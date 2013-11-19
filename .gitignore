@@ -3,8 +3,8 @@
 
 # Eclipse specific
 .classpath
-.project
-.settings
+.project/
+.settings/
 .metadata
 
 
