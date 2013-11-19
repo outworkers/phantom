@@ -1,0 +1,2 @@
+lift-cassandra
+==============
