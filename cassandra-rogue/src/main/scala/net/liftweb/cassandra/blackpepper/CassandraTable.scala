@@ -20,7 +20,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: Strin
   def optColumn[RR: CassandraPrimitive](name: String): OptionalPrimitiveColumn[RR] =
     new OptionalPrimitiveColumn[RR](name)
 
-  def jsonColumn[RR: Format](name: String): JsonTypeColumn[RR] =
+  def jsonColumn[RR](name: String)(implicit mf: Manifest[RR]): JsonTypeColumn[RR] =
     new JsonTypeColumn[RR](name)
 
   def enumColumn[EnumType <: Enumeration](enum: EnumType, name: String): EnumColumn[EnumType] =
@@ -32,7 +32,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: Strin
   def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
     new MapColumn[K, V](name)
 
-  def jsonSeqColumn[RR: Format](name: String): JsonTypeSeqColumn[RR] =
+  def jsonSeqColumn[RR](name: String)(implicit mf: Manifest[RR]): JsonTypeSeqColumn[RR] =
     new JsonTypeSeqColumn[RR](name)
 
   def select: SelectQuery[T, R] =

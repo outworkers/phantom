@@ -6,11 +6,7 @@ import com.datastax.driver.core.Row
 
 import net.liftweb.json.Formats
 import net.liftweb.json.{ DefaultFormats, JsonAST, JsonDSL, JsonParser, Extraction }
-trait Helpers {
-  implicit class RichSeq[T](val l: Seq[T]) {
-    final def toOption: Option[Seq[T]] = if (l.isEmpty) None else Some(l)
-  }
-}
+
 trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
@@ -87,7 +83,7 @@ class SeqColumn[RR: CassandraPrimitive](val name: String) extends Column[Seq[RR]
 
 class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) extends Column[Map[K, V]] {
 
-  def toCType(values: Map[K, V]): AnyRef = values.map { case (k, v) => CassandraPrimitive[K].toCType(k) -> CassandraPrimitive[V].toCType(v) }.asJava
+  def toCType(values: Map[K, V]): JMap[AnyRef, AnyRef] = values.map { case (k, v) => CassandraPrimitive[K].toCType(k) -> CassandraPrimitive[V].toCType(v) }.asJava
 
   override def apply(r: Row): Map[K, V] = {
     optional(r).getOrElse(Map.empty)
