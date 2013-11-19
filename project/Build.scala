@@ -42,7 +42,7 @@ object LiftCassandra extends Build {
 	lazy val liftCassandra = Project(
 		id = "lift-cassandra",
 		base = file("."),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings
 	).aggregate(
 		liftCassandraRecord,
 		liftCassandraRogue
@@ -51,7 +51,7 @@ object LiftCassandra extends Build {
 	lazy val liftCassandraRecord = Project(
 		id = "lift-cassandra-record",
 		base = file("cassandra-record"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings
+		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings
 	).settings(
 		libraryDependencies ++= Seq(
 			"org.scalatest"            %% "scalatest"                          % scalatestVersion      % "provided", 
@@ -63,7 +63,7 @@ object LiftCassandra extends Build {
 	lazy val liftCassandraRogue = Project(
 		id = "lift-cassandra-rogue",
 		base = file("cassandra-rogue"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings
+		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings
 	).settings(
 		libraryDependencies ++= Seq(
 			"org.scalatest"            %% "scalatest"                          % scalatestVersion      % "provided"

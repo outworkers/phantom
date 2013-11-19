@@ -1,0 +1,41 @@
+<classpath>
+  <classpathentry output="target/scala-2.10/classes" path="src/main/scala" kind="src"></classpathentry>
+  <classpathentry output="target/scala-2.10/classes" path="src/main/resources" kind="src"></classpathentry>
+  <classpathentry output="target/scala-2.10/test-classes" path="src/test/scala" kind="src"></classpathentry>
+  <classpathentry output="target/scala-2.10/test-classes" path="src/test/java" kind="src"></classpathentry>
+  <classpathentry output="target/scala-2.10/test-classes" path="src/test/resources" kind="src"></classpathentry>
+  <classpathentry output="target/scala-2.10/test-classes" path="src/main/webapp" kind="src"></classpathentry>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/com.github.nscala-time/nscala-time_2.10/jars/nscala-time_2.10-0.4.2.jar" sourcepath="/Users/alex/.ivy2/cache/com.github.nscala-time/nscala-time_2.10/srcs/nscala-time_2.10-0.4.2-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.2.jar" sourcepath="/Users/alex/.ivy2/cache/joda-time/joda-time/srcs/joda-time-2.2-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.joda/joda-convert/jars/joda-convert-1.2.jar" sourcepath="/Users/alex/.ivy2/cache/org.joda/joda-convert/srcs/joda-convert-1.2-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-record_2.10/jars/lift-record_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-record_2.10/srcs/lift-record_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-proto_2.10/jars/lift-proto_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-proto_2.10/srcs/lift-proto_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-webkit_2.10/jars/lift-webkit_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-webkit_2.10/srcs/lift-webkit_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-util_2.10/jars/lift-util_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-util_2.10/srcs/lift-util_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-actor_2.10/jars/lift-actor_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-actor_2.10/srcs/lift-actor_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-common_2.10/jars/lift-common_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-common_2.10/srcs/lift-common_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-json_2.10/jars/lift-json_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-json_2.10/srcs/lift-json_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.scala-lang/scalap/jars/scalap-2.10.0.jar" sourcepath="/Users/alex/.ivy2/cache/org.scala-lang/scalap/srcs/scalap-2.10.0-sources.jar"></classpathentry>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.0.jar" sourcepath="/Users/alex/.ivy2/cache/org.scala-lang/scala-reflect/srcs/scala-reflect-2.10.0-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/com.thoughtworks.paranamer/paranamer/jars/paranamer-2.4.1.jar" sourcepath="/Users/alex/.ivy2/cache/com.thoughtworks.paranamer/paranamer/srcs/paranamer-2.4.1-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/net.liftweb/lift-markdown_2.10/jars/lift-markdown_2.10-3.0-SNAPSHOT.jar" sourcepath="/Users/alex/.ivy2/cache/net.liftweb/lift-markdown_2.10/srcs/lift-markdown_2.10-3.0-SNAPSHOT-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/commons-codec/commons-codec/jars/commons-codec-1.6.jar" sourcepath="/Users/alex/.ivy2/cache/commons-codec/commons-codec/srcs/commons-codec-1.6-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/javax.mail/mail/jars/mail-1.4.4.jar" sourcepath="/Users/alex/.ivy2/cache/javax.mail/mail/srcs/mail-1.4.4-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/javax.activation/activation/jars/activation-1.1.jar" sourcepath="/Users/alex/.ivy2/cache/javax.activation/activation/srcs/activation-1.1-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/nu.validator.htmlparser/htmlparser/bundles/htmlparser-1.4.jar" sourcepath="/Users/alex/.ivy2/cache/nu.validator.htmlparser/htmlparser/srcs/htmlparser-1.4-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/commons-fileupload/commons-fileupload/jars/commons-fileupload-1.2.2.jar" sourcepath="/Users/alex/.ivy2/cache/commons-fileupload/commons-fileupload/srcs/commons-fileupload-1.2.2-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.mozilla/rhino/jars/rhino-1.7R4.jar" sourcepath="/Users/alex/.ivy2/cache/org.mozilla/rhino/srcs/rhino-1.7R4-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/com.datastax.cassandra/cassandra-driver-core/bundles/cassandra-driver-core-2.0.0-rc1.jar" sourcepath="/Users/alex/.ivy2/cache/com.datastax.cassandra/cassandra-driver-core/srcs/cassandra-driver-core-2.0.0-rc1-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/io.netty/netty/bundles/netty-3.7.0.Final.jar" sourcepath="/Users/alex/.ivy2/cache/io.netty/netty/srcs/netty-3.7.0.Final-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/com.google.guava/guava/bundles/guava-15.0.jar" sourcepath="/Users/alex/.ivy2/cache/com.google.guava/guava/srcs/guava-15.0-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.codehaus.jackson/jackson-core-asl/jars/jackson-core-asl-1.9.13.jar" sourcepath="/Users/alex/.ivy2/cache/org.codehaus.jackson/jackson-core-asl/srcs/jackson-core-asl-1.9.13-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.codehaus.jackson/jackson-mapper-asl/jars/jackson-mapper-asl-1.9.13.jar" sourcepath="/Users/alex/.ivy2/cache/org.codehaus.jackson/jackson-mapper-asl/srcs/jackson-mapper-asl-1.9.13-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/com.codahale.metrics/metrics-core/bundles/metrics-core-3.0.1.jar" sourcepath="/Users/alex/.ivy2/cache/com.codahale.metrics/metrics-core/srcs/metrics-core-3.0.1-sources.jar"></classpathentry>
+  <classpathentry kind="lib" path="/Users/alex/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.5.jar" sourcepath="/Users/alex/.ivy2/cache/org.slf4j/slf4j-api/srcs/slf4j-api-1.7.5-sources.jar"></classpathentry>
+  <classpathentry path="/Users/alex/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-2.0.M8.jar" kind="lib"></classpathentry>
+  <classpathentry exported="true" path="/lift-cassandra-record" kind="src" combineaccessrules="false"></classpathentry>
+  <classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"></classpathentry>
+  <classpathentry path="bin" kind="output"></classpathentry>
+</classpath>
