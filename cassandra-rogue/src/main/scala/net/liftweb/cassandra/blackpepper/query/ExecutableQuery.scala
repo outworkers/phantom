@@ -15,10 +15,10 @@ trait ExecutableStatement extends CassandraResultSetOperations {
     session.executeAsync(qb)
 }
 
-trait ExecutableQuery[T <: CTable[T, _], R] extends CassandraResultSetOperations {
+trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOperations {
 
   def qb: Statement
-  def table: CTable[T, _]
+  def table: CassandraTable[T, _]
   def fromRow(r: Row): R
 
   def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =

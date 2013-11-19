@@ -3,14 +3,21 @@ package net.liftweb.cassandra.blackpepper
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
-abstract class CTable[T <: CTable[T, R], R](val tableName: String) {
+import net.liftweb.cassandra.blackpepper.query.{
+  DeleteQuery,
+  InsertQuery,
+  SelectQuery,
+  UpdateQuery
+}
+
+abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: String) {
 
   def fromRow(r: Row): R
 
-  def column[RR: CSPrimitive](name: String): PrimitiveColumn[RR] =
+  def column[RR: CassandraPrimitive](name: String): PrimitiveColumn[RR] =
     new PrimitiveColumn[RR](name)
 
-  def optColumn[RR: CSPrimitive](name: String): OptionalPrimitiveColumn[RR] =
+  def optColumn[RR: CassandraPrimitive](name: String): OptionalPrimitiveColumn[RR] =
     new OptionalPrimitiveColumn[RR](name)
 
   def jsonColumn[RR: Format](name: String): JsonTypeColumn[RR] =
@@ -19,10 +26,10 @@ abstract class CTable[T <: CTable[T, R], R](val tableName: String) {
   def enumColumn[EnumType <: Enumeration](enum: EnumType, name: String): EnumColumn[EnumType] =
     new EnumColumn[EnumType](enum, name)
 
-  def seqColumn[RR: CSPrimitive](name: String): SeqColumn[RR] =
+  def seqColumn[RR: CassandraPrimitive](name: String): SeqColumn[RR] =
     new SeqColumn[RR](name)
 
-  def mapColumn[K: CSPrimitive, V: CSPrimitive](name: String) =
+  def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
     new MapColumn[K, V](name)
 
   def jsonSeqColumn[RR: Format](name: String): JsonTypeSeqColumn[RR] =

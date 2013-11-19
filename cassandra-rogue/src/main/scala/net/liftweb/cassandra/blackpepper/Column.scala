@@ -6,7 +6,7 @@ import com.datastax.driver.core.Row
 
 import net.liftweb.json.{ DefaultFormats, JsonAST, JsonDSL, Extraction }
 
-trait AbstractColumn[T] extends CSWrites[T] {
+trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
 
@@ -32,19 +32,19 @@ trait OptionalColumn[T] extends AbstractColumn[T] {
   override def apply(r: Row) = optional(r)
 }
 
-class OptionalPrimitiveColumn[T: CSPrimitive](val name: String) extends OptionalColumn[T] {
+class OptionalPrimitiveColumn[T: CassandraPrimitive](val name: String) extends OptionalColumn[T] {
 
-  def toCType(v: T): AnyRef = CSPrimitive[T].toCType(v)
+  def toCType(v: T): AnyRef = CassandraPrimitive[T].toCType(v)
 
-  def optional(r: Row): Option[T] = implicitly[CSPrimitive[T]].fromRow(r, name)
+  def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 }
 
-class PrimitiveColumn[RR: CSPrimitive](val name: String) extends Column[RR] {
+class PrimitiveColumn[RR: CassandraPrimitive](val name: String) extends Column[RR] {
 
-  def toCType(v: RR): AnyRef = CSPrimitive[RR].toCType(v)
+  def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
 
   def optional(r: Row): Option[RR] =
-    implicitly[CSPrimitive[RR]].fromRow(r, name)
+    implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
 class JsonTypeColumn[RR: Format](val name: String) extends Column[RR] {
@@ -65,31 +65,31 @@ class EnumColumn[EnumType <: Enumeration](enum: EnumType, val name: String) exte
 
 }
 
-class SeqColumn[RR: CSPrimitive](val name: String) extends Column[Seq[RR]] {
+class SeqColumn[RR: CassandraPrimitive](val name: String) extends Column[Seq[RR]] {
 
-  def toCType(values: Seq[RR]): AnyRef = values.map(CSPrimitive[RR].toCType).asJava
+  def toCType(values: Seq[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
   override def apply(r: Row): Seq[RR] = {
     optional(r).getOrElse(Seq.empty)
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
-    val i = implicitly[CSPrimitive[RR]]
+    val i = implicitly[CassandraPrimitive[RR]]
     Option(r.getList(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toIndexedSeq)
   }
 }
 
-class MapColumn[K: CSPrimitive, V: CSPrimitive](val name: String) extends Column[Map[K, V]] {
+class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) extends Column[Map[K, V]] {
 
-  def toCType(values: Map[K, V]): AnyRef = values.map { case (k, v) => CSPrimitive[K].toCType(k) -> CSPrimitive[V].toCType(v) }.asJava
+  def toCType(values: Map[K, V]): AnyRef = values.map { case (k, v) => CassandraPrimitive[K].toCType(k) -> CassandraPrimitive[V].toCType(v) }.asJava
 
   override def apply(r: Row): Map[K, V] = {
     optional(r).getOrElse(Map.empty)
   }
 
   def optional(r: Row): Option[Map[K, V]] = {
-    val ki = implicitly[CSPrimitive[K]]
-    val vi = implicitly[CSPrimitive[V]]
+    val ki = implicitly[CassandraPrimitive[K]]
+    val vi = implicitly[CassandraPrimitive[V]]
     Option(r.getMap(name, ki.cls, vi.cls)).map(_.asScala.map {
       case (k, v) =>
         ki.fromCType(k.asInstanceOf[AnyRef]) -> vi.fromCType(v.asInstanceOf[AnyRef])

@@ -4,19 +4,19 @@ import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause 
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 
-abstract class AbstractQueryColumn[RR: CSPrimitive](col: Column[RR]) {
+abstract class AbstractQueryColumn[RR: CassandraPrimitive](col: Column[RR]) {
 
-  def eqs(value: RR): Clause = QueryBuilder.eq(col.name, CSPrimitive[RR].toCType(value))
+  def eqs(value: RR): Clause = QueryBuilder.eq(col.name, CassandraPrimitive[RR].toCType(value))
 
-  def in[L <% Traversable[RR]](vs: L) = QueryBuilder.in(col.name, vs.map(CSPrimitive[RR].toCType).toSeq: _*)
+  def in[L <% Traversable[RR]](vs: L) = QueryBuilder.in(col.name, vs.map(CassandraPrimitive[RR].toCType).toSeq: _*)
 
-  def gt(value: RR): Clause = QueryBuilder.gt(col.name, CSPrimitive[RR].toCType(value))
-  def gte(value: RR): Clause = QueryBuilder.gte(col.name, CSPrimitive[RR].toCType(value))
-  def lt(value: RR): Clause = QueryBuilder.lt(col.name, CSPrimitive[RR].toCType(value))
-  def lte(value: RR): Clause = QueryBuilder.lte(col.name, CSPrimitive[RR].toCType(value))
+  def gt(value: RR): Clause = QueryBuilder.gt(col.name, CassandraPrimitive[RR].toCType(value))
+  def gte(value: RR): Clause = QueryBuilder.gte(col.name, CassandraPrimitive[RR].toCType(value))
+  def lt(value: RR): Clause = QueryBuilder.lt(col.name, CassandraPrimitive[RR].toCType(value))
+  def lte(value: RR): Clause = QueryBuilder.lte(col.name, CassandraPrimitive[RR].toCType(value))
 }
 
-class QueryColumn[RR: CSPrimitive](col: Column[RR]) extends AbstractQueryColumn[RR](col)
+class QueryColumn[RR: CassandraPrimitive](col: Column[RR]) extends AbstractQueryColumn[RR](col)
 
 abstract class AbstractModifyColumn[RR](name: String) {
 
@@ -51,9 +51,9 @@ class SelectColumnOptional[T](override val col: OptionalColumn[T]) extends Selec
 
 }
 
-//class CSPrimitiveModifyColumn[RR: CSPrimitive](name: String) extends AbstractModifyColumn[RR](name) {
+//class CassandraPrimitiveModifyColumn[RR: CassandraPrimitive](name: String) extends AbstractModifyColumn[RR](name) {
 //
-//  def toCType(v: RR): AnyRef = implicitly[CSPrimitive[RR]].toCType(v)
+//  def toCType(v: RR): AnyRef = implicitly[CassandraPrimitive[RR]].toCType(v)
 //}
 //
 //class JsonTypeModifyColumn[RR: Format](name: String) extends AbstractModifyColumn[RR](name) {
@@ -68,9 +68,9 @@ class SelectColumnOptional[T](override val col: OptionalColumn[T]) extends Selec
 //  def setTo(values: Seq[RR]): Assignment = QueryBuilder.set(name, values.map(toCType).asJava)
 //}
 //
-//class CSPrimitiveSeqModifyColumn[RR: CSPrimitive](name: String) extends AbstractSeqModifyColumn[RR](name) {
+//class CassandraPrimitiveSeqModifyColumn[RR: CassandraPrimitive](name: String) extends AbstractSeqModifyColumn[RR](name) {
 //
-//  def toCType(v: RR): AnyRef = implicitly[CSPrimitive[RR]].toCType(v)
+//  def toCType(v: RR): AnyRef = implicitly[CassandraPrimitive[RR]].toCType(v)
 //}
 //
 //class JsonTypeSeqModifyColumn[RR: Format](name: String) extends AbstractSeqModifyColumn[RR](name) {

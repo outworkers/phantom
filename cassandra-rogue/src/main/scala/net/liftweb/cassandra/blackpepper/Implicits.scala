@@ -2,14 +2,14 @@ package net.liftweb.cassandra.blackpepper
 
 object Implicits {
 
-  implicit def columnToQueryColumn[RR: CSPrimitive](col: Column[RR]) =
+  implicit def columnToQueryColumn[RR: CassandraPrimitive](col: Column[RR]) =
     new QueryColumn(col)
 
-  implicit def simpleColumnToAssignment[RR: CSPrimitive](col: AbstractColumn[RR]) = {
+  implicit def simpleColumnToAssignment[RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
     new ModifyColumn[RR](col)
   }
 
-  implicit def simpleOptionalColumnToAssignment[RR: CSPrimitive](col: OptionalColumn[RR]) = {
+  implicit def simpleOptionalColumnToAssignment[RR: CassandraPrimitive](col: OptionalColumn[RR]) = {
     new ModifyColumnOptional[RR](col)
   }
 
@@ -21,7 +21,7 @@ object Implicits {
     new ModifyColumn[RR](col)
   }
 
-  implicit def seqColumnToAssignment[RR: CSPrimitive](col: SeqColumn[RR]) = {
+  implicit def seqColumnToAssignment[RR: CassandraPrimitive](col: SeqColumn[RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
@@ -29,9 +29,9 @@ object Implicits {
     new ModifyColumn[Seq[RR]](col)
   }
 
-  implicit def columnIsSelectable[T](col: Column[T]): SelectColumn[T] =
+  implicit def columnIsSeleCassandraTable[T](col: Column[T]): SelectColumn[T] =
     new SelectColumnRequired[T](col)
 
-  implicit def optionalColumnIsSelectable[T](col: OptionalColumn[T]): SelectColumn[Option[T]] =
+  implicit def optionalColumnIsSeleCassandraTable[T](col: OptionalColumn[T]): SelectColumn[Option[T]] =
     new SelectColumnOptional[T](col)
 }
