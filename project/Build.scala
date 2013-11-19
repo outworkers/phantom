@@ -61,8 +61,8 @@ object LiftCassandra extends Build {
 	)
 
 	lazy val liftCassandraRogue = Project(
-		id = "lift-cassandra-rogue",
-		base = file("cassandra-rogue"),
+		id = "lift-cassandra-blackpepper",
+		base = file("cassandra-blackpepper"),
 		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings
 	).settings(
 		libraryDependencies ++= Seq(
