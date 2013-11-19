@@ -4,8 +4,13 @@ import scala.collection.JavaConverters._
 
 import com.datastax.driver.core.Row
 
-import net.liftweb.json.{ DefaultFormats, JsonAST, JsonDSL, Extraction }
-
+import net.liftweb.json.Formats
+import net.liftweb.json.{ DefaultFormats, JsonAST, JsonDSL, JsonParser, Extraction }
+trait Helpers {
+  implicit class RichSeq[T](val l: Seq[T]) {
+    final def toOption: Option[Seq[T]] = if (l.isEmpty) None else Some(l)
+  }
+}
 trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
@@ -47,12 +52,13 @@ class PrimitiveColumn[RR: CassandraPrimitive](val name: String) extends Column[R
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-class JsonTypeColumn[RR: Format](val name: String) extends Column[RR] {
+class JsonTypeColumn[RR](val name: String)(implicit mf: Manifest[RR]) extends Column[RR] {
 
-  def toCType(v: RR): AnyRef = Json.stringify(Json.toJson(v))
+  implicit val formats = DefaultFormats
+  def toCType(v: RR): AnyRef = Extraction.decompose(v)
 
   def optional(r: Row): Option[RR] = {
-    Option(r.getString(name)).flatMap(e => Json.fromJson(Json.parse(e)).asOpt)
+    Option(r.getString(name)).flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf))
   }
 }
 
@@ -97,15 +103,16 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) 
   }
 }
 
-class JsonTypeSeqColumn[RR: Format](val name: String) extends Column[Seq[RR]] {
+class JsonTypeSeqColumn[RR](val name: String)(implicit mf: Manifest[RR]) extends Column[Seq[RR]] with Helpers {
 
-  def toCType(values: Seq[RR]): AnyRef = values.map(v => Json.stringify(Json.toJson(v))).asJava
+  implicit val formats = DefaultFormats
+  def toCType(values: Seq[RR]): AnyRef = values.map(v => Extraction.decompose(v)).asJava
 
   override def apply(r: Row): Seq[RR] = {
     optional(r).getOrElse(Seq.empty)
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
-    Option(r.getList(name, classOf[String])).map(_.asScala.flatMap(e => Json.fromJson(Json.parse(e)).asOpt))
+    r.getList(name, classOf[String]).asScala.flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf)).toSeq.toOption
   }
 }
