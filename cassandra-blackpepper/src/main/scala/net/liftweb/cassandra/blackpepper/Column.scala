@@ -48,8 +48,9 @@ class PrimitiveColumn[RR: CassandraPrimitive](val name: String) extends Column[R
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-class JsonTypeColumn[RR](val name: String)(implicit mf: Manifest[RR]) extends Column[RR] {
+class JsonTypeColumn[RR: Manifest](val name: String) extends Column[RR] {
 
+  val mf = implicitly[Manifest[RR]]
   implicit val formats = DefaultFormats
   def toCType(v: RR): AnyRef = Extraction.decompose(v)
 
@@ -99,7 +100,9 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) 
   }
 }
 
-class JsonTypeSeqColumn[RR](val name: String)(implicit mf: Manifest[RR]) extends Column[Seq[RR]] with Helpers {
+class JsonTypeSeqColumn[RR: Manifest](val name: String) extends Column[Seq[RR]] with Helpers {
+
+  val mf = implicitly[Manifest[RR]]
 
   implicit val formats = DefaultFormats
   def toCType(values: Seq[RR]): AnyRef = values.map(v => Extraction.decompose(v)).asJava

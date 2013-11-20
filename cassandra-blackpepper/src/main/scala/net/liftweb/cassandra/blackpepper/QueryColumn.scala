@@ -50,30 +50,3 @@ class SelectColumnOptional[T](override val col: OptionalColumn[T]) extends Selec
   def apply(r: Row): Option[T] = col.apply(r)
 
 }
-
-//class CassandraPrimitiveModifyColumn[RR: CassandraPrimitive](name: String) extends AbstractModifyColumn[RR](name) {
-//
-//  def toCType(v: RR): AnyRef = implicitly[CassandraPrimitive[RR]].toCType(v)
-//}
-//
-//class JsonTypeModifyColumn[RR: Format](name: String) extends AbstractModifyColumn[RR](name) {
-//
-//  def toCType(v: RR): AnyRef = Json.stringify(Json.toJson(v))
-//}
-//
-//abstract class AbstractSeqModifyColumn[RR](name: String) {
-//
-//  def toCType(v: RR): AnyRef
-//
-//  def setTo(values: Seq[RR]): Assignment = QueryBuilder.set(name, values.map(toCType).asJava)
-//}
-//
-//class CassandraPrimitiveSeqModifyColumn[RR: CassandraPrimitive](name: String) extends AbstractSeqModifyColumn[RR](name) {
-//
-//  def toCType(v: RR): AnyRef = implicitly[CassandraPrimitive[RR]].toCType(v)
-//}
-//
-//class JsonTypeSeqModifyColumn[RR: Format](name: String) extends AbstractSeqModifyColumn[RR](name) {
-//
-//  def toCType(v: RR): AnyRef = Json.stringify(Json.toJson(v))
-//}
