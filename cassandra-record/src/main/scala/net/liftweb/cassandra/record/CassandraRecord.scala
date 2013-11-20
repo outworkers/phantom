@@ -1,5 +1,17 @@
-package net.liftweb.cassandra.record
+package net
+package liftweb
+package cassandra
+package record
 
-trait CassandraRecord {
+import net.liftweb.record.{ MetaRecord, Record }
+
+trait CassandraRecord[MyType <: CassandraRecord[MyType]] extends Record[MyType] {
+  self: MyType =>
+
+  def save: Unit = {
+    runSafe {
+
+    }
+  }
 
 }

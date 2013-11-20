@@ -17,7 +17,7 @@ object Implicits {
     new ModifyColumn[RR#Value](col)
   }
 
-  implicit def jsonColumnToAssignment[RR: Format](col: JsonTypeColumn[RR]) = {
+  implicit def jsonColumnToAssignment[RR: Manifest](col: JsonTypeColumn[RR]) = {
     new ModifyColumn[RR](col)
   }
 
@@ -25,7 +25,7 @@ object Implicits {
     new ModifyColumn[Seq[RR]](col)
   }
 
-  implicit def jsonSeqColumnToAssignment[RR: Format](col: JsonTypeSeqColumn[RR]) = {
+  implicit def jsonSeqColumnToAssignment[RR: Manifest](col: JsonTypeSeqColumn[RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
