@@ -1,11 +1,36 @@
-package net.liftweb.cassandra.blackpepper
+/*
+ * Copyright 2013 newzly ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net
+package liftweb
+package cassandra
+package blackpepper
 
+import scala.collection.breakOut
 import scala.collection.JavaConverters._
 
 import com.datastax.driver.core.Row
 
 import net.liftweb.json.Formats
-import net.liftweb.json.{ DefaultFormats, JsonAST, JsonDSL, JsonParser, Extraction }
+import net.liftweb.json.{
+  DefaultFormats,
+  Extraction,
+  JsonAST,
+  JsonDSL,
+  JsonParser
+}
 
 trait AbstractColumn[T] extends CassandraWrites[T] {
 
@@ -96,22 +121,22 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) 
     Option(r.getMap(name, ki.cls, vi.cls)).map(_.asScala.map {
       case (k, v) =>
         ki.fromCType(k.asInstanceOf[AnyRef]) -> vi.fromCType(v.asInstanceOf[AnyRef])
-    } toMap)
+    }(breakOut) toMap)
   }
 }
 
 class JsonTypeSeqColumn[RR: Manifest](val name: String) extends Column[Seq[RR]] with Helpers {
 
-  val mf = implicitly[Manifest[RR]]
-
   implicit val formats = DefaultFormats
-  def toCType(values: Seq[RR]): AnyRef = values.map(v => Extraction.decompose(v)).asJava
+  def toCType(values: Seq[RR]): AnyRef = values.map(v => Extraction.decompose(v))(breakOut).asJava
 
   override def apply(r: Row): Seq[RR] = {
     optional(r).getOrElse(Seq.empty)
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
-    r.getList(name, classOf[String]).asScala.flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf)).toSeq.toOption
+    r.getList(name, classOf[String]).asScala.flatMap(
+      e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, implicitly[Manifest[RR]])
+    )(breakOut).toSeq.toOption
   }
 }
