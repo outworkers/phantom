@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.newzly</groupId>
+    <artifactId>lift-cassandra-blackpepper_2.10</artifactId>
+    <packaging>jar</packaging>
+    <description>lift-cassandra-blackpepper</description>
+    <version>0.0.1</version>
+    <name>lift-cassandra-blackpepper</name>
+    <organization>
+        <name>com.newzly</name>
+    </organization>
+    <dependencies>
+        <dependency>
+            <groupId>com.newzly</groupId>
+            <artifactId>lift-cassandra-record_2.10</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.nscala-time</groupId>
+            <artifactId>nscala-time_2.10</artifactId>
+            <version>0.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.10</artifactId>
+            <version>2.0.M8</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.specs2</groupId>
+            <artifactId>specs2-core_2.10</artifactId>
+            <version>2.3.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>Sonatyperepo</id>
+            <name>Sonatype repo</name>
+            <url>https://oss.sonatype.org/content/groups/scala-tools/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>Sonatypereleases</id>
+            <name>Sonatype releases</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>Sonatypesnapshots</id>
+            <name>Sonatype snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>Sonatypestaging</id>
+            <name>Sonatype staging</name>
+            <url>http://oss.sonatype.org/content/repositories/staging/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>JavanetMaven2Repository</id>
+            <name>Java.net Maven2 Repository</name>
+            <url>http://download.java.net/maven/2/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>TwitterRepository</id>
+            <name>Twitter Repository</name>
+            <url>http://maven.twttr.com/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+</project>

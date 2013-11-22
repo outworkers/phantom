@@ -6,8 +6,6 @@ resolvers ++= Seq(
     "scct-github-repository"                             at "http://mtkopone.github.com/scct/maven-repo"
 )
 
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "0.4.2")
-
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0")
