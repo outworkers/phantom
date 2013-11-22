@@ -19,40 +19,44 @@ package cassandra
 package phantom
 
 import java.util.concurrent.TimeUnit
+
+import scala.concurrent.{ ExecutionContext, Future, CanAwait }
 import scala.util.{ Try, Success }
+import scala.concurrent.duration._
 
 import com.datastax.driver.core.{ ResultSetFuture, ResultSet }
 
-import com.twitter.finagle.AbstractCodec
-import com.twitter.finagle.Service
-import com.twitter.util.{ Await, Future }
-import com.twitter.util.Awaitable.CanAwait
-import com.twitter.util.Duration
-
 trait CassandraResultSetOperations {
+  private[this] case class ExecutionContextExecutor(executonContext: ExecutionContext) extends java.util.concurrent.Executor {
+    def execute(command: Runnable): Unit = { executonContext.execute(command) }
+  }
 
-  protected[cassandra] implicit class RichResultSetFuture(resultSetFuture: ResultSetFuture) extends Future[ResultSet] {
+  protected[this] implicit class RichResultSetFuture(resultSetFuture: ResultSetFuture) extends Future[ResultSet] {
     @throws(classOf[InterruptedException])
-    @throws(classOf[com.twitter.util.TimeoutException])
+    @throws(classOf[scala.concurrent.TimeoutException])
     def ready(atMost: Duration)(implicit permit: CanAwait): this.type = {
-      resultSetFuture.get(atMost.inMillis, TimeUnit.MILLISECONDS)
+      resultSetFuture.get(atMost.toMillis, TimeUnit.MILLISECONDS)
       this
     }
 
     @throws(classOf[Exception])
     def result(atMost: Duration)(implicit permit: CanAwait): ResultSet = {
-      resultSetFuture.get(atMost.inMillis, TimeUnit.MILLISECONDS)
+      resultSetFuture.get(atMost.toMillis, TimeUnit.MILLISECONDS)
     }
 
-    def onComplete[U](func: (Try[ResultSet]) => U)(implicit permit: CanAwait): Unit = {
-      func(Success(resultSetFuture.getUninterruptibly))
+    def onComplete[U](func: (Try[ResultSet]) => U)(implicit executionContext: ExecutionContext): Unit = {
+      if (resultSetFuture.isDone) {
+        func(Success(resultSetFuture.getUninterruptibly))
+      } else {
+        resultSetFuture.addListener(new Runnable {
+          def run() {
+            func(Try(resultSetFuture.get()))
+          }
+        }, ExecutionContextExecutor(executionContext))
+      }
     }
 
     def isCompleted: Boolean = resultSetFuture.isDone
-
-    def raise(interrup: Throwable): Unit = {
-
-    }
 
     def value: Option[Try[ResultSet]] = if (resultSetFuture.isDone) Some(Try(resultSetFuture.get())) else None
   }
