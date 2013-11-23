@@ -1,5 +1,6 @@
-package net.liftweb
+package com.newzly
 import com.datastax.driver.core.querybuilder._
+import org.apache.cassandra.service.EmbeddedCassandraService
 
 package object cassandra {
   trait Helpers {
@@ -10,5 +11,14 @@ package object cassandra {
 
   type JMap[K, V] = java.util.Map[K, V];
 
+  /**
+   * Cassandra
+   */
+  type EmbeddedCassandraService = org.apache.cassandra.service.EmbeddedCassandraService
+
+  /**
+   * Datastax imports
+   */
+  type Session = com.datastax.driver.core.Session;
   type QueryBuilder = com.datastax.driver.core.querybuilder.QueryBuilder
 }
