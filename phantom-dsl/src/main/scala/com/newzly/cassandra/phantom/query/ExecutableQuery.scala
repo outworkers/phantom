@@ -20,18 +20,16 @@ package phantom
 package query
 
 import scala.collection.JavaConverters._
-import com.twitter.finagle.{ Service }
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
-
 import com.newzly.cassandra.phantom.{ CassandraResultSetOperations, CassandraTable };
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
   def qb: Statement
 
-  def execute()(implicit session: Session, ec: Service[_, _]): Future[ResultSet] =
+  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =
     session.executeAsync(qb)
 }
 

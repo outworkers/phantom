@@ -94,12 +94,7 @@ object newzlyPhantom extends Build {
 			"org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test",
 			"net.liftweb"              %% "lift-record"                       % liftVersion           % "compile",
 			"com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion,
-			"org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-			"com.twitter"              %% "finagle"                           % finagleVersion,
-        	"com.twitter"              %% "finagle-core"                      % finagleVersion exclude("org.slf4j", "slf4j"),
-        	"com.twitter"              %% "finagle-zipkin"                    % finagleVersion,
-        	"com.twitter"              %% "finagle-stats"                     % finagleVersion,
-        	"com.twitter"              %% "finagle-thrift"                    % finagleVersion
+			"org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
 		)
 	)
 
