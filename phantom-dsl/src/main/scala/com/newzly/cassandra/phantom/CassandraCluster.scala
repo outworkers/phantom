@@ -1,4 +1,4 @@
-package com.liftweb.cassandra.blackpepper
+package com.newzly.cassandra.phantom
 
 import com.datastax.driver.core.Cluster
 import org.apache.cassandra.service.EmbeddedCassandraService
