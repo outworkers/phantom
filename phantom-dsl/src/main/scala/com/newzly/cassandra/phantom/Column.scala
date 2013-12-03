@@ -32,6 +32,7 @@ import net.liftweb.json.{
   JsonDSL,
   JsonParser
 }
+import net.liftweb.json.Serialization.write
 
 trait Helpers {
   private[cassandra] implicit class RichSeq[T](val l: Seq[T]) {
@@ -84,7 +85,7 @@ class JsonTypeColumn[RR: Manifest](val name: String) extends Column[RR] {
 
   val mf = implicitly[Manifest[RR]]
   implicit val formats = DefaultFormats
-  def toCType(v: RR): AnyRef = Extraction.decompose(v)
+  def toCType(v: RR): AnyRef = write(v.asInstanceOf[AnyRef])
 
   def optional(r: Row): Option[RR] = {
     Option(r.getString(name)).flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf))
