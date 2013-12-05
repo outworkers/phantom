@@ -1,0 +1,11 @@
+# Travis CI credentials
+
+language: scala
+
+scala: 
+ - "2.10.0"
+
+services:
+ - cassandra
+
+script: "./scripts/run_tests.sh"
