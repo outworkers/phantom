@@ -21,3 +21,7 @@ project/plugins/project/
 
 # MacOS X specific
 .DS_Store
+
+#InteliJ
+.idea_modules/
+.idea/

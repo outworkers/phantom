@@ -32,6 +32,9 @@ import net.liftweb.json.{
   JsonDSL,
   JsonParser
 }
+import net.liftweb.json.Serialization.write
+import scala.reflect.ClassTag
+
 
 trait Helpers {
   private[cassandra] implicit class RichSeq[T](val l: Seq[T]) {
@@ -84,7 +87,7 @@ class JsonTypeColumn[RR: Manifest](val name: String) extends Column[RR] {
 
   val mf = implicitly[Manifest[RR]]
   implicit val formats = DefaultFormats
-  def toCType(v: RR): AnyRef = Extraction.decompose(v)
+  def toCType(v: RR): AnyRef = write(v.asInstanceOf[AnyRef])
 
   def optional(r: Row): Option[RR] = {
     Option(r.getString(name)).flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf))
@@ -98,6 +101,36 @@ class EnumColumn[EnumType <: Enumeration](enum: EnumType, val name: String) exte
   def optional(r: Row): Option[EnumType#Value] =
     Option(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
 
+}
+
+class SetColumn[RR:CassandraPrimitive](val name: String) extends Column[Set[RR]] {
+
+  def toCType(values: Set[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
+
+  override def apply(r: Row): Set[RR] = {
+    optional(r).getOrElse(Set.empty)
+  }
+
+  def optional(r: Row): Option[Set[RR]] = {
+
+    val i = implicitly[CassandraPrimitive[RR]]
+    Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet)
+  }
+}
+
+class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive](val name: String) extends Column[Seq[RR]] {
+
+  def toCType(values: Seq[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
+
+  override def apply(r: Row): Seq[RR] = {
+    optional(r).getOrElse(Seq.empty)
+  }
+
+  def optional(r: Row): Option[Seq[RR]] = {
+
+    val i = implicitly[CassandraPrimitive[RR]]
+    Option(r.getList(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toIndexedSeq)
+  }
 }
 
 class SeqColumn[RR: CassandraPrimitive](val name: String) extends Column[Seq[RR]] {
