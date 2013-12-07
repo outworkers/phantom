@@ -9,7 +9,7 @@ trait CassandraCluster {
   val cluster =
     Cluster.builder()
       .addContactPoint("127.0.0.1")
-      .withPort(19042)
+      .withPort(9999)
       .withoutJMXReporting()
       .withoutMetrics()
       .build()

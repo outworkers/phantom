@@ -29,8 +29,9 @@ trait ExecutableStatement extends CassandraResultSetOperations {
 
   def qb: Statement
 
-  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =
+  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =  {
     session.executeAsync(qb)
+  }
 }
 
 trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOperations {
