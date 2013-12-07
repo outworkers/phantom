@@ -17,16 +17,16 @@ package com
 package newzly
 package cassandra
 package phantom
-
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
-
+import scala.reflect.runtime.universe._
 import com.newzly.cassandra.phantom.query.{
   DeleteQuery,
   InsertQuery,
   SelectQuery,
   UpdateQuery
 }
+import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: String) {
 
@@ -44,8 +44,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: Strin
   def enumColumn[EnumType <: Enumeration](enum: EnumType, name: String): EnumColumn[EnumType] =
     new EnumColumn[EnumType](enum, name)
 
+  def column[S <: Seq[RR],RR:CassandraPrimitive](name: String): SeqColumnNew[S,RR] =
+    new SeqColumnNew[S,RR](name)
+
+  def setColumn[RR:CassandraPrimitive](name: String):SetColumn[RR] =
+    new SetColumn[RR](name)
+
   def seqColumn[RR: CassandraPrimitive](name: String): SeqColumn[RR] =
     new SeqColumn[RR](name)
+
+  def column[Map,K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
+    new MapColumn[K, V](name)
 
   def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
     new MapColumn[K, V](name)
