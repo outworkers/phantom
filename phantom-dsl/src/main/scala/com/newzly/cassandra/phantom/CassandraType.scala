@@ -20,6 +20,7 @@ package phantom
 
 import com.datastax.driver.core.Row
 import java.util.{ UUID, Date }
+import java.net.{InetAddress}
 
 trait CassandraWrites[T] {
 
@@ -42,6 +43,18 @@ object CassandraPrimitive {
 
     def cls: Class[_] = classOf[java.lang.Integer]
     def fromRow(row: Row, name: String): Option[Int] = Option(row.getInt(name))
+  }
+
+  implicit object FloatIsCassandraPrimitive extends CassandraPrimitive[Float] {
+
+    def cls: Class[_] = classOf[java.lang.Float]
+    def fromRow(row: Row, name: String): Option[Float] = Option(row.getFloat(name))
+  }
+
+  implicit object LongIsCassandraPrimitive extends CassandraPrimitive[Long] {
+
+    def cls: Class[_] = classOf[java.lang.Long]
+    def fromRow(row: Row, name: String): Option[Long] = Option(row.getLong(name))
   }
 
   implicit object StringIsCassandraPrimitive extends CassandraPrimitive[String] {
@@ -73,4 +86,23 @@ object CassandraPrimitive {
     def cls: Class[_] = classOf[UUID]
     def fromRow(row: Row, name: String): Option[UUID] = Option(row.getUUID(name))
   }
+
+  implicit object BigDecimalCassandraPrimitive extends CassandraPrimitive[BigDecimal] {
+
+    def cls: Class[_] = classOf[BigDecimal]
+    def fromRow(row: Row, name: String): Option[BigDecimal] = Option(row.getDecimal(name))
+  }
+
+  implicit object InetAddressCassandraPrimitive extends CassandraPrimitive[InetAddress] {
+
+    def cls: Class[_] = classOf[InetAddress]
+    def fromRow(row: Row, name: String): Option[InetAddress] = Option(row.getInet(name))
+  }
+
+  implicit object BigIntCassandraPrimitive extends CassandraPrimitive[BigInt] {
+
+    def cls: Class[_] = classOf[BigInt]
+    def fromRow(row: Row, name: String): Option[BigInt] = Option(row.getVarint(name))
+  }
+
 }

@@ -34,4 +34,8 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     new InsertQuery[T, R](table, qb.value(col.name, value.map(col.toCType).orNull))
   }
 
+  override def toString():String={
+    val bb = qb.getValues
+    qb.getQueryString()+" ("+bb+":"+qb.toString+")"
+  }
 }
