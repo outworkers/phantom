@@ -52,23 +52,23 @@ class InsertTable extends BaseTest {
       uuid: java.util.UUID,
       bi: BigInt)
 
-    class PrimitivesTable extends CassandraTable[PrimitivesTable, Primitives]("primitives") {
+    class PrimitivesTable extends CassandraTable[PrimitivesTable, Primitives] {
       override def fromRow(r: Row): Primitives = {
         Primitives(str(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
           int(r), date(r), uuid(r), bi(r))
       }
 
-      val str = column[String]("str")
-      val long = column[Long]("long")
-      val boolean = column[Boolean]("boolean")
-      val bDecimal = column[BigDecimal]("bDecimal")
-      val double = column[Double]("double")
-      val float = column[Float]("float")
-      val inet = column[java.net.InetAddress]("inet")
-      val int = column[Int]("int")
-      val date = column[java.util.Date]("date")
-      val uuid = column[java.util.UUID]("uuid")
-      val bi = column[BigInt]("bi")
+      val str = column[String]
+      val long = column[Long]
+      val boolean = column[Boolean]
+      val bDecimal = column[BigDecimal]
+      val double = column[Double]
+      val float = column[Float]
+      val inet = column[java.net.InetAddress]
+      val int = column[Int]
+      val date = column[java.util.Date]
+      val uuid = column[java.util.UUID]
+      val bi = column[BigInt]
 
     }
     object PrimitivesTable extends PrimitivesTable
@@ -116,13 +116,13 @@ class InsertTable extends BaseTest {
       setInt: Set[Int],
       mapIntToText: Map[Int, String])
 
-    class TestTable extends CassandraTable[TestTable, TestRow]("testTable") {
-      val key = column[String]("key")
-      val list = seqColumn[String]("list")
-      val setText = setColumn[String]("setText")
-      val mapTextToText = mapColumn[String, String]("mapTextToText")
-      val setInt = setColumn[Int]("setInt")
-      val mapIntToText = mapColumn[Int, String]("mapIntToText")
+    class TestTable extends CassandraTable[TestTable, TestRow] {
+      val key = column[String]
+      val list = seqColumn[String]
+      val setText = setColumn[String]
+      val mapTextToText = mapColumn[String, String]
+      val setInt = setColumn[Int]
+      val mapIntToText = mapColumn[Int, String]
 
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), list(r),
@@ -161,16 +161,15 @@ class InsertTable extends BaseTest {
     session.execute(createTestTable)
 
     case class ClassS(something: String)
-    //case class ClassS(something:Map[String,Int])
     case class TestRow(key: String, optionA: Option[Int], classS: ClassS)
 
-    class TestTable extends CassandraTable[TestTable, TestRow]("myTest") {
+    class TestTable extends CassandraTable[TestTable, TestRow] {
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), optionA(r), classS(r))
       }
-      val key = column[String]("key")
-      val optionA = optColumn[Int]("optionA")
-      val classS = jsonColumn[ClassS]("classS")
+      val key = column[String]
+      val optionA = optColumn[Int]
+      val classS = jsonColumn[ClassS]
     }
 
     val row = TestRow("someKey", Some(2), ClassS("lol"))
@@ -212,20 +211,21 @@ class InsertTable extends BaseTest {
       lastCheckedAt: java.util.Date,
       props: Map[String, String])
 
-    class Recipes extends CassandraTable[Recipes, Recipe]("recipes") {
+    class Recipes extends CassandraTable[Recipes, Recipe] {
 
       override def fromRow(r: Row): Recipe = {
         Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), lastCheckedAt(r), props(r))
       }
 
-      val url = column[String]("url")
-      val description = optColumn[String]("description")
-      val ingredients = seqColumn[String]("ingredients")
-      val author = jsonColumn[Author]("author")
-      val servings = optColumn[Int]("servings")
-      val lastCheckedAt = column[java.util.Date]("last_checked_at")
-      val props = mapColumn[String, String]("props")
-      val uid = column[UUID]("uid")
+      val url = column[String]
+      val description = optColumn[String]
+      val ingredients = seqColumn[String]
+      val author = jsonColumn[Author]
+      val servings = optColumn[Int]
+      val lastCheckedAt = column[java.util.Date]
+      val props = mapColumn[String, String]
+      val uid = column[UUID]
+
     }
     implicit val formats = net.liftweb.json.DefaultFormats
 
@@ -265,15 +265,15 @@ class InsertTable extends BaseTest {
     case class ClassS(something: Map[String, Int])
     case class TestRow(key: String, optionA: Option[Int], classS: ClassS, optionS: Option[ClassS], map: Map[String, ClassS])
 
-    class TestTable extends CassandraTable[TestTable, TestRow]("myTest") {
+    class TestTable extends CassandraTable[TestTable, TestRow] {
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
       }
-      val key = column[String]("key")
-      val optionA = optColumn[Int]("optionA")
-      val classS = jsonColumn[ClassS]("classS")
-      val optionS = jsonColumn[Option[ClassS]]("optionS")
-      val mapIntoClass = jsonColumn[Map[String, ClassS]]("mapIntoClass")
+      val key = column[String]
+      val optionA = optColumn[Int]
+      val classS = jsonColumn[ClassS]
+      val optionS = jsonColumn[Option[ClassS]]
+      val mapIntoClass = jsonColumn[Map[String, ClassS]]
     }
 
     val row = TestRow("someKey", Some(2), ClassS(Map("k2" -> 5)), Some(ClassS(Map("k2" -> 5))), Map("5" -> ClassS(Map("p" -> 2))))
