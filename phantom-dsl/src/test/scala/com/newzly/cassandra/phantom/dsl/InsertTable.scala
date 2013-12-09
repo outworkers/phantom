@@ -228,6 +228,7 @@ class InsertTable extends BaseTest {
       val uid = column[UUID]("uid")
     }
     implicit val formats = net.liftweb.json.DefaultFormats
+
     val author = Author("Tony", "Clark", Some("great chef..."))
     val r = Recipe("recipe_url", Some("desc"), Seq("ingr1", "ingr2"), Some(author), Some(4), new java.util.Date, Map("a" -> "b", "c" -> "d"))
 
