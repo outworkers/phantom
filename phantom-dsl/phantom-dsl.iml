@@ -122,6 +122,13 @@
       <src_folder value="file://$MODULE_DIR$/src/main/webapp" expected_position="5" />
     </src_description>
   </component>
+  <component name="FacetManager">
+    <facet type="scala" name="Scala">
+      <configuration>
+        <option name="compilerLibraryLevel" value="Project" />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/bin" />
     <exclude-output />
@@ -1326,6 +1333,7 @@
     </orderEntry>
     <orderEntry type="module" module-name="phantom-record" exported="" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="" level="project" />
   </component>
 </module>
 
