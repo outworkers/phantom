@@ -46,7 +46,7 @@ trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
 
-  def name: String
+  lazy val name: String = this.getClass.getSimpleName
 
   def apply(r: Row): ValueType
 
@@ -68,14 +68,14 @@ trait OptionalColumn[T] extends AbstractColumn[T] {
   override def apply(r: Row) = optional(r)
 }
 
-class OptionalPrimitiveColumn[T: CassandraPrimitive](val name: String) extends OptionalColumn[T] {
+class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
 
   def toCType(v: T): AnyRef = CassandraPrimitive[T].toCType(v)
 
   def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 }
 
-class PrimitiveColumn[RR: CassandraPrimitive](val name: String) extends Column[RR] {
+class PrimitiveColumn[RR: CassandraPrimitive] extends Column[RR] {
 
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
 
@@ -83,7 +83,7 @@ class PrimitiveColumn[RR: CassandraPrimitive](val name: String) extends Column[R
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-class JsonTypeColumn[RR: Manifest](val name: String) extends Column[RR] {
+class JsonTypeColumn[RR: Manifest] extends Column[RR] {
 
   val mf = implicitly[Manifest[RR]]
   implicit val formats = DefaultFormats
@@ -94,7 +94,7 @@ class JsonTypeColumn[RR: Manifest](val name: String) extends Column[RR] {
   }
 }
 
-class EnumColumn[EnumType <: Enumeration](enum: EnumType, val name: String) extends Column[EnumType#Value] {
+class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumType#Value] {
 
   def toCType(v: EnumType#Value): AnyRef = v.toString
 
@@ -103,7 +103,7 @@ class EnumColumn[EnumType <: Enumeration](enum: EnumType, val name: String) exte
 
 }
 
-class SetColumn[RR:CassandraPrimitive](val name: String) extends Column[Set[RR]] {
+class SetColumn[RR:CassandraPrimitive] extends Column[Set[RR]] {
 
   def toCType(values: Set[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
@@ -118,7 +118,7 @@ class SetColumn[RR:CassandraPrimitive](val name: String) extends Column[Set[RR]]
   }
 }
 
-class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive](val name: String) extends Column[Seq[RR]] {
+class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive] extends Column[Seq[RR]] {
 
   def toCType(values: Seq[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
@@ -133,7 +133,7 @@ class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive](val name: String) extends
   }
 }
 
-class SeqColumn[RR: CassandraPrimitive](val name: String) extends Column[Seq[RR]] {
+class SeqColumn[RR: CassandraPrimitive] extends Column[Seq[RR]] {
 
   def toCType(values: Seq[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
@@ -147,7 +147,7 @@ class SeqColumn[RR: CassandraPrimitive](val name: String) extends Column[Seq[RR]
   }
 }
 
-class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) extends Column[Map[K, V]] {
+class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map[K, V]] {
 
   def toCType(values: Map[K, V]): JMap[AnyRef, AnyRef] = values.map {
     case (k, v) => CassandraPrimitive[K].toCType(k) -> CassandraPrimitive[V].toCType(v)
@@ -167,7 +167,7 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive](val name: String) 
   }
 }
 
-class JsonTypeSeqColumn[RR: Manifest](val name: String) extends Column[Seq[RR]] with Helpers {
+class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
 
   def toCType(values: Seq[RR]): AnyRef = values.map(Extraction.decompose(_)(DefaultFormats))(breakOut).asJava
 
