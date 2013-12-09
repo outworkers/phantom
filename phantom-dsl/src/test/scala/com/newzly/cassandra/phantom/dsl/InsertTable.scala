@@ -1,14 +1,18 @@
 package com.newzly.cassandra.phantom.dsl
 
-import com.newzly.cassandra.phantom.CassandraTable
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.datastax.driver.core.{ Session, Row }
-import scala.concurrent.{ Await, Future }
+
 import java.net.InetAddress
+import java.util.{ Date, UUID }
+
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
-import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core
+
+import com.newzly.cassandra.phantom._
+import com.newzly.cassandra.phantom.CassandraTable
 
 class InsertTable extends BaseTest {
 
@@ -58,18 +62,18 @@ class InsertTable extends BaseTest {
           int(r), date(r), uuid(r), bi(r))
       }
 
-      val str = column[String]
-      val long = column[Long]
-      val boolean = column[Boolean]
-      val bDecimal = column[BigDecimal]
-      val double = column[Double]
-      val float = column[Float]
-      val inet = column[java.net.InetAddress]
-      val int = column[Int]
-      val date = column[java.util.Date]
-      val uuid = column[java.util.UUID]
-      val bi = column[BigInt]
+      object str extends PrimitiveColumn[String]
+      object long extends PrimitiveColumn[Long]
 
+      object boolean extends PrimitiveColumn[Boolean]
+      object bDecimal extends PrimitiveColumn[BigDecimal]
+      object double extends PrimitiveColumn[Double]
+      object float extends PrimitiveColumn[Float]
+      object inet extends PrimitiveColumn[InetAddress]
+      object int extends PrimitiveColumn[Int]
+      object date extends PrimitiveColumn[Date]
+      object uuid extends PrimitiveColumn[UUID]
+      object bi extends PrimitiveColumn[BigInt]
     }
     object PrimitivesTable extends PrimitivesTable
 
@@ -117,12 +121,13 @@ class InsertTable extends BaseTest {
       mapIntToText: Map[Int, String])
 
     class TestTable extends CassandraTable[TestTable, TestRow] {
-      val key = column[String]
-      val list = seqColumn[String]
-      val setText = setColumn[String]
-      val mapTextToText = mapColumn[String, String]
-      val setInt = setColumn[Int]
-      val mapIntToText = mapColumn[Int, String]
+
+      object key extends PrimitiveColumn[String]
+      object list extends SeqColumn[String]
+      object setText extends SetColumn[String]
+      object mapTextToText extends MapColumn[String, String]
+      object setInt extends  SetColumn[Int]
+      object mapIntToText extends MapColumn[Int, String]
 
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), list(r),
@@ -217,14 +222,14 @@ class InsertTable extends BaseTest {
         Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), lastCheckedAt(r), props(r))
       }
 
-      val url = column[String]
-      val description = optColumn[String]
-      val ingredients = seqColumn[String]
-      val author = jsonColumn[Author]
-      val servings = optColumn[Int]
-      val lastCheckedAt = column[java.util.Date]
-      val props = mapColumn[String, String]
-      val uid = column[UUID]
+      object url extends PrimitiveColumn[String]
+      object description extends OptionalPrimitiveColumn[String]
+      object ingredients extends SeqColumn[String]
+      object author extends JsonTypeColumn[Author]
+      object servings extends OptionalPrimitiveColumn[Int]
+      object lastCheckedAt extends PrimitiveColumn[Date]
+      object props extends MapColumn[String, String]
+      object uid extends PrimitiveColumn[UUID]
 
     }
     implicit val formats = net.liftweb.json.DefaultFormats
@@ -269,11 +274,11 @@ class InsertTable extends BaseTest {
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
       }
-      val key = column[String]
-      val optionA = optColumn[Int]
-      val classS = jsonColumn[ClassS]
-      val optionS = jsonColumn[Option[ClassS]]
-      val mapIntoClass = jsonColumn[Map[String, ClassS]]
+      object key extends PrimitiveColumn[String]
+      object optionA extends OptionalPrimitiveColumn[Int]
+      object classS extends JsonTypeColumn[ClassS]
+      object optionS extends JsonTypeColumn[Option[ClassS]]
+      object mapIntoClass extends JsonTypeColumn[Map[String, ClassS]]
     }
 
     val row = TestRow("someKey", Some(2), ClassS(Map("k2" -> 5)), Some(ClassS(Map("k2" -> 5))), Map("5" -> ClassS(Map("p" -> 2))))
@@ -289,8 +294,8 @@ class InsertTable extends BaseTest {
     info(rcp.qb.toString)
     rcp.execute().sync()
     val recipeF: Future[Option[TestRow]] = TestTable.select.one
-    assert(recipeF.sync().get === row)
 
+    assert(recipeF.sync().get === row)
     assert(TestTable.select.fetch.sync() contains (row))
   }
 
