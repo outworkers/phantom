@@ -1,5 +1,9 @@
 package com.newzly.cassandra.phantom.dsl
 
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FlatSpec }
 import com.newzly.cassandra.helper.CassandraCluster
 
@@ -18,6 +22,12 @@ class BaseTest extends FlatSpec with BeforeAndAfterEach with BeforeAndAfterAll w
 
   override def afterAll() {
     cluster.shutdown()
+  }
+
+  implicit class SyncFuture[T](future: Future[T]) {
+    def sync(): T = {
+      Await.result(future, 10 seconds)
+    }
   }
 
 }

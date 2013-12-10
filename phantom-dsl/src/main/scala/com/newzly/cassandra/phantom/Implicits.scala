@@ -20,6 +20,16 @@ package phantom
 
 object Implicits {
 
+  type Column[T] = com.newzly.cassandra.phantom.Column[T]
+  type PrimitiveColumn[T] =  com.newzly.cassandra.phantom.PrimitiveColumn[T]
+  type OptionalColumn[T] =  com.newzly.cassandra.phantom.OptionalColumn[T]
+  type OptionalPrimitiveColumn[T] =  com.newzly.cassandra.phantom.OptionalPrimitiveColumn[T]
+  type JsonTypeColumn[T] =  com.newzly.cassandra.phantom.JsonTypeColumn[T]
+  type EnumColumn[T <: Enumeration] =  com.newzly.cassandra.phantom.EnumColumn[T]
+  type SetColumn[T] =  com.newzly.cassandra.phantom.SetColumn[T]
+  type SeqColumn[T] =  com.newzly.cassandra.phantom.SeqColumn[T]
+  type MapColumn[K, V] =  com.newzly.cassandra.phantom.MapColumn[K, V]
+
   implicit def columnToQueryColumn[RR: CassandraPrimitive](col: Column[RR]) =
     new QueryColumn(col)
 
