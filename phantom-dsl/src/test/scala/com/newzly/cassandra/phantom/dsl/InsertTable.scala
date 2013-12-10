@@ -225,7 +225,7 @@ class InsertTable extends BaseTest {
     class Recipes extends CassandraTable[Recipes, Recipe] {
 
       override def fromRow(r: Row): Recipe = {
-        Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), lastCheckedAt(r), props(r))
+        Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
       }
 
       object url extends PrimitiveColumn[String]
@@ -252,7 +252,7 @@ class InsertTable extends BaseTest {
       .value(_.ingredients, r.ingredients)
       .valueOrNull(_.author, r.author)
       .valueOrNull(_.servings, r.servings)
-      .value(_.lastCheckedAt, r.lastCheckedAt)
+      .value(_.last_checked_at, r.lastCheckedAt)
       .value(_.props, r.props)
       .value(_.uid, UUIDs.timeBased())
 
