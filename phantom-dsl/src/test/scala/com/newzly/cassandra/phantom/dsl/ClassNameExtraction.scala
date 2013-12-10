@@ -44,6 +44,7 @@ class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
 }
 object TestTableNames extends TestTableNames
 
+
 class TestNames {
 
   private[this] lazy val _name: String = {
@@ -59,6 +60,12 @@ class Parent extends TestNames
 class Parent2 extends Parent
 
 class ClassNameExtraction extends FlatSpec {
+
+  it should "get rid of extra naming inside the object" in {
+    val test = "$$anonfun23primitives3key$"
+    val res = test.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
+    assert(res === "key")
+  }
 
   it should "correctly name objects inside record classes " in {
     assert(TestTableNames.record.name === "record")
