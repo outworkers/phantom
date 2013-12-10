@@ -17,6 +17,9 @@ package com
 package newzly
 package cassandra
 package phantom
+
+import java.io.Serializable
+
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 import scala.reflect.runtime.universe._
@@ -28,39 +31,51 @@ import com.newzly.cassandra.phantom.query.{
 }
 import scala.reflect.ClassTag
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R](val tableName: String) {
+abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+
+  private[this] lazy val _name: String = {
+    val fullName = getClass.getName.split("\\.").toList.last
+    val index = fullName.indexOf("$$anonfun")
+    if (index != -1) {
+      val str = fullName.substring(index + 9, fullName.length)
+      str.replaceAll("[(\\$\\d+\\$)|(\\$)]", "")
+    } else {
+      fullName.replaceAll("[(\\$\\d+\\$)]|(\\$)", "")
+    }
+  }
+  def tableName: String = _name
 
   def fromRow(r: Row): R
 
-  def column[RR: CassandraPrimitive](name: String): PrimitiveColumn[RR] =
-    new PrimitiveColumn[RR](name)
+  def column[RR: CassandraPrimitive]: PrimitiveColumn[RR] =
+    new PrimitiveColumn[RR]()
 
-  def optColumn[RR: CassandraPrimitive](name: String): OptionalPrimitiveColumn[RR] =
-    new OptionalPrimitiveColumn[RR](name)
+  def optColumn[RR: CassandraPrimitive]: OptionalPrimitiveColumn[RR] =
+    new OptionalPrimitiveColumn[RR]
 
-  def jsonColumn[RR: Manifest](name: String): JsonTypeColumn[RR] =
-    new JsonTypeColumn[RR](name)
+  def jsonColumn[RR: Manifest]: JsonTypeColumn[RR] =
+    new JsonTypeColumn[RR]
 
-  def enumColumn[EnumType <: Enumeration](enum: EnumType, name: String): EnumColumn[EnumType] =
-    new EnumColumn[EnumType](enum, name)
+  def enumColumn[EnumType <: Enumeration](enum: EnumType): EnumColumn[EnumType] =
+    new EnumColumn[EnumType](enum)
 
-  def column[S <: Seq[RR],RR:CassandraPrimitive](name: String): SeqColumnNew[S,RR] =
-    new SeqColumnNew[S,RR](name)
+  def column[S <: Seq[RR], RR: CassandraPrimitive]: SeqColumnNew[S, RR] =
+    new SeqColumnNew[S, RR]
 
-  def setColumn[RR:CassandraPrimitive](name: String):SetColumn[RR] =
-    new SetColumn[RR](name)
+  def setColumn[RR: CassandraPrimitive]: SetColumn[RR] =
+    new SetColumn[RR]
 
-  def seqColumn[RR: CassandraPrimitive](name: String): SeqColumn[RR] =
-    new SeqColumn[RR](name)
+  def seqColumn[RR: CassandraPrimitive]: SeqColumn[RR] =
+    new SeqColumn[RR]()
 
-  def column[Map,K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
-    new MapColumn[K, V](name)
+  def column[Map, K: CassandraPrimitive, V: CassandraPrimitive] =
+    new MapColumn[K, V]()
 
-  def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive](name: String) =
-    new MapColumn[K, V](name)
+  def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive] =
+    new MapColumn[K, V]()
 
-  def jsonSeqColumn[RR: Manifest](name: String): JsonTypeSeqColumn[RR] =
-    new JsonTypeSeqColumn[RR](name)
+  def jsonSeqColumn[RR: Manifest]: JsonTypeSeqColumn[RR] =
+    new JsonTypeSeqColumn[RR]()
 
   def select: SelectQuery[T, R] =
     new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().from(tableName), this.asInstanceOf[T].fromRow)
