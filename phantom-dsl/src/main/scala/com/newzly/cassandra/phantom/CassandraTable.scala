@@ -33,7 +33,17 @@ import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
-  def tableName: String = getClass.getName.split("\\.").toList.last.replace("$", "")
+  private[this] lazy val _name: String = {
+    val fullName = getClass.getName.split("\\.").toList.last
+    val index = fullName.indexOf("$$anonfun")
+    if (index != -1) {
+      val str = fullName.substring(index + 9, fullName.length)
+      str.replaceAll("[(\\$\\d+\\$)|(\\$)]", "")
+    } else {
+      fullName.replaceAll("[(\\$\\d+\\$)]|(\\$)", "")
+    }
+  }
+  def tableName: String = _name
 
   def fromRow(r: Row): R
 

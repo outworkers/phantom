@@ -6,6 +6,9 @@ import java.util.{ Date, UUID }
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.reflect.ClassTag
+
+import org.scalatest.FlatSpec
 
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.utils.UUIDs
@@ -13,53 +16,64 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.cassandra.phantom._
 import com.newzly.cassandra.phantom.CassandraTable
 
-/**
- * Created by alex on 10/12/2013.
- */
-class ClassNameExtraction extends BaseTest {
 
-  implicit val session: Session = cassandraSession
+trait Test {
+  private[this] lazy val _name: String = {
+    val fullName = getClass.getName.split("\\.").toList.last
+    val index = fullName.indexOf("$$anonfun")
 
+    if (index != -1) {
+    val str = fullName.substring(index + 9, fullName.length)
+    str.replaceAll("[(\\$\\d+\\$)]", "")
+    } else {
+      fullName.replaceAll("[(\\$\\d+\\$)]", "");
+    }
+  }
+  //^[^_]*_
+  val name: String = _name
+}
+
+object Test extends PrimitiveColumn[String] {
+
+}
+
+
+  class TestNames {
+
+    private[this] lazy val _name: String = {
+      val fullName = getClass.getName.split("\\.").toList.last
+      val index = fullName.indexOf("$$anonfun")
+      val str = fullName.substring(index + 9, fullName.length)
+      str.replaceAll("(\\$\\d+\\$)", "")
+    }
+    def name: String = _name
+  }
+
+  class Parent extends TestNames
+  class Parent2 extends Parent
+
+class ClassNameExtraction extends FlatSpec {
+
+  it should "correctly extract the object name " in {
+    assert(Test.name === "Test")
+  }
 
   it should "correctly extract the table name" in {
-    case class Table(name: String)
-    class TestTable extends CassandraTable[TestTable, Table] {
+    object TestNames extends TestNames
 
-      object name extends PrimitiveColumn[String]
-      def fromRow(row: Row): Table = Table(name(row))
-    }
-
-    object TestTable extends TestTable
-
-    assert(TestTable.name === "TableName")
+    assert(TestNames.name === "TestNames")
   }
 
 
-  it should "correctly extract the table name" in {
-    case class Table(name: String)
-    class Primitives extends CassandraTable[Primitives, Table] {
+  it should "correctly extract the parent name" in {
+    object Parent extends Parent
 
-      object name extends PrimitiveColumn[String]
-
-      def fromRow(row: Row): Table = Table(name(row))
-     }
-
-    object Primitives extends Primitives
-
-    assert(Primitives.name === "Primitives")
+    assert(Parent.name === "Parent")
   }
 
   it should "correctly extract the column names" in {
-    case class Table(name: String)
-    class TestTable extends CassandraTable[TestTable, Table] {
-
-      object weirdname extends PrimitiveColumn[String]
-      def fromRow(row: Row): Table = Table(weirdname(row))
-    }
-
-    object TestTable extends TestTable
-
-    assert(TestTable.weirdname.name === "weirdname")
+    object Parent2 extends Parent2
+    assert(Parent2.name === "Parent2")
   }
 
 }
