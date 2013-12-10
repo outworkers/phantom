@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
-  lazy val tableName: String = this.getClass.getSimpleName
+  val tableName: String = this.getClass.getName
 
   def fromRow(r: Row): R
 
