@@ -19,37 +19,39 @@ package cassandra
 package phantom
 package query
 
-import com.datastax.driver.core.querybuilder.{ Assignment, Clause, Update }
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
 import com.newzly.cassandra.phantom.{ CassandraTable => CassandraTable }
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
-
-  def where(c: T => Clause): UpdateWhere[T, R] = {
-    new UpdateWhere[T, R](table, qb.where(c(table)))
+  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): UpdateWhere[T, R] = {
+    val clause = operator(c,value.asInstanceOf[RR])(table)
+    new UpdateWhere[T, R](table, qb.where(clause))
   }
-
 }
 
 class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {
 
-  def where(c: T => Clause): UpdateWhere[T, R] = {
-    new UpdateWhere[T, R](table, qb.and(c(table)))
+  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): UpdateWhere[T, R] = {
+    val clause = operator(c,value)(table)
+    new UpdateWhere[T, R](table, qb.and(clause))
   }
 
   def and = where _
 
-  def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
-    new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
+  def modify[RR](c: T => AbstractColumn[RR], value: RR): AssignmentsQuery[T, R] = {
+    val col = c(table)
+    val a = QueryBuilder.set(col.name, col.toCType(value))
+    new AssignmentsQuery[T, R](table, qb.`with`(a))
   }
-
 }
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
 
-  def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
-    new AssignmentsQuery[T, R](table, qb.and(a(table)))
+  def modify[RR](c: T => AbstractColumn[RR], value: RR): AssignmentsQuery[T, R] = {
+    val col = c(table)
+    val a = QueryBuilder.set(col.name, col.toCType(value))
+    new AssignmentsQuery[T, R](table, qb.and(a))
   }
-
   def and = modify _
 
 }
