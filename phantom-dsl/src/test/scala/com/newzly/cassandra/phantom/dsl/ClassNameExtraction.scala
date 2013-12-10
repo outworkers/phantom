@@ -63,7 +63,7 @@ class ClassNameExtraction extends FlatSpec {
 
   it should "get rid of extra naming inside the object" in {
     val test = "$$anonfun23primitives3key$"
-    val res = test.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
+    val res = test.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)", "")
     assert(res === "key")
   }
 
