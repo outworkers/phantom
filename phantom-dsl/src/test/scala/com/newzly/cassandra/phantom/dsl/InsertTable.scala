@@ -70,7 +70,9 @@ class InsertTable extends BaseTest {
       object uuid extends PrimitiveColumn[UUID]
       object bi extends PrimitiveColumn[BigInt]
     }
-    object Primitives extends Primitives
+    object Primitives extends Primitives {
+      override def tableName = "Primitives"
+    }
 
     val row = Primitive("myString", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
@@ -134,7 +136,9 @@ class InsertTable extends BaseTest {
     }
     val row = TestRow("w", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
       Map(3 -> "OO"))
-    object TestTable extends TestTable
+    object TestTable extends TestTable {
+      override def tableName = "TestTable"
+    }
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -174,7 +178,9 @@ class InsertTable extends BaseTest {
     }
 
     val row = TestRow("someKey", Some(2), ClassS("lol"))
-    object MyTest extends MyTest
+    object MyTest extends MyTest {
+      override val tableName = "MyTest"
+    }
 
     val rcp = MyTest.insert
       .value(_.key, row.key)
@@ -234,7 +240,9 @@ class InsertTable extends BaseTest {
     val author = Author("Tony", "Clark", Some("great chef..."))
     val r = Recipe("recipe_url", Some("desc"), Seq("ingr1", "ingr2"), Some(author), Some(4), new java.util.Date, Map("a" -> "b", "c" -> "d"))
 
-    object Recipes extends Recipes
+    object Recipes extends Recipes {
+      override def tableName = "Recipes"
+    }
     val rcp = Recipes.insert
       .value(_.url, r.url)
       .valueOrNull(_.description, r.description)
@@ -279,7 +287,9 @@ class InsertTable extends BaseTest {
     }
 
     val row = TestRow("someKey", Some(2), ClassS(Map("k2" -> 5)), Some(ClassS(Map("k2" -> 5))), Map("5" -> ClassS(Map("p" -> 2))))
-    object TestTable2 extends TestTable2
+    object TestTable2 extends TestTable2 {
+      override val tableName = "TestTable2"
+    }
 
     val rcp = TestTable2.insert
       .value(_.key, row.key)
