@@ -21,6 +21,7 @@ package query
 
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
 import com.newzly.cassandra.phantom.{ CassandraTable => CassandraTable }
+import com.newzly.cassandra.phantom.query.AssignmentsQuery
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
   def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): UpdateWhere[T, R] = {
