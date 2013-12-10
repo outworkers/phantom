@@ -23,36 +23,54 @@ trait Test {
     val index = fullName.indexOf("$$anonfun")
 
     if (index != -1) {
-    val str = fullName.substring(index + 9, fullName.length)
-    str.replaceAll("[(\\$\\d+\\$)]", "")
+      val str = fullName.substring(index + 9, fullName.length)
+      str.replaceAll("[(\\$\\d+\\$)]", "")
     } else {
       fullName.replaceAll("[(\\$\\d+\\$)]", "");
     }
   }
-  //^[^_]*_
   val name: String = _name
 }
 
-object Test extends PrimitiveColumn[String] {
+object Test extends PrimitiveColumn[String]
 
+case class CustomRecord(name: String, mp: Map[String, String])
+class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
+  object record extends PrimitiveColumn[String]
+
+  object sampleLongTextColumnDefinition extends MapColumn[String, String]
+
+  override def fromRow(r: Row): CustomRecord = CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+}
+object TestTableNames extends TestTableNames
+
+class TestNames {
+
+  private[this] lazy val _name: String = {
+    val fullName = getClass.getName.split("\\.").toList.last
+    val index = fullName.indexOf("$$anonfun")
+    val str = fullName.substring(index + 9, fullName.length)
+    str.replaceAll("(\\$\\d+\\$)", "")
+  }
+  def name: String = _name
 }
 
-
-  class TestNames {
-
-    private[this] lazy val _name: String = {
-      val fullName = getClass.getName.split("\\.").toList.last
-      val index = fullName.indexOf("$$anonfun")
-      val str = fullName.substring(index + 9, fullName.length)
-      str.replaceAll("(\\$\\d+\\$)", "")
-    }
-    def name: String = _name
-  }
-
-  class Parent extends TestNames
-  class Parent2 extends Parent
+class Parent extends TestNames
+class Parent2 extends Parent
 
 class ClassNameExtraction extends FlatSpec {
+
+  it should "correctly name objects inside record classes " in {
+    assert(TestTableNames.record.name === "record")
+  }
+
+  it should "correctly extract long object name definitions in nested record classes" in {
+    assert(TestTableNames.sampleLongTextColumnDefinition.name === "sampleLongTextColumnDefinition")
+  }
+
+  it should "correctly name Cassandra Tables" in {
+    assert(TestTableNames.tableName === "TestTableNames")
+  }
 
   it should "correctly extract the object name " in {
     assert(Test.name === "Test")

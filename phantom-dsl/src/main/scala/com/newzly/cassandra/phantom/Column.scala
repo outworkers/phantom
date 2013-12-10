@@ -46,18 +46,7 @@ trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
 
-  private[this] lazy val _name: String = {
-    val fullName = getClass.getName.split("\\.").toList.last
-    val index = fullName.indexOf("$$anonfun")
-    if (index != -1) {
-      val str = fullName.substring(index + 9, fullName.length)
-      str.replaceAll("[(\\$\\d+\\$)|(\\$)]", "")
-    } else {
-      fullName.replaceAll("[(\\$\\d+\\$)]|(\\$)", "")
-    }
-  }
-  def name: String = _name
-
+  lazy val name: String = getClass.getSimpleName.replaceAll("\\$", "")
 
   def apply(r: Row): ValueType
 
