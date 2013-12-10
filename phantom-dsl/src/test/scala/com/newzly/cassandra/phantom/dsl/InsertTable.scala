@@ -172,9 +172,9 @@ class InsertTable extends BaseTest {
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), optionA(r), classS(r))
       }
-      val key = column[String]
-      val optionA = optColumn[Int]
-      val classS = jsonColumn[ClassS]
+      object key extends PrimitiveColumn[String]
+      object optionA extends OptionalPrimitiveColumn[Int]
+      object classS extends JsonTypeColumn[ClassS]
     }
 
     val row = TestRow("someKey", Some(2), ClassS("lol"))
@@ -186,8 +186,11 @@ class InsertTable extends BaseTest {
       .value(_.key, row.key)
       .valueOrNull(_.optionA, row.optionA)
       .value(_.classS, row.classS)
+    
     rcp.execute().sync()
+
     val recipeF: Future[Option[TestRow]] = MyTest.select.one
+
     assert(recipeF.sync().get === row)
 
     assert(MyTest.select.fetch.sync() contains (row))
