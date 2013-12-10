@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
-  val tableName: String = this.getClass.getName
+  def tableName: String = getClass.getName.split("\\.").toList.last.replace("$", "")
 
   def fromRow(r: Row): R
 
