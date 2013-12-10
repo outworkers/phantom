@@ -34,48 +34,12 @@ import scala.reflect.ClassTag
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   private[this] lazy val _name: String = {
-    val fullName = getClass.getName.split("\\.").toList.last
-    val index = fullName.indexOf("$$anonfun")
-    if (index != -1) {
-      val str = fullName.substring(index + 9, fullName.length)
-      str.replaceAll("[(\\$\\d+\\$)|(\\$)]", "")
-    } else {
-      fullName.replaceAll("[(\\$\\d+\\$)]|(\\$)", "")
-    }
+    getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
+
   def tableName: String = _name
 
   def fromRow(r: Row): R
-
-  def column[RR: CassandraPrimitive]: PrimitiveColumn[RR] =
-    new PrimitiveColumn[RR]()
-
-  def optColumn[RR: CassandraPrimitive]: OptionalPrimitiveColumn[RR] =
-    new OptionalPrimitiveColumn[RR]
-
-  def jsonColumn[RR: Manifest]: JsonTypeColumn[RR] =
-    new JsonTypeColumn[RR]
-
-  def enumColumn[EnumType <: Enumeration](enum: EnumType): EnumColumn[EnumType] =
-    new EnumColumn[EnumType](enum)
-
-  def column[S <: Seq[RR], RR: CassandraPrimitive]: SeqColumnNew[S, RR] =
-    new SeqColumnNew[S, RR]
-
-  def setColumn[RR: CassandraPrimitive]: SetColumn[RR] =
-    new SetColumn[RR]
-
-  def seqColumn[RR: CassandraPrimitive]: SeqColumn[RR] =
-    new SeqColumn[RR]()
-
-  def column[Map, K: CassandraPrimitive, V: CassandraPrimitive] =
-    new MapColumn[K, V]()
-
-  def mapColumn[K: CassandraPrimitive, V: CassandraPrimitive] =
-    new MapColumn[K, V]()
-
-  def jsonSeqColumn[RR: Manifest]: JsonTypeSeqColumn[RR] =
-    new JsonTypeSeqColumn[RR]()
 
   def select: SelectQuery[T, R] =
     new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().from(tableName), this.asInstanceOf[T].fromRow)
@@ -91,6 +55,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
     val c1 = f1(t)
     val c2 = f2(t)
     new SelectQuery[T, (A, B)](t, QueryBuilder.select(c1.col.name, c2.col.name).from(tableName), r => (c1(r), c2(r)))
+  }
+
+  def select[A, B, C](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): SelectQuery[T, (A, B, C)] = {
+    val t = this.asInstanceOf[T]
+    val c1 = f1(t)
+    val c2 = f2(t)
+    val c3 = f3(t)
+    new SelectQuery[T, (A, B, C)](t, QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name).from(tableName), r => (c1(r), c2(r), c3(r)))
   }
 
   def update = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
