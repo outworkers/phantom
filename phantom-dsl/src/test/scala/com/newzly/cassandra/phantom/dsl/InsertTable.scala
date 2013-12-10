@@ -186,7 +186,7 @@ class InsertTable extends BaseTest {
       .value(_.key, row.key)
       .valueOrNull(_.optionA, row.optionA)
       .value(_.classS, row.classS)
-    
+
     rcp.execute().sync()
 
     val recipeF: Future[Option[TestRow]] = MyTest.select.one
@@ -233,7 +233,7 @@ class InsertTable extends BaseTest {
       object ingredients extends SeqColumn[String]
       object author extends JsonTypeColumn[Author]
       object servings extends OptionalPrimitiveColumn[Int]
-      object lastCheckedAt extends PrimitiveColumn[Date]
+      object last_checked_at extends PrimitiveColumn[Date]
       object props extends MapColumn[String, String]
       object uid extends PrimitiveColumn[UUID]
 
