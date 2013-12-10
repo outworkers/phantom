@@ -46,7 +46,7 @@ trait AbstractColumn[T] extends CassandraWrites[T] {
 
   type ValueType
 
-  lazy val name: String = this.getClass.getSimpleName
+  val name: String = this.getClass.getName
 
   def apply(r: Row): ValueType
 
