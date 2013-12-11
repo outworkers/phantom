@@ -24,17 +24,18 @@ import com.newzly.cassandra.phantom.{ CassandraTable }
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete) extends ExecutableStatement {
 
-  def where(c: T => Clause): DeleteWhere[T, R] = {
-    new DeleteWhere[T, R](table, qb.where(c(table)))
+  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): DeleteWhere[T, R] = {
+    val clause = operator(c,value.asInstanceOf[RR])(table)
+    new DeleteWhere[T, R](table, qb.where(clause))
   }
 }
 
 class DeleteWhere[T <: CassandraTable[T, R], R](table: T, val qb: Delete.Where) extends ExecutableStatement {
 
-  def where(c: T => Clause): DeleteWhere[T, R] = {
-    new DeleteWhere[T, R](table, qb.and(c(table)))
+  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): DeleteWhere[T, R] = {
+    val clause = operator(c,value.asInstanceOf[RR])(table)
+    new DeleteWhere[T, R](table, qb.and(clause))
   }
 
-  def and(c: T => Clause) = where(c)
-
+  def and  = where _
 }
