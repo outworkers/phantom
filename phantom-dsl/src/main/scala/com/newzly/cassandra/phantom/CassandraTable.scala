@@ -31,7 +31,7 @@ import com.newzly.cassandra.phantom.query.{
 }
 import scala.reflect.ClassTag
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+abstract class CassandraTable[T <: CassandraTable[T, R], R](val name = _) {
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
