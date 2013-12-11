@@ -14,24 +14,9 @@ import com.datastax.driver.core.utils.UUIDs
 class CRUDTests extends BaseTest {
   implicit val session: Session = cassandraSession
   "Select" should "work fine" in {
-    val primitivesTable =
-      """|CREATE TABLE primitives(
-        |key int PRIMARY KEY,
-        |long bigint,
-        |boolean boolean,
-        |bDecimal decimal,
-        |double double,
-        |float float,
-        |inet inet,
-        |int int,
-        |date timestamp,
-        |uuid uuid,
-        |bi varint);
-      """.stripMargin
-    cassandraSession.execute(primitivesTable)
 
     case class Primitive(
-                          key: Int,
+                          pkey: Int,
                           long: Long,
                           boolean: Boolean,
                           bDecimal: BigDecimal,
@@ -45,10 +30,10 @@ class CRUDTests extends BaseTest {
 
     class Primitives extends CassandraTable[Primitives, Primitive] {
       override def fromRow(r: Row): Primitive = {
-        Primitive(key(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
+        Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
           int(r), date(r), uuid(r), bi(r))
       }
-      object key extends PrimitiveColumn[Int]
+      object pkey extends PrimitiveColumn[Int]
       object long extends PrimitiveColumn[Long]
       object boolean extends PrimitiveColumn[Boolean]
       object bDecimal extends PrimitiveColumn[BigDecimal]
@@ -59,17 +44,27 @@ class CRUDTests extends BaseTest {
       object date extends PrimitiveColumn[java.util.Date]
       object uuid extends PrimitiveColumn[java.util.UUID]
       object bi extends PrimitiveColumn[BigInt]
-
+      val _key = pkey
     }
     object Primitives extends Primitives {
       override def tableName = "Primitives"
     }
-
+    Primitives.create(_.pkey,
+      _.long,
+      _.boolean,
+      _.bDecimal,
+      _.double,
+      _.float,
+      _.inet,
+      _.int,
+      _.date,
+      _.uuid,
+      _.bi).execute().sync()
     val row = Primitive(1, 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002))
     val rcp = Primitives.insert
-      .value(_.key, row.key)
+      .value(_.pkey, row.pkey)
       .value(_.long, row.long)
       .value(_.boolean, row.boolean)
       .value(_.bDecimal, row.bDecimal)
@@ -85,8 +80,7 @@ class CRUDTests extends BaseTest {
     val recipeF: Future[Option[Primitive]] = Primitives.select.one
     assert(recipeF.sync().get === row)
     assert(Primitives.select.fetch.sync() contains (row))
-
-    val select1 = Primitives.select.where(_.key,1,EQ[Primitives,Int])
+    val select1 = Primitives.select.where(_.pkey,1,EQ[Primitives,Int])
     val s1 = select1.one.sync()
     assert(s1.get === row)
   }
@@ -137,7 +131,7 @@ class CRUDTests extends BaseTest {
       object date extends PrimitiveColumn[java.util.Date]
       object uuid extends PrimitiveColumn[java.util.UUID]
       object bi extends PrimitiveColumn[BigInt]
-
+      val _key = str
     }
     object Primitives extends Primitives {
       override def tableName = "Primitives"
@@ -220,6 +214,7 @@ class CRUDTests extends BaseTest {
       object date extends PrimitiveColumn[java.util.Date]
       object uuid extends PrimitiveColumn[java.util.UUID]
       object bi extends PrimitiveColumn[BigInt]
+      val _key = str
     }
     object Primitives extends Primitives {
       override def tableName = "Primitives"
@@ -304,6 +299,7 @@ class CRUDTests extends BaseTest {
           setInt(r).toSet,
           mapIntToText(r))
       }
+      val _key = key
     }
     val row = TestRow("w", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
       Map(3 -> "OO"))
@@ -393,6 +389,7 @@ class CRUDTests extends BaseTest {
       object date extends PrimitiveColumn[Date]
       object uuid extends PrimitiveColumn[UUID]
       object bi extends PrimitiveColumn[BigInt]
+      val _key = str
     }
     object Primitives extends Primitives {
       override def tableName = "Primitives"
@@ -456,6 +453,7 @@ class CRUDTests extends BaseTest {
           setInt(r).toSet,
           mapIntToText(r))
       }
+      val _key = key
     }
     val row = TestRow("w", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
       Map(3 -> "OO"))
@@ -498,6 +496,7 @@ class CRUDTests extends BaseTest {
       object key extends PrimitiveColumn[String]
       object optionA extends OptionalPrimitiveColumn[Int]
       object classS extends JsonTypeColumn[ClassS]
+      val _key = key
     }
 
     val row = TestRow("someKey", Some(2), ClassS("lol"))
@@ -516,19 +515,6 @@ class CRUDTests extends BaseTest {
   }
 
   it should "work fine with Mix" in {
-    val recipesTable =
-      """|CREATE TABLE Recipes (
-        |url text PRIMARY KEY,
-        |description text,
-        |ingredients list<text>,
-        |author text,
-        |servings int,
-        |tags set<text>,
-        |last_checked_at timestamp,
-        |props map<text, text>,
-        |uid timeuuid);
-      """.stripMargin
-    session.execute(recipesTable)
 
     case class Author(firstName: String, lastName: String, bio: Option[String])
 
@@ -555,6 +541,7 @@ class CRUDTests extends BaseTest {
       object last_checked_at extends PrimitiveColumn[Date]
       object props extends MapColumn[String, String]
       object uid extends PrimitiveColumn[UUID]
+      val _key = url
     }
     implicit val formats = net.liftweb.json.DefaultFormats
     val author = Author("Tony", "Clark", Some("great chef..."))
@@ -563,6 +550,16 @@ class CRUDTests extends BaseTest {
     object Recipes extends Recipes {
       override def tableName = "Recipes"
     }
+
+    Recipes.create(_.url,
+      _.description,
+      _.ingredients,
+      _.author,
+      _.servings,
+      _.last_checked_at,
+      _.props,
+      _.uid).execute().sync()
+
     val rcp = Recipes.insert
       .value(_.url, r.url)
       .valueOrNull(_.description, r.description)
@@ -604,6 +601,7 @@ class CRUDTests extends BaseTest {
       object classS extends JsonTypeColumn[ClassS]
       object optionS extends JsonTypeColumn[Option[ClassS]]
       object mapIntoClass extends JsonTypeColumn[Map[String, ClassS]]
+      val _key = key
     }
 
     val row = TestRow("someKey", Some(2), ClassS(Map("k2" -> 5)), Some(ClassS(Map("k2" -> 5))), Map("5" -> ClassS(Map("p" -> 2))))

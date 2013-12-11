@@ -23,15 +23,12 @@ import java.io.Serializable
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 import scala.reflect.runtime.universe._
-import com.newzly.cassandra.phantom.query.{
-  DeleteQuery,
-  InsertQuery,
-  SelectQuery,
-  UpdateQuery
-}
+import com.newzly.cassandra.phantom.query._
 import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+
+  def _key: Column[_]
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
@@ -79,5 +76,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
+
+  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
 }
