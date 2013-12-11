@@ -37,7 +37,7 @@ object Test extends PrimitiveColumn[String]
 case class CustomRecord(name: String, mp: Map[String, String])
 class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   object record extends PrimitiveColumn[String]
-
+  val _key = record
   object sampleLongTextColumnDefinition extends MapColumn[String, String]
 
   override def fromRow(r: Row): CustomRecord = CustomRecord(record(r), sampleLongTextColumnDefinition(r))
