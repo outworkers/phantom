@@ -14,6 +14,7 @@ Asynchronous Scala DSL for Cassandra
 ```scala
 import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
+import com.newzly.cassandra.phantom.{ CassandraTable, PrimitiveColumn }
 import com.newzly.cassandra.phantom.Implicits._
 
 
