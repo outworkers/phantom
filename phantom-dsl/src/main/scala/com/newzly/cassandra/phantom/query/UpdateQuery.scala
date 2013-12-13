@@ -24,17 +24,15 @@ import com.newzly.cassandra.phantom.{ CassandraTable => CassandraTable }
 import com.newzly.cassandra.phantom.query.AssignmentsQuery
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): UpdateWhere[T, R] = {
-    val clause = operator(c,value.asInstanceOf[RR])(table)
-    new UpdateWhere[T, R](table, qb.where(clause))
+  def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
+    new UpdateWhere[T, R](table, qb.where(condition(table).clause))
   }
 }
 
 class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {
 
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): UpdateWhere[T, R] = {
-    val clause = operator(c,value)(table)
-    new UpdateWhere[T, R](table, qb.and(clause))
+  def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
+    new UpdateWhere[T, R](table, qb.and(condition(table).clause))
   }
 
   def and = where _

@@ -18,4 +18,7 @@ object Operators{
     val col = c(table)
     QueryBuilder.lt(col.name, col.toCType(value))
   }
+
+
+
 }
