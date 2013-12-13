@@ -1,7 +1,6 @@
 package com.newzly.cassandra.phantom.dsl
 
 import com.newzly.cassandra.phantom._
-import com.newzly.cassandra.phantom.query.Operators._
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.datastax.driver.core.{ Session, Row }
 import scala.concurrent.{ Await, Future }
