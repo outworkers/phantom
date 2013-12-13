@@ -120,7 +120,7 @@ class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive] extends Column[Seq[RR]] {
   def toCType(values: Seq[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
   override def apply(r: Row): Seq[RR] = {
-    optional(r).getOrElse(Seq.empty)
+    optional(r).getOrElse(Seq.empty[RR])
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
@@ -128,6 +128,22 @@ class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive] extends Column[Seq[RR]] {
     val i = implicitly[CassandraPrimitive[RR]]
     Option(r.getList(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toIndexedSeq)
   }
+}
+
+class ListColumn[RR: CassandraPrimitive] extends Column[List[RR]] {
+  val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
+
+  def toCType(values: List[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).toSeq.asJava
+
+  override def apply(r: Row): List[RR] = {
+    optional(r).getOrElse(List.empty[RR])
+  }
+
+  def optional(r: Row): Option[List[RR]] = {
+    val primitive = implicitly[CassandraPrimitive[RR]]
+    Option(r.getList(name, primitive.cls).asScala.toList.map(el => primitive.fromCType(el.asInstanceOf[AnyRef])))
+  }
+
 }
 
 class SeqColumn[RR: CassandraPrimitive] extends Column[Seq[RR]] {
@@ -153,7 +169,7 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map
   }.asJava
 
   override def apply(r: Row): Map[K, V] = {
-    optional(r).getOrElse(Map.empty)
+    optional(r).getOrElse(Map.empty[K, V])
   }
 
   def optional(r: Row): Option[Map[K, V]] = {
@@ -172,7 +188,7 @@ class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
   def toCType(values: Seq[RR]): AnyRef = values.map(Extraction.decompose(_)(DefaultFormats))(breakOut).asJava
 
   override def apply(r: Row): Seq[RR] = {
-    optional(r).getOrElse(Seq.empty)
+    optional(r).getOrElse(Seq.empty[RR])
   }
 
   def optional(r: Row): Option[Seq[RR]] = {

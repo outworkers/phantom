@@ -26,6 +26,7 @@ object Implicits {
   type OptionalPrimitiveColumn[T] =  com.newzly.cassandra.phantom.OptionalPrimitiveColumn[T]
   type JsonTypeColumn[T] =  com.newzly.cassandra.phantom.JsonTypeColumn[T]
   type EnumColumn[T <: Enumeration] =  com.newzly.cassandra.phantom.EnumColumn[T]
+  type ListColumn[T] = com.newzly.cassandra.phantom.ListColumn[T]
   type SetColumn[T] =  com.newzly.cassandra.phantom.SetColumn[T]
   type SeqColumn[T] =  com.newzly.cassandra.phantom.SeqColumn[T]
   type MapColumn[K, V] =  com.newzly.cassandra.phantom.MapColumn[K, V]
@@ -47,6 +48,10 @@ object Implicits {
 
   implicit def jsonColumnToAssignment[RR: Manifest](col: JsonTypeColumn[RR]) = {
     new ModifyColumn[RR](col)
+  }
+
+  implicit def listColumnToAssignment[RR: CassandraPrimitive](col: ListColumn[RR]) = {
+    new ModifyColumn[List[RR]](col)
   }
 
   implicit def seqColumnToAssignment[RR: CassandraPrimitive](col: SeqColumn[RR]) = {
