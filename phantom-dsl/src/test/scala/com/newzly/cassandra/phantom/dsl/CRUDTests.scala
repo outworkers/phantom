@@ -13,20 +13,21 @@ import com.datastax.driver.core.utils.UUIDs
 
 class CRUDTests extends BaseTest {
   implicit val session: Session = cassandraSession
+
   "Select" should "work fine" in {
 
     case class Primitive(
-                          pkey: Int,
-                          long: Long,
-                          boolean: Boolean,
-                          bDecimal: BigDecimal,
-                          double: Double,
-                          float: Float,
-                          inet: java.net.InetAddress,
-                          int: Int,
-                          date: java.util.Date,
-                          uuid: java.util.UUID,
-                          bi: BigInt)
+      pkey: Int,
+      long: Long,
+      boolean: Boolean,
+      bDecimal: BigDecimal,
+      double: Double,
+      float: Float,
+      inet: java.net.InetAddress,
+      int: Int,
+      date: java.util.Date,
+      uuid: java.util.UUID,
+      bi: BigInt)
 
     class Primitives extends CassandraTable[Primitives, Primitive] {
       override def fromRow(r: Row): Primitive = {
@@ -605,6 +606,7 @@ class CRUDTests extends BaseTest {
     }
 
     val row = TestRow("someKey", Some(2), ClassS(Map("k2" -> 5)), Some(ClassS(Map("k2" -> 5))), Map("5" -> ClassS(Map("p" -> 2))))
+
     object TestTable2 extends TestTable2 {
       override val tableName = "TestTable2"
     }
@@ -615,6 +617,7 @@ class CRUDTests extends BaseTest {
       .value(_.classS, row.classS)
       .value(_.optionS, row.optionS)
       .value(_.mapIntoClass, row.map)
+
     rcp.qb.enableTracing()
     info(rcp.toString)
     info(rcp.qb.toString)
