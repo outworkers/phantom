@@ -20,8 +20,19 @@ package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
-import com.newzly.cassandra.phantom.{ CassandraTable => CassandraTable }
-import com.newzly.cassandra.phantom.query.AssignmentsQuery
+import com.newzly.cassandra.phantom.CassandraTable
+
+
+class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
+
+  def modify[RR](c: T => AbstractColumn[RR], value: RR): AssignmentsQuery[T, R] = {
+    val col = c(table)
+    val a = QueryBuilder.set(col.name, col.toCType(value))
+    new AssignmentsQuery[T, R](table, qb.and(a))
+  }
+  def and = modify _
+
+}
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
@@ -44,13 +55,3 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) 
   }
 }
 
-class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
-
-  def modify[RR](c: T => AbstractColumn[RR], value: RR): AssignmentsQuery[T, R] = {
-    val col = c(table)
-    val a = QueryBuilder.set(col.name, col.toCType(value))
-    new AssignmentsQuery[T, R](table, qb.and(a))
-  }
-  def and = modify _
-
-}
