@@ -28,9 +28,8 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
 
   override def fromRow(r: Row) = rowFunc(r)
 
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): SelectWhere[T, R] = {
-    val clause = operator(c,value)(table)
-    new SelectWhere[T, R](table, qb.where(clause), fromRow)
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
+    new SelectWhere[T, R](table, qb.where(condition(table).clause), fromRow)
   }
 
   def limit(l: Int) = {
@@ -42,9 +41,8 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
 
   override def fromRow(r: Row) = rowFunc(r)
 
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): SelectWhere[T, R] = {
-    val clause = operator(c,value)(table)
-    new SelectWhere[T, R](table, qb.and(clause), fromRow)
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
+    new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 
   def limit(l: Int) = {

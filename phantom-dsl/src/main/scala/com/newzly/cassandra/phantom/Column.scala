@@ -26,7 +26,8 @@ import com.datastax.driver.core.Row
 
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
-
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause}
+import com.newzly.cassandra.phantom.query.QueryCondition
 
 
 trait Helpers {
@@ -52,6 +53,18 @@ trait Column[T] extends AbstractColumn[T] {
 
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
+
+  def == (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
+  }
+
+  def < (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.lt(this.name, this.toCType(value)))
+  }
+
+  def > (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
+  }
 }
 
 trait OptionalColumn[T] extends AbstractColumn[T] {
