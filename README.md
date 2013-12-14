@@ -5,23 +5,20 @@ Asynchronous Scala DSL for Cassandra
 [![Build Status](https://magnum.travis-ci.com/newzly/phantom.png?token=tyRTmBk14WrDycpepg9c&branch=master)](https://magnum.travis-ci.com/newzly/phantom)
 
 
-
-1. Creating model definitions with Phantom Record.
-
-
 1. Creating model definitions with Phantom Record.
   
 ```scala
+
 import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
 import com.newzly.cassandra.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.cassandra.phantom.field.TimeUUIDPk
 import com.newzly.cassandra.phantom.Implicits._
 
 case class ExampleModel(val id: UUID, val name: String, val props: Map[String, String]);
 
-sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] {
+sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk {
 
-  object id extends PrimitiveColumn[UUID]
   object name extends PrimitiveColumn[String]
   object props extends MapColumn[String, String]
 
@@ -34,3 +31,12 @@ object ExampleRecord extends ExampleRecord {
   override val tableName = "examplerecord"
 }
 ```
+
+Maintainers
+===========
+
+Phantom was originally developed at newzly as an in-house project destined for internal-only use.
+All Cassandra integration at newzly goes through Phantom.
+
+- Sorin Chiprian sorin.chiprian@newzly.com
+- Flavian Alexandru flavian@newzly.com
