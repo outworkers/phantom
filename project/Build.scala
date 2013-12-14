@@ -103,7 +103,6 @@ object newzlyPhantom extends Build {
 			"org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test",
 			"net.liftweb"              %% "lift-record"                       % liftVersion           % "compile",
 			"com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion,
-		//	"org.apache.cassandra"     %  "cassandra-all"                     % "1.2.6"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
       		"org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0" exclude("org.apache.cassandra","cassandra-all"),
 			"org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
 		)
