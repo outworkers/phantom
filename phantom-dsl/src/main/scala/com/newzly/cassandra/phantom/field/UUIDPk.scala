@@ -15,7 +15,7 @@ trait TimeUUIDPk[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] =>
 
   object id extends PrimitiveColumn[UUID] {
- 
+
   }
   val _key = id;
 }
