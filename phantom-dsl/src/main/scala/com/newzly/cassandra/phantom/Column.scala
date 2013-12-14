@@ -54,17 +54,18 @@ trait Column[T] extends AbstractColumn[T] {
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
 
-  def == (value: T): QueryCondition = {
+  def eqs (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
   }
 
-  def < (value: T): QueryCondition = {
+  def lt (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.lt(this.name, this.toCType(value)))
   }
 
-  def > (value: T): QueryCondition = {
+  def gt (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
   }
+ 
 }
 
 trait OptionalColumn[T] extends AbstractColumn[T] {
