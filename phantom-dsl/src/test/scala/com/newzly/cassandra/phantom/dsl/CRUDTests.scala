@@ -81,7 +81,7 @@ class CRUDTests extends BaseTest {
     assert(Primitives.select.fetch.sync() contains (row))
 
     val select1 = Primitives.select.where(_.pkey eqs 1).one.sync()
-    assert(select1 === row)
+    assert(select1.get === row)
   }
 
   "Delete" should "work fine, when deleting the whole row" in {
