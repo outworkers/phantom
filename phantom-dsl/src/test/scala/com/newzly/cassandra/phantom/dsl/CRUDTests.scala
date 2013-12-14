@@ -79,9 +79,9 @@ class CRUDTests extends BaseTest {
     val recipeF: Future[Option[Primitive]] = Primitives.select.one
     assert(recipeF.sync().get === row)
     assert(Primitives.select.fetch.sync() contains (row))
-    val select1 = Primitives.select.where(_.pkey == 1)
-    val s1 = select1.one.sync()
-    assert(s1.get === row)
+
+    val select1 = Primitives.select.where(_.pkey eqs 1).one.sync()
+    assert(select1 === row)
   }
 
   "Delete" should "work fine, when deleting the whole row" in {
@@ -156,7 +156,7 @@ class CRUDTests extends BaseTest {
     assert(recipeF.sync().get === row)
     assert(Primitives.select.fetch.sync() contains (row))
 
-    val del = Primitives.delete where(_.str == "myString")
+    val del = Primitives.delete where(_.str eqs "myString")
     del.execute().sync()
 
     val recipeF2: Future[Option[Primitive]] = Primitives.select.one
@@ -245,7 +245,7 @@ class CRUDTests extends BaseTest {
 
     Primitives.update.
       //where(PrimitivesTable => QueryBuilder.eq("str", "myString"))
-      where(_.str == "myString")
+      where(_.str eqs "myString")
       .modify(_.long, updatedRow.long)
       .modify(_.boolean, updatedRow.boolean)
       .modify(_.bDecimal, updatedRow.bDecimal)
@@ -324,7 +324,7 @@ class CRUDTests extends BaseTest {
     )
 
     TestTable.update
-      .where(_.key == "w")
+      .where(_.key eqs "w")
       .modify(_.list,updatedRow.list)
       .modify(_.setText,updatedRow.setText)
       .modify(_.mapTextToText,updatedRow.mapTextToText)
