@@ -40,3 +40,5 @@ All Cassandra integration at newzly goes through Phantom.
 
 - Sorin Chiprian sorin.chiprian@newzly.com
 - Flavian Alexandru flavian@newzly.com
+
+Contributions are most welcome!
