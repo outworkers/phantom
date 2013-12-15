@@ -16,12 +16,13 @@
 package com.newzly.phantom
 
 import java.io.Serializable
+import scala.reflect.ClassTag
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
-import scala.reflect.runtime.universe._
-import com.newzly.phantom.query._
-import scala.reflect.ClassTag
+
+import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery}
+
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
