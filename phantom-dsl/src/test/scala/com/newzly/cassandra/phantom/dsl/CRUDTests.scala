@@ -2,6 +2,10 @@ package com.newzly.cassandra.phantom.dsl
 
 import com.newzly.cassandra.phantom._
 import com.newzly.cassandra.phantom.query.Operators._
+
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.Matchers
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.datastax.driver.core.{ Session, Row }
 import scala.concurrent.{ Await, Future }
@@ -11,7 +15,7 @@ import java.util.{Date, UUID}
 import com.datastax.driver.core.utils.UUIDs
 
 
-class CRUDTests extends BaseTest {
+class CRUDTests extends BaseTest with ScalaFutures with Matchers {
   implicit val session: Session = cassandraSession
 
   "Select" should "work fine" in {
@@ -156,7 +160,7 @@ class CRUDTests extends BaseTest {
     rcp.execute().sync()
     val recipeF: Future[Option[Primitive]] = Primitives.select.one
     assert(recipeF.sync().get === row)
-    assert(Primitives.select.fetch.sync() contains (row))
+    assert(Primitives.select.fetch.sync() contains row)
 
     val del = Primitives.delete where(_.str,"myString",EQ[Primitives,String])
     del.execute().sync()
@@ -576,6 +580,79 @@ class CRUDTests extends BaseTest {
     val recipeF: Future[Option[Recipe]] = Recipes.select.one
     recipeF.sync()
 
+  }
+
+  it should "support serializing/de-serializing to List " in {
+
+    val createTestTable =
+      """|CREATE TABLE listtest(
+        |key text PRIMARY KEY,
+        |testlist list<text>
+        );
+      """.stripMargin //
+    session.execute(createTestTable)
+
+    case class TestList(val key: String, val l: List[String])
+
+    class MyTest extends CassandraTable[MyTest, TestList] {
+      def fromRow(r: Row): TestList = {
+        TestList(key(r), testlist(r));
+      }
+      object key extends PrimitiveColumn[String]
+      object testlist extends ListColumn[String]
+      val _key = key
+    }
+
+    val row = TestList("someKey", List("test", "test2"))
+
+    object MyTest extends MyTest {
+      override val tableName = "listtest"
+    }
+
+    val recipeF: Future[Option[TestList]] = MyTest.select.one
+    whenReady(recipeF) {
+      res => {
+        res.isEmpty shouldEqual false
+        res.get should be(row)
+      }
+    }
+
+  }
+
+
+  it should "support serializing/de-serializing empty lists " in {
+
+    val createTestTable =
+      """|CREATE TABLE emptylisttest(
+        |key text PRIMARY KEY,
+        |list list<text>
+        );
+      """.stripMargin //
+    session.execute(createTestTable)
+
+    case class TestList(val key: String, val l: List[String])
+
+    class MyTest extends CassandraTable[MyTest, TestList] {
+      def fromRow(r: Row): TestList = {
+        TestList(key(r), list(r));
+      }
+      object key extends PrimitiveColumn[String]
+      object list extends ListColumn[String]
+      val _key = key
+    }
+
+    val row = TestList("someKey", Nil)
+
+    object MyTest extends MyTest {
+      override val tableName = "emptylisttest"
+    }
+
+    MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute().sync()
+
+    val future = MyTest.select.one
+    whenReady(future) {
+      res => res.isEmpty shouldEqual false
+    }
   }
 
   ignore should "work here but it fails- WE NEED TO FIX IT" in {

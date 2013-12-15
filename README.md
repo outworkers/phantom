@@ -7,9 +7,6 @@ Asynchronous Scala DSL for Cassandra
 
 
 1. Creating model definitions with Phantom Record.
-
-
-1. Creating model definitions with Phantom Record.
   
 ```scala
 import java.util.{ UUID, Date }
