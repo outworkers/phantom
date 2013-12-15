@@ -27,7 +27,7 @@ import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause}
 import com.newzly.cassandra.phantom.query.QueryCondition
 
-import net.liftweb.json._
+import net.liftweb.json.{ DefaultFormats, Extraction, JsonParser }
 import net.liftweb.json.Serialization.write
 
 trait Helpers {
@@ -112,7 +112,7 @@ class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumTyp
 
 }
 
-class SetColumn[RR:CassandraPrimitive] extends Column[Set[RR]] {
+class SetColumn[RR : CassandraPrimitive] extends Column[Set[RR]] {
 
   val cassandraType = s"set<${CassandraPrimitive[RR].cassandraType}>"
   def toCType(values: Set[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
