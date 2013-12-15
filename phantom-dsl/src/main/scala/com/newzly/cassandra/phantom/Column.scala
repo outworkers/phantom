@@ -82,7 +82,7 @@ class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
   def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 }
 
-class PrimitiveColumn[@specialized(Int, Long) RR: CassandraPrimitive] extends Column[RR] {
+class PrimitiveColumn[@specialized(Int, Double, Float, Long) RR: CassandraPrimitive] extends Column[RR] {
 
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
