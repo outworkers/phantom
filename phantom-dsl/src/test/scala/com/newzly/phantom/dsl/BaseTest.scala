@@ -1,4 +1,4 @@
-package com.newzly.cassandra.phantom.dsl
+package com.newzly.phantom.dsl
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global

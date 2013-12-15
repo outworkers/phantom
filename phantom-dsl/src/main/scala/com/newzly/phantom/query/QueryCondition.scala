@@ -1,4 +1,4 @@
-package com.newzly.cassandra.phantom.query
+package com.newzly.phantom.query
 
 import com.datastax.driver.core.querybuilder.Clause
 

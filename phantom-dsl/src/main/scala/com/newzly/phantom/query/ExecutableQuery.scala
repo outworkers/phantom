@@ -15,7 +15,7 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 package query
 
@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
-import com.newzly.cassandra.phantom.{ CassandraResultSetOperations, CassandraTable };
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable };
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 

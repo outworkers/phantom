@@ -15,7 +15,7 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 
 import java.util.concurrent.TimeUnit

@@ -1,6 +1,6 @@
 package net;
 package liftweb
-package cassandra
+
 package record
 package field
 

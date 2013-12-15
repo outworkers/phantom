@@ -15,12 +15,12 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.Insert
-import com.newzly.cassandra.phantom.{ AbstractColumn, CassandraTable }
+import com.newzly.phantom.{ AbstractColumn, CassandraTable }
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
 

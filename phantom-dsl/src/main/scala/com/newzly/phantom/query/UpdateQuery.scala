@@ -15,13 +15,13 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
 
-import com.newzly.cassandra.phantom.CassandraTable
+import com.newzly.phantom.CassandraTable
 
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {

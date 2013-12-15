@@ -13,9 +13,9 @@ Data modeling with phantom
 
 import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
-import com.newzly.cassandra.phantom.{ CassandraTable, PrimitiveColumn }
-import com.newzly.cassandra.phantom.field.TimeUUIDPk
-import com.newzly.cassandra.phantom.Implicits._
+import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.phantom.field.TimeUUIDPk
+import com.newzly.phantom.Implicits._
 
 case class ExampleModel(val id: UUID, val name: String, val props: Map[String, String]);
 

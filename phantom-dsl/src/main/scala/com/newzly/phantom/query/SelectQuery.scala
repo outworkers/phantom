@@ -15,15 +15,15 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.{ Clause, Select }
 import com.datastax.driver.core.Row
 
-import com.newzly.cassandra.phantom.{ CassandraTable }
-import com.newzly.cassandra.phantom.field.LongOrderKey
+import com.newzly.phantom.{ CassandraTable }
+import com.newzly.phantom.field.LongOrderKey
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 

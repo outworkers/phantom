@@ -15,21 +15,21 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 
 object Implicits {
 
-  type Column[T] = com.newzly.cassandra.phantom.Column[T]
-  type PrimitiveColumn[T] =  com.newzly.cassandra.phantom.PrimitiveColumn[T]
-  type OptionalColumn[T] =  com.newzly.cassandra.phantom.OptionalColumn[T]
-  type OptionalPrimitiveColumn[T] =  com.newzly.cassandra.phantom.OptionalPrimitiveColumn[T]
-  type JsonTypeColumn[T] =  com.newzly.cassandra.phantom.JsonTypeColumn[T]
-  type EnumColumn[T <: Enumeration] =  com.newzly.cassandra.phantom.EnumColumn[T]
-  type ListColumn[T] = com.newzly.cassandra.phantom.ListColumn[T]
-  type SetColumn[T] =  com.newzly.cassandra.phantom.SetColumn[T]
-  type SeqColumn[T] =  com.newzly.cassandra.phantom.SeqColumn[T]
-  type MapColumn[K, V] =  com.newzly.cassandra.phantom.MapColumn[K, V]
+  type Column[T] = com.newzly.phantom.Column[T]
+  type PrimitiveColumn[T] =  com.newzly.phantom.PrimitiveColumn[T]
+  type OptionalColumn[T] =  com.newzly.phantom.OptionalColumn[T]
+  type OptionalPrimitiveColumn[T] =  com.newzly.phantom.OptionalPrimitiveColumn[T]
+  type JsonTypeColumn[T] =  com.newzly.phantom.JsonTypeColumn[T]
+  type EnumColumn[T <: Enumeration] =  com.newzly.phantom.EnumColumn[T]
+  type ListColumn[T] = com.newzly.phantom.ListColumn[T]
+  type SetColumn[T] =  com.newzly.phantom.SetColumn[T]
+  type SeqColumn[T] =  com.newzly.phantom.SeqColumn[T]
+  type MapColumn[K, V] =  com.newzly.phantom.MapColumn[K, V]
 
   implicit def columnToQueryColumn[RR: CassandraPrimitive](col: Column[RR]) =
     new QueryColumn(col)

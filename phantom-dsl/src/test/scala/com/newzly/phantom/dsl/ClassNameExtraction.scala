@@ -1,4 +1,4 @@
-package com.newzly.cassandra.phantom.dsl
+package com.newzly.phantom.dsl
 
 import java.net.InetAddress
 import java.util.{ Date, UUID }
@@ -13,8 +13,8 @@ import org.scalatest.FlatSpec
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.utils.UUIDs
 
-import com.newzly.cassandra.phantom._
-import com.newzly.cassandra.phantom.CassandraTable
+import com.newzly.phantom._
+import com.newzly.phantom.CassandraTable
 
 
 trait Test {
