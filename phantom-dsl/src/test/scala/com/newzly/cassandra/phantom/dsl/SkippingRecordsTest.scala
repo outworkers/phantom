@@ -20,7 +20,7 @@ class SkippingRecordsTest extends BaseTest with ScalaFutures {
     val articlesTable =
       """|CREATE TABLE articlestest(
         |id uuid PRIMARY KEY,
-        |order_id long,
+        |order_id bigint,
         |name text);
       """.stripMargin
     cassandraSession.execute(articlesTable)
