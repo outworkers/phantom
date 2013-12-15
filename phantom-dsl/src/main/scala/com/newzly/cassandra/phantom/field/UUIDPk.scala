@@ -6,16 +6,9 @@ import com.newzly.cassandra.phantom.{ CassandraTable, PrimitiveColumn }
 trait UUIDPk[Owner <: CassandraTable[Owner, _]] {
   this: CassandraTable[Owner, _] =>
 
-  object id extends PrimitiveColumn[UUID] {}
+  object id extends PrimitiveColumn[UUID]
 
   val _key = id;
-}
-
-trait TimeUUIDPk[Owner <: CassandraTable[Owner, _]] extends  UUIDPk[Owner] {
-  this: CassandraTable[Owner, _] =>
-
-  object id extends PrimitiveColumn[UUID]
-  override val _key = id;
 }
 
 trait LongOrderKey[Owner <: CassandraTable[Owner, _]] {
