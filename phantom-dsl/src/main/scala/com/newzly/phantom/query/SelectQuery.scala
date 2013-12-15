@@ -15,7 +15,6 @@
  */
 package com
 package newzly
-
 package phantom
 package query
 
@@ -51,12 +50,4 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   }
 
   def and = where _
-}
-
-object SelectWhere {
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T], R](val select: SelectQuery[T, R]) extends AnyVal {
-    def skip(l: Int): SelectWhere[T, R] = {
-      select.where(_.order_id gt l.toLong)
-    }
-  }
 }
