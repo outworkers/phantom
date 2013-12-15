@@ -23,6 +23,7 @@ import com.datastax.driver.core.querybuilder.{ Clause, Select }
 import com.datastax.driver.core.Row
 
 import com.newzly.cassandra.phantom.{ CassandraTable }
+import com.newzly.cassandra.phantom.field.LongOrderKey
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
@@ -52,5 +53,10 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   }
 
   def and = where _
+}
 
+class SkipSelect[T <: CassandraTable[T, _] with LongOrderKey[T, _], R](val select: SelectWhere[T, R]) extends AnyVal {
+  def skip(l: Int): SelectQuery[T, R] = {
+    select.where(_.order_id gt l.toLong)
+  }
 }
