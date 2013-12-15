@@ -18,6 +18,8 @@ package newzly
 
 package phantom
 
+import com.newzly.phantom.field.LongOrderKey
+import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
 object Implicits {
 
   type Column[T] = com.newzly.phantom.Column[T]
@@ -67,4 +69,14 @@ object Implicits {
 
   implicit def optionalColumnIsSeleCassandraTable[T](col: OptionalColumn[T]): SelectColumn[Option[T]] =
     new SelectColumnOptional[T](col)
+
+  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T], R](val select: SelectQuery[T, R]) extends AnyVal {
+    def skip(l: Int): SelectWhere[T, R] = {
+      select.where(_.order_id gt l.toLong)
+    }
+
+    def skip(l: Long): SelectWhere[T, R] = {
+      select.where(_.order_id gt l)
+    }
+  }
 }
