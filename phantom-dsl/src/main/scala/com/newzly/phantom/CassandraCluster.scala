@@ -1,4 +1,4 @@
-package com.newzly.cassandra.phantom
+package com.newzly.phantom
 
 import com.datastax.driver.core.Cluster
 import org.apache.cassandra.service.EmbeddedCassandraService

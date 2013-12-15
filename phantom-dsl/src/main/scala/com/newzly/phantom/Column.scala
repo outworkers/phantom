@@ -15,7 +15,7 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 
 import java.util.{ Map => JMap, UUID }
@@ -25,13 +25,13 @@ import scala.collection.JavaConverters._
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause}
-import com.newzly.cassandra.phantom.query.QueryCondition
+import com.newzly.phantom.query.QueryCondition
 
 import net.liftweb.json.{ DefaultFormats, Extraction, JsonParser }
 import net.liftweb.json.Serialization.write
 
 trait Helpers {
-  private[cassandra] implicit class RichSeq[T](val l: Seq[T]) {
+  private[phantom] implicit class RichSeq[T](val l: Seq[T]) {
     final def toOption: Option[Seq[T]] = if (l.isEmpty) None else Some(l)
   }
 }

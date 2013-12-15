@@ -1,7 +1,7 @@
-package com.newzly.cassandra.phantom.dsl
+package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
-import com.newzly.cassandra.phantom._
+import com.newzly.phantom._
 import com.datastax.driver.core.Row
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._

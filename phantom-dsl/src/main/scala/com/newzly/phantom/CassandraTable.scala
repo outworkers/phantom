@@ -15,7 +15,7 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 
 import java.io.Serializable
@@ -23,7 +23,7 @@ import java.io.Serializable
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 import scala.reflect.runtime.universe._
-import com.newzly.cassandra.phantom.query._
+import com.newzly.phantom.query._
 import scala.reflect.ClassTag
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {

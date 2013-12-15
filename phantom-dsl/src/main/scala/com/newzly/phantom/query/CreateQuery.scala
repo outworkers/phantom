@@ -1,6 +1,6 @@
-package com.newzly.cassandra.phantom.query
+package com.newzly.phantom.query
 
-import com.newzly.cassandra.phantom.{CassandraResultSetOperations, AbstractColumn, CassandraTable}
+import com.newzly.phantom.{CassandraResultSetOperations, AbstractColumn, CassandraTable}
 import com.datastax.driver.core.{ResultSet, Session}
 import scala.concurrent.{Future, ExecutionContext}
 

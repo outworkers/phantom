@@ -15,12 +15,12 @@
  */
 package com
 package newzly
-package cassandra
+
 package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.{ Clause, Delete }
-import com.newzly.cassandra.phantom.{ CassandraTable }
+import com.newzly.phantom.{ CassandraTable }
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete) extends ExecutableStatement {
 

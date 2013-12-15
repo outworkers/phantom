@@ -1,7 +1,7 @@
-package com.newzly.cassandra.phantom.field
+package com.newzly.phantom.field
 
 import java.util.UUID
-import com.newzly.cassandra.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
 
 trait UUIDPk[Owner <: CassandraTable[Owner, _]] {
   this: CassandraTable[Owner, _] =>

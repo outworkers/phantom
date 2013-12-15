@@ -1,6 +1,6 @@
-package com.newzly.cassandra.phantom.dsl
+package com.newzly.phantom.dsl
 
-import com.newzly.cassandra.phantom._
+import com.newzly.phantom._
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers

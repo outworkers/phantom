@@ -1,4 +1,4 @@
-package com.newzly.cassandra.phantom.dsl
+package com.newzly.phantom.dsl
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -8,9 +8,9 @@ import org.scalatest.concurrent.ScalaFutures
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.utils.UUIDs
 
-import com.newzly.cassandra.phantom.{ PrimitiveColumn, CassandraTable }
-import com.newzly.cassandra.phantom.field.{ UUIDPk, LongOrderKey }
-import com.newzly.cassandra.phantom.query.SelectWhere._
+import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
+import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
+import com.newzly.phantom.query.SelectWhere._
 
 class SkippingRecordsTest extends BaseTest with ScalaFutures {
 
