@@ -15,7 +15,6 @@
  */
 package com
 package newzly
-
 package phantom
 package query
 
