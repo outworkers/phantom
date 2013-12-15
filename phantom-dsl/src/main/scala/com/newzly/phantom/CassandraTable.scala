@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
-
-package phantom
+package com.newzly.phantom
 
 import java.io.Serializable
 

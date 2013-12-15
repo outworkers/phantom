@@ -14,12 +14,12 @@ Data modeling with phantom
 import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
-import com.newzly.phantom.field.TimeUUIDPk
+import com.newzly.phantom.field.{ TimeUUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 
 case class ExampleModel(val id: UUID, val name: String, val props: Map[String, String]);
 
-sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk {
+sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk[ExampleRecord] with LongOrderKey[ExampleRecord] {
 
   object name extends PrimitiveColumn[String]
   object props extends MapColumn[String, String]
