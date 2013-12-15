@@ -18,17 +18,17 @@ package newzly
 package cassandra
 package phantom
 
-import java.util.{ Map => JMap }
+import java.util.{ Map => JMap, UUID }
+
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
 
 import com.datastax.driver.core.Row
-
-import net.liftweb.json._
-import net.liftweb.json.Serialization.write
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause}
 import com.newzly.cassandra.phantom.query.QueryCondition
 
+import net.liftweb.json._
+import net.liftweb.json.Serialization.write
 
 trait Helpers {
   private[cassandra] implicit class RichSeq[T](val l: Seq[T]) {
@@ -82,7 +82,7 @@ class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
   def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 }
 
-class PrimitiveColumn[RR: CassandraPrimitive] extends Column[RR] {
+class PrimitiveColumn[@specialized(Int, Long) RR: CassandraPrimitive] extends Column[RR] {
 
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
