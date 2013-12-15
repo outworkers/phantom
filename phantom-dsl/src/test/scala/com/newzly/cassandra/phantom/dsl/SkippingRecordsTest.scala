@@ -25,7 +25,7 @@ class SkippingRecordsTest extends BaseTest with ScalaFutures {
       """.stripMargin
     cassandraSession.execute(articlesTable)
 
-    val indexes = """CREATE INDEX article_order_id ON articlestest (order_id)""".stripMargin
+    val indexes = """CREATE INDEX order_id ON articlestest (order_id)""".stripMargin
     cassandraSession.execute(indexes)
 
     case class Article(val name: String, id: UUID, order_id: Long)
