@@ -10,7 +10,7 @@ import com.datastax.driver.core.utils.UUIDs
 
 import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
 import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
-import com.newzly.phantom.query.SelectWhere._
+import com.newzly.phantom.Implicits._
 
 class SkippingRecordsTest extends BaseTest with ScalaFutures {
 
