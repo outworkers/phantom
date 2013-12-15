@@ -1,11 +1,11 @@
-package com.newzly.cassandra.helper
+package com.newzly.phantom.helper
 
 import com.datastax.driver.core.Cluster
 import org.apache.cassandra.service.EmbeddedCassandraService
 import org.apache.cassandra.io.util.FileUtils
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+
 object CassandraInst {
-  val embedded = EmbeddedCassandraServerHelper.startEmbeddedCassandra()
   lazy val cluster =  Cluster.builder()
     .addContactPoint("localhost")
     .withPort(9142)
@@ -18,7 +18,6 @@ object CassandraInst {
 }
 
 trait CassandraCluster {
-  val embeddedServer = CassandraInst.embedded
   val cluster = CassandraInst.cluster
   val cassandraSession = CassandraInst.cassandraSession
   def resetCluster() = CassandraInst.resetCluster()
