@@ -1,16 +1,19 @@
 package com.newzly.cassandra.phantom.dsl
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.scalatest.concurrent.ScalaFutures
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{Session, Row}
 import com.newzly.cassandra.phantom.{PrimitiveColumn, CassandraTable}
 import com.newzly.cassandra.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.cassandra.phantom.query.SelectWhere._
 import com.datastax.driver.core.utils.UUIDs
 
 class SkippingRecordsTest extends BaseTest with ScalaFutures {
+
+  implicit val session: Session = cassandraSession
 
   it should "allow skipping records " in {
 
