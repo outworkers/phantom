@@ -23,14 +23,14 @@ import com.datastax.driver.core.querybuilder.{ Clause, Select }
 import com.datastax.driver.core.Row
 
 import com.newzly.cassandra.phantom.{ CassandraTable }
+import com.newzly.cassandra.phantom.field.LongOrderKey
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
 
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): SelectWhere[T, R] = {
-    val clause = operator(c,value)(table)
-    new SelectWhere[T, R](table, qb.where(clause), fromRow)
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
+    new SelectWhere[T, R](table, qb.where(condition(table).clause), fromRow)
   }
 
   def limit(l: Int) = {
@@ -42,9 +42,8 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
 
   override def fromRow(r: Row) = rowFunc(r)
 
-  def where[RR](c: T => AbstractColumn[RR], value: RR, operator: (T => AbstractColumn[RR],RR)=>T=>Clause): SelectWhere[T, R] = {
-    val clause = operator(c,value)(table)
-    new SelectWhere[T, R](table, qb.and(clause), fromRow)
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
+    new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 
   def limit(l: Int) = {
@@ -52,5 +51,10 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   }
 
   def and = where _
+}
 
+class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
+  def skip(l: Int): SelectWhere[T, R] = {
+    select.where(_.order_id gt l.toLong)
+  }
 }
