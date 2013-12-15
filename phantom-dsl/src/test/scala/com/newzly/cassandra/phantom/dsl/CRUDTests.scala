@@ -1,7 +1,6 @@
 package com.newzly.cassandra.phantom.dsl
 
 import com.newzly.cassandra.phantom._
-import com.newzly.cassandra.phantom.query.Operators._
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
@@ -85,9 +84,9 @@ class CRUDTests extends BaseTest with ScalaFutures with Matchers {
     val recipeF: Future[Option[Primitive]] = Primitives.select.one
     assert(recipeF.sync().get === row)
     assert(Primitives.select.fetch.sync() contains (row))
-    val select1 = Primitives.select.where(_.pkey,1,EQ[Primitives,Int])
-    val s1 = select1.one.sync()
-    assert(s1.get === row)
+
+    val select1 = Primitives.select.where(_.pkey eqs 1).one.sync()
+    assert(select1.get === row)
   }
 
   "Delete" should "work fine, when deleting the whole row" in {
@@ -162,7 +161,7 @@ class CRUDTests extends BaseTest with ScalaFutures with Matchers {
     assert(recipeF.sync().get === row)
     assert(Primitives.select.fetch.sync() contains row)
 
-    val del = Primitives.delete where(_.str,"myString",EQ[Primitives,String])
+    val del = Primitives.delete where(_.str eqs "myString")
     del.execute().sync()
 
     val recipeF2: Future[Option[Primitive]] = Primitives.select.one
@@ -251,7 +250,7 @@ class CRUDTests extends BaseTest with ScalaFutures with Matchers {
 
     Primitives.update.
       //where(PrimitivesTable => QueryBuilder.eq("str", "myString"))
-      where(_.str,"myString",EQ[Primitives,String])
+      where(_.str eqs "myString")
       .modify(_.long, updatedRow.long)
       .modify(_.boolean, updatedRow.boolean)
       .modify(_.bDecimal, updatedRow.bDecimal)
@@ -330,7 +329,7 @@ class CRUDTests extends BaseTest with ScalaFutures with Matchers {
     )
 
     TestTable.update
-      .where(_.key,"w",EQ[TestTable,String])
+      .where(_.key eqs "w")
       .modify(_.list,updatedRow.list)
       .modify(_.setText,updatedRow.setText)
       .modify(_.mapTextToText,updatedRow.mapTextToText)
