@@ -20,7 +20,7 @@ trait TimeUUIDPk[Owner <: CassandraTable[Owner, Record], Record] {
   val _key = id;
 }
 
-trait LongOrderKey[Owner <: CassandraTable[Owner, _], Record] {
+trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] with UUIDPk[Owner, Record] =>
   object order_id extends PrimitiveColumn[Long]
 }
