@@ -54,7 +54,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
 }
 
 class SkipSelect[T <: CassandraTable[T, _] with LongOrderKey[T, _], R](val select: SelectWhere[T, R]) extends AnyVal {
-  def skip(l: Int): SelectQuery[T, R] = {
+  def skip(l: Int): SelectWhere[T, R] = {
     select.where(_.order_id gt l.toLong)
   }
 }
