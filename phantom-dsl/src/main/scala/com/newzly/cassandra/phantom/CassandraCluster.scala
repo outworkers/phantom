@@ -38,7 +38,7 @@ trait CassandraCluster {
   val embeddedServer = CassandraInst
   lazy val cluster =
     Cluster.builder()
-      .addContactPoint("184.169.129.2")
+      .addContactPoint("localhost")
       .withPort(9142)
       .withoutJMXReporting()
       .withoutMetrics()
