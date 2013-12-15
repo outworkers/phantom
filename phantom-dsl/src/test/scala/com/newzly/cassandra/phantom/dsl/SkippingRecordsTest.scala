@@ -5,17 +5,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.scalatest.concurrent.ScalaFutures
 
-import com.datastax.driver.core.{Session, Row}
-import com.newzly.cassandra.phantom.{PrimitiveColumn, CassandraTable}
+import com.datastax.driver.core.{ Session, Row }
+import com.datastax.driver.core.utils.UUIDs
+
+import com.newzly.cassandra.phantom.{ PrimitiveColumn, CassandraTable }
 import com.newzly.cassandra.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.cassandra.phantom.query.SelectWhere._
-import com.datastax.driver.core.utils.UUIDs
 
 class SkippingRecordsTest extends BaseTest with ScalaFutures {
 
   implicit val session: Session = cassandraSession
 
   it should "allow skipping records " in {
+    val articlesTable =
+      """|CREATE TABLE articlestest(
+        |id uuid PRIMARY KEY,
+        |order_id long,
+        |name text);
+      """.stripMargin
+    cassandraSession.execute(articlesTable)
 
     case class Article(val name: String, id: UUID, order_id: Long)
     class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
@@ -27,9 +35,8 @@ class SkippingRecordsTest extends BaseTest with ScalaFutures {
       }
     }
 
-
     object Articles extends Articles {
-      override val tableName = "articles"
+      override val tableName = "articlestest"
     }
 
     val article1 = Article("test", UUIDs.timeBased(),  1);
