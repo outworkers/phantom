@@ -1,4 +1,4 @@
-newzly phantom
+phantom
 ==============
 Asynchronous Scala DSL for Cassandra
 
