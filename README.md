@@ -34,6 +34,12 @@ object ExampleRecord extends ExampleRecord {
 }
 ```
 
+Querying with Phantom
+=====================
+
+
+
+
 Maintainers
 ===========
 
