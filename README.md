@@ -29,15 +29,40 @@ sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, Examp
   }
 }
 
-object ExampleRecord extends ExampleRecord {
-  override val tableName = "examplerecord"
-}
+
 ```
 
 Querying with Phantom
 =====================
 
+The query syntax is modelled around the Foursquare Rogue library.
+The syntax provided aims to replicate CQL 3 as much as possible.
 
+```scala
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+object ExampleRecord extends ExampleRecord {
+  override val tableName = "examplerecord"
+
+  // now define a session, which is a Cluster connection.
+  implicit val session = SomeCassandraClient.session;
+  
+  def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
+    ExampleRecord.select.where(_.name eqs name).execute()
+  }
+  
+  def getOneRecordByName(name: String): Future[Option[ExampleModel]] = {
+    ExampelRecord.select.where(_.name eqs name).one()
+  }
+  
+  // preserving order in Cassandra is not the simplest thing, but:
+  def getRecordPage(start: Int, limit: Int): Future[Seq[ExampleModel]] = {
+    ExampleRecord.select.skip(start).limit(10).execute()
+  }
+  
+}
+```
 
 
 Maintainers
