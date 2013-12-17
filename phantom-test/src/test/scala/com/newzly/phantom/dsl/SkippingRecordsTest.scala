@@ -1,3 +1,4 @@
+
 package com.newzly.phantom.dsl
 
 import java.util.UUID
@@ -11,22 +12,13 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
 import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.helper.Tables
 
-class SkippingRecordsTest extends BaseTest with ScalaFutures {
+class SkippingRecordsTest extends BaseTest with ScalaFutures with Tables {
 
   implicit val session: Session = cassandraSession
 
-  it should "allow skipping records " in {
-    val articlesTable =
-      """|CREATE TABLE articlestest(
-        |id uuid PRIMARY KEY,
-        |order_id bigint,
-        |name text);
-      """.stripMargin
-    cassandraSession.execute(articlesTable)
-
-    val indexes = """CREATE INDEX order_id ON articlestest (order_id)""".stripMargin
-    cassandraSession.execute(indexes)
+  ignore should "allow skipping records " in {
 
     case class Article(val name: String, id: UUID, order_id: Long)
     class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
@@ -71,3 +63,4 @@ class SkippingRecordsTest extends BaseTest with ScalaFutures {
   }
 
 }
+
