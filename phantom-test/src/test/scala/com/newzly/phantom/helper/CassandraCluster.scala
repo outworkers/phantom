@@ -6,6 +6,7 @@ import org.apache.cassandra.io.util.FileUtils
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 
 object CassandraInst {
+  val embedded = EmbeddedCassandraServerHelper.startEmbeddedCassandra()
   lazy val cluster =  Cluster.builder()
     .addContactPoint("localhost")
     .withPort(9142)
