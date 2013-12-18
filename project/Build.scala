@@ -2,9 +2,6 @@ import sbt._
 import Keys._
 import Tests._
 import com.twitter.sbt._
-import com.typesafe.sbteclipse.plugin.EclipsePlugin._
-
-
 
 object newzlyPhantom extends Build {
 
@@ -12,8 +9,6 @@ object newzlyPhantom extends Build {
 	val liftVersion = "3.0-SNAPSHOT";
 	val scalatestVersion = "2.0.M8";
 	val finagleVersion = "6.7.4";
-
-    val plugins: Seq[sbt.Project.Setting[_]] = net.virtualvoid.sbt.graph.Plugin.graphSettings
 
     val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
@@ -38,10 +33,8 @@ object newzlyPhantom extends Build {
            "-deprecation",
            "-feature",
            "-unchecked"
-       ),
-       EclipseKeys.withSource := true,
-       EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
-    ) ++ plugins
+       )
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 
 	val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
@@ -108,7 +101,7 @@ object newzlyPhantom extends Build {
 	lazy val phantomTest = Project(
 		id = "phantom-test",
 		base = file("phantom-test"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings
+		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
 	).settings(
 		libraryDependencies ++= Seq(
 			"org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
