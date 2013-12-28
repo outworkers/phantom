@@ -3,16 +3,17 @@ import Keys._
 import Tests._
 import com.twitter.sbt._
 import ScctPlugin.instrumentSettings
+import ScctPlugin.mergeReportSettings
 import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
 
 object newzlyPhantom extends Build {
 
-	val datastaxDriverVersion = "2.0.0-rc1";
-	val liftVersion = "3.0-SNAPSHOT";
-	val scalatestVersion = "2.0.M8";
-	val finagleVersion = "6.7.4";
+	val datastaxDriverVersion = "2.0.0-rc1"
+  val liftVersion = "3.0-SNAPSHOT"
+  val scalatestVersion = "2.0.M8"
+  val finagleVersion = "6.7.4"
 
-    val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
+  val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
        version := "0.0.2",
        scalaVersion := "2.10.0",
@@ -36,7 +37,7 @@ object newzlyPhantom extends Build {
            "-feature",
            "-unchecked"
        )
-    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings
 
 
 	val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
@@ -82,7 +83,7 @@ object newzlyPhantom extends Build {
 	lazy val phantom = Project(
 		id = "phantom",
 		base = file("."),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ mergeReportSettings
 	).aggregate(
 		phantomDsl,
 		phantomTest
@@ -91,19 +92,19 @@ object newzlyPhantom extends Build {
 	lazy val phantomDsl = Project(
 		id = "phantom-dsl",
 		base = file("phantom-dsl"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
 	).settings(
 		libraryDependencies ++= Seq(
 			"net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
 			"com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
 			"org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
 		)
-	);
+	)
 
-	lazy val phantomTest = Project(
+  lazy val phantomTest = Project(
 		id = "phantom-test",
 		base = file("phantom-test"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
 	).settings(
 		libraryDependencies ++= Seq(
 			"org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
@@ -112,5 +113,5 @@ object newzlyPhantom extends Build {
 		)
 	).dependsOn(
 		phantomDsl
-	);
+	)
 }
