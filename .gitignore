@@ -7,6 +7,9 @@
 .settings/
 .metadata
 
+# Project statistics
+stats
+
 # InteliJ IDEA
 *.iml
 
