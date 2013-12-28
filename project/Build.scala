@@ -2,6 +2,8 @@ import sbt._
 import Keys._
 import Tests._
 import com.twitter.sbt._
+import ScctPlugin.instrumentSettings
+import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
 
 object newzlyPhantom extends Build {
 
@@ -34,7 +36,7 @@ object newzlyPhantom extends Build {
            "-feature",
            "-unchecked"
        )
-    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
 
 
 	val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(

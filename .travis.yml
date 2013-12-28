@@ -5,6 +5,11 @@ language: scala
 scala: 
  - "2.10.0"
 
+# Emails to notify
+notifications:
+  email:
+    - dev@newzly.com
+
 # Branches to build.
 branches:
   only:

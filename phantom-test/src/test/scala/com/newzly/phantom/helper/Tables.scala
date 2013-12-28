@@ -6,6 +6,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.{UUID, Date}
+import com.newzly.phantom.field.LongOrderKey
 
 case class ClassS(something: String)
 case class Author(firstName: String, lastName: String, bio: Option[String])
@@ -30,7 +31,7 @@ trait Tables {
                         uuid: java.util.UUID,
                         bi: BigInt)
 
-  class Primitives extends CassandraTable[Primitives, Primitive] {
+  class Primitives extends CassandraTable[Primitives, Primitive] with UUIDPK[Primitives] with LongOrderKey[Primitives] {
     override def fromRow(r: Row): Primitive = {
       Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
         int(r), date(r), uuid(r), bi(r))
