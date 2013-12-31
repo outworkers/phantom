@@ -88,6 +88,7 @@ object CassandraPrimitive {
   implicit object DateTimeisCassandraPrimitive extends CassandraPrimitive[DateTime] {
     val cassandraType = "timestamp"
     def cls: Class[_] = classOf[org.joda.time.DateTime]
+    override def toCType(v: org.joda.time.DateTime): AnyRef = v.toDate.asInstanceOf[AnyRef]
     def fromRow(row: Row, name: String): Option[DateTime] = Option(new DateTime(row.getDate(name)))
   }
 

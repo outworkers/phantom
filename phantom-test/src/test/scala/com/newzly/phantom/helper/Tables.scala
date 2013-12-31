@@ -1,15 +1,17 @@
 package com.newzly.phantom.helper
 
 import com.newzly.phantom._
+import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.datastax.driver.core.{Session, Row}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.{UUID, Date}
+import com.newzly.phantom.field.LongOrderKey
 
 case class ClassS(something: String)
 case class Author(firstName: String, lastName: String, bio: Option[String])
-case class TestList(val key: String, val l: List[String])
+case class TestList(key: String, l: List[String])
 
 trait Tables {
   implicit class SyncFuture[T](future: Future[T]) {

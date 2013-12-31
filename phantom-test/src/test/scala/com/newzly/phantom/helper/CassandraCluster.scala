@@ -6,7 +6,33 @@ import org.apache.cassandra.io.util.FileUtils
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 
 object CassandraInst {
-  val embedded = EmbeddedCassandraServerHelper.startEmbeddedCassandra()
+
+  var inited = false
+
+  def isInited: Boolean = this.synchronized {
+    inited
+  }
+
+  def init() : Unit = {
+    this.synchronized {
+      try {
+      if (!isInited) {
+        inited = true
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra()
+      }
+      } catch {
+
+        case e: Throwable => {
+          EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+          EmbeddedCassandraServerHelper.startEmbeddedCassandra()
+          inited = true
+        }
+      }
+    }
+  }
+
+  init()
+
   lazy val cluster =  Cluster.builder()
     .addContactPoint("localhost")
     .withPort(9142)
