@@ -16,6 +16,7 @@
 package com.newzly.phantom
 
 import java.io.Serializable
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import com.datastax.driver.core.Row
@@ -76,5 +77,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+
+  def schema = {
+    val str = this.getClass.getDeclaredFields.map {
+      field => {
+        s"${field.getName}${field.getClass.asInstanceOf[CassandraPrimitive[_]].cassandraType}"
+      }
+    }
+    str
+  }
 
 }
