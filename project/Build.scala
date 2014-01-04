@@ -8,14 +8,14 @@ import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
 
 object newzlyPhantom extends Build {
 
-	val datastaxDriverVersion = "2.0.0-rc1"
-  val liftVersion = "3.0-SNAPSHOT"
+  val datastaxDriverVersion = "2.0.0-rc2"
+  val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
   val finagleVersion = "6.7.4"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.2",
+       version := "0.0.3",
        scalaVersion := "2.10.0",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
@@ -43,10 +43,7 @@ object newzlyPhantom extends Build {
 	val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
 		credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 		publishMavenStyle := true,
-		publishTo := {
-  		val nexus = "https://oss.sonatype.org/"
-    			Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-		},
+		publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
 		publishArtifact in Test := false,
 		pomIncludeRepository := { _ => true },
 		pomExtra := (
@@ -77,8 +74,6 @@ object newzlyPhantom extends Build {
 		  </developers>)
 
 	)
-
-
 
 	lazy val phantom = Project(
 		id = "phantom",
