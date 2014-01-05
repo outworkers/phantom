@@ -33,6 +33,7 @@ object newzlyPhantom extends Build {
            "-language:postfixOps",
            "-language:implicitConversions",
            "-language:reflectiveCalls",
+           "-language:higherKinds",
            "-deprecation",
            "-feature",
            "-unchecked"
@@ -40,73 +41,78 @@ object newzlyPhantom extends Build {
     ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings
 
 
-	val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
-		credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-		publishMavenStyle := true,
-		publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
-		publishArtifact in Test := false,
-		pomIncludeRepository := { _ => true },
-		pomExtra := (
-		  <url>https://github.com/newzly.phantom</url>
-		  <licenses>
-		    <license>
-		      <name>BSD-style</name>
-		      <url>http://www.opensource.org/licenses/bsd-license.php</url>
-		      <distribution>repo</distribution>
-		    </license>
-		  </licenses>
-		  <scm>
-		    <url>git@github.com:newzly/phantom.git</url>
-		    <connection>scm:git:git@github.com:newzly/phantom.git</connection>
-		  </scm>
-		  <developers>
-		  	<developer>
-			  <id>creyer</id>
-			  <name>Sorin Chiprian</name>
-			  <url>http://github.com/creyer</url>
-		    </developer>
-		    <developer>
-		      <id>alexflav</id>
-		      <name>Flavian Alexandru</name>
-		      <url>http://github.com/alexflav23</url>
-		    </developer>
-		    
-		  </developers>)
+    val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+        publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
+        credentials += Credentials(
+          "newzly Maven Repository",
+          "maven.newzly.com",
+          "admin@newzly.com",
+          "newzlymaven2323!"
+        ),
+        publishMavenStyle := true,
+        publishArtifact in Test := false,
+        pomIncludeRepository := { _ => true },
+        pomExtra := (
+          <url>https://github.com/newzly.phantom</url>
+          <licenses>
+            <license>
+              <name>BSD-style</name>
+              <url>http://www.opensource.org/licenses/bsd-license.php</url>
+              <distribution>repo</distribution>
+            </license>
+          </licenses>
+          <scm>
+            <url>git@github.com:newzly/phantom.git</url>
+            <connection>scm:git:git@github.com:newzly/phantom.git</connection>
+          </scm>
+          <developers>
+            <developer>
+              <id>creyer</id>
+              <name>Sorin Chiprian</name>
+              <url>http://github.com/creyer</url>
+            </developer>
+            <developer>
+              <id>alexflav</id>
+              <name>Flavian Alexandru</name>
+              <url>http://github.com/alexflav23</url>
+            </developer>
+            
+          </developers>)
 
-	)
+    )
 
-	lazy val phantom = Project(
-		id = "phantom",
-		base = file("."),
+    lazy val phantom = Project(
+        id = "phantom",
+        base = file("."),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ mergeReportSettings
-	).aggregate(
-		phantomDsl,
-		phantomTest
-	)
+    ).aggregate(
+        phantomDsl,
+        phantomTest
+    )
 
-	lazy val phantomDsl = Project(
-		id = "phantom-dsl",
-		base = file("phantom-dsl"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
-	).settings(
-		libraryDependencies ++= Seq(
-			"net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
-			"com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
-			"org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
-		)
-	)
+    lazy val phantomDsl = Project(
+        id = "phantom-dsl",
+        base = file("phantom-dsl"),
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+    ).settings(
+        libraryDependencies ++= Seq(
+            "net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
+            "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
+            "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
+        )
+    )
 
   lazy val phantomTest = Project(
-		id = "phantom-test",
-		base = file("phantom-test"),
-		settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
-	).settings(
-		libraryDependencies ++= Seq(
-			"org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
-			"org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
-			"org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
-		)
-	).dependsOn(
-		phantomDsl
-	)
+        id = "phantom-test",
+        base = file("phantom-test"),
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+    ).settings(
+        libraryDependencies ++= Seq(
+            "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
+            "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
+            "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
+        )
+    ).dependsOn(
+        phantomDsl
+    )
 }
