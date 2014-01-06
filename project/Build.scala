@@ -108,7 +108,7 @@ object newzlyPhantom extends Build {
   lazy val phantomTest = Project(
         id = "phantom-test",
         base = file("phantom-test"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
       fork := true,
       testGrouping <<=  (definedTests in Test map groupByFirst),
@@ -123,5 +123,6 @@ object newzlyPhantom extends Build {
         )
     ).dependsOn(
         phantomDsl
-    )
+    ) settings (ScctPlugin.instrumentSettings: _*)
+
 }
