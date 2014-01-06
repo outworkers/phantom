@@ -121,8 +121,8 @@ object newzlyPhantom extends Build {
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
         )
-    ).dependsOn(
+    ) settings (ScctPlugin.instrumentSettings: _*) dependsOn(
         phantomDsl
-    ) settings (ScctPlugin.instrumentSettings: _*)
+    )
 
 }
