@@ -90,6 +90,9 @@ object newzlyPhantom extends Build {
         phantomTest
     )
 
+    def groupByFirst(tests: Seq[TestDefinition]) =
+      tests map {t=> new Tests.Group(t.name, Seq(t)  , Tests.SubProcess(Seq.empty))}
+
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
         base = file("phantom-dsl"),
@@ -106,6 +109,12 @@ object newzlyPhantom extends Build {
         id = "phantom-test",
         base = file("phantom-test"),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+    ).settings(
+      fork := true,
+      testGrouping <<=  (definedTests in Test map groupByFirst),
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 1)
+      )
     ).settings(
         libraryDependencies ++= Seq(
             "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
