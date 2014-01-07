@@ -2,9 +2,10 @@ import sbt._
 import Keys._
 import Tests._
 import com.twitter.sbt._
-import ScctPlugin.instrumentSettings
+import ScctPlugin._
 import ScctPlugin.mergeReportSettings
 import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
+
 
 object newzlyPhantom extends Build {
 
@@ -12,7 +13,6 @@ object newzlyPhantom extends Build {
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
   val finagleVersion = "6.7.4"
-
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
        version := "0.0.3",
@@ -40,8 +40,7 @@ object newzlyPhantom extends Build {
        )
     ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings
 
-
-    val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
         publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
         credentials += Credentials(
           "newzly Maven Repository",
@@ -108,11 +107,11 @@ object newzlyPhantom extends Build {
   lazy val phantomTest = Project(
         id = "phantom-test",
         base = file("phantom-test"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
       fork := true,
-      testGrouping <<=  (definedTests in Test map groupByFirst),
-      concurrentRestrictions in Test := Seq(
+      testGrouping <<=  (((definedTests in ScctTest,definedTests in Test)map (_ ++ _) ) map groupByFirst) ,
+      concurrentRestrictions := Seq(
         Tags.limit(Tags.ForkedTestGroup, 1)
       )
     ).settings(
@@ -121,8 +120,10 @@ object newzlyPhantom extends Build {
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
         )
-    ) settings (ScctPlugin.instrumentSettings: _*) dependsOn(
+    ) dependsOn(
         phantomDsl
     )
+
+
 
 }
