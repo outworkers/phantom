@@ -3,7 +3,9 @@ package com.newzly.phantom.helper
 import com.datastax.driver.core.Cluster
 import org.apache.cassandra.service.EmbeddedCassandraService
 import org.apache.cassandra.io.util.FileUtils
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper
+import com.datastax.driver.core.policies.{ConstantReconnectionPolicy, DowngradingConsistencyRetryPolicy}
+;
 
 object CassandraInst {
 
@@ -13,39 +15,19 @@ object CassandraInst {
     inited
   }
 
-  def init() : Unit = {
-    this.synchronized {
-      try {
-      if (!isInited) {
-        inited = true
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra()
-      }
-      } catch {
-
-        case e: Throwable => {
-          EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-          EmbeddedCassandraServerHelper.startEmbeddedCassandra()
-          inited = true
-        }
-      }
-    }
-  }
-
-  init()
-
   lazy val cluster =  Cluster.builder()
-    .addContactPoint("localhost")
-    .withPort(9142)
-    .withoutJMXReporting()
-    .withoutMetrics()
+    .addContactPoint("54.241.18.80")
+    .withPort(9042)
+    .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
+    .withReconnectionPolicy(new ConstantReconnectionPolicy(100L))
     .build()
 
   lazy val cassandraSession = cluster.connect()
-  def resetCluster() = EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
+
 }
 
 trait CassandraCluster {
   val cluster = CassandraInst.cluster
   val cassandraSession = CassandraInst.cassandraSession
-  def resetCluster() = CassandraInst.resetCluster()
+
 }

@@ -110,12 +110,21 @@ object newzlyPhantom extends Build {
         base = file("phantom-test"),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
+      testOptions in Global += Tests.Setup( loader => {
+        println("Setup Cassandra..................")
+        loader.loadClass("com.newzly.phantom.helper.TestHelper").getMethod("externalInitCluster").invoke(null)
+      }),
+      testOptions in Global += Tests.Cleanup( loader => {
+        println("Shut down Cassandra..................")
+        loader.loadClass("com.newzly.phantom.helper.TestHelper").getMethod("externalShutDownCluster").invoke(null)
+      })
+    )/*.settings(
       fork := true,
       testGrouping <<=  (definedTests in Test map groupByFirst),
       concurrentRestrictions in Test := Seq(
         Tags.limit(Tags.ForkedTestGroup, 1)
       )
-    ).settings(
+    )*/.settings(
         libraryDependencies ++= Seq(
             "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",

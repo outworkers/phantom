@@ -119,10 +119,10 @@ class InsertTest  extends BaseTest with ScalaFutures with Matchers with Tables{
 
     MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute().sync()
 
-    val future = MyTest.select.one
-    whenReady(future) {
-      res => res.isEmpty shouldEqual false
-    }
+    val res = MyTest.select.one.sync()
+
+    res.isEmpty shouldEqual false
+
   }
   it should "support serializing/de-serializing to List " in {
     case class TestList(val key: String, val l: List[String])
@@ -142,13 +142,9 @@ class InsertTest  extends BaseTest with ScalaFutures with Matchers with Tables{
       override val tableName = "listtest"
     }
     MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute().sync()
-    val recipeF: Future[Option[TestList]] = MyTest.select.one
-    whenReady(recipeF) {
-      res => {
-        res.isEmpty shouldEqual false
-        res.get should be(row)
-      }
-    }
 
+    val res = MyTest.select.one.sync()
+    res.isEmpty shouldEqual false
+    res.get should be(row)
   }
 }
