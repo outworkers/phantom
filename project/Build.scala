@@ -111,10 +111,10 @@ object newzlyPhantom extends Build {
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
       fork := true,
-      testGrouping <<=  (definedTests in Test map groupByFirst),
+      testGrouping <<=  (definedTests in Test map groupByFirst)/*,
       concurrentRestrictions in Test := Seq(
         Tags.limit(Tags.ForkedTestGroup, 1)
-      )
+      )*/
     ).settings(
         libraryDependencies ++= Seq(
             "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
