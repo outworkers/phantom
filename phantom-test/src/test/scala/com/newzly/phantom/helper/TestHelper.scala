@@ -20,12 +20,25 @@ object TestHelper extends Tables{
   }
 
   def initCluster() = {
+
+  }
+  def initialized = {
+    isInitialized.get()
+  }
+
+  def externalInitCluster() = {
+    externalShutDownCluster()
     initKeySpaces
     initTables
     isInitialized.set(true)
   }
-  def initialized = {
-    isInitialized.get()
+
+  def externalShutDownCluster() = {
+    try {
+      session.execute("DROP KEYSPACE testSpace;")
+    } catch {
+      case _ => println ("Exception caught")
+    }
   }
 
 }
