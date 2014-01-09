@@ -17,6 +17,6 @@ branches:
     - develop
 
 services:
- - cassandra
+
 
 script: "./scripts/run_tests.sh"

@@ -1,15 +1,15 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
-import scala.concurrent.Future
+
+import com.twitter.util.{Await, Future}
 import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
 import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.Session
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class DeleteTest extends BaseTest with ScalaFutures with Matchers with Tables{
+
+class DeleteTest extends BaseTest with Matchers with Tables{
   implicit val session: Session = cassandraSession
 
   "Delete" should "work fine, when deleting the whole row" in {
@@ -30,6 +30,7 @@ class DeleteTest extends BaseTest with ScalaFutures with Matchers with Tables{
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
     rcp.execute().sync()
+
     assert(Primitives.select.fetch.sync() contains row)
 
     val del = Primitives.delete.where(_.pkey eqs "myString")

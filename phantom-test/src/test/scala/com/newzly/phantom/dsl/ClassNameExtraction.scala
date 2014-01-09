@@ -1,18 +1,10 @@
 package com.newzly.phantom.dsl
 
-import java.net.InetAddress
-import java.util.{ Date, UUID }
 
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.reflect.ClassTag
 
 import org.scalatest.FlatSpec
 
 import com.datastax.driver.core.{ Session, Row }
-import com.datastax.driver.core.utils.UUIDs
-
 import com.newzly.phantom._
 import com.newzly.phantom.CassandraTable
 

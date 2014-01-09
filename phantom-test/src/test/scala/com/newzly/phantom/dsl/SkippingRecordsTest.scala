@@ -2,10 +2,6 @@
 package com.newzly.phantom.dsl
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import org.scalatest.concurrent.ScalaFutures
-
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.utils.UUIDs
 
@@ -14,7 +10,7 @@ import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.Tables
 
-class SkippingRecordsTest extends BaseTest with ScalaFutures with Tables {
+class SkippingRecordsTest extends BaseTest with Tables {
 
   implicit val session: Session = cassandraSession
 
@@ -57,7 +53,7 @@ class SkippingRecordsTest extends BaseTest with ScalaFutures with Tables {
 
     val result = Articles.select.skip(1).one
 
-    whenReady(result) {
+    result.onSuccess {
       row => assert(row.get === article2)
     }
   }
