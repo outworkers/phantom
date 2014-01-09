@@ -4,6 +4,18 @@ Asynchronous Scala DSL for Cassandra
 
 [![Build Status](https://magnum.travis-ci.com/newzly/phantom.png?token=tyRTmBk14WrDycpepg9c&branch=master)](https://magnum.travis-ci.com/newzly/phantom) [![Coverage Status](https://coveralls.io/repos/newzly/phantom/badge.png)](https://coveralls.io/r/newzly/phantom)
 
+Thrift IDL definitions
+======================
+```thrift
+namespace java com.newzly.phantom.sample.ExampleModel
+
+stuct Model {
+  1: required i32 id,
+  2: required string name,
+  3: required Map<string, string> props
+}
+```
+
 Data modeling with phantom
 ==========================
 
@@ -12,11 +24,10 @@ Data modeling with phantom
 
 import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
+import com.newzly.phantom.sample.ExampleModel
 import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
 import com.newzly.phantom.field.{ TimeUUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
-
-case class ExampleModel(val id: UUID, val name: String, val props: Map[String, String]);
 
 sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk[ExampleRecord] with LongOrderKey[ExampleRecord] {
 
