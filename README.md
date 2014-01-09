@@ -39,7 +39,7 @@ The syntax provided aims to replicate CQL 3 as much as possible.
 
 ```scala
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.twitter.util.Future
 
 object ExampleRecord extends ExampleRecord {
   override val tableName = "examplerecord"
