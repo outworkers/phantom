@@ -9,6 +9,7 @@ import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
 import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.Tables
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 
 class SkippingRecordsTest extends BaseTest with Tables {
 
@@ -53,7 +54,7 @@ class SkippingRecordsTest extends BaseTest with Tables {
 
     val result = Articles.select.skip(1).one
 
-    result.onSuccess {
+    result successful {
       row => assert(row.get === article2)
     }
   }

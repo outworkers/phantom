@@ -3,20 +3,17 @@ package com.newzly.phantom.dsl.crud
 import java.net.InetAddress
 import org.scalatest.{Assertions, Matchers}
 import org.scalatest.concurrent.AsyncAssertions
-
 import com.datastax.driver.core.Session
-
 import com.newzly.phantom.dsl.BaseTest
 import com.newzly.phantom.helper.Tables
-import com.newzly.phantom.helper.AsyncAssertionsHelper
-
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.twitter.util.Future
 
 
 
 class DeleteTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
   implicit val session: Session = cassandraSession
-  import AsyncAssertionsHelper._
+
 
   "Delete" should "work fine, when deleting the whole row" in {
 
