@@ -1,20 +1,26 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
+import org.scalatest.{Assertions, Matchers}
+import org.scalatest.concurrent.AsyncAssertions
 
-import com.twitter.util.{Await, Future}
-import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.Matchers
-import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.Session
 
+import com.newzly.phantom.dsl.BaseTest
+import com.newzly.phantom.helper.Tables
+import com.newzly.phantom.helper.AsyncAssertionsHelper
 
-class DeleteTest extends BaseTest with Matchers with Tables{
+import com.twitter.util.Future
+
+
+
+class DeleteTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
   implicit val session: Session = cassandraSession
+  import AsyncAssertionsHelper._
 
   "Delete" should "work fine, when deleting the whole row" in {
 
-    val row = Primitive("myString", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
+    val row = Primitive("myString", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002))
     val rcp = Primitives.insert
@@ -31,14 +37,21 @@ class DeleteTest extends BaseTest with Matchers with Tables{
       .value(_.bi, row.bi)
     rcp.execute().sync()
 
-    assert(Primitives.select.fetch.sync() contains row)
+    Primitives.select.fetch successful {
+      case res => {
+        Console.println(res)
+        assert(res contains row)
+      }
+    }
 
     val del = Primitives.delete.where(_.pkey eqs "myString")
     del.execute().sync()
 
     val recipeF2: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myString").one
-    val rowFromDb = recipeF2.sync()
-    assert(rowFromDb.isEmpty)
+
+    recipeF2 successful {
+      case res => assert(res.isEmpty)
+    }
   }
 
 }
