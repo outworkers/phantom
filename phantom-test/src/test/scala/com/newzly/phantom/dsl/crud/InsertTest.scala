@@ -10,6 +10,7 @@ import com.newzly.phantom._
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.ClassS
 import com.newzly.phantom.helper.Author
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import scala.Some
 
 class InsertTest  extends BaseTest with Matchers with Tables{
@@ -37,9 +38,14 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.bi, row.bi)
     rcp.execute().sync()
     val recipeF: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringInsert").one
-    assert(recipeF.sync().get === row)
 
-    assert(Primitives.select.fetch.sync() contains row)
+    recipeF successful {
+      case res => assert (res.get === row)
+    }
+
+    Primitives.select.fetch successful {
+      case res => assert(res contains row)
+    }
   }
 
   it should "work fine with List, Set, Map" in {
@@ -57,9 +63,14 @@ class InsertTest  extends BaseTest with Matchers with Tables{
 
     rcp.execute().sync()
     val recipeF: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w2").one
-    assert(recipeF.sync().get === row)
 
-    assert(TestTable.select.fetch.sync() contains row)
+    recipeF successful {
+      case res => assert (res.get === row)
+    }
+
+    TestTable.select.fetch successful {
+      case res => assert(res contains row)
+    }
   }
 
 
@@ -72,9 +83,14 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.classS, row.classS)
     rcp.execute().sync()
     val recipeF: Future[Option[MyTestRow]] = MyTest.select.one
-    assert(recipeF.sync().get === row)
 
-    assert(MyTest.select.fetch.sync() contains row)
+    recipeF successful {
+      case res => assert (res.get === row)
+    }
+
+    MyTest.select.fetch successful {
+      case res => assert(res contains row)
+    }
   }
 
   it should "work fine with Mix" in {
@@ -115,7 +131,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute().sync()
 
     val future = MyTest.select.one
-    future.onSuccess {
+    future successful  {
       res => res.isEmpty shouldEqual false
     }
   }
@@ -137,9 +153,10 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       override val tableName = "listtest"
     }
     MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute().sync()
+
     val recipeF: Future[Option[TestList]] = MyTest.select.one
-    recipeF.onSuccess {
-      res => {
+    recipeF successful  {
+      case res => {
         res.isEmpty shouldEqual false
         res.get should be(row)
       }

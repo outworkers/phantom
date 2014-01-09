@@ -7,6 +7,7 @@ import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
 import com.twitter.util.Future
 import com.newzly.phantom._
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 
 
 class UpdateTest extends BaseTest with Matchers with Tables{
@@ -33,9 +34,14 @@ class UpdateTest extends BaseTest with Matchers with Tables{
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
     rcp.execute().sync()
+
     val recipeF: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringUpdate").one
-    assert(recipeF.sync().get === row)
-    assert(Primitives.select.fetch.sync() contains (row))
+    recipeF successful {
+      case res => assert(res.get === row)
+    }
+    Primitives.select.fetch successful {
+      case res => assert(res.contains(row))
+    }
 
     val updatedRow = Primitive("myStringUpdate", 21.toLong, true, BigDecimal("11.11"), 31.toDouble, 41.toFloat,
       InetAddress.getByName("127.1.1.1"), 911, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
@@ -56,13 +62,15 @@ class UpdateTest extends BaseTest with Matchers with Tables{
       .modify(_.bi, updatedRow.bi).execute().sync()
 
     val recipeF2: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringUpdate").one
-    val rowFromDb = recipeF2.sync().get
-    assert( rowFromDb === updatedRow)
-    assert(Primitives.select.fetch.sync() contains (updatedRow))
+    recipeF2 successful {
+      case res => assert(res.get === updatedRow)
+    }
+    Primitives.select.fetch successful {
+      case res => assert(res.contains(updatedRow))
+    }
   }
 
   it should "work fine with List, Set, Map" in {
-
     val row = TestRow("w", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
       Map(3 -> "OO"))
 
@@ -73,12 +81,16 @@ class UpdateTest extends BaseTest with Matchers with Tables{
       .value(_.mapTextToText, row.mapTextToText)
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
-
     rcp.execute().sync()
 
     val recipeF: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w").one
-    assert(recipeF.sync().get === row)
-    assert(TestTable.select.fetch.sync() contains (row))
+    recipeF successful {
+      case res => assert(res.get === row)
+    }
+    TestTable.select.fetch successful {
+      case res => assert(res.contains(row))
+    }
+
     val updatedRow = row.copy(
       list = Seq ("new"),
       setText = Set("newSet"),
@@ -96,9 +108,11 @@ class UpdateTest extends BaseTest with Matchers with Tables{
       .modify(_.mapIntToText,updatedRow.mapIntToText).execute().sync()
 
     val recipeF2: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w").one
-    val rowFromDb = recipeF2.sync().get
-    assert( rowFromDb === updatedRow)
-    assert(TestTable.select.fetch.sync() contains (updatedRow))
-
+    recipeF2 successful {
+      case res => assert(res.get === updatedRow)
+    }
+    TestTable.select.fetch successful {
+      case res => assert(res.contains(updatedRow))
+    }
   }
 }

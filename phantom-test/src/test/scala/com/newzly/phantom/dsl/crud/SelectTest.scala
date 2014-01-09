@@ -6,6 +6,7 @@ import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.Session
 import java.net.InetAddress
 import com.twitter.util.Future
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 
 class SelectTest extends BaseTest with Matchers with Tables{
 
@@ -28,9 +29,13 @@ class SelectTest extends BaseTest with Matchers with Tables{
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
     rcp.execute().sync()
-    assert(Primitives.select.fetch.sync() contains (row))
 
-    val select1 = Primitives.select.where(_.pkey eqs "1").one.sync()
-    assert(select1.get === row)
+    Primitives.select.fetch successful {
+      case res => assert(res contains (row))
+    }
+
+    Primitives.select.where(_.pkey eqs "1").one successful {
+      case res => assert(res.get === row)
+    }
   }
 }
