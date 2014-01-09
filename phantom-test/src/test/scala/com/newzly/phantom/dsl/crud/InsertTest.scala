@@ -8,7 +8,6 @@ import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
 import com.newzly.phantom._
 import com.datastax.driver.core.utils.UUIDs
-import scala.Some
 import com.newzly.phantom.helper.ClassS
 import com.newzly.phantom.helper.Author
 import scala.Some
@@ -20,7 +19,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
-    val row = Primitive("myStringInsert", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
+    val row = Primitive("myStringInsert", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002
       ))
@@ -40,7 +39,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     val recipeF: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringInsert").one
     assert(recipeF.sync().get === row)
 
-    assert(Primitives.select.fetch.sync() contains (row))
+    assert(Primitives.select.fetch.sync() contains row)
   }
 
   it should "work fine with List, Set, Map" in {
@@ -60,7 +59,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     val recipeF: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w2").one
     assert(recipeF.sync().get === row)
 
-    assert(TestTable.select.fetch.sync() contains (row))
+    assert(TestTable.select.fetch.sync() contains row)
   }
 
 
@@ -75,7 +74,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     val recipeF: Future[Option[MyTestRow]] = MyTest.select.one
     assert(recipeF.sync().get === row)
 
-    assert(MyTest.select.fetch.sync() contains (row))
+    assert(MyTest.select.fetch.sync() contains row)
   }
 
   it should "work fine with Mix" in {
@@ -101,9 +100,7 @@ class InsertTest  extends BaseTest with Matchers with Tables{
   }
   it should "support serializing/de-serializing empty lists " in {
     class MyTest extends CassandraTable[MyTest, TestList] {
-      def fromRow(r: Row): TestList = {
-        TestList(key(r), list(r));
-      }
+      def fromRow(r: Row): TestList = TestList(key(r), list(r))
       object key extends PrimitiveColumn[String]
       object list extends ListColumn[String]
       val _key = key
@@ -123,11 +120,11 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     }
   }
   it should "support serializing/de-serializing to List " in {
-    case class TestList(val key: String, val l: List[String])
+    case class TestList(key: String, l: List[String])
 
     class MyTest extends CassandraTable[MyTest, TestList] {
       def fromRow(r: Row): TestList = {
-        TestList(key(r), testlist(r));
+        TestList(key(r), testlist(r))
       }
       object key extends PrimitiveColumn[String]
       object testlist extends ListColumn[String]
