@@ -15,7 +15,7 @@ object newzlyPhantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.3",
+       version := "0.0.4",
        scalaVersion := "2.10.0",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
@@ -44,9 +44,9 @@ object newzlyPhantom extends Build {
     val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
         publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
         credentials += Credentials(
-          "newzly Maven Repository",
+          "Repository Archiva Managed internal Repository",
           "maven.newzly.com",
-          "admin@newzly.com",
+          "admin",
           "newzlymaven2323!"
         ),
         publishMavenStyle := true,
