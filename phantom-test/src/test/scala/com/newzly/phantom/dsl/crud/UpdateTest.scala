@@ -1,16 +1,15 @@
 package com.newzly.phantom.dsl.crud
 
 import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
 import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
-import scala.concurrent.Future
+import com.twitter.util.Future
 import com.newzly.phantom._
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class UpdateTest extends BaseTest with ScalaFutures with Matchers with Tables{
+
+class UpdateTest extends BaseTest with Matchers with Tables{
 
   implicit val session: Session = cassandraSession
 

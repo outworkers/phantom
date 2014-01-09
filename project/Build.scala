@@ -90,12 +90,16 @@ object newzlyPhantom extends Build {
         phantomTest
     )
 
+    def groupByFirst(tests: Seq[TestDefinition]) =
+      tests map {t=> new Tests.Group(t.name, Seq(t)  , Tests.SubProcess(Seq.empty))}
+
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
         base = file("phantom-dsl"),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
         libraryDependencies ++= Seq(
+            "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
             "net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
             "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
             "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
@@ -107,7 +111,14 @@ object newzlyPhantom extends Build {
         base = file("phantom-test"),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
+      fork := true,
+      testGrouping <<=  (definedTests in Test map groupByFirst)/*,
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 1)
+      )*/
+    ).settings(
         libraryDependencies ++= Seq(
+            "com.twitter"              %% "util-collection"                   % "6.3.6"               % "provided, test",
             "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"

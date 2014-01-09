@@ -1,15 +1,14 @@
 package com.newzly.phantom.dsl.specialized
 
 import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
 import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.{Row, Session}
 import org.joda.time.DateTime
 import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class JodaDateTimeColumn extends BaseTest with ScalaFutures with Matchers with Tables{
+
+class JodaDateTimeColumn extends BaseTest with Matchers with Tables{
   implicit val session: Session = cassandraSession
   it should "test fake" in {
     case class JodaRow( pkey: String, int: Int,

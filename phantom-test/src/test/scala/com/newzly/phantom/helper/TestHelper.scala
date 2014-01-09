@@ -3,8 +3,6 @@ package com.newzly.phantom.helper
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
 import com.datastax.driver.core.{Session, Row}
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
 import java.util.concurrent.atomic.AtomicBoolean
 
 object TestHelper extends Tables{
