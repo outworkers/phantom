@@ -1,13 +1,11 @@
 package com.newzly.phantom.dsl.crud
 
 import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.concurrent.ScalaFutures
+import com.twitter.util.Future
 import org.scalatest.Matchers
 import com.newzly.phantom.helper._
 import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import com.newzly.phantom._
 import com.datastax.driver.core.utils.UUIDs
 import scala.Some
@@ -15,7 +13,7 @@ import com.newzly.phantom.helper.ClassS
 import com.newzly.phantom.helper.Author
 import scala.Some
 
-class InsertTest  extends BaseTest with ScalaFutures with Matchers with Tables{
+class InsertTest  extends BaseTest with Matchers with Tables{
 
   implicit val session: Session = cassandraSession
   "Insert" should "work fine for primitives columns" in {
@@ -120,7 +118,7 @@ class InsertTest  extends BaseTest with ScalaFutures with Matchers with Tables{
     MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute().sync()
 
     val future = MyTest.select.one
-    whenReady(future) {
+    future.onSuccess {
       res => res.isEmpty shouldEqual false
     }
   }
@@ -143,7 +141,7 @@ class InsertTest  extends BaseTest with ScalaFutures with Matchers with Tables{
     }
     MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute().sync()
     val recipeF: Future[Option[TestList]] = MyTest.select.one
-    whenReady(recipeF) {
+    recipeF.onSuccess {
       res => {
         res.isEmpty shouldEqual false
         res.get should be(row)

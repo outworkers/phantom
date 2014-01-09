@@ -1,14 +1,12 @@
 package com.newzly.phantom.dsl
 
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FlatSpec }
 import com.newzly.phantom.helper.{ CassandraCluster, TestHelper}
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import java.util.concurrent.atomic.{AtomicInteger, AtomicBoolean}
-
+import com.twitter.util.{Await, Future}
+import com.twitter.conversions.time._
+import com.twitter.util.{Await, Future}
 
 object Atomics {
   val clusterStarted =  new AtomicBoolean(false)
@@ -16,7 +14,11 @@ object Atomics {
 }
 class BaseTest extends FlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with CassandraCluster {
 
-
+  implicit class SyncFuture[T](future: Future[T]) {
+    def sync(): T = {
+      Await.result(future, 10.seconds)
+    }
+  }
   override def beforeAll() {
     if (!Atomics.clusterStarted.get()) {
       if (Atomics.clusterStarted.compareAndSet(false,true)) {
