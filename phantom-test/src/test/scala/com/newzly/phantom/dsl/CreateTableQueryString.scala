@@ -3,14 +3,14 @@ package com.newzly.phantom.dsl
 import org.scalatest.FlatSpec
 import com.newzly.phantom._
 import com.datastax.driver.core.Row
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
+import com.twitter.util.{Await, Future}
+import com.twitter.conversions.time._
 import java.util.{UUID, Date}
 
 class CreateTableQueryString extends FlatSpec {
   implicit class SyncFuture[T](future: Future[T]) {
     def sync(): T = {
-      Await.result(future, 10 seconds)
+      Await.result(future, 10.seconds)
     }
   }
   it should "get the right query in primitives table" in {

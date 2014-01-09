@@ -2,7 +2,7 @@ package com.newzly.phantom.query
 
 import com.newzly.phantom.{CassandraResultSetOperations, AbstractColumn, CassandraTable}
 import com.datastax.driver.core.{ResultSet, Session}
-import scala.concurrent.{Future, ExecutionContext}
+import com.twitter.util.{FuturePool, Future}
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends CassandraResultSetOperations{
   def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T,R] = {
@@ -22,8 +22,8 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends 
 
   val queryString = query
 
-  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =  {
-    session.executeAsync(query)
+  def execute()(implicit session: Session): Future[ResultSet] =  {
+    queryStringExecuteToFuture(query)
   }
 
 }

@@ -2,20 +2,18 @@ package com.newzly.phantom.dsl
 
 import com.newzly.phantom._
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.Matchers
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import com.datastax.driver.core.{ Session, Row }
-import scala.concurrent.{ Await, Future }
 import java.net.InetAddress
-import scala.concurrent.duration.Duration
+import com.twitter.util.{Await, Future}
 import java.util.{Date, UUID}
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.{ClassS, Tables}
 
 
-class IgnoredTests extends BaseTest with ScalaFutures with Matchers with Tables {
+
+class IgnoredTests extends BaseTest  with Matchers with Tables {
 
   implicit val session: Session = cassandraSession
 
