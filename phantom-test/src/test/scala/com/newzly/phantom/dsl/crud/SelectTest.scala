@@ -1,14 +1,15 @@
 package com.newzly.phantom.dsl.crud
 
 import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.Matchers
+import org.scalatest.{Assertions, Matchers}
 import com.newzly.phantom.helper.Tables
 import com.datastax.driver.core.Session
 import java.net.InetAddress
 import com.twitter.util.Future
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import org.scalatest.concurrent.AsyncAssertions
 
-class SelectTest extends BaseTest with Matchers with Tables{
+class SelectTest extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {
 
   implicit val session: Session = cassandraSession
 
@@ -28,14 +29,15 @@ class SelectTest extends BaseTest with Matchers with Tables{
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-    rcp.execute().sync()
-
-    Primitives.select.fetch successful {
-      case res => assert(res contains (row))
-    }
-
-    Primitives.select.where(_.pkey eqs "1").one successful {
-      case res => assert(res.get === row)
+    rcp.execute() map {
+      _ => {
+        Primitives.select.fetch successful {
+          case res => assert(res contains (row))
+        }
+        Primitives.select.where(_.pkey eqs "1").one successful {
+          case res => assert(res.get === row)
+        }
+      }
     }
   }
 }

@@ -10,8 +10,10 @@ import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.Tables
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import org.scalatest.Assertions
+import org.scalatest.concurrent.AsyncAssertions
 
-class SkippingRecordsTest extends BaseTest with Tables {
+class SkippingRecordsTest extends BaseTest with Tables  with Assertions with AsyncAssertions  {
 
   implicit val session: Session = cassandraSession
 
@@ -35,24 +37,23 @@ class SkippingRecordsTest extends BaseTest with Tables {
     val article2 = Article("test2", UUIDs.timeBased(), 2);
     val article3 = Article("test3", UUIDs.timeBased(), 3);
 
-    Articles.insert
-      .value(_.name, article1.name).value(_.id, article1.id)
-      .value(_.order_id, article1.order_id)
-      .execute().sync()
-
-    Articles.insert
-      .value(_.name, article2.name)
-      .value(_.id, article2.id)
-      .value(_.order_id, article2.order_id)
-      .execute().sync()
-
-    Articles.insert
-      .value(_.name, article3.name)
-      .value(_.id, article3.id)
-      .value(_.order_id, article3.order_id)
-      .execute().sync()
-
-    val result = Articles.select.skip(1).one
+    val result = for {
+      i1 <- Articles.insert
+        .value(_.name, article1.name).value(_.id, article1.id)
+        .value(_.order_id, article1.order_id)
+        .execute()
+      i2 <- Articles.insert
+        .value(_.name, article2.name)
+        .value(_.id, article2.id)
+        .value(_.order_id, article2.order_id)
+        .execute()
+      i3 <- Articles.insert
+        .value(_.name, article3.name)
+        .value(_.id, article3.id)
+        .value(_.order_id, article3.order_id)
+        .execute()
+      res <- Articles.select.skip(1).one
+    } yield (res)
 
     result successful {
       row => assert(row.get === article2)

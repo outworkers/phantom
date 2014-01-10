@@ -2,7 +2,7 @@ package com.newzly.phantom.dsl.crud
 
 import com.newzly.phantom.dsl.BaseTest
 import com.twitter.util.Future
-import org.scalatest.Matchers
+import org.scalatest.{Assertions, Matchers}
 import com.newzly.phantom.helper._
 import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
@@ -12,10 +12,12 @@ import com.newzly.phantom.helper.ClassS
 import com.newzly.phantom.helper.Author
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import scala.Some
+import org.scalatest.concurrent.AsyncAssertions
 
-class InsertTest  extends BaseTest with Matchers with Tables{
+class InsertTest  extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
 
   implicit val session: Session = cassandraSession
+
   "Insert" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
@@ -36,15 +38,17 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-    rcp.execute().sync()
-    val recipeF: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringInsert").one
+    rcp.execute() map {
+      _ => {
+        val recipeF: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myStringInsert").one
+        recipeF successful {
+          case res => assert (res.get === row)
+        }
 
-    recipeF successful {
-      case res => assert (res.get === row)
-    }
-
-    Primitives.select.fetch successful {
-      case res => assert(res contains row)
+        Primitives.select.fetch successful {
+          case res => assert(res contains row)
+        }
+      }
     }
   }
 
@@ -61,18 +65,18 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
 
-    rcp.execute().sync()
-    val recipeF: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w2").one
-
-    recipeF successful {
-      case res => assert (res.get === row)
-    }
-
-    TestTable.select.fetch successful {
-      case res => assert(res contains row)
+    rcp.execute() map {
+      _ => {
+        val recipeF: Future[Option[TestRow]] = TestTable.select.where(_.key eqs "w2").one
+        recipeF successful {
+          case res => assert (res.get === row)
+        }
+        TestTable.select.fetch successful {
+          case res => assert(res contains row)
+        }
+      }
     }
   }
-
 
   it should "work fine with custom types" in {
     val row = MyTestRow("someKey", Some(2), ClassS("lol"))
@@ -81,15 +85,16 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.key, row.key)
       .valueOrNull(_.optionA, row.optionA)
       .value(_.classS, row.classS)
-    rcp.execute().sync()
-    val recipeF: Future[Option[MyTestRow]] = MyTest.select.one
-
-    recipeF successful {
-      case res => assert (res.get === row)
-    }
-
-    MyTest.select.fetch successful {
-      case res => assert(res contains row)
+    rcp.execute() map {
+      _ =>  {
+        val recipeF: Future[Option[MyTestRow]] = MyTest.select.one
+        recipeF successful {
+          case res => assert (res.get === row)
+        }
+        MyTest.select.fetch successful {
+          case res => assert(res contains row)
+        }
+      }
     }
   }
 
@@ -108,11 +113,14 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       .value(_.props, r.props)
       .value(_.uid, UUIDs.timeBased())
 
-    rcp.execute().sync()
-
-    val recipeF: Future[Option[Recipe]] = Recipes.select.one
-    recipeF.sync()
-
+    rcp.execute() map {
+      _ => {
+        val recipeF: Future[Option[Recipe]] = Recipes.select.one
+        recipeF successful {
+          case res =>  Console.println(res)
+        }
+      }
+    }
   }
   it should "support serializing/de-serializing empty lists " in {
     class MyTest extends CassandraTable[MyTest, TestList] {
@@ -128,11 +136,13 @@ class InsertTest  extends BaseTest with Matchers with Tables{
       override val tableName = "emptylisttest"
     }
 
-    MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute().sync()
-
-    val future = MyTest.select.one
-    future successful  {
-      res => res.isEmpty shouldEqual false
+    MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute() map {
+      _ => {
+        val future = MyTest.select.one
+        future successful  {
+          res => res.isEmpty shouldEqual false
+        }
+      }
     }
   }
   it should "support serializing/de-serializing to List " in {
@@ -152,15 +162,16 @@ class InsertTest  extends BaseTest with Matchers with Tables{
     object MyTest extends MyTest {
       override val tableName = "listtest"
     }
-    MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute().sync()
-
-    val recipeF: Future[Option[TestList]] = MyTest.select.one
-    recipeF successful  {
-      case res => {
-        res.isEmpty shouldEqual false
-        res.get should be(row)
+    MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute() map {
+      _ => {
+        val recipeF: Future[Option[TestList]] = MyTest.select.one
+        recipeF successful  {
+          case res => {
+            res.isEmpty shouldEqual false
+            res.get should be(row)
+          }
+        }
       }
     }
-
   }
 }

@@ -9,12 +9,8 @@ import com.newzly.phantom.helper.Tables
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.twitter.util.Future
 
-
-
 class DeleteTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
   implicit val session: Session = cassandraSession
-
-
   "Delete" should "work fine, when deleting the whole row" in {
 
     val row = Primitive("myString", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
@@ -32,23 +28,26 @@ class DeleteTest extends BaseTest with Matchers with Tables with Assertions with
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-    rcp.execute().sync()
 
-    Primitives.select.fetch successful {
-      case res => {
-        Console.println(res)
-        assert(res contains row)
+    rcp.execute() map {
+      _ => {
+        Primitives.select.fetch successful {
+          case res => {
+            assert(res contains row)
+          }
+        }
+
+        val del = Primitives.delete.where(_.pkey eqs "myString")
+        del.execute() map {
+          _ => {
+            val recipeF2: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myString").one
+
+            recipeF2 successful {
+              case res => assert(res.isEmpty)
+            }
+          }
+        }
       }
     }
-
-    val del = Primitives.delete.where(_.pkey eqs "myString")
-    del.execute().sync()
-
-    val recipeF2: Future[Option[Primitive]] = Primitives.select.where(_.pkey eqs "myString").one
-
-    recipeF2 successful {
-      case res => assert(res.isEmpty)
-    }
   }
-
 }
