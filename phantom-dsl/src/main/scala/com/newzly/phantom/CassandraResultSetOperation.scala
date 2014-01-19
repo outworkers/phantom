@@ -56,7 +56,7 @@ trait CassandraResultSetOperations {
     future.addListener(new Runnable {
       override def run(): Unit = {
         try {
-          promise become Future.value(future.get)
+          promise become Future.value(future.getUninterruptibly)
         } catch {
           case NonFatal(e) => promise raise e
         }
@@ -71,9 +71,9 @@ trait CassandraResultSetOperations {
     val future = session.executeAsync(s)
     future.addListener(new Runnable {
       def run(): Unit = try {
-        promise become Future.value(future.get)
+        promise become Future.value(future.getUninterruptibly)
       } catch {
-        case NonFatal(e) => promise.raise(e)
+        case NonFatal(e) => promise raise e
       }
     }, Manager.executor)
 

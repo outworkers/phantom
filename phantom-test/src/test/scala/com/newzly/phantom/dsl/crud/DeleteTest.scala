@@ -35,7 +35,6 @@ class DeleteTest extends BaseTest with Matchers with Tables with Assertions with
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-    rcp.execute().sync()
 
     Primitives.select.fetch successful {
       case res => {
