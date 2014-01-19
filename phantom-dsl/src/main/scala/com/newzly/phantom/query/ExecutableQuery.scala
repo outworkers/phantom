@@ -20,7 +20,7 @@ package phantom
 package query
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Future, Await, ExecutionContext }
+import com.twitter.util.{FuturePool, Future}
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable };
@@ -29,8 +29,8 @@ trait ExecutableStatement extends CassandraResultSetOperations {
 
   def qb: Statement
 
-  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =  {
-    session.executeAsync(qb)
+  def execute()(implicit session: Session): Future[ResultSet] =  {
+    statementExecuteToFuture(qb)
   }
 }
 
@@ -40,18 +40,18 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def table: CassandraTable[T, _]
   def fromRow(r: Row): R
 
-  def execute()(implicit session: Session, ec: ExecutionContext): Future[ResultSet] =
-    session.executeAsync(qb)
+  def execute()(implicit session: Session): Future[ResultSet] =
+    statementExecuteToFuture(qb)
 
   def fetchSync(implicit session: Session): Seq[R] = {
     session.execute(qb).all().asScala.toSeq.map(fromRow)
   }
 
-  def fetch(implicit session: Session, ec: ExecutionContext): Future[Seq[R]] = {
-    session.executeAsync(qb).map(_.all().asScala.toSeq.map(fromRow))
+  def fetch(implicit session: Session): Future[Seq[R]] = {
+    statementExecuteToFuture(qb).map(_.all().asScala.toSeq.map(fromRow))
   }
 
-  def one(implicit session: Session, ec: ExecutionContext): Future[Option[R]] = {
-    session.executeAsync(qb).map(r => Option(r.one()).map(fromRow))
+  def one(implicit session: Session): Future[Option[R]] = {
+    statementExecuteToFuture(qb).map(r => Option(r.one()).map(fromRow))
   }
 }

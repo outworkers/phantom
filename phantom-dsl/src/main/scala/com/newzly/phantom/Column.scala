@@ -17,18 +17,19 @@ package com
 package newzly
 
 package phantom
-
 import java.util.{ Map => JMap, UUID }
 
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
 
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause}
+import com.datastax.driver.core.querybuilder.{ QueryBuilder, Clause }
 import com.newzly.phantom.query.QueryCondition
 
-import net.liftweb.json.{ DefaultFormats, Extraction, JsonParser }
+import net.liftweb.json._
 import net.liftweb.json.Serialization.write
+import scala.Some
+import com.newzly.phantom.query.QueryCondition
 
 trait Helpers {
   private[phantom] implicit class RichSeq[T](val l: Seq[T]) {
@@ -199,7 +200,10 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map
 class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
 
   val cassandraType = "list<text>"
-  def toCType(values: Seq[RR]): AnyRef = values.map(Extraction.decompose(_)(DefaultFormats))(breakOut).asJava
+  def toCType(values: Seq[RR]): AnyRef = {
+    val json = JsonDSL.seq2jvalue(values.map(Extraction.decompose(_)(DefaultFormats))(breakOut))
+    Printer.compact(JsonAST.render(json))
+  }
 
   override def apply(r: Row): Seq[RR] = {
     optional(r).getOrElse(Seq.empty[RR])

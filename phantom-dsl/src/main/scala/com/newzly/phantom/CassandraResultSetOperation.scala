@@ -15,50 +15,69 @@
  */
 package com
 package newzly
-
 package phantom
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor }
+import com.datastax.driver.core.{ ResultSet, Session, Statement }
+import com.google.common.util.concurrent.{
+  ListeningExecutorService,
+  MoreExecutors,
+  ThreadFactoryBuilder
+}
+import com.twitter.util.{ Future, NonFatal, Promise }
 
-import scala.concurrent.{ ExecutionContext, Future, CanAwait }
-import scala.util.{ Try, Success }
-import scala.concurrent.duration._
+object Manager {
+  private[this] final val DEFAULT_THREAD_KEEP_ALIVE: Int = 30
 
-import com.datastax.driver.core.{ ResultSetFuture, ResultSet }
-
-trait CassandraResultSetOperations {
-  private[this] case class ExecutionContextExecutor(executonContext: ExecutionContext) extends java.util.concurrent.Executor {
-    def execute(command: Runnable): Unit = { executonContext.execute(command) }
+  private[this] def makeExecutor(threads: Int, name: String) : ListeningExecutorService = {
+    val executor: ThreadPoolExecutor = new ThreadPoolExecutor(
+      threads,
+      threads,
+      DEFAULT_THREAD_KEEP_ALIVE,
+      TimeUnit.SECONDS,
+      new LinkedBlockingQueue[Runnable],
+      new ThreadFactoryBuilder().setNameFormat(name).build()
+    )
+    executor.allowCoreThreadTimeOut(true)
+    MoreExecutors.listeningDecorator(executor)
   }
 
-  protected[this] implicit class RichResultSetFuture(resultSetFuture: ResultSetFuture) extends Future[ResultSet] {
-    @throws(classOf[InterruptedException])
-    @throws(classOf[scala.concurrent.TimeoutException])
-    def ready(atMost: Duration)(implicit permit: CanAwait): this.type = {
-      resultSetFuture.get(atMost.toMillis, TimeUnit.MILLISECONDS)
-      this
-    }
+  lazy val executor = makeExecutor(
+    Runtime.getRuntime.availableProcessors,
+    "Cassandra Java Driver worker-%d"
+  )
+}
 
-    @throws(classOf[Exception])
-    def result(atMost: Duration)(implicit permit: CanAwait): ResultSet = {
-      resultSetFuture.get(atMost.toMillis, TimeUnit.MILLISECONDS)
-    }
+trait CassandraResultSetOperations {
+  def statementExecuteToFuture(s: Statement)(implicit session: Session): Future[ResultSet] = {
+    val promise = Promise[ResultSet]()
 
-    def onComplete[U](func: (Try[ResultSet]) => U)(implicit executionContext: ExecutionContext): Unit = {
-      if (resultSetFuture.isDone) {
-        func(Success(resultSetFuture.getUninterruptibly))
-      } else {
-        resultSetFuture.addListener(new Runnable {
-          def run() {
-            func(Try(resultSetFuture.get()))
-          }
-        }, ExecutionContextExecutor(executionContext))
+    val future = session.executeAsync(s)
+    future.addListener(new Runnable {
+      override def run(): Unit = {
+        try {
+          promise become Future.value(future.getUninterruptibly)
+        } catch {
+          case NonFatal(e) => promise raise e
+        }
       }
-    }
+    }, Manager.executor)
+    promise
+  }
 
-    def isCompleted: Boolean = resultSetFuture.isDone
+  def queryStringExecuteToFuture(s: String)(implicit session: Session): Future[ResultSet] = {
+    val promise = Promise[ResultSet]()
 
-    def value: Option[Try[ResultSet]] = if (resultSetFuture.isDone) Some(Try(resultSetFuture.get())) else None
+    val future = session.executeAsync(s)
+    future.addListener(new Runnable {
+      def run(): Unit = try {
+        promise become Future.value(future.getUninterruptibly)
+      } catch {
+        case NonFatal(e) => promise raise e
+      }
+    }, Manager.executor)
+
+    promise
   }
 }
 
