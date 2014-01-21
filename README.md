@@ -2,7 +2,7 @@ phantom
 ==============
 Asynchronous Scala DSL for Cassandra
 
-[![Build Status](https://magnum.travis-ci.com/newzly/phantom.png?token=tyRTmBk14WrDycpepg9c&branch=master)](https://magnum.travis-ci.com/newzly/phantom) [![Coverage Status](https://coveralls.io/repos/newzly/phantom/badge.png)](https://coveralls.io/r/newzly/phantom)
+[![Build Status](https://magnum.travis-ci.com/newzly/phantom.png?token=tyRTmBk14WrDycpepg9c&branch=master)](https://magnum.travis-ci.com/newzly/phantom)
 
 Thrift IDL definitions
 ======================

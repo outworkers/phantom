@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
-package phantom
+package com.newzly.phantom
 
 import java.util.concurrent.{ LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor }
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
@@ -28,6 +26,8 @@ import com.twitter.util.{ Future, NonFatal, Promise }
 
 object Manager {
   private[this] final val DEFAULT_THREAD_KEEP_ALIVE: Int = 30
+
+  private[this] lazy val processors = Runtime.getRuntime.availableProcessors()
 
   private[this] def makeExecutor(threads: Int, name: String) : ListeningExecutorService = {
     val executor: ThreadPoolExecutor = new ThreadPoolExecutor(
@@ -43,7 +43,7 @@ object Manager {
   }
 
   lazy val executor = makeExecutor(
-    Runtime.getRuntime.availableProcessors,
+    processors,
     "Cassandra Java Driver worker-%d"
   )
 }
