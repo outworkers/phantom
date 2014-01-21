@@ -16,7 +16,7 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends 
     val pk = table._key.name
     //TODO support multiple keys
 
-    val queryPrimaryKey  = s", PRIMARY KEY (${pk})"
+    val queryPrimaryKey  = s", PRIMARY KEY ($pk)"
     new CreateQuery(table,queryInit+queryColumns.drop(1)+queryPrimaryKey+");")
   }
 
