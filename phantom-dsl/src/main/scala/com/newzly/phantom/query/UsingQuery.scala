@@ -19,12 +19,12 @@ import com.datastax.driver.core.querybuilder.{QueryBuilder, Insert, Using}
 import com.newzly.phantom.AbstractColumn
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.{ AbstractColumn, CassandraTable }
+  /*
 
 class UsingQuery[T <: CassandraTable[T, R], R](table: T, val qb: QueryBuilder) extends ExecutableStatement {
 
-  /*
   def ttl[RR](c: T => AbstractColumn[RR], value: RR)(expiry: Int): UsingQuery = {
     val col = c(table)
     new UsingQuery[T, R](table, qb.ttl(expiry))
-  }*/
 }
+  }*/
