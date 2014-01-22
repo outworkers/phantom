@@ -13,6 +13,7 @@ case class Author(firstName: String, lastName: String, bio: Option[String])
 case class TestList(key: String, l: List[String])
 
 trait Tables {
+
   private[this] implicit class SyncFuture[T](future: Future[T]) {
     def sync(): T = {
       Await.result(future, 10.seconds)
