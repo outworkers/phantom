@@ -1,15 +1,21 @@
 package com.newzly.phantom.helper
 
 import org.scalatest.Assertions
-import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest._
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions, ScalaFutures}
 import com.twitter.util.Future
-import org.scalatest.time.{Millis, Span}
+import org.scalatest.time.{ Millis, Seconds, Span }
 
-object AsyncAssertionsHelper {
+import org.scalatest.time.SpanSugar._
+
+object AsyncAssertionsHelper extends ScalaFutures {
+
+  implicit val s: PatienceConfiguration.Timeout = timeout(1 second)
 
   implicit class Failing[A](val f: Future[A]) extends Assertions with AsyncAssertions {
 
-    def failing[T  <: Throwable : Manifest] = {
+
+    def failing[T  <: Throwable](implicit mf: Manifest[T], timeout: PatienceConfiguration.Timeout) = {
       val w = new Waiter
 
       f onSuccess  {
@@ -20,11 +26,11 @@ object AsyncAssertionsHelper {
         e => w(throw e); w.dismiss()
       }
       intercept[T] {
-        w.await
+        w.await(timeout, dismissals(2))
       }
     }
 
-    def successful(x: A => Unit) = {
+    def successful(x: A => Unit)(implicit timeout: PatienceConfiguration.Timeout) = {
       val w = new Waiter
 
       f onSuccess {
@@ -35,7 +41,7 @@ object AsyncAssertionsHelper {
         e => w(throw e); w.dismiss()
       }
 
-      w.await()
+      w.await(timeout, dismissals(2))
     }
   }
 
