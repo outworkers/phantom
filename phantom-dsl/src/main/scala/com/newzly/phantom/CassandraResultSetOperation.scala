@@ -25,23 +25,13 @@ import com.google.common.util.concurrent.{
   ThreadFactoryBuilder
 }
 import com.twitter.util.{ Future, NonFatal, Promise }
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Manager {
-  private[this] final val DEFAULT_THREAD_KEEP_ALIVE: Int = 30
-
   private[this] lazy val processors = Runtime.getRuntime.availableProcessors()
 
   private[this] def makeExecutor(threads: Int, name: String) : ListeningExecutorService = {
-    val executor: ThreadPoolExecutor = new ThreadPoolExecutor(
-      threads,
-      threads,
-      DEFAULT_THREAD_KEEP_ALIVE,
-      TimeUnit.SECONDS,
-      new LinkedBlockingQueue[Runnable],
-      new ThreadFactoryBuilder().setNameFormat(name).build()
-    )
-    executor.allowCoreThreadTimeOut(true)
-    MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(processors))
+    MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
   }
 
   lazy val executor = makeExecutor(

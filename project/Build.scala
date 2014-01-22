@@ -15,7 +15,7 @@ object newzlyPhantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.5",
+       version := "0.0.7",
        scalaVersion := "2.10.0",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
