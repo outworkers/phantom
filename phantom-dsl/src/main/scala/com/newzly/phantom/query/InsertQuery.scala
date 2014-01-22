@@ -19,7 +19,7 @@ package newzly
 package phantom
 package query
 
-import com.datastax.driver.core.querybuilder.Insert
+import com.datastax.driver.core.querybuilder.{Using, QueryBuilder, Insert}
 import com.newzly.phantom.{ AbstractColumn, CassandraTable }
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
@@ -32,6 +32,18 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
   def valueOrNull[RR](c: T => AbstractColumn[RR], value: Option[RR]): InsertQuery[T, R] = {
     val col = c(table)
     new InsertQuery[T, R](table, qb.value(col.name, value.map(col.toCType).orNull))
+  }
+
+  /**
+   * Sets a timestamp expiry for the inserted column.
+   * This value is set in seconds.
+   * @param expiry The expiry time.
+   * @return
+   */
+  final def ttl(expiry: Int): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.ttl(expiry))
+    Console.println(this.toString)
+    this
   }
 
   override def toString: String = {

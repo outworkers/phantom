@@ -22,7 +22,7 @@ import scala.reflect.ClassTag
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
-import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery}
+import com.newzly.phantom.query._
 
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
@@ -74,7 +74,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
-  // def ttl(expiry: Int) = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.ttl(expiry))
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
