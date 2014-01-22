@@ -1,6 +1,7 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
+import scala.collection.breakOut
 import org.scalatest.{ Assertions, Matchers, Inside }
 import org.scalatest.concurrent.AsyncAssertions
 
@@ -18,6 +19,9 @@ class TTLTest extends BaseTest with Matchers with Tables with Assertions with As
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002
       ))
+
+    val l = List.empty[String]
+    l.view.map(_ + "2")(breakOut)
 
     val rcp = Primitives.insert
       .value(_.pkey, row.pkey)
