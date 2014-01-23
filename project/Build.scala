@@ -118,7 +118,7 @@ object newzlyPhantom extends Build {
     ).settings(
         libraryDependencies ++= Seq(
             "com.twitter"              %% "util-collection"                   % "6.3.6"               % "provided, test",
-            "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
+            "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             exclude("org.apache.cassandra","cassandra-all"),
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
         )
