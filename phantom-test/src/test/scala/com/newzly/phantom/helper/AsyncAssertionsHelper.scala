@@ -7,6 +7,7 @@ import com.twitter.util.Future
 import org.scalatest.time.{ Millis, Seconds, Span }
 
 import org.scalatest.time.SpanSugar._
+import scala.collection.concurrent.TrieMap
 
 object AsyncAssertionsHelper extends ScalaFutures {
 

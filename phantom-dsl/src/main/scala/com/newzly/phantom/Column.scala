@@ -13,23 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
+package com.newzly.phantom
 
-package phantom
 import java.util.{ Map => JMap, UUID }
+
 
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
-
+import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ QueryBuilder, Clause }
+import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.query.QueryCondition
 
-import net.liftweb.json._
-import net.liftweb.json.Serialization.write
-import scala.Some
-import com.newzly.phantom.query.QueryCondition
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import java.lang.reflect.ParameterizedType
+import com.twitter.util.Try
+
+object JsonSerializer {
+  val mapper = new ObjectMapper() with ScalaObjectMapper
+  mapper.registerModule(DefaultScalaModule)
+
+
+  def deserializeJson[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T])
+  def serializeJson(value: Any): String = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)
+
+  private[this] def typeReference[T: Manifest] = new TypeReference[T] {}
+}
 
 trait Helpers {
   private[phantom] implicit class RichSeq[T](val l: Seq[T]) {
@@ -92,17 +104,6 @@ class PrimitiveColumn[@specialized(Int, Double, Float, Long) RR: CassandraPrimit
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-class JsonTypeColumn[RR: Manifest] extends Column[RR] {
-
-  val mf = implicitly[Manifest[RR]]
-  implicit val formats = DefaultFormats
-  val cassandraType = "text"
-  def toCType(v: RR): AnyRef = write(v.asInstanceOf[AnyRef])
-
-  def optional(r: Row): Option[RR] = {
-    Option(r.getString(name)).flatMap(e => JsonParser.parse(e).extractOpt[RR](DefaultFormats, mf))
-  }
-}
 
 class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumType#Value] {
 
@@ -197,12 +198,37 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map
   }
 }
 
+
+class JsonTypeColumn[RR: Manifest] extends Column[RR] {
+
+  val logger = Logger.getLogger("JsonTypeColumn")
+  val mf = implicitly[Manifest[RR]]
+  val cassandraType = "text"
+
+  def toCType(v: RR): AnyRef = {
+    val s = JsonSerializer.serializeJson(v)
+    logger.warn(s)
+    s
+  }
+
+  def optional(r: Row): Option[RR] = {
+    Try {
+      Some(JsonSerializer.deserializeJson[RR](r.getString(name)))
+    } getOrElse None
+  }
+}
+
 class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
 
   val cassandraType = "list<text>"
   def toCType(values: Seq[RR]): AnyRef = {
-    val json = JsonDSL.seq2jvalue(values.map(Extraction.decompose(_)(DefaultFormats))(breakOut))
-    Printer.compact(JsonAST.render(json))
+    val json = values.map {
+      item => {
+        JsonSerializer.serializeJson(item)
+      }
+    }(breakOut)
+    Console.println(json)
+    json.toSeq.asJava
   }
 
   override def apply(r: Row): Seq[RR] = {
@@ -210,10 +236,9 @@ class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
-    r.getList(name, classOf[String]).asScala.flatMap(
-      JsonParser.parse(_).extractOpt[RR](
-        DefaultFormats,
-        implicitly[Manifest[RR]]
-      ))(breakOut).toSeq.toOption
+    val items = r.getList(name, classOf[String]).asScala.map {
+      item => JsonSerializer.deserializeJson[RR](item)
+    }
+    items.toSeq.toOption
   }
 }

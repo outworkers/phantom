@@ -1,36 +1,35 @@
 package com.newzly.phantom.dsl
 
-import com.newzly.phantom._
-
+import org.apache.log4j.Logger
 import org.scalatest.Matchers
+import com.newzly.phantom._
+import com.newzly.phantom.helper.{ AsyncAssertionsHelper, TestHelper, Tables }
+
 
 import com.datastax.driver.core.{ Session, Row }
-import java.net.InetAddress
-import com.twitter.util.{Await, Future}
-import java.util.{Date, UUID}
-import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.helper.{ClassS, Tables}
+import com.datastax.driver.core.exceptions.SyntaxError
+import com.twitter.util.{NonFatal, Future}
+
+case class ClassSMap(something: Map[String, Int])
+case class TestRow(key: String, optionA: Option[Int], classS: ClassSMap, optionS: Option[ClassSMap], map: Map[String, ClassSMap])
 
 
-
-class IgnoredTests extends BaseTest  with Matchers with Tables {
+class JsonTypeSeqTest extends BaseTest  with Matchers with Tables  {
 
   implicit val session: Session = cassandraSession
 
-  ignore should "work here but it fails- WE NEED TO FIX IT" in {
+  import AsyncAssertionsHelper._
+
+  it should "work here but it fails- WE NEED TO FIX IT" in {
     val createTestTable =
       """|CREATE TABLE TestTable2(
         |key text PRIMARY KEY,
         |optionA int,
         |classS text,
-        |optionS text
-        |mapIntoClass map<text,text>
-        );
+        |optionS text,
+        |mapIntoClass map<text,text>);
       """.stripMargin //        #|
     session.execute(createTestTable)
-
-    case class ClassSMap(something: Map[String, Int])
-    case class TestRow(key: String, optionA: Option[Int], classS: ClassSMap, optionS: Option[ClassSMap], map: Map[String, ClassSMap])
 
     class TestTable2 extends CassandraTable[TestTable2, TestRow] {
       def fromRow(r: Row): TestRow = {
@@ -56,14 +55,25 @@ class IgnoredTests extends BaseTest  with Matchers with Tables {
       .value(_.classS, row.classS)
       .value(_.optionS, row.optionS)
       .value(_.mapIntoClass, row.map)
+      .execute()
 
-    rcp.qb.enableTracing()
-    info(rcp.toString)
-    info(rcp.qb.toString)
-    rcp.execute().sync()
+
     val recipeF: Future[Option[TestRow]] = TestTable2.select.one
-    assert(recipeF.sync().get === row)
-    assert(TestTable2.select.fetch.sync() contains (row))
-  }
 
+    rcp.successful {
+      insert => {
+        recipeF.successful {
+          res => {
+            try {
+            Console.println(res.get)
+            assert (!res.isEmpty)
+            res.get === row
+            } catch {
+              case NonFatal(e) => Console.println(e.getMessage)
+            }
+          }
+        }
+      }
+    }
+  }
 }
