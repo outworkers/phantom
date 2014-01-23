@@ -10,11 +10,12 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.ClassS
 import com.newzly.phantom.helper.Author
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import scala.Some
-import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.time.SpanSugar._
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 
 class InsertTest  extends BaseTest with Matchers  with Tables with Assertions with AsyncAssertions {
   val keySpace: String = "InsertTestKeySpace"
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   "Insert" should "work fine for primitives columns" in {
     object Primitives extends Primitives {
@@ -151,7 +152,7 @@ class InsertTest  extends BaseTest with Matchers  with Tables with Assertions wi
       override def tableName = "Recipes"
     }
 
-    implicit val formats = net.liftweb.json.DefaultFormats
+    //implicit val formats = net.liftweb.json.DefaultFormats
     val author = Author("Tony", "Clark", Some("great chef..."))
     val r = Recipe("recipe_url", Some("desc"), Seq("ingr1", "ingr2"), Some(author), Some(4), new java.util.Date, Map("a" -> "b", "c" -> "d"))
 
