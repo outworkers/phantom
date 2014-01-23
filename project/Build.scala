@@ -1,7 +1,10 @@
 import sbt._
 import Keys._
+import sbtassembly.Plugin.AssemblyKeys._
+import scala.Some
 import Tests._
 import com.twitter.sbt._
+import sbtassembly.Plugin._
 import ScctPlugin.instrumentSettings
 import ScctPlugin.mergeReportSettings
 import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
@@ -80,7 +83,35 @@ object newzlyPhantom extends Build {
 
     )
 
-    lazy val phantom = Project(
+  lazy val phantomUtil = Project(
+    id = "phantom-util",
+    base = file("phantom-test"),
+    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ instrumentSettings
+  ).settings(
+    name := "phantom-util",
+    jarName in assembly := "cassandra.jar",
+    outputPath in assembly := file("cassandra.jar"),
+    test in assembly := {},
+    fork in run := true,
+    assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
+    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+      cp filter { x => println(":::: "+x)
+        x.data.getName.indexOf("specs2_2.") >= 0 ||
+        x.data.getName.indexOf("scalap-2.") >= 0 ||
+        x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
+        x.data.getName.indexOf("scala-json_") >= 0 ||
+        x.data.getName.indexOf("netty-3.2.9") >= 0 ||
+        x.data.getName.indexOf("com.twitter") >= 0
+      }
+    }
+  ).settings(
+    libraryDependencies ++= Seq(
+      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
+    )
+  )
+
+
+  lazy val phantom = Project(
         id = "phantom",
         base = file("."),
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ mergeReportSettings
@@ -88,9 +119,6 @@ object newzlyPhantom extends Build {
         phantomDsl,
         phantomTest
     )
-
-    def groupByFirst(tests: Seq[TestDefinition]) =
-      tests map {t=> new Tests.Group(t.name, Seq(t)  , Tests.SubProcess(Seq.empty))}
 
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
@@ -108,13 +136,12 @@ object newzlyPhantom extends Build {
   lazy val phantomTest = Project(
         id = "phantom-test",
         base = file("phantom-test"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
     ).settings(
       fork := true,
-      testGrouping <<=  (definedTests in Test map groupByFirst)/*,
       concurrentRestrictions in Test := Seq(
-        Tags.limit(Tags.ForkedTestGroup, 1)
-      )*/
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      )
     ).settings(
         libraryDependencies ++= Seq(
             "com.twitter"              %% "util-collection"                   % "6.3.6"               % "provided, test",
