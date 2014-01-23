@@ -15,17 +15,15 @@
  */
 package com.newzly.phantom
 
-import java.util.concurrent.{Executors, LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor}
+import java.util.concurrent.Executors
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
   FutureCallback,
   ListeningExecutorService,
-  MoreExecutors,
-  ThreadFactoryBuilder
+  MoreExecutors
 }
-import com.twitter.util.{ Future, NonFatal, Promise }
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.twitter.util.{ Future, Promise }
 
 object Manager {
   private[this] lazy val processors = Runtime.getRuntime.availableProcessors()
