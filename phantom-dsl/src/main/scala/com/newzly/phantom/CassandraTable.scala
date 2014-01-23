@@ -74,7 +74,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
-
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
