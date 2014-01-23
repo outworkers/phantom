@@ -1,16 +1,25 @@
 package com.newzly.phantom.helper
 
 import com.newzly.phantom._
-import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.datastax.driver.core.{Session, Row}
 import java.util.{UUID, Date}
-import com.newzly.phantom.field.LongOrderKey
 import com.twitter.util.{Await, Future}
 import com.twitter.conversions.time._
 
 case class ClassS(something: String)
+
 case class Author(firstName: String, lastName: String, bio: Option[String])
+
 case class TestList(key: String, l: List[String])
+
+case class TestRow(key: String,
+                   list: Seq[String],
+                   setText: Set[String],
+                   mapTextToText: Map[String, String],
+                   setInt: Set[Int],
+                   mapIntToText: Map[Int, String]
+                    )
+
 
 trait Tables {
 
@@ -19,6 +28,7 @@ trait Tables {
       Await.result(future, 10.seconds)
     }
   }
+
   case class Primitive(
                         pkey: String,
                         long: Long,
@@ -37,37 +47,48 @@ trait Tables {
       Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
         int(r), date(r), uuid(r), bi(r))
     }
+
     object pkey extends PrimitiveColumn[String]
+
     object long extends PrimitiveColumn[Long]
+
     object boolean extends PrimitiveColumn[Boolean]
+
     object bDecimal extends PrimitiveColumn[BigDecimal]
+
     object double extends PrimitiveColumn[Double]
+
     object float extends PrimitiveColumn[Float]
+
     object inet extends PrimitiveColumn[java.net.InetAddress]
+
     object int extends PrimitiveColumn[Int]
+
     object date extends PrimitiveColumn[java.util.Date]
+
     object uuid extends PrimitiveColumn[java.util.UUID]
+
     object bi extends PrimitiveColumn[BigInt]
+
     val _key = pkey
   }
+
   object Primitives extends Primitives {
     override def tableName = "Primitives"
   }
 
+  class TestTable extends CassandraTable[TestTable, TestRow] {
 
-  case class TestRow(key: String,
-                     list: Seq[String],
-                     setText: Set[String],
-                     mapTextToText: Map[String, String],
-                     setInt: Set[Int],
-                     mapIntToText: Map[Int, String])
-
-  class TestTable extends CassandraTable[TestTable, TestRow]{
     object key extends PrimitiveColumn[String]
+
     object list extends SeqColumn[String]
+
     object setText extends SetColumn[String]
+
     object mapTextToText extends MapColumn[String, String]
-    object setInt extends  SetColumn[Int]
+
+    object setInt extends SetColumn[Int]
+
     object mapIntToText extends MapColumn[Int, String]
 
     def fromRow(r: Row): TestRow = {
@@ -77,12 +98,13 @@ trait Tables {
         setInt(r).toSet,
         mapIntToText(r))
     }
+
     val _key = key
   }
+
   object TestTable extends TestTable {
     override def tableName = "TestTable"
   }
-
 
 
   case class MyTestRow(key: String, optionA: Option[Int], classS: ClassS)
@@ -91,11 +113,16 @@ trait Tables {
     def fromRow(r: Row): MyTestRow = {
       MyTestRow(key(r), optionA(r), classS(r))
     }
+
     object key extends PrimitiveColumn[String]
+
     object optionA extends OptionalPrimitiveColumn[Int]
+
     object classS extends JsonTypeColumn[ClassS]
+
     val _key = key
   }
+
   object MyTest extends MyTest {
     override val tableName = "MyTest"
   }
@@ -116,18 +143,28 @@ trait Tables {
     }
 
     object url extends PrimitiveColumn[String]
+
     object description extends OptionalPrimitiveColumn[String]
+
     object ingredients extends SeqColumn[String]
+
     object author extends JsonTypeColumn[Author]
+
     object servings extends OptionalPrimitiveColumn[Int]
+
     object last_checked_at extends PrimitiveColumn[Date]
+
     object props extends MapColumn[String, String]
+
     object uid extends PrimitiveColumn[UUID]
+
     val _key = url
   }
+
   object Recipes extends Recipes {
     override def tableName = "Recipes"
   }
+
   private[helper] def createTables(implicit session: Session): Unit = {
     Primitives.create(_.pkey,
       _.long,

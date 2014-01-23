@@ -1,14 +1,14 @@
 package com.newzly.phantom.dsl.crud
 
-import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.{Assertions, Matchers}
-import com.newzly.phantom.helper.Tables
-import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
+import org.scalatest.{Assertions, Matchers}
+import org.scalatest.concurrent.AsyncAssertions
+import com.datastax.driver.core.{ Row, Session}
 import com.twitter.util.Future
 import com.newzly.phantom._
+import com.newzly.phantom.dsl.BaseTest
+import com.newzly.phantom.helper.{ Tables, TestRow }
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.concurrent.AsyncAssertions
 
 
 class UpdateTest extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {

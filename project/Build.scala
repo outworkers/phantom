@@ -52,8 +52,7 @@ object newzlyPhantom extends Build {
         publishMavenStyle := true,
         publishArtifact in Test := false,
         pomIncludeRepository := { _ => true },
-        pomExtra := (
-          <url>https://github.com/newzly.phantom</url>
+        pomExtra := <url>https://github.com/newzly.phantom</url>
           <licenses>
             <license>
               <name>BSD-style</name>
@@ -76,8 +75,8 @@ object newzlyPhantom extends Build {
               <name>Flavian Alexandru</name>
               <url>http://github.com/alexflav23</url>
             </developer>
-            
-          </developers>)
+
+          </developers>
 
     )
 
@@ -100,7 +99,7 @@ object newzlyPhantom extends Build {
     ).settings(
         libraryDependencies ++= Seq(
             "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
-            "net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
+            "com.fasterxml.jackson.module" %% "jackson-module-scala"          % "2.3.1",
             "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
             "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
         )
