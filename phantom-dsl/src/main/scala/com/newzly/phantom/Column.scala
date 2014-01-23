@@ -16,29 +16,28 @@
 package com.newzly.phantom
 
 import java.util.{ Map => JMap, UUID }
-
-
+import scala.annotation.implicitNotFound
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
+
 import org.apache.log4j.Logger
+
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.newzly.phantom.query.QueryCondition
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import java.lang.reflect.ParameterizedType
+import com.newzly.phantom.query.QueryCondition
 import com.twitter.util.Try
-import scala.annotation.implicitNotFound
 
 object JsonSerializer {
   val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
 
-  def deserializeJson[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T])
+  def deserializeJson[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T](implicitly[Manifest[T]]))
   def serializeJson(value: Any): String = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)
 
   private[this] def typeReference[T: Manifest] = new TypeReference[T] {}
@@ -89,7 +88,7 @@ trait OptionalColumn[T] extends AbstractColumn[T] {
   override def apply(r: Row) = optional(r)
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
 
   def toCType(v: T): AnyRef = CassandraPrimitive[T].toCType(v)
@@ -97,7 +96,7 @@ class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
   def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class PrimitiveColumn[@specialized(Int, Double, Float, Long) RR: CassandraPrimitive] extends Column[RR] {
 
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
@@ -107,7 +106,7 @@ class PrimitiveColumn[@specialized(Int, Double, Float, Long) RR: CassandraPrimit
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-@implicitNotFound(msg = "Type ${EnumType#Value} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${EnumType#Value} must be a Cassandra primitive")
 class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumType#Value] {
 
   def toCType(v: EnumType#Value): AnyRef = v.toString
@@ -116,7 +115,7 @@ class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumTyp
     Option(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SetColumn[RR : CassandraPrimitive] extends Column[Set[RR]] {
 
   val cassandraType = s"set<${CassandraPrimitive[RR].cassandraType}>"
@@ -133,7 +132,7 @@ class SetColumn[RR : CassandraPrimitive] extends Column[Set[RR]] {
   }
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive] extends Column[Seq[RR]] {
 
   val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
@@ -150,7 +149,7 @@ class SeqColumnNew[S <: Seq[RR],RR:CassandraPrimitive] extends Column[Seq[RR]] {
   }
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class ListColumn[RR: CassandraPrimitive] extends Column[List[RR]] {
   val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
 
@@ -167,7 +166,7 @@ class ListColumn[RR: CassandraPrimitive] extends Column[List[RR]] {
 
 }
 
-@implicitNotFound(msg = "Type ${RR} must be Cassandra primitive")
+@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SeqColumn[RR: CassandraPrimitive] extends Column[Seq[RR]] {
 
   val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
@@ -183,7 +182,7 @@ class SeqColumn[RR: CassandraPrimitive] extends Column[Seq[RR]] {
   }
 }
 
-@implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
+@implicitNotFound(msg = "Type ${K} and ${V} must be a Cassandra primitives")
 class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map[K, V]] {
 
   val cassandraType = s"map<${CassandraPrimitive[K].cassandraType}, ${CassandraPrimitive[V].cassandraType}>"
