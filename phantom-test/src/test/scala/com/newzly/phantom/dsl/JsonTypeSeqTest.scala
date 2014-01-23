@@ -8,7 +8,7 @@ import com.newzly.phantom.helper.{ AsyncAssertionsHelper, TestHelper, Tables }
 
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.exceptions.SyntaxError
-import com.twitter.util.{NonFatal, Future}
+import com.twitter.util.{ Future, NonFatal }
 
 case class ClassSMap(something: Map[String, Int])
 case class TestRow(key: String, optionA: Option[Int], classS: ClassSMap, optionS: Option[ClassSMap], map: Map[String, ClassSMap])
