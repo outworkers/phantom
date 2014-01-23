@@ -27,7 +27,7 @@ object AsyncAssertionsHelper extends ScalaFutures {
         e => w(throw e); w.dismiss()
       }
       intercept[T] {
-        w.await(timeout, dismissals(2))
+        w.await(timeout, dismissals(1))
       }
     }
 
@@ -35,14 +35,14 @@ object AsyncAssertionsHelper extends ScalaFutures {
       val w = new Waiter
 
       f onSuccess {
-        case res => x(res); w.dismiss()
+        case res => w{x(res)}; w.dismiss()
       }
 
       f onFailure {
         e => w(throw e); w.dismiss()
       }
 
-      w.await(timeout, dismissals(2))
+      w.await(timeout, dismissals(1))
     }
   }
 
