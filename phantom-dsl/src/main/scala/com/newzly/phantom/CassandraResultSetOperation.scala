@@ -26,15 +26,13 @@ import com.google.common.util.concurrent.{
 import com.twitter.util.{ Future, Promise }
 
 object Manager {
-  private[this] lazy val processors = Runtime.getRuntime.availableProcessors()
 
-  private[this] def makeExecutor(threads: Int, name: String) : ListeningExecutorService = {
+  private[this] def makeExecutor(name: String) : ListeningExecutorService = {
     MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
   }
 
   lazy val executor = makeExecutor(
-    processors,
-    "Cassandra Java Driver worker-%d"
+    "com.newzly.phantom worker-%d"
   )
 }
 
