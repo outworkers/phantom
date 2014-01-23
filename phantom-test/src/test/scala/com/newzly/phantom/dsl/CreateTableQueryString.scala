@@ -8,11 +8,7 @@ import com.twitter.conversions.time._
 import java.util.{UUID, Date}
 
 class CreateTableQueryString extends FlatSpec {
-  implicit class SyncFuture[T](future: Future[T]) {
-    def sync(): T = {
-      Await.result(future, 10.seconds)
-    }
-  }
+
   it should "get the right query in primitives table" in {
     case class Primitive(
       key: Int,
@@ -75,6 +71,7 @@ class CreateTableQueryString extends FlatSpec {
         "bi varint, " +
         "PRIMARY KEY (keyName));")
   }
+
   it should "work fine with List, Set, Map" in {
     case class TestRow(key: String,
                        list: Seq[String],
@@ -114,10 +111,8 @@ class CreateTableQueryString extends FlatSpec {
       "setInt set<int>, " +
       "mapIntToText map<int, text>, " +
       "PRIMARY KEY (key));")
-
-
-
   }
+
   it should "get the right query in mix table" in {
     case class Recipe(
                        url: String,
@@ -166,8 +161,7 @@ class CreateTableQueryString extends FlatSpec {
       "last_checked_at timestamp, " +
       "props map<text, text>, " +
       "uid uuid, " +
-      "PRIMARY KEY (url));");
-
+      "PRIMARY KEY (url));")
   }
 }
 

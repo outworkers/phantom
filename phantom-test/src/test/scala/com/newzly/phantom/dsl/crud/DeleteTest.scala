@@ -2,16 +2,14 @@ package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
 import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.datastax.driver.core.{Row, Session}
-
+import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.{BaseTest, Tables}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.twitter.util.Future
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
 
 class DeleteTest extends BaseTest with Matchers  with Tables with Assertions with AsyncAssertions {
-
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "deleteTest"
 
   "Delete" should "work fine, when deleting the whole row" in {
@@ -53,6 +51,7 @@ class DeleteTest extends BaseTest with Matchers  with Tables with Assertions wit
         } yield (inserted.contains(row), deleted.isEmpty)
       }
     }
+
     result successful {
       r => {
         assert(r._1)

@@ -20,6 +20,5 @@ class SchemaTest extends FlatSpec {
   }
 
   object Articles extends Articles
-  Console.println(Articles.schema)
 
 }

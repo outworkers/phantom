@@ -8,22 +8,19 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
 import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.Tables
+import com.newzly.phantom.helper.{BaseTest, Tables}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
 
 class SkippingRecordsTest extends BaseTest with Tables  with Assertions with AsyncAssertions  {
-
-  implicit val session: Session = cassandraSession
+  val keySpace: String = "SkippingRecordsTest"
 
   ignore should "allow skipping records " in {
 
     case class Article(val name: String, id: UUID, order_id: Long)
     class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
-
       object name extends PrimitiveColumn[String]
-
       override def fromRow(row: Row): Article = {
         Article(name(row), id(row), order_id(row))
       }
@@ -56,7 +53,7 @@ class SkippingRecordsTest extends BaseTest with Tables  with Assertions with Asy
     } yield (res)
 
     result successful {
-      row => assert(row.get === article2)
+      row => assert(row.get == article2)
     }
   }
 

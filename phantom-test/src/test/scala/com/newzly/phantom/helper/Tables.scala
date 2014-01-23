@@ -73,10 +73,6 @@ trait Tables {
     val _key = pkey
   }
 
-  object Primitives extends Primitives {
-    override def tableName = "Primitives"
-  }
-
   class TestTable extends CassandraTable[TestTable, TestRow] {
 
     object key extends PrimitiveColumn[String]
@@ -102,11 +98,6 @@ trait Tables {
     val _key = key
   }
 
-  object TestTable extends TestTable {
-    override def tableName = "TestTable"
-  }
-
-
   case class MyTestRow(key: String, optionA: Option[Int], classS: ClassS)
 
   class MyTest extends CassandraTable[MyTest, MyTestRow] {
@@ -123,10 +114,6 @@ trait Tables {
     val _key = key
   }
 
-  object MyTest extends MyTest {
-    override val tableName = "MyTest"
-  }
-
   case class Recipe(
                      url: String,
                      description: Option[String],
@@ -137,11 +124,9 @@ trait Tables {
                      props: Map[String, String])
 
   class Recipes extends CassandraTable[Recipes, Recipe] {
-
     override def fromRow(r: Row): Recipe = {
       Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
     }
-
     object url extends PrimitiveColumn[String]
 
     object description extends OptionalPrimitiveColumn[String]
@@ -160,81 +145,4 @@ trait Tables {
 
     val _key = url
   }
-
-  object Recipes extends Recipes {
-    override def tableName = "Recipes"
-  }
-
-  private[helper] def createTables(implicit session: Session): Unit = {
-    Primitives.create(_.pkey,
-      _.long,
-      _.boolean,
-      _.bDecimal,
-      _.double,
-      _.float,
-      _.inet,
-      _.int,
-      _.date,
-      _.uuid,
-      _.bi).execute().sync()
-
-    val createTestTable =
-      """|CREATE TABLE testTable(
-        |key text PRIMARY KEY,
-        |list list<text>,
-        |setText set<text>,
-        |mapTextToText map<text,text>,
-        |setInt set<int>,
-        |mapIntToText map<int,text> );
-      """.stripMargin
-
-    session.execute(createTestTable)
-
-    val myTestTable =
-      """|CREATE TABLE MyTest(
-        |key text PRIMARY KEY,
-        |optionA int,
-        |classS text,
-        );
-      """.stripMargin //
-    session.execute(myTestTable)
-
-    Recipes.create(_.url,
-      _.description,
-      _.ingredients,
-      _.author,
-      _.servings,
-      _.last_checked_at,
-      _.props,
-      _.uid).execute().sync()
-
-    val emptylisttest =
-      """|CREATE TABLE emptylisttest(
-        |key text PRIMARY KEY,
-        |list list<text>
-        );
-      """.stripMargin //
-    session.execute(emptylisttest)
-
-    val listtest =
-      """|CREATE TABLE listtest(
-        |key text PRIMARY KEY,
-        |testlist list<text>
-        );
-      """.stripMargin //
-    session.execute(listtest)
-
-    val articlesTable =
-      """|CREATE TABLE articlestest(
-        |id uuid PRIMARY KEY,
-        |order_id bigint,
-        |name text);
-      """.stripMargin
-    session.execute(articlesTable)
-
-    val indexes = """CREATE INDEX order_id ON articlestest (order_id)""".stripMargin
-    session.execute(indexes)
-  }
-
-
 }
