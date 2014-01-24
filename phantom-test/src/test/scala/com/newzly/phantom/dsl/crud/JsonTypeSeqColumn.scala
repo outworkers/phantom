@@ -4,7 +4,7 @@ import com.twitter.conversions.time._
 import org.scalatest.{Assertions, Matchers}
 import com.newzly.phantom.helper.{BaseTest, Tables}
 import org.scalatest.concurrent.AsyncAssertions
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable, JsonTypeSeqColumn}
+import com.newzly.phantom.{PrimitiveColumn, CassandraTable, JsonSeqColumn}
 import com.datastax.driver.core.Row
 import com.newzly.phantom.field.{LongOrderKey, UUIDPk}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
@@ -30,7 +30,7 @@ class JsonTypeSeqColumnTest extends BaseTest with Matchers with Tables with Asse
       JsonTypeSeqColumnRow(pkey(r),jtsc(r))
     }
     object pkey extends PrimitiveColumn[String]
-    object jtsc extends JsonTypeSeqColumn[T]
+    object jtsc extends JsonSeqColumn[T]
   }
   object JsonTypeSeqColumnTable extends JsonTypeSeqColumnTable {
     def apply(_tableName: String) = new JsonTypeSeqColumnTable {override val tableName=_tableName}
@@ -56,7 +56,7 @@ class JsonTypeSeqColumnTest extends BaseTest with Matchers with Tables with Asse
           .value(_.pkey, "test")
           .value(_.jtsc, Seq(T("t1"),T("t2"))).execute()
         selectTask <- table.select.one
-      } yield (selectTask)
+      } yield selectTask
       ////////
       val i1 = table.insert
         .value(_.id, UUIDs.timeBased())

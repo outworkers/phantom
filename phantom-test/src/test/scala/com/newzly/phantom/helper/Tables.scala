@@ -109,7 +109,7 @@ trait Tables {
 
     object optionA extends OptionalPrimitiveColumn[Int]
 
-    object classS extends JsonTypeColumn[ClassS]
+    object classS extends JsonColumn[ClassS]
 
     val _key = key
   }
@@ -133,7 +133,7 @@ trait Tables {
 
     object ingredients extends SeqColumn[String]
 
-    object author extends JsonTypeColumn[Author]
+    object author extends JsonColumn[Author]
 
     object servings extends OptionalPrimitiveColumn[Int]
 

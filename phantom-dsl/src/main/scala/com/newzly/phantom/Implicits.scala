@@ -26,7 +26,7 @@ object Implicits {
   type PrimitiveColumn[T] =  com.newzly.phantom.PrimitiveColumn[T]
   type OptionalColumn[T] =  com.newzly.phantom.OptionalColumn[T]
   type OptionalPrimitiveColumn[T] =  com.newzly.phantom.OptionalPrimitiveColumn[T]
-  type JsonTypeColumn[T] =  com.newzly.phantom.JsonTypeColumn[T]
+  type JsonTypeColumn[T] =  com.newzly.phantom.JsonColumn[T]
   type EnumColumn[T <: Enumeration] =  com.newzly.phantom.EnumColumn[T]
   type ListColumn[T] = com.newzly.phantom.ListColumn[T]
   type SetColumn[T] =  com.newzly.phantom.SetColumn[T]
@@ -60,7 +60,7 @@ object Implicits {
     new ModifyColumn[Seq[RR]](col)
   }
 
-  implicit def jsonSeqColumnToAssignment[RR: Manifest](col: JsonTypeSeqColumn[RR]) = {
+  implicit def jsonSeqColumnToAssignment[RR: Manifest](col: JsonSeqColumn[RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
