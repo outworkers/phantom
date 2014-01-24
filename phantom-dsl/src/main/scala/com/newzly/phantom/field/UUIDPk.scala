@@ -23,7 +23,7 @@ trait UUIDPk[Owner <: CassandraTable[Owner, _]] {
 
   object id extends PrimitiveColumn[UUID]
 
-  val _key = id;
+  val _key = id
 }
 
 trait LongOrderKey[Owner <: CassandraTable[Owner, _]] {
