@@ -133,7 +133,7 @@ class CreateTableQueryString extends FlatSpec {
       object url extends PrimitiveColumn[String]
       object description extends OptionalPrimitiveColumn[String]
       object ingredients extends SeqColumn[String]
-      object author extends JsonTypeColumn[Author]
+      object author extends JsonColumn[Author]
       object servings extends OptionalPrimitiveColumn[Int]
       object last_checked_at extends PrimitiveColumn[Date]
       object props extends MapColumn[String, String]

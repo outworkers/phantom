@@ -204,7 +204,7 @@ class MapColumn[K: CassandraPrimitive, V: CassandraPrimitive] extends Column[Map
 }
 
 
-class JsonTypeColumn[RR: Manifest] extends Column[RR] {
+class JsonColumn[RR: Manifest] extends Column[RR] {
 
   val logger = Logger.getLogger("JsonTypeColumn")
   val mf = implicitly[Manifest[RR]]
@@ -218,12 +218,14 @@ class JsonTypeColumn[RR: Manifest] extends Column[RR] {
 
   def optional(r: Row): Option[RR] = {
     Try {
-      Some(JsonSerializer.deserializeJson[RR](r.getString(name)))
+      val json = r.getString(name)
+      logger.info(s"Attempting to de-serialize JSON: $json")
+      Some(JsonSerializer.deserializeJson[RR](json))
     } getOrElse None
   }
 }
 
-class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
+class JsonSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
 
   val cassandraType = "list<text>"
   def toCType(values: Seq[RR]): AnyRef = {
@@ -240,8 +242,10 @@ class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
   }
 
   def optional(r: Row): Option[Seq[RR]] = {
-    val items = r.getList(name, classOf[String]).asScala.map {
-      item => JsonSerializer.deserializeJson[RR](item)
+    val items = r.getList(name, classOf[String]).asScala.flatMap {
+      item => Try {
+        Some(JsonSerializer.deserializeJson[RR](item))
+      } getOrElse None
     }
     items.toSeq.toOption
   }

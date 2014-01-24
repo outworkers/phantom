@@ -41,7 +41,7 @@ object AsyncAssertionsHelper extends ScalaFutures {
       f onFailure {
         e => w(throw e); w.dismiss()
       }
-
+      Console.println(s"Timeout ${timeout.value.toMillis}")
       w.await(timeout, dismissals(1))
     }
   }
