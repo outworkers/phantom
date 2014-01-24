@@ -25,9 +25,7 @@ import com.datastax.driver.core.Row
 abstract class AbstractQueryColumn[RR: CassandraPrimitive](col: Column[RR]) {
 
   def eqs(value: RR): Clause = QueryBuilder.eq(col.name, CassandraPrimitive[RR].toCType(value))
-
   def in[L <% Traversable[RR]](vs: L) = QueryBuilder.in(col.name, vs.map(CassandraPrimitive[RR].toCType).toSeq: _*)
-
   def gt(value: RR): Clause = QueryBuilder.gt(col.name, CassandraPrimitive[RR].toCType(value))
   def gte(value: RR): Clause = QueryBuilder.gte(col.name, CassandraPrimitive[RR].toCType(value))
   def lt(value: RR): Clause = QueryBuilder.lt(col.name, CassandraPrimitive[RR].toCType(value))

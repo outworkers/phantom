@@ -6,7 +6,6 @@ import com.newzly.phantom._
 import java.util.UUID
 import com.newzly.phantom.field.UUIDPk
 
-
 class SchemaTest extends FlatSpec {
 
   case class Article(name: String, id: UUID)

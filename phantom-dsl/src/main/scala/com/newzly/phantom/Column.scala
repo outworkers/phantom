@@ -15,7 +15,7 @@
  */
 package com.newzly.phantom
 
-import java.util.{ Map => JMap, UUID }
+import java.util.{ Map => JMap }
 import scala.annotation.implicitNotFound
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
@@ -233,7 +233,6 @@ class JsonTypeSeqColumn[RR: Manifest] extends Column[Seq[RR]] with Helpers {
         JsonSerializer.serializeJson(item)
       }
     }(breakOut)
-    Console.println(json)
     json.toSeq.asJava
   }
 
