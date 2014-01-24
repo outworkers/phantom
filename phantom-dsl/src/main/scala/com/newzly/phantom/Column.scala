@@ -88,7 +88,7 @@ trait OptionalColumn[T] extends AbstractColumn[T] {
   override def apply(r: Row) = optional(r)
 }
 
-@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
+@implicitNotFound(msg = "Type ${T} must be a Cassandra primitive")
 class OptionalPrimitiveColumn[T: CassandraPrimitive] extends OptionalColumn[T] {
 
   def toCType(v: T): AnyRef = CassandraPrimitive[T].toCType(v)
@@ -106,7 +106,6 @@ class PrimitiveColumn[@specialized(Int, Double, Float, Long) RR: CassandraPrimit
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-@implicitNotFound(msg = "Type ${EnumType#Value} must be a Cassandra primitive")
 class EnumColumn[EnumType <: Enumeration](enum: EnumType) extends Column[EnumType#Value] {
 
   def toCType(v: EnumType#Value): AnyRef = v.toString
