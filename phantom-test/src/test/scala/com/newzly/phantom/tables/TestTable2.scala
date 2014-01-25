@@ -2,10 +2,7 @@ package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{
-  CassandraTable,
-  JsonColumn,
-  OptionalPrimitiveColumn,
-  PrimitiveColumn
+  CassandraTable
 }
 import com.newzly.phantom.helper.{TestSampler, ModelSampler, Sampler}
 

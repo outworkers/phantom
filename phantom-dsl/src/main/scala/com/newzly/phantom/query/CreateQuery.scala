@@ -1,8 +1,9 @@
 package com.newzly.phantom.query
 
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.newzly.phantom.{ AbstractColumn, CassandraResultSetOperations, CassandraTable }
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 import com.twitter.util.Future
+import com.newzly.phantom.column.AbstractColumn
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
   def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T, R] = {

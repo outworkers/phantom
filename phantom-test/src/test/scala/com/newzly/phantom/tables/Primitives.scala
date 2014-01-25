@@ -1,10 +1,11 @@
 package com.newzly.phantom.tables
 
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
-import com.datastax.driver.core.Row
-import com.newzly.phantom.helper.{ModelSampler, Sampler, TestSampler}
+import java.util.{ Date, UUID }
 import java.net.InetAddress
-import java.util.{UUID, Date}
+import com.datastax.driver.core.Row
+import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.Implicits._
 
 case class Primitive(
   pkey: String,
@@ -44,27 +45,27 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
       int(r), date(r), uuid(r), bi(r))
   }
 
-  object pkey extends PrimitiveColumn[String]
+  object pkey extends PrimitiveColumn[Primitives, Primitive, String](this)
 
-  object long extends PrimitiveColumn[Long]
+  object long extends PrimitiveColumn[Primitives, Primitive, Long](this)
 
-  object boolean extends PrimitiveColumn[Boolean]
+  object boolean extends PrimitiveColumn[Primitives, Primitive, Boolean](this)
 
-  object bDecimal extends PrimitiveColumn[BigDecimal]
+  object bDecimal extends PrimitiveColumn[Primitives, Primitive, BigDecimal](this)
 
-  object double extends PrimitiveColumn[Double]
+  object double extends PrimitiveColumn[Primitives, Primitive, Double](this)
 
-  object float extends PrimitiveColumn[Float]
+  object float extends PrimitiveColumn[Primitives, Primitive, Float](this)
 
-  object inet extends PrimitiveColumn[java.net.InetAddress]
+  object inet extends PrimitiveColumn[Primitives, Primitive, InetAddress](this)
 
-  object int extends PrimitiveColumn[Int]
+  object int extends PrimitiveColumn[Primitives, Primitive, Int](this)
 
-  object date extends PrimitiveColumn[java.util.Date]
+  object date extends PrimitiveColumn[Primitives, Primitive, Date](this)
 
-  object uuid extends PrimitiveColumn[java.util.UUID]
+  object uuid extends PrimitiveColumn[Primitives, Primitive, UUID](this)
 
-  object bi extends PrimitiveColumn[BigInt]
+  object bi extends PrimitiveColumn[Primitives, Primitive, BigInt](this)
 
   val _key = pkey
 }

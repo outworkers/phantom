@@ -21,18 +21,20 @@ package phantom
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause }
 import com.datastax.driver.core.Row
+import com.newzly.phantom.column.{OptionalColumn, Column, AbstractColumn}
 
-abstract class AbstractQueryColumn[RR: CassandraPrimitive](col: Column[RR]) {
+abstract class AbstractQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) {
 
-  def eqs(value: RR): Clause = QueryBuilder.eq(col.name, CassandraPrimitive[RR].toCType(value))
-  def in[L <% Traversable[RR]](vs: L) = QueryBuilder.in(col.name, vs.map(CassandraPrimitive[RR].toCType).toSeq: _*)
-  def gt(value: RR): Clause = QueryBuilder.gt(col.name, CassandraPrimitive[RR].toCType(value))
-  def gte(value: RR): Clause = QueryBuilder.gte(col.name, CassandraPrimitive[RR].toCType(value))
-  def lt(value: RR): Clause = QueryBuilder.lt(col.name, CassandraPrimitive[RR].toCType(value))
-  def lte(value: RR): Clause = QueryBuilder.lte(col.name, CassandraPrimitive[RR].toCType(value))
+  val primitive = implicitly[CassandraPrimitive[RR]]
+  def eqs(value: RR): Clause = QueryBuilder.eq(col.name, primitive.toCType(value))
+  def in[L <% Traversable[RR]](vs: L) = QueryBuilder.in(col.name, vs.map(primitive.toCType).toSeq: _*)
+  def gt(value: RR): Clause = QueryBuilder.gt(col.name, primitive.toCType(value))
+  def gte(value: RR): Clause = QueryBuilder.gte(col.name, primitive.toCType(value))
+  def lt(value: RR): Clause = QueryBuilder.lt(col.name, primitive.toCType(value))
+  def lte(value: RR): Clause = QueryBuilder.lte(col.name, primitive.toCType(value))
 }
 
-class QueryColumn[RR: CassandraPrimitive](col: Column[RR]) extends AbstractQueryColumn[RR](col)
+class QueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) extends AbstractQueryColumn[Owner, Record, RR](col)
 
 abstract class AbstractModifyColumn[RR](name: String) {
 
@@ -46,7 +48,7 @@ class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR]
   def toCType(v: RR): AnyRef = col.toCType(v)
 }
 
-class ModifyColumnOptional[RR](col: OptionalColumn[RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
+class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
 
   def toCType(v: Option[RR]): AnyRef = v.map(col.toCType).orNull
 }
@@ -56,12 +58,12 @@ abstract class SelectColumn[T](val col: AbstractColumn[_]) {
   def apply(r: Row): T
 }
 
-class SelectColumnRequired[T](override val col: Column[T]) extends SelectColumn[T](col) {
+class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](override val col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
 
   def apply(r: Row): T = col.apply(r)
 }
 
-class SelectColumnOptional[T](override val col: OptionalColumn[T]) extends SelectColumn[Option[T]](col) {
+class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](override val col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
 
   def apply(r: Row): Option[T] = col.apply(r)
 
