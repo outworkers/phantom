@@ -3,20 +3,46 @@ package com.newzly.phantom.helper
 import org.scalatest.Assertions
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions, ScalaFutures}
-import com.twitter.util.Future
+import com.twitter.util.{ Await, Duration, Future}
 import org.scalatest.time.{ Millis, Seconds, Span }
 
 import org.scalatest.time.SpanSugar._
-import scala.collection.concurrent.TrieMap
 
 object AsyncAssertionsHelper extends ScalaFutures {
 
+  /**
+   * The default timeout of the asynchronous assertions.
+   * To override this, simply define another implicit timeout in the desired scope.
+   */
   implicit val s: PatienceConfiguration.Timeout = timeout(1 second)
 
+  /**
+   * A simple augmentation adding a .sync() method to a @code {com.twitter.util.Future}.
+   * This is a blocking computation.
+   * @param future The future to execute.
+   * @tparam T The underlying return type of the computation.
+   */
+  implicit class SyncFuture[T](future: Future[T]) {
+    def sync(): T = {
+      Await.result(future, Duration.fromSeconds(10))
+    }
+  }
+
+  /**
+   * Augmentation to allow asynchronous assertions of a @code {com.twitter.util.Future}.
+   * @param f The future to augment.
+   * @tparam A The underlying type of the computation.
+   */
   implicit class Failing[A](val f: Future[A]) extends Assertions with AsyncAssertions {
 
-
-    def failing[T  <: Throwable](implicit mf: Manifest[T], timeout: PatienceConfiguration.Timeout) = {
+    /**
+     * Use this to assert an expected asynchronous failure of a @code {com.twitter.util.Future}
+     * The computation and waiting are both performed asynchronously.
+     * @param mf The class Manifest to extract class information from.
+     * @param timeout The timeout of the asynchronous Waiter.
+     * @tparam T The error returned by the failing computation. Used to assert error messages.
+     */
+    def failing[T  <: Throwable](implicit mf: Manifest[T], timeout: PatienceConfiguration.Timeout): Unit = {
       val w = new Waiter
 
       f onSuccess  {
@@ -31,7 +57,12 @@ object AsyncAssertionsHelper extends ScalaFutures {
       }
     }
 
-    def successful(x: A => Unit)(implicit timeout: PatienceConfiguration.Timeout) = {
+    /**
+     * Use this to assert a successful future computation of a @code {com.twitter.util.Future}
+     * @param x The computation inside the future to await. This waiting is asynchronous.
+     * @param timeout The timeout of the future.
+     */
+    def successful(x: A => Unit)(implicit timeout: PatienceConfiguration.Timeout) : Unit = {
       val w = new Waiter
 
       f onSuccess {
