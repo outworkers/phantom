@@ -1,30 +1,26 @@
 
 package com.newzly.phantom.dsl
 
-import java.util.UUID
-import com.datastax.driver.core.{ Session, Row }
-import com.datastax.driver.core.utils.UUIDs
-
-import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
-import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.{BaseTest, Tables}
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
+
+import com.newzly.phantom.helper.{ Articles, BaseTest, TableHelper }
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.Implicits._
+
 
 class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
   val keySpace: String = "SkippingRecordsTest"
 
-  ignore should "allow skipping records " in {
+  it should "allow skipping records " in {
 
     object Articles extends Articles {
       override val tableName = "articlestest"
     }
 
-    val article1 = Article("test", UUIDs.timeBased(),  1)
-    val article2 = Article("test2", UUIDs.timeBased(), 2)
-    val article3 = Article("test3", UUIDs.timeBased(), 3)
+    val article1 = TableHelper.getAUniqueArticle()
+    val article2 = TableHelper.getAUniqueArticle()
+    val article3 = TableHelper.getAUniqueArticle()
 
     val result = for {
       i1 <- Articles.insert

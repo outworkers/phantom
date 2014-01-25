@@ -1,16 +1,21 @@
 package com.newzly.phantom.dsl
 
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.Matchers
 import org.scalatest.time.SpanSugar._
-import org.scalatest.concurrent.PatienceConfiguration
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{BaseTest => MyBaseTest, TableHelper, SimpleMapOfStringsClass, TestRow}
+import com.newzly.phantom.helper.{
+  BaseTest,
+  SimpleMapOfStringsClass,
+  TableHelper,
+  TestRow
+}
 import com.twitter.util.NonFatal
 
-class JsonColumnTest extends MyBaseTest  with Matchers  {
+class JsonColumnTest extends BaseTest with Matchers  {
   val keySpace: String = "JsonTypeSeqTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 

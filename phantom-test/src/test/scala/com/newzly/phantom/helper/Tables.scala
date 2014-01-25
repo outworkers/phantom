@@ -23,7 +23,6 @@ case class TestRow(
   map: Map[String, SimpleMapOfStringsClass]
 )
 
-
 case class TestList(key: String, l: List[String])
 
 case class Primitive(
@@ -38,6 +37,16 @@ case class Primitive(
   date: java.util.Date,
   uuid: java.util.UUID,
   bi: BigInt
+)
+
+case class TestRow(
+  key: String,
+  list: Seq[String],
+  setText: Set[String],
+  mapTextToText: Map[String, String],
+  setInt: Set[Int],
+  mapIntToText: Map[Int, String],
+  mapIntToString: Map[Int, String]
 )
 
 case class Recipe(
@@ -109,11 +118,14 @@ class TestTable extends CassandraTable[TestTable, TestRow] {
   object mapIntToText extends MapColumn[Int, String]
 
   def fromRow(r: Row): TestRow = {
-    TestRow(key(r), list(r),
+    TestRow(
+      key(r),
+      list(r),
       setText(r),
       mapTextToText(r),
       setInt(r).toSet,
-      mapIntToText(r))
+      mapIntToText(r)
+    )
   }
 
   val _key = key
