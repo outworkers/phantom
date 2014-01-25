@@ -12,14 +12,11 @@ import com.newzly.phantom._
 import com.newzly.phantom.helper.{BaseTest => MyBaseTest, Tables}
 import com.twitter.util.{Await, Duration, Future, NonFatal}
 
-case class ClassSMap(something: Map[String, Int])
-case class TestRow(key: String, optionA: Option[Int], classS: ClassSMap, optionS: Option[ClassSMap], map: Map[String, ClassSMap])
-
 class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
   val keySpace: String = "JsonTypeSeqTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  it should "work here but it fails- WE NEED TO FIX IT" in {
+  it should "correctly serialize and store complex structures" in {
     class TestTable2 extends CassandraTable[TestTable2, TestRow] {
       def fromRow(r: Row): TestRow = {
         TestRow(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
@@ -42,7 +39,7 @@ class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
       """.stripMargin //        #|
     session.execute(createTestTable)
 
-    val row = TestRow("someKey", Some(2), ClassSMap(Map("k2" -> 5)), Some(ClassSMap(Map("k2" -> 5))), Map("5" -> ClassSMap(Map("p" -> 2))))
+
 
     object TestTable2 extends TestTable2 {
       override val tableName = "TestTable2"
