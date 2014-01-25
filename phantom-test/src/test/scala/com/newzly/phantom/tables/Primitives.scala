@@ -20,7 +20,7 @@ case class Primitive(
   bi: BigInt
 )
 
-object Primitive extends ModelSampler {
+object Primitive extends ModelSampler[Primitive] {
   def sample: Primitive = {
     Primitive(
       Sampler.getAUniqueString,
@@ -29,7 +29,7 @@ object Primitive extends ModelSampler {
       BigDecimal(Sampler.getARandomInteger()),
       Sampler.getARandomInteger().toDouble,
       Sampler.getARandomInteger().toFloat,
-      new InetAddress,
+      InetAddress.getByName("127.0.0.1"),
       Sampler.getARandomInteger(),
       new Date(),
       UUID.randomUUID(),

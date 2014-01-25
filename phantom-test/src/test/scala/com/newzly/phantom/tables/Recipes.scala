@@ -12,7 +12,7 @@ case class Author(
   bio: Option[String]
 )
 
-object Author {
+object Author extends ModelSampler[Author] {
   def sample: Author = {
     Author(
       Sampler.getAUniqueString,
@@ -32,7 +32,7 @@ case class Recipe(
   props: Map[String, String]
 )
 
-object Recipe extends ModelSampler {
+object Recipe extends ModelSampler[Recipe] {
   def sample: Recipe = {
     Recipe(
       Sampler.getAUniqueString,
@@ -52,7 +52,7 @@ object Recipe extends ModelSampler {
 
 case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])
 
-object JsonSeqColumnRow extends ModelSampler {
+object JsonSeqColumnRow extends ModelSampler[JsonSeqColumnRow] {
   def sample: JsonSeqColumnRow = {
     JsonSeqColumnRow(
       Sampler.getAUniqueString,

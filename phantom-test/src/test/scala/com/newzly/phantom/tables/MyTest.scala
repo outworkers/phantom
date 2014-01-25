@@ -10,7 +10,7 @@ case class MyTestRow(
   classS: SimpleStringClass
 )
 
-object MyTestRow extends ModelSampler {
+object MyTestRow extends ModelSampler[MyTestRow] {
   def sample: MyTestRow = MyTestRow(
     Sampler.getAUniqueString,
     Some(Sampler.getARandomInteger()),

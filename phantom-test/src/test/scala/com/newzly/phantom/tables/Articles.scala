@@ -16,7 +16,7 @@ case class Article(
   order_id: Long
 )
 
-object Article extends ModelSampler {
+object Article extends ModelSampler[Article] {
   def sample: Article = Article(
     Sampler.getAUniqueString,
     UUID.randomUUID(),

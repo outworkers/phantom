@@ -9,7 +9,7 @@ import com.newzly.phantom.helper.{TestSampler, Sampler, ModelSampler}
 case class JodaRow( pkey: String, int: Int,
   bi: DateTime)
 
-object JodaRow extends ModelSampler {
+object JodaRow extends ModelSampler[JodaRow] {
   def sample: JodaRow = {
     JodaRow(
       Sampler.getAUniqueString,

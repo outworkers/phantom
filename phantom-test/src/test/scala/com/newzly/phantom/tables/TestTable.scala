@@ -13,7 +13,7 @@ case class TestRow(
   mapIntToText: Map[Int, String]
 )
 
-object TestRow extends ModelSampler {
+object TestRow extends ModelSampler[TestRow] {
   def sample: TestRow = TestRow(
     Sampler.getAUniqueString,
     List.range(0, 50).map(_.toString).toSeq,
@@ -58,13 +58,13 @@ object TestTable extends TestTable with TestSampler[TestRow] {
 
   def createSchema: String = {
     """|CREATE TABLE TestTableInsert(
-          |key text PRIMARY KEY,
-          |list list<text>,
-          |setText set<text>,
-          |mapTextToText map<text,text>,
-          |setInt set<int>,
-          |mapIntToText map<int,text> );
-        """.stripMargin
+       |key text PRIMARY KEY,
+       |list list<text>,
+       |setText set<text>,
+       |mapTextToText map<text,text>,
+       |setInt set<int>,
+       |mapIntToText map<int,text> );
+    """.stripMargin
   }
 }
 
