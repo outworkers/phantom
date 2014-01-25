@@ -1,17 +1,18 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.{ CassandraTable, JsonSeqColumn, PrimitiveColumn }
+import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.field.{ LongOrderKey, UUIDPk }
 import com.newzly.phantom.helper.TestSampler
+import com.newzly.phantom.Implicits._
 
-sealed class JsonSeqColumnTable extends CassandraTable[JsonSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonSeqColumnTable]
-with LongOrderKey[JsonSeqColumnTable] {
+sealed class JsonSeqColumnTable extends CassandraTable[JsonSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonSeqColumnTable, JsonSeqColumnRow]
+  with LongOrderKey[JsonSeqColumnTable, JsonSeqColumnRow] {
   override def fromRow(r: Row): JsonSeqColumnRow = {
     JsonSeqColumnRow(pkey(r), recipes(r))
   }
-  object pkey extends PrimitiveColumn[String]
-  object recipes extends JsonSeqColumn[Recipe]
+  object pkey extends PrimitiveColumn[JsonSeqColumnTable, JsonSeqColumnRow, String](this)
+  object recipes extends JsonSeqColumn[JsonSeqColumnTable, JsonSeqColumnRow, Recipe](this)
 }
 
 object JsonSeqColumnTable extends JsonSeqColumnTable with TestSampler[JsonSeqColumnTable, JsonSeqColumnRow] {

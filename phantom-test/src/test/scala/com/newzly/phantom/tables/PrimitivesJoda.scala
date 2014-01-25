@@ -1,7 +1,7 @@
 package com.newzly.phantom.tables
 
 import org.joda.time.DateTime
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
+import com.newzly.phantom.{CassandraTable}
 import com.datastax.driver.core.Row
 import com.newzly.phantom.helper.{TestSampler, Sampler, ModelSampler}
 

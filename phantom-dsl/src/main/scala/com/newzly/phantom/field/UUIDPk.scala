@@ -16,17 +16,18 @@
 package com.newzly.phantom.field
 
 import java.util.UUID
-import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.phantom.{ CassandraTable }
+import com.newzly.phantom.column.PrimitiveColumn
 
-trait UUIDPk[Owner <: CassandraTable[Owner, _]] {
-  this: CassandraTable[Owner, _] =>
+trait UUIDPk[Owner <: CassandraTable[Owner, Record], Record] {
+  this: CassandraTable[Owner, Record] =>
 
-  object id extends PrimitiveColumn[UUID]
+  object id extends PrimitiveColumn[Owner, Record, UUID](this)
 
   val _key = id
 }
 
-trait LongOrderKey[Owner <: CassandraTable[Owner, _]] {
-  this: CassandraTable[Owner, _] with UUIDPk[Owner] =>
-  object order_id extends PrimitiveColumn[Long]
+trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
+  this: CassandraTable[Owner, Record] with UUIDPk[Owner, Record] =>
+  object order_id extends PrimitiveColumn[Owner, Record, Long](this)
 }

@@ -24,17 +24,18 @@ import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
+import com.newzly.phantom.column.Column
 
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
-  def _key: Column[_]
+  def _key: Column[T, R, _]
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
-  lazy val logger = Logger.getLogger(_name)
+  val logger = Logger.getLogger(_name)
 
   def tableName: String = _name
 

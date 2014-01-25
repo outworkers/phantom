@@ -1,7 +1,7 @@
 package com.newzly.cassandra
 
-import com.newzly.phantom.Column
 import com.datastax.driver.core.Row
+import com.newzly.phantom.column.Column
 
 package object phantom {
 

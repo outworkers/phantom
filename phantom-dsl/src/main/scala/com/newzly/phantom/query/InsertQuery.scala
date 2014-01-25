@@ -20,8 +20,9 @@ package phantom
 package query
 
 import com.datastax.driver.core.querybuilder.{Using, QueryBuilder, Insert}
-import com.newzly.phantom.{ AbstractColumn, CassandraTable }
+import com.newzly.phantom.{ CassandraTable }
 import com.twitter.util.Duration
+import com.newzly.phantom.column.AbstractColumn
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
 

@@ -2,13 +2,14 @@ package com.newzly.phantom.tables
 
 import java.util.UUID
 import com.datastax.driver.core.Row
-import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.field.{ LongOrderKey, UUIDPk }
 import com.newzly.phantom.helper.{
   ModelSampler,
   Sampler,
   TestSampler
 }
+import com.newzly.phantom.column.PrimitiveColumn
 
 case class Article(
   name: String,
@@ -24,8 +25,8 @@ object Article extends ModelSampler[Article] {
   )
 }
 
-sealed class Articles private() extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
-  object name extends PrimitiveColumn[String]
+sealed class Articles private() extends CassandraTable[Articles, Article] with UUIDPk[Articles, Article] with LongOrderKey[Articles, Article] {
+  object name extends PrimitiveColumn[Articles, Article, String](this)
   override def fromRow(row: Row): Article = {
     Article(name(row), id(row), order_id(row))
   }
