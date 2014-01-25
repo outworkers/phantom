@@ -1,31 +1,30 @@
 package com.newzly.phantom.dsl.crud
 
-import org.scalatest.{Assertions, Matchers}
+import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.AsyncAssertions
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.helper.{BaseTest, Tables}
 import com.newzly.phantom.{ CassandraTable, PrimitiveColumn, JsonSeqColumn }
 import com.newzly.phantom.field.{ LongOrderKey, UUIDPk}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.{ BaseTest, JsonSeqColumnRow, Recipe }
 
-class JsonSeqColumnTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
+class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
-
-  case class T(something: String)
-
-  case class JsonSeqColumnRow(pkey: String, jtsc: Seq[T])
 
   class JsonTypeSeqColumnTable extends CassandraTable[JsonTypeSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonTypeSeqColumnTable]
   with LongOrderKey[JsonTypeSeqColumnTable] {
     override def fromRow(r: Row): JsonSeqColumnRow = {
-      JsonSeqColumnRow(pkey(r),jtsc(r))
+      JsonSeqColumnRow(pkey(r), jtsc(r))
     }
     object pkey extends PrimitiveColumn[String]
-    object jtsc extends JsonSeqColumn[T]
+    object jtsc extends JsonSeqColumn[Recipe]
   }
+
   object JsonTypeSeqColumnTable extends JsonTypeSeqColumnTable {
-    def apply(_tableName: String) = new JsonTypeSeqColumnTable {override val tableName=_tableName}
+    def apply(_tableName: String) = new JsonTypeSeqColumnTable {
+      override val tableName = _tableName
+    }
   }
 
   "JsonTypeSeqColumn" should "work fine for create" in {

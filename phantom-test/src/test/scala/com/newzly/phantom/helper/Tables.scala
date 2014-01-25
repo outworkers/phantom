@@ -50,6 +50,10 @@ case class Recipe(
   props: Map[String, String]
 )
 
+case class T(something: String)
+
+case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])
+
 case class Article(name: String, id: UUID, order_id: Long)
 
 class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
