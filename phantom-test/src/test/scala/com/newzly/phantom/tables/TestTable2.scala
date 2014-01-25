@@ -1,10 +1,10 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.{
-  CassandraTable
-}
-import com.newzly.phantom.helper.{TestSampler, ModelSampler, Sampler}
+import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.column.JsonColumn
 
 case class SimpleStringClass(something: String)
 
@@ -67,11 +67,12 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
       mapIntoClass(r)
     )
   }
-  object key extends PrimitiveColumn[String]
-  object optionA extends OptionalPrimitiveColumn[Int]
-  object classS extends JsonColumn[SimpleMapOfStringsClass]
-  object optionS extends JsonColumn[Option[SimpleMapOfStringsClass]]
-  object mapIntoClass extends JsonColumn[Map[String, SimpleMapOfStringsClass]]
+
+  object key extends PrimitiveColumn[TestTable2, TestRow2, String](this)
+  object optionA extends OptionalPrimitiveColumn[TestTable2, TestRow2, Int](this)
+  object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)
+  object optionS extends JsonColumn[TestTable2, TestRow2, Option[SimpleMapOfStringsClass]](this)
+  object mapIntoClass extends JsonColumn[TestTable2, TestRow2, Map[String, SimpleMapOfStringsClass]](this)
   val _key = key
 }
 
