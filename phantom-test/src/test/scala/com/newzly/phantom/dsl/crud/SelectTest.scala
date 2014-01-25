@@ -1,28 +1,18 @@
 package com.newzly.phantom.dsl.crud
 
-
-import java.net.InetAddress
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{Primitive, BaseTest}
-import com.newzly.phantom.tables.Primitives
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ Primitive, Primitives }
 
 class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "selectTest"
 
   "Select" should "work fine" in {
-    object Primitives extends Primitives {
-      override def tableName = "PrimitivesSelect"
-    }
-
-    val row = Primitive("1", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002)
-    )
-
+    val row = Primitive.sample
     val rcp = Primitives.create(_.pkey,
       _.long,
       _.boolean,

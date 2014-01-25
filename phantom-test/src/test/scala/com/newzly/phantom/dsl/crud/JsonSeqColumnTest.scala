@@ -2,33 +2,16 @@ package com.newzly.phantom.dsl.crud
 
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.AsyncAssertions
-import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.{ CassandraTable, PrimitiveColumn, JsonSeqColumn }
-import com.newzly.phantom.field.{ LongOrderKey, UUIDPk}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{ BaseTest, JsonSeqColumnRow, Recipe }
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ JsonTypeSeqColumnTable, T }
 
 class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
 
-  class JsonTypeSeqColumnTable extends CassandraTable[JsonTypeSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonTypeSeqColumnTable]
-  with LongOrderKey[JsonTypeSeqColumnTable] {
-    override def fromRow(r: Row): JsonSeqColumnRow = {
-      JsonSeqColumnRow(pkey(r), jtsc(r))
-    }
-    object pkey extends PrimitiveColumn[String]
-    object jtsc extends JsonSeqColumn[Recipe]
-  }
-
-  object JsonTypeSeqColumnTable extends JsonTypeSeqColumnTable {
-    def apply(_tableName: String) = new JsonTypeSeqColumnTable {
-      override val tableName = _tableName
-    }
-  }
-
   "JsonTypeSeqColumn" should "work fine for create" in {
-    val insert = JsonTypeSeqColumnTable("JsonTypeSeqColumnTableCreate").create(_.id, _.pkey, _.jtsc).execute()
+    val insert = JsonTypeSeqColumnTable.create(_.id, _.pkey, _.jtsc).execute()
 
     insert successful {
       _ => info("table successful created")
@@ -36,7 +19,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
   }
 
   it should "work fine in insert" in {
-    val table = JsonTypeSeqColumnTable("JsonTypeSeqColumnTableInsert")
+    val table = JsonTypeSeqColumnTable
     val createTask = table.create(_.id, _.pkey, _.jtsc).execute()
 
     val resp = createTask flatMap {_=>
@@ -45,7 +28,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
         insertTask <- table.insert
           .value(_.id, UUIDs.timeBased())
           .value(_.pkey, "test")
-          .value(_.jtsc, Seq(T("t1"),T("t2"))).execute()
+          .value(_.jtsc, Seq(T("t1"), T("t2"))).execute()
         selectTask <- table.select.one
       } yield selectTask
       ////////
@@ -57,15 +40,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
       i1.execute()
 
     }
-
-
     resp.sync()
-    /*resp successful {
-      r => r.get match {
-        case row: JsonTypeSeqColumnRow => assert(row.pkey == "test")
-        case _ => fail("unexpected result returned from cassandra")
-      }
-    }*/
   }
 
   it should "work fine in update" in {
