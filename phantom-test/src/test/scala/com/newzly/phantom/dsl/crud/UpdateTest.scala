@@ -1,14 +1,14 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
-import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.newzly.phantom.helper.{ BaseTest, Tables, TestRow }
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper._
+import com.newzly.phantom.helper.Primitive
 
-
-class UpdateTest extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {
+class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -18,6 +18,7 @@ class UpdateTest extends BaseTest with Matchers with Tables  with Assertions wit
     object Primitives extends Primitives {
       override def tableName = "PrimitivesUpdateTest"
     }
+
     val row = Primitive("myStringUpdate", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002))
@@ -89,8 +90,8 @@ class UpdateTest extends BaseTest with Matchers with Tables  with Assertions wit
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = TestRow("w", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
-      Map(3 -> "OO"))
+
+    val row = TableHelper.getAUniqueJsonTestRow
 
     val updatedRow = row.copy(
       list = Seq ("new"),

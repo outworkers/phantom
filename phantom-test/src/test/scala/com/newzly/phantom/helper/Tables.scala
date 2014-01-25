@@ -15,14 +15,6 @@ case class Author(
 
 case class SimpleMapOfStringsClass(something: Map[String, Int])
 
-case class TestRow(
-  key: String,
-  optionA: Option[Int],
-  classS: SimpleMapOfStringsClass,
-  optionS: Option[SimpleMapOfStringsClass],
-  map: Map[String, SimpleMapOfStringsClass]
-)
-
 case class TestList(key: String, l: List[String])
 
 case class Primitive(

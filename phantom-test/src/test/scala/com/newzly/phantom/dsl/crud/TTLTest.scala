@@ -1,15 +1,18 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
-import org.scalatest.{ Assertions, Matchers, Inside }
-import com.newzly.phantom.helper.{BaseTest, Tables}
-import com.twitter.util.Duration
-import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 
-class TTLTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions with Inside {
+import org.scalatest.{ Assertions, Matchers, Inside }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.time.SpanSugar._
+
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.{Primitive, BaseTest, Primitives}
+import com.twitter.util.Duration
+
+class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertions with Inside {
   val keySpace: String = "TTLTest"
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "expire inserterd records" in {

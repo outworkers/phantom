@@ -1,14 +1,14 @@
 package com.newzly.phantom.dsl.crud
 
 
-import org.scalatest.{Assertions, Matchers}
-import com.newzly.phantom.helper.{BaseTest, Tables}
 import java.net.InetAddress
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
+import com.newzly.phantom.helper.{Primitive, BaseTest, Primitives}
 
-class SelectTest extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {
+class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "selectTest"
 
@@ -16,9 +16,12 @@ class SelectTest extends BaseTest with Matchers with Tables  with Assertions wit
     object Primitives extends Primitives {
       override def tableName = "PrimitivesSelect"
     }
-    val row = Primitive("1", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
+
+    val row = Primitive("1", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002))
+      BigInt(1002)
+    )
+
     val rcp = Primitives.create(_.pkey,
       _.long,
       _.boolean,
@@ -46,7 +49,7 @@ class SelectTest extends BaseTest with Matchers with Tables  with Assertions wit
           for {
             a <- Primitives.select.fetch
             b <- Primitives.select.where(_.pkey eqs "1").one
-          } yield (a contains (row),b.get == row)
+          } yield (a contains row, b.get == row)
 
         }
       }
