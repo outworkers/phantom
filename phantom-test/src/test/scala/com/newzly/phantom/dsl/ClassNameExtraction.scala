@@ -4,9 +4,9 @@ package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
 
-import com.datastax.driver.core.{ Session, Row }
-import com.newzly.phantom._
+import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.Implicits._
 
 
 trait Test {
@@ -18,23 +18,25 @@ trait Test {
       val str = fullName.substring(index + 9, fullName.length)
       str.replaceAll("[(\\$\\d+\\$)]", "")
     } else {
-      fullName.replaceAll("[(\\$\\d+\\$)]", "");
+      fullName.replaceAll("[(\\$\\d+\\$)]", "")
     }
   }
   val name: String = _name
 }
 
-object Test extends PrimitiveColumn[String]
 
 case class CustomRecord(name: String, mp: Map[String, String])
+
 class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-  object record extends PrimitiveColumn[String]
+  object record extends PrimitiveColumn[TestTableNames, CustomRecord, String](this)
   val _key = record
-  object sampleLongTextColumnDefinition extends MapColumn[String, String]
+  object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
   override def fromRow(r: Row): CustomRecord = CustomRecord(record(r), sampleLongTextColumnDefinition(r))
 }
 object TestTableNames extends TestTableNames
+
+object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTableNames)
 
 
 class TestNames {

@@ -2,7 +2,8 @@ package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
-import com.newzly.phantom.helper.{ModelSampler, Sampler, TestSampler}
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.Implicits._
 
 case class TestRow(
   key: String,
@@ -28,17 +29,17 @@ object TestRow extends ModelSampler[TestRow] {
 
 sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
-  object key extends PrimitiveColumn[String]
+  object key extends PrimitiveColumn[TestTable, TestRow, String](this)
 
-  object list extends SeqColumn[String]
+  object list extends SeqColumn[TestTable, TestRow, String](this)
 
-  object setText extends SetColumn[String]
+  object setText extends SetColumn[TestTable, TestRow, String](this)
 
-  object mapTextToText extends MapColumn[String, String]
+  object mapTextToText extends MapColumn[TestTable, TestRow, String, String](this)
 
-  object setInt extends SetColumn[Int]
+  object setInt extends SetColumn[TestTable, TestRow, Int](this)
 
-  object mapIntToText extends MapColumn[Int, String]
+  object mapIntToText extends MapColumn[TestTable, TestRow, Int, String](this)
 
   def fromRow(r: Row): TestRow = {
     TestRow(

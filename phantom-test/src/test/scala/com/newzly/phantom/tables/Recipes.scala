@@ -2,8 +2,9 @@ package com.newzly.phantom.tables
 
 import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
-import com.newzly.phantom._
+import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.Implicits._
 
 
 case class Author(
@@ -69,21 +70,21 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
     Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
   }
 
-  object url extends PrimitiveColumn[String]
+  object url extends PrimitiveColumn[Recipes, Recipe, String](this)
 
-  object description extends OptionalPrimitiveColumn[String]
+  object description extends OptionalPrimitiveColumn[Recipes, Recipe, String](this)
 
-  object ingredients extends SeqColumn[String]
+  object ingredients extends SeqColumn[Recipes, Recipe, String](this)
 
-  object author extends JsonColumn[Author]
+  object author extends JsonColumn[Recipes, Recipe, Author](this)
 
-  object servings extends OptionalPrimitiveColumn[Int]
+  object servings extends OptionalPrimitiveColumn[Recipes, Recipe, Int](this)
 
-  object last_checked_at extends PrimitiveColumn[Date]
+  object last_checked_at extends PrimitiveColumn[Recipes, Recipe, Date](this)
 
-  object props extends MapColumn[String, String]
+  object props extends MapColumn[Recipes, Recipe, String, String](this)
 
-  object uid extends PrimitiveColumn[UUID]
+  object uid extends PrimitiveColumn[Recipes, Recipe, UUID](this)
 
   val _key = url
 }
