@@ -4,9 +4,10 @@ package com.newzly.phantom.dsl
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
 
-import com.newzly.phantom.helper.{ Articles, BaseTest, TableHelper }
+import com.newzly.phantom.helper.{ BaseTest, TableHelper }
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.tables.Articles
 
 
 class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {

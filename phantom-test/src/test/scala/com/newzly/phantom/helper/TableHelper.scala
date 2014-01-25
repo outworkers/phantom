@@ -2,6 +2,7 @@ package com.newzly.phantom.helper
 
 import java.util.{ Date, UUID }
 import scala.util.Random
+import com.newzly.phantom.tables.Article
 
 
 object Sampler {
@@ -44,35 +45,6 @@ object TableHelper {
       SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())),
       Some(SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger()))),
       Map(Sampler.getAUniqueString -> SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())))
-    )
-  }
-
-  /**
-   * Generate a unique article.
-   * @param order The order index of the article.
-   * @return A unique article.
-   */
-  def getAUniqueArticle(order: Long = Sampler.getARandomInteger()): Article = {
-    Article(
-      Sampler.getAUniqueString,
-      UUID.randomUUID(),
-      order
-    )
-  }
-
-  /**
-   * Generate a unique recipe using the sampler.
-   * @return A Recipe.
-   */
-  def getAUniqueRecipe: Recipe = {
-    Recipe(
-      Sampler.getAUniqueString,
-      Some(Sampler.getAUniqueString),
-      Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
-      None,
-      Some(Sampler.getARandomInteger()),
-      new Date(),
-      Map.empty[String, String]
     )
   }
 }

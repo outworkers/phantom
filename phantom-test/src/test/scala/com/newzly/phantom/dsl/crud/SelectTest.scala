@@ -6,7 +6,8 @@ import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{Primitive, BaseTest, Primitives}
+import com.newzly.phantom.helper.{Primitive, BaseTest}
+import com.newzly.phantom.tables.Primitives
 
 class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
