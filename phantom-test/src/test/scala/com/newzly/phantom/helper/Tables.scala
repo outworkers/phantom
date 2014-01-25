@@ -1,148 +1,156 @@
 package com.newzly.phantom.helper
 
+import java.util.{ Date, UUID }
+import com.datastax.driver.core.Row
 import com.newzly.phantom._
-import com.datastax.driver.core.{Session, Row}
-import java.util.{UUID, Date}
-import com.twitter.util.{Await, Future}
-import com.twitter.conversions.time._
+import com.newzly.phantom.field.{LongOrderKey, UUIDPk}
 
-case class ClassS(something: String)
+case class SimpleStringClass(something: String)
 
-case class Author(firstName: String, lastName: String, bio: Option[String])
+case class Author(
+  firstName: String,
+  lastName: String,
+  bio: Option[String]
+)
+
+case class SimpleMapOfStringsClass(something: Map[String, Int])
+
+case class TestRow(
+  key: String,
+  optionA: Option[Int],
+  classS: SimpleMapOfStringsClass,
+  optionS: Option[SimpleMapOfStringsClass],
+  map: Map[String, SimpleMapOfStringsClass]
+)
+
 
 case class TestList(key: String, l: List[String])
 
-case class TestRow(key: String,
-                   list: Seq[String],
-                   setText: Set[String],
-                   mapTextToText: Map[String, String],
-                   setInt: Set[Int],
-                   mapIntToText: Map[Int, String]
-                    )
+case class Primitive(
+  pkey: String,
+  long: Long,
+  boolean: Boolean,
+  bDecimal: BigDecimal,
+  double: Double,
+  float: Float,
+  inet: java.net.InetAddress,
+  int: Int,
+  date: java.util.Date,
+  uuid: java.util.UUID,
+  bi: BigInt
+)
 
+case class Recipe(
+  url: String,
+  description: Option[String],
+  ingredients: Seq[String],
+  author: Option[Author],
+  servings: Option[Int],
+  lastCheckedAt: java.util.Date,
+  props: Map[String, String]
+)
 
-trait Tables {
+case class Article(name: String, id: UUID, order_id: Long)
 
-  private[this] implicit class SyncFuture[T](future: Future[T]) {
-    def sync(): T = {
-      Await.result(future, 10.seconds)
-    }
+class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
+  object name extends PrimitiveColumn[String]
+  override def fromRow(row: Row): Article = {
+    Article(name(row), id(row), order_id(row))
+  }
+}
+
+class Primitives extends CassandraTable[Primitives, Primitive] {
+  override def fromRow(r: Row): Primitive = {
+    Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
+      int(r), date(r), uuid(r), bi(r))
   }
 
-  case class Primitive(
-                        pkey: String,
-                        long: Long,
-                        boolean: Boolean,
-                        bDecimal: BigDecimal,
-                        double: Double,
-                        float: Float,
-                        inet: java.net.InetAddress,
-                        int: Int,
-                        date: java.util.Date,
-                        uuid: java.util.UUID,
-                        bi: BigInt)
+  object pkey extends PrimitiveColumn[String]
 
-  class Primitives extends CassandraTable[Primitives, Primitive] {
-    override def fromRow(r: Row): Primitive = {
-      Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
-        int(r), date(r), uuid(r), bi(r))
-    }
+  object long extends PrimitiveColumn[Long]
 
-    object pkey extends PrimitiveColumn[String]
+  object boolean extends PrimitiveColumn[Boolean]
 
-    object long extends PrimitiveColumn[Long]
+  object bDecimal extends PrimitiveColumn[BigDecimal]
 
-    object boolean extends PrimitiveColumn[Boolean]
+  object double extends PrimitiveColumn[Double]
 
-    object bDecimal extends PrimitiveColumn[BigDecimal]
+  object float extends PrimitiveColumn[Float]
 
-    object double extends PrimitiveColumn[Double]
+  object inet extends PrimitiveColumn[java.net.InetAddress]
 
-    object float extends PrimitiveColumn[Float]
+  object int extends PrimitiveColumn[Int]
 
-    object inet extends PrimitiveColumn[java.net.InetAddress]
+  object date extends PrimitiveColumn[java.util.Date]
 
-    object int extends PrimitiveColumn[Int]
+  object uuid extends PrimitiveColumn[java.util.UUID]
 
-    object date extends PrimitiveColumn[java.util.Date]
+  object bi extends PrimitiveColumn[BigInt]
 
-    object uuid extends PrimitiveColumn[java.util.UUID]
+  val _key = pkey
+}
 
-    object bi extends PrimitiveColumn[BigInt]
+class TestTable extends CassandraTable[TestTable, TestRow] {
 
-    val _key = pkey
+  object key extends PrimitiveColumn[String]
+
+  object list extends SeqColumn[String]
+
+  object setText extends SetColumn[String]
+
+  object mapTextToText extends MapColumn[String, String]
+
+  object setInt extends SetColumn[Int]
+
+  object mapIntToText extends MapColumn[Int, String]
+
+  def fromRow(r: Row): TestRow = {
+    TestRow(key(r), list(r),
+      setText(r),
+      mapTextToText(r),
+      setInt(r).toSet,
+      mapIntToText(r))
   }
 
-  class TestTable extends CassandraTable[TestTable, TestRow] {
+  val _key = key
+}
 
-    object key extends PrimitiveColumn[String]
+case class MyTestRow(key: String, optionA: Option[Int], classS: SimpleStringClass)
 
-    object list extends SeqColumn[String]
-
-    object setText extends SetColumn[String]
-
-    object mapTextToText extends MapColumn[String, String]
-
-    object setInt extends SetColumn[Int]
-
-    object mapIntToText extends MapColumn[Int, String]
-
-    def fromRow(r: Row): TestRow = {
-      TestRow(key(r), list(r),
-        setText(r),
-        mapTextToText(r),
-        setInt(r).toSet,
-        mapIntToText(r))
-    }
-
-    val _key = key
+class MyTest extends CassandraTable[MyTest, MyTestRow] {
+  def fromRow(r: Row): MyTestRow = {
+    MyTestRow(key(r), optionA(r), classS(r))
   }
 
-  case class MyTestRow(key: String, optionA: Option[Int], classS: ClassS)
+  object key extends PrimitiveColumn[String]
 
-  class MyTest extends CassandraTable[MyTest, MyTestRow] {
-    def fromRow(r: Row): MyTestRow = {
-      MyTestRow(key(r), optionA(r), classS(r))
-    }
+  object optionA extends OptionalPrimitiveColumn[Int]
 
-    object key extends PrimitiveColumn[String]
+  object classS extends JsonColumn[SimpleStringClass]
 
-    object optionA extends OptionalPrimitiveColumn[Int]
+  val _key = key
+}
 
-    object classS extends JsonColumn[ClassS]
 
-    val _key = key
+class Recipes extends CassandraTable[Recipes, Recipe] {
+  override def fromRow(r: Row): Recipe = {
+    Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
   }
+  object url extends PrimitiveColumn[String]
 
-  case class Recipe(
-                     url: String,
-                     description: Option[String],
-                     ingredients: Seq[String],
-                     author: Option[Author],
-                     servings: Option[Int],
-                     lastCheckedAt: java.util.Date,
-                     props: Map[String, String])
+  object description extends OptionalPrimitiveColumn[String]
 
-  class Recipes extends CassandraTable[Recipes, Recipe] {
-    override def fromRow(r: Row): Recipe = {
-      Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
-    }
-    object url extends PrimitiveColumn[String]
+  object ingredients extends SeqColumn[String]
 
-    object description extends OptionalPrimitiveColumn[String]
+  object author extends JsonColumn[Author]
 
-    object ingredients extends SeqColumn[String]
+  object servings extends OptionalPrimitiveColumn[Int]
 
-    object author extends JsonColumn[Author]
+  object last_checked_at extends PrimitiveColumn[Date]
 
-    object servings extends OptionalPrimitiveColumn[Int]
+  object props extends MapColumn[String, String]
 
-    object last_checked_at extends PrimitiveColumn[Date]
+  object uid extends PrimitiveColumn[UUID]
 
-    object props extends MapColumn[String, String]
-
-    object uid extends PrimitiveColumn[UUID]
-
-    val _key = url
-  }
+  val _key = url
 }

@@ -9,7 +9,7 @@ import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.datastax.driver.core.{ Session, Row }
 import com.datastax.driver.core.exceptions.SyntaxError
 import com.newzly.phantom._
-import com.newzly.phantom.helper.{BaseTest => MyBaseTest, Tables}
+import com.newzly.phantom.helper.{BaseTest => MyBaseTest, TableHelper, SimpleMapOfStringsClass, Tables, TestRow}
 import com.twitter.util.{Await, Duration, Future, NonFatal}
 
 class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
@@ -23,9 +23,9 @@ class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
       }
       object key extends PrimitiveColumn[String]
       object optionA extends OptionalPrimitiveColumn[Int]
-      object classS extends JsonColumn[ClassSMap]
-      object optionS extends JsonColumn[Option[ClassSMap]]
-      object mapIntoClass extends JsonColumn[Map[String, ClassSMap]]
+      object classS extends JsonColumn[SimpleMapOfStringsClass]
+      object optionS extends JsonColumn[Option[SimpleMapOfStringsClass]]
+      object mapIntoClass extends JsonColumn[Map[String, SimpleMapOfStringsClass]]
       val _key = key
     }
 
@@ -44,6 +44,8 @@ class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
     object TestTable2 extends TestTable2 {
       override val tableName = "TestTable2"
     }
+
+    val row = TableHelper.getAUniqueJsonTestRow
 
     val rcp = TestTable2.insert
       .value(_.key, row.key)

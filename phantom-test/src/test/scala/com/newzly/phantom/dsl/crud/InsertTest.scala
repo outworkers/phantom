@@ -7,7 +7,7 @@ import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
 import com.newzly.phantom._
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.helper.ClassS
+import com.newzly.phantom.helper.SimpleStringClass
 import com.newzly.phantom.helper.Author
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.time.SpanSugar._
@@ -126,7 +126,7 @@ class InsertTest  extends BaseTest with Matchers  with Tables with Assertions wi
       """.stripMargin //
     session.execute(myTestTable)
 
-    val row = MyTestRow("someKey", Some(2), ClassS("lol"))
+    val row = MyTestRow("someKey", Some(2), SimpleStringClass("lol"))
 
     val rcp = MyTest.insert
       .value(_.key, row.key)
