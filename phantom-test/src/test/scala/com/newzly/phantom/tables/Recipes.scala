@@ -3,7 +3,7 @@ package com.newzly.phantom.tables
 import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
-import com.newzly.phantom.helper.{ModelSampler, Sampler, TestSampler}
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 
 
 case class Author(
@@ -38,7 +38,7 @@ object Recipe extends ModelSampler {
       Sampler.getAUniqueString,
       Some(Sampler.getAUniqueString),
       Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
-      None,
+      Some(Author.sample),
       Some(Sampler.getARandomInteger()),
       new Date(),
       Map.empty[String, String]

@@ -5,13 +5,13 @@ import org.scalatest.concurrent.AsyncAssertions
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.tables.{ JsonTypeSeqColumnTable, T }
+import com.newzly.phantom.tables.{ JsonSeqColumnTable, T }
 
 class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
 
   "JsonTypeSeqColumn" should "work fine for create" in {
-    val insert = JsonTypeSeqColumnTable.create(_.id, _.pkey, _.jtsc).execute()
+    val insert = JsonSeqColumnTable.create(_.id, _.pkey, _.jtsc).execute()
 
     insert successful {
       _ => info("table successful created")
@@ -19,7 +19,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
   }
 
   it should "work fine in insert" in {
-    val table = JsonTypeSeqColumnTable
+    val table = JsonSeqColumnTable
     val createTask = table.create(_.id, _.pkey, _.jtsc).execute()
 
     val resp = createTask flatMap {_=>

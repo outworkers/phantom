@@ -66,18 +66,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
 
   it should "work fine with List, Set, Map" in {
     val row = TestRow.sample
-
-    val createTestTable =
-      """|CREATE TABLE TestTableInsert(
-        |key text PRIMARY KEY,
-        |list list<text>,
-        |setText set<text>,
-        |mapTextToText map<text,text>,
-        |setInt set<int>,
-        |mapIntToText map<int,text> );
-      """.stripMargin
-
-    session.execute(createTestTable)
+    session.execute(TestTable.createSchema)
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -103,16 +92,9 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with custom types" in {
-    val myTestTable =
-      """|CREATE TABLE MyTestInsert(
-        |key text PRIMARY KEY,
-        |optionA int,
-        |classS text,
-        );
-      """.stripMargin //
-    session.execute(myTestTable)
+    session.execute(MyTest.createSchema)
 
-    val row = MyTestRow("someKey", Some(2), SimpleStringClass("lol"))
+    val row = MyTestRow.sample
 
     val rcp = MyTest.insert
       .value(_.key, row.key)
@@ -134,8 +116,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with Mix" in {
-
-    val author = Author("Tony", "Clark", Some("great chef..."))
     val r = Recipe.sample
 
     val rcp = Recipes.create(_.url,
@@ -178,7 +158,10 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
 
     val row = TestList.sample
 
-    val f = MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute() flatMap {
+    val f = MyTest.insert
+      .value(_.key, row.key)
+      .value(_.list, row.l)
+      .execute() flatMap {
       _ => MyTest.select.one
     }
 
@@ -198,7 +181,10 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
 
     val row = TestList.sample
 
-    val recipeF = MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute() flatMap {
+    val recipeF = MyTest.insert
+      .value(_.key, row.key)
+      .value(_.testlist, row.l)
+      .execute() flatMap {
       _ => MyTest.select.one
     }
 

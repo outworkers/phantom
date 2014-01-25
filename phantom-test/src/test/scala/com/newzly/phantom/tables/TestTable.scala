@@ -57,7 +57,14 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 object TestTable extends TestTable with TestSampler[TestRow] {
 
   def createSchema: String = {
-    ""
+    """|CREATE TABLE TestTableInsert(
+          |key text PRIMARY KEY,
+          |list list<text>,
+          |setText set<text>,
+          |mapTextToText map<text,text>,
+          |setInt set<int>,
+          |mapIntToText map<int,text> );
+        """.stripMargin
   }
 }
 

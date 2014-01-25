@@ -29,7 +29,7 @@ sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
   val _key = pkey
 }
 
-object PrimitivesJoda extends PrimitivesJoda with TestSampler {
+object PrimitivesJoda extends PrimitivesJoda with TestSampler[JodaRow] {
 
   override val tableName = "PrimitivesJoda"
 

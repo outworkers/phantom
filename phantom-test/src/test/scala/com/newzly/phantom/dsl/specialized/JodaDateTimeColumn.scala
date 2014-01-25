@@ -1,6 +1,5 @@
 package com.newzly.phantom.dsl.specialized
 
-import org.joda.time.DateTime
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
@@ -15,9 +14,11 @@ class JodaDateTimeColumn extends BaseTest with Matchers with Assertions with Asy
   it should "work fine" in {
     val row = JodaRow.sample
 
-    val w = PrimitivesJoda.create(_.pkey,_.int,_.bi).execute() flatMap {
+    val w = PrimitivesJoda.create(_.pkey, _.int, _.bi).execute() flatMap {
       _ => {
-        PrimitivesJoda.insert.value(_.pkey,"w").value(_.int,1)
+        PrimitivesJoda.insert
+          .value(_.pkey, row.pkey)
+          .value(_.int, row.int)
           .value(_.bi, row.bi).execute()
         }
       } flatMap  {
