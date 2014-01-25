@@ -14,25 +14,16 @@ class JsonColumnTest extends BaseTest with Matchers  {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "correctly serialize and store complex structures" in {
-    val createTestTable =
-      """|CREATE TABLE TestTable2(
-        |key text PRIMARY KEY,
-        |optionA int,
-        |classS text,
-        |optionS text,
-        |mapIntoClass map<text,text>);
-      """.stripMargin //        #|
-
-    session.execute(createTestTable)
+    session.execute(TestTable2.createSchema)
 
     val row = TestRow2.sample
 
     val rcp = TestTable2.insert
       .value(_.key, row.key)
-      .valueOrNull(_.optionA, row.optionA)
-      .value(_.classS, row.classS)
-      .value(_.optionS, row.optionS)
-      .value(_.mapIntoClass, row.map)
+      .valueOrNull(_.optionA, row.optionalInt)
+      .value(_.classS, row.simpleMapOfString)
+      .value(_.optionS, row.optionalSimpleMapOfString)
+      .value(_.mapIntoClass, row.mapOfStringToCaseClass)
       .execute()
 
     rcp.successful {

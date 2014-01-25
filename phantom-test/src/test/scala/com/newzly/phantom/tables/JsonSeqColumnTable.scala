@@ -8,10 +8,10 @@ import com.newzly.phantom.helper.TestSampler
 sealed class JsonSeqColumnTable extends CassandraTable[JsonSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonSeqColumnTable]
 with LongOrderKey[JsonSeqColumnTable] {
   override def fromRow(r: Row): JsonSeqColumnRow = {
-    JsonSeqColumnRow(pkey(r), jtsc(r))
+    JsonSeqColumnRow(pkey(r), recipes(r))
   }
   object pkey extends PrimitiveColumn[String]
-  object jtsc extends JsonSeqColumn[Recipe]
+  object recipes extends JsonSeqColumn[Recipe]
 }
 
 object JsonSeqColumnTable extends JsonSeqColumnTable with TestSampler[JsonSeqColumnRow] {
@@ -20,7 +20,7 @@ object JsonSeqColumnTable extends JsonSeqColumnTable with TestSampler[JsonSeqCol
   def createSchema: String =
     """|CREATE TABLE JsonSeqColumnTable(
       |pkey text PRIMARY KEY,
-      |jtsc seq<text>
+      |recipes seq<text>
       |);
     """.stripMargin
 }

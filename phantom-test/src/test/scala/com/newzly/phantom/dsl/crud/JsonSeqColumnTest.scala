@@ -5,13 +5,13 @@ import org.scalatest.concurrent.AsyncAssertions
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.tables.{ JsonSeqColumnTable, T }
+import com.newzly.phantom.tables.{ JsonSeqColumnTable, SimpleStringModel }
 
 class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
 
   "JsonTypeSeqColumn" should "work fine for create" in {
-    val insert = JsonSeqColumnTable.create(_.id, _.pkey, _.jtsc).execute()
+    val insert = JsonSeqColumnTable.create(_.id, _.pkey, _.recipes).execute()
 
     insert successful {
       _ => info("table successful created")
@@ -20,7 +20,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
 
   it should "work fine in insert" in {
     val table = JsonSeqColumnTable
-    val createTask = table.create(_.id, _.pkey, _.jtsc).execute()
+    val createTask = table.create(_.id, _.pkey, _.recipes).execute()
 
     val resp = createTask flatMap {_=>
       info("table created")
@@ -28,14 +28,14 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
         insertTask <- table.insert
           .value(_.id, UUIDs.timeBased())
           .value(_.pkey, "test")
-          .value(_.jtsc, Seq(T("t1"), T("t2"))).execute()
+          .value(_.recipes, Seq(SimpleStringModel("t1"), SimpleStringModel("t2"))).execute()
         selectTask <- table.select.one
       } yield selectTask
       ////////
       val i1 = table.insert
         .value(_.id, UUIDs.timeBased())
         .value(_.pkey, "test")
-        .value(_.jtsc, Seq.empty)
+        .value(_.recipes, Seq.empty)
 
       i1.execute()
 
