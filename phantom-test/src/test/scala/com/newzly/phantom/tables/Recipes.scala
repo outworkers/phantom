@@ -22,6 +22,8 @@ case class Recipe(
   props: Map[String, String]
 )
 
+case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])
+
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   override def fromRow(r: Row): Recipe = {
@@ -59,5 +61,9 @@ object Recipes extends Recipes with TestSampler[Recipe] {
       new Date(),
       Map.empty[String, String]
     )
+  }
+
+  def createSchema: String = {
+    ""
   }
 }

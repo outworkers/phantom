@@ -7,6 +7,7 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper._
 import com.twitter.util.NonFatal
+import com.newzly.phantom.tables.TestTable2
 
 class JsonColumnTest extends BaseTest with Matchers  {
   val keySpace: String = "JsonTypeSeqTest"

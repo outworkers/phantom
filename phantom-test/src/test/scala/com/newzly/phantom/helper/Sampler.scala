@@ -1,9 +1,7 @@
 package com.newzly.phantom.helper
 
-import java.util.{ Date, UUID }
+import java.util.UUID
 import scala.util.Random
-import com.newzly.phantom.tables.Article
-
 
 object Sampler {
 
@@ -29,22 +27,5 @@ object Sampler {
    */
   def getAUniqueString: String = {
     UUID.randomUUID().toString
-  }
-}
-
-object TableHelper {
-
-  /**
-   * Generates a random unique row for a TestRow cassandra table.
-   * @return A unique Test Row with nested JSON structures..
-   */
-  def getAUniqueJsonTestRow: TestRow = {
-    TestRow(
-      Sampler.getAUniqueString,
-      Some(Sampler.getARandomInteger()),
-      SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())),
-      Some(SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger()))),
-      Map(Sampler.getAUniqueString -> SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())))
-    )
   }
 }
