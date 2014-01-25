@@ -7,7 +7,7 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper._
 import com.newzly.phantom.helper.Primitive
-import com.newzly.phantom.tables.Primitives
+import com.newzly.phantom.tables.{TestTable, Primitives}
 
 class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"

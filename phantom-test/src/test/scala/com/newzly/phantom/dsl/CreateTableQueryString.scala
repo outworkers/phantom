@@ -1,8 +1,8 @@
 package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
-import com.newzly.phantom.helper.{ TableHelper, TestTable }
-import com.newzly.phantom.tables.{Recipes, Primitives}
+import com.newzly.phantom.helper.{ TableHelper }
+import com.newzly.phantom.tables.{TestTable, Recipes, Primitives}
 
 class CreateTableQueryString extends FlatSpec {
 

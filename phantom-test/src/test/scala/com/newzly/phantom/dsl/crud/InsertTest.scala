@@ -11,18 +11,18 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.{
   Author,
   BaseTest,
-  MyTest,
-  MyTestRow,
   Primitive,
   Recipe,
   SimpleStringClass,
   TableHelper,
   TestList,
-  TestRow,
-  TestTable,
-  TestTable2
+  TestRow
 }
-import com.newzly.phantom.tables.{Recipes, Primitives}
+import com.newzly.phantom.tables._
+import scala.Some
+import com.newzly.phantom.helper.SimpleStringClass
+import com.newzly.phantom.helper.TestList
+import com.newzly.phantom.tables.MyTestRow
 
 
 class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAssertions {
