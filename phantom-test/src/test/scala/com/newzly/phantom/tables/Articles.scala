@@ -31,7 +31,7 @@ sealed class Articles private() extends CassandraTable[Articles, Article] with U
   }
 }
 
-object Articles extends Articles with TestSampler[Article] {
+object Articles extends Articles with TestSampler[Articles, Article] {
 
   override def tableName = "articlestest"
 

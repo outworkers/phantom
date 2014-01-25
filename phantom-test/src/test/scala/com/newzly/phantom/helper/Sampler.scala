@@ -15,7 +15,7 @@ object Sampler {
    * @return Integer between min and max, inclusive.
    * @see java.util.Random#nextInt(int)
    */
-  def getARandomInteger(min: Int = Int.MinValue, max: Int = Int.MaxValue): Int = {
+  def getARandomInteger(min: Int = 1, max: Int = Int.MaxValue): Int = {
     val rand = new Random()
     rand.nextInt((max - min) + 1) + min
   }

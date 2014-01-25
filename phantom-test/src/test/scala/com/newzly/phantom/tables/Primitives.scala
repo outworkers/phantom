@@ -69,7 +69,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   val _key = pkey
 }
 
-object Primitives extends Primitives with TestSampler[Primitive] {
+object Primitives extends Primitives with TestSampler[Primitives, Primitive] {
   override val tableName = "Primitives"
 
   def createSchema: String = ""

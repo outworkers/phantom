@@ -89,7 +89,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 }
 
 
-object Recipes extends Recipes with TestSampler[Recipe] {
+object Recipes extends Recipes with TestSampler[Recipes, Recipe] {
   override def tableName = "Recipes"
 
   def createSchema: String = {

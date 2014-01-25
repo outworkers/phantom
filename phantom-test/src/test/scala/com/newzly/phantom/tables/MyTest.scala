@@ -25,7 +25,7 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
   object key extends PrimitiveColumn[String]
 
-  object list extends ListColumn[String]
+  object stringlist extends ListColumn[String]
 
   object optionA extends OptionalPrimitiveColumn[Int]
 
@@ -34,15 +34,15 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   val _key = key
 }
 
-object MyTest extends MyTest with TestSampler[MyTestRow] {
+object MyTest extends MyTest with TestSampler[MyTest, MyTestRow] {
   override val tableName = "mytest"
   def createSchema = {
     """|CREATE TABLE MyTestInsert(
       |key text PRIMARY KEY,
-      |list<string>,
+      |stringlist list<text>,
       |optionA int,
-      |classS text,
-        );
+      |classS text
+      );
     """.stripMargin
   }
 }

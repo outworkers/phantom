@@ -1,10 +1,16 @@
 package com.newzly.phantom.helper
 
+import java.util.concurrent.atomic.AtomicBoolean
+import org.apache.log4j.Logger
+import com.datastax.driver.core.Session
+import com.newzly.phantom.CassandraTable
+
 /**
  * A basic trait implemented by all test tables.
  * @tparam Row The case class type returned.
  */
-trait TestSampler[Row] {
+trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
+  self : CassandraTable[Owner, Row] =>
 
   /**
    * This must specify the schema expected to exist in the database
@@ -12,6 +18,23 @@ trait TestSampler[Row] {
    * @return
    */
   def createSchema: String
+
+  /**
+   * Inserts the schema into the database in a blocking way.
+   * @param session The Cassandra session.
+   */
+  def insertSchema(session: Session): Unit = {
+    logger.info(s"Schema inserted: ${schemaCreated.get()}" )
+    if (!schemaCreated.get()) {
+      logger.info("Schema agreement in progress: " + createSchema)
+      session.execute(createSchema)
+      schemaCreated.set(true)
+    }
+  }
+
+  private[this] val schemaCreated = new AtomicBoolean(false)
+
+
 }
 
 /**
