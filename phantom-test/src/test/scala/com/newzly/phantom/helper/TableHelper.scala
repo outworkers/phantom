@@ -1,6 +1,6 @@
 package com.newzly.phantom.helper
 
-import java.util.UUID
+import java.util.{ Date, UUID }
 import scala.util.Random
 
 
@@ -47,11 +47,28 @@ object TableHelper {
     )
   }
 
+  /**
+   * Generate a unique article.
+   * @param order The order index of the article.
+   * @return A unique article.
+   */
   def getAUniqueArticle(order: Long = Sampler.getARandomInteger()): Article = {
     Article(
       Sampler.getAUniqueString,
       UUID.randomUUID(),
       order
+    )
+  }
+
+  def getAUniqueRecipe: Recipe = {
+    Recipe(
+      Sampler.getAUniqueString,
+      Some(Sampler.getAUniqueString),
+      Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
+      None,
+      Some(Sampler.getARandomInteger()),
+      new Date(),
+      Map.empty[String, String]
     )
   }
 }
