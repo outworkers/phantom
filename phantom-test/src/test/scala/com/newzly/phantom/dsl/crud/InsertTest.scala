@@ -1,19 +1,31 @@
 package com.newzly.phantom.dsl.crud
 
-import org.scalatest.{Assertions, Matchers}
-import com.newzly.phantom.helper._
-import com.newzly.phantom.helper.{BaseTest, Tables}
-import com.datastax.driver.core.{Row, Session}
 import java.net.InetAddress
-import com.newzly.phantom._
-import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.helper.SimpleStringClass
-import com.newzly.phantom.helper.Author
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.time.SpanSugar._
+import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
+import org.scalatest.time.SpanSugar._
+import com.datastax.driver.core.utils.UUIDs
+import com.datastax.driver.core.Row
+import com.newzly.phantom._
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.{
+  Author,
+  BaseTest,
+  MyTest,
+  MyTestRow,
+  Primitive,
+  Recipe,
+  SimpleStringClass,
+  TableHelper,
+  TestList,
+  TestRow,
+  TestTable,
+  TestTable2
+}
+import com.newzly.phantom.tables.{Recipes, Primitives}
 
-class InsertTest  extends BaseTest with Matchers  with Tables with Assertions with AsyncAssertions {
+
+class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "InsertTestKeySpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -28,6 +40,7 @@ class InsertTest  extends BaseTest with Matchers  with Tables with Assertions wi
       InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
       BigInt(1002
       ))
+
     val rcp = Primitives.create(_.pkey,
       _.long,
       _.boolean,
@@ -153,7 +166,7 @@ class InsertTest  extends BaseTest with Matchers  with Tables with Assertions wi
     }
 
     val author = Author("Tony", "Clark", Some("great chef..."))
-    val r = Recipe("recipe_url", Some("desc"), Seq("ingr1", "ingr2"), Some(author), Some(4), new java.util.Date, Map("a" -> "b", "c" -> "d"))
+    val r = TableHelper.getAUniqueRecipe
 
     val rcp = Recipes.create(_.url,
       _.description,

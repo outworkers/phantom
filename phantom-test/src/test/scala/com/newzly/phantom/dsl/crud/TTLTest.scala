@@ -7,8 +7,9 @@ import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{Primitive, BaseTest, Primitives}
+import com.newzly.phantom.helper.{Primitive, BaseTest}
 import com.twitter.util.Duration
+import com.newzly.phantom.tables.Primitives
 
 class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertions with Inside {
   val keySpace: String = "TTLTest"
