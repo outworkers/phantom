@@ -1,14 +1,14 @@
 package com.newzly.phantom.query
 
-import com.newzly.phantom.{CassandraResultSetOperations, AbstractColumn, CassandraTable}
-import com.datastax.driver.core.{ResultSet, Session}
-import com.twitter.util.{FuturePool, Future}
+import com.datastax.driver.core.{ ResultSet, Session }
+import com.newzly.phantom.{ AbstractColumn, CassandraResultSetOperations, CassandraTable }
+import com.twitter.util.Future
 
-class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends CassandraResultSetOperations{
-  def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T,R] = {
+class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
+  def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T, R] = {
 
     val queryInit = s"CREATE TABLE ${table.tableName} ("
-    val queryColumns = columns.foldLeft("")((qb,c) => {
+    val queryColumns = columns.foldLeft("")((qb, c) => {
       val col = c(table)
       s"$qb, ${col.name} ${col.cassandraType}"
     })
@@ -17,7 +17,7 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends 
     //TODO support multiple keys
 
     val queryPrimaryKey  = s", PRIMARY KEY ($pk)"
-    new CreateQuery(table,queryInit+queryColumns.drop(1)+queryPrimaryKey+");")
+    new CreateQuery(table, queryInit + queryColumns.drop(1) + queryPrimaryKey+ ");")
   }
 
   val queryString = query

@@ -12,6 +12,7 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
   val keySpace: String = "deleteTest"
 
   "Delete" should "work fine, when deleting the whole row" in {
+    Primitives.insertSchema(session)
     val row = Primitive.sample
     val rcp = Primitives.create(_.pkey,
       _.long,
