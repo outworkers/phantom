@@ -4,10 +4,10 @@ package com.newzly.phantom.dsl
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
 
-import com.newzly.phantom.helper.{ BaseTest, TableHelper }
+import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.Articles
+import com.newzly.phantom.tables.{ Article, Articles }
 
 
 class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
@@ -15,13 +15,9 @@ class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions 
 
   it should "allow skipping records " in {
 
-    object Articles extends Articles {
-      override val tableName = "articlestest"
-    }
-
-    val article1 = TableHelper.getAUniqueArticle()
-    val article2 = TableHelper.getAUniqueArticle()
-    val article3 = TableHelper.getAUniqueArticle()
+    val article1 = Article.sample
+    val article2 = Article.sample
+    val article3 = Article.sample
 
     val result = for {
       i1 <- Articles.insert
