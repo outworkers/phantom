@@ -11,13 +11,13 @@ import com.newzly.phantom.helper.{TestSampler, ModelSampler, Sampler}
 
 case class SimpleStringClass(something: String)
 
-object SimpleStringClass extends ModelSampler {
+object SimpleStringClass extends ModelSampler[SimpleStringClass] {
   def sample: SimpleStringClass = SimpleStringClass(Sampler.getAUniqueString)
 }
 
 case class SimpleMapOfStringsClass(something: Map[String, Int])
 
-object SimpleMapOfStringsClass extends ModelSampler {
+object SimpleMapOfStringsClass extends ModelSampler[SimpleMapOfStringsClass] {
   def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(Map(
     Sampler.getAUniqueString -> Sampler.getARandomInteger(),
     Sampler.getAUniqueString -> Sampler.getARandomInteger(),
@@ -29,14 +29,14 @@ object SimpleMapOfStringsClass extends ModelSampler {
 
 case class TestList(key: String, l: List[String])
 
-object TestList extends ModelSampler {
+object TestList extends ModelSampler[TestList] {
   def sample: TestList = TestList(
     Sampler.getAUniqueString,
     List.range(0, 20).map(x => Sampler.getAUniqueString)
   )
 }
 
-case class SimpleStringModel(something: String) extends ModelSampler {
+case class SimpleStringModel(something: String) extends ModelSampler[SimpleStringModel] {
   def sample: SimpleStringModel = SimpleStringModel(Sampler.getAUniqueString)
 }
 
@@ -48,7 +48,7 @@ case class TestRow2(
   mapOfStringToCaseClass: Map[String, SimpleMapOfStringsClass]
 )
 
-object TestRow2 extends ModelSampler {
+object TestRow2 extends ModelSampler[TestRow2] {
   def sample: TestRow2 = {
     TestRow2(
       Sampler.getAUniqueString,
