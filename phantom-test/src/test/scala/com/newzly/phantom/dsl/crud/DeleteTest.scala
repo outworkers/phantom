@@ -1,14 +1,13 @@
 package com.newzly.phantom.dsl.crud
 
 import java.net.InetAddress
-import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.datastax.driver.core.{Row, Session}
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.{BaseTest, Tables}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.{ BaseTest, Primitive, Primitives }
 
-class DeleteTest extends BaseTest with Matchers  with Tables with Assertions with AsyncAssertions {
+class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "deleteTest"
 

@@ -37,17 +37,15 @@ case class TestRow(
   setText: Set[String],
   mapTextToText: Map[String, String],
   setInt: Set[Int],
-  mapIntToText: Map[Int, String],
-  mapIntToString: Map[Int, String]
+  mapIntToText: Map[Int, String]
 )
 
 case class TestRow2(
   key: String,
-  list: Seq[String],
-  setText: Set[String],
-  mapTextToText: Map[String, String],
-  setInt: Set[Int],
-  mapIntToText: Map[Int, String]
+  optionalInt: Option[Int],
+  simpleMapOfString: SimpleMapOfStringsClass,
+  optionalSimpleMapOfString: Option[SimpleMapOfStringsClass],
+  mapOfStringToCaseClass: Map[String, SimpleMapOfStringsClass]
 )
 
 case class Recipe(
@@ -134,7 +132,13 @@ class TestTable extends CassandraTable[TestTable, TestRow] {
 
 class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
   def fromRow(r: Row): TestRow2 = {
-    TestRow2(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
+    TestRow2(
+      key(r),
+      optionA(r),
+      classS(r),
+      optionS(r),
+      mapIntoClass(r)
+    )
   }
   object key extends PrimitiveColumn[String]
   object optionA extends OptionalPrimitiveColumn[Int]
@@ -163,9 +167,11 @@ class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
 
 class Recipes extends CassandraTable[Recipes, Recipe] {
+
   override def fromRow(r: Row): Recipe = {
     Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
   }
+
   object url extends PrimitiveColumn[String]
 
   object description extends OptionalPrimitiveColumn[String]

@@ -60,6 +60,10 @@ object TableHelper {
     )
   }
 
+  /**
+   * Generate a unique recipe using the sampler.
+   * @return A Recipe.
+   */
   def getAUniqueRecipe: Recipe = {
     Recipe(
       Sampler.getAUniqueString,
