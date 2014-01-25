@@ -20,7 +20,7 @@ case class Primitive(
   bi: BigInt
 )
 
-class Primitives extends CassandraTable[Primitives, Primitive] {
+sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   override def fromRow(r: Row): Primitive = {
     Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
       int(r), date(r), uuid(r), bi(r))
@@ -52,7 +52,7 @@ class Primitives extends CassandraTable[Primitives, Primitive] {
 }
 
 object Primitives extends Primitives with TestSampler[Primitive] {
-  override val tableName = "primitives"
+  override val tableName = "Primitives"
 
   def sample: Primitive = {
     Primitive(

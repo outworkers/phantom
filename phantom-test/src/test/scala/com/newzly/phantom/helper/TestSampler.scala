@@ -10,12 +10,6 @@ import scala.Product
 trait TestSampler[Row] {
 
   /**
-   * Implementing objects must specify a way to produce a sample.
-   * @return
-   */
-  def sample: Row
-
-  /**
    * This must specify the schema expected to exist in the database
    * for the specific table.
    * @return
@@ -26,9 +20,14 @@ trait TestSampler[Row] {
 /**
  * A simple model sampler trait.
  * Forces implementing case class models to provide a way to sample themselves.
+ * This can only be mixed into a case class or Product with Serializable implementor.
  */
 trait ModelSampler {
-  self: Product with Serializable =>
 
+  /**
+   * The sample method. Using basic sampling, this will produce a unique sample
+   * of the implementing class.
+   * @return A unique sample of the class.
+   */
   def sample: this.type
 }

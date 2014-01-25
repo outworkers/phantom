@@ -2,8 +2,7 @@ package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
-import com.newzly.phantom.helper.{Sampler, SimpleMapOfStringsClass, TestSampler}
-
+import com.newzly.phantom.helper.{ModelSampler, Sampler, TestSampler}
 
 case class TestRow(
   key: String,
@@ -14,6 +13,18 @@ case class TestRow(
   mapIntToText: Map[Int, String]
 )
 
+object TestRow extends ModelSampler {
+  def sample: TestRow = TestRow(
+    Sampler.getAUniqueString,
+    List.range(0, 50).map(_.toString).toSeq,
+    List.range(0, 50).map(_.toString).toSet,
+    List.range(0, 50).map(x => {Sampler.getAUniqueString -> Sampler.getAUniqueString}).toMap,
+    List.range(0, 50).toSet,
+    List.range(0, 50).map(x => {
+      x -> Sampler.getAUniqueString
+    }).toMap
+  )
+}
 
 sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
@@ -44,22 +55,6 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 }
 
 object TestTable extends TestTable with TestSampler[TestRow] {
-  def sample: TestRow = {
-
-    /**
-     * Generates a random unique row for a TestRow cassandra table.
-     * @return A unique Test Row with nested JSON structures..
-     */
-    def sample: TestRow = {
-      TestRow(
-        Sampler.getAUniqueString,
-        Some(Sampler.getARandomInteger()),
-        SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())),
-        Some(SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger()))),
-        Map(Sampler.getAUniqueString -> SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())))
-      )
-    }
-  }
 
   def createSchema: String = {
     ""

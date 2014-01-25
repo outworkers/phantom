@@ -1,16 +1,11 @@
 package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
-import com.newzly.phantom.helper.{ TableHelper }
-import com.newzly.phantom.tables.{TestTable, Recipes, Primitives}
+import com.newzly.phantom.tables.{ Primitives, Recipes, TestTable }
 
 class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in primitives table" in {
-    object Primitives extends Primitives {
-      override def tableName = "Primitives"
-    }
-
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.create(
       _.boolean,
@@ -39,11 +34,6 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = TableHelper.getAUniqueJsonTestRow
-
-    object TestTable extends TestTable {
-      override def tableName = "TestTable"
-    }
     val q = TestTable.create(
       _.key,
       _.list,
@@ -64,10 +54,6 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "get the right query in mix table" in {
-    object Recipes extends Recipes {
-      override def tableName = "Recipes"
-    }
-
     val q = Recipes.create(_.url,
       _.description,
       _.ingredients,

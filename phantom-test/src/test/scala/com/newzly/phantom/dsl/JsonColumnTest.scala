@@ -7,7 +7,7 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper._
 import com.twitter.util.NonFatal
-import com.newzly.phantom.tables.TestTable2
+import com.newzly.phantom.tables.{TestRow2, TestTable2}
 
 class JsonColumnTest extends BaseTest with Matchers  {
   val keySpace: String = "JsonTypeSeqTest"
@@ -22,15 +22,10 @@ class JsonColumnTest extends BaseTest with Matchers  {
         |optionS text,
         |mapIntoClass map<text,text>);
       """.stripMargin //        #|
+
     session.execute(createTestTable)
 
-
-
-    object TestTable2 extends TestTable2 {
-      override val tableName = "TestTable2"
-    }
-
-    val row = TableHelper.getAUniqueJsonTestRow
+    val row = TestRow2.sample
 
     val rcp = TestTable2.insert
       .value(_.key, row.key)
