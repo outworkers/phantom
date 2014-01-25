@@ -147,14 +147,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing empty lists " in {
-
-    val emptylisttest =
-      """|CREATE TABLE emptylisttest(
-        |key text PRIMARY KEY,
-        |list list<text>
-        );
-      """.stripMargin //
-    session.execute(emptylisttest)
+    session.execute(MyTest.createSchema)
 
     val row = TestList.sample
 
@@ -171,19 +164,13 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing to List " in {
-    val listtest =
-      """|CREATE TABLE listtest(
-        |key text PRIMARY KEY,
-        |testlist list<text>
-        );
-      """.stripMargin //
-    session.execute(listtest)
+    session.execute(MyTest.createSchema)
 
     val row = TestList.sample
 
     val recipeF = MyTest.insert
       .value(_.key, row.key)
-      .value(_.testlist, row.l)
+      .value(_.list, row.l)
       .execute() flatMap {
       _ => MyTest.select.one
     }

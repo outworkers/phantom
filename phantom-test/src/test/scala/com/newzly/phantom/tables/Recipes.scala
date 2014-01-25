@@ -44,6 +44,10 @@ object Recipe extends ModelSampler {
       Map.empty[String, String]
     )
   }
+
+  def samples(num: Int = 20): List[Recipe] = {
+    List.range(1, num).map(x => { Recipe.sample })
+  }
 }
 
 case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])

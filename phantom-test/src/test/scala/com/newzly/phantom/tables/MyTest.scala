@@ -1,12 +1,7 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.{
-  CassandraTable,
-  JsonColumn,
-  OptionalPrimitiveColumn,
-  PrimitiveColumn
-}
+import com.newzly.phantom._
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 
 case class MyTestRow(
@@ -30,6 +25,8 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
   object key extends PrimitiveColumn[String]
 
+  object list extends ListColumn[String]
+
   object optionA extends OptionalPrimitiveColumn[Int]
 
   object classS extends JsonColumn[SimpleStringClass]
@@ -42,6 +39,7 @@ object MyTest extends MyTest with TestSampler[MyTestRow] {
   def createSchema = {
     """|CREATE TABLE MyTestInsert(
       |key text PRIMARY KEY,
+      |list<string>,
       |optionA int,
       |classS text,
         );
