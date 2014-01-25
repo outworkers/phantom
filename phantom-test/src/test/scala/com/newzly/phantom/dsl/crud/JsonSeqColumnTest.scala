@@ -1,33 +1,27 @@
 package com.newzly.phantom.dsl.crud
 
-import com.twitter.conversions.time._
 import org.scalatest.{Assertions, Matchers}
-import com.newzly.phantom.helper.{BaseTest, Tables}
 import org.scalatest.concurrent.AsyncAssertions
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable, JsonSeqColumn}
 import com.datastax.driver.core.Row
-import com.newzly.phantom.field.{LongOrderKey, UUIDPk}
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.twitter.util.{Await, Future}
 import com.datastax.driver.core.utils.UUIDs
+import com.newzly.phantom.helper.{BaseTest, Tables}
+import com.newzly.phantom.{ CassandraTable, PrimitiveColumn, JsonSeqColumn }
+import com.newzly.phantom.field.{ LongOrderKey, UUIDPk}
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.twitter.conversions.time._
+import com.twitter.util.{Await, Future}
 
-class JsonTypeSeqColumnTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions{
-  //Use this to debug only
-  implicit class SyncFuture[T](future: Future[T]) {
-    def sync(): T = {
-      Await.result(future, 10.seconds)
-    }
-  }
+class JsonSeqColumnTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
 
   case class T(something: String)
 
-  case class JsonTypeSeqColumnRow(pkey: String, jtsc: Seq[T])
+  case class JsonSeqColumnRow(pkey: String, jtsc: Seq[T])
 
-  class JsonTypeSeqColumnTable extends CassandraTable[JsonTypeSeqColumnTable,JsonTypeSeqColumnRow] with UUIDPk[JsonTypeSeqColumnTable]
+  class JsonTypeSeqColumnTable extends CassandraTable[JsonTypeSeqColumnTable, JsonSeqColumnRow] with UUIDPk[JsonTypeSeqColumnTable]
   with LongOrderKey[JsonTypeSeqColumnTable] {
-    override def fromRow(r: Row): JsonTypeSeqColumnRow = {
-      JsonTypeSeqColumnRow(pkey(r),jtsc(r))
+    override def fromRow(r: Row): JsonSeqColumnRow = {
+      JsonSeqColumnRow(pkey(r),jtsc(r))
     }
     object pkey extends PrimitiveColumn[String]
     object jtsc extends JsonSeqColumn[T]
