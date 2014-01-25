@@ -49,9 +49,9 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         .execute() flatMap {
           _ => {
             for {
-              one <- Primitives.select.where(_.pkey eqs "myStringInsert").one
+              one <- Primitives.select.where(_.pkey eqs row.pkey).one
               multi <- Primitives.select.fetch
-            } yield (one.get == row, multi.contains(row))
+            } yield (one.get == row, multi contains row)
           }
        }
       }
@@ -65,8 +65,8 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with List, Set, Map" in {
+    TestTable.insertSchema(session)
     val row = TestRow.sample
-    session.execute(TestTable.createSchema)
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -92,7 +92,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with custom types" in {
-    session.execute(MyTest.createSchema)
+    MyTest.insertSchema(session)
 
     val row = MyTestRow.sample
 
@@ -147,13 +147,13 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    session.execute(MyTest.createSchema)
+    MyTest.insertSchema(session)
 
     val row = TestList.sample
 
     val f = MyTest.insert
       .value(_.key, row.key)
-      .value(_.list, row.l)
+      .value(_.stringlist, row.l)
       .execute() flatMap {
       _ => MyTest.select.one
     }
@@ -164,13 +164,13 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing to List " in {
-    session.execute(MyTest.createSchema)
+    MyTest.insertSchema(session)
 
     val row = TestList.sample
 
     val recipeF = MyTest.insert
       .value(_.key, row.key)
-      .value(_.list, row.l)
+      .value(_.stringlist, row.l)
       .execute() flatMap {
       _ => MyTest.select.one
     }

@@ -19,6 +19,7 @@ import java.io.Serializable
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
+import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
@@ -32,6 +33,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
+
+  lazy val logger = Logger.getLogger(_name)
 
   def tableName: String = _name
 

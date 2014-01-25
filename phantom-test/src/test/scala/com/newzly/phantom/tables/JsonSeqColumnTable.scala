@@ -14,7 +14,7 @@ with LongOrderKey[JsonSeqColumnTable] {
   object recipes extends JsonSeqColumn[Recipe]
 }
 
-object JsonSeqColumnTable extends JsonSeqColumnTable with TestSampler[JsonSeqColumnRow] {
+object JsonSeqColumnTable extends JsonSeqColumnTable with TestSampler[JsonSeqColumnTable, JsonSeqColumnRow] {
   override val tableName = "JsonSeqColumnTable"
 
   def createSchema: String =

@@ -78,7 +78,7 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
   val _key = key
 }
 
-object TestTable2 extends TestTable2 with TestSampler[TestRow2] {
+object TestTable2 extends TestTable2 with TestSampler[TestTable2, TestRow2] {
   override val tableName = "TestTable2"
 
   def createSchema: String = {

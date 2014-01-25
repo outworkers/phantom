@@ -54,7 +54,7 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
   val _key = key
 }
 
-object TestTable extends TestTable with TestSampler[TestRow] {
+object TestTable extends TestTable with TestSampler[TestTable, TestRow] {
 
   def createSchema: String = {
     """|CREATE TABLE TestTableInsert(
