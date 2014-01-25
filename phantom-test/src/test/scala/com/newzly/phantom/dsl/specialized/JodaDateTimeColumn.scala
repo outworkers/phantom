@@ -1,15 +1,15 @@
 package com.newzly.phantom.dsl.specialized
 
-import com.datastax.driver.core.{ Row }
 import org.joda.time.DateTime
-import com.newzly.phantom.{PrimitiveColumn, CassandraTable}
-import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.newzly.phantom.helper.{ BaseTest, Tables, TestRow }
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
+import com.datastax.driver.core.Row
+import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.BaseTest
 
-class JodaDateTimeColumn extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {
+class JodaDateTimeColumn extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -25,9 +25,11 @@ class JodaDateTimeColumn extends BaseTest with Matchers with Tables  with Assert
       object bi extends PrimitiveColumn[DateTime]
       val _key = pkey
     }
+
     object PrimitivesJoda extends PrimitivesJoda {
       override def tableName = "PrimitivesJoda"
     }
+
     val dt = DateTime.now()
     val row =  JodaRow("w",1,dt)
 
