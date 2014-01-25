@@ -5,7 +5,7 @@ import org.scalatest.concurrent.AsyncAssertions
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.tables.{ JsonSeqColumnTable, SimpleStringModel }
+import com.newzly.phantom.tables.{Recipe, JsonSeqColumnTable, SimpleStringModel}
 
 class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "basicInert"
@@ -28,14 +28,14 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
         insertTask <- table.insert
           .value(_.id, UUIDs.timeBased())
           .value(_.pkey, "test")
-          .value(_.recipes, Seq(SimpleStringModel("t1"), SimpleStringModel("t2"))).execute()
+          .value(_.recipes, Recipe.samples()).execute()
         selectTask <- table.select.one
       } yield selectTask
-      ////////
+
       val i1 = table.insert
         .value(_.id, UUIDs.timeBased())
         .value(_.pkey, "test")
-        .value(_.recipes, Seq.empty)
+        .value(_.recipes, Recipe.samples())
 
       i1.execute()
 
