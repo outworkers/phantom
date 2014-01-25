@@ -8,20 +8,8 @@ import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{
-  Author,
-  BaseTest,
-  Primitive,
-  Recipe,
-  SimpleStringClass,
-  TableHelper,
-  TestList,
-  TestRow
-}
+import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables._
-import scala.Some
-import com.newzly.phantom.helper.SimpleStringClass
-import com.newzly.phantom.helper.TestList
 import com.newzly.phantom.tables.MyTestRow
 
 
@@ -30,16 +18,9 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   "Insert" should "work fine for primitives columns" in {
-    object Primitives extends Primitives {
-      override def tableName = "PrimitivesInsertTest"
-    }
-
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
-    val row = Primitive("myStringInsert", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002
-      ))
+    val row = Primitive.sample
 
     val rcp = Primitives.create(_.pkey,
       _.long,
@@ -84,12 +65,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with List, Set, Map" in {
-    object TestTable extends TestTable {
-      override def tableName = "TestTableInsert"
-    }
-
-    val row = TestRow("w2", Seq("ee", "pp", "ee3"), Set("u", "e"), Map("k" -> "val"), Set(1, 22, 2),
-      Map(3 -> "OO"))
+    val row = TestRow.sample
 
     val createTestTable =
       """|CREATE TABLE TestTableInsert(
@@ -161,12 +137,9 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with Mix" in {
-    object Recipes extends Recipes {
-      override def tableName = "Recipes"
-    }
 
     val author = Author("Tony", "Clark", Some("great chef..."))
-    val r = TableHelper.getAUniqueRecipe
+    val r = Recipe.sample
 
     val rcp = Recipes.create(_.url,
       _.description,
@@ -197,12 +170,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    class MyTest extends CassandraTable[MyTest, TestList] {
-      def fromRow(r: Row): TestList = TestList(key(r), list(r))
-      object key extends PrimitiveColumn[String]
-      object list extends ListColumn[String]
-      val _key = key
-    }
 
     val emptylisttest =
       """|CREATE TABLE emptylisttest(
@@ -212,11 +179,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       """.stripMargin //
     session.execute(emptylisttest)
 
-    val row = TestList("someKey", Nil)
-
-    object MyTest extends MyTest {
-      override val tableName = "emptylisttest"
-    }
+    val row = TestList.sample
 
     val f = MyTest.insert.value(_.key, row.key).value(_.list, row.l).execute() flatMap {
       _ => MyTest.select.one
@@ -228,16 +191,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "support serializing/de-serializing to List " in {
-    case class TestList(key: String, l: List[String])
-
-    class MyTest extends CassandraTable[MyTest, TestList] {
-      def fromRow(r: Row): TestList = {
-        TestList(key(r), testlist(r))
-      }
-      object key extends PrimitiveColumn[String]
-      object testlist extends ListColumn[String]
-      val _key = key
-    }
     val listtest =
       """|CREATE TABLE listtest(
         |key text PRIMARY KEY,
@@ -246,11 +199,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       """.stripMargin //
     session.execute(listtest)
 
-    val row = TestList("someKey", List("test", "test2"))
-
-    object MyTest extends MyTest {
-      override val tableName = "listtest"
-    }
+    val row = TestList.sample
 
     val recipeF = MyTest.insert.value(_.key,row.key).value(_.testlist,row.l).execute() flatMap {
       _ => MyTest.select.one

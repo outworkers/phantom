@@ -3,7 +3,7 @@ package com.newzly.phantom.tables
 import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
 import com.newzly.phantom._
-import com.newzly.phantom.helper.{ Sampler, TestSampler }
+import com.newzly.phantom.helper.{ModelSampler, Sampler, TestSampler}
 
 
 case class Author(
@@ -11,6 +11,16 @@ case class Author(
   lastName: String,
   bio: Option[String]
 )
+
+object Author {
+  def sample: Author = {
+    Author(
+      Sampler.getAUniqueString,
+      Sampler.getAUniqueString,
+      Some(Sampler.getAUniqueString)
+    )
+  }
+}
 
 case class Recipe(
   url: String,
@@ -22,7 +32,32 @@ case class Recipe(
   props: Map[String, String]
 )
 
+object Recipe extends ModelSampler {
+  def sample: Recipe = {
+    Recipe(
+      Sampler.getAUniqueString,
+      Some(Sampler.getAUniqueString),
+      Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
+      None,
+      Some(Sampler.getARandomInteger()),
+      new Date(),
+      Map.empty[String, String]
+    )
+  }
+}
+
 case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])
+
+object JsonSeqColumnRow extends ModelSampler {
+  def sample: JsonSeqColumnRow = {
+    JsonSeqColumnRow(
+      Sampler.getAUniqueString,
+      List.range(0, 30).map(x => {
+        Recipe.sample
+      }).toSeq
+    )
+  }
+}
 
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
@@ -51,17 +86,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
 
 object Recipes extends Recipes with TestSampler[Recipe] {
-  def sample: Recipe = {
-    Recipe(
-      Sampler.getAUniqueString,
-      Some(Sampler.getAUniqueString),
-      Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
-      None,
-      Some(Sampler.getARandomInteger()),
-      new Date(),
-      Map.empty[String, String]
-    )
-  }
+  override def tableName = "Recipes"
 
   def createSchema: String = {
     ""

@@ -1,24 +1,18 @@
 package com.newzly.phantom.dsl.crud
 
-import java.net.InetAddress
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{ BaseTest, Primitive }
-import com.newzly.phantom.tables.Primitives
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ Primitive, Primitives }
 
 class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "deleteTest"
 
   "Delete" should "work fine, when deleting the whole row" in {
-    object Primitives extends Primitives {
-      override def tableName = "PrimitivesDeleteTest"
-    }
-    val row = Primitive("myString", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002))
+    val row = Primitive.sample
     val rcp = Primitives.create(_.pkey,
       _.long,
       _.boolean,
