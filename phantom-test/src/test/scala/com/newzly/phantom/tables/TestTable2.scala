@@ -1,15 +1,38 @@
 package com.newzly.phantom.tables
 
-import com.newzly.phantom.{JsonColumn, OptionalPrimitiveColumn, PrimitiveColumn, CassandraTable}
 import com.datastax.driver.core.Row
+import com.newzly.phantom.{
+  CassandraTable,
+  JsonColumn,
+  OptionalPrimitiveColumn,
+  PrimitiveColumn
+}
+import com.newzly.phantom.helper.{ ModelSampler, Sampler }
 
-case class SimpleStringClass(something: String)
+case class SimpleStringClass(something: String) extends ModelSampler {
+  def sample: SimpleStringClass = SimpleStringClass(Sampler.getAUniqueString)
+}
 
-case class SimpleMapOfStringsClass(something: Map[String, Int])
+case class SimpleMapOfStringsClass(something: Map[String, Int]) extends ModelSampler {
+  def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(Map(
+    Sampler.getAUniqueString -> Sampler.getARandomInteger(),
+    Sampler.getAUniqueString -> Sampler.getARandomInteger(),
+    Sampler.getAUniqueString -> Sampler.getARandomInteger(),
+    Sampler.getAUniqueString -> Sampler.getARandomInteger(),
+    Sampler.getAUniqueString -> Sampler.getARandomInteger()
+  ))
+}
 
-case class TestList(key: String, l: List[String])
+case class TestList(key: String, l: List[String]) extends ModelSampler {
+   def sample: TestList = TestList(
+    Sampler.getAUniqueString,
+    List.range(0, 20).map(x => Sampler.getAUniqueString)
+   )
+}
 
-case class T(something: String)
+case class T(something: String) extends ModelSampler {
+  def sample: T = T(Sampler.getAUniqueString)
+}
 
 case class TestRow2(
   key: String,

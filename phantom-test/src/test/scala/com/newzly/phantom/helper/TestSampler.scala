@@ -1,5 +1,8 @@
 package com.newzly.phantom.helper
 
+import java.io.Serializable
+import scala.Product
+
 /**
  * A basic trait implemented by all test tables.
  * @tparam Row The case class type returned.
@@ -18,4 +21,14 @@ trait TestSampler[Row] {
    * @return
    */
   def createSchema: String
+}
+
+/**
+ * A simple model sampler trait.
+ * Forces implementing case class models to provide a way to sample themselves.
+ */
+trait ModelSampler {
+  self: Product with Serializable =>
+
+  def sample: this.type
 }
