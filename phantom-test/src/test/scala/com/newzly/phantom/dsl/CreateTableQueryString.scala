@@ -1,10 +1,7 @@
 package com.newzly.phantom.dsl
 
-import java.util.{UUID, Date}
 import org.scalatest.FlatSpec
-import com.datastax.driver.core.Row
-import com.newzly.phantom._
-import com.newzly.phantom.helper.{Recipes, TableHelper, Primitives}
+import com.newzly.phantom.helper.{ Primitives, Recipes, TableHelper, TestTable }
 
 class CreateTableQueryString extends FlatSpec {
 
