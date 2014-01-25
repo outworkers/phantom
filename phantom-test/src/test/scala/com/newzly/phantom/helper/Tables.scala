@@ -41,6 +41,15 @@ case class TestRow(
   mapIntToString: Map[Int, String]
 )
 
+case class TestRow2(
+  key: String,
+  list: Seq[String],
+  setText: Set[String],
+  mapTextToText: Map[String, String],
+  setInt: Set[Int],
+  mapIntToText: Map[Int, String]
+)
+
 case class Recipe(
   url: String,
   description: Option[String],
@@ -122,6 +131,19 @@ class TestTable extends CassandraTable[TestTable, TestRow] {
 
   val _key = key
 }
+
+class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
+  def fromRow(r: Row): TestRow2 = {
+    TestRow2(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
+  }
+  object key extends PrimitiveColumn[String]
+  object optionA extends OptionalPrimitiveColumn[Int]
+  object classS extends JsonColumn[SimpleMapOfStringsClass]
+  object optionS extends JsonColumn[Option[SimpleMapOfStringsClass]]
+  object mapIntoClass extends JsonColumn[Map[String, SimpleMapOfStringsClass]]
+  val _key = key
+}
+
 
 case class MyTestRow(key: String, optionA: Option[Int], classS: SimpleStringClass)
 

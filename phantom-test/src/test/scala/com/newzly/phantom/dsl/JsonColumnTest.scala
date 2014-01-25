@@ -4,15 +4,8 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.Matchers
 import org.scalatest.time.SpanSugar._
 
-import com.datastax.driver.core.Row
-import com.newzly.phantom._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{
-  BaseTest,
-  SimpleMapOfStringsClass,
-  TableHelper,
-  TestRow
-}
+import com.newzly.phantom.helper._
 import com.twitter.util.NonFatal
 
 class JsonColumnTest extends BaseTest with Matchers  {
@@ -20,18 +13,6 @@ class JsonColumnTest extends BaseTest with Matchers  {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "correctly serialize and store complex structures" in {
-    class TestTable2 extends CassandraTable[TestTable2, TestRow] {
-      def fromRow(r: Row): TestRow = {
-        TestRow(key(r), optionA(r), classS(r), optionS(r), mapIntoClass(r))
-      }
-      object key extends PrimitiveColumn[String]
-      object optionA extends OptionalPrimitiveColumn[Int]
-      object classS extends JsonColumn[SimpleMapOfStringsClass]
-      object optionS extends JsonColumn[Option[SimpleMapOfStringsClass]]
-      object mapIntoClass extends JsonColumn[Map[String, SimpleMapOfStringsClass]]
-      val _key = key
-    }
-
     val createTestTable =
       """|CREATE TABLE TestTable2(
         |key text PRIMARY KEY,
