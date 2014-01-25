@@ -7,13 +7,21 @@ import com.newzly.phantom.{
   OptionalPrimitiveColumn,
   PrimitiveColumn
 }
-import com.newzly.phantom.helper.{ Sampler, TestSampler }
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 
 case class MyTestRow(
   key: String,
   optionA: Option[Int],
   classS: SimpleStringClass
 )
+
+object MyTestRow extends ModelSampler {
+  def sample: MyTestRow = MyTestRow(
+    Sampler.getAUniqueString,
+    Some(Sampler.getARandomInteger()),
+    SimpleStringClass.sample
+  )
+}
 
 sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   def fromRow(r: Row): MyTestRow = {
@@ -30,12 +38,8 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 }
 
 object MyTest extends MyTest with TestSampler[MyTestRow] {
-  def sample: MyTestRow = {
-    MyTestRow(
-      Sampler.getAUniqueString,
-      Some(Sampler.getARandomInteger())
-    )
-  }
+  override val tableName = "mytest"
+  def createSchema = ""
 }
 
 

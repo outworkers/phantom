@@ -1,13 +1,16 @@
 package com.newzly.phantom.dsl.crud
 
-import java.net.InetAddress
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper._
-import com.newzly.phantom.helper.Primitive
-import com.newzly.phantom.tables.{TestTable, Primitives}
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{
+  Primitive,
+  Primitives,
+  TestRow,
+  TestTable
+}
 
 class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"
@@ -16,17 +19,9 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
   "Update" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
-    object Primitives extends Primitives {
-      override def tableName = "PrimitivesUpdateTest"
-    }
+    val row = Primitive.sample
 
-    val row = Primitive("myStringUpdate", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002))
-
-    val updatedRow = Primitive("myStringUpdate", 21.toLong, true, BigDecimal("11.11"), 31.toDouble, 41.toFloat,
-      InetAddress.getByName("127.1.1.1"), 911, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1012))
+    val updatedRow = Primitive.sample
 
     val rcp = Primitives.create(_.pkey,
       _.long,
@@ -92,7 +87,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
 
   it should "work fine with List, Set, Map" in {
 
-    val row = TableHelper.getAUniqueJsonTestRow
+    val row = TestRow.sample
 
     val updatedRow = row.copy(
       list = Seq ("new"),
@@ -101,10 +96,6 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       setInt = Set(3,4,7),
       mapIntToText = Map (-1 -> "&&&")
     )
-
-    object TestTable extends TestTable {
-      override def tableName = "UpdateTestTable"
-    }
 
     val createTestTable =
       """|CREATE TABLE UpdateTestTable(

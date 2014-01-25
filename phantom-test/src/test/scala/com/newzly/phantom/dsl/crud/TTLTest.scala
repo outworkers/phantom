@@ -1,15 +1,13 @@
 package com.newzly.phantom.dsl.crud
 
-import java.net.InetAddress
-
 import org.scalatest.{ Assertions, Matchers, Inside }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.{Primitive, BaseTest}
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ Primitive, Primitives }
 import com.twitter.util.Duration
-import com.newzly.phantom.tables.Primitives
 
 class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertions with Inside {
   val keySpace: String = "TTLTest"
@@ -17,14 +15,7 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "expire inserterd records" in {
-    object Primitives extends Primitives {
-      override def tableName = "PrimitivesTTLTest"
-    }
-
-    val row = Primitive("myStringInsert", 2.toLong, boolean = true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002
-      ))
+    val row = Primitive.sample
 
     val test = Primitives.create(_.pkey,
       _.long,

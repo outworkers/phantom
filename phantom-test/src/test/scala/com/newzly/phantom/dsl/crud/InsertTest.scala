@@ -103,9 +103,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   }
 
   it should "work fine with custom types" in {
-    object MyTest extends MyTest {
-      override val tableName = "MyTestInsert"
-    }
     val myTestTable =
       """|CREATE TABLE MyTestInsert(
         |key text PRIMARY KEY,
