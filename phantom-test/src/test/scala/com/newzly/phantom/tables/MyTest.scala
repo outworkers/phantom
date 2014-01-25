@@ -39,7 +39,14 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
 object MyTest extends MyTest with TestSampler[MyTestRow] {
   override val tableName = "mytest"
-  def createSchema = ""
+  def createSchema = {
+    """|CREATE TABLE MyTestInsert(
+      |key text PRIMARY KEY,
+      |optionA int,
+      |classS text,
+        );
+    """.stripMargin
+  }
 }
 
 
