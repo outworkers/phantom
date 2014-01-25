@@ -8,8 +8,6 @@ import com.newzly.phantom.helper.{BaseTest, Tables}
 import com.newzly.phantom.{ CassandraTable, PrimitiveColumn, JsonSeqColumn }
 import com.newzly.phantom.field.{ LongOrderKey, UUIDPk}
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.twitter.conversions.time._
-import com.twitter.util.{Await, Future}
 
 class JsonSeqColumnTest extends BaseTest with Matchers with Tables with Assertions with AsyncAssertions {
   val keySpace = "basicInert"

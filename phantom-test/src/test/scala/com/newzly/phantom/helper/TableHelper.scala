@@ -4,17 +4,6 @@ import java.util.UUID
 import scala.util.Random
 
 
-case class ClassSMap(something: Map[String, Int])
-
-case class TestRow(
-  key: String,
-  optionA: Option[Int],
-  classS: ClassSMap,
-  optionS: Option[ClassSMap],
-  map: Map[String, ClassSMap]
-)
-
-
 object Sampler {
 
   /**
@@ -42,19 +31,27 @@ object Sampler {
   }
 }
 
-object TableHelper extends Tables {
+object TableHelper {
 
   /**
    * Generates a random unique row for a TestRow cassandra table.
-   * @return A unique row.
+   * @return A unique Test Row with nested JSON structures..
    */
   def getAUniqueJsonTestRow: TestRow = {
     TestRow(
       Sampler.getAUniqueString,
       Some(Sampler.getARandomInteger()),
-      ClassSMap(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())),
-      Some(ClassSMap(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger()))),
-      Map(Sampler.getAUniqueString -> ClassSMap(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())))
+      SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())),
+      Some(SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger()))),
+      Map(Sampler.getAUniqueString -> SimpleMapOfStringsClass(Map(Sampler.getAUniqueString -> Sampler.getARandomInteger())))
+    )
+  }
+
+  def getAUniqueArticle(order: Long = Sampler.getARandomInteger()): Article = {
+    Article(
+      Sampler.getAUniqueString,
+      UUID.randomUUID(),
+      order
     )
   }
 }

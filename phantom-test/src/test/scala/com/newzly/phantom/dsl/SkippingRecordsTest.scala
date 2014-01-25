@@ -13,26 +13,18 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
 
-class SkippingRecordsTest extends BaseTest with Tables  with Assertions with AsyncAssertions  {
+class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
   val keySpace: String = "SkippingRecordsTest"
 
   ignore should "allow skipping records " in {
-
-    case class Article(val name: String, id: UUID, order_id: Long)
-    class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
-      object name extends PrimitiveColumn[String]
-      override def fromRow(row: Row): Article = {
-        Article(name(row), id(row), order_id(row))
-      }
-    }
 
     object Articles extends Articles {
       override val tableName = "articlestest"
     }
 
-    val article1 = Article("test", UUIDs.timeBased(),  1);
-    val article2 = Article("test2", UUIDs.timeBased(), 2);
-    val article3 = Article("test3", UUIDs.timeBased(), 3);
+    val article1 = Article("test", UUIDs.timeBased(),  1)
+    val article2 = Article("test2", UUIDs.timeBased(), 2)
+    val article3 = Article("test3", UUIDs.timeBased(), 3)
 
     val result = for {
       i1 <- Articles.insert
@@ -50,7 +42,7 @@ class SkippingRecordsTest extends BaseTest with Tables  with Assertions with Asy
         .value(_.order_id, article3.order_id)
         .execute()
       res <- Articles.select.skip(1).one
-    } yield (res)
+    } yield res
 
     result successful {
       row => assert(row.get == article2)
