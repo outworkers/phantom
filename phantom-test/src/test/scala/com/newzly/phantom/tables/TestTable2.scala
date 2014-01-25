@@ -36,8 +36,8 @@ object TestList extends ModelSampler {
   )
 }
 
-case class T(something: String) extends ModelSampler {
-  def sample: T = T(Sampler.getAUniqueString)
+case class SimpleStringModel(something: String) extends ModelSampler {
+  def sample: SimpleStringModel = SimpleStringModel(Sampler.getAUniqueString)
 }
 
 case class TestRow2(
@@ -80,5 +80,14 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
 
 object TestTable2 extends TestTable2 with TestSampler[TestRow2] {
   override val tableName = "TestTable2"
-  def createSchema: String = ""
+
+  def createSchema: String = {
+    """|CREATE TABLE TestTable2(
+      |key text PRIMARY KEY,
+      |optionA int,
+      |classS text,
+      |optionS text,
+      |mapIntoClass map<text,text>);
+    """.stripMargin
+  }
 }
