@@ -152,7 +152,6 @@ class InsertTest  extends BaseTest with Matchers  with Tables with Assertions wi
       override def tableName = "Recipes"
     }
 
-    //implicit val formats = net.liftweb.json.DefaultFormats
     val author = Author("Tony", "Clark", Some("great chef..."))
     val r = Recipe("recipe_url", Some("desc"), Seq("ingr1", "ingr2"), Some(author), Some(4), new java.util.Date, Map("a" -> "b", "c" -> "d"))
 

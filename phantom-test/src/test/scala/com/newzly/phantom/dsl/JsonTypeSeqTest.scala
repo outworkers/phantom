@@ -15,7 +15,7 @@ import com.twitter.util.{Await, Duration, Future, NonFatal}
 case class ClassSMap(something: Map[String, Int])
 case class TestRow(key: String, optionA: Option[Int], classS: ClassSMap, optionS: Option[ClassSMap], map: Map[String, ClassSMap])
 
-class JsonTypeSeqTest extends MyBaseTest  with Matchers with Tables  {
+class JsonColumnTest extends MyBaseTest  with Matchers with Tables  {
   val keySpace: String = "JsonTypeSeqTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 

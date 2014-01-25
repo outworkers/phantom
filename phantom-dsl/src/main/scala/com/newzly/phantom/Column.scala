@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.newzly.phantom.query.QueryCondition
-import com.twitter.util.Try
+import com.twitter.util.{ NonFatal, Try }
 
 object JsonSerializer {
   val mapper = new ObjectMapper() with ScalaObjectMapper
@@ -212,16 +212,21 @@ class JsonColumn[RR: Manifest] extends Column[RR] {
 
   def toCType(v: RR): AnyRef = {
     val s = JsonSerializer.serializeJson(v)
-    logger.warn(s)
+    logger.info(s)
     s
   }
 
   def optional(r: Row): Option[RR] = {
-    Try {
+    try {
       val json = r.getString(name)
       logger.info(s"Attempting to de-serialize JSON: $json")
       Some(JsonSerializer.deserializeJson[RR](json))
-    } getOrElse None
+    } catch{
+      case NonFatal(e) => {
+        logger.error(e.getMessage)
+        None
+      }
+    }
   }
 }
 

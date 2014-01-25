@@ -20,6 +20,10 @@
         <level value="error" />
     </logger>
 
+    <logger name="com.newzly.phantom">
+        <level value="info"/>
+    </logger>
+
     <logger name="me.prettyprint">
         <level value="error" />
     </logger>
