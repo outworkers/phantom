@@ -22,7 +22,7 @@ import com.datastax.driver.core.querybuilder.{ Clause, Select }
 import com.datastax.driver.core.Row
 
 import com.newzly.phantom.{ CassandraTable }
-import com.newzly.phantom.field.LongOrderKey
+import com.newzly.phantom.keys.LongOrderKey
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 

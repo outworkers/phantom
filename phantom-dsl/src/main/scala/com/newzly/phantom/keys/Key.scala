@@ -1,4 +1,4 @@
-package com.newzly.phantom.field
+package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.Column
@@ -10,6 +10,19 @@ import com.newzly.phantom.column.Column
  * @tparam ValueType The type of the value to store as a key.
  */
 trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
+  self: Column[Owner, Record, ValueType] =>
+
+  this.getTable.addKey(this)
+}
+
+
+/**
+ * A trait mixable into a Column to allow clustering order.
+ * @tparam Owner The owner of the record.
+ * @tparam Record The case class record to store.
+ * @tparam ValueType The type of the value to store as a key.
+ */
+trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
   self: Column[Owner, Record, ValueType] =>
 
   this.getTable.addKey(this)

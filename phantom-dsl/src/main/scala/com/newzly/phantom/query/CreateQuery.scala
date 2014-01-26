@@ -1,9 +1,11 @@
 package com.newzly.phantom.query
 
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 import com.twitter.util.Future
-import com.newzly.phantom.column.AbstractColumn
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
+import com.newzly.phantom.column.{ AbstractColumn, Column }
+import java.util.Date
+import org.joda.time.DateTime
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
   def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T, R] = {
@@ -17,14 +19,29 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends
     val pk = table._key.name
     //TODO support multiple keys
 
-    val queryPrimaryKey  = s", PRIMARY KEY ($pk)"
-    new CreateQuery(table, queryInit + queryColumns.drop(1) + queryPrimaryKey+ ");")
+    val pkes = table.primaryKeys.map(_.name).mkString(",")
+    val queryPrimaryKey  = s", PRIMARY KEY ($pkes)"
+    new CreateQuery(table, queryInit + queryColumns.drop(1) + queryPrimaryKey + ");")
   }
 
   val queryString = query
 
+  def withClusteringOrder(column: Column[T, R, DateTime]): OrderedQuery[T, R] = {
+    table.addKey(column)
+    new OrderedQuery[T, R](table, query + "")
+  }
+
   def execute()(implicit session: Session): Future[ResultSet] =  {
     queryStringExecuteToFuture(query)
   }
+}
 
+class OrderedQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CreateQuery[T, R](table, query) {
+  def descending: OrderedQuery[T, R] = {
+    new OrderedQuery[T, R](table, query + " DESC)")
+  }
+
+  def ascending: OrderedQuery[T, R] = {
+    new OrderedQuery[T, R](table, query + " ASCENDING)")
+  }
 }

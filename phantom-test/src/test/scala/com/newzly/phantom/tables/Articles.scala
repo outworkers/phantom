@@ -3,7 +3,7 @@ package com.newzly.phantom.tables
 import java.util.UUID
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.field.{ LongOrderKey, UUIDPk }
+import com.newzly.phantom.keys.{ LongOrderKey, UUIDPk }
 import com.newzly.phantom.helper.{
   ModelSampler,
   Sampler,
