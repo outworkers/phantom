@@ -23,17 +23,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
 
     val updatedRow = Primitive.sample
 
-    val rcp = Primitives.create(_.pkey,
-      _.long,
-      _.boolean,
-      _.bDecimal,
-      _.double,
-      _.float,
-      _.inet,
-      _.int,
-      _.date,
-      _.uuid,
-      _.bi)
+    val rcp = Primitives.create.schema()
       .execute() flatMap {
         _ =>Primitives.insert
         .value(_.pkey, row.pkey)
