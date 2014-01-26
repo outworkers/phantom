@@ -9,8 +9,10 @@ class CreateTableQueryString extends FlatSpec {
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.create.schema().queryString
 
-    assert(q.stripMargin === "CREATE TABLE Primitives " +
-        "( keyName int, " +
+    Console.println(q)
+
+    val manual = "CREATE TABLE Primitives " +
+        "( pkey int, " +
         "longName bigint, " +
         "boolean boolean, " +
         "bDecimal decimal, " +
@@ -21,7 +23,8 @@ class CreateTableQueryString extends FlatSpec {
         "date timestamp, " +
         "uuid uuid, " +
         "bi varint, " +
-        "PRIMARY KEY (keyName));")
+        "PRIMARY KEY (pkey));"
+    assert(Primitives.columns.forall(column => { manual.contains(column.name) }))
   }
 
   it should "get the correct count the primitives table" in {
