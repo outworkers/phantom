@@ -5,9 +5,6 @@ import scala.Some
 import Tests._
 import com.twitter.sbt._
 import sbtassembly.Plugin._
-import ScctPlugin.instrumentSettings
-import ScctPlugin.mergeReportSettings
-import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
 
 object newzlyPhantom extends Build {
 
@@ -41,7 +38,7 @@ object newzlyPhantom extends Build {
            "-feature",
            "-unchecked"
        )
-    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 
     val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
@@ -86,7 +83,7 @@ object newzlyPhantom extends Build {
   lazy val phantomUtil = Project(
     id = "phantom-util",
     base = file("phantom-test"),
-    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ instrumentSettings
+    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings
   ).settings(
     name := "phantom-util",
     jarName in assembly := "cassandra.jar",
@@ -114,7 +111,7 @@ object newzlyPhantom extends Build {
   lazy val phantom = Project(
         id = "phantom",
         base = file("."),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ mergeReportSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).aggregate(
         phantomDsl,
         phantomTest
@@ -123,7 +120,7 @@ object newzlyPhantom extends Build {
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
         base = file("phantom-dsl"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
         libraryDependencies ++= Seq(
             "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
@@ -136,7 +133,7 @@ object newzlyPhantom extends Build {
   lazy val phantomTest = Project(
         id = "phantom-test",
         base = file("phantom-test"),
-        settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
       fork := true,
       concurrentRestrictions in Test := Seq(

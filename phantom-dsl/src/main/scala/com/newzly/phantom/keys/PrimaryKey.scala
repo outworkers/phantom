@@ -18,8 +18,8 @@ package com.newzly.phantom.keys
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.{ Column, PrimitiveColumn }
 
-trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
-  this: Column[Owner, Record, ValueType] =>
+trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record] {
+  this: Column[Owner, Record, _] =>
 
   _isPrimaryKey.set(true)
 

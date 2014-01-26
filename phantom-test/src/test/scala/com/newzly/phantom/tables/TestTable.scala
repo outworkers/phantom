@@ -4,6 +4,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom._
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.keys.PrimaryKey
 
 case class TestRow(
   key: String,
@@ -29,7 +30,7 @@ object TestRow extends ModelSampler[TestRow] {
 
 sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
-  object key extends PrimitiveColumn[TestTable, TestRow, String](this)
+  object key extends StringColumn(this) with PrimaryKey[TestTable, TestRow]
 
   object list extends SeqColumn[TestTable, TestRow, String](this)
 
@@ -51,8 +52,6 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
       mapIntToText(r)
     )
   }
-
-  val _key = key
 }
 
 object TestTable extends TestTable with TestSampler[TestTable, TestRow] {

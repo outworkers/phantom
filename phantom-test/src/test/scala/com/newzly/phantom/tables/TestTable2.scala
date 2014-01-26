@@ -5,6 +5,7 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.column.JsonColumn
+import com.newzly.phantom.keys.PrimaryKey
 
 case class SimpleStringClass(something: String)
 
@@ -68,12 +69,11 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
     )
   }
 
-  object key extends PrimitiveColumn[TestTable2, TestRow2, String](this)
-  object optionA extends OptionalPrimitiveColumn[TestTable2, TestRow2, Int](this)
+  object key extends StringColumn(this) with PrimaryKey[TestTable2, TestRow2]
+  object optionA extends OptionalIntColumn(this)
   object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)
   object optionS extends JsonColumn[TestTable2, TestRow2, Option[SimpleMapOfStringsClass]](this)
   object mapIntoClass extends JsonColumn[TestTable2, TestRow2, Map[String, SimpleMapOfStringsClass]](this)
-  val _key = key
 }
 
 object TestTable2 extends TestTable2 with TestSampler[TestTable2, TestRow2] {

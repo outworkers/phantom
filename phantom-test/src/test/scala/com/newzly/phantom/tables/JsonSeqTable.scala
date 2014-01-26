@@ -13,7 +13,7 @@ sealed class JsonSeqTable extends CassandraTable[JsonSeqTable, JsonSeqRow]
     JsonSeqRow(pkey(r), recipes(r))
   }
 
-  object pkey extends PrimitiveColumn[JsonSeqTable, JsonSeqRow, String](this) with PrimaryKey[JsonSeqTable, JsonSeqRow, String]
+  object pkey extends StringColumn(this) with PrimaryKey[JsonSeqTable, JsonSeqRow]
   object recipes extends JsonSeqColumn[JsonSeqTable, JsonSeqRow, Recipe](this)
 }
 

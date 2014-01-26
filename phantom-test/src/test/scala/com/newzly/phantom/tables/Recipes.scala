@@ -67,26 +67,32 @@ object JsonSeqRow extends ModelSampler[JsonSeqRow] {
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   override def fromRow(r: Row): Recipe = {
-    Recipe(url(r), description(r), ingredients(r), author.optional(r), servings(r), last_checked_at(r), props(r))
+    Recipe(
+      url(r),
+      description(r),
+      ingredients(r),
+      author.optional(r),
+      servings(r),
+      last_checked_at(r),
+      props(r)
+    )
   }
 
-  object url extends PrimitiveColumn[Recipes, Recipe, String](this)
+  object url extends StringColumn(this)
 
-  object description extends OptionalPrimitiveColumn[Recipes, Recipe, String](this)
+  object description extends OptionalStringColumn(this)
 
   object ingredients extends SeqColumn[Recipes, Recipe, String](this)
 
   object author extends JsonColumn[Recipes, Recipe, Author](this)
 
-  object servings extends OptionalPrimitiveColumn[Recipes, Recipe, Int](this)
+  object servings extends OptionalIntColumn(this)
 
-  object last_checked_at extends PrimitiveColumn[Recipes, Recipe, Date](this)
+  object last_checked_at extends DateColumn(this)
 
   object props extends MapColumn[Recipes, Recipe, String, String](this)
 
-  object uid extends PrimitiveColumn[Recipes, Recipe, UUID](this)
-
-  val _key = url
+  object uid extends UUIDColumn(this)
 }
 
 

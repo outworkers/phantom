@@ -25,7 +25,7 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
     MyTestRow(key(r), optionA(r), classS(r))
   }
 
-  object key extends PrimitiveColumn[MyTest, MyTestRow, String](this)
+  object key extends StringColumn(this)
 
   object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
 

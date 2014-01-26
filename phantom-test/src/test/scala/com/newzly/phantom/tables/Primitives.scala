@@ -6,6 +6,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.keys.PrimaryKey
 
 case class Primitive(
   pkey: String,
@@ -45,29 +46,27 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
       int(r), date(r), uuid(r), bi(r))
   }
 
-  object pkey extends PrimitiveColumn[Primitives, Primitive, String](this)
+  object pkey extends StringColumn(this) with PrimaryKey[Primitives, Primitive]
 
-  object long extends PrimitiveColumn[Primitives, Primitive, Long](this)
+  object long extends LongColumn(this)
 
-  object boolean extends PrimitiveColumn[Primitives, Primitive, Boolean](this)
+  object boolean extends BooleanColumn(this)
 
-  object bDecimal extends PrimitiveColumn[Primitives, Primitive, BigDecimal](this)
+  object bDecimal extends BigDecimalColumn(this)
 
-  object double extends PrimitiveColumn[Primitives, Primitive, Double](this)
+  object double extends DoubleColumn(this)
 
-  object float extends PrimitiveColumn[Primitives, Primitive, Float](this)
+  object float extends FloatColumn(this)
 
-  object inet extends PrimitiveColumn[Primitives, Primitive, InetAddress](this)
+  object inet extends InetAddressColumn(this)
 
-  object int extends PrimitiveColumn[Primitives, Primitive, Int](this)
+  object int extends IntColumn(this)
 
-  object date extends PrimitiveColumn[Primitives, Primitive, Date](this)
+  object date extends DateColumn(this)
 
-  object uuid extends PrimitiveColumn[Primitives, Primitive, UUID](this)
+  object uuid extends UUIDColumn(this)
 
-  object bi extends PrimitiveColumn[Primitives, Primitive, BigInt](this)
-
-  val _key = pkey
+  object bi extends BigIntColumn(this)
 }
 
 object Primitives extends Primitives with TestSampler[Primitives, Primitive] {
