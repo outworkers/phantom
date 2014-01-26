@@ -7,16 +7,7 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
-    val q = Primitives.create(
-      _.boolean,
-      _.bDecimal,
-      _.double,
-      _.float,
-      _.inet,
-      _.int,
-      _.date,
-      _.uuid,
-      _.bi).queryString
+    val q = Primitives.create.schema().queryString
 
     assert(q.stripMargin === "CREATE TABLE Primitives " +
         "( keyName int, " +
@@ -38,14 +29,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "work fine with List, Set, Map" in {
-    val q = TestTable.create(
-      _.key,
-      _.list,
-      _.setText,
-      _.mapTextToText,
-      _.setInt,
-      _.mapIntToText
-    ).queryString
+    val q = TestTable.create.schema().queryString
 
     assert( q==="CREATE TABLE TestTable " +
       "( key text, " +
@@ -58,14 +42,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "get the right query in mix table" in {
-    val q = Recipes.create(_.url,
-      _.description,
-      _.ingredients,
-      _.author,
-      _.servings,
-      _.last_checked_at,
-      _.props,
-      _.uid).queryString
+    val q = Recipes.create.schema().queryString
 
     assert(q.stripMargin === "CREATE TABLE Recipes ( "+
       "url text, " +
@@ -80,15 +57,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "correctly add clustering order to a query" in {
-    val q = Recipes.create(
-      _.url,
-      _.description,
-      _.ingredients,
-      _.author,
-      _.servings,
-      _.last_checked_at,
-      _.props,
-      _.uid)
+    val q = Recipes.create.schema()
       .withClusteringOrder(_.last_checked_at)
       .ascending.queryString
     Console.println(q)

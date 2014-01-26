@@ -22,17 +22,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
 
-    val rcp = Primitives.create(_.pkey,
-      _.long,
-      _.boolean,
-      _.bDecimal,
-      _.double,
-      _.float,
-      _.inet,
-      _.int,
-      _.date,
-      _.uuid,
-      _.bi)
+    val rcp = Primitives.create.schema()
       .execute() flatMap {
       _ => Primitives.insert
         .value(_.pkey, row.pkey)
@@ -118,14 +108,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   it should "work fine with Mix" in {
     val r = Recipe.sample
 
-    val rcp = Recipes.create(_.url,
-      _.description,
-      _.ingredients,
-      _.author,
-      _.servings,
-      _.last_checked_at,
-      _.props,
-      _.uid).execute() flatMap { _ => Recipes.insert
+    val rcp = Recipes.create.schema().execute() flatMap { _ => Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
         .value(_.ingredients, r.ingredients)

@@ -1,18 +1,16 @@
 package com.newzly.phantom.query
 
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.twitter.util.Future
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
-import com.newzly.phantom.column.{ AbstractColumn, Column }
-import com.newzly.phantom.Implicits.{ DateColumn, DateTimeColumn }
+import com.newzly.phantom.Implicits.DateTimeColumn
+import com.twitter.util.Future
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
-  def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T, R] = {
+  def schema(): CreateQuery[T, R] = {
 
     val queryInit = s"CREATE TABLE ${table.tableName} ("
-    val queryColumns = columns.foldLeft("")((qb, c) => {
-      val col = c(table)
-      s"$qb, ${col.name} ${col.cassandraType}"
+    val queryColumns = table.columns.foldLeft("")((qb, c) => {
+      s"$qb, ${c.name} ${c.cassandraType}"
     })
 
     val pkes = table.primaryKeys.map(_.name).mkString(",")
