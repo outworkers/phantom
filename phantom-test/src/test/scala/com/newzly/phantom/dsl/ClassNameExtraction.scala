@@ -3,10 +3,10 @@ package com.newzly.phantom.dsl
 
 
 import org.scalatest.FlatSpec
-
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.keys.PrimaryKey
 
 
 trait Test {
@@ -28,12 +28,15 @@ trait Test {
 case class CustomRecord(name: String, mp: Map[String, String])
 
 class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-  object record extends PrimitiveColumn[TestTableNames, CustomRecord, String](this)
-  val _key = record
+  def meta = TestTableNames
+  object record extends StringColumn(this) with PrimaryKey[TestTableNames, CustomRecord]
   object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
-  override def fromRow(r: Row): CustomRecord = CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+  override def fromRow(r: Row): CustomRecord = {
+    CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+  }
 }
+
 object TestTableNames extends TestTableNames
 
 object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTableNames)
@@ -82,7 +85,6 @@ class ClassNameExtraction extends FlatSpec {
 
     assert(TestNames.name === "TestNames")
   }
-
 
   it should "correctly extract the parent name" in {
     object Parent extends Parent

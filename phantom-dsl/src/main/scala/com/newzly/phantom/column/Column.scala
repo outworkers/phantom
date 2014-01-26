@@ -1,11 +1,11 @@
 package com.newzly.phantom.column
 
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
 
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.query.QueryCondition
+import com.newzly.phantom.query.{ InsertQuery, QueryCondition }
 
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
@@ -15,6 +15,10 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](table: 
 
   type ValueType = T
 
+  protected[this] lazy val valueBox = new AtomicReference[T]()
+
+  def get: T = valueBox.get()
+
   val ref = this
 
   table.addColumn(this)
@@ -23,6 +27,11 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](table: 
 
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
+
+  def apply(value: ValueType) : CassandraTable[Owner, Record] = {
+    valueBox.compareAndSet(null.asInstanceOf[ValueType], value)
+    table.meta
+  }
 
   def eqs (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))

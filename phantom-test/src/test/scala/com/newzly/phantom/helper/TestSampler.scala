@@ -33,8 +33,6 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   }
 
   private[this] val schemaCreated = new AtomicBoolean(false)
-
-
 }
 
 /**

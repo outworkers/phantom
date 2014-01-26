@@ -79,6 +79,8 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
     )
   }
 
+  def meta = Recipes
+
   object url extends StringColumn(this)
 
   object description extends OptionalStringColumn(this)
