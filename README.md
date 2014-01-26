@@ -89,4 +89,9 @@ Pre newzly fork
 ===============
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Contributions are most welcome!
+Contributions
+=============
+
+Contributions are most welcome! 
+
+To contribute, simply submit a "Pull request" via GitHub.
