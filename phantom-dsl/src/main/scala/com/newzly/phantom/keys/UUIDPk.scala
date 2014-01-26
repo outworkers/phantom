@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.newzly.phantom.field
+package com.newzly.phantom.keys
 
 import java.util.UUID
 import com.newzly.phantom.{ CassandraTable }
@@ -23,11 +23,12 @@ trait UUIDPk[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] =>
 
   object id extends PrimitiveColumn[Owner, Record, UUID](this)
-
+  this.addPrimaryKey(id)
   val _key = id
 }
 
 trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] with UUIDPk[Owner, Record] =>
+
   object order_id extends PrimitiveColumn[Owner, Record, Long](this)
 }

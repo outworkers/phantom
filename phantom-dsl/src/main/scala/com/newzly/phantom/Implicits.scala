@@ -19,7 +19,7 @@ package newzly
 package phantom
 
 import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.field.LongOrderKey
+import com.newzly.phantom.keys.LongOrderKey
 import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
 
 object Implicits {

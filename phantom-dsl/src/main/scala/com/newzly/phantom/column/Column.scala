@@ -9,7 +9,7 @@ import com.newzly.phantom.query.QueryCondition
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](_table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
-  protected[this] val getTable = _table
+  def getTable: CassandraTable[Owner, Record] = _table
   type ValueType = T
 
   //table.addColumn(this)

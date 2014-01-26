@@ -26,7 +26,7 @@ import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.sample.ExampleModel
 import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
-import com.newzly.phantom.field.{ TimeUUIDPk, LongOrderKey }
+import com.newzly.phantom.keys.{ TimeUUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 
 sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk[ExampleRecord] with LongOrderKey[ExampleRecord] {

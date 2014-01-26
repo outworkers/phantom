@@ -2,7 +2,7 @@ package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.field.{ LongOrderKey, UUIDPk }
+import com.newzly.phantom.keys.{ LongOrderKey, UUIDPk }
 import com.newzly.phantom.helper.TestSampler
 import com.newzly.phantom.Implicits._
 

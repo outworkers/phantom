@@ -29,6 +29,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   def _key: Column[T, R, _]
 
   private[this] val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
 
   def addColumn(column: Column[T, R, _]): Unit = {
@@ -38,9 +39,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def columns: List[Column[T, R, _]] = _columns.toList
   def keys: List[Column[T, R, _]] = _keys.toList
+  def primaryKeys: List[Column[T, R, _]] = _primaryKeys.toList
 
   protected[phantom] def addKey(key: Column[T, R, _]): Unit = {
     _keys += key
+  }
+
+  protected[phantom] def addPrimaryKey(key: Column[T, R, _]): Unit = {
+    _primaryKeys += key
   }
 
   private[this] lazy val _name: String = {
