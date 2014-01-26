@@ -79,21 +79,21 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
     )
   }
 
-  val url = new StringColumn(this)
+  object url extends StringColumn(this)
 
-  val description = new OptionalStringColumn(this)
+  object description extends OptionalStringColumn(this)
 
-  val ingredients = new SeqColumn[Recipes, Recipe, String](this)
+  object ingredients extends SeqColumn[Recipes, Recipe, String](this)
 
-  val author = new JsonColumn[Recipes, Recipe, Author](this)
+  object author extends JsonColumn[Recipes, Recipe, Author](this)
 
-  val servings = new OptionalIntColumn(this)
+  object servings extends OptionalIntColumn(this)
 
-  val last_checked_at = new DateTimeColumn(this)
+  object last_checked_at extends DateTimeColumn(this)
 
-  val props = new MapColumn[Recipes, Recipe, String, String](this)
+  object props extends MapColumn[Recipes, Recipe, String, String](this)
 
-  val uid = new UUIDColumn(this)
+  object uid extends UUIDColumn(this)
 }
 
 

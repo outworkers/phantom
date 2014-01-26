@@ -123,10 +123,11 @@ object newzlyPhantom extends Build {
         settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
         libraryDependencies ++= Seq(
-            "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
-            "com.fasterxml.jackson.module" %% "jackson-module-scala"          % "2.3.1",
-            "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
-            "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
+          "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
+          "com.fasterxml.jackson.module" %% "jackson-module-scala"          % "2.3.1",
+          "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
+          "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
+          "org.scala-lang"           %  "scala-reflect"                     % "2.10.0"
         )
     )
 

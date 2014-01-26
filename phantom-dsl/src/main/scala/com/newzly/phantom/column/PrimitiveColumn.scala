@@ -15,3 +15,11 @@ class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specializ
   def optional(r: Row): Option[RR] =
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
+
+object PrimitiveColumn {
+
+  @implicitNotFound(msg = "Type ${ValueType} must be a Cassandra primitive")
+  def apply[Owner <: CassandraTable[Owner, Record], Record, ValueType : CassandraPrimitive](table: CassandraTable[Owner, Record]) : PrimitiveColumn[Owner, Record, ValueType] = {
+    new PrimitiveColumn[Owner, Record, ValueType](table)
+  }
+}
