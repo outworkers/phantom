@@ -5,6 +5,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{TestSampler, Sampler, ModelSampler}
 import com.newzly.phantom.Implicits._
+import com.newzly.phantom.keys.PrimaryKey
 
 case class JodaRow(
   pkey: String,
@@ -27,10 +28,9 @@ sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
     JodaRow(pkey(r), int(r), bi(r))
   }
 
-  object pkey extends PrimitiveColumn[PrimitivesJoda, JodaRow, String](this)
-  object int extends PrimitiveColumn[PrimitivesJoda, JodaRow, Int](this)
-  object bi extends PrimitiveColumn[PrimitivesJoda, JodaRow, DateTime](this)
-  val _key = pkey
+  object pkey extends StringColumn(this) with PrimaryKey[PrimitivesJoda, JodaRow]
+  object int extends IntColumn(this)
+  object bi extends DateTimeColumn(this)
 }
 
 object PrimitivesJoda extends PrimitivesJoda with TestSampler[PrimitivesJoda, JodaRow] {

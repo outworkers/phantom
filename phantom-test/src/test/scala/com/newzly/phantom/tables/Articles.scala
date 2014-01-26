@@ -9,7 +9,7 @@ import com.newzly.phantom.helper.{
   Sampler,
   TestSampler
 }
-import com.newzly.phantom.column.PrimitiveColumn
+import com.newzly.phantom.Implicits._
 
 case class Article(
   name: String,
@@ -27,8 +27,8 @@ object Article extends ModelSampler[Article] {
 
 sealed class Articles private() extends CassandraTable[Articles, Article] with LongOrderKey[Articles, Article] {
 
-  object id extends PrimitiveColumn[Articles, Article, UUID](this) with PrimaryKey[Articles, Article, UUID]
-  object name extends PrimitiveColumn[Articles, Article, String](this)
+  object id extends UUIDColumn(this) with PrimaryKey[Articles, Article]
+  object name extends StringColumn(this)
 
   override def fromRow(row: Row): Article = {
     Article(name(row), id(row), order_id(row))
