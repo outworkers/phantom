@@ -78,10 +78,20 @@ object ExampleRecord extends ExampleRecord {
 Maintainers
 ===========
 
-Phantom was originally developed at newzly as an in-house project destined for internal-only use.
+Phantom was originally developed at newzly as an in-house project.
 All Cassandra integration at newzly goes through Phantom.
 
 - Sorin Chiprian sorin.chiprian@newzly.com
+- Krisztian Kovacs krisztian.kovacs@newzly.com
 - Flavian Alexandru flavian@newzly.com
 
-Contributions are most welcome!
+Pre newzly fork
+===============
+Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
+
+Contributions
+=============
+
+Contributions are most welcome! 
+
+To contribute, simply submit a "Pull request" via GitHub.
