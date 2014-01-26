@@ -15,27 +15,35 @@
  */
 package com.newzly.phantom
 
-import java.io.Serializable
-import scala.collection.JavaConverters._
-import scala.reflect.ClassTag
-
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.Column
+import scala.collection.parallel.mutable.ParHashSet
 
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def _key: Column[T, R, _]
 
+  val keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  val columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+
+  protected[phantom] def addColumn(column: Column[T, R, _]): Unit = {
+    columns += column
+  }
+
+  protected[phantom] def addKey(key: Column[T, R, _]): Unit = {
+    keys += key
+  }
+
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
-  val logger = Logger.getLogger(_name)
+  lazy val logger = Logger.getLogger(_name)
 
   def tableName: String = _name
 
