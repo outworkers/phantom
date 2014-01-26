@@ -7,11 +7,12 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.query.QueryCondition
 
 
-abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
+abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](_table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
+  protected[this] val getTable = _table
   type ValueType = T
 
-  table.addColumn(this)
+  //table.addColumn(this)
 
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))

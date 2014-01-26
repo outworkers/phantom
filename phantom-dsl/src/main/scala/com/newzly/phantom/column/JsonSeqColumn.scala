@@ -6,9 +6,12 @@ import com.newzly.phantom.CassandraTable
 import com.datastax.driver.core.Row
 import com.twitter.util.Try
 
-class JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](override val table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Seq[RR]](table) with Helpers {
+class JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Seq[RR]](table) with Helpers {
+
+  table.addColumn(this)
 
   val cassandraType = "list<text>"
+
   def toCType(values: Seq[RR]): AnyRef = {
     val json = values.map {
       item => {

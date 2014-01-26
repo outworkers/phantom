@@ -5,7 +5,7 @@ import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.twitter.util.NonFatal
 
-class JsonColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](override val table: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](table) {
+class JsonColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](table) {
 
   val logger = Logger.getLogger("JsonTypeColumn")
   val mf = implicitly[Manifest[RR]]

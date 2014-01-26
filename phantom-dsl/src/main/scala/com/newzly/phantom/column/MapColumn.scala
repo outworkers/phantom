@@ -8,7 +8,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be a Cassandra primitives")
-class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](override val table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table) {
+class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table) {
 
   val cassandraType = s"map<${CassandraPrimitive[K].cassandraType}, ${CassandraPrimitive[V].cassandraType}>"
   def toCType(values: Map[K, V]): JMap[AnyRef, AnyRef] = values.map {

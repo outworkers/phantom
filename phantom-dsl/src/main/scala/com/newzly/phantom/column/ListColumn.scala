@@ -6,7 +6,7 @@ import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 import com.datastax.driver.core.Row
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](override val table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table) {
+class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table) {
   val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
 
   def toCType(values: List[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
