@@ -5,6 +5,10 @@ import com.newzly.phantom.tables.{ Primitives, Recipes, TestTable }
 
 class CreateTableQueryString extends FlatSpec {
 
+  it should "get the correct count the primitives table" in {
+    assert(Primitives.columns.length === 11)
+  }
+
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.create(
@@ -73,6 +77,21 @@ class CreateTableQueryString extends FlatSpec {
       "props map<text, text>, " +
       "uid uuid, " +
       "PRIMARY KEY (url));")
+  }
+
+  it should "correctly add clustering order to a query" in {
+    val q = Recipes.create(
+      _.url,
+      _.description,
+      _.ingredients,
+      _.author,
+      _.servings,
+      _.last_checked_at,
+      _.props,
+      _.uid)
+      .withClusteringOrder(_.last_checked_at)
+      .ascending.queryString
+    Console.println(q)
   }
 }
 
