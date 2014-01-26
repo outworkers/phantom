@@ -15,10 +15,7 @@
  */
 package com.newzly.phantom
 
-import java.lang.reflect.Method
-import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.mutable.ParHashSet
-import scala.language.existentials
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
@@ -26,7 +23,7 @@ import com.datastax.driver.core.querybuilder._
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.Column
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit[T, R] {
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   private[this] val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
@@ -99,20 +96,4 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit[T,
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
-
-  def schema = {
-    _columns map {
-      column => {
-        s"${column.name} ${column.cassandraType}"
-      }
-    }
-
-    val str = this.getClass.getDeclaredFields.map {
-      field => {
-        s"${field.getName}${field.getClass.asInstanceOf[CassandraPrimitive[_]].cassandraType}"
-      }
-    }
-    str
-  }
-
 }

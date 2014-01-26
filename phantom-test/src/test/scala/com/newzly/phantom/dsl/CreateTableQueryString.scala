@@ -5,10 +5,6 @@ import com.newzly.phantom.tables.{ Primitives, Recipes, TestTable }
 
 class CreateTableQueryString extends FlatSpec {
 
-  it should "get the correct count the primitives table" in {
-    assert(Primitives.columns.length === 11)
-  }
-
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.create(
@@ -35,6 +31,10 @@ class CreateTableQueryString extends FlatSpec {
         "uuid uuid, " +
         "bi varint, " +
         "PRIMARY KEY (keyName));")
+  }
+
+  it should "get the correct count the primitives table" in {
+    assert(Primitives.columns.length === 11)
   }
 
   it should "work fine with List, Set, Map" in {
