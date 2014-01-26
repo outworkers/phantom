@@ -16,7 +16,8 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends
     })
 
     val pkes = table.primaryKeys.map(_.name).mkString(",")
-    val queryPrimaryKey  = s", PRIMARY KEY ($pkes)"
+    table.logger.info(s"Adding Primary keys indexes: $pkes")
+    val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
     new CreateQuery(table, queryInit + queryColumns.drop(1) + queryPrimaryKey + ")")
   }
 

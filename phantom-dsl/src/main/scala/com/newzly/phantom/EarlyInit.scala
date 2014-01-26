@@ -8,7 +8,7 @@ trait EarlyInit {
   val reflection  = mirror.reflect(this)
 
   mirror
-    .classSymbol(getClass.getSuperclass)
+    .classSymbol(getClass)
     .toType
     .members
     .filter(_.isModule)
@@ -17,7 +17,7 @@ trait EarlyInit {
         try {
           module.instance
         } catch {
-          case NonFatal(err) => Console.println(s"${err.getMessage}")
+          case NonFatal(err) =>
         }
     })
 }
