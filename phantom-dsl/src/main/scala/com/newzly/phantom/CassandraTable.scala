@@ -26,8 +26,6 @@ import scala.collection.parallel.mutable.ParHashSet
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
-  def _key: Column[T, R, _]
-
   private[this] val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
@@ -101,6 +99,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
   def schema = {
+
+    _columns map {
+      column => {
+        s"${column.name} ${column}"
+      }
+    }
+
     val str = this.getClass.getDeclaredFields.map {
       field => {
         s"${field.getName}${field.getClass.asInstanceOf[CassandraPrimitive[_]].cassandraType}"

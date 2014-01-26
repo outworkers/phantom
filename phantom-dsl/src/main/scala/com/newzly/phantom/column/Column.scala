@@ -3,16 +3,17 @@ package com.newzly.phantom.column
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
 
-import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 import com.newzly.phantom.query.QueryCondition
 
 
-abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](_table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
+abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
-  def getTable: CassandraTable[Owner, Record] = _table
   type ValueType = T
 
-  //table.addColumn(this)
+  table.addColumn(this)
+
+  def getTable: CassandraTable[Owner, Record] = table
 
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))

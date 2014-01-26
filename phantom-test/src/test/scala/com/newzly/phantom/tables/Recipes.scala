@@ -51,11 +51,11 @@ object Recipe extends ModelSampler[Recipe] {
   }
 }
 
-case class JsonSeqColumnRow(pkey: String, jtsc: Seq[Recipe])
+case class JsonSeqRow(pkey: String, jtsc: Seq[Recipe])
 
-object JsonSeqColumnRow extends ModelSampler[JsonSeqColumnRow] {
-  def sample: JsonSeqColumnRow = {
-    JsonSeqColumnRow(
+object JsonSeqRow extends ModelSampler[JsonSeqRow] {
+  def sample: JsonSeqRow = {
+    JsonSeqRow(
       Sampler.getAUniqueString,
       List.range(0, 30).map(x => {
         Recipe.sample
