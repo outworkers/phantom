@@ -11,6 +11,8 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val tab
 
   type ValueType = T
 
+  table.addColumn(this)
+
   override def apply(r: Row): T =
     optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
 
