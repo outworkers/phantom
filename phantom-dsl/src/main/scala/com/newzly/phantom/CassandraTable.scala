@@ -15,23 +15,46 @@
  */
 package com.newzly.phantom
 
+import scala.collection.parallel.mutable.ParHashSet
+import scala.reflect.ClassTag
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.Column
-import scala.collection.parallel.mutable.ParHashSet
 
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+trait EarlyInit[T <: CassandraTable[T, R], R] {
+  self: CassandraTable[T, R] =>
+
+  val tag = implicitly[ClassTag[self.type]]
+
+  tag.runtimeClass.getFields.foreach {
+    field => logger.info(s"${field.getName}")
+  }
+
+  /*
+  for (f <- this.getClass.getDeclaredFields) {
+    logger.info(s"Field: ${f.getName}")
+  }
+
+  for (f <- this.getClass.getDeclaredMethods) {
+    if (f.getParameterTypes.length == 0 && classOf[Column[T, R, _]].isAssignableFrom(f.getReturnType)) {
+      logger.info(s"Method: ${f.getName}")
+      f.invoke(this)
+    }
+  }*/
+}
+
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit[T, R] {
 
   private[this] val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
 
   def addColumn(column: Column[T, R, _]): Unit = {
-    logger.info(s"Added column ${column.name}")
+    // logger.info(s"Added column ${column.name}")
     _columns += column
   }
 
@@ -99,10 +122,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
   def schema = {
-
     _columns map {
       column => {
-        s"${column.name} ${column}"
+        s"${column.name} ${column.cassandraType}"
       }
     }
 

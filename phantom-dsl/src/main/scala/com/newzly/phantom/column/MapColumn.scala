@@ -28,3 +28,8 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrim
     }(breakOut) toMap)
   }
 }
+
+object MapColumn {
+  def apply[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record]) =
+    new MapColumn[Owner, Record, K, V](table)
+}

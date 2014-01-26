@@ -5,6 +5,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
+import org.joda.time.DateTime
 
 
 case class Author(
@@ -29,7 +30,7 @@ case class Recipe(
   ingredients: Seq[String],
   author: Option[Author],
   servings: Option[Int],
-  lastCheckedAt: java.util.Date,
+  lastCheckedAt: DateTime,
   props: Map[String, String]
 )
 
@@ -41,7 +42,7 @@ object Recipe extends ModelSampler[Recipe] {
       Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
       Some(Author.sample),
       Some(Sampler.getARandomInteger()),
-      new Date(),
+      new DateTime(),
       Map.empty[String, String]
     )
   }
@@ -78,21 +79,21 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
     )
   }
 
-  object url extends StringColumn(this)
+  val url = new StringColumn(this)
 
-  object description extends OptionalStringColumn(this)
+  val description = new OptionalStringColumn(this)
 
-  object ingredients extends SeqColumn[Recipes, Recipe, String](this)
+  val ingredients = new SeqColumn[Recipes, Recipe, String](this)
 
-  object author extends JsonColumn[Recipes, Recipe, Author](this)
+  val author = new JsonColumn[Recipes, Recipe, Author](this)
 
-  object servings extends OptionalIntColumn(this)
+  val servings = new OptionalIntColumn(this)
 
-  object last_checked_at extends DateColumn(this)
+  val last_checked_at = new DateTimeColumn(this)
 
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  val props = new MapColumn[Recipes, Recipe, String, String](this)
 
-  object uid extends UUIDColumn(this)
+  val uid = new UUIDColumn(this)
 }
 
 
