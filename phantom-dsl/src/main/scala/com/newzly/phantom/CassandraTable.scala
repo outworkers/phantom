@@ -15,37 +15,16 @@
  */
 package com.newzly.phantom
 
+import java.lang.reflect.Method
+import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.mutable.ParHashSet
-import scala.reflect.ClassTag
+import scala.language.existentials
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.Column
-
-
-trait EarlyInit[T <: CassandraTable[T, R], R] {
-  self: CassandraTable[T, R] =>
-
-  val tag = implicitly[ClassTag[self.type]]
-
-  tag.runtimeClass.getFields.foreach {
-    field => logger.info(s"${field.getName}")
-  }
-
-  /*
-  for (f <- this.getClass.getDeclaredFields) {
-    logger.info(s"Field: ${f.getName}")
-  }
-
-  for (f <- this.getClass.getDeclaredMethods) {
-    if (f.getParameterTypes.length == 0 && classOf[Column[T, R, _]].isAssignableFrom(f.getReturnType)) {
-      logger.info(s"Method: ${f.getName}")
-      f.invoke(this)
-    }
-  }*/
-}
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit[T, R] {
 
