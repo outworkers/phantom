@@ -20,6 +20,9 @@ import com.newzly.phantom.column.{ Column, PrimitiveColumn }
 
 trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
   this: Column[Owner, Record, ValueType] =>
+
+  _isPrimaryKey.set(true)
+
   getTable.addPrimaryKey(this)
 }
 

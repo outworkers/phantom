@@ -1,5 +1,6 @@
 package com.newzly.phantom.column
 
+import java.util.concurrent.atomic.AtomicBoolean
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
 
@@ -8,6 +9,10 @@ import com.newzly.phantom.query.QueryCondition
 
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
+
+
+  protected[this] lazy val _isKey = new AtomicBoolean(false)
+  protected[this] lazy val _isPrimaryKey = new AtomicBoolean(false)
 
   type ValueType = T
 
