@@ -12,5 +12,5 @@ import com.newzly.phantom.column.Column
 trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
   self: Column[Owner, Record, ValueType] =>
 
-  this.table.addKey(this)
+  this.getTable.addKey(this)
 }
