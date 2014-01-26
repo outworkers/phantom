@@ -12,7 +12,7 @@ sealed class JsonSeqTable extends CassandraTable[JsonSeqTable, JsonSeqRow]
   override def fromRow(r: Row): JsonSeqRow = {
     JsonSeqRow(pkey(r), recipes(r))
   }
-
+  def meta = JsonSeqTable
   object pkey extends StringColumn(this) with PrimaryKey[JsonSeqTable, JsonSeqRow]
   object recipes extends JsonSeqColumn[JsonSeqTable, JsonSeqRow, Recipe](this)
 }

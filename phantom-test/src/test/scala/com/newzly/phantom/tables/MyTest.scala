@@ -26,6 +26,8 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
     MyTestRow(key(r), optionA(r), classS(r))
   }
 
+  def meta = MyTest
+
   object key extends StringColumn(this) with PrimaryKey[MyTest, MyTestRow]
 
   object stringlist extends ListColumn[MyTest, MyTestRow, String](this)

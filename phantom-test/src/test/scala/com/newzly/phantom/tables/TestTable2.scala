@@ -69,6 +69,8 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
     )
   }
 
+  def meta = TestTable2
+
   object key extends StringColumn(this) with PrimaryKey[TestTable2, TestRow2]
   object optionA extends OptionalIntColumn(this)
   object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)

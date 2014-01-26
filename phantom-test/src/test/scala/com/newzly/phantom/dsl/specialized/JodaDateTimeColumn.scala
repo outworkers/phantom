@@ -18,8 +18,8 @@ class JodaDateTimeColumn extends BaseTest with Matchers with Assertions with Asy
       _ => {
         PrimitivesJoda.insert
           .value(_.pkey, row.pkey)
-          .value(_.int, row.int)
-          .value(_.bi, row.bi).execute()
+          .value(_.intColumn, row.int)
+          .value(_.timestamp, row.bi).execute()
         }
       } flatMap  {
         _ => PrimitivesJoda.select.one

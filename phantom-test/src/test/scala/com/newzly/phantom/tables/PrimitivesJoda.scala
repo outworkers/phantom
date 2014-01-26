@@ -25,12 +25,14 @@ object JodaRow extends ModelSampler[JodaRow] {
 
 sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
   override def fromRow(r: Row): JodaRow = {
-    JodaRow(pkey(r), int(r), bi(r))
+    JodaRow(pkey(r), intColumn(r), timestamp(r))
   }
 
+  def meta = PrimitivesJoda
+
   object pkey extends StringColumn(this) with PrimaryKey[PrimitivesJoda, JodaRow]
-  object int extends IntColumn(this)
-  object bi extends DateTimeColumn(this)
+  object intColumn extends IntColumn(this)
+  object timestamp extends DateTimeColumn(this)
 }
 
 object PrimitivesJoda extends PrimitivesJoda with TestSampler[PrimitivesJoda, JodaRow] {
