@@ -16,10 +16,6 @@ class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specializ
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-object PrimitiveColumn {
+class TimeSeries[T]
 
-  @implicitNotFound(msg = "Type ${ValueType} must be a Cassandra primitive")
-  def apply[Owner <: CassandraTable[Owner, Record], Record, ValueType : CassandraPrimitive](table: CassandraTable[Owner, Record]) : PrimitiveColumn[Owner, Record, ValueType] = {
-    new PrimitiveColumn[Owner, Record, ValueType](table)
-  }
-}
+class TimeColumn[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record])(implicit ev: TimeSeries[T], pr: CassandraPrimitive[T]) extends PrimitiveColumn[Owner, Record, T](table)(pr)
