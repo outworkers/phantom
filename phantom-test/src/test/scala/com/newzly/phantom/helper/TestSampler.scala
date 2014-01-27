@@ -11,14 +11,6 @@ import com.newzly.phantom.CassandraTable
  */
 trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   self : CassandraTable[Owner, Row] =>
-
-  /**
-   * This must specify the schema expected to exist in the database
-   * for the specific table.
-   * @return
-   */
-  def createSchema: String
-
   /**
    * Inserts the schema into the database in a blocking way.
    * @param session The Cassandra session.
@@ -26,8 +18,9 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   def insertSchema(session: Session): Unit = {
     logger.info(s"Schema inserted: ${schemaCreated.get()}" )
     if (!schemaCreated.get()) {
-      logger.info("Schema agreement in progress: " + createSchema)
-      session.execute(createSchema)
+      val schema = create.schema().queryString
+      logger.info(s"Schema agreement in progress: $schema")
+      session.execute(schema)
       schemaCreated.set(true)
     }
   }

@@ -47,13 +47,14 @@ case class TestRow2(
 )
 
 object TestRow2 extends ModelSampler[TestRow2] {
-  def sample: TestRow2 = {
+  def sample = sample(5)
+  def sample(limit: Int = 5): TestRow2 = {
     TestRow2(
       Sampler.getAUniqueString,
       Some(Sampler.getARandomInteger()),
       SimpleMapOfStringsClass.sample,
       Some(SimpleMapOfStringsClass.sample),
-      List.range(0, 20).map(x => { x.toString -> SimpleMapOfStringsClass.sample}).toMap
+      List.range(0, limit).map(x => { x.toString -> SimpleMapOfStringsClass.sample}).toMap
     )
   }
 }

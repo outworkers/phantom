@@ -37,10 +37,5 @@ sealed class Articles private() extends CassandraTable[Articles, Article] with L
 }
 
 object Articles extends Articles with TestSampler[Articles, Article] {
-
   override def tableName = "articlestest"
-
-  def createSchema: String = {
-    ""
-  }
 }
