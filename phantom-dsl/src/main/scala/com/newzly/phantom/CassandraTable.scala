@@ -15,23 +15,46 @@
  */
 package com.newzly.phantom
 
-import java.io.Serializable
-import scala.collection.JavaConverters._
-import scala.reflect.ClassTag
-
+import scala.collection.parallel.mutable.ParHashSet
+import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
-import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery}
+import com.newzly.phantom.query._
+import com.newzly.phantom.column.Column
 
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+  private[this] lazy val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] lazy val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] lazy val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] lazy val _orderKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
 
-  def _key: Column[_]
+  def addColumn(column: Column[T, R, _]): Unit = {
+    _columns += column
+  }
+
+  def columns: List[Column[T, R, _]] = _columns.toList
+  def keys: List[Column[T, R, _]] = _keys.toList
+  def primaryKeys: List[Column[T, R, _]] = _primaryKeys.toList
+
+  protected[phantom] def addKey(key: Column[T, R, _]): Unit = {
+    _keys += key
+  }
+
+  protected[phantom] def addPrimaryKey(key: Column[T, R, _]): Unit = {
+    _primaryKeys += key
+  }
+
+  protected[phantom] def addOrderKey(key: Column[T, R, _]): Unit = {
+    _orderKeys += key
+  }
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
+
+  lazy val logger = Logger.getLogger(_name)
 
   def tableName: String = _name
 
@@ -74,19 +97,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
-  // def ttl(expiry: Int) = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.ttl(expiry))
+  def createRecord: CassandraTable[T, R] = meta
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def schema = {
-    val str = this.getClass.getDeclaredFields.map {
-      field => {
-        s"${field.getName}${field.getClass.asInstanceOf[CassandraPrimitive[_]].cassandraType}"
-      }
-    }
-    str
-  }
-
+  def meta: CassandraTable[T, R]
 }

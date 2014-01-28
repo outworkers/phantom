@@ -15,53 +15,51 @@
  */
 package com.newzly.phantom
 
-import java.util.concurrent.{ LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor }
+import java.util.concurrent.Executors
+import scala.concurrent.{ Future => ScalaFuture, Promise => ScalaPromise }
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
+  Futures,
+  FutureCallback,
   ListeningExecutorService,
-  MoreExecutors,
-  ThreadFactoryBuilder
+  MoreExecutors
 }
-import com.twitter.util.{ Future, NonFatal, Promise }
+import com.twitter.util.{ Future, Promise }
 
 object Manager {
-  private[this] final val DEFAULT_THREAD_KEEP_ALIVE: Int = 30
 
-  private[this] lazy val processors = Runtime.getRuntime.availableProcessors()
-
-  private[this] def makeExecutor(threads: Int, name: String) : ListeningExecutorService = {
-    val executor: ThreadPoolExecutor = new ThreadPoolExecutor(
-      threads,
-      threads,
-      DEFAULT_THREAD_KEEP_ALIVE,
-      TimeUnit.SECONDS,
-      new LinkedBlockingQueue[Runnable],
-      new ThreadFactoryBuilder().setNameFormat(name).build()
-    )
-    executor.allowCoreThreadTimeOut(true)
-    MoreExecutors.listeningDecorator(executor)
+  private[this] def makeExecutor(name: String) : ListeningExecutorService = {
+    MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
   }
 
   lazy val executor = makeExecutor(
-    processors,
-    "Cassandra Java Driver worker-%d"
+    "com.newzly.phantom worker-%d"
   )
 }
 
 trait CassandraResultSetOperations {
+
+  /**
+   * Converts a statement to a result Future.
+   * @param s The statement to execute.
+   * @param session The Cassandra cluster connection session to use.
+   * @return
+   */
   def statementExecuteToFuture(s: Statement)(implicit session: Session): Future[ResultSet] = {
     val promise = Promise[ResultSet]()
-
     val future = session.executeAsync(s)
-    future.addListener(new Runnable {
-      override def run(): Unit = {
-        try {
-          promise become Future.value(future.getUninterruptibly)
-        } catch {
-          case NonFatal(e) => promise raise e
-        }
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise become Future.value(result)
       }
-    }, Manager.executor)
+
+      def onFailure(err: Throwable): Unit = {
+        promise raise err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+
     promise
   }
 
@@ -69,15 +67,54 @@ trait CassandraResultSetOperations {
     val promise = Promise[ResultSet]()
 
     val future = session.executeAsync(s)
-    future.addListener(new Runnable {
-      def run(): Unit = try {
-        promise become Future.value(future.getUninterruptibly)
-      } catch {
-        case NonFatal(e) => promise raise e
-      }
-    }, Manager.executor)
 
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise become Future.value(result)
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise raise err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
     promise
+  }
+
+  def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
+    val promise = ScalaPromise[ResultSet]()
+
+    val future = session.executeAsync(s)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise.future
+  }
+
+  def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
+    val promise = ScalaPromise[ResultSet]()
+
+    val future = session.executeAsync(query)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise.future
   }
 }
 

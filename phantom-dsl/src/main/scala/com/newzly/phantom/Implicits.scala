@@ -13,69 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
+package com.newzly.phantom
 
-package phantom
-
-import com.newzly.phantom.field.LongOrderKey
+import java.net.InetAddress
+import java.util.{ Date, UUID }
+import org.joda.time.DateTime
+import com.newzly.phantom.column.{TimeSeries, AbstractColumn}
+import com.newzly.phantom.keys.LongOrderKey
 import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
+
 object Implicits {
 
-  type Column[T] = com.newzly.phantom.Column[T]
-  type PrimitiveColumn[T] =  com.newzly.phantom.PrimitiveColumn[T]
-  type OptionalColumn[T] =  com.newzly.phantom.OptionalColumn[T]
-  type OptionalPrimitiveColumn[T] =  com.newzly.phantom.OptionalPrimitiveColumn[T]
-  type JsonTypeColumn[T] =  com.newzly.phantom.JsonTypeColumn[T]
-  type EnumColumn[T <: Enumeration] =  com.newzly.phantom.EnumColumn[T]
-  type ListColumn[T] = com.newzly.phantom.ListColumn[T]
-  type SetColumn[T] =  com.newzly.phantom.SetColumn[T]
-  type SeqColumn[T] =  com.newzly.phantom.SeqColumn[T]
-  type MapColumn[K, V] =  com.newzly.phantom.MapColumn[K, V]
+  type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.Column[Owner, Record, T]
+  type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.PrimitiveColumn[Owner, Record, T]
 
-  implicit def columnToQueryColumn[RR: CassandraPrimitive](col: Column[RR]) =
+  type OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.OptionalColumn[Owner, Record, T]
+  type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
+  type JsonColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.JsonColumn[Owner, Record, T]
+  type JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.JsonSeqColumn[Owner, Record, T]
+  type ListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.ListColumn[Owner, Record, T]
+  type SetColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SetColumn[Owner, Record, T]
+  type SeqColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SeqColumn[Owner, Record, T]
+  type MapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V] =  com.newzly.phantom.column.MapColumn[Owner, Record, K, V]
+
+
+  type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, BigDecimal]
+  type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, BigInt]
+  type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
+  type DateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.DateColumn[Owner, Record]
+  type DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.DateTimeColumn[Owner, Record]
+  type DoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Double]
+  type FloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Float]
+  type IntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Int]
+  type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
+  type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Long]
+  type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
+  type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
+
+
+  type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigDecimal]
+  type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigInt]
+  type OptionalBooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Boolean]
+  type OptionalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Date]
+  type OptionalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, DateTime]
+  type OptionalDoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Double]
+  type OptionalFloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Float]
+  type OptionalIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Int]
+  type OptionalInetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, InetAddress]
+  type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Long]
+  type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
+  type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
+
+  implicit def columnToQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) =
     new QueryColumn(col)
 
-  implicit def simpleColumnToAssignment[RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
+  implicit def simpleColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
     new ModifyColumn[RR](col)
   }
 
-  implicit def simpleOptionalColumnToAssignment[RR: CassandraPrimitive](col: OptionalColumn[RR]) = {
-    new ModifyColumnOptional[RR](col)
+  implicit def simpleOptionalColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: OptionalColumn[Owner, Record, RR]) = {
+    new ModifyColumnOptional[Owner, Record, RR](col)
   }
 
-  implicit def enumColumnToAssignment[RR <: Enumeration](col: EnumColumn[RR]) = {
-    new ModifyColumn[RR#Value](col)
-  }
-
-  implicit def jsonColumnToAssignment[RR: Manifest](col: JsonTypeColumn[RR]) = {
+  implicit def jsonColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](col: JsonColumn[Owner, Record, RR]) = {
     new ModifyColumn[RR](col)
   }
 
-  implicit def listColumnToAssignment[RR: CassandraPrimitive](col: ListColumn[RR]) = {
+  implicit def listColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) = {
     new ModifyColumn[List[RR]](col)
   }
 
-  implicit def seqColumnToAssignment[RR: CassandraPrimitive](col: SeqColumn[RR]) = {
+  implicit def seqColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SeqColumn[Owner, Record, RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
-  implicit def jsonSeqColumnToAssignment[RR: Manifest](col: JsonTypeSeqColumn[RR]) = {
+  implicit def jsonSeqColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](col: JsonSeqColumn[Owner, Record, RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
-  implicit def columnIsSeleCassandraTable[T](col: Column[T]): SelectColumn[T] =
-    new SelectColumnRequired[T](col)
+  implicit def columnIsSeleCassandraTable[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]): SelectColumn[T] =
+    new SelectColumnRequired[Owner, Record, T](col)
 
-  implicit def optionalColumnIsSeleCassandraTable[T](col: OptionalColumn[T]): SelectColumn[Option[T]] =
-    new SelectColumnOptional[T](col)
+  implicit def optionalColumnIsSeleCassandraTable[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T]): SelectColumn[Option[T]] =
+    new SelectColumnOptional[Owner, Record, T](col)
 
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T], R](val select: SelectQuery[T, R]) extends AnyVal {
-    def skip(l: Int): SelectWhere[T, R] = {
+  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
+    final def skip(l: Int): SelectWhere[T, R] = {
       select.where(_.order_id gt l.toLong)
     }
 
-    def skip(l: Long): SelectWhere[T, R] = {
+    final def skip(l: Long): SelectWhere[T, R] = {
       select.where(_.order_id gt l)
     }
   }

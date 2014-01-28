@@ -15,7 +15,3 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.5.0")
 addSbtPlugin("com.twitter" % "sbt-package-dist" % "1.1.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
-
-addSbtPlugin("com.sqality.scct" % "sbt-scct" % "0.2.2")
-
-addSbtPlugin("com.github.theon" %% "xsbt-coveralls-plugin" % "0.0.4")
