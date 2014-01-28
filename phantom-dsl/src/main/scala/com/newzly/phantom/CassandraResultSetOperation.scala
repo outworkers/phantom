@@ -16,6 +16,7 @@
 package com.newzly.phantom
 
 import java.util.concurrent.Executors
+import scala.concurrent.{ Future => ScalaFuture, Promise => ScalaPromise }
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
@@ -78,6 +79,42 @@ trait CassandraResultSetOperations {
     }
     Futures.addCallback(future, callback, Manager.executor)
     promise
+  }
+
+  def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
+    val promise = ScalaPromise[ResultSet]()
+
+    val future = session.executeAsync(s)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise.future
+  }
+
+  def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
+    val promise = ScalaPromise[ResultSet]()
+
+    val future = session.executeAsync(query)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise.future
   }
 }
 
