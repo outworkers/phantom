@@ -28,9 +28,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
   private[this] lazy val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] lazy val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
   private[this] lazy val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] lazy val _orderKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
 
   def addColumn(column: Column[T, R, _]): Unit = {
-    // logger.info(s"Added column ${column.name}")
     _columns += column
   }
 
@@ -44,6 +44,10 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   protected[phantom] def addPrimaryKey(key: Column[T, R, _]): Unit = {
     _primaryKeys += key
+  }
+
+  protected[phantom] def addOrderKey(key: Column[T, R, _]): Unit = {
+    _orderKeys += key
   }
 
   private[this] lazy val _name: String = {

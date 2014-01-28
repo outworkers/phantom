@@ -6,7 +6,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler}
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.PrimaryKey
+import com.newzly.phantom.keys.{ClusteringOrder, PrimaryKey}
 
 case class Primitive(
   pkey: String,
@@ -64,7 +64,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
 
   object int extends IntColumn(this)
 
-  object date extends DateColumn(this)
+  object date extends DateColumn(this) with ClusteringOrder[Primitives, Primitive, Date]
 
   object uuid extends UUIDColumn(this)
 

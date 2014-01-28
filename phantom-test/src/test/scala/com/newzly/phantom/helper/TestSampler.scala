@@ -2,11 +2,8 @@ package com.newzly.phantom.helper
 
 import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.Session
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.query.CreateQuery
-import com.twitter.util.{Promise, Future}
-
 
 /**
  * A basic trait implemented by all test tables.

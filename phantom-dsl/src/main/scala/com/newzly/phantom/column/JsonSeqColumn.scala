@@ -8,8 +8,6 @@ import com.twitter.util.Try
 
 class JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Seq[RR]](table) with Helpers {
 
-  table.addColumn(this)
-
   val cassandraType = "list<text>"
 
   def toCType(values: Seq[RR]): AnyRef = {
