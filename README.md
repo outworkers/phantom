@@ -12,7 +12,9 @@ namespace java com.newzly.phantom.sample.ExampleModel
 stuct Model {
   1: required i32 id,
   2: required string name,
-  3: required Map<string, string> props
+  3: required Map<string, string> props,
+  4: required i32 timestamp
+  5: optional i32 test
 }
 ```
 
@@ -29,13 +31,16 @@ import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
 import com.newzly.phantom.keys.{ TimeUUIDPk, LongOrderKey }
 import com.newzly.phantom.Implicits._
 
-sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] with TimeUUIDPk[ExampleRecord] with LongOrderKey[ExampleRecord] {
+sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] {
 
-  object name extends PrimitiveColumn[String]
+  object id extends UUIDColumn(this) with PrimaryKey[ExampleRecord, ExampleModel]
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder[ExampleRecord, ExampleModel] with Ascending
+  object name extends PrimitiveColumn[String] 
   object props extends MapColumn[String, String]
+  object test extends OptionalIntColumn(this)
 
   override def fromRow(row: Row): ExampleModel = {
-    ExampleModel(id(row), name(row), props(row));
+    ExampleModel(id(row), name(row), props(row), timestamp(row), test(row));
   }
 }
 
