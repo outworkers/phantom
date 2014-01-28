@@ -3,9 +3,9 @@ package com.newzly.phantom.column
 import com.newzly.phantom.CassandraTable
 import com.datastax.driver.core.Row
 
-abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
+abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, T](table) {
 
-  type ValueType = Option[T]
+  table.addColumn(this)
 
-  override def apply(r: Row) = optional(r)
+  override def apply(r: Row): Option[T] = optional(r)
 }
