@@ -9,9 +9,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.createSchema
 
-    Console.println(q)
-
-    val manual = "CREATE TABLE Primitives " +
+    val manual = s"CREATE TABLE ${Primitives.tableName}} " +
         "( pkey int, " +
         "longName bigint, " +
         "boolean boolean, " +
@@ -42,7 +40,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("mapTextToText map<text, text>") > 0)
     assert(q.indexOf("PRIMARY KEY (key)") > 0 )
 
-    assert( q.replace("CREATE TABLE TestTable ( ","" )
+    assert( q.replace("CREATE TABLE ${TestTable.tableName} ( ","" )
       .replace("list list<text>","")
       .replace("setText set<text>","")
       .replace("mapIntToText map<int, text>","")
@@ -69,7 +67,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("uid uuid") > 0)
     assert(q.indexOf("PRIMARY KEY (url)") > 0)
 
-    assert( q.replace("CREATE TABLE Recipes ( ","" )
+    assert( q.replace("CREATE TABLE  ${Recipes.tableName} ( ","" )
       .replace("url text","")
       .replace("description text","")
       .replace("ingredients list<text>","")
@@ -83,13 +81,16 @@ class CreateTableQueryString extends FlatSpec {
       .replace(" ","")
       .replace(",","") == ";" )
 
+      assert(Recipes.columns.forall(column => {
+        manual.contains(column.name)
+      }))
   }
 
   ignore should "correctly add clustering order to a query" in {
     /*val q = Recipes.create()
       .withClusteringOrder(_.last_checked_at)
       .ascending.queryString
-    Console.println(q)*/
+    Console.println(q)
   }
 }
 
