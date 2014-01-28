@@ -25,8 +25,3 @@ trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record] {
 
 }
 
-trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
-  this: CassandraTable[Owner, Record] =>
-
-  object order_id extends PrimitiveColumn[Owner, Record, Long](this)
-}

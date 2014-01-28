@@ -26,7 +26,7 @@ class TimeSeries[T]
  */
 class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, Date](table) {
   implicit object DateIsTimeSeries extends TimeSeries[Date]
-  val ev = implicitly[TimeSeries[Date]]
+  implicit def timeSeries: TimeSeries[Date] = implicitly[TimeSeries[Date]]
 }
 
 /**
@@ -37,5 +37,5 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  */
 class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, DateTime](table) {
   implicit object DateTimeIsTimeSeries extends TimeSeries[DateTime]
-  val ev = implicitly[TimeSeries[DateTime]]
+  implicit def timeSeries: TimeSeries[DateTime] = implicitly[TimeSeries[DateTime]]
 }

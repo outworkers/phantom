@@ -6,7 +6,7 @@ import com.newzly.phantom.tables.{ Articles, Primitives }
 class FieldCollectionTest extends FlatSpec {
 
   it should "correctly reference the same table" in {
-     assert(Primitives.pkey.getTable eq Primitives)
+     assert(Primitives.pkey.table eq Primitives)
   }
 
 
