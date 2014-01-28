@@ -80,17 +80,6 @@ class CreateTableQueryString extends FlatSpec {
       .replace(")","")
       .replace(" ","")
       .replace(",","") == ";" )
-
-      assert(Recipes.columns.forall(column => {
-        manual.contains(column.name)
-      }))
-  }
-
-  ignore should "correctly add clustering order to a query" in {
-    /*val q = Recipes.create()
-      .withClusteringOrder(_.last_checked_at)
-      .ascending.queryString
-    Console.println(q)
   }
 }
 

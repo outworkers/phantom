@@ -18,16 +18,4 @@ trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 }
 
 
-/**
- * A trait mixable into a Column to allow clustering order.
- * @tparam Owner The owner of the record.
- * @tparam Record The case class record to store.
- */
-trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 
-  self: Column[Owner, Record, ValueType] =>
-
-  setAsKey()
-
-  implicit def timeSeries[T]: TimeSeries[T]
-}
