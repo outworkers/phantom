@@ -31,7 +31,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     _columns += column
   }
 
-  lazy val columns: List[AbstractColumn[_]] = _columns.toList
+  def columns: List[AbstractColumn[_]] = _columns.toList
 
   def keys: List[AbstractColumn[_]] = columns.filter(_.isKey)
   def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
@@ -87,7 +87,20 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  protected[phantom] def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+
+  def schema(): String = {
+    val queryInit = s"CREATE TABLE $tableName ("
+    val queryColumns = columns.foldLeft("")((qb, c) => {
+      s"$qb, ${c.name} ${c.cassandraType}"
+    })
+
+    val pkes = primaryKeys.map(_.name).mkString(",")
+    logger.info(s"Adding Primary keys indexes: $pkes")
+    val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
+    val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
+    if (query.last != ';') query + ";" else query
+  }
 
   def meta: CassandraTable[T, R]
 }

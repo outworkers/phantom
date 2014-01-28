@@ -7,7 +7,7 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
-    val q = Primitives.createSchema
+    val q = Primitives.schema()
 
     val manual = s"CREATE TABLE ${Primitives.tableName}} " +
         "( pkey int, " +
@@ -30,7 +30,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "work fine with List, Set, Map" in {
-    val q = TestTable.createSchema
+    val q = TestTable.schema()
 
     assert(q.indexOf("list list<text>") > 0)
     assert(q.indexOf("setText set<text>") > 0 )
@@ -55,7 +55,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "get the right query in mix table" in {
-    val q = Recipes.createSchema
+    val q = Recipes.schema()
     Console.println(q)
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)
