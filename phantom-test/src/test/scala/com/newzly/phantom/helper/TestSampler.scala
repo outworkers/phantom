@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Session
 import com.newzly.phantom.CassandraTable
-
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 /**
  * A basic trait implemented by all test tables.
  * @tparam Row The case class type returned.
@@ -23,14 +23,16 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
    * Inserts the schema into the database in a blocking way.
    * This is intentionally left without an else behaviour.
    * Throwing an error here is not recommended.
-   * Cassandra will automatically throw an error if the schema is a duplicate.
+   * Cassandra will automatically throw an error if the schema is inserted more then once.
    * @param session The Cassandra session.
+   *
+   * ATTENTION!!! this method creates the schema in a sync mode, the unit tests rely on it to be synced
    */
   def insertSchema(implicit session: Session): Unit = {
     if (schemaCreated.compareAndSet(false, true)) {
       logger.info("Schema agreement in progress: ")
-      create.execute()
-      schemaCreated.set(true)
+      create.execute().sync()
+      logger.debug("Schema inserted")
     }
   }
 }

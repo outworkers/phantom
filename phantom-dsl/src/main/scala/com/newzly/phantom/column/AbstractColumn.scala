@@ -10,10 +10,10 @@ trait AbstractColumn[T] extends CassandraWrites[T] {
   private[this] lazy val _isPrimaryKey = new AtomicBoolean(false)
 
   protected[phantom] def setAsKey(): Unit = _isKey.compareAndSet(false, true)
-  protected[phantom] def setAsPrimaryKey(): Unit = _isKey.compareAndSet(false, true)
+  protected[phantom] def setAsPrimaryKey(): Unit = _isPrimaryKey.compareAndSet(false, true)
 
   def isPrimary: Boolean = _isPrimaryKey.get()
-  def isKey: Boolean = _isPrimaryKey.get()
+  def isKey: Boolean = _isKey.get()
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
