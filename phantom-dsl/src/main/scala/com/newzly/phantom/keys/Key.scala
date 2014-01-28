@@ -14,10 +14,7 @@ import com.newzly.phantom.Implicits._
  */
 trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
   self: Column[Owner, Record, ValueType] =>
-
-  _isKey.set(true)
-
-  this.getTable.addKey(this)
+  setAsKey()
 }
 
 
@@ -28,11 +25,9 @@ trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
  */
 trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 
-  self: Column[Owner, Record, _] =>
+  self: Column[Owner, Record, ValueType] =>
 
-  _isKey.set(true)
+  setAsKey()
 
   implicit def timeSeries[T]: TimeSeries[T]
-
-  this.getTable.addOrderKey(this)
 }

@@ -9,8 +9,6 @@ import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long) RR: CassandraPrimitive](t: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](t) {
 
-  getTable.addColumn(this)
-
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
 

@@ -21,34 +21,20 @@ import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
-import com.newzly.phantom.column.Column
+import com.newzly.phantom.column.{AbstractColumn, Column}
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
-  private[this] lazy val _keys : ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
-  private[this] lazy val _primaryKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
-  private[this] lazy val _columns: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
-  private[this] lazy val _orderKeys: ParHashSet[Column[T, R, _]] = ParHashSet.empty[Column[T, R, _]]
+  private[this] lazy val _columns: ParHashSet[AbstractColumn[_]] = ParHashSet.empty[AbstractColumn[_]]
 
-  def addColumn(column: Column[T, R, _]): Unit = {
+  def addColumn(column: AbstractColumn[_]): Unit = {
     _columns += column
   }
 
-  def columns: List[Column[T, R, _]] = _columns.toList
-  def keys: List[Column[T, R, _]] = _keys.toList
-  def primaryKeys: List[Column[T, R, _]] = _primaryKeys.toList
+  lazy val columns: List[AbstractColumn[_]] = _columns.toList
 
-  protected[phantom] def addKey(key: Column[T, R, _]): Unit = {
-    _keys += key
-  }
-
-  protected[phantom] def addPrimaryKey(key: Column[T, R, _]): Unit = {
-    _primaryKeys += key
-  }
-
-  protected[phantom] def addOrderKey(key: Column[T, R, _]): Unit = {
-    _orderKeys += key
-  }
+  def keys: List[AbstractColumn[_]] = columns.filter(_.isKey)
+  def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
