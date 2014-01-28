@@ -35,19 +35,13 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   object optionA extends OptionalPrimitiveColumn[MyTest, MyTestRow, Int](this)
 
   object classS extends JsonColumn[MyTest, MyTestRow, SimpleStringClass](this)
+
+  def createSchema: String = super.create().queryString
 }
 
 object MyTest extends MyTest with TestSampler[MyTest, MyTestRow] {
   override val tableName = "mytest"
-  def createSchema = {
-    """|CREATE TABLE MyTestInsert(
-      |key text PRIMARY KEY,
-      |stringlist list<text>,
-      |optionA int,
-      |classS text
-      );
-    """.stripMargin
-  }
+
 }
 
 

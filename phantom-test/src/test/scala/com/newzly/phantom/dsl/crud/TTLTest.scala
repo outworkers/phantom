@@ -16,10 +16,8 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
 
   it should "expire inserterd records" in {
     val row = Primitive.sample
-
-    val test = Primitives.create.schema()
-      .execute() flatMap {
-      _ => Primitives.insert
+    Primitives.insertSchema(session)
+    val test = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -32,10 +30,9 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
         .ttl(Duration.fromSeconds(5))
-        .execute()
-      } flatMap {
+        .execute() flatMap {
           _ =>  Primitives.select.one
-      }
+        }
 
     test.successful {
       record => {

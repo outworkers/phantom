@@ -6,8 +6,7 @@ import com.newzly.phantom.Implicits.DateTimeColumn
 import com.twitter.util.Future
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
-  def schema(): CreateQuery[T, R] = {
-
+  def apply(): CreateQuery[T, R] = {
     val queryInit = s"CREATE TABLE ${table.tableName} ("
     val queryColumns = table.columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"

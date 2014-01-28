@@ -14,18 +14,16 @@ import com.newzly.phantom.tables.{
 
 class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   "Update" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
 
-    val updatedRow = Primitive.sample
-
-    val rcp = Primitives.create.schema()
-      .execute() flatMap {
-        _ =>Primitives.insert
+    val updatedRow = Primitive.sample.copy(pkey = row.pkey)
+    Primitives.insertSchema(session)
+    val rcp = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -36,13 +34,12 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
         .value(_.int, row.int)
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi).execute()
-      } flatMap {
-      _ => {
+        .value(_.bi, row.bi).execute() flatMap {
+        _ => {
           for {
-            a <- Primitives.select.where(_.pkey eqs "myStringUpdate").one
+            a <- Primitives.select.where(_.pkey eqs row.pkey).one
             b <- Primitives.select.fetch
-            u <- Primitives.update.where(_.pkey eqs "myStringUpdate")
+            u <- Primitives.update.where(_.pkey eqs row.pkey)
                   .modify(_.long, updatedRow.long)
                   .modify(_.boolean, updatedRow.boolean)
                   .modify(_.bDecimal, updatedRow.bDecimal)
@@ -53,7 +50,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
                   .modify(_.date, updatedRow.date)
                   .modify(_.uuid, updatedRow.uuid)
                   .modify(_.bi, updatedRow.bi).execute()
-            a2 <- Primitives.select.where(_.pkey eqs "myStringUpdate").one
+            a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
             b2 <- Primitives.select.fetch
 
           } yield (
@@ -87,16 +84,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       mapIntToText = Map (-1 -> "&&&")
     )
 
-    val createTestTable =
-      """|CREATE TABLE UpdateTestTable(
-        |key text PRIMARY KEY,
-        |list list<text>,
-        |setText set<text>,
-        |mapTextToText map<text,text>,
-        |setInt set<int>,
-        |mapIntToText map<int,text> );
-      """.stripMargin
-    session.execute(createTestTable)
+    TestTable.insertSchema(session)
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -107,16 +95,16 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       .value(_.mapIntToText, row.mapIntToText)
       .execute() flatMap {
         _ => for {
-        a <-TestTable.select.where(_.key eqs "w").one
+        a <-TestTable.select.where(_.key eqs row.key).one
         b <-TestTable.select.fetch
         u <- TestTable.update
-          .where(_.key eqs "w")
+          .where(_.key eqs row.key)
           .modify(_.list,updatedRow.list)
           .modify(_.setText,updatedRow.setText)
           .modify(_.mapTextToText,updatedRow.mapTextToText)
           .modify(_.setInt,updatedRow.setInt)
           .modify(_.mapIntToText,updatedRow.mapIntToText).execute()
-        a2 <- TestTable.select.where(_.key eqs "w").one
+        a2 <- TestTable.select.where(_.key eqs row.key).one
         b2 <- TestTable.select.fetch
         } yield (
           a.get == row,

@@ -13,17 +13,15 @@ class JodaDateTimeColumn extends BaseTest with Matchers with Assertions with Asy
 
   it should "work fine" in {
     val row = JodaRow.sample
-
-    val w = PrimitivesJoda.create.schema().execute() flatMap {
-      _ => {
+    PrimitivesJoda.insertSchema(session)
+    val w =
         PrimitivesJoda.insert
           .value(_.pkey, row.pkey)
           .value(_.intColumn, row.int)
-          .value(_.timestamp, row.bi).execute()
-        }
-      } flatMap  {
-        _ => PrimitivesJoda.select.one
-      }
+          .value(_.timestamp, row.bi)
+          .execute() flatMap  {
+            _ => PrimitivesJoda.select.one
+          }
 
     w successful {
       case res => assert(res.get === row)

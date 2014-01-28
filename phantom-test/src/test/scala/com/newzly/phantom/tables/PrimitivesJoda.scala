@@ -33,12 +33,12 @@ sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
   object pkey extends StringColumn(this) with PrimaryKey[PrimitivesJoda, JodaRow]
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
+  def createSchema: String = super.create().queryString
 }
 
 object PrimitivesJoda extends PrimitivesJoda with TestSampler[PrimitivesJoda, JodaRow] {
 
   override val tableName = "PrimitivesJoda"
 
-  def createSchema = ""
 }
 

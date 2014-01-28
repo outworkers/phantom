@@ -2,8 +2,11 @@ package com.newzly.phantom.helper
 
 import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ResultSet, Session}
 import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.query.CreateQuery
+import com.twitter.util.{Promise, Future}
+
 
 /**
  * A basic trait implemented by all test tables.
@@ -25,11 +28,15 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
    */
   def insertSchema(session: Session): Unit = {
     logger.info(s"Schema inserted: ${schemaCreated.get()}" )
-    if (!schemaCreated.get()) {
+    if (schemaCreated.compareAndSet(false,true)) {
       logger.info("Schema agreement in progress: " + createSchema)
       session.execute(createSchema)
       schemaCreated.set(true)
-    }
+    } else throw new Exception("schema was already inserted")
+  }
+
+  override def create() = {
+    throw new Exception("use TestSampler.insertSchema in tests to get the schema")
   }
 
   private[this] val schemaCreated = new AtomicBoolean(false)

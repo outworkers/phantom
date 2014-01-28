@@ -6,6 +6,7 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
 import org.joda.time.DateTime
+import com.newzly.phantom.keys.PrimaryKey
 
 
 case class Author(
@@ -81,7 +82,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   def meta = Recipes
 
-  object url extends StringColumn(this)
+  object url extends StringColumn(this) with PrimaryKey[Recipes, Recipe]
 
   object description extends OptionalStringColumn(this)
 
@@ -96,13 +97,12 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[Recipes, Recipe, String, String](this)
 
   object uid extends UUIDColumn(this)
+
+  def createSchema: String = super.create().queryString
 }
 
 
 object Recipes extends Recipes with TestSampler[Recipes, Recipe] {
   override def tableName = "Recipes"
 
-  def createSchema: String = {
-    ""
-  }
 }

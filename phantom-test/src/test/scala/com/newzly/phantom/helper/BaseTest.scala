@@ -9,7 +9,7 @@ import com.twitter.util.{Await, Future}
 object BaseTestHelper {
   val cluster = Cluster.builder()
     .addContactPoint("localhost")
-    .withPort(9142)
+    .withPort(9042)
     .withoutJMXReporting()
     .withoutMetrics()
     .build()
@@ -18,7 +18,7 @@ object BaseTestHelper {
 
 trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Matchers with Assertions with AsyncAssertions {
   val keySpace: String
-  lazy val cluster = BaseTestHelper.cluster
+  val cluster = BaseTestHelper.cluster
   implicit lazy val session: Session = cluster.connect()
 
   private[this] def createKeySpace(spaceName: String) = {

@@ -14,7 +14,7 @@ class JsonColumnTest extends BaseTest with Matchers  {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "correctly serialize and store complex structures" in {
-    session.execute(TestTable2.createSchema)
+    TestTable2.insertSchema(session)
 
     val row = TestRow2.sample
 
