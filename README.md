@@ -35,8 +35,8 @@ sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, Examp
 
   object id extends UUIDColumn(this) with PrimaryKey[ExampleRecord, ExampleModel]
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[ExampleRecord, ExampleModel] with Ascending
-  object name extends PrimitiveColumn[String] 
-  object props extends MapColumn[String, String]
+  object name extends PrimitiveColumn[String](this)
+  object props extends MapColumn[String, String](this)
   object test extends OptionalIntColumn(this)
 
   override def fromRow(row: Row): ExampleModel = {
