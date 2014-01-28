@@ -3,7 +3,7 @@ package com.newzly.phantom.keys
 import java.util.Date
 import org.joda.time.DateTime
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.Column
+import com.newzly.phantom.column.{TimeSeries, Column}
 import com.newzly.phantom.Implicits._
 
 /**
@@ -21,7 +21,6 @@ trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 }
 
 
-
 /**
  * A trait mixable into a Column to allow clustering order.
  * @tparam Owner The owner of the record.
@@ -29,9 +28,11 @@ trait Key[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
  */
 trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 
-  self: TimeColumn[Owner, Record, _] =>
+  self: Column[Owner, Record, _] =>
 
   _isKey.set(true)
 
-  this.getTable.addKey(this)
+  implicit def timeSeries[T]: TimeSeries[T]
+
+  this.getTable.addOrderKey(this)
 }
