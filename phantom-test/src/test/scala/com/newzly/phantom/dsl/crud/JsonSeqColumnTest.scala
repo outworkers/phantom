@@ -18,7 +18,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
 
   }
 
-  it should "work fine in insert" in {
+  ignore should "work fine in insert" in {
     val table = JsonSeqTable
     val createTask = table.insertSchema(session)
 
