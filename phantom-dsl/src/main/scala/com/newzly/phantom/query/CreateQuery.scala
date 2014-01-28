@@ -1,8 +1,8 @@
 package com.newzly.phantom.query
 
+import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Session }
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
-import com.newzly.phantom.Implicits.DateTimeColumn
 import com.twitter.util.Future
 
 class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
@@ -22,23 +22,11 @@ class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends
     if (query.last != ';') query + ";" else query
   }
 
-  def withClusteringOrder(columnRef: T => DateTimeColumn[T, R]): OrderedQuery[T, R] = {
-    val column = columnRef(table)
-    table.addKey(column)
-    new OrderedQuery[T, R](table, query + s" WITH CLUSTERING ORDER BY (${column.name}")
-  }
-
   def execute()(implicit session: Session): Future[ResultSet] =  {
     queryStringExecuteToFuture(queryString)
   }
-}
 
-class OrderedQuery[T <: CassandraTable[T, R], R](table: T, query: String) {
-  def descending: CreateQuery[T, R] = {
-    new CreateQuery[T, R](table, query + " DESC);")
-  }
-
-  def ascending: CreateQuery[T, R] = {
-    new CreateQuery[T, R](table, query + " ASCENDING);")
+  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(queryString)
   }
 }

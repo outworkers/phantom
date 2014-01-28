@@ -21,9 +21,8 @@ import com.newzly.phantom.column.{ Column, PrimitiveColumn }
 trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: Column[Owner, Record, _] =>
 
-  _isPrimaryKey.set(true)
+  setAsPrimaryKey()
 
-  getTable.addPrimaryKey(this)
 }
 
 trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
