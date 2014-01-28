@@ -34,7 +34,6 @@ sealed class Articles private() extends CassandraTable[Articles, Article] with L
   override def fromRow(row: Row): Article = {
     Article(name(row), id(row), order_id(row))
   }
-  val createSchema: String = create().queryString
 }
 
 object Articles extends Articles with TestSampler[Articles, Article] {

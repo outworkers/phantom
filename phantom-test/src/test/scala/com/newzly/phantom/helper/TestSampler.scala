@@ -13,30 +13,26 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   self : CassandraTable[Owner, Row] =>
 
   /**
-   * This must specify the schema expected to exist in the database
-   * for the specific table.
-   * @return
+   * An Atomic boolean storing the insertion status of the schema.
+   * This is used to prevent a table schema from being inserted twice.
    */
-  def createSchema: String
+  private[this] val schemaCreated = new AtomicBoolean(false)
+
 
   /**
    * Inserts the schema into the database in a blocking way.
+   * This is intentionally left without an else behaviour.
+   * Throwing an error here is not recommended.
+   * Cassandra will automatically throw an error if the schema is a duplicate.
    * @param session The Cassandra session.
    */
-  def insertSchema(session: Session): Unit = {
-    logger.info(s"Schema inserted: ${schemaCreated.get()}" )
-    if (schemaCreated.compareAndSet(false,true)) {
-      logger.info("Schema agreement in progress: " + createSchema)
-      session.execute(createSchema)
+  def insertSchema(implicit session: Session): Unit = {
+    if (schemaCreated.compareAndSet(false, true)) {
+      logger.info("Schema agreement in progress: ")
+      create.execute()
       schemaCreated.set(true)
-    } else throw new Exception("schema was already inserted")
+    }
   }
-
-  override def create() = {
-    throw new Exception("use TestSampler.insertSchema in tests to get the schema")
-  }
-
-  private[this] val schemaCreated = new AtomicBoolean(false)
 }
 
 /**

@@ -97,8 +97,6 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[Recipes, Recipe, String, String](this)
 
   object uid extends UUIDColumn(this)
-
-  def createSchema: String = super.create().queryString
 }
 
 

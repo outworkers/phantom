@@ -54,8 +54,6 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
       mapIntToText(r)
     )
   }
-
-  def createSchema: String = super.create().queryString
 }
 
 object TestTable extends TestTable with TestSampler[TestTable, TestRow] {

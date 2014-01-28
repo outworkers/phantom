@@ -35,8 +35,6 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   object optionA extends OptionalPrimitiveColumn[MyTest, MyTestRow, Int](this)
 
   object classS extends JsonColumn[MyTest, MyTestRow, SimpleStringClass](this)
-
-  def createSchema: String = super.create().queryString
 }
 
 object MyTest extends MyTest with TestSampler[MyTest, MyTestRow] {
