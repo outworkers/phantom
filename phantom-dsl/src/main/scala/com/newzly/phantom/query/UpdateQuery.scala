@@ -22,6 +22,7 @@ package query
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
 
 import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.column.AbstractColumn
 
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {

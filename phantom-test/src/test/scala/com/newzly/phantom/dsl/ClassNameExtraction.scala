@@ -1,13 +1,10 @@
 package com.newzly.phantom.dsl
 
-
-
 import org.scalatest.FlatSpec
-
-import com.datastax.driver.core.{ Session, Row }
-import com.newzly.phantom._
+import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.keys.PrimaryKey
 
 trait Test {
   private[this] lazy val _name: String = {
@@ -18,23 +15,28 @@ trait Test {
       val str = fullName.substring(index + 9, fullName.length)
       str.replaceAll("[(\\$\\d+\\$)]", "")
     } else {
-      fullName.replaceAll("[(\\$\\d+\\$)]", "");
+      fullName.replaceAll("[(\\$\\d+\\$)]", "")
     }
   }
   val name: String = _name
 }
 
-object Test extends PrimitiveColumn[String]
 
 case class CustomRecord(name: String, mp: Map[String, String])
-class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-  object record extends PrimitiveColumn[String]
-  val _key = record
-  object sampleLongTextColumnDefinition extends MapColumn[String, String]
 
-  override def fromRow(r: Row): CustomRecord = CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
+  def meta = TestTableNames
+  object record extends StringColumn(this) with PrimaryKey[TestTableNames, CustomRecord]
+  object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
+
+  override def fromRow(r: Row): CustomRecord = {
+    CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+  }
 }
+
 object TestTableNames extends TestTableNames
+
+object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTableNames)
 
 
 class TestNames {
@@ -80,7 +82,6 @@ class ClassNameExtraction extends FlatSpec {
 
     assert(TestNames.name === "TestNames")
   }
-
 
   it should "correctly extract the parent name" in {
     object Parent extends Parent

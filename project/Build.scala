@@ -1,10 +1,10 @@
 import sbt._
 import Keys._
+import sbtassembly.Plugin.AssemblyKeys._
+import scala.Some
 import Tests._
 import com.twitter.sbt._
-import ScctPlugin.instrumentSettings
-import ScctPlugin.mergeReportSettings
-import com.github.theon.coveralls.CoverallsPlugin.coverallsSettings
+import sbtassembly.Plugin._
 
 object newzlyPhantom extends Build {
 
@@ -15,7 +15,7 @@ object newzlyPhantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.5",
+       version := "0.0.7",
        scalaVersion := "2.10.0",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
@@ -38,7 +38,7 @@ object newzlyPhantom extends Build {
            "-feature",
            "-unchecked"
        )
-    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 
     val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
@@ -52,8 +52,7 @@ object newzlyPhantom extends Build {
         publishMavenStyle := true,
         publishArtifact in Test := false,
         pomIncludeRepository := { _ => true },
-        pomExtra := (
-          <url>https://github.com/newzly.phantom</url>
+        pomExtra := <url>https://github.com/newzly.phantom</url>
           <licenses>
             <license>
               <name>BSD-style</name>
@@ -76,50 +75,75 @@ object newzlyPhantom extends Build {
               <name>Flavian Alexandru</name>
               <url>http://github.com/alexflav23</url>
             </developer>
-            
-          </developers>)
+
+          </developers>
 
     )
 
-    lazy val phantom = Project(
+  lazy val phantomUtil = Project(
+    id = "phantom-util",
+    base = file("phantom-test"),
+    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-util",
+    jarName in assembly := "cassandra.jar",
+    outputPath in assembly := file("cassandra.jar"),
+    test in assembly := {},
+    fork in run := true,
+    assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
+    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+      cp filter { x => println(":::: "+x)
+        x.data.getName.indexOf("specs2_2.") >= 0 ||
+        x.data.getName.indexOf("scalap-2.") >= 0 ||
+        x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
+        x.data.getName.indexOf("scala-json_") >= 0 ||
+        x.data.getName.indexOf("netty-3.2.9") >= 0 ||
+        x.data.getName.indexOf("com.twitter") >= 0
+      }
+    }
+  ).settings(
+    libraryDependencies ++= Seq(
+      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
+    )
+  )
+
+
+  lazy val phantom = Project(
         id = "phantom",
         base = file("."),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ mergeReportSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).aggregate(
         phantomDsl,
         phantomTest
     )
 
-    def groupByFirst(tests: Seq[TestDefinition]) =
-      tests map {t=> new Tests.Group(t.name, Seq(t)  , Tests.SubProcess(Seq.empty))}
-
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
         base = file("phantom-dsl"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
         libraryDependencies ++= Seq(
-            "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
-            "net.liftweb"              %% "lift-json"                         % liftVersion           % "compile, test",
-            "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
-            "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12")
+          "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
+          "com.fasterxml.jackson.module" %% "jackson-module-scala"          % "2.3.1",
+          "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
+          "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
+          "org.scala-lang"           %  "scala-reflect"                     % "2.10.0"
         )
     )
 
   lazy val phantomTest = Project(
         id = "phantom-test",
         base = file("phantom-test"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings ++ instrumentSettings
+        settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
     ).settings(
       fork := true,
-      testGrouping <<=  (definedTests in Test map groupByFirst)/*,
       concurrentRestrictions in Test := Seq(
-        Tags.limit(Tags.ForkedTestGroup, 1)
-      )*/
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      )
     ).settings(
         libraryDependencies ++= Seq(
             "com.twitter"              %% "util-collection"                   % "6.3.6"               % "provided, test",
-            "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             % "test, provided" exclude("org.apache.cassandra","cassandra-all"),
+            "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             exclude("org.apache.cassandra","cassandra-all"),
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
         )

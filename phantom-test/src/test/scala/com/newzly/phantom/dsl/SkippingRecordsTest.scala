@@ -1,41 +1,23 @@
 
 package com.newzly.phantom.dsl
 
-import java.util.UUID
-import com.datastax.driver.core.{ Session, Row }
-import com.datastax.driver.core.utils.UUIDs
-
-import com.newzly.phantom.{ PrimitiveColumn, CassandraTable }
-import com.newzly.phantom.field.{ UUIDPk, LongOrderKey }
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.Tables
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.Assertions
 import org.scalatest.concurrent.AsyncAssertions
 
-class SkippingRecordsTest extends BaseTest with Tables  with Assertions with AsyncAssertions  {
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.tables.{ Article, Articles }
 
-  implicit val session: Session = cassandraSession
+
+class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
+  val keySpace: String = "SkippingRecordsTest"
 
   ignore should "allow skipping records " in {
 
-    case class Article(val name: String, id: UUID, order_id: Long)
-    class Articles extends CassandraTable[Articles, Article] with UUIDPk[Articles] with LongOrderKey[Articles] {
-
-      object name extends PrimitiveColumn[String]
-
-      override def fromRow(row: Row): Article = {
-        Article(name(row), id(row), order_id(row))
-      }
-    }
-
-    object Articles extends Articles {
-      override val tableName = "articlestest"
-    }
-
-    val article1 = Article("test", UUIDs.timeBased(),  1);
-    val article2 = Article("test2", UUIDs.timeBased(), 2);
-    val article3 = Article("test3", UUIDs.timeBased(), 3);
+    val article1 = Article.sample
+    val article2 = Article.sample
+    val article3 = Article.sample
 
     val result = for {
       i1 <- Articles.insert
@@ -53,10 +35,10 @@ class SkippingRecordsTest extends BaseTest with Tables  with Assertions with Asy
         .value(_.order_id, article3.order_id)
         .execute()
       res <- Articles.select.skip(1).one
-    } yield (res)
+    } yield res
 
     result successful {
-      row => assert(row.get === article2)
+      row => assert(row.get == article2)
     }
   }
 

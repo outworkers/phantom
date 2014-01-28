@@ -18,5 +18,5 @@ branches:
 
 services:
 
-
+before_script: "./scripts/test_util.sh"
 script: "./scripts/run_tests.sh"
