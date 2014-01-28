@@ -13,7 +13,7 @@ import com.newzly.phantom.tables.{ Article, Articles }
 class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
   val keySpace: String = "SkippingRecordsTest"
 
-  it should "allow skipping records " in {
+  ignore should "allow skipping records " in {
 
     val article1 = Article.sample
     val article2 = Article.sample

@@ -11,19 +11,18 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
   val keySpace = "basicInert"
 
   "JsonTypeSeqColumn" should "work fine for create" in {
-    val insert = JsonSeqTable.create.schema().execute()
+    val insert = JsonSeqTable.insertSchema(session)
 
-    insert successful {
-      _ => info("table successful created")
-    }
+
+    info("table successful created")
+
   }
 
   it should "work fine in insert" in {
     val table = JsonSeqTable
-    val createTask = table.create.schema().execute()
+    val createTask = table.insertSchema(session)
 
-    val resp = createTask flatMap {_=>
-      info("table created")
+    val resp =
       for {
         insertTask <- table.insert
           .value(_.pkey, "test")
@@ -37,7 +36,7 @@ class JsonSeqColumnTest extends BaseTest with Matchers with Assertions with Asyn
 
       i1.execute()
 
-    }
+
     resp.sync()
   }
 

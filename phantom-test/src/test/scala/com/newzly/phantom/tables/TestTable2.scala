@@ -76,18 +76,9 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
   object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)
   object optionS extends JsonColumn[TestTable2, TestRow2, Option[SimpleMapOfStringsClass]](this)
   object mapIntoClass extends JsonColumn[TestTable2, TestRow2, Map[String, SimpleMapOfStringsClass]](this)
+  def createSchema: String = super.create().queryString
 }
 
 object TestTable2 extends TestTable2 with TestSampler[TestTable2, TestRow2] {
   override val tableName = "TestTable2"
-
-  def createSchema: String = {
-    """|CREATE TABLE TestTable2(
-      |key text PRIMARY KEY,
-      |optionA int,
-      |classS text,
-      |optionS text,
-      |mapIntoClass map<text,text>);
-    """.stripMargin
-  }
 }

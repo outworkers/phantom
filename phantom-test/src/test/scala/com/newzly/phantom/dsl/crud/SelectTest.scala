@@ -13,8 +13,8 @@ class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssert
 
   "Select" should "work fine" in {
     val row = Primitive.sample
-    val rcp = Primitives.create.schema()
-      .execute() flatMap { _ => Primitives.insert
+    Primitives.insertSchema(session)
+    val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -29,12 +29,12 @@ class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssert
         _ => {
           for {
             a <- Primitives.select.fetch
-            b <- Primitives.select.where(_.pkey eqs "1").one
+            b <- Primitives.select.where(_.pkey eqs row.pkey).one
           } yield (a contains row, b.get == row)
 
         }
       }
-    }
+
     rcp successful {
       r => {
         assert(r._1)

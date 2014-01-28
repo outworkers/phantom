@@ -14,7 +14,7 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
   "Delete" should "work fine, when deleting the whole row" in {
     Primitives.insertSchema(session)
     val row = Primitive.sample
-    val rcp = Primitives.create.schema().execute() flatMap {_ => Primitives.insert
+    val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
       .value(_.boolean, row.boolean)
@@ -25,7 +25,7 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
       .value(_.int, row.int)
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() }
+      .value(_.bi, row.bi).execute()
 
     val result = rcp flatMap {
       _ => {
@@ -44,7 +44,6 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
         info("success")
       }
     }
-
   }
 
 }

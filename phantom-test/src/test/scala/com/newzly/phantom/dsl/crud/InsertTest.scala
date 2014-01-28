@@ -21,10 +21,8 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
-
-    val rcp = Primitives.create.schema()
-      .execute() flatMap {
-      _ => Primitives.insert
+    Primitives.insertSchema(session)
+    val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -44,7 +42,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
             } yield (one.get == row, multi contains row)
           }
        }
-      }
+
 
     rcp successful {
       res => {
@@ -68,7 +66,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       .execute() flatMap {
       _ => {
         for {
-          one <- TestTable.select.where(_.key eqs "w2").one
+          one <- TestTable.select.where(_.key eqs row.key).one
           multi <- TestTable.select.fetch
         }  yield (one.get == row, multi.contains(row))
       }
@@ -107,8 +105,8 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
 
   it should "work fine with Mix" in {
     val r = Recipe.sample
-
-    val rcp = Recipes.create.schema().execute() flatMap { _ => Recipes.insert
+    Recipes.insertSchema(session)
+    val rcp = Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
         .value(_.ingredients, r.ingredients)
@@ -121,7 +119,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
          Recipes.select.one
         }
       }
-    }
+
     rcp successful {
       res => {
         assert (res.get == r)

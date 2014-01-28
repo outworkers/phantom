@@ -54,19 +54,11 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
       mapIntToText(r)
     )
   }
+
+  def createSchema: String = super.create().queryString
 }
 
 object TestTable extends TestTable with TestSampler[TestTable, TestRow] {
-
-  def createSchema: String = {
-    """|CREATE TABLE TestTableInsert(
-       |key text PRIMARY KEY,
-       |list list<text>,
-       |setText set<text>,
-       |mapTextToText map<text,text>,
-       |setInt set<int>,
-       |mapIntToText map<int,text> );
-    """.stripMargin
-  }
+  override val tableName = "TestTable"
 }
 

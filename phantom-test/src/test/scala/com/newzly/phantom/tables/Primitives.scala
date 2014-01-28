@@ -4,7 +4,7 @@ import java.util.{ Date, UUID }
 import java.net.InetAddress
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler}
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.keys.PrimaryKey
 
@@ -69,11 +69,11 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   object uuid extends UUIDColumn(this)
 
   object bi extends BigIntColumn(this)
+
+  def createSchema: String = super.create().queryString
 }
 
 object Primitives extends Primitives with TestSampler[Primitives, Primitive] {
   override val tableName = "Primitives"
-
-  def createSchema: String = ""
 
 }
