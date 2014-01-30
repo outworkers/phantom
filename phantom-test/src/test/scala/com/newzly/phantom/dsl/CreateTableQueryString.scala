@@ -40,7 +40,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("mapTextToText map<text, text>") > 0)
     assert(q.indexOf("PRIMARY KEY (key)") > 0 )
 
-    assert( q.replace("CREATE TABLE ${TestTable.tableName} ( ","" )
+    assert( q.replace(s"CREATE TABLE ${TestTable.tableName} ( ","" )
       .replace("list list<text>","")
       .replace("setText set<text>","")
       .replace("mapIntToText map<int, text>","")
@@ -56,7 +56,7 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in mix table" in {
     val q = Recipes.schema()
-    Console.println(q)
+
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)
     assert(q.indexOf("ingredients list<text>") > 0)
@@ -66,8 +66,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("props map<text, text>") > 0)
     assert(q.indexOf("uid uuid") > 0)
     assert(q.indexOf("PRIMARY KEY (url)") > 0)
-
-    assert( q.replace("CREATE TABLE  ${Recipes.tableName} ( ","" )
+    assert( q.replace(s"CREATE TABLE ${Recipes.tableName} ( ","" )
       .replace("url text","")
       .replace("description text","")
       .replace("ingredients list<text>","")
