@@ -48,7 +48,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
 
   def meta = Primitives
 
-  object pkey extends StringColumn(this) with PrimaryKey[Primitives, Primitive]
+  object pkey extends StringColumn(this) with PrimaryKey
 
   object long extends LongColumn(this)
 

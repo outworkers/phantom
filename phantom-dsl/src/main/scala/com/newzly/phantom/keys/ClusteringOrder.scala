@@ -12,7 +12,7 @@ trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType]
 
   self: Column[Owner, Record, ValueType] =>
 
-  setAsKey()
+  override val isKey = true
 
   implicit def timeSeries: TimeSeries[ValueType]
 }

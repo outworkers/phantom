@@ -31,7 +31,7 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
   def meta = TestTable
 
-  object key extends StringColumn(this) with PrimaryKey[TestTable, TestRow]
+  object key extends StringColumn(this) with PrimaryKey
 
   object list extends SeqColumn[TestTable, TestRow, String](this)
 
