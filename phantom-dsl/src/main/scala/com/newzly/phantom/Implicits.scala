@@ -24,6 +24,8 @@ import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
 
 object Implicits {
 
+  type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.CassandraTable[Owner, Record]
+
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.PrimitiveColumn[Owner, Record, T]
 
