@@ -11,7 +11,7 @@ class JsonColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](t
   val cassandraType = "text"
 
   def toCType(v: RR): AnyRef = {
-    val s = JsonSerializer.serializeJson(v)
+    val s = Serializer.serialize(v)
     table.logger.info(s)
     s
   }
@@ -20,7 +20,8 @@ class JsonColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](t
     try {
       val json = r.getString(name)
       table.logger.info(s"Attempting to de-serialize JSON: $json")
-      Some(JsonSerializer.deserializeJson[RR](json))
+      //Some(Serializer.deserialize[RR](json).toString)
+      None
     } catch{
       case NonFatal(e) => {
         table.logger.error(e.getMessage)

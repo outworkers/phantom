@@ -16,7 +16,7 @@ class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 
   def meta = ThriftColumnTable
 
-  object id extends IntColumn(this) with PrimaryKey[ThriftColumnTable, Output]
+  object id extends IntColumn(this) with PrimaryKey
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
 

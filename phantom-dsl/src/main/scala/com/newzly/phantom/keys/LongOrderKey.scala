@@ -5,6 +5,7 @@ import com.newzly.phantom.column.PrimitiveColumn
 
 trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] =>
-
-  object order_id extends PrimitiveColumn[Owner, Record, Long](this)
+  object order_id extends PrimitiveColumn[Owner, Record, Long](this) {
+    override val isKey = true
+  }
 }

@@ -16,12 +16,11 @@
 package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.{ Column, PrimitiveColumn }
+import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
 
-trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record] {
-  this: Column[Owner, Record, _] =>
-
-  setAsPrimaryKey()
+trait PrimaryKey {
+  self: Keys =>
+  override val isPrimary = true
 
 }
 

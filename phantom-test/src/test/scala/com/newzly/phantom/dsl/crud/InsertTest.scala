@@ -11,6 +11,8 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables._
 import com.newzly.phantom.tables.MyTestRow
+import scala.util.Marshal
+import com.newzly.phantom.column.Serializer
 
 
 class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAssertions {
@@ -18,7 +20,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
 
-  "Insert" should "work fine for primitives columns" in {
+  /*"Insert" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
@@ -79,13 +81,14 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         assert (res._2)
       }
     }
-  }
+  }*/
+
 
   ignore should "work fine with custom types" in {
     MyTest.insertSchema(session)
 
     val row = MyTestRow.sample
-
+    Console.println(s"row= $row")
     val rcp = MyTest.insert
       .value(_.key, row.key)
       .valueOrNull(_.optionA, row.optionA)
