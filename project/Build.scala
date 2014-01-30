@@ -4,6 +4,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 import scala.Some
 import Tests._
 import com.twitter.sbt._
+import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 
 object newzlyPhantom extends Build {
@@ -11,11 +12,19 @@ object newzlyPhantom extends Build {
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
-  val finagleVersion = "6.7.4"
+  val finagleVersion = "6.8.1"
+  val scroogeVersion = "3.11.2"
+
+  val thriftLibs = Seq(
+    "org.apache.thrift" % "libthrift" % "0.9.1" intransitive()
+  )
+  val scroogeLibs = thriftLibs ++ Seq(
+    "com.twitter" %% "scrooge-runtime" % scroogeVersion
+  )
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.7",
+       version := "0.0.5",
        scalaVersion := "2.10.0",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
@@ -120,14 +129,21 @@ object newzlyPhantom extends Build {
     lazy val phantomDsl = Project(
         id = "phantom-dsl",
         base = file("phantom-dsl"),
-        settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+        settings = Project.defaultSettings ++
+          VersionManagement.newSettings ++
+          sharedSettings ++
+          publishSettings ++
+          ScroogeSBT.newSettings
     ).settings(
         libraryDependencies ++= Seq(
-          "com.twitter"              %% "util-collection"                   % "6.3.6"               % "compile, test",
-          "com.fasterxml.jackson.module" %% "jackson-module-scala"          % "2.3.1",
-          "com.datastax.cassandra"   %  "cassandra-driver-core"             % datastaxDriverVersion % "compile, test",
-          "org.apache.cassandra"     %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-          "org.scala-lang"           %  "scala-reflect"                     % "2.10.0"
+          "com.twitter"                  %% "util-collection"                   % "6.3.6",
+          "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
+          "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
+          "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.3.1",
+          "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+          "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
+          "org.scala-lang"               %  "scala-reflect"                     % "2.10.0",
+          "org.apache.thrift"            % "libthrift"                          % "0.9.1"
         )
     )
 
@@ -142,7 +158,6 @@ object newzlyPhantom extends Build {
       )
     ).settings(
         libraryDependencies ++= Seq(
-            "com.twitter"              %% "util-collection"                   % "6.3.6"               % "provided, test",
             "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             exclude("org.apache.cassandra","cassandra-all"),
             "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test",
             "org.specs2"               %% "specs2-core"                       % "2.3.4"               % "provided, test"
