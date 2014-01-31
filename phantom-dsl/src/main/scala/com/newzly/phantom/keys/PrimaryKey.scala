@@ -20,7 +20,13 @@ import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
 
 trait PrimaryKey {
   self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
   override val isPrimary = true
-
 }
 
+trait PartitionKey {
+  self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+  override val isPrimary = true
+  override val isPartitionKey = true
+}

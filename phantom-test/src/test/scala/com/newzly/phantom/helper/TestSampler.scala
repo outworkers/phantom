@@ -25,7 +25,9 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
       try {
         create.execute().sync()
       } catch {
-        case e: Throwable => logger.error(s"schema for ${this.tableName} could not be created. ")
+        case e: Throwable =>
+          logger.error(s"schema for ${this.tableName} could not be created. ")
+          logger.error(e)
       }
   }
 }

@@ -5,7 +5,8 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraWrites
 trait Keys {
   val isPrimary: Boolean = false
-  val isKey: Boolean = false
+  val isSecondaryKey: Boolean = false
+  val isPartitionKey: Boolean = false
 }
 trait AbstractColumn[T] extends CassandraWrites[T] with Keys {
 
