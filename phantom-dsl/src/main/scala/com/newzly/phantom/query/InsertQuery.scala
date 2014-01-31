@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
+package com.newzly.phantom.query
 
-package phantom
-package query
-
-import com.datastax.driver.core.querybuilder.{Using, QueryBuilder, Insert}
-import com.newzly.phantom.{ CassandraTable }
-import com.twitter.util.Duration
+import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
+import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
+import com.twitter.util.Duration
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
 
@@ -34,7 +30,8 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
 
   def valueOrNull[RR](c: T => AbstractColumn[RR], value: Option[RR]): InsertQuery[T, R] = {
     val col = c(table)
-    new InsertQuery[T, R](table, qb.value(col.name, value.map(col.toCType).orNull))
+    qb.value(col.name, value.map(col.toCType).orNull)
+    this
   }
 
   /**
@@ -45,12 +42,12 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
    */
   final def ttl(expiry: Duration): InsertQuery[T, R] = {
     qb.using(QueryBuilder.ttl(expiry.inSeconds))
-    Console.println(this.toString)
     this
   }
 
   override def toString: String = {
-    val bb = qb.getValues
-    qb.getQueryString + s"($bb: ${qb.toString}"
+    val query = s"${qb.getQueryString}(${qb.getValues}: ${qb.toString})}"
+    table.logger.info(s"$query")
+    query
   }
 }
