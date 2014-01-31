@@ -9,8 +9,6 @@ import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long) RR: CassandraPrimitive](t: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](t) {
 
-  getTable.addColumn(this)
-
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
 
@@ -28,7 +26,7 @@ class TimeSeries[T]
  */
 class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, Date](table) {
   implicit object DateIsTimeSeries extends TimeSeries[Date]
-  val ev = implicitly[TimeSeries[Date]]
+  implicit def timeSeries: TimeSeries[Date] = implicitly[TimeSeries[Date]]
 }
 
 /**
@@ -39,5 +37,5 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  */
 class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, DateTime](table) {
   implicit object DateTimeIsTimeSeries extends TimeSeries[DateTime]
-  val ev = implicitly[TimeSeries[DateTime]]
+  implicit def timeSeries: TimeSeries[DateTime] = implicitly[TimeSeries[DateTime]]
 }

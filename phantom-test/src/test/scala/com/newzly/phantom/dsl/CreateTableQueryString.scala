@@ -7,7 +7,7 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
-    val q = Primitives.createSchema
+    val q = Primitives.schema()
 
     val manual = s"CREATE TABLE ${Primitives.tableName}} " +
         "( pkey int, " +
@@ -30,7 +30,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "work fine with List, Set, Map" in {
-    val q = TestTable.createSchema
+    val q = TestTable.schema()
 
     assert(q.indexOf("list list<text>") > 0)
     assert(q.indexOf("setText set<text>") > 0 )
@@ -40,7 +40,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("mapTextToText map<text, text>") > 0)
     assert(q.indexOf("PRIMARY KEY (key)") > 0 )
 
-    assert( q.replace("CREATE TABLE ${TestTable.tableName} ( ","" )
+    assert( q.replace(s"CREATE TABLE ${TestTable.tableName} ( ","" )
       .replace("list list<text>","")
       .replace("setText set<text>","")
       .replace("mapIntToText map<int, text>","")
@@ -55,8 +55,8 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "get the right query in mix table" in {
-    val q = Recipes.createSchema
-    Console.println(q)
+    val q = Recipes.schema()
+
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)
     assert(q.indexOf("ingredients list<text>") > 0)
@@ -66,8 +66,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(q.indexOf("props map<text, text>") > 0)
     assert(q.indexOf("uid uuid") > 0)
     assert(q.indexOf("PRIMARY KEY (url)") > 0)
-
-    assert( q.replace("CREATE TABLE  ${Recipes.tableName} ( ","" )
+    assert( q.replace(s"CREATE TABLE ${Recipes.tableName} ( ","" )
       .replace("url text","")
       .replace("description text","")
       .replace("ingredients list<text>","")
@@ -80,17 +79,6 @@ class CreateTableQueryString extends FlatSpec {
       .replace(")","")
       .replace(" ","")
       .replace(",","") == ";" )
-
-      assert(Recipes.columns.forall(column => {
-        manual.contains(column.name)
-      }))
-  }
-
-  ignore should "correctly add clustering order to a query" in {
-    /*val q = Recipes.create()
-      .withClusteringOrder(_.last_checked_at)
-      .ascending.queryString
-    Console.println(q)
   }
 }
 

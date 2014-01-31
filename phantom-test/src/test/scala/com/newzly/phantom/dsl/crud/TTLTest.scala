@@ -12,7 +12,7 @@ import com.twitter.util.Duration
 class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertions with Inside {
   val keySpace: String = "TTLTest"
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   it should "expire inserterd records" in {
     val row = Primitive.sample

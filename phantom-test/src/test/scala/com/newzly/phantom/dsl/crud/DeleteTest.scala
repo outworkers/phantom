@@ -31,8 +31,8 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
       _ => {
         for {
           inserted <- Primitives.select.fetch
-          delete <- Primitives.delete.where(_.pkey eqs "myString").execute()
-          deleted <- Primitives.select.where(_.pkey eqs "myString").one
+          delete <- Primitives.delete.where(_.pkey eqs row.pkey).execute()
+          deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
         } yield (inserted.contains(row), deleted.isEmpty)
       }
     }

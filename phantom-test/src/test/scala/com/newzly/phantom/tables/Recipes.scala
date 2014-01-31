@@ -82,7 +82,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   def meta = Recipes
 
-  object url extends StringColumn(this) with PrimaryKey[Recipes, Recipe]
+  object url extends StringColumn(this) with PrimaryKey
 
   object description extends OptionalStringColumn(this)
 
@@ -97,8 +97,6 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[Recipes, Recipe, String, String](this)
 
   object uid extends UUIDColumn(this)
-
-  def createSchema: String = super.create().queryString
 }
 
 

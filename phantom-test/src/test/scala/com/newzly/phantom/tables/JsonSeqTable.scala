@@ -13,9 +13,8 @@ sealed class JsonSeqTable extends CassandraTable[JsonSeqTable, JsonSeqRow]
     JsonSeqRow(pkey(r), recipes(r))
   }
   def meta = JsonSeqTable
-  object pkey extends StringColumn(this) with PrimaryKey[JsonSeqTable, JsonSeqRow]
+  object pkey extends StringColumn(this) with PrimaryKey
   object recipes extends JsonSeqColumn[JsonSeqTable, JsonSeqRow, Recipe](this)
-  def createSchema: String = super.create().queryString
 }
 
 object JsonSeqTable extends JsonSeqTable with TestSampler[JsonSeqTable, JsonSeqRow] {

@@ -72,12 +72,11 @@ sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
 
   def meta = TestTable2
 
-  object key extends StringColumn(this) with PrimaryKey[TestTable2, TestRow2]
+  object key extends StringColumn(this) with PrimaryKey
   object optionA extends OptionalIntColumn(this)
   object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)
   object optionS extends JsonColumn[TestTable2, TestRow2, Option[SimpleMapOfStringsClass]](this)
   object mapIntoClass extends JsonColumn[TestTable2, TestRow2, Map[String, SimpleMapOfStringsClass]](this)
-  def createSchema: String = super.create().queryString
 }
 
 object TestTable2 extends TestTable2 with TestSampler[TestTable2, TestRow2] {
