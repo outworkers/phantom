@@ -16,18 +16,17 @@
 package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.{ Column, PrimitiveColumn }
+import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
 
-trait PrimaryKey[Owner <: CassandraTable[Owner, Record], Record] {
-  this: Column[Owner, Record, _] =>
-
-  _isPrimaryKey.set(true)
-
-  getTable.addPrimaryKey(this)
+trait PrimaryKey {
+  self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+  override val isPrimary = true
 }
 
-trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
-  this: CassandraTable[Owner, Record] =>
-
-  object order_id extends PrimitiveColumn[Owner, Record, Long](this)
+trait PartitionKey {
+  self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+  override val isPrimary = true
+  override val isPartitionKey = true
 }

@@ -28,15 +28,13 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
   def meta = MyTest
 
-  object key extends StringColumn(this) with PrimaryKey[MyTest, MyTestRow]
+  object key extends StringColumn(this) with PrimaryKey
 
   object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
 
   object optionA extends OptionalPrimitiveColumn[MyTest, MyTestRow, Int](this)
 
   object classS extends JsonColumn[MyTest, MyTestRow, SimpleStringClass](this)
-
-  def createSchema: String = super.create().queryString
 }
 
 object MyTest extends MyTest with TestSampler[MyTest, MyTestRow] {

@@ -48,7 +48,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
 
   def meta = Primitives
 
-  object pkey extends StringColumn(this) with PrimaryKey[Primitives, Primitive]
+  object pkey extends StringColumn(this) with PrimaryKey
 
   object long extends LongColumn(this)
 
@@ -69,8 +69,6 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   object uuid extends UUIDColumn(this)
 
   object bi extends BigIntColumn(this)
-
-  def createSchema: String = super.create().queryString
 }
 
 object Primitives extends Primitives with TestSampler[Primitives, Primitive] {

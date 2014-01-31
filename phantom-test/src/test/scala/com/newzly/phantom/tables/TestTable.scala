@@ -1,7 +1,6 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom._
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.keys.PrimaryKey
@@ -32,7 +31,7 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
   def meta = TestTable
 
-  object key extends StringColumn(this) with PrimaryKey[TestTable, TestRow]
+  object key extends StringColumn(this) with PrimaryKey
 
   object list extends SeqColumn[TestTable, TestRow, String](this)
 
@@ -54,8 +53,6 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
       mapIntToText(r)
     )
   }
-
-  def createSchema: String = super.create().queryString
 }
 
 object TestTable extends TestTable with TestSampler[TestTable, TestRow] {

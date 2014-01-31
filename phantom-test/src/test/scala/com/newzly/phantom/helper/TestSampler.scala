@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Session
 import com.newzly.phantom.CassandraTable
-
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
 /**
  * A basic trait implemented by all test tables.
  * @tparam Row The case class type returned.
@@ -13,30 +13,23 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   self : CassandraTable[Owner, Row] =>
 
   /**
-   * This must specify the schema expected to exist in the database
-   * for the specific table.
-   * @return
-   */
-  def createSchema: String
-
-  /**
    * Inserts the schema into the database in a blocking way.
+   * This is done with a try catch in order to avoid tests issues when the same keyspace is used
+   * and schema is inserted twice
    * @param session The Cassandra session.
+   *
+   * ATTENTION!!! this method creates the schema in a sync mode, the unit tests rely on it to be synced
    */
-  def insertSchema(session: Session): Unit = {
-    logger.info(s"Schema inserted: ${schemaCreated.get()}" )
-    if (schemaCreated.compareAndSet(false,true)) {
-      logger.info("Schema agreement in progress: " + createSchema)
-      session.execute(createSchema)
-      schemaCreated.set(true)
-    } else throw new Exception("schema was already inserted")
+  def insertSchema(implicit session: Session): Unit = {
+      logger.info("Schema agreement in progress: ")
+      try {
+        create.execute().sync()
+      } catch {
+        case e: Throwable =>
+          logger.error(s"schema for ${this.tableName} could not be created. ")
+          logger.error(e)
+      }
   }
-
-  override def create() = {
-    throw new Exception("use TestSampler.insertSchema in tests to get the schema")
-  }
-
-  private[this] val schemaCreated = new AtomicBoolean(false)
 }
 
 /**
