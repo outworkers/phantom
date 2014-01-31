@@ -38,7 +38,7 @@ class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions 
         .execute()
       all <- Articles.select.fetch
       res <- Articles.select.where(_.id eqs  article1.id ).skip(article1.order_id).one
-    } yield (all.size,res)
+    } yield (all.size, res)
 
     result successful {
       r => {
