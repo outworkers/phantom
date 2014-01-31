@@ -13,7 +13,7 @@ class JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest
   def toCType(values: Seq[RR]): AnyRef = {
     val json = values.map {
       item => {
-        JsonSerializer.serializeJson(item)
+        Serializer.serialize(item)
       }
     }(breakOut)
     json.toSeq.asJava
@@ -26,9 +26,11 @@ class JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest
   def optional(r: Row): Option[Seq[RR]] = {
     val items = r.getList(name, classOf[String]).asScala.flatMap {
       item => Try {
-        Some(JsonSerializer.deserializeJson[RR](item))
+       // Some(Serializer.deserializeJson[RR](item))
+        None
       } getOrElse None
     }
-    items.toSeq.toOption
+    //items.toSeq.toOption
+    Some(Seq.empty[RR])
   }
 }
