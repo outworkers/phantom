@@ -9,7 +9,7 @@ import com.twitter.util.{Await, Future}
 object BaseTestHelper {
   val cluster = Cluster.builder()
     .addContactPoint("localhost")
-    .withPort(9042)
+    .withPort(9142)
     .withoutJMXReporting()
     .withoutMetrics()
     .build()

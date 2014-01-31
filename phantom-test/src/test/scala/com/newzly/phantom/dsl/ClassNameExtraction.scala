@@ -26,7 +26,7 @@ case class CustomRecord(name: String, mp: Map[String, String])
 
 class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   def meta = TestTableNames
-  object record extends StringColumn(this) with PrimaryKey[TestTableNames, CustomRecord]
+  object record extends StringColumn(this) with PrimaryKey
   object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
   override def fromRow(r: Row): CustomRecord = {
