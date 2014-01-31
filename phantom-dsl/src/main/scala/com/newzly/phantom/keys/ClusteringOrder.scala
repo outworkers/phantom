@@ -11,8 +11,8 @@ import com.newzly.phantom.column.{TimeSeries, Column}
 trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
 
   self: Column[Owner, Record, ValueType] =>
-
-  override val isKey = true
+  if (isPrimary) throw new Exception("Incompatible Keys")
+  override val isSecondaryKey = true
 
   implicit def timeSeries: TimeSeries[ValueType]
 }

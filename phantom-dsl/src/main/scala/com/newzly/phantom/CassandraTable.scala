@@ -23,6 +23,7 @@ import com.datastax.driver.core.querybuilder._
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.{AbstractColumn, Column}
 
+
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   private[this] lazy val _columns: ParHashSet[AbstractColumn[_]] = ParHashSet.empty[AbstractColumn[_]]
@@ -32,9 +33,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
   }
 
   def columns: List[AbstractColumn[_]] = _columns.toList
-
-  def keys: List[AbstractColumn[_]] = columns.filter(_.isKey)
-  def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
@@ -89,17 +87,34 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   protected[phantom] def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
+  def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
+
+  def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
+
   def schema(): String = {
     val queryInit = s"CREATE TABLE $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
-
-    val pkes = primaryKeys.map(_.name).mkString(",")
+    val pkes = {
+      if (primaryKeys.filter(_.isPartitionKey).size > 0) {
+        if (primaryKeys.filter(_.isPartitionKey).size > 1)// hudson we have an error
+          throw new Exception("only one partition key is allowed in the schema")
+        primaryKeys.filter(_.isPartitionKey).head.name + "," +
+          primaryKeys.filter(_.isPartitionKey).map(_.name).mkString(",")
+      } else {
+        primaryKeys.map(_.name).mkString(",")
+      }
+    }
     logger.info(s"Adding Primary keys indexes: $pkes")
     val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
+
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
     if (query.last != ';') query + ";" else query
+  }
+
+  def createIndexes(): Seq[String] = {
+    secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
   }
 
   def meta: CassandraTable[T, R]

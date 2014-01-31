@@ -9,8 +9,9 @@ import com.newzly.phantom.Implicits._
 /**
  * A trait mixable into Column definitions to allow storing them as keys.
  */
-trait Key{
+trait SecondaryKey{
   self: Keys=>
-  override val isKey = true
+  if (isPrimary) throw new Exception("Incompatible Keys")
+  override val isSecondaryKey = true
 }
 
