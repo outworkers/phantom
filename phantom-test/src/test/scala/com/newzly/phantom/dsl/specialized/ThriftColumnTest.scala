@@ -7,7 +7,7 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.tables.ThriftColumnTable
 import com.newzly.phantom.thrift.ThriftTest
 import com.newzly.phantom.helper.BaseTest
-import com.twitter.util.NonFatal
+import com.twitter.util.{ Await, Duration }
 
 class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace = "thrift"
@@ -26,17 +26,10 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
 
     insert.successful {
       result => {
-        val select = ThriftColumnTable.select.one(session)
-        try {
-          select.successful {
-            row => {
-              row.isEmpty shouldEqual false
-              row shouldEqual sample
-            }
-          }
-        } catch {
-          case NonFatal(err) => fail(err.getMessage)
-        }
+        Console.println("Record inserted")
+        val row = Await.result(ThriftColumnTable.select.one, Duration.fromSeconds(5))
+        row.isEmpty shouldEqual false
+        row.get.struct shouldEqual sample
       }
     }
   }
