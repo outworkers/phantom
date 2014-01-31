@@ -1,29 +1,36 @@
 package com.newzly.phantom.query
 
-import com.newzly.phantom.{CassandraResultSetOperations, AbstractColumn, CassandraTable}
-import com.datastax.driver.core.{ResultSet, Session}
-import com.twitter.util.{FuturePool, Future}
+import scala.concurrent.{ Future => ScalaFuture }
+import com.datastax.driver.core.{ ResultSet, Session }
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
+import com.twitter.util.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class CreateQuery[T <: CassandraTable[T, R], R](table: T, query:String) extends CassandraResultSetOperations{
-  def apply(columns: (T => AbstractColumn[_])*): CreateQuery[T,R] = {
-
-    val queryInit = s"CREATE TABLE ${table.tableName} ("
-    val queryColumns = columns.foldLeft("")((qb,c) => {
-      val col = c(table)
-      s"$qb, ${col.name} ${col.cassandraType}"
-    })
-
-    val pk = table._key.name
-    //TODO support multiple keys
-
-    val queryPrimaryKey  = s", PRIMARY KEY (${pk})"
-    new CreateQuery(table,queryInit+queryColumns.drop(1)+queryPrimaryKey+");")
-  }
-
-  val queryString = query
+class CreateQuery[T <: CassandraTable[T, R], R](table: T, query: String) extends CassandraResultSetOperations {
 
   def execute()(implicit session: Session): Future[ResultSet] =  {
-    queryStringExecuteToFuture(query)
+    if (table.createIndexes().isEmpty)
+      queryStringExecuteToFuture(table.schema)
+    else
+      queryStringExecuteToFuture(table.schema)  flatMap {
+        _=> {
+         val seqF = table.createIndexes() map (q => queryStringExecuteToFuture(q))
+         val f = seqF.reduce[Future[ResultSet]]((f1,f2) => f1 flatMap { _ => f2 })
+         f
+        }
+      }
   }
 
+  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+    if (table.createIndexes().isEmpty)
+      scalaQueryStringExecuteToFuture(table.schema)
+    else
+      scalaQueryStringExecuteToFuture(table.schema)  flatMap {
+      _=> {
+        val seqF = table.createIndexes() map (q => scalaQueryStringExecuteToFuture(q))
+        val f = seqF.reduce[ScalaFuture[ResultSet]]((f1,f2) => f1 flatMap { _ => f2 })
+        f
+      }
+    }
+  }
 }

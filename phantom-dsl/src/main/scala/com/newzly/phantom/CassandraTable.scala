@@ -15,23 +15,31 @@
  */
 package com.newzly.phantom
 
-import java.io.Serializable
-import scala.collection.JavaConverters._
-import scala.reflect.ClassTag
-
+import scala.collection.parallel.mutable.ParHashSet
+import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
-import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery}
+import com.newzly.phantom.query._
+import com.newzly.phantom.column.{AbstractColumn, Column}
+import scala.annotation.switch
 
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] {
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
-  def _key: Column[_]
+  private[this] lazy val _columns: ParHashSet[AbstractColumn[_]] = ParHashSet.empty[AbstractColumn[_]]
+
+  def addColumn(column: AbstractColumn[_]): Unit = {
+    _columns += column
+  }
+
+  def columns: List[AbstractColumn[_]] = _columns.toList
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
+
+  lazy val logger = Logger.getLogger(_name)
 
   def tableName: String = _name
 
@@ -74,17 +82,39 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] {
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
+  def createRecord: CassandraTable[T, R] = meta
+
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  protected[phantom] def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def schema = {
-    val str = this.getClass.getDeclaredFields.map {
-      field => {
-        s"${field.getName}${field.getClass.asInstanceOf[CassandraPrimitive[_]].cassandraType}"
+  def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
+
+  def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
+
+  def schema(): String = {
+    val queryInit = s"CREATE TABLE $tableName ("
+    val queryColumns = columns.foldLeft("")((qb, c) => {
+      s"$qb, ${c.name} ${c.cassandraType}"
+    })
+
+    val pkes = {
+      (primaryKeys.filter(_.isPartitionKey): @switch) match {
+        case head :: tail if tail.length > 0 => throw new Exception("only one partition key is allowed in the schema")
+        case head :: tail => s"${head.name}, ${tail.map(_.name).mkString(",")}"
+        case Nil => primaryKeys.map(_.name).mkString(",")
       }
     }
-    str
+    logger.info(s"Adding Primary keys indexes: $pkes")
+    val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
+
+    val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
+    if (query.last != ';') query + ";" else query
   }
 
+  def createIndexes(): Seq[String] = {
+    secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
+  }
+
+  def meta: CassandraTable[T, R]
 }

@@ -1,42 +1,44 @@
 package com.newzly.phantom.dsl.crud
 
-import com.newzly.phantom.dsl.BaseTest
-import org.scalatest.{Assertions, Matchers}
-import com.newzly.phantom.helper.Tables
-import com.datastax.driver.core.Session
-import java.net.InetAddress
-import com.twitter.util.Future
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.concurrent.AsyncAssertions
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ Primitive, Primitives }
 
-class SelectTest extends BaseTest with Matchers with Tables  with Assertions with AsyncAssertions {
-
-  implicit val session: Session = cassandraSession
+class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  val keySpace: String = "selectTest"
 
   "Select" should "work fine" in {
-    val row = Primitive("1", 2.toLong, true, BigDecimal("1.1"), 3.toDouble, 4.toFloat,
-      InetAddress.getByName("127.0.0.1"), 9, new java.util.Date, com.datastax.driver.core.utils.UUIDs.timeBased(),
-      BigInt(1002))
-    val rcp = Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
-    rcp.execute() map {
-      _ => {
-        Primitives.select.fetch successful {
-          case res => assert(res contains (row))
+    val row = Primitive.sample
+    Primitives.insertSchema(session)
+    val rcp =  Primitives.insert
+        .value(_.pkey, row.pkey)
+        .value(_.long, row.long)
+        .value(_.boolean, row.boolean)
+        .value(_.bDecimal, row.bDecimal)
+        .value(_.double, row.double)
+        .value(_.float, row.float)
+        .value(_.inet, row.inet)
+        .value(_.int, row.int)
+        .value(_.date, row.date)
+        .value(_.uuid, row.uuid)
+        .value(_.bi, row.bi).execute() flatMap {
+        _ => {
+          for {
+            a <- Primitives.select.fetch
+            b <- Primitives.select.where(_.pkey eqs row.pkey).one
+          } yield (a contains row, b.get == row)
+
         }
-        Primitives.select.where(_.pkey eqs "1").one successful {
-          case res => assert(res.get === row)
-        }
+      }
+
+    rcp successful {
+      r => {
+        assert(r._1)
+        assert(r._2)
       }
     }
   }

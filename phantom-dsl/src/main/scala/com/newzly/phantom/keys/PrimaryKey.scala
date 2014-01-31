@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.newzly.phantom.field
+package com.newzly.phantom.keys
 
-import java.util.UUID
-import com.newzly.phantom.{ CassandraTable, PrimitiveColumn }
+import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
 
-trait UUIDPk[Owner <: CassandraTable[Owner, _]] {
-  this: CassandraTable[Owner, _] =>
-
-  object id extends PrimitiveColumn[UUID]
-
-  val _key = id;
+trait PrimaryKey {
+  self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+  override val isPrimary = true
 }
 
-trait LongOrderKey[Owner <: CassandraTable[Owner, _]] {
-  this: CassandraTable[Owner, _] with UUIDPk[Owner] =>
-  object order_id extends PrimitiveColumn[Long]
+trait PartitionKey {
+  self: Keys =>
+  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+  override val isPrimary = true
+  override val isPartitionKey = true
 }

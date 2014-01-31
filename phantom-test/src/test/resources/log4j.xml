@@ -14,9 +14,20 @@
     <logger name="org.apache.cassandra">
         <level value="error" />
     </logger>
+
+
+    <logger name="com.datastax.driver.core">
+        <level value="error" />
+    </logger>
+
+    <logger name="com.newzly.phantom">
+        <level value="info"/>
+    </logger>
+
     <logger name="me.prettyprint">
         <level value="error" />
     </logger>
+
 
     <root>
         <priority value="debug" />

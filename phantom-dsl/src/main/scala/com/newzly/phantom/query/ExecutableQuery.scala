@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
-
-package phantom
-package query
+package com.newzly.phantom.query
 
 import scala.collection.JavaConverters._
-import com.twitter.util.{FuturePool, Future}
+import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
+import com.twitter.util.Future
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
-import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable };
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
@@ -31,6 +28,10 @@ trait ExecutableStatement extends CassandraResultSetOperations {
 
   def execute()(implicit session: Session): Future[ResultSet] =  {
     statementExecuteToFuture(qb)
+  }
+
+  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+    scalaStatementToFuture(qb)
   }
 }
 
@@ -43,8 +44,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def execute()(implicit session: Session): Future[ResultSet] =
     statementExecuteToFuture(qb)
 
-  def fetchSync(implicit session: Session): Seq[R] = {
-    session.execute(qb).all().asScala.toSeq.map(fromRow)
+  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+    scalaStatementToFuture(qb)
   }
 
   def fetch(implicit session: Session): Future[Seq[R]] = {
