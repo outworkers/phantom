@@ -7,12 +7,13 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.column.ThriftColumn
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.keys.PrimaryKey
-import com.newzly.phantom.thrift.ThriftTest
 import com.newzly.phantom.helper.TestSampler
+import com.newzly.phantom.thrift.ThriftTest
+import com.thinkaurelius.thrift.util
 
 case class Output(id: Int, name: String, struct: ThriftTest)
 
-class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
+sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 
   def meta = ThriftColumnTable
 
@@ -20,9 +21,16 @@ class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
 
+    def encode(item: ThriftTest): Array[Byte] = {
+      val trans = new TMemoryInputTransport()
+      val protocol = new TBinaryProtocol(trans)
+      ThriftTest.encode(item.copy(), protocol)
+      item.toString.getBytes
+    }
+
     def decode(data: Array[Byte]): ThriftTest = {
       val _trans = new TMemoryInputTransport(data)
-      ThriftTest.Immutable.decode(new TBinaryProtocol(_trans))
+      ThriftTest.decode(new TBinaryProtocol(_trans))
     }
   }
 
@@ -31,6 +39,4 @@ class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
   }
 }
 
-object ThriftColumnTable extends ThriftColumnTable with TestSampler[ThriftColumnTable, Output] {
-
-}
+object ThriftColumnTable extends ThriftColumnTable with TestSampler[ThriftColumnTable, Output] {}
