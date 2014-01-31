@@ -22,6 +22,7 @@ import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
 import com.newzly.phantom.column.{AbstractColumn, Column}
+import scala.annotation.switch
 
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
@@ -96,14 +97,12 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
+
     val pkes = {
-      if (primaryKeys.filter(_.isPartitionKey).size > 0) {
-        if (primaryKeys.filter(_.isPartitionKey).size > 1)// hudson we have an error
-          throw new Exception("only one partition key is allowed in the schema")
-        primaryKeys.filter(_.isPartitionKey).head.name + "," +
-          primaryKeys.filter(_.isPartitionKey).map(_.name).mkString(",")
-      } else {
-        primaryKeys.map(_.name).mkString(",")
+      (primaryKeys.filter(_.isPartitionKey): @switch) match {
+        case head :: tail if tail.length > 0 => throw new Exception("only one partition key is allowed in the schema")
+        case head :: tail => s"${head.name}, ${tail.map(_.name).mkString(",")}"
+        case Nil => primaryKeys.map(_.name).mkString(",")
       }
     }
     logger.info(s"Adding Primary keys indexes: $pkes")
