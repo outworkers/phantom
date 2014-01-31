@@ -1,18 +1,17 @@
 import sbt._
 import Keys._
-import sbtassembly.Plugin.AssemblyKeys._
-import scala.Some
 import Tests._
 import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
+import sbtassembly.Plugin.AssemblyKeys._
 
 object newzlyPhantom extends Build {
 
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
-  val finagleVersion = "6.8.1"
+  val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
 
   val thriftLibs = Seq(
@@ -24,15 +23,17 @@ object newzlyPhantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
        organization := "com.newzly",
-       version := "0.0.5",
-       scalaVersion := "2.10.0",
+       version := "0.0.6",
+       scalaVersion := "2.10.3",
        resolvers ++= Seq(
         "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
         "Sonatype releases"                at "https://oss.sonatype.org/content/repositories/releases",
         "Sonatype snapshots"               at "https://oss.sonatype.org/content/repositories/snapshots",
         "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
         "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
-        "Twitter Repository"               at "http://maven.twttr.com"
+        "Twitter Repository"               at "http://maven.twttr.com",
+        "newzly snapshots"                 at "http://maven.newzly.com/repository/snapshots",
+        "newzly repository"                at "http://maven.newzly.com/repository/internal"
        ),
        libraryDependencies ++= Seq(
          "com.github.nscala-time"  %% "nscala-time"                       % "0.4.2"
