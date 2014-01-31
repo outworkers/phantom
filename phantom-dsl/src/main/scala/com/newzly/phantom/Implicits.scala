@@ -18,9 +18,10 @@ package com.newzly.phantom
 import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
-import com.newzly.phantom.column.{TimeSeries, AbstractColumn}
+import com.newzly.phantom.column.AbstractColumn
 import com.newzly.phantom.keys.LongOrderKey
-import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
+import com.newzly.phantom.query.SelectWhere
+import com.twitter.scrooge.ThriftStruct
 
 object Implicits {
 
@@ -50,6 +51,8 @@ object Implicits {
   type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
   type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Long]
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
+  type ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftColumn[Owner, Record, ValueType]
+  type ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftSeqColumn[Owner, Record, ValueType]
   type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
 
 
