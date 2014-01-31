@@ -26,4 +26,18 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val tab
     QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
   }
 
+  def ltToken (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.lt(QueryBuilder.token(this.name),
+      QueryBuilder.fcall("token",this.toCType(value))))
+  }
+
+  def gtToken (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.gt(QueryBuilder.token(this.name),
+      QueryBuilder.fcall("token",this.toCType(value))))
+  }
+
+  def eqsToken (value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.eq(QueryBuilder.token(this.name),
+      QueryBuilder.fcall("token",this.toCType(value))))
+  }
 }
