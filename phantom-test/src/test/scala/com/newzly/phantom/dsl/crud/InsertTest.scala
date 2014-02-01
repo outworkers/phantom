@@ -1,18 +1,14 @@
 package com.newzly.phantom.dsl.crud
 
-import java.net.InetAddress
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.Row
 import com.newzly.phantom._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables._
-import com.newzly.phantom.tables.MyTestRow
-import scala.util.Marshal
-import com.newzly.phantom.column.Serializer
+
 
 
 class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAssertions {
@@ -20,7 +16,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
 
-  /*"Insert" should "work fine for primitives columns" in {
+  "Insert" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
@@ -81,42 +77,18 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         assert (res._2)
       }
     }
-  }*/
-
-
-  ignore should "work fine with custom types" in {
-    MyTest.insertSchema(session)
-
-    val row = MyTestRow.sample
-    Console.println(s"row= $row")
-    val rcp = MyTest.insert
-      .value(_.key, row.key)
-      .valueOrNull(_.optionA, row.optionA)
-      .value(_.classS, row.classS)
-      .execute() flatMap {
-      _ =>  {
-        for {
-          one <- MyTest.select.one
-          multi <- MyTest.select.fetch
-        }  yield (one.get == row, multi.contains(row))
-      }
-    }
-    rcp successful {
-      res => {
-        assert (res._1)
-        assert (res._2)
-      }
-    }
   }
 
-  ignore should "work fine with Mix" in {
+
+
+
+  it should "work fine with Mix" in {
     val r = Recipe.sample
     Recipes.insertSchema(session)
     val rcp = Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
         .value(_.ingredients, r.ingredients)
-        .valueOrNull(_.author, r.author)
         .valueOrNull(_.servings, r.servings)
         .value(_.last_checked_at, r.lastCheckedAt)
         .value(_.props, r.props)
@@ -133,7 +105,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     }
   }
 
-  ignore should "support serializing/de-serializing empty lists " in {
+  it should "support serializing/de-serializing empty lists " in {
     MyTest.insertSchema(session)
 
     val row = TestList.sample
@@ -150,7 +122,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     }
   }
 
-  ignore should "support serializing/de-serializing to List " in {
+  it should "support serializing/de-serializing to List " in {
     MyTest.insertSchema(session)
 
     val row = TestList.sample
