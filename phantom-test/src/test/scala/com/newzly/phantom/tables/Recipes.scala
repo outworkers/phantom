@@ -6,7 +6,7 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
 import org.joda.time.DateTime
-import com.newzly.phantom.keys.PrimaryKey
+import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class Recipe(
   url: String,
@@ -49,7 +49,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   def meta = Recipes
 
-  object url extends StringColumn(this) with PrimaryKey
+  object url extends StringColumn(this) with PartitionKey
 
   object description extends OptionalStringColumn(this)
 

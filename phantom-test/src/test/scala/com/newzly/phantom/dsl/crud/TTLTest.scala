@@ -38,7 +38,7 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
       record => {
         record.isEmpty shouldEqual false
         record.get should be (row)
-        Thread.sleep(Duration.fromSeconds(5).inMillis)
+        Thread.sleep(Duration.fromSeconds(6).inMillis)
         val test2 = Primitives.select.one
         test2 successful {
           expired => {
