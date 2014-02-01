@@ -4,7 +4,7 @@ import org.scalatest.FlatSpec
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.PrimaryKey
+import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 trait Test {
   private[this] lazy val _name: String = {
@@ -26,7 +26,7 @@ case class CustomRecord(name: String, mp: Map[String, String])
 
 class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   def meta = TestTableNames
-  object record extends StringColumn(this) with PrimaryKey
+  object record extends StringColumn(this) with PartitionKey
   object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
   override def fromRow(r: Row): CustomRecord = {
