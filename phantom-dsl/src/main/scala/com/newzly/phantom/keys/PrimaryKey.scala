@@ -17,6 +17,8 @@ package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
+import com.newzly.phantom.query.QueryCondition
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 trait PrimaryKey {
   self: Keys =>
@@ -24,9 +26,7 @@ trait PrimaryKey {
   override val isPrimary = true
 }
 
-trait PartitionKey {
+trait PartitionKey extends PrimaryKey{
   self: Keys =>
-  if (isSecondaryKey) throw new Exception("Incompatible Keys")
-  override val isPrimary = true
   override val isPartitionKey = true
 }
