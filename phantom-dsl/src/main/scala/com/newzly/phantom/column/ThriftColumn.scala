@@ -1,5 +1,6 @@
 package com.newzly.phantom.column
 
+import scala.collection.breakOut
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
@@ -24,8 +25,8 @@ abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, Valu
 
   def optional(r: Row): Option[ValueType] = {
     Try {
-      Some(serializer.fromString(r.getString(name)))
-    } getOrElse None
+      serializer.fromString(r.getString(name))
+    }.toOption
   }
 }
 
@@ -37,7 +38,7 @@ abstract class ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, V
   val cassandraType = "list<text>"
 
   override def toCType(v: Seq[ValueType]): AnyRef = {
-    v.map(serializer.toString).toSeq.asJava
+    v.map(serializer.toString)(breakOut).toSeq.asJava
   }
 
   def optional(r: Row): Option[Seq[ValueType]] = {
