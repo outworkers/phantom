@@ -144,8 +144,8 @@ object newzlyPhantom extends Build {
           "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.3.1",
           "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
           "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-          "org.scala-lang"               %  "scala-reflect"                     % "2.10.0",
-          "org.apache.thrift"            % "libthrift"                          % "0.9.1"
+          "org.scala-lang"               %  "scala-reflect"                     % "2.10.3",
+          "org.apache.thrift"            %  "libthrift"                         % "0.9.1"
         )
     )
 
