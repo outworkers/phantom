@@ -19,9 +19,10 @@ import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.keys.LongOrderKey
-import com.newzly.phantom.query.SelectWhere
+import com.newzly.phantom.keys.{PartitionKey, LongOrderKey}
+import com.newzly.phantom.query.{QueryCondition, SelectWhere}
 import com.twitter.scrooge.ThriftStruct
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 object Implicits {
 
@@ -99,6 +100,24 @@ object Implicits {
 
     final def skip(l: Long): SelectWhere[T, R] = {
       select.where(_.order_id gt l)
+    }
+  }
+
+  implicit class PartitionTokenHelper[T](val p: PartitionKey) extends AnyVal {
+
+    def ltToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
+    }
+
+    def gtToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
+    }
+
+    def eqsToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
     }
   }
 }

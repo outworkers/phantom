@@ -25,22 +25,4 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val tab
   def gt (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
   }
-
-  implicit class PartitionTokenHelper(p: PartitionKey){
-
-    def ltToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token",p.asInstanceOf[Column[_,_,T]].toCType(value))))
-    }
-
-    def gtToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token",p.asInstanceOf[Column[_,_,T]].toCType(value))))
-    }
-
-    def eqsToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token",p.asInstanceOf[Column[_,_,T]].toCType(value))))
-    }
-  }
 }
