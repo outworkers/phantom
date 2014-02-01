@@ -31,8 +31,8 @@ import com.newzly.phantom.Implicits._
 
 sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] {
 
-  object id extends UUIDColumn(this) with PrimaryKey[ExampleRecord, ExampleModel]
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[ExampleRecord, ExampleModel] with Ascending
+  object id extends UUIDColumn(this) with PartitionKey
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
   object name extends PrimitiveColumn[String](this)
   object props extends MapColumn[String, String](this)
   object test extends OptionalIntColumn(this)
@@ -48,8 +48,7 @@ sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, Examp
 Querying with Phantom
 =====================
 
-The query syntax is modelled around the Foursquare Rogue library.
-The syntax provided aims to replicate CQL 3 as much as possible.
+The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
 
 ```scala
 
@@ -81,7 +80,7 @@ object ExampleRecord extends ExampleRecord {
 Maintainers
 ===========
 
-Phantom was originally developed at newzly as an in-house project.
+Phantom was developed at newzly as an in-house project.
 All Cassandra integration at newzly goes through Phantom.
 
 - Sorin Chiprian sorin.chiprian@newzly.com
