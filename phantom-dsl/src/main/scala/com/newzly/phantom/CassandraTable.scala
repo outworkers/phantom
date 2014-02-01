@@ -86,7 +86,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  protected[phantom] def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
   def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
