@@ -4,7 +4,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.PrimaryKey
+import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class MyTestRow(
   key: String,
@@ -25,7 +25,7 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
   def meta = MyTest
 
-  object key extends StringColumn(this) with PrimaryKey
+  object key extends StringColumn(this) with PartitionKey
 
   object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
 
