@@ -92,6 +92,11 @@ Pre newzly fork
 ===============
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
+Copyright
+=========
+Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly ltd.
+
+
 Contributions
 =============
 
