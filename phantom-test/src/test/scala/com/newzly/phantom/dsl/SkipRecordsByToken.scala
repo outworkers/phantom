@@ -44,17 +44,17 @@ class SkipRecordsByToken extends BaseTest with Assertions with AsyncAssertions {
         .value(_.id, article4.id)
         .value(_.order_id, article4.order_id)
         .execute()
-      zero <- Articles.select.where(_.id ltToken article1.id ).one
-      next2 <- Articles.select.where(_.id gtToken article1.id ).limit(2).execute()
+      one <- Articles.select.one
+      zero <- Articles.select.where(_.id ltToken one.get.id ).one
+      next2 <- Articles.select.where(_.id gtToken one.get.id ).limit(2).execute()
       last <- Articles.select.where(_.id gtToken  Articles.fromRow(next2.all().get(1)).id).limit(2).execute()
-    } yield (zero, next2, last)
+    } yield (zero, last)
 
 
     result successful {
       r => {
-        assert( r._1.isEmpty) //zero
-        assert(r._2.all().size() == 2)
-        assert(r._3.all().size() == 1)
+        assert( r._1.isEmpty)
+        assert(r._2.all().size() == 1)
       }
     }
   }
