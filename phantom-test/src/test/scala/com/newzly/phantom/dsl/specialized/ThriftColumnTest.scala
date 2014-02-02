@@ -4,9 +4,9 @@ import org.scalatest.{ Assertions, FlatSpec, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.ThriftColumnTable
 import com.newzly.phantom.thrift.ThriftTest
-import com.newzly.phantom.helper.{Sampler, BaseTest}
 import com.twitter.util.{ Await, Duration }
 
 class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Assertions with AsyncAssertions {
@@ -38,8 +38,8 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
     ThriftColumnTable.insertSchema
 
     val sample = ThriftTest(5, "test", test = true)
-    val sampl2 = ThriftTest(6, "asasf", test = false)
-    val l = sample :: sampl2 :: Nil
+    val sample2 = ThriftTest(6, "asasf", test = false)
+    val l = Set(sample, sample2)
 
     val insert = ThriftColumnTable.insert
       .value(_.id, sample.id)
