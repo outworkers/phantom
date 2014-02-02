@@ -5,6 +5,7 @@ import scala.annotation.implicitNotFound
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
+import com.twitter.concurrent.AsyncQueue
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long) RR: CassandraPrimitive](t: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](t) {
@@ -16,7 +17,7 @@ class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specializ
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
-class TimeSeries[T]
+private[phantom] class TimeSeries[T]
 
 /**
  * A Date Column, used to enforce restrictions on clustering order.

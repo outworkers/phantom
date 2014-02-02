@@ -11,7 +11,7 @@ import com.newzly.phantom.helper.TestSampler
 import com.newzly.phantom.thrift.ThriftTest
 import com.twitter.scrooge.CompactThriftSerializer
 
-case class Output(id: Int, name: String, struct: ThriftTest, list: Seq[ThriftTest])
+case class Output(id: Int, name: String, struct: ThriftTest, list: Set[ThriftTest])
 
 sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 

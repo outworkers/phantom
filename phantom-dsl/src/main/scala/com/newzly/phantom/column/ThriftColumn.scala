@@ -31,21 +31,21 @@ abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, Valu
 }
 
 
-abstract class ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Seq[ValueType]](table) {
+abstract class ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[ValueType]](table) {
 
   def serializer: CompactThriftSerializer[ValueType]
 
   val cassandraType = "list<text>"
 
-  override def toCType(v: Seq[ValueType]): AnyRef = {
+  override def toCType(v: Set[ValueType]): AnyRef = {
     v.map(serializer.toString)(breakOut).toSeq.asJava
   }
 
-  def optional(r: Row): Option[Seq[ValueType]] = {
+  def optional(r: Row): Option[Set[ValueType]] = {
     val i = implicitly[CassandraPrimitive[String]]
 
     Option(r.getList(name, i.cls)).map(_.asScala.map(
       e => serializer.fromString(i.fromCType(e.asInstanceOf[String]))
-    ).toSeq)
+    ).toSet[ValueType])
   }
 }
