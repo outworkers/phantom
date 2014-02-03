@@ -19,7 +19,7 @@ import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.keys.{PartitionKey, LongOrderKey}
+import com.newzly.phantom.keys.{ Key, LongOrderKey, PartitionKey }
 import com.newzly.phantom.query.{QueryCondition, SelectWhere}
 import com.twitter.scrooge.ThriftStruct
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -103,21 +103,21 @@ object Implicits {
     }
   }
 
-  implicit class PartitionTokenHelper[T](val p: PartitionKey) extends AnyVal {
+  implicit class PartitionTokenHelper[T <: Key[T, _]](val p: PartitionKey[T]) extends AnyVal {
 
     def ltToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
 
     def gtToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
 
     def eqsToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_,_,T]].toCType(value))))
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
   }
 }
