@@ -9,5 +9,5 @@ import com.newzly.phantom.column.{ AbstractColumn, TimeSeries }
 trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueType]]{
   self: AbstractColumn[ValueType] =>
   override val isSecondaryKey = true
-  implicit def timeSeries: TimeSeries[ValueType]
+  private[phantom] implicit val timeSeries: TimeSeries[ValueType]
 }
