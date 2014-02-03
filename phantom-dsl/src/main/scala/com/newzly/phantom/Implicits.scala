@@ -19,7 +19,7 @@ import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.keys.{ Key, LongOrderKey, PartitionKey }
+import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
 import com.newzly.phantom.query.{QueryCondition, SelectWhere}
 import com.twitter.scrooge.ThriftStruct
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -103,7 +103,7 @@ object Implicits {
     }
   }
 
-  implicit class PartitionTokenHelper[T <: Key[T, _]](val p: PartitionKey[T]) extends AnyVal {
+  implicit class PartitionTokenHelper[T <: AbstractColumn[T] with PartitionKey[T]](val p: T) extends AnyVal {
 
     def ltToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
