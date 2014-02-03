@@ -49,7 +49,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   def meta = Recipes
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn(this) with PartitionKey[String]
 
   object description extends OptionalStringColumn(this)
 

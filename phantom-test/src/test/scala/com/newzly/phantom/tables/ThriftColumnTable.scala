@@ -17,7 +17,7 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
 
   def meta = ThriftColumnTable
 
-  object id extends IntColumn(this) with PartitionKey
+  object id extends IntColumn(this) with PartitionKey[Int]
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
