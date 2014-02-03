@@ -31,6 +31,7 @@ trait PrimaryKey[ValueType] extends Key[ValueType, PrimaryKey[ValueType]] {
 trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] {
   self: AbstractColumn[ValueType] =>
   override val isPartitionKey = true
+  override val isPrimary = true
 }
 
 
