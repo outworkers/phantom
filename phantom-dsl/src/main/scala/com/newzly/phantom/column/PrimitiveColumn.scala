@@ -26,8 +26,7 @@ private[phantom] class TimeSeries[T]
  * @tparam Record The Record type.
  */
 class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, Date](table) {
-  implicit object DateIsTimeSeries extends TimeSeries[Date]
-  implicit def timeSeries: TimeSeries[Date] = implicitly[TimeSeries[Date]]
+  private[phantom] implicit val timeSeries = new TimeSeries[Date]
 }
 
 /**
@@ -37,6 +36,5 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  * @tparam Record The Record type.
  */
 class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, DateTime](table) {
-  implicit object DateTimeIsTimeSeries extends TimeSeries[DateTime]
-  implicit def timeSeries: TimeSeries[DateTime] = implicitly[TimeSeries[DateTime]]
+  private[phantom] implicit val timeSeries = new TimeSeries[DateTime]
 }
