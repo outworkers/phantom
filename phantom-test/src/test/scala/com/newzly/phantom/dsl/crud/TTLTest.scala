@@ -14,7 +14,7 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
 
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
-  it should "expire inserterd records" in {
+  it should "expire inserted records" in {
     val row = Primitive.sample
     Primitives.insertSchema(session)
     val test = Primitives.insert

@@ -15,10 +15,11 @@ case class JodaRow(
 
 object JodaRow extends ModelSampler[JodaRow] {
   def sample: JodaRow = {
+    val d = new DateTime()
     JodaRow(
       Sampler.getAUniqueString,
       Sampler.getARandomInteger(),
-      new DateTime()
+      new DateTime(d.plus(Sampler.getARandomInteger().toLong))
     )
   }
 }
