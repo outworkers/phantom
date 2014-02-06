@@ -105,7 +105,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
           if(primaryKeysString.isEmpty)
             s"${head.name}"
           else
-            s"${head.name}, $primaryKeysString"
+            s"${head.name}, ${primaryKeysString}"
         case Nil =>  throw new Exception("please specify the partition key for the schema")
       }
     }

@@ -137,7 +137,7 @@ object newzlyPhantom extends Build {
       "com.twitter"                  %% "util-collection"                   % "6.3.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-      "org.sca la-lang"               %  "scala-reflect"                     % "2.10.3",
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.3",
       "org.scalaz"                   %% "scalaz-iteratee"                   % "7.0.5"
     )
   )

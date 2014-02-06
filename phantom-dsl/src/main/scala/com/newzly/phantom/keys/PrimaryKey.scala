@@ -15,9 +15,7 @@
  */
 package com.newzly.phantom.keys
 
-import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
-
 
 private[phantom] trait Key[ValueType, KeyType <: Key[ValueType, KeyType]] {
   self: AbstractColumn[ValueType] =>
