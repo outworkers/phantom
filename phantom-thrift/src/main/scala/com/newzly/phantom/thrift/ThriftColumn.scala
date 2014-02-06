@@ -1,4 +1,4 @@
-package com.newzly.phantom.column
+package com.newzly.phantom.thrift
 
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
@@ -6,6 +6,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 import com.twitter.scrooge.{ CompactThriftSerializer, ThriftStruct}
 import com.twitter.util.Try
+import com.newzly.phantom.column.Column
 
 abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, ValueType](table) {
 

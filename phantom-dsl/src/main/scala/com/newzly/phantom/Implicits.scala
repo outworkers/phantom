@@ -23,6 +23,7 @@ import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
 import com.newzly.phantom.query.{QueryCondition, SelectWhere}
 import com.twitter.scrooge.ThriftStruct
 import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.newzly.phantom.thrift.{ThriftSeqColumn, ThriftColumn}
 
 object Implicits {
 
@@ -50,8 +51,6 @@ object Implicits {
   type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
   type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Long]
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
-  type ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftColumn[Owner, Record, ValueType]
-  type ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftSeqColumn[Owner, Record, ValueType]
   type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
 
 

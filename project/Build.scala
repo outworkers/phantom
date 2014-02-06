@@ -142,7 +142,7 @@ object newzlyPhantom extends Build {
 
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
-    base = file("pnhantom-thrift"),
+    base = file("phantom-thrift"),
     settings = Project.defaultSettings ++
       VersionManagement.newSettings ++
       sharedSettings ++
