@@ -21,9 +21,7 @@ import org.joda.time.DateTime
 import com.newzly.phantom.column.AbstractColumn
 import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
 import com.newzly.phantom.query.{QueryCondition, SelectWhere}
-import com.twitter.scrooge.ThriftStruct
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.newzly.phantom.thrift.{ThriftSeqColumn, ThriftColumn}
 
 object Implicits {
 

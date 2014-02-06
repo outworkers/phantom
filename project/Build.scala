@@ -132,6 +132,8 @@ object newzlyPhantom extends Build {
       publishSettings
   ).settings(
     libraryDependencies ++= Seq(
+      "joda-time"                    %  "joda-time"                         % "2.3",
+      "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.twitter"                  %% "util-collection"                   % "6.3.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
