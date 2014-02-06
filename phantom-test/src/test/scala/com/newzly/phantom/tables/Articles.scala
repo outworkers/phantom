@@ -3,7 +3,7 @@ package com.newzly.phantom.tables
 import java.util.UUID
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.keys.{ LongOrderKey, PrimaryKey }
+import com.newzly.phantom.keys.{PartitionKey, LongOrderKey, PrimaryKey}
 import com.newzly.phantom.helper.{
   ModelSampler,
   Sampler,
@@ -28,7 +28,7 @@ object Article extends ModelSampler[Article] {
 sealed class Articles private() extends CassandraTable[Articles, Article] with LongOrderKey[Articles, Article] {
 
   def meta = Articles
-  object id extends UUIDColumn(this) with PrimaryKey
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
 
   override def fromRow(row: Row): Article = {

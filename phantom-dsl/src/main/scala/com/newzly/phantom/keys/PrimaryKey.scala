@@ -16,17 +16,28 @@
 package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.{Keys, Column, PrimitiveColumn}
+import com.newzly.phantom.column.AbstractColumn
 
-trait PrimaryKey {
-  self: Keys =>
-  if (isSecondaryKey) throw new Exception("Incompatible Keys")
+
+private[phantom] trait Key[ValueType, KeyType <: Key[ValueType, KeyType]] {
+  self: AbstractColumn[ValueType] =>
+}
+
+trait PrimaryKey[ValueType] extends Key[ValueType, PrimaryKey[ValueType]] {
+  self: AbstractColumn[ValueType] =>
   override val isPrimary = true
 }
 
-trait PartitionKey {
-  self: Keys =>
-  if (isSecondaryKey) throw new Exception("Incompatible Keys")
-  override val isPrimary = true
+trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] {
+  self: AbstractColumn[ValueType] =>
   override val isPartitionKey = true
+  override val isPrimary = true
+}
+
+
+/**
+ * A trait mixable into Column definitions to allow storing them as keys.
+ */
+trait SecondaryKey[ValueType] extends Key[ValueType, SecondaryKey[ValueType]] {
+  self: AbstractColumn[ValueType] => override val isSecondaryKey = true
 }

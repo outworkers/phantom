@@ -18,9 +18,10 @@ package com.newzly.phantom
 import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
-import com.newzly.phantom.column.{TimeSeries, AbstractColumn}
-import com.newzly.phantom.keys.LongOrderKey
-import com.newzly.phantom.query.{ SelectQuery, SelectWhere }
+import com.newzly.phantom.column.AbstractColumn
+import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
+import com.newzly.phantom.query.{QueryCondition, SelectWhere}
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 object Implicits {
 
@@ -31,8 +32,6 @@ object Implicits {
 
   type OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.OptionalColumn[Owner, Record, T]
   type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
-  type JsonColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.JsonColumn[Owner, Record, T]
-  type JsonSeqColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.JsonSeqColumn[Owner, Record, T]
   type ListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.ListColumn[Owner, Record, T]
   type SetColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SetColumn[Owner, Record, T]
   type SeqColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SeqColumn[Owner, Record, T]
@@ -77,19 +76,11 @@ object Implicits {
     new ModifyColumnOptional[Owner, Record, RR](col)
   }
 
-  implicit def jsonColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](col: JsonColumn[Owner, Record, RR]) = {
-    new ModifyColumn[RR](col)
-  }
-
   implicit def listColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) = {
     new ModifyColumn[List[RR]](col)
   }
 
   implicit def seqColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SeqColumn[Owner, Record, RR]) = {
-    new ModifyColumn[Seq[RR]](col)
-  }
-
-  implicit def jsonSeqColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: Manifest](col: JsonSeqColumn[Owner, Record, RR]) = {
     new ModifyColumn[Seq[RR]](col)
   }
 
@@ -106,6 +97,24 @@ object Implicits {
 
     final def skip(l: Long): SelectWhere[T, R] = {
       select.where(_.order_id gt l)
+    }
+  }
+
+  implicit class PartitionTokenHelper[T <: AbstractColumn[T] with PartitionKey[T]](val p: T) extends AnyVal {
+
+    def ltToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    }
+
+    def gtToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    }
+
+    def eqsToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
   }
 }

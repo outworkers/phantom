@@ -86,7 +86,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  protected[phantom] def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
   def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
@@ -97,12 +97,16 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
-
+    val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(",")
     val pkes = {
       (primaryKeys.filter(_.isPartitionKey): @switch) match {
-        case head :: tail if tail.length > 0 => throw new Exception("only one partition key is allowed in the schema")
-        case head :: tail => s"${head.name}, ${tail.map(_.name).mkString(",")}"
-        case Nil => primaryKeys.map(_.name).mkString(",")
+        case head :: tail if !tail.isEmpty => throw new Exception("only one partition key is allowed in the schema")
+        case head :: tail =>
+          if(primaryKeysString.isEmpty)
+            s"${head.name}"
+          else
+            s"${head.name}, $primaryKeysString"
+        case Nil =>  throw new Exception("please specify the partition key for the schema")
       }
     }
     logger.info(s"Adding Primary keys indexes: $pkes")

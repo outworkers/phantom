@@ -3,8 +3,6 @@ package com.newzly.phantom.tables
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.column.JsonColumn
 import com.newzly.phantom.keys.PrimaryKey
 
 case class SimpleStringClass(something: String)
@@ -57,28 +55,4 @@ object TestRow2 extends ModelSampler[TestRow2] {
       List.range(0, limit).map(x => { x.toString -> SimpleMapOfStringsClass.sample}).toMap
     )
   }
-}
-
-sealed class TestTable2 extends CassandraTable[TestTable2, TestRow2] {
-  def fromRow(r: Row): TestRow2 = {
-    TestRow2(
-      key(r),
-      optionA(r),
-      classS(r),
-      optionS(r),
-      mapIntoClass(r)
-    )
-  }
-
-  def meta = TestTable2
-
-  object key extends StringColumn(this) with PrimaryKey
-  object optionA extends OptionalIntColumn(this)
-  object classS extends JsonColumn[TestTable2, TestRow2, SimpleMapOfStringsClass](this)
-  object optionS extends JsonColumn[TestTable2, TestRow2, Option[SimpleMapOfStringsClass]](this)
-  object mapIntoClass extends JsonColumn[TestTable2, TestRow2, Map[String, SimpleMapOfStringsClass]](this)
-}
-
-object TestTable2 extends TestTable2 with TestSampler[TestTable2, TestRow2] {
-  override val tableName = "TestTable2"
 }

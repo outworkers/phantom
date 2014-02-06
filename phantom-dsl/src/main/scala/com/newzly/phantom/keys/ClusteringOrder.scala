@@ -1,18 +1,13 @@
 package com.newzly.phantom.keys
 
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.{TimeSeries, Column}
+import com.newzly.phantom.column.{ AbstractColumn, TimeSeries }
 
 /**
  * A trait mixable into a Column to allow clustering order.
- * @tparam Owner The owner of the record.
- * @tparam Record The case class record to store.
+ * @tparam ValueType The value stored in the column.
  */
-trait ClusteringOrder[Owner <: CassandraTable[Owner, Record], Record, ValueType] {
-
-  self: Column[Owner, Record, ValueType] =>
-  if (isPrimary) throw new Exception("Incompatible Keys")
+trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueType]]{
+  self: AbstractColumn[ValueType] =>
   override val isSecondaryKey = true
-
-  implicit def timeSeries: TimeSeries[ValueType]
+  private[phantom] implicit val timeSeries: TimeSeries[ValueType]
 }
