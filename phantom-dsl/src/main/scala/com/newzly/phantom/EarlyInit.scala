@@ -1,7 +1,7 @@
 package com.newzly.phantom
 
 import scala.reflect.runtime.universe._
-import com.twitter.util.NonFatal
+import scala.util.control.NonFatal
 
 trait EarlyInit {
   val mirror = runtimeMirror(this.getClass.getClassLoader)

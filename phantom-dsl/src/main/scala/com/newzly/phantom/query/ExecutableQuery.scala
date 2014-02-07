@@ -41,18 +41,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def table: CassandraTable[T, _]
   def fromRow(r: Row): R
 
-  def execute()(implicit session: Session): Future[ResultSet] =
-    statementExecuteToFuture(qb)
-
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     scalaStatementToFuture(qb)
   }
 
-  def fetch(implicit session: Session): Future[Seq[R]] = {
-    statementExecuteToFuture(qb).map(_.all().asScala.toSeq.map(fromRow))
-  }
-
-  def one(implicit session: Session): Future[Option[R]] = {
-    statementExecuteToFuture(qb).map(r => Option(r.one()).map(fromRow))
-  }
 }

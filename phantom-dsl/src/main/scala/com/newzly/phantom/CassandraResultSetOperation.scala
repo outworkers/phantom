@@ -24,7 +24,6 @@ import com.google.common.util.concurrent.{
   ListeningExecutorService,
   MoreExecutors
 }
-import com.twitter.util.{ Future, Promise }
 
 object Manager {
 
@@ -39,47 +38,6 @@ object Manager {
 
 trait CassandraResultSetOperations {
 
-  /**
-   * Converts a statement to a result Future.
-   * @param s The statement to execute.
-   * @param session The Cassandra cluster connection session to use.
-   * @return
-   */
-  def statementExecuteToFuture(s: Statement)(implicit session: Session): Future[ResultSet] = {
-    val promise = Promise[ResultSet]()
-    val future = session.executeAsync(s)
-
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise become Future.value(result)
-      }
-
-      def onFailure(err: Throwable): Unit = {
-        promise raise err
-      }
-    }
-    Futures.addCallback(future, callback, Manager.executor)
-
-    promise
-  }
-
-  def queryStringExecuteToFuture(s: String)(implicit session: Session): Future[ResultSet] = {
-    val promise = Promise[ResultSet]()
-
-    val future = session.executeAsync(s)
-
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise become Future.value(result)
-      }
-
-      def onFailure(err: Throwable): Unit = {
-        promise raise err
-      }
-    }
-    Futures.addCallback(future, callback, Manager.executor)
-    promise
-  }
 
   def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
     val promise = ScalaPromise[ResultSet]()
