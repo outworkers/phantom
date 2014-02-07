@@ -23,7 +23,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.0.7-SNAPSHOT",
+    version := "0.0.7",
     scalaVersion := "2.10.3",
     resolvers ++= Seq(
       "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
@@ -89,9 +89,13 @@ object phantom extends Build {
     id = "phantom",
     base = file("."),
     settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+  ).settings(
+    name := "phantom"
   ).aggregate(
     phantomDsl,
+    phantomFinagle,
     phantomThrift,
+    phantomCassandraUnit,
     phantomTest
   )
 
@@ -103,6 +107,7 @@ object phantom extends Build {
       sharedSettings ++
       publishSettings
   ).settings(
+    name := "phantom-dsl",
     libraryDependencies ++= Seq(
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
@@ -122,6 +127,7 @@ object phantom extends Build {
       publishSettings ++
       ScroogeSBT.newSettings
   ).settings(
+    name := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.apache.thrift"            %  "libthrift"                         % "0.9.1",
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
@@ -140,6 +146,7 @@ object phantom extends Build {
       sharedSettings ++
       publishSettings
   ).settings(
+    name := "phantom-finagle",
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-collection"                   % "6.3.6"
     )
@@ -153,7 +160,7 @@ object phantom extends Build {
     settings = Project.defaultSettings ++
       assemblySettings ++
       VersionManagement.newSettings ++
-      sharedSettings
+      sharedSettings ++ publishSettings
   ).settings(
       name := "phantom-cassandra-unit",
       jarName in assembly := "cassandra.jar",
@@ -186,6 +193,7 @@ object phantom extends Build {
       sharedSettings ++
       publishSettings
   ).settings(
+    name := "phantom-test",
     fork := true,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
