@@ -6,7 +6,7 @@ import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
 
-object newzlyPhantom extends Build {
+object phantom extends Build {
 
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
@@ -85,34 +85,6 @@ object newzlyPhantom extends Build {
         </developers>
     )
 
-  lazy val phantomUtil = Project(
-    id = "phantom-util",
-    base = file("phantom-test"),
-    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings
-  ).settings(
-    name := "phantom-util",
-    jarName in assembly := "cassandra.jar",
-    outputPath in assembly := file("cassandra.jar"),
-    test in assembly := {},
-    fork in run := true,
-    assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
-    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-      cp filter { x => println(":::: "+x)
-        x.data.getName.indexOf("specs2_2.") >= 0 ||
-        x.data.getName.indexOf("scalap-2.") >= 0 ||
-        x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
-        x.data.getName.indexOf("scala-json_") >= 0 ||
-        x.data.getName.indexOf("netty-3.2.9") >= 0 ||
-        x.data.getName.indexOf("com.twitter") >= 0
-      }
-    }
-  ).settings(
-    libraryDependencies ++= Seq(
-      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
-    )
-  )
-
-
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
@@ -175,10 +147,44 @@ object newzlyPhantom extends Build {
     phantomDsl
   )
 
+  lazy val phantomCassandraUnit = Project(
+    id = "phantom-cassandra-unit",
+    base = file("phantom-cassandra-unit"),
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      VersionManagement.newSettings ++
+      sharedSettings
+  ).settings(
+      name := "phantom-cassandra-unit",
+      jarName in assembly := "cassandra.jar",
+      outputPath in assembly := file("cassandra.jar"),
+      test in assembly := {},
+      fork in run := true,
+      assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
+      excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+        cp filter { x => println(":::: "+x)
+          x.data.getName.indexOf("specs2_2.") >= 0 ||
+            x.data.getName.indexOf("scalap-2.") >= 0 ||
+            x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
+            x.data.getName.indexOf("scala-json_") >= 0 ||
+            x.data.getName.indexOf("netty-3.2.9") >= 0 ||
+            x.data.getName.indexOf("com.twitter") >= 0
+        }
+      }
+    ).settings(
+      libraryDependencies ++= Seq(
+        "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
+      )
+    )
+
   lazy val phantomTest = Project(
     id = "phantom-test",
     base = file("phantom-test"),
-    settings = Project.defaultSettings ++ assemblySettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings
   ).settings(
     fork := true,
     concurrentRestrictions in Test := Seq(
@@ -191,6 +197,7 @@ object newzlyPhantom extends Build {
     )
   ).dependsOn(
     phantomDsl,
+    phantomCassandraUnit,
     phantomFinagle,
     phantomThrift
   )
