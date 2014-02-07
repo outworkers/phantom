@@ -4,6 +4,7 @@ package com.newzly.phantom.dsl
 import org.scalatest.Assertions
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 
+import com.newzly.phantom.finagle.Implicits._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.Implicits._
