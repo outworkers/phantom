@@ -3,6 +3,7 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
+import com.newzly.phantom.finagle.Implicits._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{
@@ -11,6 +12,7 @@ import com.newzly.phantom.tables.{
   TestRow,
   TestTable
 }
+
 
 class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "UpdateTest"

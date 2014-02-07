@@ -5,7 +5,7 @@ import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, Resu
 import com.google.common.util.concurrent.{Futures, FutureCallback}
 import com.newzly.phantom.{CassandraTable, CassandraResultSetOperations, Manager}
 import com.newzly.phantom.batch.BatchStatement
-import com.newzly.phantom.query.{ CreateQuery, ExecutableQuery, InsertQuery }
+import com.newzly.phantom.query._
 import com.twitter.util.{Duration, Future, Promise}
 
 object Implicits {
@@ -84,9 +84,6 @@ object Implicits {
 
 
   implicit class FinagleExecutableQuery[T <: CassandraTable[T, R], R](val query: ExecutableQuery[T, R]) extends AnyVal {
-    def execute()(implicit session: Session): Future[ResultSet] =
-      query.statementExecuteToFuture(query.qb)
-
 
     def fetch(implicit session: Session): Future[Seq[R]] = {
       query.statementExecuteToFuture(query.qb).map(_.all().asScala.toSeq.map(query.fromRow))
@@ -97,7 +94,10 @@ object Implicits {
     }
   }
 
-  implicit class FinagleTTLInsertQuery[T <: CassandraTable[T, R], R](val query: InsertQuery[T, R]) extends AnyVal {
+  implicit class FinagleInsertQuery[T <: CassandraTable[T, R], R](val query: InsertQuery[T, R]) extends AnyVal {
+
+    def execute()(implicit session: Session): Future[ResultSet] =
+      query.statementExecuteToFuture(query.qb)
 
     /**
      * Sets a timestamp expiry for the inserted column.
@@ -110,4 +110,18 @@ object Implicits {
     }
   }
 
+  implicit class FinagleSelectWhereQuery[T <: CassandraTable[T, _]](val query: SelectWhere[T, _]) extends AnyVal {
+    def execute()(implicit session: Session): Future[ResultSet] =
+      query.statementExecuteToFuture(query.qb)
+  }
+
+  implicit class FinagleDeleteWhereQuery[T <: CassandraTable[T, R], R](val query: DeleteWhere[T, R]) extends AnyVal {
+    def execute()(implicit session: Session): Future[ResultSet] =
+      query.statementExecuteToFuture(query.qb)
+  }
+
+  implicit class FinagleAssignmentsQuery[T <: CassandraTable[T, R], R](val query: AssignmentsQuery[T, R]) extends AnyVal {
+    def execute()(implicit session: Session): Future[ResultSet] =
+      query.statementExecuteToFuture(query.qb)
+  }
 }
