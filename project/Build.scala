@@ -123,27 +123,57 @@ object newzlyPhantom extends Build {
     phantomTest
   )
 
-    lazy val phantomDsl = Project(
-        id = "phantom-dsl",
-        base = file("phantom-dsl"),
-        settings = Project.defaultSettings ++
-          VersionManagement.newSettings ++
-          sharedSettings ++
-          publishSettings ++
-          ScroogeSBT.newSettings
-    ).settings(
-        libraryDependencies ++= Seq(
-          "com.twitter"                  %% "util-collection"                   % "6.3.6",
-          "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
-          "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
-          "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-          "com.fasterxml.jackson.module" %% "jackson-module-scala"              % "2.3.1",
-          "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-          "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-          "org.scala-lang"               %  "scala-reflect"                     % "2.10.0",
-          "org.apache.thrift"            % "libthrift"                          % "0.9.1"
-        )
+  lazy val phantomDsl = Project(
+    id = "phantom-dsl",
+    base = file("phantom-dsl"),
+    settings = Project.defaultSettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings
+  ).settings(
+    libraryDependencies ++= Seq(
+      "joda-time"                    %  "joda-time"                         % "2.3",
+      "org.joda"                     %  "joda-convert"                      % "1.6",
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+      "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.3",
+      "org.scalaz"                   %% "scalaz-iteratee"                   % "7.0.5"
     )
+  )
+
+  lazy val phantomThrift = Project(
+    id = "phantom-thrift",
+    base = file("phantom-thrift"),
+    settings = Project.defaultSettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings ++
+      ScroogeSBT.newSettings
+  ).settings(
+    libraryDependencies ++= Seq(
+      "org.apache.thrift"            %  "libthrift"                         % "0.9.1",
+      "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
+      "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
+      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion
+    )
+  ).dependsOn(
+    phantomDsl
+  )
+
+  lazy val phantomFinagle = Project(
+    id = "phantom-finagle",
+    base = file("phantom-finagle"),
+    settings = Project.defaultSettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings
+  ).settings(
+    libraryDependencies ++= Seq(
+      "com.twitter"                  %% "util-collection"                   % "6.3.6"
+    )
+  ).dependsOn(
+    phantomDsl
+  )
 
   lazy val phantomTest = Project(
     id = "phantom-test",
@@ -161,6 +191,7 @@ object newzlyPhantom extends Build {
     )
   ).dependsOn(
     phantomDsl,
+    phantomFinagle,
     phantomThrift
   )
 }
