@@ -17,7 +17,6 @@ package com.newzly.phantom.query
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
-import com.twitter.util.Future
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
@@ -25,10 +24,6 @@ import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 trait ExecutableStatement extends CassandraResultSetOperations {
 
   def qb: Statement
-
-  def execute()(implicit session: Session): Future[ResultSet] =  {
-    statementExecuteToFuture(qb)
-  }
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     scalaStatementToFuture(qb)
@@ -44,5 +39,4 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     scalaStatementToFuture(qb)
   }
-
 }

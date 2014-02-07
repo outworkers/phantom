@@ -18,7 +18,6 @@ package com.newzly.phantom.query
 import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
-import com.twitter.util.Duration
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
 
@@ -40,8 +39,8 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
    * @param expiry The expiry time.
    * @return
    */
-  final def ttl(expiry: Duration): InsertQuery[T, R] = {
-    qb.using(QueryBuilder.ttl(expiry.inSeconds))
+  def ttl(expiry: Int): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.ttl(expiry))
     this
   }
 

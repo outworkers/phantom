@@ -3,10 +3,10 @@ package com.newzly.phantom.finagle
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, ResultSet, Session, Statement}
 import com.google.common.util.concurrent.{Futures, FutureCallback}
-import com.newzly.phantom.{ CassandraResultSetOperations, Manager }
+import com.newzly.phantom.{CassandraTable, CassandraResultSetOperations, Manager}
 import com.newzly.phantom.batch.BatchStatement
-import com.newzly.phantom.query.{ CreateQuery, ExecutableQuery }
-import com.twitter.util.{ Future, Promise }
+import com.newzly.phantom.query.{ CreateQuery, ExecutableQuery, InsertQuery }
+import com.twitter.util.{Duration, Future, Promise}
 
 object Implicits {
 
@@ -66,7 +66,7 @@ object Implicits {
     }
   }
 
-  implicit class FinagleCreateQuery[T <: CreateQuery](val query: T) extends AnyVal {
+  implicit class FinagleCreateQuery[T <: CassandraTable[T, R] ,R](val query: CreateQuery[T, R]) extends AnyVal {
 
     def execute()(implicit session: Session): Future[ResultSet] =  {
       if (query.table.createIndexes().isEmpty)
@@ -82,7 +82,8 @@ object Implicits {
     }
   }
 
-  implicit class FinagleExecutableQuery[T <: ExecutableQuery](val query: T) extends AnyVal {
+
+  implicit class FinagleExecutableQuery[T <: CassandraTable[T, R], R](val query: ExecutableQuery[T, R]) extends AnyVal {
     def execute()(implicit session: Session): Future[ResultSet] =
       query.statementExecuteToFuture(query.qb)
 
@@ -93,6 +94,19 @@ object Implicits {
 
     def one(implicit session: Session): Future[Option[R]] = {
       query.statementExecuteToFuture(query.qb).map(r => Option(r.one()).map(query.fromRow))
+    }
+  }
+
+  implicit class FinagleTTLInsertQuery[T <: CassandraTable[T, R], R](val query: InsertQuery[T, R]) extends AnyVal {
+
+    /**
+     * Sets a timestamp expiry for the inserted column.
+     * This value is set in seconds.
+     * @param expiry The expiry time.
+     * @return
+     */
+    final def ttl(expiry: Duration): InsertQuery[T, R] = {
+      query.ttl(expiry.inSeconds)
     }
   }
 
