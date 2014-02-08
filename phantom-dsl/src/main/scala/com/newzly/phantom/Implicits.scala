@@ -69,7 +69,7 @@ object Implicits {
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
   type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
-  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record, ValueType] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
+  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
   implicit def columnToQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) =
     new QueryColumn(col)

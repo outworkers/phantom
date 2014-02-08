@@ -50,12 +50,7 @@ object phantom extends Build {
 
     val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
-      credentials += Credentials(
-        "Repository Archiva Managed internal Repository",
-        "maven.newzly.com",
-        "admin",
-        "newzlymaven2323!"
-      ),
+      credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
       publishArtifact in Test := false,
       pomIncludeRepository := { _ => true },
