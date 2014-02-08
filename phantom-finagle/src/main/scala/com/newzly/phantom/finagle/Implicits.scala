@@ -110,6 +110,20 @@ object Implicits {
     }
   }
 
+  implicit class FinagleUpdateQuery[T <: CassandraTable[T, R], R](val query: UpdateQuery[T, R]) extends AnyVal {
+
+    /**
+     * Sets a timestamp expiry for the inserted column.
+     * This value is set in seconds.
+     * @param expiry The expiry time.
+     * @return
+     */
+    final def ttl(expiry: Duration): UpdateQuery[T, R] = {
+      query.ttl(expiry.inSeconds)
+    }
+  }
+
+
   implicit class FinagleSelectWhereQuery[T <: CassandraTable[T, _]](val query: SelectWhere[T, _]) extends AnyVal {
     def execute()(implicit session: Session): Future[ResultSet] =
       query.statementExecuteToFuture(query.qb)

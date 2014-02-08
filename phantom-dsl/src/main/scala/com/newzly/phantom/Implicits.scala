@@ -65,6 +65,12 @@ object Implicits {
   type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
 
+  type ClusteringOrder[ValueType] = com.newzly.phantom.keys.ClusteringOrder[ValueType]
+  type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
+  type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
+  type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
+  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record, ValueType] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
+
   implicit def columnToQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) =
     new QueryColumn(col)
 
