@@ -15,8 +15,7 @@
  */
 package com.newzly.phantom.query
 
-import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
+import scala.concurrent.{ Future => ScalaFuture }
 
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
