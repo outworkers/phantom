@@ -1,10 +1,10 @@
 package com.newzly.phantom.helper
 
-import java.util.concurrent.atomic.AtomicBoolean
-import org.apache.log4j.Logger
 import com.datastax.driver.core.Session
 import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.finagle.Implicits._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
+
 /**
  * A basic trait implemented by all test tables.
  * @tparam Row The case class type returned.

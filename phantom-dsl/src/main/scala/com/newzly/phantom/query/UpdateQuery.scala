@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
-
-package phantom
-package query
+package com.newzly.phantom.query
 
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause, Update}
 
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
-
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
 
@@ -37,8 +32,20 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
 }
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
+
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))
+  }
+
+  /**
+   * Sets a timestamp expiry for the inserted column.
+   * This value is set in seconds.
+   * @param expiry The expiry time.
+   * @return
+   */
+  def ttl(expiry: Int): UpdateQuery[T, R] = {
+    qb.using(QueryBuilder.ttl(expiry))
+    this
   }
 }
 

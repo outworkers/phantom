@@ -1,15 +1,15 @@
 package com.newzly.phantom.batch
 
-import com.newzly.phantom.query.{ ExecutableStatement }
+import com.newzly.phantom.query.ExecutableStatement
 import com.datastax.driver.core.{BatchStatement => DatastaxBatchStatement, ResultSet, Session}
 import com.newzly.phantom.CassandraResultSetOperations
-import com.twitter.util.Future
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 
 sealed trait BatchQueryListTrait extends CassandraResultSetOperations{
   protected[this] lazy val statements: ListBuffer[ExecutableStatement] =  ListBuffer.empty[ExecutableStatement]
   def add(statement: ExecutableStatement): BatchStatement
-  def execute()(implicit session: Session) :Future[ResultSet]
+  def future()(implicit session: Session): Future[ResultSet]
   def qbList: Seq[ExecutableStatement]
 }
 
@@ -19,8 +19,8 @@ sealed trait BatchQueryListTrait extends CassandraResultSetOperations{
  * In order to have concurrent operation on the same row in the same batch, custom timesatmps needs to be inserted
  * on each statement. This is not in the scope of this class.(for now)
  */
-class BatchStatement extends BatchQueryListTrait{
-   val qbList = Seq.empty[ExecutableStatement]
+class BatchStatement extends BatchQueryListTrait {
+  val qbList = Seq.empty[ExecutableStatement]
 
   def apply(list: Seq[ExecutableStatement] = Seq.empty[ExecutableStatement]) = {
     new BatchStatement(){
@@ -32,11 +32,11 @@ class BatchStatement extends BatchQueryListTrait{
      apply(qbList :+ statement)
   }
 
-  def execute()(implicit session: Session):Future[ResultSet] = {
+  def future()(implicit session: Session): Future[ResultSet] = {
     val batch = new DatastaxBatchStatement()
     for (s <- qbList) {
       batch.add(s.qb)
     }
-    statementExecuteToFuture(batch)
+    scalaStatementToFuture(batch)
   }
 }

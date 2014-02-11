@@ -1,13 +1,14 @@
 package com.newzly.phantom.dsl.batch
 
-import com.newzly.phantom.helper.BaseTest
-import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.newzly.phantom.tables.{PrimitivesJoda, JodaRow}
-import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import com.newzly.phantom.batch.BatchStatement
 import org.joda.time.DateTime
+import org.scalatest.{ Assertions, Matchers }
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
+import org.scalatest.time.SpanSugar._
+import com.newzly.phantom.batch.BatchStatement
+import com.newzly.phantom.finagle.Implicits._
+import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 
 class BatchTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "BatchTestSpace"

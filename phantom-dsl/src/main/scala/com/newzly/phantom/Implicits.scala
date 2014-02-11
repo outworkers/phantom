@@ -21,7 +21,6 @@ import org.joda.time.DateTime
 import com.newzly.phantom.column.AbstractColumn
 import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
 import com.newzly.phantom.query.{QueryCondition, SelectWhere}
-import com.twitter.scrooge.ThriftStruct
 import com.datastax.driver.core.querybuilder.QueryBuilder
 
 object Implicits {
@@ -50,8 +49,6 @@ object Implicits {
   type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
   type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Long]
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
-  type ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftColumn[Owner, Record, ValueType]
-  type ThriftSeqColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct] = com.newzly.phantom.column.ThriftSeqColumn[Owner, Record, ValueType]
   type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
 
 
@@ -67,6 +64,12 @@ object Implicits {
   type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, Long]
   type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
+
+  type ClusteringOrder[ValueType] = com.newzly.phantom.keys.ClusteringOrder[ValueType]
+  type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
+  type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
+  type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
+  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
   implicit def columnToQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) =
     new QueryColumn(col)

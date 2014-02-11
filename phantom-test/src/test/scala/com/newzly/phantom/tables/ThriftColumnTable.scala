@@ -1,14 +1,10 @@
 package com.newzly.phantom.tables
 
-import org.apache.thrift.protocol.{TCompactProtocol, TBinaryProtocol}
-import org.apache.thrift.transport.TMemoryInputTransport
-
 import com.datastax.driver.core.Row
-import com.newzly.phantom.column.{ThriftSeqColumn, ThriftColumn}
+import com.newzly.phantom.thrift.{ ThriftColumn, ThriftSeqColumn, ThriftTest }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
+import com.newzly.phantom.keys.PartitionKey
 import com.newzly.phantom.helper.TestSampler
-import com.newzly.phantom.thrift.ThriftTest
 import com.twitter.scrooge.CompactThriftSerializer
 
 case class Output(id: Int, name: String, struct: ThriftTest, list: Set[ThriftTest])
