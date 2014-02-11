@@ -9,6 +9,8 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement
 import org.joda.time.DateTime
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
 
 class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "IterateeTestSpace"
@@ -27,20 +29,23 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
     })
 
     val w = for {
-      b <- batch.execute()
-      all <- PrimitivesJoda.select.execute()
-      result <- IResultSet(all).result
-    } yield (result)
+      b <- batch.future()
+      r<- PlayIteratee(PrimitivesJoda.select.future()).result
+    } yield (r)
 
-    w successful     {
+
+    Await.result(w,5.minutes) match  {
       case res =>
-        assert(rows.size===res.size)
+        //println(res)
         info(res.size.toString)
+        assert(rows.size===res.size)
+
     }
+
   }
   it should "get mapResult fine" in {
     Primitives.insertSchema(session)
-    val rows = for (i <- (1 to 5000)) yield  Primitive.sample
+    val rows = for (i <- (1 to 20000)) yield  Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b,row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -58,20 +63,17 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
     })
 
     val w = for {
-      b <- batch.execute()
-      all <- Primitives.select.execute()
+      b <- batch.future()
+      all <- Primitives.select.future()
     } yield (all)
 
-    val m = w flatMap {
-      all => { info("mmmm")
-        IResultSet(all).mapResult {x => {
-          Console.println(x)
-          info("ppp")
-          assert(rows.contains(x))
+    val m = PlayIteratee(w)
+          .resultMap {x => {
+          assert(rows.contains(Primitives.fromRow(x)))
         }}
-      }
-    }
-    m successful {
+
+    println("first")
+    Await.result(m,5.minutes) match  {
       case _ => info("ok")
     }
 

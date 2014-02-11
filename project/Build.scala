@@ -26,6 +26,8 @@ object phantom extends Build {
     version := "0.0.7",
     scalaVersion := "2.10.3",
     resolvers ++= Seq(
+      "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+      "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
       "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
       "Sonatype releases"                at "https://oss.sonatype.org/content/repositories/releases",
       "Sonatype snapshots"               at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -104,6 +106,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     libraryDependencies ++= Seq(
+"com.typesafe.play" %% "play-iteratees" % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,

@@ -1,3 +1,4 @@
+/*
 package com.newzly.phantom.iteratee
 import scalaz._
 import iteratee._
@@ -35,4 +36,4 @@ case class IResultSet(r: ResultSet) {
     def write(a: Future[Unit], e: E) = IO(a flatMap(_=>Future(f(e))))
     foldM(Future.Done) ((a: Future[Unit], e: E) => write(a,e))
   }
-}
+}*/
