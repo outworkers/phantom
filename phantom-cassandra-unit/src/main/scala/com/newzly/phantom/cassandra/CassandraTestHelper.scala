@@ -1,4 +1,5 @@
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper
+package com.newzly.phantom.cassandra
+
 
 object CassandraTestHelper {
   def main(args: Array[String]) {
