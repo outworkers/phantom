@@ -19,8 +19,8 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   it should "get result fine" in {
     PrimitivesJoda.insertSchema(session)
 
-    val rows = for (i <- (1 to 50000)) yield  JodaRow.sample
-    val batch = rows.foldLeft(new BatchStatement())((b,row) => {
+    val rows = for (i <- 1 to 50000) yield  JodaRow.sample
+    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
@@ -30,11 +30,11 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
 
     val w = for {
       b <- batch.future()
-      r<- PlayIteratee(PrimitivesJoda.select.future()).result
-    } yield (r)
+      r <- PlayIteratee(PrimitivesJoda.select.future()).result()
+    } yield r
 
 
-    Await.result(w,5.minutes) match  {
+    Await.result(w, 5.minutes) match  {
       case res =>
         //println(res)
         info(res.size.toString)
@@ -45,7 +45,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   }
   it should "get mapResult fine" in {
     Primitives.insertSchema(session)
-    val rows = for (i <- (1 to 20000)) yield  Primitive.sample
+    val rows = for (i <- 1 to 20000) yield  Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b,row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -65,7 +65,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
     val w = for {
       b <- batch.future()
       all <- Primitives.select.future()
-    } yield (all)
+    } yield all
 
     val m = PlayIteratee(w)
           .resultMap {x => {
@@ -73,7 +73,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         }}
 
     println("first")
-    Await.result(m,5.minutes) match  {
+    Await.result(m, 5.minutes) match  {
       case _ => info("ok")
     }
 
