@@ -26,17 +26,17 @@ class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions 
       i1 <- Articles.insert
         .value(_.name, article1.name).value(_.id, article1.id)
         .value(_.order_id, article1.order_id)
-        .execute()
+        .future()
       i2 <- Articles.insert
         .value(_.name, article2.name)
         .value(_.id, article2.id)
         .value(_.order_id, article2.order_id)
-        .execute()
+        .future()
       i3 <- Articles.insert
         .value(_.name, article3.name)
         .value(_.id, article3.id)
         .value(_.order_id, article3.order_id)
-        .execute()
+        .future()
       all <- Articles.select.fetch
       res <- Articles.select.where(_.id eqs  article1.id ).skip(article1.order_id).one
     } yield (all.size, res)

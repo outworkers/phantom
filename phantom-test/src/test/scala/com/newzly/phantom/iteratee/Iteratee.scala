@@ -8,18 +8,17 @@ import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement
-import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Await
+import java.util.concurrent.atomic.AtomicInteger
+
 
 class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "IterateeTestSpace"
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 minutes)
+  implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
   it should "get result fine" in {
     PrimitivesJoda.insertSchema(session)
 
-    val rows = for (i <- 1 to 50000) yield  JodaRow.sample
+    val rows = for (i <- 1 to 1000) yield  JodaRow.sample
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
@@ -28,24 +27,23 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
       b.add(statement)
     })
 
-    val w = for {
-      b <- batch.future()
-      r <- PlayIteratee(PrimitivesJoda.select.future()).result()
-    } yield r
-
-
-    Await.result(w, 5.minutes) match  {
-      case res =>
-        //println(res)
-        info(res.size.toString)
-        assert(rows.size===res.size)
-
+    val w = batch.future() flatMap (_ => PrimitivesJoda.select.setFetchSize(100).fetchEnumerator)
+    w successful {
+      en => {
+        val result = en run Iteratee.collect()
+        result successful {
+          seqR =>
+            for (row <- seqR)
+              assert(rows.contains(row))
+            assert(seqR.size === rows.size)
+        }
+      }
     }
-
   }
+
   it should "get mapResult fine" in {
     Primitives.insertSchema(session)
-    val rows = for (i <- 1 to 20000) yield  Primitive.sample
+    val rows = for (i <- 1 to 2000) yield  Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b,row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -61,20 +59,18 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         .value(_.bi, row.bi)
       b.add(statement)
     })
-
     val w = for {
       b <- batch.future()
-      all <- Primitives.select.future()
+      all <- Primitives.select.fetchEnumerator
     } yield all
+    val counter: AtomicInteger = new AtomicInteger(0)
+    val m = w flatMap {
+      en => en run Iteratee.forEach(x => {counter.incrementAndGet(); assert(rows.contains(x))})
+    }
 
-    val m = PlayIteratee(w)
-          .resultMap {x => {
-          assert(rows.contains(Primitives.fromRow(x)))
-        }}
-
-    println("first")
-    Await.result(m, 5.minutes) match  {
-      case _ => info("ok")
+    m successful {
+      _ =>
+        assert(counter.intValue()===rows.size)
     }
 
   }

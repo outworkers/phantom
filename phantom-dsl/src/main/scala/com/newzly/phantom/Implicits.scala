@@ -18,10 +18,17 @@ package com.newzly.phantom
 import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
-import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.keys.{ LongOrderKey, PartitionKey }
-import com.newzly.phantom.query.{QueryCondition, SelectWhere}
 import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.newzly.phantom.column.{
+  AbstractColumn,
+  ModifyColumn,
+  ModifyColumnOptional,
+  QueryColumn,
+  SelectColumn,
+  SelectColumnOptional,
+  SelectColumnRequired
+}
+import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
 
 object Implicits {
 
@@ -123,4 +130,7 @@ object Implicits {
         QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
   }
+
+  implicit lazy val context = Manager.scalaExecutor
+
 }

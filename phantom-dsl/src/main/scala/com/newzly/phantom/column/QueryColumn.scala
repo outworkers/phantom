@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
+package com.newzly.phantom.column
 
-package phantom
-
-import scala.collection.JavaConverters._
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause }
 import com.datastax.driver.core.Row
-import com.newzly.phantom.column.{OptionalColumn, Column, AbstractColumn}
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause }
+import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 
 abstract class AbstractQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) {
 

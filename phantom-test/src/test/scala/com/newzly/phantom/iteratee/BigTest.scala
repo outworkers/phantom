@@ -1,24 +1,14 @@
-package com.newzly.phantom.helper
+package com.newzly.phantom.iteratee
 
 import scala.concurrent.ExecutionContext
-import org.scalatest.{ Assertions, BeforeAndAfterAll, FlatSpec, Matchers }
-import org.scalatest.concurrent.{ AsyncAssertions, ScalaFutures }
-import com.datastax.driver.core.{ Cluster, Session }
+import org.scalatest.{ Assertions, BeforeAndAfterAll, FlatSpec, Matchers  }
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
+import com.datastax.driver.core.Session
 import com.newzly.phantom.Manager
 
-object BaseTestHelper {
-  val cluster = Cluster.builder()
-    .addContactPoint("localhost")
-    .withPort(9142)
-    .withoutJMXReporting()
-    .withoutMetrics()
-    .build()
-
-}
-
-trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Matchers with Assertions with AsyncAssertions {
+trait BigTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Matchers with Assertions with AsyncAssertions {
   val keySpace: String
-  val cluster = BaseTestHelper.cluster
+  val cluster = BigTestHelper.cluster
   implicit lazy val session: Session = cluster.connect()
   implicit lazy val context: ExecutionContext = Manager.scalaExecutor
 
@@ -29,6 +19,7 @@ trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Ma
   }
 
   override def beforeAll() {
+    session.execute(s"DROP KEYSPACE $keySpace;")
     createKeySpace(keySpace)
   }
 

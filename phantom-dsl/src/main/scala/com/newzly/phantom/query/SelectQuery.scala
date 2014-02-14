@@ -25,8 +25,13 @@ import com.newzly.phantom.{ CassandraTable }
 import com.newzly.phantom.keys.LongOrderKey
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
-  qb.setFetchSize(10)
+
   override def fromRow(r: Row) = rowFunc(r)
+
+  def setFetchSize(n: Int) = {
+    qb.setFetchSize(n)
+    this
+  }
 
   def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.where(condition(table).clause), fromRow)
@@ -47,6 +52,11 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
 
   def limit(l: Int) = {
     new SelectQuery(table, qb.limit(l), fromRow)
+  }
+
+  def setFetchSize(n: Int) = {
+    qb.setFetchSize(n)
+    this
   }
 
   def and = where _

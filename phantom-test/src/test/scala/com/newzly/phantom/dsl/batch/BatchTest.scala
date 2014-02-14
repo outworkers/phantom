@@ -10,6 +10,7 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 
+
 class BatchTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "BatchTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -37,11 +38,11 @@ class BatchTest extends BaseTest with Matchers with Assertions with AsyncAsserti
     val batch = new BatchStatement().add(statement3).add(statement4)
 
     val w = for {
-      s1 <- statement1.execute()
-      s3 <- statement2.execute()
-      b <- batch.execute()
-      updated <- PrimitivesJoda.select.where(_.pkey eqs row.pkey).execute()
-      deleted <- PrimitivesJoda.select.where(_.pkey eqs row3.pkey).execute()
+      s1 <- statement1.future()
+      s3 <- statement2.future()
+      b <- batch.future()
+      updated <- PrimitivesJoda.select.where(_.pkey eqs row.pkey).future()
+      deleted <- PrimitivesJoda.select.where(_.pkey eqs row3.pkey).future()
     } yield (updated, deleted)
 
     w successful {

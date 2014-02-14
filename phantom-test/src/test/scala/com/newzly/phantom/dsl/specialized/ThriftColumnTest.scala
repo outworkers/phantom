@@ -23,7 +23,7 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
       .value(_.id, sample.id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
-      .execute()
+      .future()
 
     insert.successful {
       result => {
@@ -47,7 +47,7 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSeq, l)
-      .execute()
+      .future()
 
     insert.successful {
       result => {

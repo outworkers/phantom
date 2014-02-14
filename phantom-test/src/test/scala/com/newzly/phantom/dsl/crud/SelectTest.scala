@@ -26,7 +26,7 @@ class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssert
         .value(_.int, row.int)
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi).execute() flatMap {
+        .value(_.bi, row.bi).future() flatMap {
         _ => {
           for {
             a <- Primitives.select.fetch

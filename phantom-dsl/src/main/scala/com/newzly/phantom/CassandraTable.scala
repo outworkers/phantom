@@ -15,14 +15,14 @@
  */
 package com.newzly.phantom
 
+import scala.annotation.switch
 import scala.collection.parallel.mutable.ParHashSet
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
 
 import com.newzly.phantom.query._
-import com.newzly.phantom.column.{AbstractColumn, Column}
-import scala.annotation.switch
+import com.newzly.phantom.column.{ AbstractColumn, SelectColumn }
 
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {

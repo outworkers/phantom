@@ -8,6 +8,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
+  val newzlyUtilVersion = "0.0.4"
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
@@ -111,8 +112,8 @@ object phantom extends Build {
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
-      "org.scala-lang"               %  "scala-reflect"                     % "2.10.3",
-      "org.scalaz"                   %% "scalaz-iteratee"                   % "7.0.5"
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.3"
+
     )
   )
 
@@ -167,13 +168,13 @@ object phantom extends Build {
       fork in run := true,
       assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
       excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-        cp filter { x => println(":::: "+x)
+        cp filter { x =>
           x.data.getName.indexOf("specs2_2.") >= 0 ||
-            x.data.getName.indexOf("scalap-2.") >= 0 ||
-            x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
-            x.data.getName.indexOf("scala-json_") >= 0 ||
-            x.data.getName.indexOf("netty-3.2.9") >= 0 ||
-            x.data.getName.indexOf("com.twitter") >= 0
+          x.data.getName.indexOf("scalap-2.") >= 0 ||
+          x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
+          x.data.getName.indexOf("scala-json_") >= 0 ||
+          x.data.getName.indexOf("netty-3.2.9") >= 0 ||
+          x.data.getName.indexOf("com.twitter") >= 0
         }
       }
     ).settings(
@@ -198,7 +199,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"             exclude("org.apache.cassandra","cassandra-all"),
+      "com.newzly"               %% "util-finagle"                      % newzlyUtilVersion     % "provided",
       "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test"
     )
   ).dependsOn(

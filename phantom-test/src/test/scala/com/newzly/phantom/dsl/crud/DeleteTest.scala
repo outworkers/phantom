@@ -26,13 +26,13 @@ class DeleteTest extends BaseTest with Matchers with Assertions with AsyncAssert
       .value(_.int, row.int)
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute()
+      .value(_.bi, row.bi).future()
 
     val result = rcp flatMap {
       _ => {
         for {
           inserted <- Primitives.select.fetch
-          delete <- Primitives.delete.where(_.pkey eqs row.pkey).execute()
+          delete <- Primitives.delete.where(_.pkey eqs row.pkey).future()
           deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
         } yield (inserted.contains(row), deleted.isEmpty)
       }

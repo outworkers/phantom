@@ -10,8 +10,6 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables._
 
-
-
 class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAssertions {
   val keySpace: String = "InsertTestKeySpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -34,7 +32,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-        .execute() flatMap {
+        .future() flatMap {
           _ => {
             for {
               one <- Primitives.select.where(_.pkey eqs row.pkey).one
@@ -42,7 +40,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
             } yield (one.get == row, multi contains row)
           }
        }
-
 
     rcp successful {
       res => {
@@ -64,7 +61,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       .value(_.mapTextToText, row.mapTextToText)
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
-      .execute() flatMap {
+      .future() flatMap {
       _ => {
         for {
           one <- TestTable.select.where(_.key eqs row.key).one
@@ -93,7 +90,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         .valueOrNull(_.servings, r.servings)
         .value(_.last_checked_at, r.lastCheckedAt)
         .value(_.props, r.props)
-        .value(_.uid, UUIDs.timeBased()).execute() flatMap {
+        .value(_.uid, UUIDs.timeBased()).future() flatMap {
         _ => {
          Recipes.select.one
         }
@@ -114,7 +111,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     val f = MyTest.insert
       .value(_.key, row.key)
       .value(_.stringlist, row.l)
-      .execute() flatMap {
+      .future() flatMap {
       _ => MyTest.select.one
     }
 
@@ -131,7 +128,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
     val recipeF = MyTest.insert
       .value(_.key, row.key)
       .value(_.stringlist, row.l)
-      .execute() flatMap {
+      .future() flatMap {
       _ => MyTest.select.one
     }
 

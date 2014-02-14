@@ -1,13 +1,12 @@
 package com.newzly.phantom.query
 
-import scala.concurrent.{ Future => ScalaFuture }
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
+import com.newzly.phantom.{Manager, CassandraResultSetOperations, CassandraTable}
 
 class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CassandraResultSetOperations {
 
-  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+  def future()(implicit session: Session, context: ExecutionContext = Manager.scalaExecutor): ScalaFuture[ResultSet] = {
     if (table.createIndexes().isEmpty)
       scalaQueryStringExecuteToFuture(table.schema())
     else

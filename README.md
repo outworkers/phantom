@@ -84,7 +84,6 @@ Phantom was developed at newzly as an in-house project.
 All Cassandra integration at newzly goes through Phantom.
 
 - Sorin Chiprian sorin.chiprian@newzly.com
-- Krisztian Kovacs krisztian.kovacs@newzly.com
 - Flavian Alexandru flavian@newzly.com
 
 Pre newzly fork

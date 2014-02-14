@@ -36,7 +36,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
         .value(_.int, row.int)
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi).execute() flatMap {
+        .value(_.bi, row.bi).future() flatMap {
         _ => {
           for {
             a <- Primitives.select.where(_.pkey eqs row.pkey).one
@@ -51,7 +51,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
                   .modify(_.int, updatedRow.int)
                   .modify(_.date, updatedRow.date)
                   .modify(_.uuid, updatedRow.uuid)
-                  .modify(_.bi, updatedRow.bi).execute()
+                  .modify(_.bi, updatedRow.bi).future()
             a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
             b2 <- Primitives.select.fetch
 
@@ -95,7 +95,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       .value(_.mapTextToText, row.mapTextToText)
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
-      .execute() flatMap {
+      .future() flatMap {
         _ => for {
         a <-TestTable.select.where(_.key eqs row.key).one
         b <-TestTable.select.fetch
@@ -105,7 +105,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
           .modify(_.setText,updatedRow.setText)
           .modify(_.mapTextToText,updatedRow.mapTextToText)
           .modify(_.setInt,updatedRow.setInt)
-          .modify(_.mapIntToText,updatedRow.mapIntToText).execute()
+          .modify(_.mapIntToText,updatedRow.mapIntToText).future()
         a2 <- TestTable.select.where(_.key eqs row.key).one
         b2 <- TestTable.select.fetch
         } yield (

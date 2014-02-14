@@ -1,21 +1,20 @@
 package com.newzly.phantom.iteratee
 
-import com.datastax.driver.core.{Row, ResultSet}
-import play.api.libs.iteratee._
-import java.util.{ ArrayDeque, Deque }
-import scala.xml.Elem
+import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import com.datastax.driver.core.{ResultSet, Row}
+import com.newzly.phantom.Manager
+import play.api.libs.iteratee.{ Enumerator => PlayE }
 
-case class PlayIteratee(futureResultSet: Future[ResultSet]) {
 
-  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): Enumerator[E] = {
-    Enumerator.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
+object Enumerator {
+  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext = Manager.scalaExecutor): PlayE[E] = {
+    PlayE.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
       if (currentIt.hasNext)
         Future[Option[(scala.collection.Iterator[E], E)]]({
-          val next = currentIt.next
-          Some((currentIt -> next))
+          val next = currentIt.next()
+          Some(currentIt -> next)
         })(ctx)
       else
         Future.successful[Option[(scala.collection.Iterator[E], E)]]({
@@ -24,28 +23,8 @@ case class PlayIteratee(futureResultSet: Future[ResultSet]) {
     })(Execution.defaultExecutionContext)
   }
 
-
-
-  //(state: A)(f: (A, E) => Future[A])
-  private[this] def iteratee[Row] =
-    Iteratee.foldM(Seq.empty[Row])((acc,e:Row)=> future {acc :+ e})
-
-  def resultMap(func: Row => Unit): Future[Unit] = {
-    val i = Iteratee.foreach[Row]( s => func(s))
-    futureResultSet flatMap {
-      r=> enumerate[Row](r.iterator()) run(i)
-    }
-  }
-
-  def result() = {
-    futureResultSet flatMap {
-      r => enumerate[Row](r.iterator()) run iteratee[Row]
-    }
-  }
+  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext = Manager.scalaExecutor) = enumerate[Row](r.iterator())
 }
-
-
-
 
 /**
  * Contains the default ExecutionContext used by Iteratees.
@@ -70,7 +49,7 @@ private object Execution {
    */
   val trampoline: ExecutionContext = new ExecutionContext {
 
-    private val local = new ThreadLocal[Deque[Runnable]]
+    private val local = new ThreadLocal[JavaDeque[Runnable]]
 
     def execute(runnable: Runnable): Unit = {
       @volatile var queue = local.get()
@@ -78,7 +57,7 @@ private object Execution {
         // Since there is no local queue, we need to install one and
         // start our trampolining loop.
         try {
-          queue = new ArrayDeque(4)
+          queue = new JavaArrayDeque(4)
           queue.addLast(runnable)
           local.set(queue)
           while (!queue.isEmpty) {

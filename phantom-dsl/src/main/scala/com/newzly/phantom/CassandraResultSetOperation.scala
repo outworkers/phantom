@@ -16,7 +16,7 @@
 package com.newzly.phantom
 
 import java.util.concurrent.Executors
-import scala.concurrent.{ Future => ScalaFuture, Promise => ScalaPromise }
+import scala.concurrent.{ ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise }
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
@@ -27,13 +27,11 @@ import com.google.common.util.concurrent.{
 
 object Manager {
 
-  private[this] def makeExecutor(name: String) : ListeningExecutorService = {
-    MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
-  }
+  lazy val taskExecutor = Executors.newCachedThreadPool()
 
-  lazy val executor = makeExecutor(
-    "com.newzly.phantom worker-%d"
-  )
+  implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
+
+  lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
 }
 
 trait CassandraResultSetOperations {

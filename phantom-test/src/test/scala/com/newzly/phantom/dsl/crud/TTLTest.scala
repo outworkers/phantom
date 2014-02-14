@@ -30,8 +30,8 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-        .ttl(Duration.fromSeconds(5))
-        .execute() flatMap {
+        .ttl(5)
+        .future() flatMap {
           _ =>  Primitives.select.one
         }
 
