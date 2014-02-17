@@ -44,7 +44,7 @@ class IterateeBigTest extends BigTest {
     val result = combinedFuture flatMap {
        rs => {
          info(s"done, inserted: $rs rows - start parsing")
-         PrimitivesJoda.select.fetchEnumerator  flatMap (_ run Iteratee.forEach { r=> counter.incrementAndGet() })
+         PrimitivesJoda.select.setFetchSize(10000).fetchEnumerator  flatMap (_ run Iteratee.forEach { r=> counter.incrementAndGet() })
        }
     }
 
