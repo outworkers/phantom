@@ -16,6 +16,7 @@ trait BigTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Mat
   private[this] def createKeySpace(spaceName: String) = {
     session.execute(s"CREATE KEYSPACE $spaceName WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
     session.execute(s"use $spaceName;")
+    cluster.getConfiguration().getSocketOptions().setReadTimeoutMillis(3*60*1000);
   }
 
   override def beforeAll() {
