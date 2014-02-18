@@ -82,8 +82,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
-  def createRecord: CassandraTable[T, R] = meta
-
   def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
@@ -119,6 +117,4 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
   }
-
-  def meta: CassandraTable[T, R]
 }

@@ -14,7 +14,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   val keySpace: String = "InsertTestKeySpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-
   "Insert" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
@@ -37,7 +36,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
             for {
               one <- Primitives.select.where(_.pkey eqs row.pkey).one
               multi <- Primitives.select.fetch
-            } yield (one.get == row, multi contains row)
+            } yield (one.get === row, multi contains row)
           }
        }
 
@@ -48,7 +47,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       }
     }
   }
-
 
   it should "work fine with List, Set, Map" in {
     TestTable.insertSchema(session)
@@ -66,7 +64,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
         for {
           one <- TestTable.select.where(_.key eqs row.key).one
           multi <- TestTable.select.fetch
-        }  yield (one.get == row, multi.contains(row))
+        }  yield (one.get === row, multi.contains(row))
       }
     }
     rcp successful {
@@ -76,9 +74,6 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
       }
     }
   }
-
-
-
 
   it should "work fine with Mix" in {
     val r = Recipe.sample
@@ -98,7 +93,7 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
 
     rcp successful {
       res => {
-        assert (res.get == r)
+        assert (res.get === r)
       }
     }
   }
@@ -106,30 +101,33 @@ class InsertTest  extends BaseTest with Matchers with Assertions with AsyncAsser
   it should "support serializing/de-serializing empty lists " in {
     MyTest.insertSchema(session)
 
-    val row = TestList.sample
+    val row = MyTestRow.sample
 
     val f = MyTest.insert
       .value(_.key, row.key)
-      .value(_.stringlist, row.l)
+      .value(_.stringlist, List.empty[String])
       .future() flatMap {
-      _ => MyTest.select.one
+      _ => MyTest.select.where(_.key eqs row.key).one
     }
 
     f successful  {
-      res => res.isEmpty shouldEqual false
+      res =>
+        res.isEmpty shouldEqual false
+        res.get.stringlist.isEmpty shouldEqual true
     }
   }
 
   it should "support serializing/de-serializing to List " in {
     MyTest.insertSchema(session)
 
-    val row = TestList.sample
+    val row = MyTestRow.sample
 
     val recipeF = MyTest.insert
       .value(_.key, row.key)
-      .value(_.stringlist, row.l)
+      .value(_.optionA, row.optionA)
+      .value(_.stringlist, row.stringlist)
       .future() flatMap {
-      _ => MyTest.select.one
+      _ => MyTest.select.where(_.key eqs row.key).one
     }
 
     recipeF successful  {

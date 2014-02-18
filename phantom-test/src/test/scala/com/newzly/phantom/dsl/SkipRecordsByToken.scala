@@ -11,12 +11,12 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import org.scalatest.Assertions
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.newzly.phantom.tables.{Article, Articles}
+import com.newzly.phantom.iteratee.Iteratee
 
 class SkipRecordsByToken extends BaseTest with Assertions with AsyncAssertions {
   val keySpace: String = "SkippingRecordsByTokenTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-   //QueryBuilder.token
-  //https://datastax-oss.atlassian.net/browse/JAVA-44
+
   it should "allow skipping records " in {
     Articles.insertSchema(session)
     val article1 = Article.sample
@@ -46,13 +46,14 @@ class SkipRecordsByToken extends BaseTest with Assertions with AsyncAssertions {
         .value(_.order_id, article4.order_id)
         .future()
       one <- Articles.select.one
-    } yield i4
+      next <- Articles.select.where(_.id gtToken one.get.id ).fetch
+    } yield next
 
 
     result successful {
       r => {
-        assert(condition = true)
-        fail("this test is wrong!! please review")
+        assert(r.size === 3)
+        info (s"got exactly ${r.size} records")
       }
     }
   }

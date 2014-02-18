@@ -24,7 +24,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.0.7",
+    version := "0.1.0",
     scalaVersion := "2.10.3",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -194,6 +194,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-test",
     fork := true,
+    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
     )

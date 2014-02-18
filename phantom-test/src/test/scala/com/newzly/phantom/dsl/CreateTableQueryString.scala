@@ -1,9 +1,14 @@
 package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
-import com.newzly.phantom.tables.{ Primitives, Recipes, TestTable }
+import com.newzly.phantom.tables._
 
 class CreateTableQueryString extends FlatSpec {
+
+  it should "create the right keys" in {
+    val q = TwoKeys.schema()
+    assert(q.contains("PRIMARY KEY (pkey, intColumn)"))
+  }
 
   it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
@@ -23,6 +28,7 @@ class CreateTableQueryString extends FlatSpec {
         "bi varint, " +
         "PRIMARY KEY (pkey));"
     assert(Primitives.columns.forall(column => { manual.contains(column.name) }))
+    assert(Primitives.columns.forall(column => { q.contains(column.name) }))
   }
 
   it should "get the correct count the primitives table" in {
@@ -56,11 +62,9 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "get the right query in mix table" in {
     val q = Recipes.schema()
-
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)
     assert(q.indexOf("ingredients list<text>") > 0)
-    assert(q.indexOf("author text") > 0)
     assert(q.indexOf("servings int") > 0)
     assert(q.indexOf("last_checked_at timestamp") > 0)
     assert(q.indexOf("props map<text, text>") > 0)
@@ -70,7 +74,6 @@ class CreateTableQueryString extends FlatSpec {
       .replace("url text","")
       .replace("description text","")
       .replace("ingredients list<text>","")
-      .replace("author text","")
       .replace("servings int","")
       .replace("last_checked_at timestamp","")
       .replace("props map<text, text>","")

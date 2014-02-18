@@ -29,8 +29,6 @@ sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
     JodaRow(pkey(r), intColumn(r), timestamp(r))
   }
 
-  def meta = PrimitivesJoda
-
   object pkey extends StringColumn(this) with PartitionKey[String]
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)

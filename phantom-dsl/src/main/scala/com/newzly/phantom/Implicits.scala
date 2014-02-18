@@ -113,7 +113,7 @@ object Implicits {
     }
   }
 
-  implicit class PartitionTokenHelper[T <: AbstractColumn[T] with PartitionKey[T]](val p: T) extends AnyVal {
+  implicit class PartitionTokenHelper[T](val p: PartitionKey[T]) extends AnyVal {
 
     def ltToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),

@@ -27,7 +27,6 @@ object Article extends ModelSampler[Article] {
 
 sealed class Articles private() extends CassandraTable[Articles, Article] with LongOrderKey[Articles, Article] {
 
-  def meta = Articles
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
 
