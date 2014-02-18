@@ -84,7 +84,9 @@ Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal 
 
 Usage is trivial:
 
-```ExampleRecord.select.fetchEnumerator```. 
+```scala
+ExampleRecord.select.fetchEnumerator
+```. 
 
 
 Maintainers
