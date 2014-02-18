@@ -95,6 +95,8 @@ Batch statements
 
 phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/iteratee/IterateeBigTest.scala)
 
+We have tested with 10,000 statements per batch, and 1000 batches processed simulatenously.
+
 
 Maintainers
 ===========
