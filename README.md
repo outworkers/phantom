@@ -90,6 +90,11 @@ ExampleRecord.select.fetchEnumerator.foreach {
 }
 ```
 
+Batch statements
+================
+
+phantom also brrings in support for batch statements. To use them, see [IterateeInsertTest|https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/iteratee/IterateeBigTest.scala]
+
 
 Maintainers
 ===========
