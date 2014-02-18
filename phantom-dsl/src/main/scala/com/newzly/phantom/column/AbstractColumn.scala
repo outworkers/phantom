@@ -11,6 +11,4 @@ trait AbstractColumn[T] extends CassandraWrites[T] {
   val isPartitionKey: Boolean = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
-
-  def optional(r: Row): Option[T]
 }

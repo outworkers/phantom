@@ -31,7 +31,7 @@ class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssert
           for {
             a <- Primitives.select.fetch
             b <- Primitives.select.where(_.pkey eqs row.pkey).one
-          } yield (a contains row, b.get == row)
+          } yield (a contains row, b.get === row)
 
         }
       }
