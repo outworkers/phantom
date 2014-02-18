@@ -8,28 +8,28 @@ import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class MyTestRow(
   key: String,
-  optionA: Option[Int]
+  optionA: Option[Int],
+  stringlist: List[String]
 )
 
 object MyTestRow extends ModelSampler[MyTestRow] {
   def sample: MyTestRow = MyTestRow(
     Sampler.getAUniqueString,
-    Some(Sampler.getARandomInteger())
+    Some(Sampler.getARandomInteger()),
+    List.range(0, 20).map(x => Sampler.getAUniqueString)
   )
 }
 
 sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   def fromRow(r: Row): MyTestRow = {
-    MyTestRow(key(r), optionA(r))
+    MyTestRow(key(r), optionA(r), stringlist(r))
   }
-
-  def meta = MyTest
 
   object key extends StringColumn(this) with PartitionKey[String]
 
   object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
 
-  object optionA extends OptionalPrimitiveColumn[MyTest, MyTestRow, Int](this)
+  object optionA extends OptionalIntColumn(this)
 
 }
 

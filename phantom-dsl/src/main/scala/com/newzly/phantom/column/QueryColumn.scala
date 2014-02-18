@@ -46,7 +46,7 @@ class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR]
 
 class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
 
-  def toCType(v: Option[RR]): AnyRef = v.map(col.toCType).orNull
+  def toCType(v: Option[RR]): AnyRef = col.toCType(v)
 }
 
 abstract class SelectColumn[T](val col: AbstractColumn[_]) {

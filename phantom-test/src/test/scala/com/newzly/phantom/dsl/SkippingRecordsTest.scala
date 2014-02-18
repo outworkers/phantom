@@ -45,8 +45,8 @@ class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions 
       r => {
         val allSize = r._1
         val row = r._2
-        assert(allSize == 3)
-        assert(row.get == article2)
+        assert(allSize === 3)
+        assert(row.get === article2)
       }
     }
   }

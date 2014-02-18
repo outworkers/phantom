@@ -12,6 +12,8 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, @specializ
 
   table.addColumn(this)
 
+  def optional(r: Row): Option[T]
+
   def apply(r: Row): T = optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
 
   def eqs (value: T): QueryCondition = {

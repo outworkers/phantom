@@ -56,9 +56,9 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
             b2 <- Primitives.select.fetch
 
           } yield (
-            a.get == row,
+            a.get === row,
             b.contains(row),
-            a2.get == updatedRow,
+            a2.get === updatedRow,
             b2.contains(updatedRow)
           )
         }
@@ -109,9 +109,9 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
         a2 <- TestTable.select.where(_.key eqs row.key).one
         b2 <- TestTable.select.fetch
         } yield (
-          a.get == row,
+          a.get === row,
           b.contains(row),
-          a2.get == updatedRow,
+          a2.get === updatedRow,
           b2.contains(updatedRow)
         )
     }
