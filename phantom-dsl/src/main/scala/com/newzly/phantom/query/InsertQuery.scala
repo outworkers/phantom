@@ -18,6 +18,7 @@ package com.newzly.phantom.query
 import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
+import scala.util.Try
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
 
@@ -27,9 +28,11 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     this
   }
 
-  def valueOrNull[RR](c: T => AbstractColumn[RR], value: Option[RR]): InsertQuery[T, R] = {
+  def valueOrNull[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
-    qb.value(col.name, value.map(col.toCType).orNull)
+    qb.value(col.name, Try {
+      col.toCType(value)
+    } getOrElse null.asInstanceOf[T])
     this
   }
 

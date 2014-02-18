@@ -46,8 +46,6 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
       int(r), date(r), uuid(r), bi(r))
   }
 
-  def meta = Primitives
-
   object pkey extends StringColumn(this) with PartitionKey[String]
 
   object long extends LongColumn(this)
