@@ -61,7 +61,7 @@ object ExampleRecord extends ExampleRecord {
   implicit val session = SomeCassandraClient.session;
   
   def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
-    ExampleRecord.select.where(_.name eqs name).execute()
+    ExampleRecord.select.where(_.name eqs name).fetch
   }
   
   def getOneRecordByName(name: String): Future[Option[ExampleModel]] = {
