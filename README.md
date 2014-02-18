@@ -70,7 +70,7 @@ object ExampleRecord extends ExampleRecord {
   
   // preserving order in Cassandra is not the simplest thing, but:
   def getRecordPage(start: Int, limit: Int): Future[Seq[ExampleModel]] = {
-    ExampleRecord.select.skip(start).limit(10).execute()
+    ExampleRecord.select.skip(start).limit(10).fetch
   }
   
 }
