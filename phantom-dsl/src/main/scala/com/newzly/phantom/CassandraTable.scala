@@ -15,7 +15,6 @@
  */
 package com.newzly.phantom
 
-import scala.annotation.switch
 import scala.collection.parallel.mutable.ParHashSet
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
@@ -97,7 +96,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     })
     val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(",")
     val pkes = {
-      (primaryKeys.filter(_.isPartitionKey): @switch) match {
+      primaryKeys.filter(_.isPartitionKey) match {
         case head :: tail if !tail.isEmpty => throw new Exception("only one partition key is allowed in the schema")
         case head :: tail =>
           if(primaryKeysString.isEmpty)
