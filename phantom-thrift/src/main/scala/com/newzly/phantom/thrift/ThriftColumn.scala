@@ -22,7 +22,6 @@ abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, Valu
     serializer.toString(v)
   }
 
-
   val cassandraType = "text"
 
   def optional(r: Row): Option[ValueType] = {
