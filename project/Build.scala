@@ -153,6 +153,28 @@ object phantom extends Build {
     phantomDsl
   )
 
+  lazy val phantomExample = Project(
+    id = "phantom-example",
+    base = file("phantom-example"),
+    settings = Project.defaultSettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings ++
+      ScroogeSBT.newSettings
+  ).settings(
+    name := "phantom-example",
+    libraryDependencies ++= Seq(
+      "org.apache.thrift"            %  "libthrift"                         % "0.9.1",
+      "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
+      "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
+      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion
+    )
+  ).dependsOn(
+    phantomDsl,
+    phantomFinagle,
+    phantomThrift
+  )
+
   lazy val phantomCassandraUnit = Project(
     id = "phantom-cassandra-unit",
     base = file("phantom-cassandra-unit"),
