@@ -85,6 +85,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
+  def count = new CountQuery[T, R](this, QueryBuilder.select().countAll().from(tableName))
+
   def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
   def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
@@ -116,4 +118,5 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
   }
+
 }
