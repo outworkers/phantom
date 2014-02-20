@@ -4,7 +4,7 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.thrift.ThriftColumn
-import com.twitter.scrooge.{ThriftStructCodec, CompactThriftSerializer}
+import com.twitter.scrooge.CompactThriftSerializer
 
 
 case class SampleRecord(
