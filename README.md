@@ -6,6 +6,8 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
+The current version is: ```0.1.0```.
+
 ```scala
 resolvers ++= Seq("newzly Releases" at "http://maven.newzly.com/repository/internal")
 libraryDependencies ++= Seq(
