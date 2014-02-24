@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraWrites
 
-trait AbstractColumn[T] extends CassandraWrites[T] {
+trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   val isPrimary: Boolean = false
   val isSecondaryKey: Boolean = false

@@ -4,12 +4,11 @@ import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
 import com.datastax.driver.core.{ResultSet, Row}
-import com.newzly.phantom.Manager
 import play.api.libs.iteratee.{ Enumerator => PlayE }
 
 
 object Enumerator {
-  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext = Manager.scalaExecutor): PlayE[E] = {
+  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayE[E] = {
     PlayE.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
       if (currentIt.hasNext)
         Future[Option[(scala.collection.Iterator[E], E)]]({
@@ -23,7 +22,7 @@ object Enumerator {
     })(Execution.defaultExecutionContext)
   }
 
-  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext = Manager.scalaExecutor) = enumerate[Row](r.iterator())
+  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext) = enumerate[Row](r.iterator())
 }
 
 /**

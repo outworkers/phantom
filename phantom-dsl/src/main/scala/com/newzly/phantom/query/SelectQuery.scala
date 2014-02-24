@@ -18,7 +18,7 @@ package newzly
 package phantom
 package query
 
-import com.datastax.driver.core.querybuilder.{ Clause, Select }
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause, Select}
 import com.datastax.driver.core.Row
 
 import com.newzly.phantom.{ CassandraTable }
