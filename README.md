@@ -64,9 +64,9 @@ Querying with Phantom
 
 The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
 
-```scala
+Phantom works with both Scala Futures and Twitter Futures. For the Twitter flavour, simply add the ```"com.newzly  %% phantom-finagle % 0.1.0"``` dependency. 
 
-import com.twitter.util.Future
+```scala
 
 object ExampleRecord extends ExampleRecord {
   override val tableName = "examplerecord"
