@@ -47,7 +47,7 @@ sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, Examp
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
-  object name extends PrimitiveColumn[String](this)
+  object name extends StringColumn(this)
   object props extends MapColumn[String, String](this)
   object test extends OptionalIntColumn(this)
 
