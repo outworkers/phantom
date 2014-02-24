@@ -2,6 +2,18 @@ phantom
 ==============
 Asynchronous Scala DSL for Cassandra
 
+
+Using phantom
+=============
+
+```scala
+resolvers ++= Seq("newzly Releases" at "http://maven.newzly.com/repository/internal")
+libraryDependencies ++= Seq(
+  "com.newzly"  %% "phantom-dsl"    % "0.1.0",
+  "com.newzly"  %% "phantom-thrift" % "0.1.0"
+)
+```
+
 [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
 
 Thrift IDL definitions
