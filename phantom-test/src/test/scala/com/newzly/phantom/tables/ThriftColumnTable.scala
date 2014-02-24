@@ -7,7 +7,7 @@ import com.newzly.phantom.keys.PartitionKey
 import com.newzly.phantom.helper.TestSampler
 import com.twitter.scrooge.CompactThriftSerializer
 
-case class Output(id: Int, name: String, struct: ThriftTest, list: Set[ThriftTest])
+case class Output(id: Int, name: String, struct: ThriftTest, list: Seq[ThriftTest])
 
 sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 

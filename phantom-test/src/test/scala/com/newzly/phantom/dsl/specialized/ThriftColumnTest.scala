@@ -40,7 +40,7 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
 
     val sample = ThriftTest(5, "test", test = true)
     val sample2 = ThriftTest(6, "asasf", test = false)
-    val l = Set(sample, sample2)
+    val l = Seq(sample, sample2)
 
     val insert = ThriftColumnTable.insert
       .value(_.id, sample.id)

@@ -4,7 +4,7 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 import scala.util.Try
 
-abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long, Boolean, Short) T : CassandraPrimitive](table: CassandraTable[Owner, Record]) extends AbstractColumn[Option[T]] {
+abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T : CassandraPrimitive](table: CassandraTable[Owner, Record]) extends AbstractColumn[Option[T]] {
 
   type ValueType = Option[T]
 
