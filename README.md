@@ -18,18 +18,32 @@ libraryDependencies ++= Seq(
 
 [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
 
-Thrift IDL definitions
+Basic data models and Thrift IDL definitions
 ======================
+
+We use Apache Thrift extensively for our backend services. ```phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "phantom-thrift"  % "0.1.0"```.
+
 ```thrift
 namespace java com.newzly.phantom.sample.ExampleModel
 
-stuct Model {
+stuct ExampleModel {
   1: required i32 id,
   2: required string name,
   3: required Map<string, string> props,
   4: required i32 timestamp
   5: optional i32 test
 }
+```
+
+If you don't want Thrift integration, you can simply use:
+```scala
+case class ExampleModel (
+  id: Int,
+  name: String,
+  props: Map[String, String],
+  timestamp: Int,
+  test: Option[Int]
+)
 ```
 
 Data modeling with phantom
