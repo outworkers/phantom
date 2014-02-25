@@ -1,4 +1,4 @@
-phantom
+phantom [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
 ==============
 Asynchronous Scala DSL for Cassandra
 
@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
 )
 ```
 
-[![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
 
 Basic data models and Thrift IDL definitions
 ======================
