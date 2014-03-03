@@ -6,7 +6,7 @@ import com.newzly.phantom.{Manager, CassandraResultSetOperations, CassandraTable
 
 class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CassandraResultSetOperations {
 
-  def future()(implicit session: Session, context: ExecutionContext = Manager.scalaExecutor): ScalaFuture[ResultSet] = {
+  def future()(implicit session: Session, context: ExecutionContext): ScalaFuture[ResultSet] = {
     if (table.createIndexes().isEmpty)
       scalaQueryStringExecuteToFuture(table.schema())
     else
