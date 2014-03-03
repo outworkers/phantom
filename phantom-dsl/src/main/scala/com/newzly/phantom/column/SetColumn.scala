@@ -4,6 +4,8 @@ import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
+import com.newzly.phantom.query.QueryAssignment
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[RR]](table) {
@@ -19,5 +21,10 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPr
 
     val i = implicitly[CassandraPrimitive[RR]]
     Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet)
+  }
+
+  def append(value: RR): QueryAssignment = {
+    val primitive = implicitly[CassandraPrimitive[RR]]
+    QueryAssignment(QueryBuilder.append(this.name, primitive.toCType(value)))
   }
 }

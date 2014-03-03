@@ -15,6 +15,8 @@
  */
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.querybuilder.Clause
+import com.datastax.driver.core.querybuilder.{ Assignment, Clause }
 
 case class QueryCondition(clause: Clause)
+
+case class QueryAssignment(assignment: Assignment)
