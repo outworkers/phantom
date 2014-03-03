@@ -18,7 +18,6 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPr
   }
 
   def optional(r: Row): Option[Set[RR]] = {
-
     val i = implicitly[CassandraPrimitive[RR]]
     Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet)
   }

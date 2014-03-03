@@ -41,7 +41,6 @@ object Implicits {
   type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
   type ListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.ListColumn[Owner, Record, T]
   type SetColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SetColumn[Owner, Record, T]
-  type SeqColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.SeqColumn[Owner, Record, T]
   type MapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V] =  com.newzly.phantom.column.MapColumn[Owner, Record, K, V]
 
 
@@ -93,8 +92,8 @@ object Implicits {
     new ModifyColumn[List[RR]](col)
   }
 
-  implicit def seqColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SeqColumn[Owner, Record, RR]) = {
-    new ModifyColumn[Seq[RR]](col)
+  implicit def setColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SetColumn[Owner, Record, RR]) = {
+    new ModifyColumn[Set[RR]](col)
   }
 
   implicit def columnIsSeleCassandraTable[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]): SelectColumn[T] =
