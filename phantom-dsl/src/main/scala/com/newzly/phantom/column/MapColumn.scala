@@ -6,6 +6,8 @@ import scala.collection.breakOut
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
+import com.newzly.phantom.query.QueryAssignment
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be a Cassandra primitives")
 class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table) {
@@ -27,9 +29,10 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrim
         ki.fromCType(k.asInstanceOf[AnyRef]) -> vi.fromCType(v.asInstanceOf[AnyRef])
     }(breakOut) toMap)
   }
-}
 
-object MapColumn {
-  def apply[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record]) =
-    new MapColumn[Owner, Record, K, V](table)
+  def put(key: K, value: V): QueryAssignment = {
+    val ki = implicitly[CassandraPrimitive[K]]
+    val vi = implicitly[CassandraPrimitive[V]]
+    QueryAssignment(QueryBuilder.put(this.name, ki.toCType(key), vi.toCType(value)))
+  }
 }
