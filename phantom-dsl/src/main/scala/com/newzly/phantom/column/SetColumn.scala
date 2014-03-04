@@ -21,9 +21,4 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPr
     val i = implicitly[CassandraPrimitive[RR]]
     Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet)
   }
-
-  def append(value: RR): QueryAssignment = {
-    val primitive = implicitly[CassandraPrimitive[RR]]
-    QueryAssignment(QueryBuilder.append(this.name, primitive.toCType(value)))
-  }
 }

@@ -29,10 +29,4 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrim
         ki.fromCType(k.asInstanceOf[AnyRef]) -> vi.fromCType(v.asInstanceOf[AnyRef])
     }(breakOut) toMap)
   }
-
-  def put(key: K, value: V): QueryAssignment = {
-    val ki = implicitly[CassandraPrimitive[K]]
-    val vi = implicitly[CassandraPrimitive[V]]
-    QueryAssignment(QueryBuilder.put(this.name, ki.toCType(key), vi.toCType(value)))
-  }
 }

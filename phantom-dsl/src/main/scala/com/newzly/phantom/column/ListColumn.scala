@@ -21,14 +21,4 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPr
   def optional(r: Row): Option[List[RR]] = {
     Option(r.getList(name, primitive.cls).asScala.toList.map(el => primitive.fromCType(el.asInstanceOf[AnyRef])))
   }
-
-  def append(value: RR): QueryAssignment = {
-    QueryAssignment(QueryBuilder.append(this.name, primitive.toCType(value)))
-  }
-
-  def prepend(value: RR): QueryAssignment = {
-    QueryAssignment(QueryBuilder.prepend(this.name, primitive.toCType(value)))
-  }
-
-
 }
