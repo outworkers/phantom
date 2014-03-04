@@ -77,4 +77,67 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "prepend an item to a list" in {
+    Recipes.insertSchema
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield {
+      select
+    }
+
+    operation.successful {
+      items => {
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe List("test") :::  recipe.ingredients
+      }
+    }
+  }
+
+  it should "prepend several items to a list" in {
+    Recipes.insertSchema
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val appendable = List("test", "test2")
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prependAll appendable).future()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield {
+      select
+    }
+
+    operation.successful {
+      items => {
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe appendable.reverse ::: recipe.ingredients
+      }
+    }
+  }
+
 }
