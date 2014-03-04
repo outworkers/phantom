@@ -8,14 +8,24 @@ import com.newzly.phantom.column.{ Column, SetColumn }
 import com.twitter.scrooge.{ CompactThriftSerializer, ThriftStruct}
 import com.twitter.util.Try
 
-abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, ValueType](table) {
 
+trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
   /**
    * The Thrift serializer to use.
    * This must always be overriden before usage.
    * It is a simple forwarding from a concrete Thrift Struct.
    */
   def serializer: CompactThriftSerializer[ValueType]
+
+  def itemToCType(v: ValueType): AnyRef = {
+    serializer.toString(v)
+  }
+
+  val primitive = implicitly[CassandraPrimitive[String]]
+}
+
+
+abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, ValueType](table) with ThriftColumnDefinition[ValueType] {
 
   def toCType(v: ValueType): AnyRef = {
     serializer.toString(v)
@@ -30,29 +40,23 @@ abstract class ThriftColumn[Owner <: CassandraTable[Owner, Record], Record, Valu
   }
 }
 
-abstract class ThriftSetColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[ValueType]](table) {
+abstract class ThriftSetColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[ValueType]](table) with ThriftColumnDefinition[ValueType] {
   def serializer: CompactThriftSerializer[ValueType]
 
   override val cassandraType = "set<text>"
-
-  def itemToCType(v: ValueType): AnyRef = {
-    serializer.toString(v)
-  }
 
   override def toCType(v: Set[ValueType]): AnyRef = {
     v.map(itemToCType)(breakOut).toSeq.asJava
   }
 
   override def optional(r: Row): Option[Set[ValueType]] = {
-    val i = implicitly[CassandraPrimitive[String]]
-
-    Option(r.getList(name, i.cls)).map(_.asScala.map(
-      e => serializer.fromString(i.fromCType(e.asInstanceOf[String]))
+    Option(r.getList(name, primitive.cls)).map(_.asScala.map(
+      e => serializer.fromString(primitive.fromCType(e.asInstanceOf[String]))
     ).toSet[ValueType])
   }
 }
 
-abstract class ThriftListColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[ValueType]](table) {
+abstract class ThriftListColumn[Owner <: CassandraTable[Owner, Record], Record, ValueType <: ThriftStruct](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[ValueType]](table) with ThriftColumnDefinition[ValueType] {
   def serializer: CompactThriftSerializer[ValueType]
 
   override val cassandraType = "list<text>"
@@ -62,10 +66,8 @@ abstract class ThriftListColumn[Owner <: CassandraTable[Owner, Record], Record, 
   }
 
   override def optional(r: Row): Option[List[ValueType]] = {
-    val i = implicitly[CassandraPrimitive[String]]
-
-    Option(r.getList(name, i.cls)).map(_.asScala.map(
-      e => serializer.fromString(i.fromCType(e.asInstanceOf[String]))
+    Option(r.getList(name, primitive.cls)).map(_.asScala.map(
+      e => serializer.fromString(primitive.fromCType(e.asInstanceOf[String]))
     ).toList)
   }
 }

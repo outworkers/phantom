@@ -20,6 +20,16 @@ object Implicits {
     def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.itemToCType(value))
     def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, values.map(col.itemToCType).asJava)
   }
+
+  class ThriftListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
+    def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, col.itemToCType(value))
+    def prependAll(values: List[RR]): Assignment = QueryBuilder.prependAll(col.name, values.map(col.itemToCType).asJava)
+    def append(value: RR): Assignment = QueryBuilder.append(col.name, col.itemToCType(value))
+    def appendAll(values: List[RR]): Assignment = QueryBuilder.appendAll(col.name, values.map(col.itemToCType).asJava)
+    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.itemToCType(value))
+    def removeAll(values: List[RR]): Assignment = QueryBuilder.removeAll(col.name, values.toSet[RR].map(col.itemToCType).asJava)
+  }
+
   implicit def thriftColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) : ThriftModifyColumn[T, R, RR] = {
     new ThriftModifyColumn[T, R, RR](col)
   }
