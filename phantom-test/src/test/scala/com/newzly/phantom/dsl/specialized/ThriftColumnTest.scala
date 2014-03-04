@@ -14,6 +14,7 @@ class ThriftColumnTest extends BaseTest {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   it should "allow storing thrift columns" in {
+
     ThriftColumnTable.insertSchema
 
     val sample = ThriftTest(5, "test", test = true)

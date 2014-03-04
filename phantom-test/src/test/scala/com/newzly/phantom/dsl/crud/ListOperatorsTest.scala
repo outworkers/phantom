@@ -15,6 +15,7 @@ class ListOperatorsTest extends BaseTest {
 
 
   it should "append an item to a list" in {
+    Recipes.insertSchema
 
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
@@ -29,15 +30,17 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.uid eqs id).modify(_.ingredients append "test").future()
-      select <- Recipes.select(_.ingredients).where(_.uid eqs id).one
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").future()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield {
       select
     }
 
     operation.successful {
       items => {
-        items shouldBe "test" :: recipe.ingredients
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe recipe.ingredients ::: List("test")
       }
     }
   }
@@ -59,15 +62,17 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.uid eqs id).modify(_.ingredients appendAll appendable).future()
-      select <- Recipes.select(_.ingredients).where(_.uid eqs id).one
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients appendAll appendable).future()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield {
       select
     }
 
     operation.successful {
       items => {
-        items shouldBe appendable ::: recipe.ingredients
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe recipe.ingredients ::: appendable
       }
     }
   }
