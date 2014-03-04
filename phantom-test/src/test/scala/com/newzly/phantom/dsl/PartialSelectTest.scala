@@ -8,7 +8,7 @@ import org.scalatest.Assertions
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.newzly.phantom.tables.{Primitives, Primitive, Article, Articles}
 
-class PartialSelectTest extends BaseTest with Assertions with AsyncAssertions {
+class PartialSelectTest extends BaseTest {
   val keySpace: String = "PartialSelect"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 

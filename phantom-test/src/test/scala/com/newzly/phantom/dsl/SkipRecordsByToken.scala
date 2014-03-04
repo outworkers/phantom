@@ -13,7 +13,7 @@ import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.newzly.phantom.tables.{Article, Articles}
 import com.newzly.phantom.iteratee.Iteratee
 
-class SkipRecordsByToken extends BaseTest with Assertions with AsyncAssertions {
+class SkipRecordsByToken extends BaseTest {
   val keySpace: String = "SkippingRecordsByTokenTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 

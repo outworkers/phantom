@@ -8,7 +8,7 @@ import com.newzly.phantom.helper.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 
-class JodaDateTimeColumn extends BaseTest with Matchers with Assertions with AsyncAssertions {
+class JodaDateTimeColumn extends BaseTest {
   val keySpace = "UpdateTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
