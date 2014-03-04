@@ -1,0 +1,30 @@
+package com.newzly.phantom.thrift
+
+import scala.collection.JavaConverters._
+import com.newzly.phantom.{CassandraTable, CassandraPrimitive}
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.column._
+import com.twitter.scrooge.ThriftStruct
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment}
+
+object Implicits {
+
+  class ThriftModifyColumn[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) extends AbstractModifyColumn[RR](col.name) {
+
+    def toCType(v: RR): AnyRef = col.toCType(v)
+  }
+
+  class ThriftSetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftSetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
+    def add(value: RR): Assignment = QueryBuilder.add(col.name, col.itemToCType(value))
+    def addAll(values: Set[RR]): Assignment = QueryBuilder.addAll(col.name, values.map(col.itemToCType).asJava)
+    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.itemToCType(value))
+    def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, values.map(col.itemToCType).asJava)
+  }
+  implicit def thriftColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) : ThriftModifyColumn[T, R, RR] = {
+    new ThriftModifyColumn[T, R, RR](col)
+  }
+
+  implicit def thriftSetColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftSetColumn[T, R, RR]): ThriftSetLikeModifyColumn[T, R, RR] = {
+    new ThriftSetLikeModifyColumn[T, R, RR](col)
+  }
+}
