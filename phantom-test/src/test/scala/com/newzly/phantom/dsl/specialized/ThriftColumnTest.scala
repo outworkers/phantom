@@ -40,13 +40,13 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
 
     val sample = ThriftTest(5, "test", test = true)
     val sample2 = ThriftTest(6, "asasf", test = false)
-    val l = Seq(sample, sample2)
+    val sampleList = List(sample, sample2)
 
     val insert = ThriftColumnTable.insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
-      .value(_.thriftSeq, l)
+      .value(_.thriftSet, sampleList)
       .future()
 
     insert.successful {
@@ -56,7 +56,7 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
         row.isEmpty shouldEqual false
         row.get.struct shouldEqual sample
         Console.println(row.get.list.mkString(""))
-        row.get.list shouldEqual l
+        row.get.list shouldEqual sampleList
       }
     }
   }

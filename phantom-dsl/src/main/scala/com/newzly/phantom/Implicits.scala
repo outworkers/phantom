@@ -19,16 +19,9 @@ import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.newzly.phantom.column.{
-  AbstractColumn,
-  ModifyColumn,
-  ModifyColumnOptional,
-  QueryColumn,
-  SelectColumn,
-  SelectColumnOptional,
-  SelectColumnRequired
-}
+import com.newzly.phantom.column._
 import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
+import com.newzly.phantom.query.QueryCondition
 
 object Implicits {
 
@@ -77,30 +70,34 @@ object Implicits {
   type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
-  implicit def columnToQueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) =
+  implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =
     new QueryColumn(col)
 
-  implicit def simpleColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
+  implicit def simpleColumnToAssignment[RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
     new ModifyColumn[RR](col)
   }
 
-  implicit def simpleOptionalColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: OptionalColumn[Owner, Record, RR]) = {
-    new ModifyColumnOptional[Owner, Record, RR](col)
+  implicit def simpleOptionalColumnToAssignment[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: OptionalColumn[T, R, RR]) = {
+    new ModifyColumnOptional[T, R, RR](col)
   }
 
-  implicit def listColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) = {
-    new ModifyColumn[List[RR]](col)
+  implicit def seqColumnToAssignment[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: ListColumn[T, R, RR]) = {
+    new ListLikeModifyColumn[T, R, RR](col)
   }
 
-  implicit def setColumnToAssignment[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SetColumn[Owner, Record, RR]) = {
-    new ModifyColumn[Set[RR]](col)
+  implicit def setColumnToAssignment[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: SetColumn[T, R, RR]) = {
+    new SetLikeModifyColumn[T, R, RR](col)
   }
 
-  implicit def columnIsSeleCassandraTable[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]): SelectColumn[T] =
-    new SelectColumnRequired[Owner, Record, T](col)
+  implicit def mapColumnToAssignment[T <: CassandraTable[T, R], R, A: CassandraPrimitive, B: CassandraPrimitive](col: MapColumn[T, R, A, B]) = {
+    new MapLikeModifyColumn[T, R, A, B](col)
+  }
 
-  implicit def optionalColumnIsSeleCassandraTable[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T]): SelectColumn[Option[T]] =
-    new SelectColumnOptional[Owner, Record, T](col)
+  implicit def columnIsSelectable[T <: CassandraTable[T, R], R, RR](col: Column[T, R, RR]): SelectColumn[RR] =
+    new SelectColumnRequired[T, R, RR](col)
+
+  implicit def optionalColumnIsSelectable[T <: CassandraTable[T, R], R, RR](col: OptionalColumn[T, R, RR]): SelectColumn[Option[RR]] =
+    new SelectColumnOptional[T, R, RR](col)
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {

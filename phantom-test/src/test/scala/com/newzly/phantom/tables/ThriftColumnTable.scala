@@ -1,13 +1,13 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.thrift.{ ThriftColumn, ThriftSeqColumn, ThriftTest }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.PartitionKey
 import com.newzly.phantom.helper.TestSampler
+import com.newzly.phantom.keys.PartitionKey
+import com.newzly.phantom.thrift.{ ThriftSetColumn, ThriftColumn, ThriftTest }
 import com.twitter.scrooge.CompactThriftSerializer
 
-case class Output(id: Int, name: String, struct: ThriftTest, list: Seq[ThriftTest])
+case class Output(id: Int, name: String, struct: ThriftTest, list: Set[ThriftTest])
 
 sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 
@@ -19,14 +19,14 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
     }
   }
 
-  object thriftSeq extends ThriftSeqColumn[ThriftColumnTable, Output, ThriftTest](this) {
+  object thriftSet extends ThriftSetColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       def codec = ThriftTest
     }
   }
 
   def fromRow(row: Row): Output = {
-    Output(id(row), name(row), ref(row), thriftSeq(row))
+    Output(id(row), name(row), ref(row), thriftSet(row))
   }
 }
 
