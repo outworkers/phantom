@@ -9,6 +9,11 @@ import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment}
 
 object Implicits {
 
+
+  type ThriftColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftColumn[T, R, Value]
+  type ThriftSetColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftSetColumn[T, R, Value]
+  type ThriftListColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftListColumn[T, R, Value]
+
   class ThriftModifyColumn[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) extends AbstractModifyColumn[RR](col.name) {
 
     def toCType(v: RR): AnyRef = col.toCType(v)
