@@ -35,7 +35,7 @@ class ThriftColumnTest extends FlatSpec with BaseTest with Matchers with Asserti
     }
   }
 
-  it should "allow storing sequences of thrift columns" in {
+  it should "allow storing lists of thrift objects" in {
     ThriftColumnTable.insertSchema
 
     val sample = ThriftTest(5, "test", test = true)
