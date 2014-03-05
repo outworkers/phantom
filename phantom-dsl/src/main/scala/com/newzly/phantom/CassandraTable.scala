@@ -85,7 +85,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def count = new CountQuery[T, R](this, QueryBuilder.select().countAll().from(tableName))
+  def count = new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), this.asInstanceOf[T].fromRow)
 
   def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
