@@ -33,7 +33,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
     this
   }
 
-  def allowFiltering() : Unit = {
+  def allowFiltering() : SelectQuery[T, R] = {
     new SelectQuery(table, qb.allowFiltering(), fromRow)
   }
 
