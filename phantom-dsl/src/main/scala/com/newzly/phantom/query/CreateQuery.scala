@@ -9,13 +9,14 @@ class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) ext
   def future()(implicit session: Session, context: ExecutionContext): ScalaFuture[ResultSet] = {
     if (table.createIndexes().isEmpty)
       scalaQueryStringExecuteToFuture(table.schema())
-    else
+    else {
       scalaQueryStringExecuteToFuture(table.schema())  flatMap {
       _=> {
-        val seqF = table.createIndexes() map (q => scalaQueryStringExecuteToFuture(q))
-        val f = seqF.reduce[ScalaFuture[ResultSet]]((f1,f2) => f1 flatMap { _ => f2 })
-        f
+        ScalaFuture.sequence(table.createIndexes() map scalaQueryStringExecuteToFuture) map (_.head)
+      }
       }
     }
+
+
   }
 }
