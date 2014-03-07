@@ -1,7 +1,7 @@
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.{ResultSet, Session}
 import scala.concurrent.Future
+import com.datastax.driver.core.{ResultSet, Session}
 import com.newzly.phantom.{CassandraTable, CassandraResultSetOperations}
 import com.newzly.phantom.column.AbstractColumn
 
