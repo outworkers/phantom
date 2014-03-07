@@ -117,8 +117,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     if (query.last != ';') query + ";" else query
   }
 
-  def createIndexes(): Seq[String] = {
-    secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
-  }
+  def createSecondaryIndexes: SecondaryIndexesQuery = new SecondaryIndexesQuery(secondaryKeys)
+
 
 }
