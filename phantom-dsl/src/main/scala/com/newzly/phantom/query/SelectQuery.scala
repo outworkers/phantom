@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
-package phantom
-package query
+package com.newzly.phantom.query
 
-import com.datastax.driver.core.querybuilder.{QueryBuilder, Clause, Select}
-import com.datastax.driver.core.Row
-
-import com.newzly.phantom.{ CassandraTable }
-import com.newzly.phantom.keys.LongOrderKey
+import scala.concurrent.Future
+import com.datastax.driver.core.{Session, Row}
+import com.datastax.driver.core.querybuilder.Select
+import com.newzly.phantom.CassandraTable
+import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
@@ -43,6 +40,15 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
 
   def limit(l: Int) = {
     new SelectQuery(table, qb.limit(l), fromRow)
+  }
+   /**
+   * Returns the first row from the select ignoring everything else
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return
+   */
+  override def one(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+    new SelectQuery[T, R](table, qb.limit(1), fromRow).fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 }
 
