@@ -16,6 +16,7 @@
 package com.newzly.phantom
 
 import scala.collection.parallel.mutable.ParHashSet
+import scala.collection.mutable.{ ArrayBuffer, SynchronizedBuffer }
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
@@ -26,9 +27,10 @@ import com.newzly.phantom.column.{ AbstractColumn, SelectColumn }
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
-  private[this] lazy val _columns: ParHashSet[AbstractColumn[_]] = ParHashSet.empty[AbstractColumn[_]]
+  private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with SynchronizedBuffer[AbstractColumn[_]]
 
   def addColumn(column: AbstractColumn[_]): Unit = {
+    Console.println(s"${column.name}")
     _columns += column
   }
 
