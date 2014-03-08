@@ -5,8 +5,9 @@ import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.batch.BatchStatement
+import com.newzly.phantom.Implicits._
 import com.newzly.phantom.finagle.Implicits._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 
@@ -30,8 +31,8 @@ class BatchTest extends BaseTest with Matchers with Assertions with AsyncAsserti
       .value(_.timestamp, row3.bi)
     val statement3 = PrimitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn, row2.int)
-      .modify(_.timestamp, row2.bi)
+      .modify(_.intColumn setTo row2.int)
+      .modify(_.timestamp setTo  row2.bi)
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 

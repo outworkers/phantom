@@ -15,16 +15,4 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val tab
   def optional(r: Row): Option[T]
 
   def apply(r: Row): T = optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
-
-  def eqs (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
-  }
-
-  def lt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.lt(this.name, this.toCType(value)))
-  }
-
-  def gt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
-  }
 }

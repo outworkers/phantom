@@ -6,13 +6,13 @@ import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 
 import com.newzly.phantom.finagle.Implicits._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Article, Articles }
 import org.scalatest.time.SpanSugar._
 
 
-class SkippingRecordsTest extends BaseTest with Assertions with AsyncAssertions  {
+class SkippingRecordsTest extends BaseTest {
   val keySpace: String = "SkippingRecordsTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 

@@ -1,14 +1,13 @@
 package com.newzly.phantom.dsl.crud
 
-import org.scalatest.{ Assertions, Matchers }
-import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.finagle.Implicits._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Primitive, Primitives }
 
-class SelectTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
+class SelectTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "selectTest"
 

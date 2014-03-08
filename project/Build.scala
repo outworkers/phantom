@@ -8,7 +8,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.4"
+  val newzlyUtilVersion = "0.0.13"
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
@@ -24,7 +24,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.1.0",
+    version := "0.1.5-SNAPSHOT",
     scalaVersion := "2.10.3",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",

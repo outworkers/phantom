@@ -3,8 +3,9 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
+import com.newzly.phantom.Implicits._
 import com.newzly.phantom.finagle.Implicits._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{
   Primitive,
@@ -42,16 +43,17 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
             a <- Primitives.select.where(_.pkey eqs row.pkey).one
             b <- Primitives.select.fetch
             u <- Primitives.update.where(_.pkey eqs row.pkey)
-                  .modify(_.long, updatedRow.long)
-                  .modify(_.boolean, updatedRow.boolean)
-                  .modify(_.bDecimal, updatedRow.bDecimal)
-                  .modify(_.double, updatedRow.double)
-                  .modify(_.float, updatedRow.float)
-                  .modify(_.inet, updatedRow.inet)
-                  .modify(_.int, updatedRow.int)
-                  .modify(_.date, updatedRow.date)
-                  .modify(_.uuid, updatedRow.uuid)
-                  .modify(_.bi, updatedRow.bi).future()
+                  .modify(_.long setTo updatedRow.long)
+                  .and(_.boolean setTo updatedRow.boolean)
+                  .and(_.bDecimal setTo updatedRow.bDecimal)
+                  .and(_.double setTo updatedRow.double)
+                  .and(_.float setTo updatedRow.float)
+                  .and(_.inet setTo updatedRow.inet)
+                  .and(_.int setTo updatedRow.int)
+                  .and(_.date setTo updatedRow.date)
+                  .and(_.uuid setTo updatedRow.uuid)
+                  .and(_.bi setTo updatedRow.bi)
+                  .future()
             a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
             b2 <- Primitives.select.fetch
 
@@ -79,7 +81,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
     val row = TestRow.sample
 
     val updatedRow = row.copy(
-      list = Seq ("new"),
+      list = List("new"),
       setText = Set("newSet"),
       mapTextToText =  Map("n" -> "newVal"),
       setInt = Set(3,4,7),
@@ -101,11 +103,11 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
         b <-TestTable.select.fetch
         u <- TestTable.update
           .where(_.key eqs row.key)
-          .modify(_.list,updatedRow.list)
-          .modify(_.setText,updatedRow.setText)
-          .modify(_.mapTextToText,updatedRow.mapTextToText)
-          .modify(_.setInt,updatedRow.setInt)
-          .modify(_.mapIntToText,updatedRow.mapIntToText).future()
+          .modify(_.list setTo updatedRow.list)
+          .and(_.setText setTo updatedRow.setText)
+          .modify(_.mapTextToText setTo updatedRow.mapTextToText)
+          .modify(_.setInt setTo updatedRow.setInt)
+          .modify(_.mapIntToText setTo updatedRow.mapIntToText).future()
         a2 <- TestTable.select.where(_.key eqs row.key).one
         b2 <- TestTable.select.fetch
         } yield (
