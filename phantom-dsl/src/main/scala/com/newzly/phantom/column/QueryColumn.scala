@@ -80,8 +80,6 @@ class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A: Cas
     val map = values.map({ case (k, v) => CassandraPrimitive[A].toCType(k) -> CassandraPrimitive[B].toCType(v) }).toMap.asJava
     QueryBuilder.putAll(col.name, map)
   }
-  def remove(key: A): Assignment = QueryBuilder.remove(col.name, CassandraPrimitive[A].toCType(key))
-  def removeAll[L <% Seq[A]](keys: L): Assignment = QueryBuilder.removeAll(col.name, keys.map(CassandraPrimitive[A].toCType).toSet.asJava)
 }
 
 class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](override val col: Column[Owner, Record, T]) extends SelectColumn[T](col) {

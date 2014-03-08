@@ -50,7 +50,7 @@ abstract class ThriftSetColumn[Owner <: CassandraTable[Owner, Record], Record, V
   }
 
   override def optional(r: Row): Option[Set[ValueType]] = {
-    Option(r.getList(name, primitive.cls)).map(_.asScala.map(
+    Option(r.getSet(name, primitive.cls)).map(_.asScala.map(
       e => serializer.fromString(primitive.fromCType(e.asInstanceOf[String]))
     ).toSet[ValueType])
   }

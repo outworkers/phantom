@@ -23,14 +23,15 @@ class ThriftColumnTest extends BaseTest {
       .value(_.id, sample.id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
-      .future()
+      .future() flatMap {
+      _ => ThriftColumnTable.select.one
+    }
 
     insert.successful {
       result => {
         Console.println("Record inserted")
-        val row = Await.result(ThriftColumnTable.select.one, Duration.fromSeconds(5))
-        row.isEmpty shouldEqual false
-        row.get.struct shouldEqual sample
+        result.isEmpty shouldEqual false
+        result.get.struct shouldEqual sample
       }
     }
   }
@@ -47,16 +48,17 @@ class ThriftColumnTest extends BaseTest {
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
-      .future()
+      .future() flatMap {
+      _ => ThriftColumnTable.select.one
+    }
 
     insert.successful {
       result => {
         Console.println("Record inserted")
-        val row = Await.result(ThriftColumnTable.select.one, Duration.fromSeconds(5))
-        row.isEmpty shouldEqual false
-        row.get.struct shouldEqual sample
-        Console.println(row.get.list.mkString(""))
-        row.get.list shouldEqual sampleList
+        result.isEmpty shouldEqual false
+        result.get.struct shouldEqual sample
+        Console.println(result.get.list.mkString(""))
+        result.get.list shouldEqual sampleList
       }
     }
   }
