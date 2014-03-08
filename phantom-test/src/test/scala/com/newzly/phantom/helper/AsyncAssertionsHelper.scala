@@ -103,7 +103,7 @@ object AsyncAssertionsHelper extends ScalaFutures {
      * @param timeout The timeout of the asynchronous Waiter.
      * @tparam T The error returned by the failing computation. Used to assert error messages.
      */
-    def failing[T  <: Throwable](implicit mf: Manifest[T], timeout: PatienceConfiguration.Timeout, executor: ExecutionContext = Manager.scalaExecutor): Unit = {
+    def failing[T  <: Throwable](implicit mf: Manifest[T], timeout: PatienceConfiguration.Timeout, executor: ExecutionContext): Unit = {
       val w = new Waiter
 
       f onSuccess {
@@ -123,7 +123,7 @@ object AsyncAssertionsHelper extends ScalaFutures {
      * @param x The computation inside the future to await. This waiting is asynchronous.
      * @param timeout The timeout of the future.
      */
-    def successful(x: A => Unit)(implicit timeout: PatienceConfiguration.Timeout, executor: ExecutionContext = Manager.scalaExecutor) : Unit = {
+    def successful(x: A => Unit)(implicit timeout: PatienceConfiguration.Timeout, executor: ExecutionContext) : Unit = {
       val w = new Waiter
 
       f onSuccess {

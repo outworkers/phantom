@@ -11,7 +11,7 @@ import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 case class Recipe(
   url: String,
   description: Option[String],
-  ingredients: Seq[String],
+  ingredients: List[String],
   servings: Option[Int],
   lastCheckedAt: DateTime,
   props: Map[String, String]
@@ -22,7 +22,7 @@ object Recipe extends ModelSampler[Recipe] {
     Recipe(
       Sampler.getAUniqueString,
       Some(Sampler.getAUniqueString),
-      Seq(Sampler.getAUniqueString, Sampler.getAUniqueString),
+      List(Sampler.getAUniqueString, Sampler.getAUniqueString),
       Some(Sampler.getARandomInteger()),
       new DateTime(),
       Map.empty[String, String]
@@ -51,7 +51,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   object description extends OptionalStringColumn(this)
 
-  object ingredients extends SeqColumn[Recipes, Recipe, String](this)
+  object ingredients extends ListColumn[Recipes, Recipe, String](this)
 
   object servings extends OptionalIntColumn(this)
 
