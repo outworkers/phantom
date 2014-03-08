@@ -4,7 +4,7 @@ import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.finagle.Implicits._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 

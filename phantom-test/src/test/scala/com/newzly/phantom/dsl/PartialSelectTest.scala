@@ -1,12 +1,12 @@
 package com.newzly.phantom.dsl
 
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
-import org.scalatest.Assertions
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.newzly.phantom.tables.{Primitives, Primitive, Article, Articles}
+import com.newzly.phantom.tables.{ Article, Articles, Primitives, Primitive }
+import com.newzly.util.finagle.AsyncAssertionsHelper._
+
 
 class PartialSelectTest extends BaseTest {
   val keySpace: String = "PartialSelect"
