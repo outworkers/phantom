@@ -41,13 +41,14 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
   def limit(l: Int) = {
     new SelectQuery(table, qb.limit(l), fromRow)
   }
-   /**
+
+  /**
    * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.
    * @param ctx The Execution Context.
    * @return
    */
-  override def one(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+  def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     new SelectQuery[T, R](table, qb.limit(1), fromRow).fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 }
@@ -55,6 +56,16 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
 class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Where, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return
+   */
+  def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+    new SelectQuery[T, R](table, qb.limit(1), fromRow).fetchEnumerator flatMap(_ run PlayIteratee.head)
+  }
 
   def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
@@ -70,4 +81,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   }
 
   def and = where _
+
+
 }
