@@ -42,4 +42,8 @@ object Implicits {
   implicit def thriftSetColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftSetColumn[T, R, RR]): ThriftSetLikeModifyColumn[T, R, RR] = {
     new ThriftSetLikeModifyColumn[T, R, RR](col)
   }
+
+  implicit def thriftListColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftListColumn[T, R, RR]): ThriftListLikeModifyColumn[T, R, RR] = {
+    new ThriftListLikeModifyColumn[T, R, RR](col)
+  }
 }
