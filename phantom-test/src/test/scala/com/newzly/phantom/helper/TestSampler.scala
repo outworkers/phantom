@@ -2,8 +2,9 @@ package com.newzly.phantom.helper
 
 import com.datastax.driver.core.Session
 import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.Implicits._
 import com.newzly.phantom.finagle.Implicits._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 /**
  * A basic trait implemented by all test tables.
