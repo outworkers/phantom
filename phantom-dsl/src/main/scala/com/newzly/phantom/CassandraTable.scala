@@ -16,6 +16,7 @@
 package com.newzly.phantom
 
 import scala.collection.parallel.mutable.ParHashSet
+import scala.collection.mutable.{ ArrayBuffer, SynchronizedBuffer }
 import org.apache.log4j.Logger
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder._
@@ -26,13 +27,13 @@ import com.newzly.phantom.column.{ AbstractColumn, SelectColumn }
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
-  private[this] lazy val _columns: ParHashSet[AbstractColumn[_]] = ParHashSet.empty[AbstractColumn[_]]
+  private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with SynchronizedBuffer[AbstractColumn[_]]
 
   def addColumn(column: AbstractColumn[_]): Unit = {
     _columns += column
   }
 
-  def columns: List[AbstractColumn[_]] = _columns.toList
+  def columns: Seq[AbstractColumn[_]] = _columns.toSeq.reverse
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
@@ -85,20 +86,20 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def count = new CountQuery[T, R](this, QueryBuilder.select().countAll().from(tableName))
+  def count = new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), this.asInstanceOf[T].fromRow)
 
-  def secondaryKeys: List[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
+  def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
-  def primaryKeys: List[AbstractColumn[_]] = columns.filter(_.isPrimary)
+  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   def schema(): String = {
     val queryInit = s"CREATE TABLE $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
-    val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(",")
+    val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(", ")
     val pkes = {
-      primaryKeys.filter(_.isPartitionKey) match {
+      primaryKeys.toList.filter(_.isPartitionKey) match {
         case head :: tail if !tail.isEmpty => throw new Exception("only one partition key is allowed in the schema")
         case head :: tail =>
           if(primaryKeysString.isEmpty)

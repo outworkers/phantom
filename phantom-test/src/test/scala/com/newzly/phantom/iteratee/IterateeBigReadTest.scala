@@ -2,7 +2,7 @@ package com.newzly.phantom.iteratee
 
 import org.scalatest.concurrent.ScalaFutures
 import com.newzly.phantom.tables.PrimitivesJoda
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import java.util.concurrent.atomic.AtomicLong
 
 class IterateeBigReadTest extends BigTest with ScalaFutures {

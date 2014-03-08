@@ -7,7 +7,15 @@ class CreateTableQueryString extends FlatSpec {
 
   it should "create the right keys" in {
     val q = TwoKeys.schema()
-    assert(q.contains("PRIMARY KEY (pkey, intColumn)"))
+    assert(q.contains("PRIMARY KEY (pkey, " +
+      "intColumn1, " +
+      "intColumn2, " +
+      "intColumn3, " +
+      "intColumn4, " +
+      "intColumn5, " +
+      "intColumn6, " +
+      "intColumn7" +
+      ")"))
   }
 
   it should "get the right query in primitives table" in {
