@@ -7,7 +7,7 @@ import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class TestRow(
   key: String,
-  list: Seq[String],
+  list: List[String],
   setText: Set[String],
   mapTextToText: Map[String, String],
   setInt: Set[Int],
@@ -17,7 +17,7 @@ case class TestRow(
 object TestRow extends ModelSampler[TestRow] {
   def sample: TestRow = TestRow(
     Sampler.getAUniqueString,
-    List.range(0, 50).map(_.toString).toSeq,
+    List.range(0, 50).map(_.toString),
     List.range(0, 50).map(_.toString).toSet,
     List.range(0, 50).map(x => {Sampler.getAUniqueString -> Sampler.getAUniqueString}).toMap,
     List.range(0, 50).toSet,
@@ -31,7 +31,7 @@ sealed class TestTable extends CassandraTable[TestTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends SeqColumn[TestTable, TestRow, String](this)
+  object list extends ListColumn[TestTable, TestRow, String](this)
 
   object setText extends SetColumn[TestTable, TestRow, String](this)
 

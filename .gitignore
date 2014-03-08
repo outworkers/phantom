@@ -1,6 +1,8 @@
 *.class
 *.log
 
+atlassian-ide-plugin.xml
+
 # Eclipse specific
 .classpath
 .project

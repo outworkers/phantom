@@ -6,7 +6,7 @@ import org.scalatest.{Assertions, Matchers}
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.AsyncAssertionsHelper._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement
 import java.util.concurrent.atomic.AtomicInteger
 

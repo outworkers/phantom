@@ -6,13 +6,13 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```0.1.0```.
+The current version is: ```val phantomVersion = 0.1.5-SNAPSHOT```.
 
 ```scala
 resolvers ++= Seq("newzly Releases" at "http://maven.newzly.com/repository/internal")
 libraryDependencies ++= Seq(
-  "com.newzly"  %% "phantom-dsl"    % "0.1.0",
-  "com.newzly"  %% "phantom-thrift" % "0.1.0"
+  "com.newzly"  %% "phantom-dsl"    % phantomVersion,
+  "com.newzly"  %% "phantom-thrift" % phantomVersion
 )
 ```
 
@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
 Basic data models and Thrift IDL definitions
 ======================
 
-We use Apache Thrift extensively for our backend services. ```phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "phantom-thrift"  % "0.1.0"```.
+We use Apache Thrift extensively for our backend services. ```phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "phantom-thrift"  % phantomVersion```.
 
 ```thrift
 namespace java com.newzly.phantom.sample.ExampleModel
@@ -77,7 +77,7 @@ Querying with Phantom
 
 The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
 
-Phantom works with both Scala Futures and Twitter Futures. For the Twitter flavour, simply add the ```"com.newzly  %% phantom-finagle % 0.1.0"``` dependency. 
+Phantom works with both Scala Futures and Twitter Futures. For the Twitter flavour, simply add the ```"com.newzly  %% phantom-finagle % phantomVersion"``` dependency.
 
 ```scala
 
