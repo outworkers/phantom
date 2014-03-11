@@ -17,7 +17,7 @@ class IterateeBigTest extends BigTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
 
   it should "get result fine" in {
-    PrimitivesJoda.insertSchema(session)
+    PrimitivesJoda.insertSchema()
     val fs = for {
       step <- 1 to 100
       rows = Iterator.fill(10000)(JodaRow.sample)

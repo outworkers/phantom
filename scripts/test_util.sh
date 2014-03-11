@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sbt "project phantom-cassandra-unit" "assembly"
+sbt "project phantom-test" "assembly"
 nohup java -jar ${PWD}/cassandra.jar &

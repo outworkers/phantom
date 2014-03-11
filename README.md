@@ -6,7 +6,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.1.5-SNAPSHOT```.
+The current version is: ```val phantomVersion = 0.1.9-SNAPSHOT```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
@@ -34,18 +34,6 @@ libraryDependencies ++= Seq(
 )
 ```
 
-Basic models
-======================
-
-```scala
-case class ExampleModel (
-  id: Int,
-  name: String,
-  props: Map[String, String],
-  timestamp: Int,
-  test: Option[Int]
-)
-```
 
 Data modeling with phantom
 ==========================
@@ -56,6 +44,14 @@ import java.util.{ UUID, Date }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.sample.ExampleModel
 import com.newzly.phantom.Implicits._
+
+case class ExampleModel (
+  id: Int,
+  name: String,
+  props: Map[String, String],
+  timestamp: Int,
+  test: Option[Int]
+)
 
 sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] {
 
@@ -314,6 +310,27 @@ stuct ExampleModel {
   4: required i32 timestamp
   5: optional i32 test
 }
+```
+
+
+Running the tests
+=================
+
+phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
+You need two terminals to run the tests, one for Embedded Cassandra and one for the actual tests.
+
+```scala
+sbt
+project phantom-cassandra-unit
+run
+```
+
+Then in a new terminal
+
+```scala
+sbt
+project phantom-test
+test
 ```
 
 Maintainers

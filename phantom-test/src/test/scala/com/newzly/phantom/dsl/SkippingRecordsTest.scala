@@ -1,15 +1,12 @@
 
 package com.newzly.phantom.dsl
 
-import org.scalatest.Assertions
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-
-import com.newzly.phantom.finagle.Implicits._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Article, Articles }
-import org.scalatest.time.SpanSugar._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 
 class SkippingRecordsTest extends BaseTest {
@@ -17,7 +14,7 @@ class SkippingRecordsTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   it should "allow skipping records " in {
-    Articles.insertSchema(session)
+    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = article1.copy(order_id = article1.order_id + 1)
     val article3 = article1.copy(order_id = article1.order_id + 2)
