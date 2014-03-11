@@ -16,7 +16,5 @@ class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) ext
       }
       }
     }
-
-
   }
 }

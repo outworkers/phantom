@@ -15,17 +15,19 @@
  */
 package com.newzly.phantom
 
-import scala.collection.parallel.mutable.ParHashSet
+import scala.collection.JavaConverters._
 import scala.collection.mutable.{ ArrayBuffer, SynchronizedBuffer }
-import org.apache.log4j.Logger
+import scala.util.Try
+import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder._
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
-import com.newzly.phantom.query._
-import com.newzly.phantom.column.{ AbstractColumn, SelectColumn }
+import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery }
+import com.newzly.phantom.column.AbstractColumn
+import scala.reflect.runtime.universe._
 
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
+abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends EarlyInit[T] with SelectTable[T, R] {
 
   private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with SynchronizedBuffer[AbstractColumn[_]]
 
@@ -39,44 +41,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
-  lazy val logger = Logger.getLogger(_name)
+  def extractCount(r: Row): Option[Long] = {
+    Try {
+      Some(r.getLong("count"))
+    } getOrElse None
+  }
+
+  lazy val logger = LoggerFactory.getLogger(tableName)
 
   def tableName: String = _name
 
   def fromRow(r: Row): R
-
-  def select: SelectQuery[T, R] =
-    new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().from(tableName), this.asInstanceOf[T].fromRow)
-
-  def select[A](f1: T => SelectColumn[A]): SelectQuery[T, A] = {
-    val t = this.asInstanceOf[T]
-    val c = f1(t)
-    new SelectQuery[T, A](t, QueryBuilder.select(c.col.name).from(tableName), c.apply)
-  }
-
-  def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): SelectQuery[T, (A, B)] = {
-    val t = this.asInstanceOf[T]
-    val c1 = f1(t)
-    val c2 = f2(t)
-    new SelectQuery[T, (A, B)](t, QueryBuilder.select(c1.col.name, c2.col.name).from(tableName), r => (c1(r), c2(r)))
-  }
-
-  def select[A, B, C](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): SelectQuery[T, (A, B, C)] = {
-    val t = this.asInstanceOf[T]
-    val c1 = f1(t)
-    val c2 = f2(t)
-    val c3 = f3(t)
-    new SelectQuery[T, (A, B, C)](t, QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name).from(tableName), r => (c1(r), c2(r), c3(r)))
-  }
-
-  def select[A, B, C, D](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C], f4: T => SelectColumn[D]): SelectQuery[T, (A, B, C, D)] = {
-    val t = this.asInstanceOf[T]
-    val c1 = f1(t)
-    val c2 = f2(t)
-    val c3 = f3(t)
-    val c4 = f4(t)
-    new SelectQuery[T, (A, B, C, D)](t, QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name, c4.col.name).from(tableName), r => (c1(r), c2(r), c3(r), c4(r)))
-  }
 
   def update = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
 
@@ -86,14 +61,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def count = new SelectQuery[T, R](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), this.asInstanceOf[T].fromRow)
+  def count = new SelectQuery[T, Option[Long]](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
   def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   def schema(): String = {
-    val queryInit = s"CREATE TABLE $tableName ("
+    val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
@@ -117,7 +92,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends EarlyInit {
   }
 
   def createIndexes(): Seq[String] = {
-    secondaryKeys.map(k => s"CREATE INDEX ON $tableName (${k.name});")
+    secondaryKeys.map(k => s"CREATE IF NOT EXISTS INDEX ${k.name} ON $tableName (${k.name});")
   }
 
 }

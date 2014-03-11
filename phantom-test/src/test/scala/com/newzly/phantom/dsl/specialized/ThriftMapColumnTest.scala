@@ -1,0 +1,122 @@
+package com.newzly.phantom.dsl.specialized
+
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
+import com.newzly.phantom.Implicits._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.phantom.helper.{ BaseTest, Sampler }
+import com.newzly.phantom.tables.ThriftColumnTable
+import com.newzly.phantom.thrift.Implicits._
+import com.newzly.phantom.thrift.ThriftTest
+
+class ThriftMapColumnTest extends BaseTest {
+
+  val keySpace = "thriftmapoperators"
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  it should "put an item to a thrift map column" in {
+    ThriftColumnTable.insertSchema
+
+    val sample = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getAUniqueString,
+      test = true
+    )
+
+    val sample2 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getAUniqueString,
+      test = true
+    )
+
+    val map = Map("first" -> sample)
+    val toAdd = "second" -> sample2
+    val expected = map + toAdd
+
+
+    val insert = ThriftColumnTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, Set(sample))
+      .value(_.thriftList, List(sample))
+      .value(_.thriftMap, map)
+
+      .future()
+
+
+    Console.println("logging query")
+    Console.println(ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).qb.toString)
+    val operation = for {
+      insertDone <- insert
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+    } yield {
+      select
+    }
+
+    operation.successful {
+      items => {
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe expected
+      }
+    }
+  }
+
+  it should "put several items to a thrift map column" in {
+    ThriftColumnTable.insertSchema
+
+    val sample = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getAUniqueString,
+      test = true
+    )
+
+    val sample2 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getAUniqueString,
+      test = true
+    )
+
+    val sample3 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getAUniqueString,
+      test = true
+    )
+
+    val map = Map("first" -> sample)
+    val toAdd = Map("second" -> sample2, "third" -> sample3)
+    val expected = map ++ toAdd
+
+
+    val insert = ThriftColumnTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, Set(sample))
+      .value(_.thriftList, List(sample))
+      .value(_.thriftMap, map)
+
+      .future()
+
+    Console.println("logging query")
+    Console.println(ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).qb.toString)
+
+    val operation = for {
+      insertDone <- insert
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+    } yield {
+      select
+    }
+
+    operation.successful {
+      items => {
+        Console.println(s"${items.mkString(" ")}")
+        items.isDefined shouldBe true
+        items.get shouldBe expected
+      }
+    }
+  }
+}
