@@ -14,14 +14,14 @@ case class TestRow(
   mapIntToText: Map[Int, String]
 )
 
-object TestRow extends ModelSampler[TestRow] {
-  def sample: TestRow = TestRow(
+object TestRow {
+  def sample(end: Int = 5): TestRow = TestRow(
     Sampler.getAUniqueString,
-    List.range(0, 50).map(_.toString),
-    List.range(0, 50).map(_.toString).toSet,
-    List.range(0, 50).map(x => {Sampler.getAUniqueString -> Sampler.getAUniqueString}).toMap,
-    List.range(0, 50).toSet,
-    List.range(0, 50).map(x => {
+    List.range(0, end).map(_.toString),
+    List.range(0, end).map(_.toString).toSet,
+    List.range(0, end).map(x => {Sampler.getAUniqueString -> Sampler.getAUniqueString}).toMap,
+    List.range(0, end).toSet,
+    List.range(0, end).map(x => {
       x -> Sampler.getAUniqueString
     }).toMap
   )

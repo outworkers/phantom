@@ -14,11 +14,11 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPr
   def toCType(values: Set[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
   override def apply(r: Row): Set[RR] = {
-    optional(r).getOrElse(Set.empty)
+    optional(r).getOrElse(Set.empty[RR])
   }
 
   def optional(r: Row): Option[Set[RR]] = {
     val i = implicitly[CassandraPrimitive[RR]]
-    Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet)
+    Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet[RR])
   }
 }

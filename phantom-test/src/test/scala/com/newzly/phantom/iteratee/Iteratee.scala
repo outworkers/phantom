@@ -16,7 +16,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
   it should "get result fine" in {
-    PrimitivesJoda.insertSchema(session)
+    PrimitivesJoda.insertSchema()
 
     val rows = for (i <- 1 to 1000) yield  JodaRow.sample
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
@@ -42,7 +42,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   }
 
   it should "get mapResult fine" in {
-    Primitives.insertSchema(session)
+    Primitives.insertSchema()
     val rows = for (i <- 1 to 2000) yield  Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b,row) => {
       val statement = Primitives.insert

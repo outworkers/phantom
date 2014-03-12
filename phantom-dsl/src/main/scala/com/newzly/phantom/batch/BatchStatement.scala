@@ -1,10 +1,9 @@
 package com.newzly.phantom.batch
 
-import com.newzly.phantom.query.ExecutableStatement
-import com.datastax.driver.core.{BatchStatement => DatastaxBatchStatement, ResultSet, Session}
-import com.newzly.phantom.CassandraResultSetOperations
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
+import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, ResultSet, Session }
+import com.newzly.phantom.query.ExecutableStatement
+import com.newzly.phantom.CassandraResultSetOperations
 
 sealed trait BatchQueryListTrait extends CassandraResultSetOperations {
   protected[this] lazy val statements: Iterator[ExecutableStatement] =  Iterator.empty

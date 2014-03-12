@@ -1,12 +1,10 @@
 package com.newzly.phantom.dsl.batch
 
-import org.joda.time.DateTime
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.batch.BatchStatement
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.finagle.Implicits._
 import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
@@ -20,7 +18,7 @@ class BatchTest extends BaseTest with Matchers with Assertions with AsyncAsserti
     val row = JodaRow.sample
     val row2 = JodaRow.sample.copy(pkey = row.pkey)
     val row3 = JodaRow.sample
-    PrimitivesJoda.insertSchema(session)
+    PrimitivesJoda.insertSchema()
     val statement1 = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
