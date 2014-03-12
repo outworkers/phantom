@@ -101,9 +101,9 @@ abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : Cassandra
   override val cassandraType = s"map<${CassandraPrimitive[KeyType].cassandraType}, text>"
 
   override def toCType(v: Map[KeyType, ValueType]): AnyRef = {
-    v.map {
+    mapAsJavaMapConverter(v.map {
       case (key, value) => CassandraPrimitive[KeyType].toCType(key) -> primitive.toCType(serializer.toString(value))
-    }(breakOut).asJava
+    }).asJava
   }
 
   def optional(r: Row): Option[Map[KeyType, ValueType]] = {
