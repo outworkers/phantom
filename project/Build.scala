@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import Tests._
 import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
@@ -8,15 +7,16 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.13"
+  val newzlyUtilVersion = "0.0.17"
   val datastaxDriverVersion = "2.0.0-rc2"
   val liftVersion = "2.6-M2"
   val scalatestVersion = "2.0.M8"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
+  val thriftVersion = "0.9.1"
 
   val thriftLibs = Seq(
-    "org.apache.thrift" % "libthrift" % "0.9.1" intransitive()
+    "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
   )
   val scroogeLibs = thriftLibs ++ Seq(
     "com.twitter" %% "scrooge-runtime" % scroogeVersion
@@ -24,7 +24,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.1.5-SNAPSHOT",
+    version := "0.2.0",
     scalaVersion := "2.10.3",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -91,7 +91,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val arhviaPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
@@ -131,9 +131,9 @@ object phantom extends Build {
     name := "phantom"
   ).aggregate(
     phantomDsl,
+    phantomCassandraUnit,
     phantomFinagle,
     phantomThrift,
-    phantomCassandraUnit,
     phantomTest
   )
 
@@ -147,13 +147,42 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     libraryDependencies ++= Seq(
-"com.typesafe.play" %% "play-iteratees" % "2.2.0",
+      "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-      "org.apache.cassandra"         %  "cassandra-all"                     % "2.0.2"               % "compile, test" exclude("org.slf4j", "slf4j-log4j12"),
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j"),
       "org.scala-lang"               %  "scala-reflect"                     % "2.10.3"
 
+    )
+  )
+
+  lazy val phantomCassandraUnit = Project(
+    id = "phantom-cassandra-unit",
+    base = file("phantom-cassandra-unit"),
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++ publishSettings
+  ).settings(
+    name := "phantom-cassandra-unit",
+    jarName in assembly := "cassandra.jar",
+    outputPath in assembly := file("cassandra.jar"),
+    test in assembly := {},
+    fork in run := true,
+    assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
+    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+      cp filter { x =>
+        x.data.getName.indexOf("specs2_2.") >= 0 ||
+          x.data.getName.indexOf("scalap-2.") >= 0 ||
+          x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
+          x.data.getName.indexOf("scala-json_") >= 0 ||
+          x.data.getName.indexOf("netty-3.2.9") >= 0 ||
+          x.data.getName.indexOf("com.twitter") >= 0
+      }
+    }
+  ).settings(
+    libraryDependencies ++= Seq(
+      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
     )
   )
 
@@ -168,7 +197,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.apache.thrift"            %  "libthrift"                         % "0.9.1",
+      "org.apache.thrift"            %  "libthrift"                         % thriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion
@@ -187,7 +216,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-finagle",
     libraryDependencies ++= Seq(
-      "com.twitter"                  %% "util-collection"                   % "6.3.6"
+      "com.twitter"                  %% "util-collection"                   % finagleVersion
     )
   ).dependsOn(
     phantomDsl
@@ -202,48 +231,12 @@ object phantom extends Build {
       publishSettings ++
       ScroogeSBT.newSettings
   ).settings(
-    name := "phantom-example",
-    libraryDependencies ++= Seq(
-      "org.apache.thrift"            %  "libthrift"                         % "0.9.1",
-      "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
-      "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
-      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion
-    )
+    name := "phantom-example"
   ).dependsOn(
     phantomDsl,
     phantomFinagle,
     phantomThrift
   )
-
-  lazy val phantomCassandraUnit = Project(
-    id = "phantom-cassandra-unit",
-    base = file("phantom-cassandra-unit"),
-    settings = Project.defaultSettings ++
-      assemblySettings ++
-      VersionManagement.newSettings ++
-      sharedSettings ++ publishSettings
-  ).settings(
-      name := "phantom-cassandra-unit",
-      jarName in assembly := "cassandra.jar",
-      outputPath in assembly := file("cassandra.jar"),
-      test in assembly := {},
-      fork in run := true,
-      assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
-      excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-        cp filter { x =>
-          x.data.getName.indexOf("specs2_2.") >= 0 ||
-          x.data.getName.indexOf("scalap-2.") >= 0 ||
-          x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
-          x.data.getName.indexOf("scala-json_") >= 0 ||
-          x.data.getName.indexOf("netty-3.2.9") >= 0 ||
-          x.data.getName.indexOf("com.twitter") >= 0
-        }
-      }
-    ).settings(
-      libraryDependencies ++= Seq(
-        "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
-      )
-    )
 
   lazy val phantomTest = Project(
     id = "phantom-test",

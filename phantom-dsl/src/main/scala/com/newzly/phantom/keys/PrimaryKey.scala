@@ -32,7 +32,6 @@ trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] {
   override val isPrimary = true
 }
 
-
 /**
  * A trait mixable into Column definitions to allow storing them as keys.
  */

@@ -4,10 +4,9 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.finagle.Implicits._
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Recipe, Recipes }
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 class ListOperatorsTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -32,9 +31,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -64,9 +61,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients appendAll appendable).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -95,9 +90,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -127,9 +120,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prependAll appendable).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -159,9 +150,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients remove list.head).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -191,9 +180,7 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients removeAll list.tail).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {

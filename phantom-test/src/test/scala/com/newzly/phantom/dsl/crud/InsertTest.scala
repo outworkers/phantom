@@ -3,10 +3,9 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.phantom.finagle.Implicits._
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables._
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 class InsertTest extends BaseTest {
   val keySpace: String = "InsertTestKeySpace"
@@ -16,7 +15,7 @@ class InsertTest extends BaseTest {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
-    Primitives.insertSchema(session)
+    Primitives.insertSchema()
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -47,8 +46,8 @@ class InsertTest extends BaseTest {
   }
 
   it should "work fine with List, Set, Map" in {
-    TestTable.insertSchema(session)
-    val row = TestRow.sample
+    TestTable.insertSchema()
+    val row = TestRow.sample()
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -75,7 +74,7 @@ class InsertTest extends BaseTest {
 
   it should "work fine with Mix" in {
     val r = Recipe.sample
-    Recipes.insertSchema(session)
+    Recipes.insertSchema()
     val rcp = Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
@@ -97,7 +96,7 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    MyTest.insertSchema(session)
+    MyTest.insertSchema()
 
     val row = MyTestRow.sample
 
@@ -116,7 +115,7 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing to List " in {
-    MyTest.insertSchema(session)
+    MyTest.insertSchema()
 
     val row = MyTestRow.sample
 

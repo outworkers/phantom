@@ -4,7 +4,6 @@ import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.finagle.Implicits._
 import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{
@@ -25,7 +24,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
     val row = Primitive.sample
 
     val updatedRow = Primitive.sample.copy(pkey = row.pkey)
-    Primitives.insertSchema(session)
+    Primitives.insertSchema()
     val rcp = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -78,7 +77,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
 
   it should "work fine with List, Set, Map" in {
 
-    val row = TestRow.sample
+    val row = TestRow.sample()
 
     val updatedRow = row.copy(
       list = List("new"),
@@ -88,7 +87,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       mapIntToText = Map (-1 -> "&&&")
     )
 
-    TestTable.insertSchema(session)
+    TestTable.insertSchema()
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
