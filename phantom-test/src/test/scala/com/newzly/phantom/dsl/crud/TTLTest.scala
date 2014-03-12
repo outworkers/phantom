@@ -3,11 +3,9 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.{ Assertions, Matchers, Inside }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
-
-import com.newzly.phantom.finagle.Implicits._
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Primitive, Primitives }
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.twitter.util.Duration
 
 class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertions with Inside {
@@ -17,7 +15,7 @@ class TTLTest extends BaseTest with Matchers with Assertions with AsyncAssertion
 
   it should "expire inserted records" in {
     val row = Primitive.sample
-    Primitives.insertSchema(session)
+    Primitives.insertSchema()
     val test = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
