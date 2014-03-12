@@ -23,10 +23,11 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
   def insertSchema()(implicit session: Session): Unit = {
       logger.info("Schema agreement in progress: ")
       try {
+        logger.info(schema())
         create.future().sync()
       } catch {
         case e: Throwable =>
-          logger.error(s"schema for ${this.tableName} could not be created. ")
+          logger.error(s"schema for $tableName could not be created. ")
           logger.error(e.getMessage)
       }
   }

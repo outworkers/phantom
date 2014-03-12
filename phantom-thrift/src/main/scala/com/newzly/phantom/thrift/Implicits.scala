@@ -36,9 +36,9 @@ object Implicits {
   }
 
   implicit class ThriftMapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, Key : CassandraPrimitive, RR <: ThriftStruct](col: ThriftMapColumn[Owner, Record, Key, RR]) extends ModifyColumn[Map[Key, RR]](col) {
-    def put(value: (Key, RR)): Assignment = QueryBuilder.put(col.name, CassandraPrimitive[Key].toCType(value._1), col.itemToCType(value._2))
+    def put(value: (Key, RR)): Assignment = QueryBuilder.put(col.name, CassandraPrimitive[Key].toCType(value._1), col.itemToCType(value._2).asInstanceOf[String])
     def putAll[L <% Traversable[(Key, RR)]](values: L): Assignment = {
-      val map = values.map({ case (k, v) => CassandraPrimitive[Key].toCType(k) -> col.itemToCType(v) }).toMap.asJava
+      val map = values.map({ case (k, v) => CassandraPrimitive[Key].toCType(k) -> col.itemToCType(v).asInstanceOf[String] }).toMap.asJava
       QueryBuilder.putAll(col.name, map)
     }
   }

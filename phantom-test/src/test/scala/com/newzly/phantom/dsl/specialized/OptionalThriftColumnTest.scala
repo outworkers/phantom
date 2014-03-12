@@ -40,7 +40,7 @@ class OptionalThriftColumnTest extends BaseTest {
     operation.successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldBe sample
+        res.get shouldBe Some(sample)
       }
     }
   }
@@ -70,7 +70,8 @@ class OptionalThriftColumnTest extends BaseTest {
 
     operation.successful {
       res => {
-        res.isDefined shouldBe false
+        res.isDefined shouldBe true
+        res.get.isDefined shouldBe false
       }
     }
   }

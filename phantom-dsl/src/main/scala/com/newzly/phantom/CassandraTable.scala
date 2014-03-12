@@ -15,8 +15,10 @@
  */
 package com.newzly.phantom
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ ArrayBuffer, SynchronizedBuffer }
+import scala.util.control.NonFatal
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
@@ -27,7 +29,9 @@ import com.newzly.phantom.column.AbstractColumn
 import scala.reflect.runtime.universe._
 
 
-abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends EarlyInit[T] with SelectTable[T, R] {
+abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends SelectTable[T, R] {
+
+  private[this] val greedyInit = new AtomicBoolean(false)
 
   private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with SynchronizedBuffer[AbstractColumn[_]]
 
@@ -68,7 +72,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends E
   def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   def schema(): String = {
-    val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
+    val queryInit = s"CREATE TABLE $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
@@ -95,4 +99,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends E
     secondaryKeys.map(k => s"CREATE IF NOT EXISTS INDEX ${k.name} ON $tableName (${k.name});")
   }
 
+  val mirror = runtimeMirror(getClass.getClassLoader)
+  val reflection  = mirror.reflect(this)
+
+  if (greedyInit.compareAndSet(false, true)) {
+    Console.println("Initialising tables")
+    synchronized {
+      typeTag[T].tpe.members.filter(_.isModule).foreach(m => try {
+        reflection.reflectModule(m.asModule).instance
+      } catch {
+        case NonFatal(err) => logger.error(err.getMessage)
+      })
+    }
+  }
 }

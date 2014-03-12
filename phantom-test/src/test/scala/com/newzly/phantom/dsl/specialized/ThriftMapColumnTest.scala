@@ -45,8 +45,6 @@ class ThriftMapColumnTest extends BaseTest {
       .future()
 
 
-    Console.println("logging query")
-    Console.println(ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).qb.toString)
     val operation = for {
       insertDone <- insert
       update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
