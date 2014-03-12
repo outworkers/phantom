@@ -1,6 +1,6 @@
 package com.newzly.phantom.dsl
 
-import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.BaseTest
@@ -14,7 +14,7 @@ class PartialSelectTest extends BaseTest {
 
   "Select" should "work fine" in {
     val row = Primitive.sample
-    Primitives.insertSchema(session)
+    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

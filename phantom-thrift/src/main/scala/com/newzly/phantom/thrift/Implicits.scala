@@ -9,24 +9,24 @@ import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment}
 
 object Implicits {
 
-
   type ThriftColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftColumn[T, R, Value]
   type ThriftSetColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftSetColumn[T, R, Value]
   type ThriftListColumn[T <: CassandraTable[T, R], R, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftListColumn[T, R, Value]
+  type ThriftMapColumn[T <: CassandraTable[T, R], R, Key, Value <: ThriftStruct] = com.newzly.phantom.thrift.ThriftMapColumn[T, R, Key, Value]
+  type OptionalThriftColumn[T <: CassandraTable[T, R], R, RR <: ThriftStruct] = com.newzly.phantom.thrift.OptionalThriftColumn[T, R, RR]
 
-  class ThriftModifyColumn[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) extends AbstractModifyColumn[RR](col.name) {
-
+  implicit class ThriftModifyColumn[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) extends AbstractModifyColumn[RR](col.name) {
     def toCType(v: RR): AnyRef = col.toCType(v)
   }
 
-  class ThriftSetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftSetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
+  implicit class ThriftSetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftSetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
     def add(value: RR): Assignment = QueryBuilder.add(col.name, col.itemToCType(value))
     def addAll(values: Set[RR]): Assignment = QueryBuilder.addAll(col.name, values.map(col.itemToCType).asJava)
     def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.itemToCType(value))
     def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, values.map(col.itemToCType).asJava)
   }
 
-  class ThriftListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
+  implicit class ThriftListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR <: ThriftStruct](col: ThriftListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
     def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, col.itemToCType(value))
     def prependAll(values: List[RR]): Assignment = QueryBuilder.prependAll(col.name, values.map(col.itemToCType).asJava)
     def append(value: RR): Assignment = QueryBuilder.append(col.name, col.itemToCType(value))
@@ -35,15 +35,11 @@ object Implicits {
     def removeAll(values: List[RR]): Assignment = QueryBuilder.removeAll(col.name, values.toSet[RR].map(col.itemToCType).asJava)
   }
 
-  implicit def thriftColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftColumn[T, R, RR]) : ThriftModifyColumn[T, R, RR] = {
-    new ThriftModifyColumn[T, R, RR](col)
-  }
-
-  implicit def thriftSetColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftSetColumn[T, R, RR]): ThriftSetLikeModifyColumn[T, R, RR] = {
-    new ThriftSetLikeModifyColumn[T, R, RR](col)
-  }
-
-  implicit def thriftListColumnToAssignment[T <: CassandraTable[T, R], R, RR <: ThriftStruct](col: ThriftListColumn[T, R, RR]): ThriftListLikeModifyColumn[T, R, RR] = {
-    new ThriftListLikeModifyColumn[T, R, RR](col)
+  implicit class ThriftMapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, Key : CassandraPrimitive, RR <: ThriftStruct](col: ThriftMapColumn[Owner, Record, Key, RR]) extends ModifyColumn[Map[Key, RR]](col) {
+    def put(value: (Key, RR)): Assignment = QueryBuilder.put(col.name, CassandraPrimitive[Key].toCType(value._1), col.itemToCType(value._2))
+    def putAll[L <% Traversable[(Key, RR)]](values: L): Assignment = {
+      val map = values.map({ case (k, v) => CassandraPrimitive[Key].toCType(k) -> col.itemToCType(v).asInstanceOf[String] }).toMap.asJava
+      QueryBuilder.putAll(col.name, map)
+    }
   }
 }

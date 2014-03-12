@@ -1,9 +1,7 @@
 package com.newzly.phantom.dsl.specialized
 
-import org.scalatest.{ Assertions, Matchers }
-import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.finagle.Implicits._
 import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
@@ -14,7 +12,7 @@ class JodaDateTimeColumn extends BaseTest {
 
   it should "work fine" in {
     val row = JodaRow.sample
-    PrimitivesJoda.insertSchema(session)
+    PrimitivesJoda.insertSchema()
     val w =
         PrimitivesJoda.insert
           .value(_.pkey, row.pkey)

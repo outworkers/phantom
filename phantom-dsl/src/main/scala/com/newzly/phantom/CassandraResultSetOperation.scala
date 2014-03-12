@@ -21,7 +21,6 @@ import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
   FutureCallback,
-  ListeningExecutorService,
   MoreExecutors
 }
 

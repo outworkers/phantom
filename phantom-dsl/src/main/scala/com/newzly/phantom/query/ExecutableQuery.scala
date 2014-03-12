@@ -42,6 +42,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def fromRow(r: Row): R
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+    table.logger.info(qb.toString)
     scalaStatementToFuture(qb)
   }
 
@@ -76,6 +77,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
    * @return
    */
   def fetch()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): ScalaFuture[Seq[R]] = {
+    table.logger.info(qb.toString)
     fetchEnumerator flatMap(_ run Iteratee.collect())
   }
 }
