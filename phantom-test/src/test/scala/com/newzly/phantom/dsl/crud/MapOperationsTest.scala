@@ -42,7 +42,6 @@ class MapOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe props + item
       }
@@ -77,7 +76,6 @@ class MapOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe props ++ mapItems
       }

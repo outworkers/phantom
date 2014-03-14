@@ -32,7 +32,6 @@ class SetOperationsTest extends BaseTest {
 
     chain.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe item.setText + someItem
       }
@@ -63,7 +62,6 @@ class SetOperationsTest extends BaseTest {
 
     chain.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe item.setText ++ someItems
       }
@@ -93,7 +91,6 @@ class SetOperationsTest extends BaseTest {
 
     chain.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe someItems.diff(Set(removal))
       }
@@ -123,7 +120,6 @@ class SetOperationsTest extends BaseTest {
 
     chain.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe someItems.diff(removal)
       }

@@ -114,7 +114,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val fullMap = potentialFields.foldLeft[Map[String, List[Method]]](Map()) {
       case (map, method) => val name = method.getName
         order += method.getName
-        Console.println(method.getName)
         map + (name -> (method :: map.getOrElse(name, Nil)))
 
     }
