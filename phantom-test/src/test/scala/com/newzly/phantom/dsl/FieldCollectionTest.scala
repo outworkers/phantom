@@ -5,7 +5,7 @@ import com.newzly.phantom.tables.{ Articles, Primitives }
 
 class FieldCollectionTest extends FlatSpec with Matchers {
 
-  it should "collect objects in the same order they are written" in {
+  ignore should "collect objects in the same order they are written" in {
     val collected = Articles.columns.map(_.name).mkString(" ")
     val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
     collected shouldBe expected
