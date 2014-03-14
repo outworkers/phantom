@@ -15,31 +15,32 @@
  */
 package com.newzly.phantom
 
-import java.util.concurrent.atomic.AtomicBoolean
-import scala.collection.JavaConverters._
-import scala.collection.mutable.{ ArrayBuffer, SynchronizedBuffer }
-import scala.util.control.NonFatal
+import java.lang.reflect.Method
+import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
-
-import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery }
 import com.newzly.phantom.column.AbstractColumn
-import scala.reflect.runtime.universe._
+import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery }
 
+case class FieldHolder(name: String, metaField: AbstractColumn[_])
 
-abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends SelectTable[T, R] {
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[this] val greedyInit = new AtomicBoolean(false)
+  val order = new ArrayBuffer[String] with collection.mutable.SynchronizedBuffer[String]
 
-  private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with SynchronizedBuffer[AbstractColumn[_]]
+  def runSafe[A](f : => A) : A = {
+    Safe.runSafe(System.identityHashCode(this))(f)
+  }
+
+  private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with collection.mutable.SynchronizedBuffer[AbstractColumn[_]]
 
   def addColumn(column: AbstractColumn[_]): Unit = {
     _columns += column
   }
 
-  def columns: Seq[AbstractColumn[_]] = _columns.toSeq.reverse
+  def columns: ArrayBuffer[AbstractColumn[_]] = _columns
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
@@ -72,7 +73,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends S
   def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
   def schema(): String = {
-    val queryInit = s"CREATE TABLE $tableName ("
+    val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       s"$qb, ${c.name} ${c.cassandraType}"
     })
@@ -96,20 +97,50 @@ abstract class CassandraTable[T <: CassandraTable[T, R]  : TypeTag, R] extends S
   }
 
   def createIndexes(): Seq[String] = {
-    secondaryKeys.map(k => s"CREATE IF NOT EXISTS INDEX ${k.name} ON $tableName (${k.name});")
+    secondaryKeys.map(k => s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});")
   }
 
-  val mirror = runtimeMirror(getClass.getClassLoader)
-  val reflection  = mirror.reflect(this)
+  private[this] def isField(m: Method) = {
+    val ret = !m.isSynthetic && classOf[AbstractColumn[_]].isAssignableFrom(m.getReturnType)
+    ret
+  }
 
-  if (greedyInit.compareAndSet(false, true)) {
-    Console.println("Initialising tables")
-    synchronized {
-      typeTag[T].tpe.members.filter(_.isModule).foreach(m => try {
-        reflection.reflectModule(m.asModule).instance
-      } catch {
-        case NonFatal(err) => logger.error(err.getMessage)
-      })
+  private[this] def introspect(rec: CassandraTable[T, R], methods: Array[Method])(f: (Method, AbstractColumn[_]) => Any): Unit = {
+
+    // find all the potential fields
+    val potentialFields = methods.filter(isField)
+
+    // any fields with duplicate names get put into a List
+    val fullMap = potentialFields.foldLeft[Map[String, List[Method]]](Map()) {
+      case (map, method) => val name = method.getName
+        order += method.getName
+        Console.println(method.getName)
+        map + (name -> (method :: map.getOrElse(name, Nil)))
+
     }
+
+    // sort each list based on having the most specific type and use that method
+    val realMeth = fullMap.values.map(_.sortWith {
+      case (a, b) => !a.getReturnType.isAssignableFrom(b.getReturnType)
+    }).map(_.head)
+
+    for (v <- realMeth) {
+      v.invoke(rec) match {
+        case mf: AbstractColumn[_]  => f(v, mf)
+        case _ =>
+      }
+    }
+
+  }
+
+  this.runSafe {
+    val tArray = new ListBuffer[FieldHolder]
+    introspect(this, this.getClass.getSuperclass.getMethods) {
+      case (v, mf) =>
+        tArray += FieldHolder(mf.name, mf)
+    }
+
+  val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
+    sorted.foreach(_columns += _.metaField)
   }
 }

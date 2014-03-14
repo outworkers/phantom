@@ -6,8 +6,6 @@ import scala.util.Try
 
 abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[Option[T]] {
 
-  table.addColumn(this)
-
   def apply(r: Row): Option[T] = optional(r)
 
   def cassandraType: String
