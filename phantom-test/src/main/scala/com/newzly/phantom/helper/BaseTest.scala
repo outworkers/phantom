@@ -24,7 +24,7 @@ trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Ma
 
 
   private[this] def createKeySpace(spaceName: String) = {
-    session.execute(s"CREATE KEYSPACE $spaceName WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
+    session.execute(s"CREATE KEYSPACE IF NOT EXISTS $spaceName WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
     session.execute(s"use $spaceName;")
   }
 
