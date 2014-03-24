@@ -54,6 +54,10 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
     qb.using(QueryBuilder.ttl(expiry))
     this
   }
+
+  def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
+    new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
+  }
 }
 
 class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {

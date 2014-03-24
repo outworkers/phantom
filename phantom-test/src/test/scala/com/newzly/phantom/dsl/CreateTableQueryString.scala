@@ -8,8 +8,6 @@ class CreateTableQueryString extends FlatSpec {
   ignore should "create the right keys" in {
     val q = TwoKeys.schema()
 
-    Console.println(TwoKeys.columns.map(_.name).mkString(" "))
-
     assert(q.contains("PRIMARY KEY (pkey, " +
       "intColumn1, " +
       "intColumn2, " +

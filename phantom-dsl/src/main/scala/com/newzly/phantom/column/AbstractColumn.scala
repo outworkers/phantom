@@ -8,9 +8,10 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
-  val isPrimary: Boolean = false
-  val isSecondaryKey: Boolean = false
-  val isPartitionKey: Boolean = false
+  val isPrimary = false
+  val isSecondaryKey = false
+  val isPartitionKey = false
+  val isCounterColumn = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
