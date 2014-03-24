@@ -91,16 +91,11 @@ class CounterColumnTest extends BaseTest {
   it should "decrement counter values by 1" in {
     CounterTableTest.insertSchema()
     val sample = CounterRecord.sample
-    val insert = CounterTableTest.insert
-      .value(_.id, sample.id)
-      .value(_.count_entries, 1L)
-      .future()
 
     val chain = for {
-      ins <- insert
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one
+      select <- CounterTableTest.select.one()
       incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries decrement()).future()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
+      select2 <- CounterTableTest.select.one()
     } yield (select, select2)
 
 
