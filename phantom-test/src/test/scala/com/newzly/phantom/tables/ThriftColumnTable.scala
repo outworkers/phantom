@@ -13,7 +13,8 @@ case class Output(
   list: Set[ThriftTest],
   thriftList: List[ThriftTest],
   thriftMap: Map[String, ThriftTest],
-  optThrift: Option[ThriftTest]
+  optThrift: Option[ThriftTest],
+  count: BigInt
 )
 
 sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
@@ -50,6 +51,8 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
     }
   }
 
+  object count_entries extends CounterColumn(this)
+
   def fromRow(row: Row): Output = {
     Output(
       id(row),
@@ -58,7 +61,8 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
       thriftSet(row),
       thriftList(row),
       thriftMap(row),
-      optionalThrift(row)
+      optionalThrift(row),
+      count_entries(row)
     )
   }
 }
