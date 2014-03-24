@@ -2,7 +2,7 @@
 
 language: scala
 
-scala: 
+scala:
  - "2.10.3"
 
 # Emails to notify
@@ -16,7 +16,11 @@ branches:
     - master
     - develop
 
-services:
+jdk:
+  - oraclejdk7
+  - oraclejdk6
+  - openjdk7
+  - openjdk6
 
 before_script: "./scripts/test_util.sh"
 script: "./scripts/run_tests.sh"
