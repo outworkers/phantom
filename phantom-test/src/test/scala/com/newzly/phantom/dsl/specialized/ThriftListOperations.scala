@@ -47,7 +47,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample2, sample)
       }
@@ -95,7 +94,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample3, sample2, sample)
       }
@@ -135,7 +133,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample, sample2)
       }
@@ -183,7 +180,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample, sample2, sample3)
       }
@@ -223,7 +219,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample)
       }
@@ -269,7 +264,6 @@ class ThriftListOperations extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(sample)
       }

@@ -27,7 +27,6 @@ class ThriftColumnTest extends BaseTest {
 
     insert.successful {
       result => {
-        Console.println("Record inserted")
         result.isEmpty shouldEqual false
         result.get.struct shouldEqual sample
       }
@@ -52,10 +51,8 @@ class ThriftColumnTest extends BaseTest {
 
     insert.successful {
       result => {
-        Console.println("Record inserted")
         result.isEmpty shouldEqual false
         result.get.struct shouldEqual sample
-        Console.println(result.get.list.mkString(""))
         result.get.list shouldEqual sampleList
       }
     }

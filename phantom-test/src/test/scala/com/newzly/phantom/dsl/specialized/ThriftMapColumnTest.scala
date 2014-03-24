@@ -55,7 +55,6 @@ class ThriftMapColumnTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe expected
       }
@@ -98,9 +97,6 @@ class ThriftMapColumnTest extends BaseTest {
 
       .future()
 
-    Console.println("logging query")
-    Console.println(ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).qb.toString)
-
     val operation = for {
       insertDone <- insert
       update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
@@ -111,7 +107,6 @@ class ThriftMapColumnTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe expected
       }
