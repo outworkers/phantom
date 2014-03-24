@@ -46,6 +46,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
+  private[this] def isCounterTable = columns.count(_.isCounterColumn) > 0
+
   def extractCount(r: Row): Option[Long] = {
     Try {
       Some(r.getLong("count"))
@@ -114,7 +116,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val fullMap = potentialFields.foldLeft[Map[String, List[Method]]](Map()) {
       case (map, method) => val name = method.getName
         order += method.getName
-        Console.println(method.getName)
         map + (name -> (method :: map.getOrElse(name, Nil)))
 
     }
