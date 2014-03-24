@@ -11,7 +11,7 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
   val isPrimary = false
   val isSecondaryKey = false
   val isPartitionKey = false
-  var isCounterColumn = false
+  val isCounterColumn = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
