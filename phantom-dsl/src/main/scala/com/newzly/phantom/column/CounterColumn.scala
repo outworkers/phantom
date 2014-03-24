@@ -6,6 +6,7 @@ import com.datastax.driver.core.Row
 class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends AbstractColumn[Long] {
   val cassandraType = "counter"
   val primitive = CassandraPrimitive[Long]
+  override val isCounterColumn = true
 
   def toCType(values: Long): AnyRef = primitive.toCType(values)
 

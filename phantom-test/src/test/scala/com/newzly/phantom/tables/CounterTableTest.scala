@@ -16,7 +16,7 @@ object CounterRecord extends ModelSampler[CounterRecord] {
 }
 
 
-class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] with CounterTable[CounterTableTest, CounterRecord] {
+class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object count_entries extends CounterColumn(this)

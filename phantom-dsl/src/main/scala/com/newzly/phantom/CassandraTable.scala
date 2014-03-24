@@ -46,6 +46,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
+  private[this] def isCounterTable = columns.count(_.isCounterColumn) > 0
+
   def extractCount(r: Row): Option[Long] = {
     Try {
       Some(r.getLong("count"))
@@ -93,7 +95,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    if (query.last != ';') query + ";" else query
+    val finalQuery = if (isCounterTable) query + " WITH default_validation_class=CounterColumnType" else query
+    if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
   def createIndexes(): Seq[String] = {
