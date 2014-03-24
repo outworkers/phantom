@@ -51,7 +51,7 @@ object Implicits {
   type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, Long]
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
   type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
-
+  type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.CounterColumn[Owner, Record]
 
   type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigDecimal]
   type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigInt]
@@ -72,6 +72,13 @@ object Implicits {
   type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
+
+  implicit class CounterModifyColumn[Owner <: CassandraTable[Owner, Record], Record](col: CounterColumn[Owner, Record]) extends ModifyColumn[Long](col) {
+    def increment(): Assignment = QueryBuilder.incr(col.name, 1L)
+    def increment(value: Long): Assignment = QueryBuilder.incr(col.name, value)
+    def decrement(): Assignment = QueryBuilder.decr(col.name)
+    def decrement(value: Long): Assignment = QueryBuilder.decr(col.name, value)
+  }
 
   implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
 

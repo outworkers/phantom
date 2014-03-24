@@ -47,7 +47,6 @@ class ThriftSetOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe Set(sample, sample2)
       }
@@ -92,7 +91,6 @@ class ThriftSetOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe Set(sample, sample2, sample3)
       }
@@ -137,7 +135,6 @@ class ThriftSetOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe Set(sample, sample2)
       }
@@ -183,7 +180,6 @@ class ThriftSetOperationsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe Set(sample)
       }
