@@ -35,7 +35,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe recipe.ingredients ::: List("test")
       }
@@ -65,7 +64,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe recipe.ingredients ::: appendable
       }
@@ -94,7 +92,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List("test") :::  recipe.ingredients
       }
@@ -124,7 +121,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe appendable.reverse ::: recipe.ingredients
       }
@@ -154,7 +150,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe list.tail
       }
@@ -184,7 +179,6 @@ class ListOperatorsTest extends BaseTest {
 
     operation.successful {
       items => {
-        Console.println(s"${items.mkString(" ")}")
         items.isDefined shouldBe true
         items.get shouldBe List(list.head)
       }

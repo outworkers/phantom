@@ -30,7 +30,6 @@ class CountTest extends BaseTest {
 
     batch successful {
       res => {
-        Console.println(res)
         res.isDefined shouldBe true
         res.get.get shouldBe 1
       }
