@@ -95,7 +95,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = if (isCounterTable) query + " WITH default_validation_class=CounterColumnType" else query
+    val finalQuery = query
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
