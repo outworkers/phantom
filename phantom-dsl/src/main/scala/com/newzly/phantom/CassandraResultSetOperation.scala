@@ -18,7 +18,7 @@ package com.newzly.phantom
 import java.util.concurrent.Executors
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise }
 import org.slf4j.LoggerFactory
-import com.datastax.driver.core.{RegularStatement, ResultSet, Session, Statement}
+import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
   FutureCallback,

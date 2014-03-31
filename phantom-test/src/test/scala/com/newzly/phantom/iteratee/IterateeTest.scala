@@ -1,14 +1,15 @@
 package com.newzly.phantom.iteratee
 
 
-import com.newzly.phantom.helper.BaseTest
+import java.util.concurrent.atomic.AtomicInteger
+import scala.concurrent.Future
 import org.scalatest.{Assertions, Matchers}
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
 import org.scalatest.time.SpanSugar._
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement
-import java.util.concurrent.atomic.AtomicInteger
+import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
+import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 
 class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
@@ -77,8 +78,10 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   it should "get a slice of the iterator" in {
     Primitives.insertSchema()
     val rows = for (i <- 1 to 100) yield  Primitive.sample
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
-      val statement = Primitives.insert
+    var count = 0
+    val batch = Iterator.fill(100) {
+      val row = rows(count)
+      val st = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -90,10 +93,14 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-      b.add(statement)
-    })
+        .future()
+      count += 1
+      st
+    }
+
+    val traverse = Future.sequence(batch)
     val w = for {
-      b <- batch.future()
+      b <- traverse
       all <- Primitives.select.fetchEnumerator
     } yield all
 
@@ -110,8 +117,10 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   it should "drop records from the iterator" in {
     Primitives.insertSchema()
     val rows = for (i <- 1 to 100) yield  Primitive.sample
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
-      val statement = Primitives.insert
+    var count = 0
+    val batch = Iterator.fill(100) {
+      val row = rows(count)
+      val st = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -123,10 +132,14 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-      b.add(statement)
-    })
+        .future()
+      count += 1
+      st
+    }
+
+    val traverse = Future.sequence(batch)
     val w = for {
-      b <- batch.future()
+      b <- traverse
       all <- Primitives.select.fetchEnumerator
     } yield all
 
@@ -143,8 +156,10 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   it should "take records from the iterator" in {
     Primitives.insertSchema()
     val rows = for (i <- 1 to 100) yield  Primitive.sample
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
-      val statement = Primitives.insert
+    var count = 0
+    val batch = Iterator.fill(100) {
+      val row = rows(count)
+      val st = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
         .value(_.boolean, row.boolean)
@@ -156,10 +171,14 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-      b.add(statement)
-    })
+        .future()
+      count += 1
+      st
+    }
+
+    val traverse = Future.sequence(batch)
     val w = for {
-      b <- batch.future()
+      b <- traverse
       all <- Primitives.select.fetchEnumerator
     } yield all
 
