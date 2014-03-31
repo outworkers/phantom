@@ -76,7 +76,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
 
   it should "get a slice of the iterator" in {
     Primitives.insertSchema()
-    val rows = for (i <- 1 to 2000) yield  Primitive.sample
+    val rows = for (i <- 1 to 100) yield  Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -106,4 +106,71 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
         res.toIndexedSeq shouldBe rows.slice(10, 15)
     }
   }
+
+  it should "drop records from the iterator" in {
+    Primitives.insertSchema()
+    val rows = for (i <- 1 to 100) yield  Primitive.sample
+    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
+      val statement = Primitives.insert
+        .value(_.pkey, row.pkey)
+        .value(_.long, row.long)
+        .value(_.boolean, row.boolean)
+        .value(_.bDecimal, row.bDecimal)
+        .value(_.double, row.double)
+        .value(_.float, row.float)
+        .value(_.inet, row.inet)
+        .value(_.int, row.int)
+        .value(_.date, row.date)
+        .value(_.uuid, row.uuid)
+        .value(_.bi, row.bi)
+      b.add(statement)
+    })
+    val w = for {
+      b <- batch.future()
+      all <- Primitives.select.fetchEnumerator
+    } yield all
+
+    val m = w flatMap {
+      en => en run Iteratee.drop(10)
+    }
+
+    m successful {
+      res =>
+        res.toIndexedSeq shouldBe rows.drop(10)
+    }
+  }
+
+  it should "take records from the iterator" in {
+    Primitives.insertSchema()
+    val rows = for (i <- 1 to 100) yield  Primitive.sample
+    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
+      val statement = Primitives.insert
+        .value(_.pkey, row.pkey)
+        .value(_.long, row.long)
+        .value(_.boolean, row.boolean)
+        .value(_.bDecimal, row.bDecimal)
+        .value(_.double, row.double)
+        .value(_.float, row.float)
+        .value(_.inet, row.inet)
+        .value(_.int, row.int)
+        .value(_.date, row.date)
+        .value(_.uuid, row.uuid)
+        .value(_.bi, row.bi)
+      b.add(statement)
+    })
+    val w = for {
+      b <- batch.future()
+      all <- Primitives.select.fetchEnumerator
+    } yield all
+
+    val m = w flatMap {
+      en => en run Iteratee.take(10)
+    }
+
+    m successful {
+      res =>
+        res.toIndexedSeq shouldBe rows.take(10)
+    }
+  }
+
 }
