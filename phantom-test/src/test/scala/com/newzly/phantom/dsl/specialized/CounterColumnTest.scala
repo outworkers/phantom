@@ -34,6 +34,30 @@ class CounterColumnTest extends BaseTest {
     }
   }
 
+
+  it should "allow selecting a counter" in {
+    CounterTableTest.insertSchema()
+
+    val sample = CounterRecord.sample
+
+    val chain = for {
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 500).future()
+      select <- CounterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment()).future()
+      select2 <- CounterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
+    } yield (select, select2)
+
+
+    chain.successful {
+      result => {
+        result._1.isEmpty shouldEqual false
+        result._1.get.count shouldEqual 500
+        result._2.isEmpty shouldEqual false
+        result._2.get shouldEqual 501
+      }
+    }
+  }
+
   it should "increment counter values by a given value" in {
     CounterTableTest.insertSchema()
     val sample = CounterRecord.sample
