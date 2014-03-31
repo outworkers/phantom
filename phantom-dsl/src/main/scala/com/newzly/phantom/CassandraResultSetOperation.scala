@@ -50,6 +50,7 @@ trait CassandraResultSetOperations {
       }
 
       def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
         promise failure err
       }
     }
@@ -70,6 +71,7 @@ trait CassandraResultSetOperations {
       }
 
       def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
         promise failure err
       }
     }
