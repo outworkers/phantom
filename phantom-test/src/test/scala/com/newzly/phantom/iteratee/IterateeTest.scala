@@ -44,8 +44,8 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
 
   it should "get mapResult fine" in {
     Primitives.insertSchema()
-    val rows = for (i <- 1 to 2000) yield  Primitive.sample
-    val batch = rows.foldLeft(new BatchStatement())((b,row) => {
+    val rows = for (i <- 1 to 2000) yield Primitive.sample
+    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -66,130 +66,14 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
     } yield all
     val counter: AtomicInteger = new AtomicInteger(0)
     val m = w flatMap {
-      en => en run Iteratee.forEach(x => {counter.incrementAndGet(); assert(rows.contains(x))})
+      en => en run Iteratee.forEach(x => {
+        counter.incrementAndGet(); assert(rows.contains(x))
+      })
     }
 
     m successful {
       _ =>
-        assert(counter.intValue()===rows.size)
+        assert(counter.intValue() === rows.size)
     }
   }
-
-  it should "get a slice of the iterator" in {
-    Primitives.insertSchema()
-    val rows = for (i <- 1 to 100) yield  Primitive.sample
-    var count = 0
-    val batch = Iterator.fill(100) {
-      val row = rows(count)
-      val st = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-        .future()
-      count += 1
-      st
-    }
-
-    val traverse = Future.sequence(batch)
-    val w = for {
-      b <- traverse
-      all <- Primitives.select.fetchEnumerator
-    } yield all
-
-    val m = w flatMap {
-      en => en run Iteratee.slice(10, 15)
-    }
-
-    m successful {
-      res =>
-        res.toIndexedSeq shouldBe rows.slice(10, 15)
-    }
-  }
-
-  it should "drop records from the iterator" in {
-    Primitives.insertSchema()
-    val rows = for (i <- 1 to 100) yield  Primitive.sample
-    var count = 0
-    val batch = Iterator.fill(100) {
-      val row = rows(count)
-      val st = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-        .future()
-      count += 1
-      st
-    }
-
-    val traverse = Future.sequence(batch)
-    val w = for {
-      b <- traverse
-      all <- Primitives.select.fetchEnumerator
-    } yield all
-
-    val m = w flatMap {
-      en => en run Iteratee.drop(10)
-    }
-
-    m successful {
-      res =>
-        res.toIndexedSeq shouldBe rows.drop(10)
-    }
-  }
-
-  it should "take records from the iterator" in {
-    Primitives.insertSchema()
-    val rows = for (i <- 1 to 100) yield  Primitive.sample
-    var count = 0
-    val batch = Iterator.fill(100) {
-      val row = rows(count)
-      val st = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-        .future()
-      count += 1
-      st
-    }
-
-    val traverse = Future.sequence(batch)
-    val w = for {
-      b <- traverse
-      all <- Primitives.select.fetchEnumerator
-    } yield all
-
-    val m = w flatMap {
-      en => en run Iteratee.take(10)
-    }
-
-    m successful {
-      res =>
-        res.toIndexedSeq shouldBe rows.take(10)
-    }
-  }
-
 }
