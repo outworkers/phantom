@@ -17,6 +17,7 @@ package com.newzly.phantom
 
 import java.util.concurrent.Executors
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise }
+import org.slf4j.LoggerFactory
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
   Futures,
@@ -31,6 +32,8 @@ object Manager {
   implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
 
   lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
+
+  lazy val logger = LoggerFactory.getLogger("com.newzly.phantom")
 }
 
 trait CassandraResultSetOperations {
@@ -47,6 +50,7 @@ trait CassandraResultSetOperations {
       }
 
       def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
         promise failure err
       }
     }
@@ -55,6 +59,8 @@ trait CassandraResultSetOperations {
   }
 
   def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
+    Manager.logger.debug("Executing Cassandra query:")
+    Manager.logger.debug(query)
     val promise = ScalaPromise[ResultSet]()
 
     val future = session.executeAsync(query)
@@ -65,6 +71,7 @@ trait CassandraResultSetOperations {
       }
 
       def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
         promise failure err
       }
     }
