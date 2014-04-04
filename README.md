@@ -6,7 +6,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.2.0```.
+The current version is: ```val phantomVersion = 0.3.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
@@ -279,9 +279,30 @@ Usage is trivial:
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
-val enumerator = Await.result(ExampleRecord.select.where(_.timestamp gtToken someTimestamp).fetchEnumerator(), 5000 millis)
+
+sealed class ExampleRecord3 private() extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
+
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object timestamp extends DateTimeColumn(this) with PrimaryKey[DateTime]
+  object name extends StringColumn(this) with PrimaryKey[String]
+  object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
+  object test extends OptionalIntColumn(this)
+
+  override def fromRow(row: Row): ExampleModel = {
+    ExampleModel(id(row), name(row), props(row), timestamp(row), test(row));
+  }
+}
+
+object ExampleRecord3 extends ExampleRecord3 {
+  def getRecords(start: Int, limit: Int): Future[Set[ExampleModel]] = {
+    select.fetchEnumerator.map {
+      _.slice(start, limit).collect
+    }
+  }
+}
 
 ```
 
