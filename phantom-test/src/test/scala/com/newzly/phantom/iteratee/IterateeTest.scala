@@ -16,7 +16,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
   val keySpace: String = "IterateeTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
-  it should "get result fine" in {
+  ignore should "get result fine" in {
     PrimitivesJoda.insertSchema()
 
     val rows = for (i <- 1 to 1000) yield  JodaRow.sample

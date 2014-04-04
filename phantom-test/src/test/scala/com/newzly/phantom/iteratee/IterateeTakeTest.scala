@@ -11,7 +11,7 @@ class IterateeTakeTest extends BaseTest {
   val keySpace: String = "iteratee_take_tests"
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
-  it should "take records from the iterator" in {
+  ignore should "take records from the iterator" in {
     Primitives.insertSchema()
     val rows = for (i <- 1 to 100) yield  Primitive.sample
     var count = 0
