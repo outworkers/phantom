@@ -126,7 +126,6 @@ trait CassandraResultSetOperations {
       case Success(res) => promise become TwitterFuture.value(res)
       case Failure(err) => promise raise err
     }
-
     promise
   }
 
