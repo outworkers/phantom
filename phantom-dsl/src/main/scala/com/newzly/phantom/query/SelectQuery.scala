@@ -15,10 +15,11 @@
  */
 package com.newzly.phantom.query
 
-import scala.concurrent.Future
-import com.datastax.driver.core.{Session, Row}
+import scala.concurrent.{ ExecutionContext, Future }
+import com.datastax.driver.core.{ Row, Session }
 import com.datastax.driver.core.querybuilder.Select
 import com.newzly.phantom.CassandraTable
+import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
@@ -53,6 +54,22 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
     table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This will always use a LIMIT 1 in the Cassandra query.
+   * @param session The Cassandra session in use.
+   * @return
+   */
+  def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
+    table.logger.info(query.qb.toString)
+    query.enumerate() flatMap {
+      res => {
+        scalaFutureToTwitter(res run PlayIteratee.head)
+      }
+    }
+  }
 }
 
 class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Where, rowFunc: Row => R) extends ExecutableQuery[T, R] {
@@ -69,6 +86,21 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
     table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
+  }
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * @param session The Cassandra session in use.
+   * @return
+   */
+  def get()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): TwitterFuture[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
+    table.logger.info(query.qb.toString)
+    query.enumerate() flatMap {
+      res => {
+        scalaFutureToTwitter(res run PlayIteratee.head)
+      }
+    }
   }
 
   def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {

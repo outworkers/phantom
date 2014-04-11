@@ -1,8 +1,8 @@
 package com.newzly.phantom.query
 
-import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
+import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.newzly.phantom.{Manager, CassandraResultSetOperations, CassandraTable}
+import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 
 class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CassandraResultSetOperations {
 
