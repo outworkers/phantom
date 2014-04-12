@@ -29,6 +29,10 @@ trait ExecutableStatement extends CassandraResultSetOperations {
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     scalaStatementToFuture(qb)
   }
+
+  def execute()(implicit  session: Session): TwitterFuture[ResultSet] = {
+    twitterStatementToFuture(qb)
+  }
 }
 
 /**
