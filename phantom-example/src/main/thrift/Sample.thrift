@@ -1,4 +1,4 @@
-namespace java com.newzly.phantom.example
+namespace java com.newzly.phantom.example.basics
 
 struct SampleModel {
     1: required string id,
