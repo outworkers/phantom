@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com
-package newzly
+package com.newzly.phantom.query
 
-package phantom
-package query
-
-import com.datastax.driver.core.querybuilder.{ Clause, Delete }
-import com.newzly.phantom.{ CassandraTable }
+import com.datastax.driver.core.querybuilder.Delete
+import com.newzly.phantom.CassandraTable
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete) extends ExecutableStatement {
 
