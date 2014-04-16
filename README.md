@@ -273,7 +273,7 @@ For more on this, see this [Play tutorial](
 http://mandubian.com/2012/08/27/understanding-play2-iteratees-for-normal-humans/)
 
 
-Usage is trivial:
+Usage is trivial. If you want to use ```slice, take or drop``` with iterators, the partitioner needs to be ordered.
 
 ```scala
 
@@ -360,7 +360,6 @@ Maintainers
 Phantom was developed at newzly as an in-house project.
 All Cassandra integration at newzly goes through Phantom.
 
-- Sorin Chiprian sorin.chiprian@newzly.com
 - Flavian Alexandru flavian@newzly.com
 
 Pre newzly fork

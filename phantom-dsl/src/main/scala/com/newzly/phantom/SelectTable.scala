@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 newzly ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.newzly.phantom
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -175,6 +190,47 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
         c8.col.name,
         c9.col.name
       ).from(tableName), r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r)))
+  }
+
+  /**
+   * Select method for 10 records.
+   */
+  def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10](
+    f1: T =>SelectColumn[A1],
+    f2: T => SelectColumn[A2],
+    f3: T => SelectColumn[A3],
+    f4: T => SelectColumn[A4],
+    f5: T => SelectColumn[A5],
+    f6: T => SelectColumn[A6],
+    f7: T => SelectColumn[A7],
+    f8: T => SelectColumn[A8],
+    f9: T => SelectColumn[A9],
+    f10: T => SelectColumn[A10]
+    ): SelectQuery[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)] = {
+    val t = this.asInstanceOf[T]
+    val c1 = f1(t)
+    val c2 = f2(t)
+    val c3 = f3(t)
+    val c4 = f4(t)
+    val c5 = f5(t)
+    val c6 = f6(t)
+    val c7 = f7(t)
+    val c8 = f8(t)
+    val c9 = f9(t)
+    val c10 = f10(t)
+    new SelectQuery[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)](t,
+      QueryBuilder.select(
+        c1.col.name,
+        c2.col.name,
+        c3.col.name,
+        c4.col.name,
+        c5.col.name,
+        c6.col.name,
+        c7.col.name,
+        c8.col.name,
+        c9.col.name,
+        c9.col.name
+      ).from(tableName), r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r), c10(r)))
   }
 
 }
