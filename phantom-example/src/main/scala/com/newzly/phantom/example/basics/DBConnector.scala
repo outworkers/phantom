@@ -1,5 +1,4 @@
-package com.newzly.phantom.example
-
+package com.newzly.phantom.example.basics
 
 import scala.concurrent. { blocking, Future }
 import com.datastax.driver.core.{ Cluster, Session }

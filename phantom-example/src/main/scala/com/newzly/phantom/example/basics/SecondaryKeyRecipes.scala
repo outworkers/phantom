@@ -1,20 +1,19 @@
-package com.newzly.phantom.example
+package com.newzly.phantom.example.basics
 
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
-import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.newzly.phantom.Implicits._
 
 /**
- * In this example we will create a  table storing recipes.
- * This time we will use a composite key formed by name and id.
+ * In this example we will create a table storing recipes with a SecondaryKey.
+ * This time we will use a non-composite Primary key with a SecondaryKey on author.
  */
 
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class CompositeKeyRecipes extends CassandraTable[Recipes, Recipe] {
+sealed class SecondaryKeyRecipes extends CassandraTable[Recipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -22,17 +21,16 @@ sealed class CompositeKeyRecipes extends CassandraTable[Recipes, Recipe] {
     override lazy  val name = "the_primary_key"
   }
 
-  // Now we define a column for each field in our case class.
-  // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
-  object name extends StringColumn(this) with PrimaryKey[String] // and you're done
-
+  object name extends StringColumn(this) with PrimaryKey[String]
 
   object title extends StringColumn(this)
-  object author extends StringColumn(this)
+
+  // If you want to query by a field, you need an index on it.
+  // One of the strategies for doing so is using a SecondaryKey
+  object author extends StringColumn(this) with SecondaryKey[String] // done
+
   object description extends StringColumn(this)
 
-  // Custom data types can be stored easily.
-  // Cassandra collections target a small number of items, but usage is trivial.
   object ingredients extends SetColumn[Recipes, Recipe, String](this)
   object props extends MapColumn[Recipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this)
@@ -54,16 +52,18 @@ sealed class CompositeKeyRecipes extends CassandraTable[Recipes, Recipe] {
 }
 
 
-object CompositeKeyRecipes extends CompositeKeyRecipes with DBConnector {
+object SecondaryKeyRecipes extends SecondaryKeyRecipes with DBConnector {
 
-
-
-  // now you can use composite keys in the normal way.
-  // If you would select only by id,
-  // Cassandra will tell you a part of the primary is missing from the where clause.
-  // Querying by composite keys is trivial using the "and" operator.
-  def getRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
-    select.where(_.id eqs id).and(_.name eqs name).one()
+  // Now say you want to get a Recipe by title.
+  // title is a SecondaryKey, you can now use it in a "where" clause.
+  // Performance is unpredicable for such queries, so you need to allow filtering.
+  // Note this is not the best practice.
+  // In a real world environment, you create a RecipesByTitle mapping table.
+  // Check out the example.
+  def getRecipeByTitle(title: String): ScalaFuture[Option[Recipe]] = {
+    select.allowFiltering().where(_.title eqs title).one()
   }
+
+
 
 }
