@@ -17,6 +17,7 @@ package com.newzly.phantom
 
 import java.util.concurrent.Executors
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise }
+import scala.util.{ Failure, Success }
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.{ ResultSet, Session, Statement }
 import com.google.common.util.concurrent.{
@@ -24,6 +25,7 @@ import com.google.common.util.concurrent.{
   FutureCallback,
   MoreExecutors
 }
+import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise }
 
 object Manager {
 
@@ -56,6 +58,26 @@ trait CassandraResultSetOperations {
     }
     Futures.addCallback(future, callback, Manager.executor)
     promise.future
+
+  }
+
+  def twitterStatementToFuture(s: Statement)(implicit session: Session): TwitterFuture[ResultSet] = {
+    val promise = TwitterPromise[ResultSet]()
+    val future = session.executeAsync(s)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise become TwitterFuture.value(result)
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
+        promise raise err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise
+
   }
 
   def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
@@ -78,6 +100,35 @@ trait CassandraResultSetOperations {
     Futures.addCallback(future, callback, Manager.executor)
     promise.future
   }
+
+  def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session): TwitterFuture[ResultSet] = {
+    val promise = TwitterPromise[ResultSet]()
+    val future = session.executeAsync(query)
+
+    val callback = new FutureCallback[ResultSet] {
+      def onSuccess(result: ResultSet): Unit = {
+        promise become TwitterFuture.value(result)
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
+        promise raise err
+      }
+    }
+    Futures.addCallback(future, callback, Manager.executor)
+    promise
+  }
+
+  private[phantom] def scalaFutureToTwitter[R](future: ScalaFuture[R])(implicit ctx: ExecutionContext): TwitterFuture[R] = {
+    val promise = TwitterPromise[R]()
+
+    future onComplete {
+      case Success(res) => promise become TwitterFuture.value(res)
+      case Failure(err) => promise raise err
+    }
+    promise
+  }
+
 }
 
 object CassandraResultSetOperations extends CassandraResultSetOperations

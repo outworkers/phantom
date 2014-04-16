@@ -15,7 +15,6 @@
  */
 package com.newzly.phantom.column
 
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }

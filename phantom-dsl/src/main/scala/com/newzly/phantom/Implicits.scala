@@ -22,7 +22,13 @@ import scala.collection.JavaConverters._
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
-import com.newzly.phantom.column._
+import com.newzly.phantom.column.{
+  AbstractColumn,
+  ModifyColumn,
+  ModifyColumnOptional,
+  QueryColumn,
+  SelectColumn
+}
 import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
 
 object Implicits {
@@ -52,6 +58,7 @@ object Implicits {
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, String]
   type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.PrimitiveColumn[Owner, Record, UUID]
   type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.CounterColumn[Owner, Record]
+  type TimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.TimeUUIDColumn[Owner, Record]
 
   type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigDecimal]
   type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigInt]
@@ -70,6 +77,7 @@ object Implicits {
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
   type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
+  type StaticColumn[ValueType] = com.newzly.phantom.keys.StaticColumn[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
 
