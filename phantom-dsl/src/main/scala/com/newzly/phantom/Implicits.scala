@@ -77,6 +77,7 @@ object Implicits {
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
   type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
+  type StaticColumn[ValueType] = com.newzly.phantom.keys.StaticColumn[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
 
