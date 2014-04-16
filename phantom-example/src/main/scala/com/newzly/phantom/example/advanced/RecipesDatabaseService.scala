@@ -2,6 +2,7 @@ package com.newzly.phantom.example.advanced
 
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.ResultSet
+import com.newzly.phantom.Implicits.context
 import com.newzly.phantom.example.basics.Recipe
 
 // In this section, we will show how you can create a real-world Cassandra service with phantom.
@@ -13,7 +14,7 @@ import com.newzly.phantom.example.basics.Recipe
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-object RecipesService {
+object RecipesDatabaseService {
 
   // For instance, right now when you want to insert a new recipe.
   // Say from a JavaScript client with a fancy interface.
