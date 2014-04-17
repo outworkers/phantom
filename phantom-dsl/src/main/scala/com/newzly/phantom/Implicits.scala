@@ -116,20 +116,18 @@ object Implicits {
   }
 
   class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](override val col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
-
     def apply(r: Row): T = col.apply(r)
   }
 
   class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](override val col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
-
     def apply(r: Row): Option[T] = col.apply(r)
-
   }
 
 
-  implicit def partitionColumnToIndexedColumn[T <: AbstractColumn[T] with PartitionKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
-  implicit def primaryColumnToIndexedColumn[T <: AbstractColumn[T] with PrimaryKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
-  implicit def secondaryColumnToIndexedColumn[T <: AbstractColumn[T] with SecondaryKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def partitionColumnToIndexedColumn[T](col: AbstractColumn[T] with PartitionKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def primaryColumnToIndexedColumn[T](col: AbstractColumn[T] with PrimaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def secondaryColumnToIndexedColumn[T](col: AbstractColumn[T] with SecondaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
+
 
 
   implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =
@@ -151,6 +149,7 @@ object Implicits {
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
+
       select.where(_.order_id gt l.toLong)
     }
 

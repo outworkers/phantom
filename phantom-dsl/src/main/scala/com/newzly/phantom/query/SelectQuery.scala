@@ -21,6 +21,7 @@ import com.datastax.driver.core.querybuilder.Select
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
+import com.newzly.phantom.column.AbstractColumn
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
@@ -35,7 +36,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
     new SelectQuery(table, qb.allowFiltering(), fromRow)
   }
 
-  def where[RR](condition: T => QueryCondition)(implicit ev: IndexedColumn[T]): SelectWhere[T, R] = {
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.where(condition(table).clause), fromRow)
   }
 
@@ -103,7 +104,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     }
   }
 
-  def where[RR](condition: T => QueryCondition)(implicit ev: IndexedColumn[T]): SelectWhere[T, R] = {
+  def where[RR <% IndexedColumn[RR]](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 

@@ -54,6 +54,8 @@ class OptionalThriftColumnTest extends BaseTest {
       test = true
     )
 
+    ThriftColumnTable.select(_.optionalThrift).where(_.name eqs "test")
+
     val insert = ThriftColumnTable.insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)

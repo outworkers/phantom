@@ -22,4 +22,4 @@ case class QueryCondition(clause: Clause)
 
 case class QueryAssignment(assignment: Assignment)
 
-class IndexedColumn[T <: AbstractColumn[T]](col: T) {}
+class IndexedColumn[T](col: AbstractColumn[T]) {}
