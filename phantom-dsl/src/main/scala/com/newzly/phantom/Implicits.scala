@@ -123,12 +123,9 @@ object Implicits {
     def apply(r: Row): Option[T] = col.apply(r)
   }
 
-
   implicit def partitionColumnToIndexedColumn[T](col: AbstractColumn[T] with PartitionKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
   implicit def primaryColumnToIndexedColumn[T](col: AbstractColumn[T] with PrimaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
   implicit def secondaryColumnToIndexedColumn[T](col: AbstractColumn[T] with SecondaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
-
-
 
   implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =
     new QueryColumn(col)
