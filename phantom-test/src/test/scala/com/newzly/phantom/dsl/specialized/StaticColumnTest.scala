@@ -4,7 +4,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.tables.{StaticTableTest, Primitive, Primitives}
+import com.newzly.phantom.tables.StaticTableTest
 import com.newzly.util.finagle.AsyncAssertionsHelper._
 
 class StaticColumnTest extends BaseTest {
@@ -42,7 +42,7 @@ class StaticColumnTest extends BaseTest {
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
     StaticTableTest.insertSchema()
-    
+
     val id = UUIDs.timeBased()
     val static = "this_is_static"
     val static2 = "this_is_updated_static"
