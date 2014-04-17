@@ -24,7 +24,7 @@ class StaticColumnTest extends BaseTest {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.string, static).execute()
+      insert <- StaticTableTest.insert.value(_.id, id).value(_.staticTest, static).execute()
       insert2 <- StaticTableTest.insert.value(_.id, id2).execute()
       select <- StaticTableTest.select.where(_.id eqs id2).get()
     } yield select
@@ -50,10 +50,10 @@ class StaticColumnTest extends BaseTest {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.string, static).execute()
+      insert <- StaticTableTest.insert.value(_.id, id).value(_.staticTest, static).execute()
 
       // The second insert updates the static value
-      insert2 <- StaticTableTest.insert.value(_.id, id2).value(_.string, static2).execute()
+      insert2 <- StaticTableTest.insert.value(_.id, id2).value(_.staticTest, static2).execute()
 
       // We query for the first record inserted.
       select <- StaticTableTest.select.where(_.id eqs id).get()

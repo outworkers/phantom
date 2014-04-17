@@ -76,7 +76,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       if (c.isStaticColumn) {
-        s"$qb, ${c.name} ${c.cassandraType} static"
+        val q = s"$qb, ${c.name} ${c.cassandraType} static"
+        Console.println(q)
+        q
       } else {
         s"$qb, ${c.name} ${c.cassandraType}"
       }

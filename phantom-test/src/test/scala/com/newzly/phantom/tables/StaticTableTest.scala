@@ -8,10 +8,10 @@ import com.newzly.phantom.helper.TestSampler
 sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, String)] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object string extends StringColumn(this) with StaticColumn[String]
+  object staticTest extends StringColumn(this) with StaticColumn[String]
 
   def fromRow(row: Row): (UUID, String) = {
-    Tuple2(id(row), string(row))
+    Tuple2(id(row), staticTest(row))
   }
 }
 
