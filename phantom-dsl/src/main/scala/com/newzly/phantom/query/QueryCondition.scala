@@ -15,11 +15,30 @@
  */
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.querybuilder.{ Assignment, Clause }
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause}
 import com.newzly.phantom.column.AbstractColumn
 
 case class QueryCondition(clause: Clause)
 
 case class QueryAssignment(assignment: Assignment)
 
-class IndexedColumn[T](col: AbstractColumn[T]) {}
+class IndexedColumn[T](col: AbstractColumn[T]) {
+
+  /**
+   * The equals operator. Will return a match if the value equals the database value.
+   * @param value The value to search for in the database.
+   * @return A QueryCondition, wrapping a QueryBuilder clause.
+   */
+  def eqs(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
+  }
+
+  def lt(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.lt(col.name, col.toCType(value)))
+  }
+
+  def gt(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.gt(col.name, col.toCType(value)))
+  }
+
+}

@@ -17,7 +17,7 @@ package com.newzly.phantom.column
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.CassandraWrites
-import com.newzly.phantom.query.QueryCondition
+import com.newzly.phantom.query.{IndexedColumn, QueryCondition}
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
@@ -28,21 +28,5 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
   private[phantom] val isStaticColumn = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
-
-  /**
-   * The equals operator. Will return a match if the value equals the database value.
-   * @param value The value to search for in the database.
-   * @return A QueryCondition, wrapping a QueryBuilder clause.
-   */
-  def eqs (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
-  }
-
-  def lt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.lt(this.name, this.toCType(value)))
-  }
-
-  def gt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
-  }
 }
+

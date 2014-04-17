@@ -4,6 +4,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.BaseTest
+import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.StaticTableTest
 import com.newzly.util.finagle.AsyncAssertionsHelper._
 

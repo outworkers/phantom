@@ -26,7 +26,6 @@ import com.newzly.phantom.column.{
   AbstractColumn,
   ModifyColumn,
   ModifyColumnOptional,
-  QueryColumn,
   SelectColumn
 }
 import com.newzly.phantom.query.{ IndexedColumn, QueryCondition, SelectWhere }
@@ -126,9 +125,6 @@ object Implicits {
   implicit def partitionColumnToIndexedColumn[T](col: AbstractColumn[T] with PartitionKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
   implicit def primaryColumnToIndexedColumn[T](col: AbstractColumn[T] with PrimaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
   implicit def secondaryColumnToIndexedColumn[T](col: AbstractColumn[T] with SecondaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
-
-  implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =
-    new QueryColumn(col)
 
   implicit def simpleColumnToAssignment[RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
     new ModifyColumn[RR](col)
