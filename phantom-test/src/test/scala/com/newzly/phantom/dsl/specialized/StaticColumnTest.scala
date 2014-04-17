@@ -13,7 +13,7 @@ class StaticColumnTest extends BaseTest {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  "Insert" should "use a static value for a static column" in {
+  ignore should "use a static value for a static column" in {
 
     StaticTableTest.insertSchema()
 
@@ -38,7 +38,7 @@ class StaticColumnTest extends BaseTest {
     }
   }
 
-  "Updating a static column" should "update values in all rows" in {
+  ignore should "update values in all rows" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
