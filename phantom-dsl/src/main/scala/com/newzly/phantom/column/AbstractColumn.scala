@@ -21,14 +21,19 @@ import com.newzly.phantom.query.QueryCondition
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
-  val isPrimary = false
-  val isSecondaryKey = false
-  val isPartitionKey = false
-  val isCounterColumn = false
-  val isStaticColumn = false
+  private[phantom] val isPrimary = false
+  private[phantom] val isSecondaryKey = false
+  private[phantom] val isPartitionKey = false
+  private[phantom] val isCounterColumn = false
+  private[phantom] val isStaticColumn = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
+  /**
+   * The equals operator. Will return a match if the value equals the database value.
+   * @param value The value to search for in the database.
+   * @return A QueryCondition, wrapping a QueryBuilder clause.
+   */
   def eqs (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
   }

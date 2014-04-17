@@ -60,5 +60,7 @@ class BatchStatement(val qbList: Iterator[ExecutableStatement] = Iterator.empty)
     }
     twitterStatementToFuture(batch)
   }
-
 }
+
+
+
