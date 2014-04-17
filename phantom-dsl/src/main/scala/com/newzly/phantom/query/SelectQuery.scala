@@ -104,7 +104,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     }
   }
 
-  def where[RR <% IndexedColumn[RR]](condition: T => QueryCondition): SelectWhere[T, R] = {
+  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 

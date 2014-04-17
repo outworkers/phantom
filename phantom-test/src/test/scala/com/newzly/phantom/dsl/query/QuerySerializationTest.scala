@@ -8,6 +8,7 @@ import com.newzly.phantom.tables.{ Articles, Recipes }
 import com.datastax.driver.core.utils.UUIDs
 
 class QuerySerializationTest extends BaseTest {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "deleteTest"
 

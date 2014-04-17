@@ -41,7 +41,7 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
 
-  def where[RR <% IndexedColumn[RR]](condition: T => QueryCondition): UpdateWhere[T, R] = {
+  def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))
   }
 
@@ -63,7 +63,7 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
 
 class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {
 
-  def where[RR <% IndexedColumn[RR]](condition: T => QueryCondition): UpdateWhere[T, R] = {
+  def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
   }
 
