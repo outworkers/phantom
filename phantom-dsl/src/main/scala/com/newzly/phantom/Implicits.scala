@@ -21,7 +21,7 @@ import java.util.{ Date, UUID }
 import scala.collection.JavaConverters._
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.column.{
   AbstractColumn,
   ModifyColumn,
@@ -29,7 +29,7 @@ import com.newzly.phantom.column.{
   QueryColumn,
   SelectColumn
 }
-import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
+import com.newzly.phantom.query.{ IndexedColumn, QueryCondition, SelectWhere }
 
 object Implicits {
 
@@ -125,6 +125,11 @@ object Implicits {
     def apply(r: Row): Option[T] = col.apply(r)
 
   }
+
+
+  implicit def partitionColumnToIndexedColumn[T <: AbstractColumn[T] with PartitionKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def primaryColumnToIndexedColumn[T <: AbstractColumn[T] with PrimaryKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def secondaryColumnToIndexedColumn[T <: AbstractColumn[T] with SecondaryKey[T]](col: T): IndexedColumn[T] = new IndexedColumn[T](col)
 
 
   implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =

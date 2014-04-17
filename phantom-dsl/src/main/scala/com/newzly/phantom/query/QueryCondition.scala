@@ -16,7 +16,10 @@
 package com.newzly.phantom.query
 
 import com.datastax.driver.core.querybuilder.{ Assignment, Clause }
+import com.newzly.phantom.column.AbstractColumn
 
 case class QueryCondition(clause: Clause)
 
 case class QueryAssignment(assignment: Assignment)
+
+class IndexedColumn[T <: AbstractColumn[T]](col: T) {}
