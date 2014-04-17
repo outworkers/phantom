@@ -13,6 +13,9 @@ class StaticColumnTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   "Insert" should "use a static value for a static column" in {
+
+    StaticTableTest.insertSchema()
+
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
@@ -38,6 +41,8 @@ class StaticColumnTest extends BaseTest {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
+    StaticTableTest.insertSchema()
+    
     val id = UUIDs.timeBased()
     val static = "this_is_static"
     val static2 = "this_is_updated_static"
