@@ -75,7 +75,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def schema(): String = {
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
-      s"$qb, ${c.name} ${c.cassandraType}"
+      if (c.isStaticColumn) {
+        s"$qb, ${c.name} ${c.cassandraType} static"
+      } else {
+        s"$qb, ${c.name} ${c.cassandraType}"
+      }
     })
     val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(", ")
     val pkes = {
