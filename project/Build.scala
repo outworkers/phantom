@@ -45,6 +45,8 @@ object phantom extends Build {
       "-language:reflectiveCalls",
       "-language:higherKinds",
       "-language:existentials",
+      "-Yinline-warnings",
+      "-Xlint",
       "-deprecation",
       "-feature",
       "-unchecked"

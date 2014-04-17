@@ -26,8 +26,8 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
   val isPartitionKey = false
   val isCounterColumn = false
   val isStaticColumn = false
-  lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
+  lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
   def eqs (value: T): QueryCondition = {
     QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
