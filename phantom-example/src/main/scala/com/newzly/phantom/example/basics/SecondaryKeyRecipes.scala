@@ -27,7 +27,7 @@ sealed class SecondaryKeyRecipes extends CassandraTable[Recipes, Recipe] {
 
   // If you want to query by a field, you need an index on it.
   // One of the strategies for doing so is using a SecondaryKey
-  object author extends StringColumn(this) with SecondaryKey[String] // done
+  object author extends StringColumn(this) with Index[String] // done
 
   object description extends StringColumn(this)
 

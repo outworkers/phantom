@@ -35,6 +35,6 @@ trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] {
 /**
  * A trait mixable into Column definitions to allow storing them as keys.
  */
-trait SecondaryKey[ValueType] extends Key[ValueType, SecondaryKey[ValueType]] {
+trait Index[ValueType] extends Key[ValueType, Index[ValueType]] {
   self: AbstractColumn[ValueType] => override val isSecondaryKey = true
 }
