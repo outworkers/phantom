@@ -21,6 +21,8 @@ import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 import play.api.libs.iteratee.{Enumerator => PlayEnumerator, Iteratee => PlayIteratee, Enumeratee}
 import com.newzly.phantom.iteratee.{ Enumerator, Iteratee }
 import com.twitter.util.{ Future => TwitterFuture }
+import rx.lang.scala.Observable
+import scala.collection.JavaConverters._
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
@@ -33,6 +35,9 @@ trait ExecutableStatement extends CassandraResultSetOperations {
   def execute()(implicit  session: Session): TwitterFuture[ResultSet] = {
     twitterStatementToFuture(qb)
   }
+
+  def observe()(implicit session: Session): Observable[ResultSet] =
+    statementToObservable(qb)
 }
 
 /**
@@ -76,6 +81,13 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
       resultSet => {
         Enumerator.enumerator(resultSet) through Enumeratee.map(r => this.fromRow(r))
       }
+    }
+  }
+
+  def observe()(implicit session: Session): Observable[R] = {
+    table.logger.info(qb.toString)
+    statementToObservable(qb) flatMap { resultSet =>
+      Observable.from(resultSet.iterator.asScala.toIterable) map this.fromRow
     }
   }
 

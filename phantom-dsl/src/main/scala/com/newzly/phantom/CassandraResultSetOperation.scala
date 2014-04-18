@@ -26,6 +26,7 @@ import com.google.common.util.concurrent.{
   MoreExecutors
 }
 import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise }
+import rx.lang.scala.Observable
 
 object Manager {
 
@@ -79,6 +80,24 @@ trait CassandraResultSetOperations {
     promise
 
   }
+
+  def statementToObservable(s: Statement)(implicit session: Session): Observable[ResultSet] =
+    Observable { subscriber =>
+      val future = session.executeAsync(s)
+
+      val callback = new FutureCallback[ResultSet] {
+        def onSuccess(result: ResultSet): Unit = {
+          subscriber.onNext(result)
+          subscriber.onCompleted()
+        }
+
+        def onFailure(err: Throwable): Unit = {
+          Manager.logger.error(err.getMessage)
+          subscriber.onError(err)
+        }
+      }
+      Futures.addCallback(future, callback, Manager.executor)
+    }
 
   def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
     Manager.logger.debug("Executing Cassandra query:")
