@@ -9,8 +9,7 @@ object phantom extends Build {
 
   val newzlyUtilVersion = "0.0.20"
   val datastaxDriverVersion = "2.0.1"
-  val liftVersion = "2.6-M2"
-  val scalatestVersion = "2.0.M8"
+  val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
   val thriftVersion = "0.9.1"
@@ -24,7 +23,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.3.2",
+    version := "0.3.3",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -257,6 +256,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
+      "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided",
       "com.newzly"               %% "util-finagle"                      % newzlyUtilVersion     % "provided",
       "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test"
     )
