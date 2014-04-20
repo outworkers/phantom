@@ -15,6 +15,7 @@
  */
 package com.newzly.phantom.query
 
+import scala.collection.JavaConverters._
 import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause}
 import com.newzly.phantom.column.AbstractColumn
 
@@ -41,4 +42,7 @@ class IndexedColumn[T](col: AbstractColumn[T]) {
     QueryCondition(QueryBuilder.gt(col.name, col.toCType(value)))
   }
 
+  def in(values: List[T]): QueryCondition = {
+    QueryCondition(QueryBuilder.in(col.name, values.map(col.toCType).asJava))
+  }
 }
