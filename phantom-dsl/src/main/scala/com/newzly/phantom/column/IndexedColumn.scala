@@ -32,6 +32,6 @@ class IndexedColumn[T](col: AbstractColumn[T]) {
   }
 
   def in(values: List[T]): QueryCondition = {
-    QueryCondition(QueryBuilder.in(col.name, values.map(col.toCType).asJava))
+    QueryCondition(QueryBuilder.in(col.name, values.map(col.toCType): _*))
   }
 }

@@ -11,6 +11,7 @@ class InOperatorTest extends BaseTest {
   val keySpace = "in_operators_test"
 
   it should "find a record with a in operator if the record exists" in {
+    Recipes.insertSchema()
     val id = UUIDs.timeBased()
     val recipe = Recipe.sample
     val insert = Recipes.insert
@@ -30,12 +31,13 @@ class InOperatorTest extends BaseTest {
     chain.successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldEqual recipe
+        res.get.url shouldEqual recipe.url
       }
     }
   }
 
   it should "not find a record with a in operator if the record doesn't exists" in {
+    Recipes.insertSchema()
     val id = UUIDs.timeBased()
     val recipe = Recipe.sample
     val insert = Recipes.insert
