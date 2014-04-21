@@ -7,7 +7,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.21"
+  val newzlyUtilVersion = "0.0.22"
   val datastaxDriverVersion = "2.0.1"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
