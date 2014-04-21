@@ -31,6 +31,10 @@ class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specializ
     implicitly[CassandraPrimitive[RR]].fromRow(r, name)
 }
 
+/**
+ * Simple mechanism to restrict ClusteringOrder mixin to a union type bound.
+ * @tparam T The type of the value to store.
+ */
 private[phantom] class TimeSeries[T]
 
 /**

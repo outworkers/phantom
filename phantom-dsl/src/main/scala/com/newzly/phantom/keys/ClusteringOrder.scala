@@ -26,3 +26,11 @@ trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueTyp
   override val isSecondaryKey = true
   private[phantom] implicit val timeSeries: TimeSeries[ValueType]
 }
+
+trait Ascending {
+  self: ClusteringOrder[_] =>
+}
+
+trait Descending {
+  self: ClusteringOrder[_] =>
+}

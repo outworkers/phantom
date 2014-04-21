@@ -15,15 +15,17 @@
  */
 package com.newzly.phantom.batch
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, ResultSet, Session }
 import com.newzly.phantom.query.ExecutableStatement
 import com.newzly.phantom.CassandraResultSetOperations
+import com.twitter.util.{ Future => TwitterFuture }
 
 sealed trait BatchQueryListTrait extends CassandraResultSetOperations {
   protected[this] lazy val statements: Iterator[ExecutableStatement] =  Iterator.empty
   def add(statement: => ExecutableStatement): BatchStatement
-  def future()(implicit session: Session): Future[ResultSet]
+  def future()(implicit session: Session): ScalaFuture[ResultSet]
+  def execute()(implicit session: Session): TwitterFuture[ResultSet]
   def qbList: Iterator[ExecutableStatement]
 }
 
@@ -43,11 +45,22 @@ class BatchStatement(val qbList: Iterator[ExecutableStatement] = Iterator.empty)
      apply(qbList ++ Iterator(statement))
   }
 
-  def future()(implicit session: Session): Future[ResultSet] = {
+  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     val batch = new DatastaxBatchStatement()
     for (s <- qbList) {
       batch.add(s.qb)
     }
     scalaStatementToFuture(batch)
   }
+
+  def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
+    val batch = new DatastaxBatchStatement()
+    for (s <- qbList) {
+      batch.add(s.qb)
+    }
+    twitterStatementToFuture(batch)
+  }
 }
+
+
+

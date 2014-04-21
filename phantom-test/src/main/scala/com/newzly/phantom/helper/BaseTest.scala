@@ -9,7 +9,7 @@ import com.newzly.phantom.Manager
 object BaseTestHelper {
   val cluster = Cluster.builder()
     .addContactPoint("localhost")
-    .withPort(9142)
+    .withPort(9042)
     .withoutJMXReporting()
     .withoutMetrics()
     .build()

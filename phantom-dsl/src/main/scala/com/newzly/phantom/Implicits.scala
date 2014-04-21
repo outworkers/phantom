@@ -21,15 +21,10 @@ import java.util.{ Date, UUID }
 import scala.collection.JavaConverters._
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
-import com.newzly.phantom.column.{
-  AbstractColumn,
-  ModifyColumn,
-  ModifyColumnOptional,
-  QueryColumn,
-  SelectColumn
-}
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
+import com.newzly.phantom.column._
 import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
+import com.newzly.phantom.query.QueryCondition
 
 object Implicits {
 
@@ -76,7 +71,7 @@ object Implicits {
   type ClusteringOrder[ValueType] = com.newzly.phantom.keys.ClusteringOrder[ValueType]
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
-  type SecondaryKey[ValueType] = com.newzly.phantom.keys.SecondaryKey[ValueType]
+  type Index[ValueType] = com.newzly.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.newzly.phantom.keys.StaticColumn[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
@@ -116,19 +111,16 @@ object Implicits {
   }
 
   class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](override val col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
-
     def apply(r: Row): T = col.apply(r)
   }
 
   class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](override val col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
-
     def apply(r: Row): Option[T] = col.apply(r)
-
   }
 
-
-  implicit def columnToQueryColumn[T <: CassandraTable[T, R], R, RR: CassandraPrimitive](col: Column[T, R, RR]) =
-    new QueryColumn(col)
+  implicit def partitionColumnToIndexedColumn[T](col: AbstractColumn[T] with PartitionKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def primaryColumnToIndexedColumn[T](col: AbstractColumn[T] with PrimaryKey[T]): IndexedColumn[T] = new IndexedColumn[T](col)
+  implicit def secondaryColumnToIndexedColumn[T](col: AbstractColumn[T] with Index[T]): IndexedColumn[T] = new IndexedColumn[T](col)
 
   implicit def simpleColumnToAssignment[RR: CassandraPrimitive](col: AbstractColumn[RR]) = {
     new ModifyColumn[RR](col)
@@ -146,6 +138,7 @@ object Implicits {
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
+
       select.where(_.order_id gt l.toLong)
     }
 
