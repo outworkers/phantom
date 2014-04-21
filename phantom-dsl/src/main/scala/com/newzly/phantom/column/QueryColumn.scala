@@ -30,7 +30,6 @@ abstract class AbstractQueryColumn[Owner <: CassandraTable[Owner, Record], Recor
   def lte(value: RR): Clause = QueryBuilder.lte(col.name, primitive.toCType(value))
 }
 
-class QueryColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: Column[Owner, Record, RR]) extends AbstractQueryColumn[Owner, Record, RR](col)
 
 abstract class AbstractModifyColumn[RR](name: String) {
 

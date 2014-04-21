@@ -21,23 +21,12 @@ import com.newzly.phantom.query.QueryCondition
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
-  val isPrimary = false
-  val isSecondaryKey = false
-  val isPartitionKey = false
-  val isCounterColumn = false
-  val isStaticColumn = false
+  private[phantom] val isPrimary = false
+  private[phantom] val isSecondaryKey = false
+  private[phantom] val isPartitionKey = false
+  private[phantom] val isCounterColumn = false
+  private[phantom] val isStaticColumn = false
+
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
-
-
-  def eqs (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.eq(this.name, this.toCType(value)))
-  }
-
-  def lt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.lt(this.name, this.toCType(value)))
-  }
-
-  def gt (value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.gt(this.name, this.toCType(value)))
-  }
 }
+

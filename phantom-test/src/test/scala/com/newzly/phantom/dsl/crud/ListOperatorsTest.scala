@@ -41,6 +41,34 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "append an item to a list with Twitter futures" in {
+    Recipes.insertSchema
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").execute()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe recipe.ingredients ::: List("test")
+      }
+    }
+  }
+
   it should "append several items to a list" in {
 
     val recipe = Recipe.sample
@@ -70,6 +98,35 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "append several items to a list with Twitter futures" in {
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val appendable = List("test", "test2")
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients appendAll appendable).execute()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe recipe.ingredients ::: appendable
+      }
+    }
+  }
+
   it should "prepend an item to a list" in {
     Recipes.insertSchema
 
@@ -88,6 +145,34 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe List("test") :::  recipe.ingredients
+      }
+    }
+  }
+
+  it should "prepend an item to a list with Twitter Futures" in {
+    Recipes.insertSchema
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").execute()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -127,6 +212,35 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "prepend several items to a list with Twitter futures" in {
+    Recipes.insertSchema
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val appendable = List("test", "test2")
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prependAll appendable).execute()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe appendable.reverse ::: recipe.ingredients
+      }
+    }
+  }
+
   it should "remove an item from a list" in {
     Recipes.insertSchema
 
@@ -156,6 +270,35 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "remove an item from a list with Twitter Futures" in {
+    Recipes.insertSchema
+
+    val list = List("test, test2")
+    val recipe = Recipe.sample.copy(ingredients = list)
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients remove list.head).execute
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe list.tail
+      }
+    }
+  }
+
   it should "remove multiple items from a list" in {
     Recipes.insertSchema
 
@@ -175,6 +318,35 @@ class ListOperatorsTest extends BaseTest {
       insertDone <- insert
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients removeAll list.tail).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe List(list.head)
+      }
+    }
+  }
+
+  it should "remove multiple items from a list with Twitter futures" in {
+    Recipes.insertSchema
+
+    val list = List("test, test2, test3, test4, test5")
+    val recipe = Recipe.sample.copy(ingredients = list)
+    val id = UUIDs.timeBased()
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients removeAll list.tail).execute()
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
