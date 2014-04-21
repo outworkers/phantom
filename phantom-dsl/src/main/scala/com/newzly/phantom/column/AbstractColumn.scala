@@ -17,7 +17,7 @@ package com.newzly.phantom.column
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.CassandraWrites
-import com.newzly.phantom.query.{IndexedColumn, QueryCondition}
+import com.newzly.phantom.query.QueryCondition
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 

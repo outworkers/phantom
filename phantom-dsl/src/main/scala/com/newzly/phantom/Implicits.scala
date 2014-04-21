@@ -22,13 +22,9 @@ import scala.collection.JavaConverters._
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
-import com.newzly.phantom.column.{
-  AbstractColumn,
-  ModifyColumn,
-  ModifyColumnOptional,
-  SelectColumn
-}
-import com.newzly.phantom.query.{ IndexedColumn, QueryCondition, SelectWhere }
+import com.newzly.phantom.column._
+import com.newzly.phantom.query.{ QueryCondition, SelectWhere }
+import com.newzly.phantom.query.QueryCondition
 
 object Implicits {
 
