@@ -74,6 +74,55 @@ The query syntax is inspired by the Foursquare Rogue library and aims to replica
 
 Phantom works with both Scala Futures and Twitter Futures as first class citizens.
 
+
+"Select" queries
+================
+
+Select queries are very straightforward and enforce most limitations at compile time.
+
+The "where" clause operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
+
+- eqs
+- gt
+- gte
+- lt
+- lte
+
+The "side" methods providing the juice:
+
+- allowFiltering
+
+Used when querying based on an Index column. Because this has unpredictable performance in Cassandra, you must explicitly allow filtering.
+```ExampleRecord.select.allowFiltering().where(_.index eqs someIndex).future()```
+
+
+- useConsistencyLevel
+
+Very straightforward method, used to specify the consistency level of a query.
+
+
+
+
+Partial selects
+===============
+
+All partial select queries will return Tuples and are therefore limited to 22 fields.
+This will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
+
+```scala
+  def getNameById(id: UUID): Future[Option[String]] = {
+    ExampleRecord.select(_.name).where(_.id eqs someId).one()
+  }
+
+  def getNameAndPropsById(id: UUID): Future[Option(String, Map[String, String])] {
+    ExampleRecord.select(_.name, _.props).where(_.id eqs someId).one()
+  }
+```
+
+
+
+
+
 Scala Futures
 =============
 
@@ -141,22 +190,6 @@ object ExampleRecord extends ExampleRecord {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).get()
   }
 }
-```
-
-Partial selects
-===============
-
-All partial select queries will return Tuples and are therefore limited to 22 fields.
-This will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
-
-```scala
-  def getNameById(id: UUID): Future[Option[String]] = {
-    ExampleRecord.select(_.name).where(_.id eqs someId).one()
-  }
-  
-  def getNameAndPropsById(id: UUID): Future[Option(String, Map[String, String])] {
-    ExampleRecord.select(_.name, _.props).where(_.id eqs someId).one()
-  }
 ```
 
 Collection operators
@@ -241,6 +274,15 @@ sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel]
 val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id ).fetch, 5000 millis)
 
 ```
+
+The full list of PartitionToken operators is:
+
+- eqsToken
+- gtToken
+- gteToken
+- ltToken
+- lteToken
+
 For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/SkipRecordsByToken.scala)
 
 
