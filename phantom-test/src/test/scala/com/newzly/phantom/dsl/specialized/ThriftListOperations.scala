@@ -211,7 +211,7 @@ class ThriftListOperations extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList remove sample2).future()
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList discard sample2).future()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield {
       select
@@ -256,7 +256,7 @@ class ThriftListOperations extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList removeAll List(sample2, sample3)).future()
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList discardAll List(sample2, sample3)).future()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield {
       select

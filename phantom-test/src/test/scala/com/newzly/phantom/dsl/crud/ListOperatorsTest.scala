@@ -258,7 +258,7 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients remove list.head).future()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -287,7 +287,7 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients remove list.head).execute
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).execute
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
@@ -316,7 +316,7 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients removeAll list.tail).future()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discardAll list.tail).future()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -345,7 +345,7 @@ class ListOperatorsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients removeAll list.tail).execute()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discardAll list.tail).execute()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 

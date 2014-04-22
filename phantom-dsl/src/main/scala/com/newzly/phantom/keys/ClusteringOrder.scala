@@ -28,9 +28,9 @@ trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueTyp
 }
 
 trait Ascending {
-  self: ClusteringOrder[_] =>
+  self: AbstractColumn[_] with ClusteringOrder[_] =>
 }
 
 trait Descending {
-  self: ClusteringOrder[_] =>
+  self: AbstractColumn[_] with ClusteringOrder[_] =>
 }
