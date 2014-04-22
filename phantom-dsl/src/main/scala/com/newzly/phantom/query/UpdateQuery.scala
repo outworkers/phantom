@@ -26,6 +26,11 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
   }
 
   def and = modify _
+
+  def useConsistencyLevel(level: ConsistencyLevel): AssignmentsQuery[T, R] = {
+    qb.setConsistencyLevel(level)
+    this
+  }
 }
 
 class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends ExecutableStatement {
@@ -36,6 +41,11 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
 
   def using(u: Using): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(u))
+  }
+
+  def useConsistencyLevel(level: ConsistencyLevel): AssignmentOptionQuery[T, R] = {
+    qb.setConsistencyLevel(level)
+    this
   }
 }
 
