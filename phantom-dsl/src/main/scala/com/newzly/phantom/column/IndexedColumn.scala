@@ -26,8 +26,16 @@ class IndexedColumn[T](col: AbstractColumn[T]) {
     QueryCondition(QueryBuilder.lt(col.name, col.toCType(value)))
   }
 
+  def lte(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.lte(col.name, col.toCType(value)))
+  }
+
   def gt(value: T): QueryCondition = {
     QueryCondition(QueryBuilder.gt(col.name, col.toCType(value)))
+  }
+
+  def gte(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.gte(col.name, col.toCType(value)))
   }
 
   def in(values: List[T]): QueryCondition = {

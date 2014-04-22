@@ -89,8 +89,9 @@ object Implicits {
     def prependAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.prependAll(col.name, values.map(CassandraPrimitive[RR].toCType).toList.asJava)
     def append(value: RR): Assignment = QueryBuilder.append(col.name, CassandraPrimitive[RR].toCType(value))
     def appendAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.appendAll(col.name, values.map(CassandraPrimitive[RR].toCType).toList.asJava)
-    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, CassandraPrimitive[RR].toCType(value))
-    def removeAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.removeAll(col.name, values.map(CassandraPrimitive[RR].toCType).toSet.asJava)
+    def discard(value: RR): Assignment = QueryBuilder.discard(col.name, CassandraPrimitive[RR].toCType(value))
+    def discardAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.discardAll(col.name, values.map(CassandraPrimitive[RR].toCType).asJava)
+    def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, CassandraPrimitive[RR].toCType(value))
   }
 
   implicit class SetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
@@ -138,7 +139,6 @@ object Implicits {
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
-
       select.where(_.order_id gt l.toLong)
     }
 
@@ -154,8 +154,18 @@ object Implicits {
         QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
 
+    def lteToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.lte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    }
+
     def gtToken (value: T): QueryCondition = {
       QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
+        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    }
+
+    def gteToken (value: T): QueryCondition = {
+      QueryCondition(QueryBuilder.gte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
         QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
 
