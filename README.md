@@ -93,17 +93,28 @@ The "side" methods providing the juice:
 - allowFiltering
 
 Used when querying based on an Index column. Because this has unpredictable performance in Cassandra, you must explicitly allow filtering.
+
 ```ExampleRecord.select.allowFiltering().where(_.index eqs someIndex).future()```
 
-Insert queries
-==============
+Partial selects
+===============
 
+All partial select queries will return Tuples and are therefore limited to 22 fields.
+We haven't yet bothered to add more than 11 fields in the select, but you can always do a Pull Request.
+The file you are looking for is [here](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/SelectTable.scala).
+The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
-Update queries
-==============
+```scala
+  def getNameById(id: UUID): Future[Option[String]] = {
+    ExampleRecord.select(_.name).where(_.id eqs someId).one()
+  }
 
+  def getNameAndPropsById(id: UUID): Future[Option(String, Map[String, String])] {
+    ExampleRecord.select(_.name, _.props).where(_.id eqs someId).one()
+  }
+```
 
-Delete queries
+"Insert" queries
 ==============
 
 - useConsistencyLevel
@@ -117,24 +128,27 @@ This is a very fast way of providing an int value Time-To-Live for the inserterd
 Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
 
-Partial selects
-===============
+"Update" queries
+==============
 
-All partial select queries will return Tuples and are therefore limited to 22 fields.
-This will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
+- useConsistencyLevel
 
-```scala
-  def getNameById(id: UUID): Future[Option[String]] = {
-    ExampleRecord.select(_.name).where(_.id eqs someId).one()
-  }
+Very straightforward method, used to specify the consistency level of a query.
+Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
 
-  def getNameAndPropsById(id: UUID): Future[Option(String, Map[String, String])] {
-    ExampleRecord.select(_.name, _.props).where(_.id eqs someId).one()
-  }
-```
+- ttl
+
+This is a very fast way of providing an int value Time-To-Live for the inserterd or updated record.
+Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
 
+"Delete" queries
+==============
 
+- useConsistencyLevel
+
+Very straightforward method, used to specify the consistency level of a query.
+Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
 
 
 Scala Futures
