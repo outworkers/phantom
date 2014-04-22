@@ -447,6 +447,20 @@ We have tested with 10,000 statements per batch, and 1000 batches processed simu
 
 Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
 
+Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
+
+```scala
+
+import com.newzly.phantom.Implicits._
+
+BatchStatement()
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
+    .future()
+
+```
+
+
 
 Thrift integration
 ==================
