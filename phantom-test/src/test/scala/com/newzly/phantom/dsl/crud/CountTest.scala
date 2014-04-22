@@ -5,7 +5,7 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement
 
 class CountTest extends BaseTest {

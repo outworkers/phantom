@@ -76,7 +76,7 @@ object Implicits {
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
 
-  implicit class CounterModifyColumn[Owner <: CassandraTable[Owner, Record], Record](col: CounterColumn[Owner, Record]) extends ModifyColumn[Long](col) {
+  implicit class CounterModifyColumn[Owner <: CassandraTable[Owner, Record], Record](col: CounterColumn[Owner, Record]) {
     def increment(): Assignment = QueryBuilder.incr(col.name, 1L)
     def increment(value: Long): Assignment = QueryBuilder.incr(col.name, value)
     def decrement(): Assignment = QueryBuilder.decr(col.name)

@@ -9,7 +9,7 @@ import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.batch.BatchStatement
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 
 
 class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAssertions {

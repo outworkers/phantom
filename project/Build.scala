@@ -7,7 +7,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.22"
+  val newzlyUtilVersion = "0.0.26"
   val datastaxDriverVersion = "2.0.1"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
@@ -131,8 +131,9 @@ object phantom extends Build {
   ).settings(
     name := "phantom"
   ).aggregate(
-    phantomDsl,
     phantomCassandraUnit,
+    phantomDsl,
+    phantomExample,
     phantomThrift,
     phantomTest
   )
@@ -238,9 +239,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided",
-      "com.newzly"               %% "util-finagle"                      % newzlyUtilVersion     % "provided",
-      "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test"
+      "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
     phantomDsl,

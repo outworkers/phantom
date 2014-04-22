@@ -4,7 +4,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Recipe, Recipes }
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
 
 class InOperatorTest extends BaseTest {

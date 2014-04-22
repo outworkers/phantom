@@ -166,15 +166,14 @@ phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, ma
 
 It works as you would expect it to:
 
-List operators, with examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala): ```
-    prepend
-    prependAll
-    append
-    appendAll
-    discard
-    discardAll
-    setIdx
-    ```
+List operators, with examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala):
+- prepend
+- prependAll
+- append
+- appendAll
+- discard
+- discardAll
+- setIdx
 
 ```scala
 
@@ -187,18 +186,16 @@ ExampleRecord.update.where(_.id eqs someId).modify(_.someList appendAll someItem
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList discard someItem).future()
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList discardAll someItems).future()
 
-```
 
-Set operators, with examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala): ```
-    append
-    appendAll
-    remove
-    removeAll
-```
-Map operators, with examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala): ```
-    put
-    putAll
-```
+Set operators, with examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala):
+- append
+- appendAll
+- remove
+- removeAll
+
+Map operators, with examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala):
+- put
+- putAll
 
 
 
@@ -303,7 +300,7 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 CQL 3 index and non-primary index columns
 =========================================
 
-When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, but phantom offers ```com.newzly.phantom.Keys.SecondaryKey``` to enable querying.
+When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, but phantom offers ```com.newzly.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
@@ -315,8 +312,8 @@ import com.newzly.phantom.Implicits._
 sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object timestamp extends DateTimeColumn(this) with SecondaryKey[DateTime]
-  object name extends StringColumn(this) with SecondaryKey[String]
+  object timestamp extends DateTimeColumn(this) with Index[DateTime]
+  object name extends StringColumn(this) with Index[String]
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
   object test extends OptionalIntColumn(this)
 

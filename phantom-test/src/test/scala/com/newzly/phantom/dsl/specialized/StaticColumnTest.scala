@@ -6,7 +6,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.StaticTableTest
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class StaticColumnTest extends BaseTest {
   val keySpace = "static_columns_test"
