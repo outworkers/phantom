@@ -400,7 +400,7 @@ Asynchronous iterators for large record sets
 Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal with billions of records.
 phantom iterators are based on Play iterators with very lightweight integration.
 
-The functionality is identical with respect to asyncrhonous, lazy behaviour and available methods.
+The functionality is identical with respect to asynchronous, lazy behaviour and available methods.
 For more on this, see this [Play tutorial](
 http://mandubian.com/2012/08/27/understanding-play2-iteratees-for-normal-humans/)
 
@@ -454,7 +454,7 @@ Batches are immutable and adding a new record will result in a new Batch, just l
 import com.newzly.phantom.Implicits._
 
 BatchStatement()
-    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla))
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
     .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
     .future()
 
