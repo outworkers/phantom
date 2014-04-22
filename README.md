@@ -80,7 +80,15 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 
 Select queries are very straightforward and enforce most limitations at compile time.
 
-The "where" clause operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
+
+- where
+
+This is the basic where clause method. The "where" operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
+
+- and
+
+Used to chain multiple where conditions into an "AND" clause in CQL 3. "and" respects the same restrictions as above, you can't use it on a non-indexed column.
+The following operators can be used into a "where" and "and" clause.
 
 - eqs
 - gt
@@ -117,6 +125,22 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 "Insert" queries
 ==============
 
+- value
+
+This is a very basic way of telling phantom what to set a column to for that particular row.
+
+```scala
+ExampleRecord.insert.value(_.name, "someName").value(_.id, UUIDs.timeBased()).execute()
+```
+
+A field that is not set will be set to ```null``` in Cassandra.
+
+- valueOrNull
+
+This will take ```null``` values without throwing an error. Only use this when ```null``` is acceptable.
+Although you likely want to stick with Optional columns. They are better, as phantom will give you a type-safe ```Option[T]``` back instead of ```null```
+
+
 - useConsistencyLevel
 
 Very straightforward method, used to specify the consistency level of a query.
@@ -124,13 +148,21 @@ Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available val
 
 - ttl
 
-This is a very fast way of providing an int value Time-To-Live for the inserterd or updated record.
+This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
 Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
 
 "Update" queries
 ==============
 
+- where
+
+This is the basic where clause method. The "where" operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
+
+- and
+
+Used to chain multiple where conditions into an "AND" clause in CQL 3.
+
 - useConsistencyLevel
 
 Very straightforward method, used to specify the consistency level of a query.
@@ -138,7 +170,7 @@ Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available val
 
 - ttl
 
-This is a very fast way of providing an int value Time-To-Live for the inserterd or updated record.
+This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
 Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
 
