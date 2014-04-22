@@ -176,7 +176,6 @@ List operators, with examples in [ListOperatorsTest.scala](https://github.com/ne
 - setIdx
 
 ```scala
-
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList prepend someItem).future()
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList prependAll someItems).future()
 
@@ -185,7 +184,8 @@ ExampleRecord.update.where(_.id eqs someId).modify(_.someList appendAll someItem
 
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList discard someItem).future()
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList discardAll someItems).future()
-
+ExampleRecord.update.where(_.id eqs someId).modify(_.someList setIdx (0, someItem)).future()
+```
 
 Set operators, with examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala):
 - append
