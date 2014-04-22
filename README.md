@@ -6,7 +6,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.3.0```.
+The current version is: ```val phantomVersion = 0.4.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
@@ -29,8 +29,7 @@ libraryDependencies ++= Seq(
   "com.newzly"  %% "phantom-cassandra-unit"        % phantomVersion,
   "com.newzly"  %% "phantom-example"               % phantomVersion,
   "com.newzly"  %% "phantom-thrift"                % phantomVersion,
-  "com.newzly"  %% "phantom-test"                  % phantomVersion,
-  "com.newzly"  %% "phantom-finagle"               % phantomVersion
+  "com.newzly"  %% "phantom-test"                  % phantomVersion
 )
 ```
 
@@ -53,7 +52,7 @@ case class ExampleModel (
   test: Option[Int]
 )
 
-sealed class ExampleRecord private() extends CassandraTable[ExampleRecord, ExampleModel] {
+sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
@@ -73,9 +72,37 @@ Querying with Phantom
 
 The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
 
-Phantom works with both Scala Futures and Twitter Futures. For the Twitter flavour, simply add the ```"com.newzly  %% phantom-finagle % phantomVersion"``` dependency.
+Phantom works with both Scala Futures and Twitter Futures as first class citizens.
+
+Scala Futures
+=============
 
 ```scala
+ExampleRecord.select.one() // When you only want to select one record
+ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").future() // When you don't care about the return type.
+ExampleRecord.select.fetchEnumerator // when you need an Enumerator
+ExampleRecord.select.fetch // When you want to fetch a Seq[Record]
+```
+
+Twitter Futures
+=============
+
+```scala
+ExampleRecord.select.get() // When you only want to select one record
+ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").execute() // When you don't care about the return type.
+ExampleRecord.select.enumerate // when you need an Enumerator
+ExampleRecord.select.collect // When you want to fetch a Seq[Record]
+```
+
+
+More examples with Scala Futures
+================================
+
+
+```scala
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object ExampleRecord extends ExampleRecord {
   override val tableName = "examplerecord"
@@ -89,6 +116,29 @@ object ExampleRecord extends ExampleRecord {
   
   def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).one()
+  }
+}
+```
+
+More examples with Twitter Futures
+================================
+
+```scala
+
+import com.twitter.util.Future
+
+object ExampleRecord extends ExampleRecord {
+  override val tableName = "examplerecord"
+
+  // now define a session, a normal Datastax cluster connection
+  implicit val session = SomeCassandraClient.session;
+  
+  def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
+    ExampleRecord.select.where(_.name eqs name).collect
+  }
+  
+  def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
+    ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).get()
   }
 }
 ```
@@ -116,7 +166,15 @@ phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, ma
 
 It works as you would expect it to:
 
-List operators: ```prepend, prependAll, append, appendAll, remove, removeAll```
+List operators, with examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala): ```
+    prepend
+    prependAll
+    append
+    appendAll
+    discard
+    discardAll
+    setIdx
+    ```
 
 ```scala
 
@@ -126,15 +184,22 @@ ExampleRecord.update.where(_.id eqs someId).modify(_.someList prependAll someIte
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList append someItem).future()
 ExampleRecord.update.where(_.id eqs someId).modify(_.someList appendAll someItems).future()
 
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList remove someItem).future()
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList removeAll someItems).future()
+ExampleRecord.update.where(_.id eqs someId).modify(_.someList discard someItem).future()
+ExampleRecord.update.where(_.id eqs someId).modify(_.someList discardAll someItems).future()
 
 ```
 
-Set operators: ```append, appendAll, remove, removeAll```
-Map operators: ```put, putAll```
+Set operators, with examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala): ```
+    append
+    appendAll
+    remove
+    removeAll
+```
+Map operators, with examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala): ```
+    put
+    putAll
+```
 
-For working examples, see [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala) and [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala).
 
 
 Automated schema generation
@@ -162,7 +227,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.newzly.phantom.Implicits._
 
-sealed class ExampleRecord2 private() extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
+sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this)
@@ -193,7 +258,7 @@ Restrictions are enforced at compile time.
 
 import com.newzly.phantom.Implicits._
 
-sealed class ExampleRecord3 private() extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
+sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
@@ -221,7 +286,7 @@ A table can have only one ```PartitionKey``` but several ```PrimaryKey``` defini
 import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
-sealed class ExampleRecord3 private() extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
+sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with PrimaryKey[DateTime]
@@ -247,7 +312,7 @@ The CQL 3 schema for secondary indexes can also be auto-generated with ```Exampl
 import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
-sealed class ExampleRecord4 private() extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
+sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with SecondaryKey[DateTime]
@@ -283,7 +348,7 @@ import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
 
-sealed class ExampleRecord3 private() extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
+sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object timestamp extends DateTimeColumn(this) with PrimaryKey[DateTime]
