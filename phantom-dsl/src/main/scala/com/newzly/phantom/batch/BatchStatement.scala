@@ -62,5 +62,10 @@ class BatchStatement(val qbList: Iterator[ExecutableStatement] = Iterator.empty)
   }
 }
 
+object BatchStatement {
+  def apply(): BatchStatement = new BatchStatement()
+  def apply(statements: Iterator[ExecutableStatement]) = new BatchStatement(statements)
+}
+
 
 

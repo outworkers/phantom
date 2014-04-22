@@ -29,7 +29,8 @@ import com.newzly.phantom.query.QueryCondition
 object Implicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.CassandraTable[Owner, Record]
-
+  type BatchStatement = com.newzly.phantom.batch.BatchStatement
+  val BatchStatement = com.newzly.phantom.batch.BatchStatement
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.PrimitiveColumn[Owner, Record, T]
 
