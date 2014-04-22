@@ -133,7 +133,6 @@ object phantom extends Build {
   ).aggregate(
     phantomDsl,
     phantomCassandraUnit,
-    phantomFinagle,
     phantomThrift,
     phantomTest
   )
@@ -207,22 +206,6 @@ object phantom extends Build {
     phantomDsl
   )
 
-  lazy val phantomFinagle = Project(
-    id = "phantom-finagle",
-    base = file("phantom-finagle"),
-    settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
-      sharedSettings ++
-      publishSettings
-  ).settings(
-    name := "phantom-finagle",
-    libraryDependencies ++= Seq(
-      "com.twitter"                  %% "util-collection"                   % finagleVersion
-    )
-  ).dependsOn(
-    phantomDsl
-  )
-
   lazy val phantomExample = Project(
     id = "phantom-example",
     base = file("phantom-example"),
@@ -235,7 +218,6 @@ object phantom extends Build {
     name := "phantom-example"
   ).dependsOn(
     phantomDsl,
-    phantomFinagle,
     phantomThrift
   )
 
@@ -263,7 +245,6 @@ object phantom extends Build {
   ).dependsOn(
     phantomDsl,
     phantomCassandraUnit,
-    phantomFinagle,
     phantomThrift
   )
 }

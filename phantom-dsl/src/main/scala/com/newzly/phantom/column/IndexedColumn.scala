@@ -1,6 +1,5 @@
 package com.newzly.phantom.column
 
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.query.QueryCondition
 
