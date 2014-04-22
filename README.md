@@ -91,6 +91,7 @@ Used to chain multiple where conditions into an "AND" clause in CQL 3. "and" res
 The following operators can be used into a "where" and "and" clause.
 
 - eqs
+- in
 - gt
 - gte
 - lt
