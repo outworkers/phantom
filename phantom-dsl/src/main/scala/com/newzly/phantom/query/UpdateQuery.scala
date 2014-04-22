@@ -15,9 +15,9 @@
  */
 package com.newzly.phantom.query
 
+import com.datastax.driver.core.ConsistencyLevel
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.AbstractColumn
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
 
@@ -56,6 +56,11 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
     this
   }
 
+  def useConsistencyLevel(level: ConsistencyLevel): UpdateQuery[T, R] = {
+    qb.setConsistencyLevel(level)
+    this
+  }
+
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
   }
@@ -71,6 +76,11 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) 
 
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
+  }
+
+  def useConsistencyLevel(level: ConsistencyLevel): UpdateWhere[T, R] = {
+    qb.setConsistencyLevel(level)
+    this
   }
 }
 

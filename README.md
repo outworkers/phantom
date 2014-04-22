@@ -95,12 +95,26 @@ The "side" methods providing the juice:
 Used when querying based on an Index column. Because this has unpredictable performance in Cassandra, you must explicitly allow filtering.
 ```ExampleRecord.select.allowFiltering().where(_.index eqs someIndex).future()```
 
+Insert queries
+==============
+
+
+Update queries
+==============
+
+
+Delete queries
+==============
 
 - useConsistencyLevel
 
 Very straightforward method, used to specify the consistency level of a query.
+Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
 
+- ttl
 
+This is a very fast way of providing an int value Time-To-Live for the inserterd or updated record.
+Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
 
 Partial selects
