@@ -343,6 +343,7 @@ The full list of PartitionToken operators is:
 - gteToken
 - ltToken
 - lteToken
+- in
 
 For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/SkipRecordsByToken.scala)
 
