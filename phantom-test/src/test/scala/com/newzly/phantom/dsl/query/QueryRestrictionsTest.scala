@@ -6,6 +6,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ CounterTableTest, Primitives, TwoKeys }
 
 class QueryRestrictionsTest extends FlatSpec with Matchers {
+
   it should "not allow using the eqs operator on non index columns" in {
     "Primitives.select.where(_.long eqs 5L).one()" shouldNot compile
   }
@@ -14,8 +15,16 @@ class QueryRestrictionsTest extends FlatSpec with Matchers {
     "Primitives.select.where(_.long lt 5L).one()" shouldNot compile
   }
 
+  it should "not allow using the lte operator on non index columns" in {
+    "Primitives.select.where(_.long lte 5L).one()" shouldNot compile
+  }
+
   it should "not allow using the gt operator on non index columns" in {
     "Primitives.select.where(_.long gt 5L).one()" shouldNot compile
+  }
+
+  it should "not allow using the gte operator on non index columns" in {
+    "Primitives.select.where(_.long gte 5L).one()" shouldNot compile
   }
 
   it should "not allow using the in operator on non index columns" in {
