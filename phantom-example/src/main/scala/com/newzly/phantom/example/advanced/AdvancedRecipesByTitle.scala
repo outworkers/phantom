@@ -7,7 +7,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.example.basics.DBConnector
 
 
-// Now you want to enable querying Recipes by title.
+// Now you want to enable querying Recipes by author.
 // Because of the massive performance overhead of filtering,
 // you can't really use a SecondaryKey for multi-billion record databases.
 
@@ -15,7 +15,7 @@ import com.newzly.phantom.example.basics.DBConnector
 // This will illustrate just how easy it is to do that with phantom.
 sealed class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitle, (String, UUID)] {
 
-  // In this table, the title will be PrimaryKey and PartitionKey.
+  // In this table, the author will be PrimaryKey and PartitionKey.
   object title extends StringColumn(this) with PartitionKey[String]
 
   // The id is just another normal field.
