@@ -15,25 +15,21 @@
  */
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.ConsistencyLevel
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
 import com.newzly.phantom.CassandraTable
 
-class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
+class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
+  extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) with ExecutableStatement {
 
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.and(a(table)))
   }
 
   def and = modify _
-
-  def useConsistencyLevel(level: ConsistencyLevel): AssignmentsQuery[T, R] = {
-    qb.setConsistencyLevel(level)
-    this
-  }
 }
 
-class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends ExecutableStatement {
+class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options)
+  extends SharedQueryMethods[AssignmentOptionQuery[T, R], Update.Options](qb) with ExecutableStatement {
 
   def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
@@ -42,14 +38,10 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
   def using(u: Using): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(u))
   }
-
-  def useConsistencyLevel(level: ConsistencyLevel): AssignmentOptionQuery[T, R] = {
-    qb.setConsistencyLevel(level)
-    this
-  }
 }
 
-class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
+class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
+  extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) {
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))
@@ -66,17 +58,13 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
     this
   }
 
-  def useConsistencyLevel(level: ConsistencyLevel): UpdateQuery[T, R] = {
-    qb.setConsistencyLevel(level)
-    this
-  }
-
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
   }
 }
 
-class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {
+class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
+  extends SharedQueryMethods[UpdateWhere[T, R], Update.Where](qb) {
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
@@ -86,11 +74,6 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) 
 
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
-  }
-
-  def useConsistencyLevel(level: ConsistencyLevel): UpdateWhere[T, R] = {
-    qb.setConsistencyLevel(level)
-    this
   }
 }
 

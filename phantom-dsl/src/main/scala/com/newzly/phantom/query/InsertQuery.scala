@@ -21,7 +21,7 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
 import com.datastax.driver.core.ConsistencyLevel
 
-class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends ExecutableStatement {
+class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends SharedQueryMethods[InsertQuery[T, R], Insert](qb) with ExecutableStatement {
 
   def value[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
@@ -34,11 +34,6 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     qb.value(col.name, Try {
       col.toCType(value)
     } getOrElse null.asInstanceOf[T])
-    this
-  }
-
-  def useConsistencyLevel(level: ConsistencyLevel): InsertQuery[T, R] = {
-    qb.setConsistencyLevel(level)
     this
   }
 
