@@ -13,7 +13,7 @@ import com.newzly.phantom.Implicits._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class CompositeKeyRecipes extends CassandraTable[Recipes, Recipe] {
+sealed class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -32,8 +32,8 @@ sealed class CompositeKeyRecipes extends CassandraTable[Recipes, Recipe] {
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[Recipes, Recipe, String](this)
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[CompositeKeyRecipes, Recipe, String](this)
+  object props extends MapColumn[CompositeKeyRecipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.
