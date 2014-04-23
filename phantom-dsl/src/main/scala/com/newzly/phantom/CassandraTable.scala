@@ -43,7 +43,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with collection.mutable.SynchronizedBuffer[AbstractColumn[_]]
 
-  def addColumn(column: AbstractColumn[_]): Unit = {
+  final def addColumn(column: AbstractColumn[_]): Unit = {
     _columns += column
   }
 
