@@ -19,7 +19,6 @@ import scala.util.Try
 import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
-import com.datastax.driver.core.ConsistencyLevel
 
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends SharedQueryMethods[InsertQuery[T, R], Insert](qb) with ExecutableStatement {
 
