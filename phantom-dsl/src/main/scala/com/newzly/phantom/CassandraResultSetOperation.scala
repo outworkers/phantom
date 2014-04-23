@@ -27,7 +27,7 @@ import com.google.common.util.concurrent.{
 }
 import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise }
 
-object Manager {
+private [phantom] object Manager {
 
   lazy val taskExecutor = Executors.newCachedThreadPool()
 
@@ -38,7 +38,7 @@ object Manager {
   lazy val logger = LoggerFactory.getLogger("com.newzly.phantom")
 }
 
-trait CassandraResultSetOperations {
+private [phantom] trait CassandraResultSetOperations {
 
 
   def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
@@ -130,5 +130,3 @@ trait CassandraResultSetOperations {
   }
 
 }
-
-object CassandraResultSetOperations extends CassandraResultSetOperations
