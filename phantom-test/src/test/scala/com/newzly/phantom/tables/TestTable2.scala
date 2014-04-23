@@ -1,9 +1,6 @@
 package com.newzly.phantom.tables
 
-import com.datastax.driver.core.Row
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
-import com.newzly.phantom.keys.PrimaryKey
+import com.newzly.phantom.helper.{ ModelSampler, Sampler }
 
 case class SimpleStringClass(something: String)
 

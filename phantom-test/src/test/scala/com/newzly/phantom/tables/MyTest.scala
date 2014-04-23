@@ -4,7 +4,6 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class MyTestRow(
   key: String,

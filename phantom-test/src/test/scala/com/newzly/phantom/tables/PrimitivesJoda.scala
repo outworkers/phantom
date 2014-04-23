@@ -5,7 +5,6 @@ import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.helper.{TestSampler, Sampler, ModelSampler}
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
 
 case class JodaRow(
   pkey: String,

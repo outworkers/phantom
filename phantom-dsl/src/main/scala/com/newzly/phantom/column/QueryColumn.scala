@@ -21,6 +21,7 @@ import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause 
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 import com.newzly.phantom.keys.{ Index, PrimaryKey, PartitionKey }
 import com.newzly.phantom.query.QueryCondition
+import scala.annotation.implicitNotFound
 
 
 /**
@@ -125,13 +126,36 @@ sealed trait IndexRestrictions {
   implicit def secondaryColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with Index[T]): QueryColumn[T] = new QueryColumn(col)
 }
 
+sealed class ModifiableColumn[T]
 sealed trait ModifyImplicits extends LowPriorityImplicits {
-  trait =!=[A, B]
-  type ¬[T] = T => Nothing
-  implicit def neg[T, U](t : T)(implicit ev : T =!= U) : ¬[U] = null
-  final def notCounter[T <: AbstractColumn[_] <% ¬[CounterRestriction[_]]](t : T) = t
+
+  implicit final def columnsAreModifiable[T <: AbstractColumn[_]] = new ModifiableColumn[T]
+
+  implicit final def countersAreNotModifiable[T <: AbstractColumn[RR] with CounterRestriction[RR], RR] = new ModifiableColumn[T]
+  implicit final def countersAreNotModifiable2[T <: AbstractColumn[RR] with CounterRestriction[RR], RR] = new ModifiableColumn[T]
+
+  implicit final def primaryKeysAreNotModifiable[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
+  implicit final def primaryKeysAreNotModifiable2[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
+
+  implicit final def partitionKeysAreNotModifiable[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
+  implicit final def partitionKeysAreNotModifiable2[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
+
+  implicit final def indexesAreNotModifiable[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
+  implicit final def indexesAreNotModifiable2[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
 
   implicit final def columnToModifyColumn[T](col: AbstractColumn[T]): ModifyColumn[T] = new ModifyColumn[T](col)
+
+  @implicitNotFound(msg = "CounterColumns can only be incremented or decremented.")
+  implicit final def nonCounterColumns[T <: CounterRestriction[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with CounterRestriction[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+
+  @implicitNotFound(msg = "The value of primary key columns cannot be updated as per the Cassandra specification")
+  implicit final def notPrimaryKeys[T <: PrimaryKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with PrimaryKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+
+  @implicitNotFound(msg = "The value of partition key columns cannot be updated as per the Cassandra specification")
+  implicit final def notPartitionKeys[T <: PartitionKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with PartitionKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+
+  @implicitNotFound(msg = "The value of indexed columns cannot be updated as per the Cassandra specification")
+  implicit final def notIndexKeys[T <: PartitionKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with Index[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
 

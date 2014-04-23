@@ -2,8 +2,6 @@ package com.newzly.phantom.tables
 
 import java.util.UUID
 import com.datastax.driver.core.Row
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.keys.{PartitionKey, LongOrderKey, PrimaryKey}
 import com.newzly.phantom.helper.{
   ModelSampler,
   Sampler,
