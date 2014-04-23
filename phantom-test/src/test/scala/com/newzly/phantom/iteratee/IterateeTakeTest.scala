@@ -5,7 +5,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Primitive, Primitives }
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class IterateeTakeTest extends BaseTest {
   val keySpace: String = "iteratee_take_tests"
