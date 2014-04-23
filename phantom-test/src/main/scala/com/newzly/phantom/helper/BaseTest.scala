@@ -1,6 +1,6 @@
 package com.newzly.phantom.helper
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ blocking, ExecutionContext }
 import org.scalatest.{ Assertions, BeforeAndAfterAll, FlatSpec, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, ScalaFutures }
 import com.datastax.driver.core.{ Cluster, Session }
@@ -24,8 +24,10 @@ trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Ma
 
 
   private[this] def createKeySpace(spaceName: String) = {
-    session.execute(s"CREATE KEYSPACE IF NOT EXISTS $spaceName WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
-    session.execute(s"use $spaceName;")
+    blocking {
+      session.execute(s"CREATE KEYSPACE IF NOT EXISTS $spaceName WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
+      session.execute(s"use $spaceName;")
+    }
   }
 
   override def beforeAll() {
@@ -33,7 +35,9 @@ trait BaseTest extends FlatSpec with ScalaFutures with BeforeAndAfterAll with Ma
   }
 
   override def afterAll() {
-    session.execute(s"DROP KEYSPACE $keySpace;")
+    blocking {
+      session.execute(s"DROP KEYSPACE $keySpace;")
+    }
   }
 
 }

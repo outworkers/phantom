@@ -131,7 +131,7 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   implicit def neg[T, U](t : T)(implicit ev : T =!= U) : ¬[U] = null
   final def notCounter[T <: AbstractColumn[_] <% ¬[CounterRestriction[_]]](t : T) = t
 
-  implicit def columnToModifyColumn[T](col: AbstractColumn[T]): ModifyColumn[T] = new ModifyColumn[T](col)
+  implicit final def columnToModifyColumn[T](col: AbstractColumn[T]): ModifyColumn[T] = new ModifyColumn[T](col)
 
   implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
 
