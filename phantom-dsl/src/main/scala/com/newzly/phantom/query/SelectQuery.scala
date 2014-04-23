@@ -21,6 +21,7 @@ import com.datastax.driver.core.querybuilder.Select
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
+import com.newzly.phantom.column.AbstractColumn
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 

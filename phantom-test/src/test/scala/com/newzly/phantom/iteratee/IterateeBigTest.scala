@@ -5,10 +5,8 @@ import scala.concurrent.{ Await, Future }
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.batch.BatchStatement
-import com.newzly.util.finagle.AsyncAssertionsHelper._
 import com.newzly.phantom.tables.{ PrimitivesJoda, JodaRow }
-
-
+import com.newzly.util.testing.AsyncAssertionsHelper._
 
 
 class IterateeBigTest extends BigTest {
