@@ -18,7 +18,12 @@ package com.newzly.phantom.column
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
 
-class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Long](table) {
+
+private [phantom] trait CounterRestriction[T]
+
+class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
+  extends Column[Owner, Record, Long](table) with CounterRestriction[Long] {
+
   val cassandraType = "counter"
   val primitive = CassandraPrimitive[Long]
   override val isCounterColumn = true

@@ -13,7 +13,7 @@ import com.newzly.phantom.Implicits._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class SecondaryKeyRecipes extends CassandraTable[Recipes, Recipe] {
+sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -27,12 +27,12 @@ sealed class SecondaryKeyRecipes extends CassandraTable[Recipes, Recipe] {
 
   // If you want to query by a field, you need an index on it.
   // One of the strategies for doing so is using a SecondaryKey
-  object author extends StringColumn(this) with SecondaryKey[String] // done
+  object author extends StringColumn(this) with Index[String] // done
 
   object description extends StringColumn(this)
 
-  object ingredients extends SetColumn[Recipes, Recipe, String](this)
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[SecondaryKeyRecipes, Recipe, String](this)
+  object props extends MapColumn[SecondaryKeyRecipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.
@@ -54,14 +54,14 @@ sealed class SecondaryKeyRecipes extends CassandraTable[Recipes, Recipe] {
 
 object SecondaryKeyRecipes extends SecondaryKeyRecipes with DBConnector {
 
-  // Now say you want to get a Recipe by title.
-  // title is a SecondaryKey, you can now use it in a "where" clause.
-  // Performance is unpredicable for such queries, so you need to allow filtering.
+  // Now say you want to get a Recipe by author.
+  // author is a Index, you can now use it in a "where" clause.
+  // Performance is unpredictable for such queries, so you need to allow filtering.
   // Note this is not the best practice.
   // In a real world environment, you create a RecipesByTitle mapping table.
   // Check out the example.
-  def getRecipeByTitle(title: String): ScalaFuture[Option[Recipe]] = {
-    select.allowFiltering().where(_.title eqs title).one()
+  def getRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
+    select.allowFiltering().where(_.author eqs author).one()
   }
 
 
