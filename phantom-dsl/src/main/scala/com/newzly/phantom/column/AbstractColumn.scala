@@ -21,6 +21,7 @@ import com.newzly.phantom.query.QueryCondition
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
+  type Value = T
   private[phantom] val isPrimary = false
   private[phantom] val isSecondaryKey = false
   private[phantom] val isPartitionKey = false

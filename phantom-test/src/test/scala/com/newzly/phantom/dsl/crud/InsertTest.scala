@@ -169,7 +169,7 @@ class InsertTest extends BaseTest {
       .value(_.props, r.props)
       .value(_.uid, UUIDs.timeBased()).execute() flatMap {
       _ => {
-        Recipes.select.get
+        Recipes.select.where(_.url eqs r.url).get
       }
     }
 

@@ -23,6 +23,6 @@ class QueryRestrictionsTest extends FlatSpec with Matchers {
   }
 
   it should "not allow using the setTo operator on a Counter column" in {
-    CounterTableTest.update.where(_.id eqs UUIDs.timeBased()).modify(_.count_entries setTo 5L)
+    "CounterTableTest.update.where(_.id eqs UUIDs.timeBased()).modify(_.count_entries setTo 5L)" shouldNot compile
   }
 }
