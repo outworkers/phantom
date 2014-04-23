@@ -15,13 +15,13 @@
  */
 package com.newzly.phantom.column
 
+import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Clause }
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 import com.newzly.phantom.keys.{ Index, PrimaryKey, PartitionKey }
 import com.newzly.phantom.query.QueryCondition
-import scala.annotation.implicitNotFound
 
 
 /**
@@ -85,10 +85,8 @@ class QueryColumn[RR : CassandraPrimitive](col: AbstractColumn[RR]) extends Abst
 sealed trait CollectionOperators {
 
   implicit class CounterModifyColumn[Owner <: CassandraTable[Owner, Record], Record](col: CounterColumn[Owner, Record]) {
-    def increment(): Assignment = QueryBuilder.incr(col.name, 1L)
-    def increment(value: Long): Assignment = QueryBuilder.incr(col.name, value)
-    def decrement(): Assignment = QueryBuilder.decr(col.name)
-    def decrement(value: Long): Assignment = QueryBuilder.decr(col.name, value)
+    def increment(value: Long = 1L): Assignment = QueryBuilder.incr(col.name, value)
+    def decrement(value: Long = 1L): Assignment = QueryBuilder.decr(col.name, value)
   }
 
   implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
