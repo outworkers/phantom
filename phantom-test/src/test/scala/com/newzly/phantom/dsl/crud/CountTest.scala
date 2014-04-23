@@ -3,7 +3,7 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.BaseTest
+import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.tables.{ PrimitivesJoda, JodaRow }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.phantom.batch.BatchStatement

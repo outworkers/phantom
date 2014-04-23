@@ -4,7 +4,8 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.{TestSampler, ModelSampler, Sampler}
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
+import com.newzly.util.testing.Sampler
 
 case class CounterRecord(id: UUID, count: Long)
 
@@ -14,7 +15,6 @@ object CounterRecord extends ModelSampler[CounterRecord] {
     Sampler.getARandomInteger().toLong
   )
 }
-
 
 class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] {
 

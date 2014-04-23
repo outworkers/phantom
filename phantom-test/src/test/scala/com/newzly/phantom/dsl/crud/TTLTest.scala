@@ -3,7 +3,7 @@ package com.newzly.phantom.dsl.crud
 import org.scalatest.{ Assertions, Matchers, Inside }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.BaseTest
+import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.tables.{ Primitive, Primitives }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.twitter.util.Duration

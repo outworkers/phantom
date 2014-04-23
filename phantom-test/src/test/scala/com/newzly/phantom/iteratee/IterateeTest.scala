@@ -7,7 +7,7 @@ import org.scalatest.{Assertions, Matchers}
 import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.batch.BatchStatement
-import com.newzly.phantom.helper.BaseTest
+import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
 import com.newzly.util.testing.AsyncAssertionsHelper._
 

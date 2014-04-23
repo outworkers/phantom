@@ -3,8 +3,9 @@ package com.newzly.phantom.tables
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{TestSampler, Sampler, ModelSampler}
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
 import com.newzly.phantom.Implicits._
+import com.newzly.util.testing.Sampler
 
 case class JodaRow(
   pkey: String,
@@ -16,7 +17,7 @@ object JodaRow extends ModelSampler[JodaRow] {
   def sample: JodaRow = {
     val d = new DateTime()
     JodaRow(
-      Sampler.getAUniqueString,
+      Sampler.getARandomString,
       Sampler.getARandomInteger(),
       new DateTime(d.plus(Sampler.getARandomInteger().toLong))
     )
