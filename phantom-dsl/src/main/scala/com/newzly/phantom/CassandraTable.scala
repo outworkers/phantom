@@ -22,7 +22,14 @@ import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.column.AbstractColumn
-import com.newzly.phantom.query.{ CreateQuery, DeleteQuery, InsertQuery, SelectQuery, UpdateQuery }
+import com.newzly.phantom.query.{
+  CreateQuery,
+  DeleteQuery,
+  InsertQuery,
+  SelectQuery,
+  TruncateQuery,
+  UpdateQuery
+}
 
 case class FieldHolder(name: String, metaField: AbstractColumn[_])
 
@@ -66,6 +73,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
+  def truncate = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
+
   def count = new SelectQuery[T, Option[Long]](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
@@ -75,7 +84,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def schema(): String = {
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
-      s"$qb, ${c.name} ${c.cassandraType}"
+      if (c.isStaticColumn) {
+        val q = s"$qb, ${c.name} ${c.cassandraType} static"
+        Console.println(q)
+        q
+      } else {
+        s"$qb, ${c.name} ${c.cassandraType}"
+      }
     })
     val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(", ")
     val pkes = {
