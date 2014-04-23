@@ -18,7 +18,8 @@ package com.newzly.phantom.query
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
 import com.newzly.phantom.CassandraTable
 
-class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends ExecutableStatement {
+class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
+  extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) with ExecutableStatement {
 
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.and(a(table)))
@@ -27,7 +28,8 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
   def and = modify _
 }
 
-class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends ExecutableStatement {
+class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options)
+  extends SharedQueryMethods[AssignmentOptionQuery[T, R], Update.Options](qb) with ExecutableStatement {
 
   def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
@@ -38,7 +40,8 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
   }
 }
 
-class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
+class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
+  extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) {
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))
@@ -60,7 +63,8 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) {
   }
 }
 
-class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) {
+class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
+  extends SharedQueryMethods[UpdateWhere[T, R], Update.Where](qb) {
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))

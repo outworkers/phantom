@@ -3,7 +3,7 @@ package com.newzly.phantom.dsl.crud
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ TestRow, TestTable }
-import com.newzly.util.finagle.AsyncAssertionsHelper._
+import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class SetOperationsTest extends BaseTest {
   val keySpace = "setoperationstest"

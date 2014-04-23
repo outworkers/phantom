@@ -15,8 +15,11 @@
  */
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.querybuilder.{ Assignment, Clause }
+import scala.collection.JavaConverters._
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Assignment, Clause}
+import com.newzly.phantom.column.AbstractColumn
 
 case class QueryCondition(clause: Clause)
 
 case class QueryAssignment(assignment: Assignment)
+

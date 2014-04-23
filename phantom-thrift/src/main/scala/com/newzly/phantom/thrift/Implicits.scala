@@ -46,8 +46,10 @@ object Implicits {
     def prependAll(values: List[RR]): Assignment = QueryBuilder.prependAll(col.name, values.map(col.itemToCType).asJava)
     def append(value: RR): Assignment = QueryBuilder.append(col.name, col.itemToCType(value))
     def appendAll(values: List[RR]): Assignment = QueryBuilder.appendAll(col.name, values.map(col.itemToCType).asJava)
-    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.itemToCType(value))
-    def removeAll(values: List[RR]): Assignment = QueryBuilder.removeAll(col.name, values.toSet[RR].map(col.itemToCType).asJava)
+
+    def discard(value: RR): Assignment = QueryBuilder.discard(col.name, col.itemToCType(value))
+    def discardAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.discardAll(col.name, values.map(col.itemToCType).asJava)
+    def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, col.itemToCType(value))
   }
 
   implicit class ThriftMapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, Key : CassandraPrimitive, RR <: ThriftStruct](col: ThriftMapColumn[Owner, Record, Key, RR]) extends ModifyColumn[Map[Key, RR]](col) {

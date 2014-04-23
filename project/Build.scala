@@ -7,10 +7,9 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.17"
+  val newzlyUtilVersion = "0.0.26"
   val datastaxDriverVersion = "2.0.1"
-  val liftVersion = "2.6-M2"
-  val scalatestVersion = "2.0.M8"
+  val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
   val thriftVersion = "0.9.1"
@@ -24,8 +23,8 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.3.1",
-    scalaVersion := "2.10.3",
+    version := "0.4.0",
+    scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -45,6 +44,8 @@ object phantom extends Build {
       "-language:reflectiveCalls",
       "-language:higherKinds",
       "-language:existentials",
+      "-Yinline-warnings",
+      "-Xlint",
       "-deprecation",
       "-feature",
       "-unchecked"
@@ -130,9 +131,9 @@ object phantom extends Build {
   ).settings(
     name := "phantom"
   ).aggregate(
-    phantomDsl,
     phantomCassandraUnit,
-    phantomFinagle,
+    phantomDsl,
+    phantomExample,
     phantomThrift,
     phantomTest
   )
@@ -182,7 +183,7 @@ object phantom extends Build {
     }
   ).settings(
     libraryDependencies ++= Seq(
-      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.0"
+      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.1"
     )
   )
 
@@ -206,22 +207,6 @@ object phantom extends Build {
     phantomDsl
   )
 
-  lazy val phantomFinagle = Project(
-    id = "phantom-finagle",
-    base = file("phantom-finagle"),
-    settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
-      sharedSettings ++
-      publishSettings
-  ).settings(
-    name := "phantom-finagle",
-    libraryDependencies ++= Seq(
-      "com.twitter"                  %% "util-collection"                   % finagleVersion
-    )
-  ).dependsOn(
-    phantomDsl
-  )
-
   lazy val phantomExample = Project(
     id = "phantom-example",
     base = file("phantom-example"),
@@ -234,7 +219,6 @@ object phantom extends Build {
     name := "phantom-example"
   ).dependsOn(
     phantomDsl,
-    phantomFinagle,
     phantomThrift
   )
 
@@ -255,13 +239,11 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "com.newzly"               %% "util-finagle"                      % newzlyUtilVersion     % "provided",
-      "org.scalatest"            %% "scalatest"                         % scalatestVersion      % "provided, test"
+      "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
     phantomDsl,
     phantomCassandraUnit,
-    phantomFinagle,
     phantomThrift
   )
 }
