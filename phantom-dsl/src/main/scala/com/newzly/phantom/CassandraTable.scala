@@ -54,9 +54,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   def extractCount(r: Row): Option[Long] = {
-    Try {
-      Some(r.getLong("count"))
-    } getOrElse None
+    Try { r.getLong("count") }.toOption
   }
 
   lazy val logger = LoggerFactory.getLogger(tableName)
