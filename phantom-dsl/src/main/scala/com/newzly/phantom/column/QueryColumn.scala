@@ -21,6 +21,8 @@ import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 import com.newzly.phantom.keys.{ Index, PrimaryKey, PartitionKey }
+import com.newzly.phantom.query._
+import com.newzly.phantom.batch.BatchableStatement
 import com.newzly.phantom.query.QueryCondition
 
 
@@ -81,6 +83,16 @@ class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR]
 }
 
 class QueryColumn[RR : CassandraPrimitive](col: AbstractColumn[RR]) extends AbstractQueryColumn[RR](col)
+
+sealed trait BatchRestrictions {
+  implicit def insertQueryIsBatchable[T <: CassandraTable[T, R], R](query: InsertQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def assignmentsQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentsQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def assignmentsOptionQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentOptionQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def deleteQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def deleteWhereQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteWhere[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def truncateQueryIsBatchable[T <: CassandraTable[T, R], R](query: TruncateQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+  implicit def createQueryIsBatchable[T <: CassandraTable[T, R], R](query: CreateQuery[T, R]): BatchableStatement = new BatchableStatement(query)
+}
 
 sealed trait CollectionOperators {
 
@@ -169,4 +181,4 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   }
 }
 
-private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with IndexRestrictions {}
+private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with IndexRestrictions with BatchRestrictions {}
