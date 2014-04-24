@@ -41,7 +41,7 @@ private [phantom] object Manager {
 private [phantom] trait CassandraResultSetOperations {
 
 
-  def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
+  protected[this] def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
     val promise = ScalaPromise[ResultSet]()
 
     val future = session.executeAsync(s)
@@ -61,7 +61,7 @@ private [phantom] trait CassandraResultSetOperations {
 
   }
 
-  def twitterStatementToFuture(s: Statement)(implicit session: Session): TwitterFuture[ResultSet] = {
+  protected[this] def twitterStatementToFuture(s: Statement)(implicit session: Session): TwitterFuture[ResultSet] = {
     val promise = TwitterPromise[ResultSet]()
     val future = session.executeAsync(s)
 
@@ -80,7 +80,7 @@ private [phantom] trait CassandraResultSetOperations {
 
   }
 
-  def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
+  protected[this] def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
     Manager.logger.debug("Executing Cassandra query:")
     Manager.logger.debug(query)
     val promise = ScalaPromise[ResultSet]()
@@ -101,7 +101,7 @@ private [phantom] trait CassandraResultSetOperations {
     promise.future
   }
 
-  def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session): TwitterFuture[ResultSet] = {
+  protected[this] def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session): TwitterFuture[ResultSet] = {
     val promise = TwitterPromise[ResultSet]()
     val future = session.executeAsync(query)
 
@@ -119,7 +119,7 @@ private [phantom] trait CassandraResultSetOperations {
     promise
   }
 
-  private[phantom] def scalaFutureToTwitter[R](future: ScalaFuture[R])(implicit ctx: ExecutionContext): TwitterFuture[R] = {
+  protected[this] def scalaFutureToTwitter[R](future: ScalaFuture[R])(implicit ctx: ExecutionContext): TwitterFuture[R] = {
     val promise = TwitterPromise[R]()
 
     future onComplete {

@@ -25,11 +25,10 @@ class CounterBatchTest extends BaseTest {
       .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
       .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
       .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .future()
 
     val chain = for {
-      batched <- ft
-      get <- CounterTableTest.select.where(_.id eqs id).one()
+      batched <- ft.future()
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).one()
     } yield get
 
     chain.successful {
@@ -52,7 +51,7 @@ class CounterBatchTest extends BaseTest {
 
     val chain = for {
       batched <- ft
-      get <- CounterTableTest.select.where(_.id eqs id).get()
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).get()
     } yield get
 
     chain.successful {
@@ -80,8 +79,8 @@ class CounterBatchTest extends BaseTest {
 
     val chain = for {
       batched <- ft
-      get <- CounterTableTest.select.where(_.id eqs id).one()
-      get2 <- SecondaryCounterTable.select.where(_.id eqs id).one()
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get2 <- SecondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
     } yield (get, get2)
 
     chain.successful {
@@ -116,8 +115,8 @@ class CounterBatchTest extends BaseTest {
 
     val chain = for {
       batched <- ft
-      get <- CounterTableTest.select.where(_.id eqs id).get()
-      get2 <- SecondaryCounterTable.select.where(_.id eqs id).get()
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).get()
+      get2 <- SecondaryCounterTable.select(_.count_entries).where(_.id eqs id).get()
     } yield (get, get2)
 
     chain.successful {
