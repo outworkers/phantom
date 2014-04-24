@@ -11,6 +11,12 @@ import com.newzly.util.testing.cassandra.BaseTest
 class CounterBatchTest extends BaseTest {
   val keySpace = "counter_batch_test"
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    CounterTableTest.insertSchema()
+    SecondaryCounterTable.insertSchema()
+  }
+
   it should "create a batch query to perform several updates in a single table" in {
     val id = UUIDs.timeBased()
     val ft = CounterBatchStatement()
