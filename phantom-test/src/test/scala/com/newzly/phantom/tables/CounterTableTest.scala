@@ -29,3 +29,16 @@ class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] {
 object CounterTableTest extends CounterTableTest with TestSampler[CounterTableTest, CounterRecord] {
   override val tableName = "counter_column_tests"
 }
+
+class SecondaryCounterTable extends CassandraTable[SecondaryCounterTable, CounterRecord] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object count_entries extends CounterColumn(this)
+
+  def fromRow(row: Row): CounterRecord = {
+    CounterRecord(id(row), count_entries(row))
+  }
+}
+
+object SecondaryCounterTable extends SecondaryCounterTable with TestSampler[SecondaryCounterTable, CounterRecord] {
+  override val tableName = "secondary_column_tests"
+}

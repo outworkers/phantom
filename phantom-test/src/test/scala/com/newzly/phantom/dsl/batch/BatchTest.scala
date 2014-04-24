@@ -1,7 +1,6 @@
 package com.newzly.phantom.dsl.batch
 
-import org.scalatest.{ Assertions, Matchers }
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
@@ -9,7 +8,7 @@ import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.cassandra.BaseTest
 
 
-class BatchTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
+class BatchTest extends BaseTest {
   val keySpace: String = "BatchTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
