@@ -37,7 +37,9 @@ sealed trait BatchQueryListTrait extends CassandraResultSetOperations {
  * In order to have concurrent operation on the same row in the same batch, custom timesatmps needs to be inserted
  * on each statement. This is not in the scope of this class.(for now)
  */
-class BatchStatement(val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait {
+sealed class BatchStatement(val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait {
+
+  protected [this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.LOGGED)
 
   final def apply(list: Iterator[BatchableStatement] = Iterator.empty) = {
     new BatchStatement(list)
@@ -49,7 +51,7 @@ class BatchStatement(val qbList: Iterator[BatchableStatement] = Iterator.empty) 
   }
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    val batch = new DatastaxBatchStatement()
+    val batch = create()
     for (s <- qbList) {
       batch.add(s.executable.qb)
     }
@@ -57,7 +59,7 @@ class BatchStatement(val qbList: Iterator[BatchableStatement] = Iterator.empty) 
   }
 
   def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
-    val batch = new DatastaxBatchStatement()
+    val batch = create()
     for (s <- qbList) {
       batch.add(s.executable.qb)
     }
@@ -65,9 +67,27 @@ class BatchStatement(val qbList: Iterator[BatchableStatement] = Iterator.empty) 
   }
 }
 
+sealed class CounterBatchStatement(override val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchStatement(qbList) {
+  override def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
+}
+
+sealed class UnloggedBatchStatement(override val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchStatement(qbList) {
+  override def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.UNLOGGED)
+}
+
 object BatchStatement {
   def apply(): BatchStatement = new BatchStatement()
-  def apply(statements: Iterator[BatchableStatement]) = new BatchStatement(statements)
+  def apply(statements: Iterator[BatchableStatement]): BatchStatement = new BatchStatement(statements)
+}
+
+object CounterBatchStatement {
+  def apply(): CounterBatchStatement = new CounterBatchStatement()
+  def apply(statements: Iterator[BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(statements)
+}
+
+object UnloggedBatchStatement {
+  def apply(): UnloggedBatchStatement = new UnloggedBatchStatement()
+  def apply(statements: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(statements)
 }
 
 

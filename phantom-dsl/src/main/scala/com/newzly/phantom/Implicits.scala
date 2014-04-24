@@ -28,7 +28,12 @@ object Implicits extends Operations {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.newzly.phantom.batch.BatchStatement
+  type CounterBatchStatement = com.newzly.phantom.batch.CounterBatchStatement
+  type UnloggedBatchStatement = com.newzly.phantom.batch.UnloggedBatchStatement
+
   val BatchStatement = com.newzly.phantom.batch.BatchStatement
+  val CounterBatchStatement = com.newzly.phantom.batch.CounterBatchStatement
+  val UnloggedBatchStatement = com.newzly.phantom.batch.UnloggedBatchStatement
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.PrimitiveColumn[Owner, Record, T]
