@@ -133,4 +133,78 @@ class CounterBatchTest extends BaseTest {
       }
     }
   }
+
+  it should "create a batch query to counters in several tables while alternating between increment and decrement" in {
+    val id = UUIDs.timeBased()
+    val ft = CounterBatchStatement()
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .future()
+
+    val chain = for {
+      batched <- ft
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get2 <- SecondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
+    } yield (get, get2)
+
+    chain.successful {
+      res => {
+        info("The first counter select should return the record")
+        res._1.isDefined shouldEqual true
+        info("and the counter value should match the sum of the increments")
+        res._1.get shouldEqual 500L
+
+        info("The second counter select should return the record")
+        res._2.isDefined shouldEqual true
+        info("and the counter value should match the sum of the increments")
+        res._2.get shouldEqual 500L
+      }
+    }
+  }
+
+  it should "create a batch query to counters in several tables while alternating between increment and decrement with Twitter futures" in {
+    val id = UUIDs.timeBased()
+    val ft = CounterBatchStatement()
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .future()
+
+    val chain = for {
+      batched <- ft
+      get <- CounterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get2 <- SecondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
+    } yield (get, get2)
+
+    chain.successful {
+      res => {
+        info("The first counter select should return the record")
+        res._1.isDefined shouldEqual true
+        info("and the counter value should match the sum of the increments")
+        res._1.get shouldEqual 500L
+
+        info("The second counter select should return the record")
+        res._2.isDefined shouldEqual true
+        info("and the counter value should match the sum of the increments")
+        res._2.get shouldEqual 500L
+      }
+    }
+  }
 }

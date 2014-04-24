@@ -24,30 +24,22 @@ import com.twitter.util.{ Future => TwitterFuture }
 
 private [phantom] class BatchableStatement(val executable: ExecutableStatement)
 
-sealed trait BatchQueryListTrait extends CassandraResultSetOperations {
+sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends CassandraResultSetOperations {
+  self: X =>
+
   protected[this] lazy val statements: Iterator[BatchableStatement] =  Iterator.empty
-  def future()(implicit session: Session): ScalaFuture[ResultSet]
-  def execute()(implicit session: Session): TwitterFuture[ResultSet]
-  protected[this] def qbList: Iterator[BatchableStatement]
-}
 
-/**
- * !!! Attention !!!
- * This class is not meant to be used for concurrent operations on the same row inside one batch.
- * In order to have concurrent operation on the same row in the same batch, custom timesatmps needs to be inserted
- * on each statement. This is not in the scope of this class.(for now)
- */
-sealed class BatchStatement(protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait {
+  protected[this] def newSubclass(sts: Iterator[BatchableStatement]): X
 
-  def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.LOGGED)
+  protected[this] def create(): DatastaxBatchStatement
 
-  def apply(list: Iterator[BatchableStatement] = Iterator.empty): BatchStatement = {
-    new BatchStatement(list)
+  final def apply(list: Iterator[BatchableStatement] = Iterator.empty): X = {
+    newSubclass(list)
   }
 
   @implicitNotFound("SELECT queries cannot be used in a BATCH.")
-  def add[T <: ExecutableStatement <% BatchableStatement](statement: => T): BatchStatement = {
-     apply(qbList ++ Iterator(statement))
+  final def add[T <: ExecutableStatement <% BatchableStatement](statement: => T): X = {
+    apply(qbList ++ Iterator(statement))
   }
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
@@ -67,21 +59,25 @@ sealed class BatchStatement(protected[this] val qbList: Iterator[BatchableStatem
   }
 }
 
-sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchStatement(qbList) {
-  override def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
-
-  override def apply(list: Iterator[BatchableStatement] = Iterator.empty): CounterBatchStatement = {
-    new CounterBatchStatement(list)
-  }
-
-  @implicitNotFound("SELECT queries cannot be used in a BATCH.")
-  override def add[T <: ExecutableStatement <% BatchableStatement](statement: => T): CounterBatchStatement = {
-    apply(qbList ++ Iterator(statement))
-  }
+/**
+ * !!! Attention !!!
+ * This class is not meant to be used for concurrent operations on the same row inside one batch.
+ * In order to have concurrent operation on the same row in the same batch, custom timestamp needs to be inserted
+ * on each statement. This is not in the scope of this class.(for now)
+ */
+sealed class BatchStatement(qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[BatchStatement](qbList) {
+  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.LOGGED)
+  protected[this] def newSubclass(sts: Iterator[BatchableStatement]): BatchStatement = new BatchStatement(sts)
 }
 
-sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchStatement(qbList) {
-  override def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.UNLOGGED)
+sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[CounterBatchStatement](qbList) {
+  protected[this] def newSubclass(sts: Iterator[BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(sts)
+  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
+}
+
+sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[UnloggedBatchStatement](qbList) {
+  protected[this] def newSubclass(sts: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(sts)
+  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
 }
 
 object BatchStatement {
