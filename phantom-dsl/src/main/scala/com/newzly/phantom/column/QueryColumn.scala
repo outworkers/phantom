@@ -90,8 +90,6 @@ sealed trait BatchRestrictions {
   implicit def assignmentsOptionQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentOptionQuery[T, R]): BatchableStatement = new BatchableStatement(query)
   implicit def deleteQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteQuery[T, R]): BatchableStatement = new BatchableStatement(query)
   implicit def deleteWhereQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteWhere[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def truncateQueryIsBatchable[T <: CassandraTable[T, R], R](query: TruncateQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def createQueryIsBatchable[T <: CassandraTable[T, R], R](query: CreateQuery[T, R]): BatchableStatement = new BatchableStatement(query)
 }
 
 sealed trait CollectionOperators {
