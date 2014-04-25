@@ -1,5 +1,6 @@
 package com.newzly.phantom.dsl.specialized
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
@@ -15,9 +16,14 @@ class ThriftListOperations extends BaseTest {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  it should "prepend an item to a thrift list column" in {
-    ThriftColumnTable.insertSchema
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      ThriftColumnTable.insertSchema()
+    }
+  }
 
+  it should "prepend an item to a thrift list column" in {
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -55,8 +61,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "prepend an item to a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -92,8 +96,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "prepend several items to a thrift list column" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -139,8 +141,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "prepend several items to a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -184,8 +184,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "append an item to a thrift list column" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -223,8 +221,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "append an item to a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -260,8 +256,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "append several items to a thrift list column" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -307,8 +301,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "append several items to a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -352,8 +344,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "remove an item from a thrift list column" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -391,8 +381,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "remove an item from a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -428,8 +416,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "remove several items from a thrift list column" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -473,8 +459,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "remove several items from a thrift list column with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -516,8 +500,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "set an index to a given value" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -561,8 +543,6 @@ class ThriftListOperations extends BaseTest {
   }
 
   it should "set an index to a given value with Twitter Futures" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -599,6 +579,88 @@ class ThriftListOperations extends BaseTest {
       items => {
         items.isDefined shouldEqual true
         items.get(0) shouldEqual sample3
+      }
+    }
+  }
+
+  it should "set a non-zero index to a given value" in {
+    val sample = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val sample2 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val sample3 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val insert = ThriftColumnTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, Set(sample))
+      .value(_.thriftList, List(sample, sample2, sample3))
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList setIdx(2, sample3)).future()
+      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldEqual true
+        items.get(2) shouldEqual sample3
+      }
+    }
+  }
+
+  it should "set a non-zero index to a given value with Twitter Futures" in {
+    val sample = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val sample2 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val sample3 = ThriftTest(
+      Sampler.getARandomInteger(),
+      Sampler.getARandomString,
+      test = true
+    )
+
+    val insert = ThriftColumnTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, Set(sample))
+      .value(_.thriftList, List(sample, sample2, sample3))
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList setIdx(2, sample3)).execute()
+      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldEqual true
+        items.get(2) shouldEqual sample3
       }
     }
   }

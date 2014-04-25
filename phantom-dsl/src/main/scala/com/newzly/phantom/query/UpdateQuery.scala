@@ -40,8 +40,20 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
   }
 }
 
+class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
+  extends SharedQueryMethods[ConditionalUpdateQuery[T, R], Update.Conditions](qb) with ExecutableStatement {
+
+  def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
+    new UpdateWhere[T, R](table, qb.where(condition(table).clause))
+  }
+}
+
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
   extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) {
+
+  def onlyIf[RR](condition: T => QueryCondition): ConditionalUpdateQuery[T, R] = {
+    new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
+  }
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))

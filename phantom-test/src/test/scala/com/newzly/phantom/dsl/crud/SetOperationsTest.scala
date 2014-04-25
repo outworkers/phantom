@@ -1,17 +1,22 @@
 package com.newzly.phantom.dsl.crud
 
+import scala.concurrent.blocking
 import com.newzly.phantom.Implicits._
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.tables.{ TestRow, TestTable }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 class SetOperationsTest extends BaseTest {
-  val keySpace = "setoperationstest"
+  val keySpace = "set_operations_test"
+
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      TestTable.insertSchema()
+    }
+  }
 
   it should "append an item to a set column" in {
-
-    TestTable.insertSchema
-
     val item = TestRow.sample()
     val someItem = "test5"
 
@@ -39,9 +44,6 @@ class SetOperationsTest extends BaseTest {
   }
 
   it should "append several items to a set column" in {
-
-    TestTable.insertSchema
-
     val item = TestRow.sample()
     val someItems = Set("test5", "test6")
 
@@ -69,7 +71,6 @@ class SetOperationsTest extends BaseTest {
   }
 
   it should "remove an item from a set column" in {
-    TestTable.insertSchema
     val someItems = Set("test3", "test4", "test5", "test6")
     val item = TestRow.sample().copy(setText = someItems)
     val removal = "test6"
@@ -98,7 +99,6 @@ class SetOperationsTest extends BaseTest {
   }
 
   it should "remove several items from a set column" in {
-    TestTable.insertSchema
     val someItems = Set("test3", "test4", "test5", "test6")
     val item = TestRow.sample().copy(setText = someItems)
     val removal = Set("test5", "test6")

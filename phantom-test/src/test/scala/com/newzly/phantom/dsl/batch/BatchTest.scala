@@ -1,5 +1,6 @@
 package com.newzly.phantom.dsl.batch
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
@@ -11,6 +12,13 @@ import com.newzly.util.testing.cassandra.BaseTest
 class BatchTest extends BaseTest {
   val keySpace: String = "BatchTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      PrimitivesJoda.insertSchema()
+    }
+  }
 
   it should "work fine" in {
     val row = JodaRow.sample

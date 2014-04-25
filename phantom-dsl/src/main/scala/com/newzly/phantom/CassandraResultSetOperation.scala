@@ -40,7 +40,6 @@ private [phantom] object Manager {
 
 private [phantom] trait CassandraResultSetOperations {
 
-
   protected[this] def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
     val promise = ScalaPromise[ResultSet]()
 

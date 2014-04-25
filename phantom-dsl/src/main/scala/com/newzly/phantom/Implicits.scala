@@ -74,6 +74,8 @@ object Implicits extends Operations {
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
 
   type ClusteringOrder[ValueType] = com.newzly.phantom.keys.ClusteringOrder[ValueType]
+  type Ascending = com.newzly.phantom.keys.Ascending
+  type Descending = com.newzly.phantom.keys.Descending
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.newzly.phantom.keys.Index[ValueType]
