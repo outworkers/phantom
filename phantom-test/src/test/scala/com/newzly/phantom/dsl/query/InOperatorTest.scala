@@ -13,6 +13,7 @@ class InOperatorTest extends BaseTest {
 
   override def beforeAll(): Unit = {
     blocking {
+      super.beforeAll()
       Recipes.insertSchema()
     }
   }

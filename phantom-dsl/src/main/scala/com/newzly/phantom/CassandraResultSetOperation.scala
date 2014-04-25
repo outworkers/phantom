@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.{
   FutureCallback,
   MoreExecutors
 }
-import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise }
+import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise, Return, Throw }
 
 private [phantom] object Manager {
 
@@ -66,12 +66,12 @@ private [phantom] trait CassandraResultSetOperations {
 
     val callback = new FutureCallback[ResultSet] {
       def onSuccess(result: ResultSet): Unit = {
-        promise become TwitterFuture.value(result)
+        promise update Return(result)
       }
 
       def onFailure(err: Throwable): Unit = {
         Manager.logger.error(err.getMessage)
-        promise raise err
+        promise update Throw(err)
       }
     }
     Futures.addCallback(future, callback, Manager.executor)
@@ -106,12 +106,12 @@ private [phantom] trait CassandraResultSetOperations {
 
     val callback = new FutureCallback[ResultSet] {
       def onSuccess(result: ResultSet): Unit = {
-        promise become TwitterFuture.value(result)
+        promise update Return(result)
       }
 
       def onFailure(err: Throwable): Unit = {
         Manager.logger.error(err.getMessage)
-        promise raise err
+        promise update Throw(err)
       }
     }
     Futures.addCallback(future, callback, Manager.executor)

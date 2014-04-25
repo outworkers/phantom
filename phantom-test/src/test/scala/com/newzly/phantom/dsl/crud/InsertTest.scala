@@ -19,6 +19,7 @@ class InsertTest extends BaseTest {
       Primitives.insertSchema()
       TestTable.insertSchema()
       MyTest.insertSchema()
+      Recipes.insertSchema()
     }
   }
 

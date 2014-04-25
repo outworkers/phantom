@@ -62,7 +62,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
 
   object int extends IntColumn(this)
 
-  object date extends DateColumn(this) with ClusteringOrder[Date]
+  object date extends DateColumn(this)
 
   object uuid extends UUIDColumn(this)
 

@@ -20,6 +20,33 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
+  it should "store items in a list in the same order" in {
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val list = List("test, test2, test3, test4, test5")
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, list)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldEqual list
+      }
+    }
+  }
+
   it should "append an item to a list" in {
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()

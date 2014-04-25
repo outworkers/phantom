@@ -20,8 +20,14 @@ import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.keys.{ Index, PrimaryKey, PartitionKey }
-import com.newzly.phantom.query._
+import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
+import com.newzly.phantom.query.{
+  AssignmentsQuery,
+  AssignmentOptionQuery,
+  DeleteQuery,
+  DeleteWhere,
+  InsertQuery
+}
 import com.newzly.phantom.batch.BatchableStatement
 import com.newzly.phantom.query.QueryCondition
 
@@ -145,6 +151,9 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   implicit final def primaryKeysAreNotModifiable[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
   implicit final def primaryKeysAreNotModifiable2[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
 
+  implicit final def clusteringKeysAreNotModifiable[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR] = new ModifiableColumn[T]
+  implicit final def clusteringKeysAreNotModifiable2[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR] = new ModifiableColumn[T]
+
   implicit final def partitionKeysAreNotModifiable[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
   implicit final def partitionKeysAreNotModifiable2[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
 
@@ -164,6 +173,9 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
 
   @implicitNotFound(msg = "The value of indexed columns cannot be updated as per the Cassandra specification")
   implicit final def notIndexKeys[T <: PartitionKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with Index[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+
+  @implicitNotFound(msg = "The value of clustering columns cannot be updated as per the Cassandra specification")
+  implicit final def notClusteringKeys[T <: ClusteringOrder[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with ClusteringOrder[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
 
