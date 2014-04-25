@@ -4,7 +4,6 @@ import java.util.UUID
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.Descending
 import com.newzly.phantom.helper.TestSampler
 
 case class TimeSeriesRecord(

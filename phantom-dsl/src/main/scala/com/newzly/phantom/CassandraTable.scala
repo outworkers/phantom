@@ -82,7 +82,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[phantom] def clusterOrderSchema(query: String): String = {
     if (columns.count(_.isClusteringKey) == 1) {
       val clusteringColumn = columns.filter(_.isClusteringKey).head
-      val direction = if (clusteringColumn.isAscending) "ASCENDING" else "DESCENDING"
+      val direction = if (clusteringColumn.isAscending) "ASC" else "DESC"
       s"$query WITH CLUSTERING ORDER BY (${clusteringColumn.name} $direction);"
     } else {
       query
