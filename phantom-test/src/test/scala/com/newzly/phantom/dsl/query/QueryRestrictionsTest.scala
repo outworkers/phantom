@@ -51,4 +51,14 @@ class QueryRestrictionsTest extends FlatSpec with Matchers {
   it should "not allow using SelectWhere queries in a batch" in {
     "BatchStatement().add(Primitives.select.where(_.pkey eqs Sampler.getARandomString))" shouldNot compile
   }
+
+  it should "not allow using Truncate queries in a batch" in {
+    "BatchStatement().add(Primitives.truncate)" shouldNot compile
+  }
+
+  it should "not allow using Create queries in a batch" in {
+    "BatchStatement().add(Primitives.create)" shouldNot compile
+  }
+
+
 }

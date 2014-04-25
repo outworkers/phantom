@@ -77,7 +77,7 @@ sealed class CounterBatchStatement(override protected[this] val qbList: Iterator
 
 sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[UnloggedBatchStatement](qbList) {
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(sts)
-  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
+  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.UNLOGGED)
 }
 
 object BatchStatement {
