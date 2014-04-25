@@ -15,6 +15,7 @@ class InsertTest extends BaseTest {
 
   override def beforeAll(): Unit = {
     blocking {
+      super.beforeAll()
       Primitives.insertSchema()
       TestTable.insertSchema()
       MyTest.insertSchema()
