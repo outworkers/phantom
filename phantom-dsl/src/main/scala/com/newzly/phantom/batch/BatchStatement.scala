@@ -18,8 +18,8 @@ package com.newzly.phantom.batch
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, ResultSet, Session }
+import com.newzly.phantom.CassandraResultSetOperations
 import com.newzly.phantom.query.ExecutableStatement
-import com.newzly.phantom.{Manager, CassandraResultSetOperations}
 import com.twitter.util.{ Future => TwitterFuture }
 
 private [phantom] class BatchableStatement(val executable: ExecutableStatement)
@@ -37,7 +37,7 @@ sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterato
     newSubclass(list)
   }
 
-  @implicitNotFound("SELECT queries cannot be used in a BATCH.")
+  @implicitNotFound("SELECT, CREATE and TRUNCATE queries cannot be used in a BATCH.")
   final def add[T <: ExecutableStatement <% BatchableStatement](statement: => T): X = {
     apply(qbList ++ Iterator(statement))
   }

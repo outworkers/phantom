@@ -128,7 +128,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       case (map, method) => val name = method.getName
         order += method.getName
         map + (name -> (method :: map.getOrElse(name, Nil)))
-
     }
 
     // sort each list based on having the most specific type and use that method

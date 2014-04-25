@@ -1,5 +1,6 @@
 package com.newzly.phantom.dsl.crud
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
@@ -12,11 +13,18 @@ class InsertTest extends BaseTest {
   val keySpace: String = "InsertTestKeySpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
+  override def beforeAll(): Unit = {
+    blocking {
+      Primitives.insertSchema()
+      TestTable.insertSchema()
+      MyTest.insertSchema()
+    }
+  }
+
   "Insert" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -50,7 +58,6 @@ class InsertTest extends BaseTest {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -81,7 +88,6 @@ class InsertTest extends BaseTest {
   }
 
   it should "work fine with List, Set, Map" in {
-    TestTable.insertSchema()
     val row = TestRow.sample()
 
     val rcp = TestTable.insert
@@ -108,7 +114,6 @@ class InsertTest extends BaseTest {
   }
 
   it should "work fine with List, Set, Map and Twitter futures" in {
-    TestTable.insertSchema()
     val row = TestRow.sample()
 
     val rcp = TestTable.insert
@@ -136,7 +141,6 @@ class InsertTest extends BaseTest {
 
   it should "work fine with Mix" in {
     val r = Recipe.sample
-    Recipes.insertSchema()
     val rcp = Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
@@ -159,7 +163,6 @@ class InsertTest extends BaseTest {
 
   it should "work fine with Mix and Twitter futures" in {
     val r = Recipe.sample
-    Recipes.insertSchema()
     val rcp = Recipes.insert
       .value(_.url, r.url)
       .valueOrNull(_.description, r.description)
@@ -181,10 +184,7 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    MyTest.insertSchema()
-
     val row = MyTestRow.sample
-
     val f = MyTest.insert
       .value(_.key, row.key)
       .value(_.stringlist, List.empty[String])
@@ -200,8 +200,6 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing empty lists with Twitter futures" in {
-    MyTest.insertSchema()
-
     val row = MyTestRow.sample
 
     val f = MyTest.insert
@@ -219,8 +217,6 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing to List " in {
-    MyTest.insertSchema()
-
     val row = MyTestRow.sample
 
     val recipeF = MyTest.insert
@@ -232,7 +228,7 @@ class InsertTest extends BaseTest {
     }
 
     recipeF successful  {
-      case res => {
+      res => {
         res.isEmpty shouldEqual false
         res.get should be(row)
       }
@@ -240,8 +236,6 @@ class InsertTest extends BaseTest {
   }
 
   it should "support serializing/de-serializing to List with Twitter futures" in {
-    MyTest.insertSchema()
-
     val row = MyTestRow.sample
 
     val recipeF = MyTest.insert
@@ -253,7 +247,7 @@ class InsertTest extends BaseTest {
     }
 
     recipeF successful  {
-      case res => {
+      res => {
         res.isEmpty shouldEqual false
         res.get should be(row)
       }
