@@ -24,11 +24,13 @@ import com.newzly.phantom.column.{ AbstractColumn, TimeSeries }
 trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueType]]{
   self: AbstractColumn[ValueType] =>
   override val isSecondaryKey = true
+  override val isClusteringKey = true
   private[phantom] implicit val timeSeries: TimeSeries[ValueType]
 }
 
 trait Ascending {
   self: AbstractColumn[_] with ClusteringOrder[_] =>
+  override val isAscending = true
 }
 
 trait Descending {
