@@ -43,6 +43,7 @@ class ListOperatorsTest extends BaseTest {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
+        Console.println(items.get)
       }
     }
   }
@@ -425,13 +426,13 @@ class ListOperatorsTest extends BaseTest {
 
   it should "set the third index inside a List" in {
     val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
+    val recipe = Recipe.sample
     val id = UUIDs.timeBased()
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
+      .value(_.ingredients, list)
       .value(_.last_checked_at, recipe.lastCheckedAt)
       .value(_.props, recipe.props)
       .future()
@@ -452,13 +453,13 @@ class ListOperatorsTest extends BaseTest {
 
   it should "set the third index inside a List with Twitter Futures" in {
     val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
+    val recipe = Recipe.sample
     val id = UUIDs.timeBased()
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
+      .value(_.ingredients, list)
       .value(_.last_checked_at, recipe.lastCheckedAt)
       .value(_.props, recipe.props)
       .execute()

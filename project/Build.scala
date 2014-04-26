@@ -12,7 +12,7 @@ object phantom extends Build {
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.9.1"
+  val thriftVersion = "0.5.0"
 
   val thriftLibs = Seq(
     "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
