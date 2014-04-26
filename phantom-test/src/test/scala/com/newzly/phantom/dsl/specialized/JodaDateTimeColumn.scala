@@ -8,7 +8,7 @@ import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.cassandra.BaseTest
 
 class JodaDateTimeColumn extends BaseTest {
-  val keySpace = "UpdateTest"
+  val keySpace = "joda_columns_test"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
@@ -18,7 +18,7 @@ class JodaDateTimeColumn extends BaseTest {
     }
   }
 
-  it should "work fine" in {
+  it should "correctly insert and extract a JodaTime date" in {
     val row = JodaRow.sample
     PrimitivesJoda.insertSchema()
     val w =
@@ -31,7 +31,7 @@ class JodaDateTimeColumn extends BaseTest {
           }
 
     w successful {
-      case res => assert(res.get === row)
+      res => res.get shouldEqual row
     }
   }
 }

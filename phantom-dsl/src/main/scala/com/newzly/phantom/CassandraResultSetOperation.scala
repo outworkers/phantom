@@ -122,8 +122,11 @@ private [phantom] trait CassandraResultSetOperations {
     val promise = TwitterPromise[R]()
 
     future onComplete {
-      case Success(res) => promise become TwitterFuture.value(res)
-      case Failure(err) => promise raise err
+      case Success(res) => promise update Return(res)
+      case Failure(err) => {
+        Manager.logger.error(err.getMessage)
+        promise update Throw(err)
+      }
     }
     promise
   }

@@ -21,8 +21,7 @@ import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.column._
-import com.newzly.phantom.query.SelectWhere
-import com.newzly.phantom.query.QueryCondition
+import com.newzly.phantom.query.{SelectQuery, SelectWhere, QueryCondition}
 
 object Implicits extends Operations {
 
@@ -83,13 +82,23 @@ object Implicits extends Operations {
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
 
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
+  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
       select.where(_.order_id gt l.toLong)
     }
 
     final def skip(l: Long): SelectWhere[T, R] = {
       select.where(_.order_id gt l)
+    }
+  }
+
+  implicit class SkipSelectWhere[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
+    final def skip(l: Int): SelectWhere[T, R] = {
+      select.and(_.order_id gt l.toLong)
+    }
+
+    final def skip(l: Long): SelectWhere[T, R] = {
+      select.and(_.order_id gt l)
     }
   }
 

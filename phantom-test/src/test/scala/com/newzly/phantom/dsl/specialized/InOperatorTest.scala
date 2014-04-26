@@ -1,4 +1,4 @@
-package com.newzly.phantom.dsl.query
+package com.newzly.phantom.dsl.specialized
 
 import scala.concurrent.blocking
 import com.datastax.driver.core.utils.UUIDs

@@ -18,19 +18,23 @@ package com.newzly.phantom.column
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Ordering => TableOrdering }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
-import com.newzly.phantom.query.{
-  AssignmentsQuery,
-  AssignmentOptionQuery,
-  DeleteQuery,
-  DeleteWhere,
-  InsertQuery
-}
+import com.newzly.phantom.query._
 import com.newzly.phantom.batch.BatchableStatement
 import com.newzly.phantom.query.QueryCondition
 
+
+sealed class OrderingColumn[T](col: AbstractColumn[T]) {
+  def asc: QueryOrdering = {
+    QueryOrdering(QueryBuilder.asc(col.name))
+  }
+
+  def desc: QueryOrdering = {
+    QueryOrdering(QueryBuilder.desc(col.name))
+  }
+}
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -40,7 +44,7 @@ import com.newzly.phantom.query.QueryCondition
  * @param col The column to cast to an IndexedColumn.
  * @tparam T The type of the value the column holds.
  */
-sealed abstract class AbstractQueryColumn[T: CassandraPrimitive](col: AbstractColumn[T]) {
+sealed abstract class AbstractQueryColumn[T: CassandraPrimitive](col: AbstractColumn[T]) extends OrderingColumn[T](col) {
 
   /**
    * The equals operator. Will return a match if the value equals the database value.
@@ -71,6 +75,7 @@ sealed abstract class AbstractQueryColumn[T: CassandraPrimitive](col: AbstractCo
     QueryCondition(QueryBuilder.in(col.name, values.map(col.toCType): _*))
   }
 }
+
 
 private [phantom] abstract class AbstractModifyColumn[RR](name: String) {
 
@@ -134,6 +139,11 @@ sealed trait CollectionOperators {
   }
 }
 
+sealed trait OrderingOperators {
+  implicit def clusteringKeyToOrderingOperator[T : CassandraPrimitive](col: AbstractColumn[T] with ClusteringOrder[T]): OrderingColumn[T] = new OrderingColumn[T](col)
+
+}
+
 sealed trait IndexRestrictions {
   implicit def partitionColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with PartitionKey[T]): QueryColumn[T] = new QueryColumn(col)
   implicit def primaryColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with PrimaryKey[T]): QueryColumn[T] = new QueryColumn(col)
@@ -191,4 +201,4 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   }
 }
 
-private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with IndexRestrictions with BatchRestrictions {}
+private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with OrderingOperators with IndexRestrictions with BatchRestrictions {}
