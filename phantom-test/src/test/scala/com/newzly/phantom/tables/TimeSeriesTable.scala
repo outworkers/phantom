@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.{ModelSampler, TestSampler}
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
 import com.newzly.util.testing.Sampler
 
 case class TimeSeriesRecord(

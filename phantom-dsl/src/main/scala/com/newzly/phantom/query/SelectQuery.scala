@@ -58,7 +58,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 
@@ -70,7 +69,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
    */
   def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.enumerate() flatMap {
       res => {
         scalaFutureToTwitter(res run PlayIteratee.head)
@@ -98,7 +96,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 
@@ -109,7 +106,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    */
   def get()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.enumerate() flatMap {
       res => {
         scalaFutureToTwitter(res run PlayIteratee.head)
