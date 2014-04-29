@@ -38,6 +38,10 @@ Available primitive columns
 ==========================
 
 This is the list of available columns and how they map to C* data types.
+This also includes the newly introduced ```static``` columns in C* 2.0.6.
+
+The type of a static column can be any of the allowed primitive Cassandra types.
+phantom won't let you mixin a non-primitive via implicit magic.
 
 | phantom columns               | Cassandra columns |
 | ---------------               | ----------------- |
@@ -55,6 +59,7 @@ This is the list of available columns and how they map to C* data types.
 | UUIDColumn                    | uuid              |
 | TimeUUIDColumn                | timeuuid          |
 | CounterColumn                 | counter           |
+| StaticColumn<type>            | type static       |
 
 
 Optional primitive columns
@@ -93,6 +98,58 @@ The ```type``` in the below example is always a default C* type.
 | ListColumn.<type>             | list<primitive>   |
 | SetColumn.<type>              | set<primitive>    |
 | MapColumn.<type, type>        | map<type, type>   |
+
+Special column traits
+=====================
+
+phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
+
+For example:
+- You cannot mix in more than one index on a single column
+- You cannot set index columns to a different value.
+- You cannot query on a column that's not an index.
+
+- ```PartitionKey[T]```
+
+This is the default partitioning key of the table, telling Cassandra how to divide data into partitions and store them accordingly.
+You must define at least one partition key for a table. Phantom will gently remind you of this with a fatal error.
+
+If you use a single partition key, the ```PartitionKey``` will always be the first ```PrimaryKey``` in the schema.
+
+It looks like this in CQL: ```PRIMARY_KEY(your_partition_key, primary_key_1, primary_key_2)```.
+
+Using more than one ```PartitionKey[T]``` in your schema definition will output a Composite Key in Cassandra.
+```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
+
+- ```PrimaryKey[T]```
+
+As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
+The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
+about how your data is partitioned. We also use this DSL restriction because we hope to do more clever things with it in the future.
+
+A compound key in C* looks like this:
+```PRIMARY_KEY(primary_key, primary_key_1, primary_key_2)```.
+
+Before you add to many of these, remember they all have to go into a ```where``` clause.
+You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
+
+
+- ```Index[T]```
+
+This is a SecondaryIndex in Cassandra. It can help you enable querying really fast, but it's not exactly high performance.
+It's generally best to avoid it, we implemented it to show off what good guys we are.
+
+When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
+However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
+
+- ```ClusteringOrder```
+
+This can be used with either ```java.util.Date``` or ```org.joda.time.DateTime```. It tells Cassandra to store records in a certain order based on this field.
+
+An example might be: ```object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Ascending```
+To fully define a clustering column, you MUST also mixin either ```Ascending``` or ```Descending``` to indicate the sorting order.
+
+
 
 Thrift Columns
 ==============
@@ -178,7 +235,11 @@ The following operators can be used into a "where" and "and" clause.
 - lt
 - lte
 
-The "side" methods providing the juice:
+More select methods:
+
+- orderBy
+
+This in an place ordering operator. The records are manually ordered by Cassandra upon retrieval. For maximum performance, you may want to use ClusteringOrder instead.
 
 - allowFiltering
 
@@ -232,10 +293,6 @@ Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available val
 
 This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
 Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
-
-- orderBy
-
-This in an place ordering operator. The records are manually ordered by Cassandra upon retrieval. For maximum performance, you may want to use ClusteringOrder instead.
 
 
 "Update" queries
