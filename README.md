@@ -644,7 +644,7 @@ import com.newzly.phantom.Implicits._
 
 BatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
     .future()
 
 ```
@@ -667,7 +667,7 @@ import com.newzly.phantom.Implicits._
 
 UnloggedBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
     .future()
 
 ```
