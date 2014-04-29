@@ -21,14 +21,18 @@ import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.newzly.phantom.column._
-import com.newzly.phantom.query.SelectWhere
-import com.newzly.phantom.query.QueryCondition
+import com.newzly.phantom.query.{SelectQuery, SelectWhere, QueryCondition}
 
 object Implicits extends Operations {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.newzly.phantom.batch.BatchStatement
+  type CounterBatchStatement = com.newzly.phantom.batch.CounterBatchStatement
+  type UnloggedBatchStatement = com.newzly.phantom.batch.UnloggedBatchStatement
+
   val BatchStatement = com.newzly.phantom.batch.BatchStatement
+  val CounterBatchStatement = com.newzly.phantom.batch.CounterBatchStatement
+  val UnloggedBatchStatement = com.newzly.phantom.batch.UnloggedBatchStatement
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.newzly.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.newzly.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -69,6 +73,8 @@ object Implicits extends Operations {
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
 
   type ClusteringOrder[ValueType] = com.newzly.phantom.keys.ClusteringOrder[ValueType]
+  type Ascending = com.newzly.phantom.keys.Ascending
+  type Descending = com.newzly.phantom.keys.Descending
   type PartitionKey[ValueType] = com.newzly.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.newzly.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.newzly.phantom.keys.Index[ValueType]
@@ -76,13 +82,23 @@ object Implicits extends Operations {
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.newzly.phantom.keys.LongOrderKey[Owner, Record]
 
 
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
+  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
       select.where(_.order_id gt l.toLong)
     }
 
     final def skip(l: Long): SelectWhere[T, R] = {
       select.where(_.order_id gt l)
+    }
+  }
+
+  implicit class SkipSelectWhere[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
+    final def skip(l: Int): SelectWhere[T, R] = {
+      select.and(_.order_id gt l.toLong)
+    }
+
+    final def skip(l: Long): SelectWhere[T, R] = {
+      select.and(_.order_id gt l)
     }
   }
 

@@ -15,6 +15,7 @@
  */
 package com.newzly.phantom.iteratee
 
+import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext
 import play.api.libs.iteratee.{ Iteratee => PIteratee }
 
@@ -23,8 +24,12 @@ import play.api.libs.iteratee.{ Iteratee => PIteratee }
  * This is a wrapper around play Iteratee class
  */
 object Iteratee {
-  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R,Seq[R]] =
-    PIteratee.fold(Seq.empty[R])((acc, e: R)=> acc :+ e)
+  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, Queue[R]] =
+    PIteratee.fold(Queue.empty[R])((acc, e: R)=> acc :+ e)
+
+  def chunks[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] = {
+    PIteratee.getChunks
+  }
 
   def forEach[E](f: E => Unit)(implicit ec: ExecutionContext) = PIteratee.foreach(f: E => Unit)
 

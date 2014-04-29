@@ -1,25 +1,32 @@
 package com.newzly.phantom.dsl.specialized
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.{Sampler, BaseTest}
 import com.newzly.phantom.tables.ThriftColumnTable
 import com.newzly.phantom.thrift.Implicits._
 import com.newzly.phantom.thrift.ThriftTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.Sampler
+import com.newzly.util.testing.cassandra.BaseTest
 
 class OptionalThriftColumnTest extends BaseTest {
 
-  val keySpace = "optionalthriftcolumns"
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      ThriftColumnTable.insertSchema()
+    }
+  }
+
+  val keySpace = "optional_thrift_columns"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "find an item if it was defined" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
-      Sampler.getAUniqueString,
+      Sampler.getARandomString,
       test = true
     )
 
@@ -46,11 +53,9 @@ class OptionalThriftColumnTest extends BaseTest {
   }
 
   it should "not find an item if was not defined" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
-      Sampler.getAUniqueString,
+      Sampler.getARandomString,
       test = true
     )
 

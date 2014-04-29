@@ -2,17 +2,15 @@ package com.newzly.phantom.iteratee
 
 
 import java.util.concurrent.atomic.AtomicInteger
-import scala.concurrent.Future
-import org.scalatest.{Assertions, Matchers}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.batch.BatchStatement
-import com.newzly.phantom.helper.BaseTest
-import com.newzly.phantom.tables.{Primitives, Primitive, PrimitivesJoda, JodaRow}
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.tables.{ Primitives, Primitive, PrimitivesJoda, JodaRow }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 
-class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
+class IterateeTest extends BaseTest {
   val keySpace: String = "IterateeTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
@@ -20,7 +18,7 @@ class IterateeTest extends BaseTest with Matchers with Assertions with AsyncAsse
     PrimitivesJoda.insertSchema()
 
     val rows = for (i <- 1 to 1000) yield  JodaRow.sample
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
+    val batch = rows.foldLeft(BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)

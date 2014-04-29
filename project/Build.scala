@@ -7,12 +7,12 @@ import sbtassembly.Plugin.AssemblyKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.26"
+  val newzlyUtilVersion = "0.0.27"
   val datastaxDriverVersion = "2.0.1"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.9.1"
+  val thriftVersion = "0.8.0"
 
   val thriftLibs = Seq(
     "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
@@ -23,7 +23,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.4.0",
+    version := "0.4.4",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -52,7 +52,7 @@ object phantom extends Build {
      )
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply{
@@ -92,7 +92,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val MavenpublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,

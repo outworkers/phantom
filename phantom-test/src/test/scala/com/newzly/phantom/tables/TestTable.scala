@@ -1,9 +1,9 @@
 package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.helper.TestSampler
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
+import com.newzly.util.testing.Sampler
 
 case class TestRow(
   key: String,
@@ -16,13 +16,13 @@ case class TestRow(
 
 object TestRow {
   def sample(end: Int = 5): TestRow = TestRow(
-    Sampler.getAUniqueString,
+    Sampler.getARandomString,
     List.range(0, end).map(_.toString),
     List.range(0, end).map(_.toString).toSet,
-    List.range(0, end).map(x => {Sampler.getAUniqueString -> Sampler.getAUniqueString}).toMap,
+    List.range(0, end).map(x => {Sampler.getARandomString -> Sampler.getARandomString}).toMap,
     List.range(0, end).toSet,
     List.range(0, end).map(x => {
-      x -> Sampler.getAUniqueString
+      x -> Sampler.getARandomString
     }).toMap
   )
 }
