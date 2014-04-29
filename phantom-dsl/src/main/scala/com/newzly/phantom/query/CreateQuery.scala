@@ -15,20 +15,35 @@
  */
 package com.newzly.phantom.query
 
-import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
+import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Session }
-import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
+import com.newzly.phantom.CassandraTable
+import com.newzly.phantom.Implicits.context
+import com.twitter.util.{ Future => TwitterFuture }
 
-class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CassandraResultSetOperations {
+class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends ExecutableStatement {
+  val qb = null
 
-  def future()(implicit session: Session, context: ExecutionContext): ScalaFuture[ResultSet] = {
+  override def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     if (table.createIndexes().isEmpty)
       scalaQueryStringExecuteToFuture(table.schema())
     else {
       scalaQueryStringExecuteToFuture(table.schema())  flatMap {
-      _=> {
-        ScalaFuture.sequence(table.createIndexes() map scalaQueryStringExecuteToFuture) map (_.head)
+        _=> {
+          ScalaFuture.sequence(table.createIndexes() map scalaQueryStringExecuteToFuture) map (_.head)
+        }
       }
+    }
+  }
+
+  override def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
+    if (table.createIndexes().isEmpty)
+      twitterQueryStringExecuteToFuture(table.schema())
+    else {
+      twitterQueryStringExecuteToFuture(table.schema())  flatMap {
+        _=> {
+          TwitterFuture.collect(table.createIndexes() map twitterQueryStringExecuteToFuture) map (_.head)
+        }
       }
     }
   }

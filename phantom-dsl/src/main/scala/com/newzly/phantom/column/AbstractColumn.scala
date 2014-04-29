@@ -25,6 +25,8 @@ private [phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Bo
   private[phantom] val isPartitionKey = false
   private[phantom] val isCounterColumn = false
   private[phantom] val isStaticColumn = false
+  private[phantom] val isClusteringKey = false
+  private[phantom] val isAscending = false
 
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 }

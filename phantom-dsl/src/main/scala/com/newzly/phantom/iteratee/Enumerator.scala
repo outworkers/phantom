@@ -18,7 +18,7 @@ package com.newzly.phantom.iteratee
 import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
-import com.datastax.driver.core.{ResultSet, Row}
+import com.datastax.driver.core.{ ResultSet, Row }
 import play.api.libs.iteratee.{ Enumerator => PlayE }
 
 

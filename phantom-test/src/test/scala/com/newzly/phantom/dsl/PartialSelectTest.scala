@@ -1,20 +1,28 @@
 package com.newzly.phantom.dsl
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Primitives, Primitive }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 
 class PartialSelectTest extends BaseTest {
+
   val keySpace: String = "PartialSelect"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  "Select" should "work fine" in {
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      Primitives.insertSchema()
+    }
+  }
+
+  "Partially selecting 2 fields" should "work fine" in {
     val row = Primitive.sample
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -39,7 +47,7 @@ class PartialSelectTest extends BaseTest {
     rcp successful {
       r => {
         assert(r._1 === List(row.pkey))
-        assert(r._2 === Some(row.long,row.boolean))
+        assert(r._2 === Some(Tuple2(row.long, row.boolean)))
       }
     }
   }

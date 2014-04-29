@@ -1,19 +1,26 @@
 package com.newzly.phantom.dsl.crud
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Primitive, Primitives }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 class SelectTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace: String = "selectTest"
 
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      Primitives.insertSchema()
+    }
+  }
+
   "Selecting the whole row" should "work fine" in {
     val row = Primitive.sample
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -45,7 +52,6 @@ class SelectTest extends BaseTest {
 
   "Selecting the whole row" should "work fine with Twitter futures" in {
     val row = Primitive.sample
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -78,7 +84,6 @@ class SelectTest extends BaseTest {
   "Selecting 2 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -107,7 +112,6 @@ class SelectTest extends BaseTest {
   "Selecting 2 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -136,7 +140,6 @@ class SelectTest extends BaseTest {
   "Selecting 3 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -165,7 +168,6 @@ class SelectTest extends BaseTest {
   "Selecting 3 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -194,7 +196,6 @@ class SelectTest extends BaseTest {
   "Selecting 4 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -223,7 +224,6 @@ class SelectTest extends BaseTest {
   "Selecting 4 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -253,7 +253,6 @@ class SelectTest extends BaseTest {
   "Selecting 5 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -282,7 +281,6 @@ class SelectTest extends BaseTest {
   "Selecting 5 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -311,7 +309,6 @@ class SelectTest extends BaseTest {
   "Selecting 6 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -340,7 +337,6 @@ class SelectTest extends BaseTest {
   "Selecting 6 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -369,7 +365,6 @@ class SelectTest extends BaseTest {
   "Selecting 7 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -398,7 +393,6 @@ class SelectTest extends BaseTest {
   "Selecting 7 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -427,7 +421,6 @@ class SelectTest extends BaseTest {
   "Selecting 8 columns" should "work fine" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -456,7 +449,6 @@ class SelectTest extends BaseTest {
   "Selecting 8 columns" should "work fine with Twitter Futures" in {
     val row = Primitive.sample
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-    Primitives.insertSchema()
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -481,5 +473,4 @@ class SelectTest extends BaseTest {
       }
     }
   }
-
 }

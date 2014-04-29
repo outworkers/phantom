@@ -2,8 +2,6 @@ package com.newzly.phantom.dsl
 
 import org.scalatest.FlatSpec
 import com.datastax.driver.core.Row
-import com.newzly.phantom.keys.PartitionKey
-import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.Implicits._
 
 trait Test {
