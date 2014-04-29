@@ -152,6 +152,10 @@ Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available val
 This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
 Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
 
+- orderBy
+
+This in an place ordering operator. The records are manually ordered by Cassandra upon retrieval. For maximum performance, you may want to use ClusteringOrder instead.
+
 
 "Update" queries
 ==============
@@ -376,11 +380,11 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 Automatic schema generation can do all the setup for you.
 
 
-Composite keys
+Compound keys
 ==============
-Phantom also supports using composite keys out of the box. The schema can once again by auto-generated.
+Phantom also supports using Compound keys out of the box. The schema can once again by auto-generated.
 
-A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a composite value. Example scenario, with the composite key: ```(id, timestamp, name)```
+A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the composite key: ```(id, timestamp, name)```
 
 ```scala
 
@@ -494,7 +498,28 @@ BatchStatement()
 
 ```
 
+phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
+```scala
+
+import com.newzly.phantom.Implicits._
+
+CounterBatchStatement()
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
+    .future()
+```
+
+```scala
+
+import com.newzly.phantom.Implicits._
+
+UnloggedBatchStatement()
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
+    .future()
+
+```
 
 Thrift integration
 ==================
