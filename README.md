@@ -187,7 +187,7 @@ You generally use these to store collections(small number of items), not big thi
 
 Data modeling with phantom
 ==========================
-  
+
 ```scala
 
 import java.util.{ Date, UUID }
@@ -374,11 +374,11 @@ object ExampleRecord extends ExampleRecord {
 
   // now define a session, a normal Datastax cluster connection
   implicit val session = SomeCassandraClient.session;
-  
+
   def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).fetch
   }
-  
+
   def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).one()
   }
@@ -397,11 +397,11 @@ object ExampleRecord extends ExampleRecord {
 
   // now define a session, a normal Datastax cluster connection
   implicit val session = SomeCassandraClient.session;
-  
+
   def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).collect
   }
-  
+
   def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).get()
   }

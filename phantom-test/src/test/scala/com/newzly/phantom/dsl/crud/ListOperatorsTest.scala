@@ -424,7 +424,7 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
-  it should "set the third index inside a List" in {
+  ignore should "set the third index inside a List" in {
     val list = List("test, test2, test3, test4, test5")
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
@@ -451,7 +451,7 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
-  it should "set the third index inside a List with Twitter Futures" in {
+  ignore should "set the third index inside a List with Twitter Futures" in {
     val list = List("test, test2, test3, test4, test5")
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()

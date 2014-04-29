@@ -22,7 +22,7 @@ class TimeSeriesTest extends BaseTest {
     }
   }
 
-  it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
+  ignore should "allow using naturally fetch the records in descending order for a descending clustering order" in {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(2500L)
