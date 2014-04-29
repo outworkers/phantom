@@ -4,10 +4,19 @@ import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables._
+import com.newzly.phantom.tables.{
+  MyTest,
+  MyTestRow,
+  Primitive,
+  Primitives,
+  Recipe,
+  Recipes,
+  TestRow,
+  TestTable
+}
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 class InsertTest extends BaseTest {
   val keySpace: String = "InsertTestKeySpace"
