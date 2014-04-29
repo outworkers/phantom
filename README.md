@@ -65,6 +65,8 @@ The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can 
 
 The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
 
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
 | OptionalBigDecimalColumn      | decimal           |
 | OptionalBigIntColumn          | varint            |
 | OptionalBooleanColumn         | boolean           |
@@ -84,8 +86,14 @@ Collection columns
 ==============
 
 Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
-The ```type``` in the below example is always a default C* type.
+The ```type``` in the below example is always a default C* type. phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
 
+Thrift serialization and de-serialization is extremely fast, so you don't need to worry about speed or performance overhead.
+You generally use these to store collections(small number of items), not big things.
+
+
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
 | ListColumn.<type>             | list<primitive>   |
 | SetColumn.<type>              | set<primitive>    |
 | MapColumn.<type, type>        | map<type, type>   |
@@ -98,6 +106,8 @@ They are available via the ```phantom-thrift``` module and you need to ```import
 
 In the below scenario, the C* type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge.ThriftStruct```.
 
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
 | ThriftColumn.<type>           | text              |
 | ThriftListColumn.<type>       | list<text>        |
 | ThriftSetColumn.<type>        | set<text>         |
