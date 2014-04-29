@@ -72,7 +72,7 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | UUIDColumn                    | uuid              |
 | TimeUUIDColumn                | timeuuid          |
 | CounterColumn                 | counter           |
-| StaticColumn<type>            | type static       |
+| StaticColumn&lt;type&gt;      | type static       |
 
 
 Optional primitive columns
@@ -106,11 +106,11 @@ Collection columns
 Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
 The ```type``` in the below example is always a default C* type.
 
-| phantom columns               | Cassandra columns |
-| ---------------               | ----------------- |
-| ListColumn.<type>             | list<primitive>   |
-| SetColumn.<type>              | set<primitive>    |
-| MapColumn.<type, type>        | map<type, type>   |
+| phantom columns                     | Cassandra columns       |
+| ---------------                     | -----------------       |
+| ListColumn.&lt;type&gt;             | list&lt;primitive&gt;   |
+| SetColumn.&lt;type&gt;              | set&lt;primitive&gt;    |
+| MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
 Special column traits
 =====================
@@ -118,9 +118,10 @@ Special column traits
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 
 For example:
+
 - You cannot mix in more than one index on a single column
-- You cannot set index columns to a different value.
-- You cannot query on a column that's not an index.
+- You cannot set index columns to a different value
+- You cannot query on a column that's not an index
 
 - ```PartitionKey[T]```
 
@@ -145,7 +146,6 @@ A compound key in C* looks like this:
 
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
-
 
 - ```Index[T]```
 
@@ -176,12 +176,12 @@ phantom will use a ```CompactThriftSerializer```, store the record as a binary s
 Thrift serialization and de-serialization is extremely fast, so you don't need to worry about speed or performance overhead.
 You generally use these to store collections(small number of items), not big things.
 
-| phantom columns               | Cassandra columns |
-| ---------------               | ----------------- |
-| ThriftColumn.<type>           | text              |
-| ThriftListColumn.<type>       | list<text>        |
-| ThriftSetColumn.<type>        | set<text>         |
-| ThriftMapColumn.<type, type>  | map<text, text>   |
+| phantom columns                     | Cassandra columns       |
+| ---------------                     | -----------------       |
+| ThriftColumn.&lt;type&gt;           | text                    |
+| ThriftListColumn.&lt;type&gt;       | list&lt;text&gt;        |
+| ThriftSetColumn.&lt;type&gt;        | set&lt;text&gt;         |
+| ThriftMapColumn.&lt;type, type&gt;  | map&lt;text, text&gt;   |
 
 
 
@@ -683,7 +683,7 @@ namespace java com.newzly.phantom.sample.ExampleModel
 stuct ExampleModel {
   1: required i32 id,
   2: required string name,
-  3: required Map<string, string> props,
+  3: required Map&lt;string, string&gt; props,
   4: required i32 timestamp
   5: optional i32 test
 }
