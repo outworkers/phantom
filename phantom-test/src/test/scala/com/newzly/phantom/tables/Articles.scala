@@ -2,14 +2,12 @@ package com.newzly.phantom.tables
 
 import java.util.UUID
 import com.datastax.driver.core.Row
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.keys.{PartitionKey, LongOrderKey, PrimaryKey}
 import com.newzly.phantom.helper.{
   ModelSampler,
-  Sampler,
   TestSampler
 }
 import com.newzly.phantom.Implicits._
+import com.newzly.util.testing.Sampler
 
 case class Article(
   name: String,
@@ -19,7 +17,7 @@ case class Article(
 
 object Article extends ModelSampler[Article] {
   def sample: Article = Article(
-    Sampler.getAUniqueString,
+    Sampler.getARandomString,
     UUID.randomUUID(),
     Sampler.getARandomInteger().toLong
   )

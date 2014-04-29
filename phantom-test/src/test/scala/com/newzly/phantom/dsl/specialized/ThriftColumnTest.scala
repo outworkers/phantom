@@ -1,20 +1,26 @@
 package com.newzly.phantom.dsl.specialized
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.ThriftColumnTable
 import com.newzly.phantom.thrift.ThriftTest
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 class ThriftColumnTest extends BaseTest {
   val keySpace = "thrift"
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      ThriftColumnTable.insertSchema
+    }
+  }
+
   it should "allow storing thrift columns" in {
-
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(5, "test", test = true)
 
     val insert = ThriftColumnTable.insert
@@ -34,8 +40,6 @@ class ThriftColumnTest extends BaseTest {
   }
 
   it should "allow storing lists of thrift objects" in {
-    ThriftColumnTable.insertSchema
-
     val sample = ThriftTest(5, "test", test = true)
     val sample2 = ThriftTest(6, "asasf", test = false)
     val sampleList = Set(sample, sample2)

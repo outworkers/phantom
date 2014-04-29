@@ -4,9 +4,9 @@ import java.util.{ Date, UUID }
 import java.net.InetAddress
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler}
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler}
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, ClusteringOrder, PrimaryKey}
+import com.newzly.util.testing.Sampler
 
 case class Primitive(
   pkey: String,
@@ -25,7 +25,7 @@ case class Primitive(
 object Primitive extends ModelSampler[Primitive] {
   def sample: Primitive = {
     Primitive(
-      Sampler.getAUniqueString,
+      Sampler.getARandomString,
       Sampler.getARandomInteger().toLong,
       boolean = false,
       BigDecimal(Sampler.getARandomInteger()),
@@ -62,7 +62,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
 
   object int extends IntColumn(this)
 
-  object date extends DateColumn(this) with ClusteringOrder[Date]
+  object date extends DateColumn(this)
 
   object uuid extends UUIDColumn(this)
 

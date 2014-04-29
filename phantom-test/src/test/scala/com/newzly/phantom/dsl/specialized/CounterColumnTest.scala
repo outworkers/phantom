@@ -1,19 +1,26 @@
 package com.newzly.phantom.dsl.specialized
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ CounterRecord, CounterTableTest }
+import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class CounterColumnTest extends BaseTest {
   val keySpace = "counter_column_test"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  it should "increment counter values by 1" in {
-    CounterTableTest.insertSchema()
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      CounterTableTest.insertSchema()
+    }
+  }
 
+
+  it should "increment counter values by 1" in {
     val sample = CounterRecord.sample
 
     val chain = for {
@@ -36,8 +43,6 @@ class CounterColumnTest extends BaseTest {
 
 
   it should "allow selecting a counter" in {
-    CounterTableTest.insertSchema()
-
     val sample = CounterRecord.sample
 
     val chain = for {
@@ -59,7 +64,6 @@ class CounterColumnTest extends BaseTest {
   }
 
   it should "increment counter values by a given value" in {
-    CounterTableTest.insertSchema()
     val sample = CounterRecord.sample
     val diff = 200L
 
@@ -82,7 +86,6 @@ class CounterColumnTest extends BaseTest {
   }
 
   it should "decrement counter values by 1" in {
-    CounterTableTest.insertSchema()
     val sample = CounterRecord.sample
 
     val chain = for {
@@ -104,7 +107,6 @@ class CounterColumnTest extends BaseTest {
   }
 
   it should "decrement counter values by a given value" in {
-    CounterTableTest.insertSchema()
     val sample = CounterRecord.sample
     val diff = 200L
     val initial = 500L

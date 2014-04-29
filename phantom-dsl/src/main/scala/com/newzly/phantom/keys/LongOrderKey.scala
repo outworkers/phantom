@@ -16,7 +16,6 @@
 package com.newzly.phantom.keys
 
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.column.PrimitiveColumn
 import com.newzly.phantom.Implicits.LongColumn
 
 /**
