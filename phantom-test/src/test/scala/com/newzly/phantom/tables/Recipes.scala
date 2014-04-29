@@ -1,12 +1,11 @@
 package com.newzly.phantom.tables
 
-import java.util.{ Date, UUID }
+import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
 import com.newzly.phantom.Implicits._
-import org.joda.time.DateTime
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
+import com.newzly.util.testing.Sampler
 
 case class Recipe(
   url: String,
@@ -20,9 +19,9 @@ case class Recipe(
 object Recipe extends ModelSampler[Recipe] {
   def sample: Recipe = {
     Recipe(
-      Sampler.getAUniqueString,
-      Some(Sampler.getAUniqueString),
-      List(Sampler.getAUniqueString, Sampler.getAUniqueString),
+      Sampler.getARandomString,
+      Some(Sampler.getARandomString),
+      List(Sampler.getARandomString, Sampler.getARandomString),
       Some(Sampler.getARandomInteger()),
       new DateTime(),
       Map.empty[String, String]

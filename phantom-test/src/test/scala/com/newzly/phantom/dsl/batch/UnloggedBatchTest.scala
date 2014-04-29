@@ -8,8 +8,7 @@ import com.newzly.phantom.tables.{ JodaRow, PrimitivesJoda }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.cassandra.BaseTest
 
-
-class BatchTest extends BaseTest {
+class UnloggedBatchTest extends BaseTest {
   val keySpace: String = "BatchTestSpace"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -20,7 +19,7 @@ class BatchTest extends BaseTest {
     }
   }
 
-  it should "work fine" in {
+  it should "execute multiple updates to a single table" in {
     val row = JodaRow.sample
     val row2 = JodaRow.sample.copy(pkey = row.pkey)
     val row3 = JodaRow.sample
@@ -40,7 +39,7 @@ class BatchTest extends BaseTest {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
-    val batch = new BatchStatement().add(statement3).add(statement4)
+    val batch = UnloggedBatchStatement().add(statement3).add(statement4)
 
     val w = for {
       s1 <- statement1.future()

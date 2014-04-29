@@ -1,18 +1,25 @@
 package com.newzly.phantom.dsl
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Article, Articles }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 class SkipRecordsByToken extends BaseTest {
   val keySpace: String = "SkippingRecordsByTokenTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      Articles.insertSchema()
+    }
+  }
+
   it should "allow skipping records using gtToken" in {
-    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = Article.sample
     val article3 = Article.sample
@@ -43,7 +50,6 @@ class SkipRecordsByToken extends BaseTest {
       next <- Articles.select.where(_.id gtToken one.get.id ).fetch
     } yield next
 
-
     result successful {
       r => {
         assert(r.size === 3)
@@ -53,7 +59,6 @@ class SkipRecordsByToken extends BaseTest {
   }
 
   ignore should "allow skipping records using eqsToken" in {
-    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = Article.sample
     val article3 = Article.sample
@@ -95,7 +100,6 @@ class SkipRecordsByToken extends BaseTest {
   }
 
   ignore should "allow skipping records using gteToken" in {
-    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = Article.sample
     val article3 = Article.sample
@@ -136,8 +140,6 @@ class SkipRecordsByToken extends BaseTest {
   }
 
   ignore should "allow skipping records using ltToken" in {
-    Articles.insertSchema()
-
     val article1 = Article.sample
     val article2 = Article.sample
     val article3 = Article.sample
@@ -181,7 +183,6 @@ class SkipRecordsByToken extends BaseTest {
   }
 
   ignore should "allow skipping records using lteToken" in {
-    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = Article.sample
     val article3 = Article.sample

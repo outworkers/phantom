@@ -18,9 +18,9 @@ package com.newzly.phantom.query
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
-import play.api.libs.iteratee.{Enumerator => PlayEnumerator, Iteratee => PlayIteratee, Enumeratee}
 import com.newzly.phantom.iteratee.{ Enumerator, Iteratee }
 import com.twitter.util.{ Future => TwitterFuture }
+import play.api.libs.iteratee.{ Enumerator => PlayEnumerator, Enumeratee }
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
@@ -47,12 +47,10 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def fromRow(r: Row): R
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    table.logger.info(qb.toString)
     scalaStatementToFuture(qb)
   }
 
   def execute()(implicit  session: Session): TwitterFuture[ResultSet] = {
-    table.logger.info(qb.toString)
     twitterStatementToFuture(qb)
   }
 
@@ -66,7 +64,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[PlayEnumerator[R]] = {
     future() map {
       resultSet => {
-        Enumerator.enumerator(resultSet) through Enumeratee.map(r => this.fromRow(r))
+        Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
       }
     }
   }
@@ -74,7 +72,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
   def enumerate()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[PlayEnumerator[R]] = {
     execute() map {
       resultSet => {
-        Enumerator.enumerator(resultSet) through Enumeratee.map(r => this.fromRow(r))
+        Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
       }
     }
   }
@@ -102,7 +100,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
    * @return
    */
   def fetch()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Seq[R]] = {
-    table.logger.info(qb.toString)
     fetchEnumerator flatMap(_ run Iteratee.collect())
   }
 
@@ -114,7 +111,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
    * @return
    */
   def collect()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Seq[R]] = {
-    table.logger.info(qb.toString)
     enumerate flatMap {
       res => {
         scalaFutureToTwitter(res run Iteratee.collect())

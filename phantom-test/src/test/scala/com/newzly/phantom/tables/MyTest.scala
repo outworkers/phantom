@@ -2,9 +2,9 @@ package com.newzly.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.helper.{ ModelSampler, Sampler, TestSampler }
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.keys.{PartitionKey, PrimaryKey}
+import com.newzly.util.testing.Sampler
 
 case class MyTestRow(
   key: String,
@@ -14,9 +14,9 @@ case class MyTestRow(
 
 object MyTestRow extends ModelSampler[MyTestRow] {
   def sample: MyTestRow = MyTestRow(
-    Sampler.getAUniqueString,
+    Sampler.getARandomString,
     Some(Sampler.getARandomInteger()),
-    List.range(0, 20).map(x => Sampler.getAUniqueString)
+    List.range(0, 20).map(x => Sampler.getARandomString)
   )
 }
 
