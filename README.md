@@ -108,8 +108,8 @@ The ```type``` in the below example is always a default C* type.
 
 | phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
-| ListColumn.&lt;type&gt;             | list&lt;primitive&gt;   |
-| SetColumn.&lt;type&gt;              | set&lt;primitive&gt;    |
+| ListColumn.&lt;type&gt;             | list&lt;type&gt;        |
+| SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
 Special column traits
