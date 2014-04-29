@@ -9,6 +9,19 @@ Using phantom
 The current version is: ```val phantomVersion = 0.4.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
+Issues and questions
+====================
+
+We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
+Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
+All queries need to be planned in advance, schema is not flexible and people who can help are very rare.
+
+Documentation is not plentiful and you to spend some serious hours on IRC channels looking for basic things.
+
+Unless you are planning on multi-datacenter financial timeseries data or 100 000 writes per second, you are going to waste a lot of time and money dealing with problems that won't do much for you, your app or business.
+For your own sake, research Cassandra use cases and see if it is truly a fit.
+
+We are very happy to help implement missing features in phantom, answer questions strictly about phantom, but Cassandra Data modeling is out of that scope.
 
 Integrating phantom in your project
 ===================================
@@ -34,12 +47,150 @@ libraryDependencies ++= Seq(
 ```
 
 
+Available primitive columns
+==========================
+
+This is the list of available columns and how they map to C* data types.
+This also includes the newly introduced ```static``` columns in C* 2.0.6.
+
+The type of a static column can be any of the allowed primitive Cassandra types.
+phantom won't let you mixin a non-primitive via implicit magic.
+
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
+| BigDecimalColumn              | decimal           |
+| BigIntColumn                  | varint            |
+| BooleanColumn                 | boolean           |
+| DateColumn                    | timestamp         |
+| DateTimeColumn                | timestamp         |
+| DoubleColumn                  | double            |
+| FloatColumn                   | float             |
+| IntColumn                     | int               |
+| InetAddressColumn             | inet              |
+| LongColumn                    | long              |
+| StringColumn                  | text              |
+| UUIDColumn                    | uuid              |
+| TimeUUIDColumn                | timeuuid          |
+| CounterColumn                 | counter           |
+| StaticColumn&lt;type&gt;      | type static       |
+
+
+Optional primitive columns
+================
+
+Optional columns allow you to set a column to a ```null``` or a ```None```. Use them when you really want something to be optional.
+The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can ```match, fold, flatMap, map``` on a ```None```.
+
+The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
+
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
+| OptionalBigDecimalColumn      | decimal           |
+| OptionalBigIntColumn          | varint            |
+| OptionalBooleanColumn         | boolean           |
+| OptionalDateColumn            | timestamp         |
+| OptionalDateTimeColumn        | timestamp         |
+| OptionalDoubleColumn          | double            |
+| OptionalFloatColumn           | float             |
+| OptionalIntColumn             | int               |
+| OptionalInetAddressColumn     | inet              |
+| OptionalLongColumn            | long              |
+| OptionalStringColumn          | text              |
+| OptionalUUIDColumn            | uuid              |
+| OptionalTimeUUID              | timeuuid          |
+
+
+Collection columns
+==============
+
+Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
+The ```type``` in the below example is always a default C* type.
+
+| phantom columns                     | Cassandra columns       |
+| ---------------                     | -----------------       |
+| ListColumn.&lt;type&gt;             | list&lt;type&gt;        |
+| SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
+| MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
+
+Special column traits
+=====================
+
+phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
+
+For example:
+
+- You cannot mix in more than one index on a single column
+- You cannot set index columns to a different value
+- You cannot query on a column that's not an index
+
+- ```PartitionKey[T]```
+
+This is the default partitioning key of the table, telling Cassandra how to divide data into partitions and store them accordingly.
+You must define at least one partition key for a table. Phantom will gently remind you of this with a fatal error.
+
+If you use a single partition key, the ```PartitionKey``` will always be the first ```PrimaryKey``` in the schema.
+
+It looks like this in CQL: ```PRIMARY_KEY(your_partition_key, primary_key_1, primary_key_2)```.
+
+Using more than one ```PartitionKey[T]``` in your schema definition will output a Composite Key in Cassandra.
+```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
+
+- ```PrimaryKey[T]```
+
+As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
+The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
+about how your data is partitioned. We also use this DSL restriction because we hope to do more clever things with it in the future.
+
+A compound key in C* looks like this:
+```PRIMARY_KEY(primary_key, primary_key_1, primary_key_2)```.
+
+Before you add too many of these, remember they all have to go into a ```where``` clause.
+You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
+
+- ```Index[T]```
+
+This is a SecondaryIndex in Cassandra. It can help you enable querying really fast, but it's not exactly high performance.
+It's generally best to avoid it, we implemented it to show off what good guys we are.
+
+When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
+However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
+
+- ```ClusteringOrder```
+
+This can be used with either ```java.util.Date``` or ```org.joda.time.DateTime```. It tells Cassandra to store records in a certain order based on this field.
+
+An example might be: ```object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Ascending```
+To fully define a clustering column, you MUST also mixin either ```Ascending``` or ```Descending``` to indicate the sorting order.
+
+
+
+Thrift Columns
+==============
+
+These columns are especially useful if you are building Thrift services. They are deeply integrated with Twitter Scrooge and relevant to the Twitter ecosystem(Finagle, Zipkin, Storm etc)
+They are available via the ```phantom-thrift``` module and you need to ```import com.newzly.phantom.thrift.Implicits._``` to get them.
+
+In the below scenario, the C* type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge.ThriftStruct```.
+phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
+
+Thrift serialization and de-serialization is extremely fast, so you don't need to worry about speed or performance overhead.
+You generally use these to store collections(small number of items), not big things.
+
+| phantom columns                     | Cassandra columns       |
+| ---------------                     | -----------------       |
+| ThriftColumn.&lt;type&gt;           | text                    |
+| ThriftListColumn.&lt;type&gt;       | list&lt;text&gt;        |
+| ThriftSetColumn.&lt;type&gt;        | set&lt;text&gt;         |
+| ThriftMapColumn.&lt;type, type&gt;  | map&lt;text, text&gt;   |
+
+
+
 Data modeling with phantom
 ==========================
-  
+
 ```scala
 
-import java.util.{ UUID, Date }
+import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.sample.ExampleModel
 import com.newzly.phantom.Implicits._
@@ -97,7 +248,11 @@ The following operators can be used into a "where" and "and" clause.
 - lt
 - lte
 
-The "side" methods providing the juice:
+More select methods:
+
+- orderBy
+
+This in an place ordering operator. The records are manually ordered by Cassandra upon retrieval. For maximum performance, you may want to use ClusteringOrder instead.
 
 - allowFiltering
 
@@ -219,11 +374,11 @@ object ExampleRecord extends ExampleRecord {
 
   // now define a session, a normal Datastax cluster connection
   implicit val session = SomeCassandraClient.session;
-  
+
   def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).fetch
   }
-  
+
   def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).one()
   }
@@ -242,11 +397,11 @@ object ExampleRecord extends ExampleRecord {
 
   // now define a session, a normal Datastax cluster connection
   implicit val session = SomeCassandraClient.session;
-  
+
   def getRecordsByName(name: String): Future[Seq[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).collect
   }
-  
+
   def getOneRecordByName(name: String, someId: UUID): Future[Option[ExampleModel]] = {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).get()
   }
@@ -376,11 +531,11 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 Automatic schema generation can do all the setup for you.
 
 
-Composite keys
+Compound keys
 ==============
-Phantom also supports using composite keys out of the box. The schema can once again by auto-generated.
+Phantom also supports using Compound keys out of the box. The schema can once again by auto-generated.
 
-A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a composite value. Example scenario, with the composite key: ```(id, timestamp, name)```
+A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the composite key: ```(id, timestamp, name)```
 
 ```scala
 
@@ -489,12 +644,33 @@ import com.newzly.phantom.Implicits._
 
 BatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
     .future()
 
 ```
 
+phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
+```scala
+
+import com.newzly.phantom.Implicits._
+
+CounterBatchStatement()
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
+    .future()
+```
+
+```scala
+
+import com.newzly.phantom.Implicits._
+
+UnloggedBatchStatement()
+    .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
+    .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
+    .future()
+
+```
 
 Thrift integration
 ==================
@@ -507,7 +683,7 @@ namespace java com.newzly.phantom.sample.ExampleModel
 stuct ExampleModel {
   1: required i32 id,
   2: required string name,
-  3: required Map<string, string> props,
+  3: required Map&lt;string, string&gt; props,
   4: required i32 timestamp
   5: optional i32 test
 }
@@ -534,13 +710,14 @@ project phantom-test
 test
 ```
 
-Maintainers
-===========
+Maintainers and contributors
+============================
 
-Phantom was developed at newzly as an in-house project.
-All Cassandra integration at newzly goes through Phantom.
+Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
 
 - Flavian Alexandru flavian@newzly.com
+- Andreas C. Osowski andreas.osowski@newzly.com
+- Decebal Popa decebal.popa@newzly.com
 
 Pre newzly fork
 ===============

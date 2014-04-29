@@ -54,9 +54,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   def extractCount(r: Row): Option[Long] = {
-    Try {
-      Some(r.getLong("count"))
-    } getOrElse None
+    Try { r.getLong("count") }.toOption
   }
 
   lazy val logger = LoggerFactory.getLogger(tableName)
@@ -81,13 +79,21 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
+  private[phantom] def clusterOrderSchema(query: String): String = {
+    if (columns.count(_.isClusteringKey) == 1) {
+      val clusteringColumn = columns.filter(_.isClusteringKey).head
+      val direction = if (clusteringColumn.isAscending) "ASC" else "DESC"
+      s"$query WITH CLUSTERING ORDER BY (${clusteringColumn.name} $direction);"
+    } else {
+      query
+    }
+  }
+
   def schema(): String = {
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       if (c.isStaticColumn) {
-        val q = s"$qb, ${c.name} ${c.cassandraType} static"
-        Console.println(q)
-        q
+        s"$qb, ${c.name} ${c.cassandraType} static"
       } else {
         s"$qb, ${c.name} ${c.cassandraType}"
       }
@@ -108,7 +114,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    if (query.last != ';') query + ";" else query
+    val finalQuery = clusterOrderSchema(query)
+    if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
   def createIndexes(): Seq[String] = {
@@ -130,7 +137,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       case (map, method) => val name = method.getName
         order += method.getName
         map + (name -> (method :: map.getOrElse(name, Nil)))
-
     }
 
     // sort each list based on having the most specific type and use that method

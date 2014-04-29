@@ -2,10 +2,11 @@ package com.newzly.phantom.dsl.query
 
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.phantom.helper.{Sampler, BaseTest}
+import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Articles, Recipes }
-import com.datastax.driver.core.utils.UUIDs
+import com.newzly.util.testing.Sampler
+import com.newzly.util.testing.cassandra.BaseTest
 
 class QuerySerializationTest extends BaseTest {
 
@@ -28,7 +29,7 @@ class QuerySerializationTest extends BaseTest {
   }
 
   ignore should "correctly serialize a 3 column partial select query" in {
-    val someId = Sampler.getAUniqueString
+    val someId = Sampler.getARandomString
     Recipes.select(
       _.url,
       _.description,

@@ -1,22 +1,27 @@
 package com.newzly.phantom.dsl.crud
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.phantom.helper.BaseTest
 import com.newzly.phantom.tables.{ Recipe, Recipes }
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
 
 
 class MapOperationsTest extends BaseTest {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
   val keySpace = "map_operators"
 
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      Recipes.insertSchema()
+    }
+  }
 
   it should "support a single item map put operation" in {
-    Recipes.insertSchema
-
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
 
@@ -49,8 +54,6 @@ class MapOperationsTest extends BaseTest {
   }
 
   it should "support a single item map put operation with Twitter futures" in {
-    Recipes.insertSchema
-
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
 
@@ -83,8 +86,6 @@ class MapOperationsTest extends BaseTest {
   }
 
   it should "support a multiple item map put operation" in {
-    Recipes.insertSchema
-
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
 
@@ -117,8 +118,6 @@ class MapOperationsTest extends BaseTest {
   }
 
   it should "support a multiple item map put operation with Twitter futures" in {
-    Recipes.insertSchema
-
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
 

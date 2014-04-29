@@ -17,11 +17,10 @@ package com.newzly.phantom.query
 
 import scala.concurrent.{ ExecutionContext, Future }
 import com.datastax.driver.core.{ Row, Session }
-import com.datastax.driver.core.querybuilder.Select
+import com.datastax.driver.core.querybuilder.{ Select, Ordering }
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
-import com.newzly.phantom.column.AbstractColumn
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
 
@@ -40,6 +39,13 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
     new SelectWhere[T, R](table, qb.where(condition(table).clause), fromRow)
   }
 
+  def orderBy[RR](conditions: (T => QueryOrdering)*): SelectQuery[T, R] = {
+    val applied = conditions map {
+      fn => fn(table).ordering
+    }
+    new SelectQuery[T, R](table, qb.orderBy(applied: _*), fromRow)
+  }
+
   def limit(l: Int) = {
     new SelectQuery(table, qb.limit(l), fromRow)
   }
@@ -52,7 +58,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 
@@ -64,7 +69,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
    */
   def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.enumerate() flatMap {
       res => {
         scalaFutureToTwitter(res run PlayIteratee.head)
@@ -77,6 +81,13 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
 
   override def fromRow(r: Row) = rowFunc(r)
 
+  def orderBy[RR](conditions: (T => QueryOrdering)*): SelectQuery[T, R] = {
+    val applied = conditions map {
+      fn => fn(table).ordering
+    }
+    new SelectQuery[T, R](table, qb.orderBy(applied: _*), fromRow)
+  }
+
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.
@@ -85,7 +96,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.fetchEnumerator flatMap(_ run PlayIteratee.head)
   }
 
@@ -96,7 +106,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    */
   def get()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    table.logger.info(query.qb.toString)
     query.enumerate() flatMap {
       res => {
         scalaFutureToTwitter(res run PlayIteratee.head)
@@ -104,7 +113,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     }
   }
 
-  def where[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
+  def and[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
     new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 
@@ -116,6 +125,4 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     qb.setFetchSize(n)
     this
   }
-
-  def and = where _
 }
