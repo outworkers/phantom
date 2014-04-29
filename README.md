@@ -34,12 +34,83 @@ libraryDependencies ++= Seq(
 ```
 
 
+Available primitive columns
+==========================
+
+This is the list of available columns and how they map to C* data types.
+
+| phantom columns               | Cassandra columns |
+| ---------------               | ----------------- |
+| BigDecimalColumn              | decimal           |
+| BigIntColumn                  | varint            |
+| BooleanColumn                 | boolean           |
+| DateColumn                    | timestamp         |
+| DateTimeColumn                | timestamp         |
+| DoubleColumn                  | double            |
+| FloatColumn                   | float             |
+| IntColumn                     | int               |
+| InetAddressColumn             | inet              |
+| LongColumn                    | long              |
+| StringColumn                  | text              |
+| UUIDColumn                    | uuid              |
+| TimeUUIDColumn                | timeuuid          |
+| CounterColumn                 | counter           |
+
+
+Optional primitive columns
+================
+
+Optional columns allow you to set a column to a ```null``` or a ```None```. Use them when you really want something to be optional.
+The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can ```match, fold, flatMap, map``` on a ```None```.
+
+The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
+
+| OptionalBigDecimalColumn      | decimal           |
+| OptionalBigIntColumn          | varint            |
+| OptionalBooleanColumn         | boolean           |
+| OptionalDateColumn            | timestamp         |
+| OptionalDateTimeColumn        | timestamp         |
+| OptionalDoubleColumn          | double            |
+| OptionalFloatColumn           | float             |
+| OptionalIntColumn             | int               |
+| OptionalInetAddressColumn     | inet              |
+| OptionalLongColumn            | long              |
+| OptionalStringColumn          | text              |
+| OptionalUUIDColumn            | uuid              |
+| OptionalTimeUUID              | timeuuid          |
+
+
+Collection columns
+==============
+
+Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
+The ```type``` in the below example is always a default C* type.
+
+| ListColumn.<type>             | list<primitive>   |
+| SetColumn.<type>              | set<primitive>    |
+| MapColumn.<type, type>        | map<type, type>   |
+
+Thrift Columns
+==============
+
+These columns are especially useful if you are building Thrift services. They are deeply integrated with Twitter Scrooge and relevant to the Twitter ecosystem(Finagle, Zipkin, Storm etc)
+They are available via the ```phantom-thrift``` module and you need to ```import com.newzly.phantom.thrift.Implicits._``` to get them.
+
+In the below scenario, the C* type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge.ThriftStruct```.
+
+| ThriftColumn.<type>           | text              |
+| ThriftListColumn.<type>       | list<text>        |
+| ThriftSetColumn.<type>        | set<text>         |
+| ThriftMapColumn.<type, type>  | map<text, text>   |
+
+
+
 Data modeling with phantom
 ==========================
   
 ```scala
 
-import java.util.{ UUID, Date }
+import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.sample.ExampleModel
 import com.newzly.phantom.Implicits._
@@ -559,13 +630,14 @@ project phantom-test
 test
 ```
 
-Maintainers
-===========
+Maintainers and contributors
+============================
 
-Phantom was developed at newzly as an in-house project.
-All Cassandra integration at newzly goes through Phantom.
+Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
 
 - Flavian Alexandru flavian@newzly.com
+- Andreas C. Osowski andreas.osowski@newzly.com
+- Decebal Popa decebal.popa@newzly.com
 
 Pre newzly fork
 ===============
