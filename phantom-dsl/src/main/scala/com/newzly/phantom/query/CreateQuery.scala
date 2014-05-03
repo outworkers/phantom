@@ -28,7 +28,7 @@ class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) ext
     if (table.createIndexes().isEmpty)
       scalaQueryStringExecuteToFuture(table.schema())
     else {
-      scalaQueryStringExecuteToFuture(table.schema())  flatMap {
+      scalaQueryStringExecuteToFuture(table.schema()) flatMap {
         _=> {
           ScalaFuture.sequence(table.createIndexes() map scalaQueryStringExecuteToFuture) map (_.head)
         }

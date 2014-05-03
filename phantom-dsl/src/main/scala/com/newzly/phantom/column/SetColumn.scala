@@ -19,6 +19,7 @@ import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
+import com.twitter.util.Try
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[RR]](table) {
@@ -32,6 +33,8 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPr
 
   def optional(r: Row): Option[Set[RR]] = {
     val i = implicitly[CassandraPrimitive[RR]]
-    Option(r.getSet(name, i.cls)).map(_.asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet[RR])
+    Try {
+      r.getSet(name, i.cls).asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet[RR]
+    }.toOption
   }
 }
