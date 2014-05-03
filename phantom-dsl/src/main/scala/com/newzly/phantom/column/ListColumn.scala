@@ -19,11 +19,12 @@ import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
+import com.twitter.util.Try
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table) {
-  val cassandraType = s"list<${CassandraPrimitive[RR].cassandraType}>"
-  val primitive = implicitly[CassandraPrimitive[RR]]
+  val primitive = CassandraPrimitive[RR]
+  val cassandraType = s"list<${primitive.cassandraType}>"
 
   def toCType(values: List[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
 
@@ -32,6 +33,10 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPr
   }
 
   def optional(r: Row): Option[List[RR]] = {
-    Option(r.getList(name, primitive.cls).asScala.toList.map(el => primitive.fromCType(el.asInstanceOf[AnyRef])))
+    Try {
+      r.getList(name, primitive.cls).asScala.map {
+        el => primitive.fromCType(el.asInstanceOf[AnyRef])
+      }.toList
+    }.toOption
   }
 }

@@ -17,7 +17,7 @@ package com.newzly.phantom.query
 
 import scala.concurrent.{ ExecutionContext, Future }
 import com.datastax.driver.core.{ Row, Session }
-import com.datastax.driver.core.querybuilder.{ Select, Ordering }
+import com.datastax.driver.core.querybuilder.Select
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
