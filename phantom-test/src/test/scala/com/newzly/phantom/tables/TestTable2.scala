@@ -1,6 +1,6 @@
 package com.newzly.phantom.tables
 
-import com.newzly.phantom.helper.{ ModelSampler }
+import com.newzly.phantom.helper.ModelSampler
 import com.newzly.util.testing.Sampler
 
 case class SimpleStringClass(something: String)

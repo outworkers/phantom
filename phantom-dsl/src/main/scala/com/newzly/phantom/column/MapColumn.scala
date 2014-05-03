@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 
-@implicitNotFound(msg = "Type ${K} and ${V} must be a Cassandra primitives")
+@implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
 class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table) {
 
   val cassandraType = s"map<${CassandraPrimitive[K].cassandraType}, ${CassandraPrimitive[V].cassandraType}>"

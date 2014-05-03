@@ -6,7 +6,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.4.0```.
+The current version is: ```val phantomVersion = 0.5.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 Issues and questions
@@ -22,6 +22,8 @@ Unless you are planning on multi-datacenter financial timeseries data or 100 000
 For your own sake, research Cassandra use cases and see if it is truly a fit.
 
 We are very happy to help implement missing features in phantom, answer questions strictly about phantom, but Cassandra Data modeling is out of that scope.
+
+You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
 Integrating phantom in your project
 ===================================
@@ -56,23 +58,23 @@ This also includes the newly introduced ```static``` columns in C* 2.0.6.
 The type of a static column can be any of the allowed primitive Cassandra types.
 phantom won't let you mixin a non-primitive via implicit magic.
 
-| phantom columns               | Cassandra columns |
-| ---------------               | ----------------- |
-| BigDecimalColumn              | decimal           |
-| BigIntColumn                  | varint            |
-| BooleanColumn                 | boolean           |
-| DateColumn                    | timestamp         |
-| DateTimeColumn                | timestamp         |
-| DoubleColumn                  | double            |
-| FloatColumn                   | float             |
-| IntColumn                     | int               |
-| InetAddressColumn             | inet              |
-| LongColumn                    | long              |
-| StringColumn                  | text              |
-| UUIDColumn                    | uuid              |
-| TimeUUIDColumn                | timeuuid          |
-| CounterColumn                 | counter           |
-| StaticColumn&lt;type&gt;      | type static       |
+| phantom columns               | Java/Scala type           | Cassandra type    |
+| ---------------               |-------------------        | ----------------- |
+| BigDecimalColumn              | scala.math.BigDecimal     | decimal           |
+| BigIntColumn                  | scala.math.BigInt         | varint            |
+| BooleanColumn                 | scala.Boolean             | boolean           |
+| DateColumn                    | java.util.Date            | timestamp         |
+| DateTimeColumn                | org.joda.time.DateTime    | timestamp         |
+| DoubleColumn                  | scala.Double              | double            |
+| FloatColumn                   | scala.Float               | float             |
+| IntColumn                     | scala.Int                 | int               |
+| InetAddressColumn             | java.net.InetAddress      | inet              |
+| LongColumn                    | scala.Long                | long              |
+| StringColumn                  | java.lang.String          | text              |
+| UUIDColumn                    | java.util.UUID            | uuid              |
+| TimeUUIDColumn                | java.util.UUID            | timeuuid          |
+| CounterColumn                 | scala.Long                | counter           |
+| StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
 
 Optional primitive columns
@@ -83,21 +85,21 @@ The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can 
 
 The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
 
-| phantom columns               | Cassandra columns |
-| ---------------               | ----------------- |
-| OptionalBigDecimalColumn      | decimal           |
-| OptionalBigIntColumn          | varint            |
-| OptionalBooleanColumn         | boolean           |
-| OptionalDateColumn            | timestamp         |
-| OptionalDateTimeColumn        | timestamp         |
-| OptionalDoubleColumn          | double            |
-| OptionalFloatColumn           | float             |
-| OptionalIntColumn             | int               |
-| OptionalInetAddressColumn     | inet              |
-| OptionalLongColumn            | long              |
-| OptionalStringColumn          | text              |
-| OptionalUUIDColumn            | uuid              |
-| OptionalTimeUUID              | timeuuid          |
+| phantom columns               | Java/Scala type                   | Cassandra columns |
+| ---------------               | -------------------------         | ----------------- |
+| OptionalBigDecimalColumn      | Option[scala.math.BigDecimal]     | decimal           |
+| OptionalBigIntColumn          | Option[scala.math.BigInt]         | varint            |
+| OptionalBooleanColumn         | Option[scala.Boolean]             | boolean           |
+| OptionalDateColumn            | Option[java.util.Date]            | timestamp         |
+| OptionalDateTimeColumn        | Option[org.joda.time.DateTime]    | timestamp         |
+| OptionalDoubleColumn          | Option[scala.Double]              | double            |
+| OptionalFloatColumn           | Option[scala.Float]               | float             |
+| OptionalIntColumn             | Option[scala.Int]                 | int               |
+| OptionalInetAddressColumn     | Option[java.net.InetAddress]      | inet              |
+| OptionalLongColumn            | Option[Long]                      | long              |
+| OptionalStringColumn          | Option[java.lang.String]          | text              |
+| OptionalUUIDColumn            | Option[java.util.UUID]            | uuid              |
+| OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
 
 Collection columns
@@ -112,7 +114,7 @@ The ```type``` in the below example is always a default C* type.
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
-Special column traits
+Special columns
 =====================
 
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
@@ -122,6 +124,10 @@ For example:
 - You cannot mix in more than one index on a single column
 - You cannot set index columns to a different value
 - You cannot query on a column that's not an index
+
+
+List of special columns
+=======================
 
 - ```PartitionKey[T]```
 
@@ -229,36 +235,31 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 "Select" queries
 ================
 
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```where```                       | The ```WHERE``` clause in CQL                                                         |
+| ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
+| ```orderBy```                     | Adds an ```ORDER_BY column_name``` to the query                                       |
+| ```allowFiltering```              | Allows Cassandra to filter records in memory. This is an expensive operation.         |
+| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
+| ```setFetchSize       ```         | Sets the maximum number of records to retrieve. Default is 10000                      |
+| ```limit```                       | Sets the exact number of records to retrieve.                                         |
+
+
 Select queries are very straightforward and enforce most limitations at compile time.
 
 
-- where
+```where``` and ```and``` clause operators
+==========================================
+| Operator name      | Description                                                              |
+| ------------------ | ------------------------------------------------------------                                             |
+| eqs                | The "equals" operator. Will match if the objects are equal                                               |
+| in                 | The "in" operator. Will match if the object is found the list of arguments                               |
+| gt                 | The "greater than" operator. Will match a the record is greater than the argument and exists             |
+| gte                | The "greater than or equals" operator. Will match a the record is greater than the argument and exists   |
+| lt                 | The "lower than" operator. Will match a the record that is less than the argument and exists             |
+| lte                | The "lower than or equals" operator. Will match a the record that is less than the argument and exists   |
 
-This is the basic where clause method. The "where" operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
-
-- and
-
-Used to chain multiple where conditions into an "AND" clause in CQL 3. "and" respects the same restrictions as above, you can't use it on a non-indexed column.
-The following operators can be used into a "where" and "and" clause.
-
-- eqs
-- in
-- gt
-- gte
-- lt
-- lte
-
-More select methods:
-
-- orderBy
-
-This in an place ordering operator. The records are manually ordered by Cassandra upon retrieval. For maximum performance, you may want to use ClusteringOrder instead.
-
-- allowFiltering
-
-Used when querying based on an Index column. Because this has unpredictable performance in Cassandra, you must explicitly allow filtering.
-
-```ExampleRecord.select.allowFiltering().where(_.index eqs someIndex).future()```
 
 Partial selects
 ===============
@@ -281,62 +282,31 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 "Insert" queries
 ==============
 
-- value
-
-This is a very basic way of telling phantom what to set a column to for that particular row.
-
-```scala
-ExampleRecord.insert.value(_.name, "someName").value(_.id, UUIDs.timeBased()).execute()
-```
-
-A field that is not set will be set to ```null``` in Cassandra.
-
-- valueOrNull
-
-This will take ```null``` values without throwing an error. Only use this when ```null``` is acceptable.
-Although you likely want to stick with Optional columns. They are better, as phantom will give you a type-safe ```Option[T]``` back instead of ```null```
-
-
-- useConsistencyLevel
-
-Very straightforward method, used to specify the consistency level of a query.
-Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
-
-- ttl
-
-This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
-Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```value```                       | A type safe Insert query builder. Throws an error for ```null``` values.              |
+| ```valueOrNull```                 | This will accept a ```null``` without throwing an error.                              |
+| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
+| ```ttl```                         | Sets the "Time-To-Live" for the record.                                               |
 
 
 "Update" queries
 ==============
 
-- where
-
-This is the basic where clause method. The "where" operators, only available when the column is a ```PartitionKey```, ```PrimaryKey``` or an ```Index```:
-
-- and
-
-Used to chain multiple where conditions into an "AND" clause in CQL 3.
-
-- useConsistencyLevel
-
-Very straightforward method, used to specify the consistency level of a query.
-Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
-
-- ttl
-
-This is a very fast way of providing an int value Time-To-Live for the inserted or updated record.
-Unlike MongoDB, you don't need a timestamp index, Cassandra will do the magic for you.
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```where```                       | The ```WHERE``` clause in CQL                                                         |
+| ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
+| ```modify```                      | The actual update query builder                                                       |
+| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 
 
 "Delete" queries
 ==============
 
-- useConsistencyLevel
-
-Very straightforward method, used to specify the consistency level of a query.
-Use ```import com.datastax.driver.core.ConsistencyLevel``` for the available values.
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 
 
 Scala Futures
@@ -408,44 +378,53 @@ object ExampleRecord extends ExampleRecord {
 }
 ```
 
-Collection operators
-====================
+Collections and operators
+=========================
 
-phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, map```.
+Based on the above list of columns, phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, map```.
+All operators will be available in an update query, specifically:
 
-It works as you would expect it to:
+```ExampleRecord.update.where(_.id eqs someId).modify(_.someList $OPERATOR $args).future()```.
 
-List operators, with examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala):
-- prepend
-- prependAll
-- append
-- appendAll
-- discard
-- discardAll
-- setIdx
+List operators
+==============
 
-```scala
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList prepend someItem).future()
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList prependAll someItems).future()
+Examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala).
 
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList append someItem).future()
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList appendAll someItems).future()
+| Name                          | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| ```prepend```                 | Adds an item to the head of the list          |
+| ```prependAll```              | Adds multiple items to the head of the list   |
+| ```append```                  | Adds an item to the tail of the list          |
+| ```appendAll```               | Adds multiple items to the tail of the list   |
+| ```discard```                 | Removes the given item from the list.         |
+| ```discardAll```              | Removes all given items from the list.        |
+| ```setIdIx```                 | Updates a specific index in the list          |
 
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList discard someItem).future()
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList discardAll someItems).future()
-ExampleRecord.update.where(_.id eqs someId).modify(_.someList setIdx (0, someItem)).future()
-```
+Set operators
+=============
 
-Set operators, with examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala):
-- append
-- appendAll
-- remove
-- removeAll
+Sets have a better performance than lists, as the Cassandra documentation suggests.
+Examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala).
 
-Map operators, with examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala):
-- put
-- putAll
+| Name                          | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| ```append```                  | Adds an item to the tail of the set           |
+| ```appendAll```               | Adds multiple items to the tail of the set    |
+| ```remove ```                 | Removes the given item from the set.          |
+| ```removeAll```               | Removes all given items from the set.         |
 
+
+Map operators
+=============
+
+Both the key and value types of a Map must be Cassandra primitives.
+Examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala):
+
+| Name                          | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| ```put```                     | Adds an (key -> value) pair to the map        |
+| ```putAll```                  | Adds multiple (key -> value) pairs to the map |
 
 
 Automated schema generation
@@ -491,14 +470,16 @@ val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id )
 
 ```
 
-The full list of PartitionToken operators is:
+PartitionToken operators
+========================
 
-- eqsToken
-- gtToken
-- gteToken
-- ltToken
-- lteToken
-- in
+| Operator name      | Description                                                              |
+| ------------------ | ------------------------------------------------------------                                             |
+| eqsToken           | The "equals" operator. Will match if the objects are equal                                               |
+| gtToken            | The "greater than" operator. Will match a the record is greater than the argument                        |
+| gteToken           | The "greater than or equals" operator. Will match a the record is greater than the argument              |
+| ltToken            | The "lower than" operator. Will match a the record that is less than the argument and exists             |
+| lteToken           | The "lower than or equals" operator. Will match a the record that is less than the argument              |
 
 For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/SkipRecordsByToken.scala)
 
@@ -535,7 +516,7 @@ Compound keys
 ==============
 Phantom also supports using Compound keys out of the box. The schema can once again by auto-generated.
 
-A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the composite key: ```(id, timestamp, name)```
+A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the compound key: ```(id, timestamp, name)```
 
 ```scala
 
@@ -716,8 +697,6 @@ Maintainers and contributors
 Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
 
 - Flavian Alexandru flavian@newzly.com
-- Andreas C. Osowski andreas.osowski@newzly.com
-- Decebal Popa decebal.popa@newzly.com
 
 Pre newzly fork
 ===============
