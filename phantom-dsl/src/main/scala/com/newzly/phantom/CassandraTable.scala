@@ -119,7 +119,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   def createIndexes(): Seq[String] = {
-    secondaryKeys.map(k => s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});")
+    secondaryKeys.map(k => {
+      val query = s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});"
+      logger.info(query)
+      query
+    })
   }
 
   private[this] def isField(m: Method) = {

@@ -23,7 +23,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.4.4",
+    version := "0.4.5",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -239,6 +239,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
+      "org.scala-lang"           %  "scala-compiler"                    % "2.10.4",
       "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
