@@ -710,6 +710,8 @@ Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
 Contributions
 =============
 
+* Bartosz Jankiewicz (@bjankie1)
+
 Contributions are most welcome! 
 
 To contribute, simply submit a "Pull request" via GitHub.
