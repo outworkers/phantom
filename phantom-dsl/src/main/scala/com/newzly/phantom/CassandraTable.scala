@@ -32,10 +32,8 @@ import com.newzly.phantom.query.{
 }
 
 case class FieldHolder(name: String, metaField: AbstractColumn[_])
-
+case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
-
-  val order = new ArrayBuffer[String] with collection.mutable.SynchronizedBuffer[String]
 
   def runSafe[A](f : => A) : A = {
     Safe.runSafe(System.identityHashCode(this))(f)
@@ -77,7 +75,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
-  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
+  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
+
+  def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
   private[phantom] def clusterOrderSchema(query: String): String = {
     if (columns.count(_.isClusteringKey) == 1) {
@@ -89,6 +89,51 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
+  /**
+   * This method will define the PRIMARY_KEY of the table.
+   * <ul>
+   *   <li>
+   *    For more than one partition key, it will define a Composite Key.
+   *    Example: PRIMARY_KEY((partition_key_1, partition_key2), primary_key_1, etc..)
+   *   </li>
+   *   <li>
+   *     For a single partition key, it will define a Compound Key.
+   *     Example: PRIMARY_KEY(partition_key_1, primary_key_1, primary_key_2)
+   *   </li>
+   *   <li>
+   *     For no partition key, it will throw an exception.
+   *   </li>
+   * </ul>
+   * @return A string value representing the primary key of the table.
+   */
+  @throws(classOf[InvalidPrimaryKeyException])
+  private[phantom] def defineTableKey(): String = {
+
+    // Get the list of primary keys that are not partition keys.
+    val primaries = primaryKeys
+    val primaryString = primaryKeys.map(_.name).mkString(", ")
+
+    // Get the list of partition keys that are not primary keys
+    // This is done to avoid including the same columns twice.
+    val partitions = partitionKeys.toList
+    val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
+
+    val key = partitions match {
+      case head :: tail if !tail.isEmpty =>
+        if (primaries.isEmpty)
+          partitionString
+        else
+          s"$partitionString, $primaryString"
+      case head :: tail =>
+        if(primaries.isEmpty)
+          s"${head.name}"
+        else
+          s"${head.name}, $primaryString"
+      case Nil =>  throw InvalidPrimaryKeyException()
+    }
+    s"PRIMARY KEY ($key)"
+  }
+
   def schema(): String = {
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
@@ -98,20 +143,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
         s"$qb, ${c.name} ${c.cassandraType}"
       }
     })
-    val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(", ")
-    val pkes = {
-      primaryKeys.toList.filter(_.isPartitionKey) match {
-        case head :: tail if !tail.isEmpty => throw new Exception("only one partition key is allowed in the schema")
-        case head :: tail =>
-          if(primaryKeysString.isEmpty)
-            s"${head.name}"
-          else
-            s"${head.name}, $primaryKeysString"
-        case Nil =>  throw new Exception("please specify the partition key for the schema")
-      }
-    }
-    logger.info(s"Adding Primary keys indexes: $pkes")
-    val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
+    val tableKey = defineTableKey()
+    logger.info(s"Adding Primary keys indexes: $tableKey}")
+    val queryPrimaryKey  = if (tableKey.length > 0) s", ${defineTableKey()}" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
     val finalQuery = clusterOrderSchema(query)
@@ -126,45 +160,21 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  private[this] def isField(m: Method) = {
-    val ret = !m.isSynthetic && classOf[AbstractColumn[_]].isAssignableFrom(m.getReturnType)
-    ret
+  val instanceMirror = cm.reflect(this)
+  val selfType = instanceMirror.symbol.toType
+
+  // Collect all column definitions starting from base class
+  val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
+  selfType.baseClasses.reverse.foreach {
+    baseClass =>
+      val baseClassMembers = baseClass.typeSignature.members.sorted
+      val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
+      baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
   }
 
-  private[this] def introspect(rec: CassandraTable[T, R], methods: Array[Method])(f: (Method, AbstractColumn[_]) => Any): Unit = {
-
-    // find all the potential fields
-    val potentialFields = methods.filter(isField)
-
-    // any fields with duplicate names get put into a List
-    val fullMap = potentialFields.foldLeft[Map[String, List[Method]]](Map()) {
-      case (map, method) => val name = method.getName
-        order += method.getName
-        map + (name -> (method :: map.getOrElse(name, Nil)))
-    }
-
-    // sort each list based on having the most specific type and use that method
-    val realMeth = fullMap.values.map(_.sortWith {
-      case (a, b) => !a.getReturnType.isAssignableFrom(b.getReturnType)
-    }).map(_.head)
-
-    for (v <- realMeth) {
-      v.invoke(rec) match {
-        case mf: AbstractColumn[_]  => f(v, mf)
-        case _ =>
-      }
-    }
-
-  }
-
-  this.runSafe {
-    val tArray = new ListBuffer[FieldHolder]
-    introspect(this, this.getClass.getSuperclass.getMethods) {
-      case (v, mf) =>
-        tArray += FieldHolder(mf.name, mf)
-    }
-
-  val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
-    sorted.foreach(_columns += _.metaField)
+  columnMembers.foreach {
+    symbol =>
+      val column = instanceMirror.reflectModule(symbol.asModule).instance
+      _columns += column.asInstanceOf[AbstractColumn[_]]
   }
 }
