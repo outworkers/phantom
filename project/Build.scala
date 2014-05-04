@@ -12,11 +12,18 @@ object phantom extends Build {
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.5.0"
+  val thriftVersion = "0.8.0"
+
+  val thriftLibs = Seq(
+    "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
+  )
+  val scroogeLibs = thriftLibs ++ Seq(
+    "com.twitter" %% "scrooge-runtime" % scroogeVersion
+  )
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.5.0",
+    version := "0.4.5",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -45,7 +52,7 @@ object phantom extends Build {
      )
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply{
@@ -85,7 +92,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
@@ -145,8 +152,8 @@ object phantom extends Build {
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
-
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j"),
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4"
     )
   )
 
@@ -232,7 +239,6 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang"           %  "scala-compiler"                    % "2.10.4",
       "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
