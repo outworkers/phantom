@@ -12,18 +12,11 @@ object phantom extends Build {
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.8.0"
-
-  val thriftLibs = Seq(
-    "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
-  )
-  val scroogeLibs = thriftLibs ++ Seq(
-    "com.twitter" %% "scrooge-runtime" % scroogeVersion
-  )
+  val thriftVersion = "0.5.0"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.4.5",
+    version := "0.5.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
