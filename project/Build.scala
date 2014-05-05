@@ -4,6 +4,8 @@ import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
 
 object phantom extends Build {
 
@@ -43,7 +45,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ jacoco.settings
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -145,8 +147,7 @@ object phantom extends Build {
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j"),
-      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4"
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
     )
   )
 
@@ -232,6 +233,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
+      "org.scalacheck"           %% "scalacheck"                        % "1.11.3",
       "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(

@@ -15,9 +15,8 @@
  */
 package com.newzly.phantom
 
+import java.lang.reflect.Method
 import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
-import scala.reflect.runtime.{ universe => ru}
-import scala.reflect.runtime.{ currentMirror => cm }
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
@@ -127,21 +126,42 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  private[this] def introspect(f: (String, AbstractColumn[_]) => Any): Unit = {
-    val im = cm.reflect(this)
-    val members = im.symbol.selfType.members
-    val objectMembers = members.filter(_.isModule).map(_.asModule)
-    val metaDataMembers = objectMembers.filter(_.moduleClass.asClass.toType.<:<(ru.typeOf[AbstractColumn[_]]))
-    metaDataMembers.foreach { m =>
-      f(m.name.decoded, im.reflectModule(m).instance.asInstanceOf[AbstractColumn[_]])
+  private[this] def isField(m: Method) = {
+    val ret = !m.isSynthetic && classOf[AbstractColumn[_]].isAssignableFrom(m.getReturnType)
+    ret
+  }
+
+  private[this] def introspect(rec: CassandraTable[T, R], methods: Array[Method])(f: (Method, AbstractColumn[_]) => Any): Unit = {
+
+    // find all the potential fields
+    val potentialFields = methods.filter(isField)
+
+    // any fields with duplicate names get put into a List
+    val fullMap = potentialFields.foldLeft[Map[String, List[Method]]](Map()) {
+      case (map, method) => val name = method.getName
+        order += method.getName
+        map + (name -> (method :: map.getOrElse(name, Nil)))
     }
+
+    // sort each list based on having the most specific type and use that method
+    val realMeth = fullMap.values.map(_.sortWith {
+      case (a, b) => !a.getReturnType.isAssignableFrom(b.getReturnType)
+    }).map(_.head)
+
+    for (v <- realMeth) {
+      v.invoke(rec) match {
+        case mf: AbstractColumn[_]  => f(v, mf)
+        case _ =>
+      }
+    }
+
   }
 
   this.runSafe {
     val tArray = new ListBuffer[FieldHolder]
-    introspect {
-      case (name, ac) =>
-        tArray += FieldHolder(name, ac)
+    introspect(this, this.getClass.getSuperclass.getMethods) {
+      case (v, mf) =>
+        tArray += FieldHolder(mf.name, mf)
     }
 
   val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
