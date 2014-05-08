@@ -16,25 +16,13 @@
 package com.newzly.phantom.column
 
 import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters._
-import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.twitter.util.Try
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPrimitive](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Set[RR]](table) {
+class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPrimitive](table: CassandraTable[Owner, Record])
+    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollecitonValue[RR] {
 
-  val cassandraType = s"set<${CassandraPrimitive[RR].cassandraType}>"
-  def toCType(values: Set[RR]): AnyRef = values.map(CassandraPrimitive[RR].toCType).asJava
+  override val valuePrimitive = CassandraPrimitive[RR]
 
-  override def apply(r: Row): Set[RR] = {
-    optional(r).getOrElse(Set.empty[RR])
-  }
-
-  def optional(r: Row): Option[Set[RR]] = {
-    val i = implicitly[CassandraPrimitive[RR]]
-    Try {
-      r.getSet(name, i.cls).asScala.map(e => i.fromCType(e.asInstanceOf[AnyRef])).toSet[RR]
-    }.toOption
-  }
+  val cassandraType = s"set<${valuePrimitive.cassandraType}>"
 }
