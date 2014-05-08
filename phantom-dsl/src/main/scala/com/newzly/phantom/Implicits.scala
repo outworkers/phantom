@@ -20,8 +20,8 @@ import java.net.InetAddress
 import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.newzly.phantom.column._
-import com.newzly.phantom.query.{SelectQuery, SelectWhere, QueryCondition}
+import com.newzly.phantom.column.{ AbstractColumn, Operations }
+import com.newzly.phantom.query.{ QueryCondition, SelectQuery, SelectWhere }
 
 object Implicits extends Operations {
 

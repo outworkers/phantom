@@ -17,13 +17,19 @@ package com.newzly.phantom.column
 
 import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Ordering => TableOrdering }
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
-import com.newzly.phantom.query._
 import com.newzly.phantom.batch.BatchableStatement
-import com.newzly.phantom.query.QueryCondition
-
+import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
+import com.newzly.phantom.query.{
+  AssignmentsQuery,
+  AssignmentOptionQuery,
+  DeleteQuery,
+  DeleteWhere,
+  InsertQuery,
+  QueryCondition,
+  QueryOrdering
+}
 
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
   def asc: QueryOrdering = {

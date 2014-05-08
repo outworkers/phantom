@@ -15,9 +15,8 @@
  */
 package com.newzly.phantom
 
-import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
-import scala.reflect.runtime.{ universe => ru}
-import scala.reflect.runtime.{ currentMirror => cm }
+import scala.collection.mutable.ArrayBuffer
+import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
@@ -33,6 +32,7 @@ import com.newzly.phantom.query.{
 }
 
 case class FieldHolder(name: String, metaField: AbstractColumn[_])
+case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
@@ -80,6 +80,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
 
+  def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
+
   private[phantom] def clusterOrderSchema(query: String): String = {
     if (columns.count(_.isClusteringKey) == 1) {
       val clusteringColumn = columns.filter(_.isClusteringKey).head
@@ -88,6 +90,53 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     } else {
       query
     }
+  }
+
+  /**
+   * This method will define the PRIMARY_KEY of the table.
+   * <ul>
+   *   <li>
+   *    For more than one partition key, it will define a Composite Key.
+   *    Example: PRIMARY_KEY((partition_key_1, partition_key2), primary_key_1, etc..)
+   *   </li>
+   *   <li>
+   *     For a single partition key, it will define a Compound Key.
+   *     Example: PRIMARY_KEY(partition_key_1, primary_key_1, primary_key_2)
+   *   </li>
+   *   <li>
+   *     For no partition key, it will throw an exception.
+   *   </li>
+   * </ul>
+   * @return A string value representing the primary key of the table.
+   */
+  @throws(classOf[InvalidPrimaryKeyException])
+  private[phantom] def defineTableKey(): String = {
+
+    // Get the list of primary keys that are not partition keys.
+    val primaries = primaryKeys.filterNot(_.isPartitionKey)
+    val primaryString = primaries.map(_.name).mkString("")
+
+    // Get the list of partition keys that are not primary keys
+    // This is done to avoid including the same columns twice.
+    val partitions = primaryKeys.filter(_.isPartitionKey).toList
+
+    val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
+
+    val key = partitions match {
+      case head :: tail if !tail.isEmpty =>
+        if (primaries.isEmpty)
+          partitionString
+        else
+          s"$partitionString, $primaryString"
+      case head :: tail =>
+        if(primaries.isEmpty)
+          s"${head.name}"
+        else
+          s"${head.name}, $primaryString"
+      case Nil =>  throw InvalidPrimaryKeyException()
+    }
+
+    s"PRIMARY_KEY ($key)"
   }
 
   def schema(): String = {
@@ -99,26 +148,22 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
         s"$qb, ${c.name} ${c.cassandraType}"
       }
     })
-    val primaryKeysString = primaryKeys.filterNot(_.isPartitionKey).map(_.name).mkString(", ")
-    val pkes = {
-      primaryKeys.toList.filter(_.isPartitionKey) match {
-        case head :: tail if !tail.isEmpty => throw new Exception("only one partition key is allowed in the schema")
-        case head :: tail =>
-          if(primaryKeysString.isEmpty)
-            s"${head.name}"
-          else
-            s"${head.name}, $primaryKeysString"
-        case Nil =>  throw new Exception("please specify the partition key for the schema")
-      }
-    }
-    logger.info(s"Adding Primary keys indexes: $pkes")
-    val queryPrimaryKey  = if (pkes.length > 0) s", PRIMARY KEY ($pkes)" else ""
+    val tableKey = defineTableKey()
+    logger.info(s"Adding Primary keys indexes: $tableKey}")
+    val queryPrimaryKey  = if (tableKey.length > 0) s", ${defineTableKey()}" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
     val finalQuery = clusterOrderSchema(query)
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
+  /**
+   * This creates a sequence of string queries to execute for creating secondary indexes.
+   * The queries are then processed with table.create().
+   * As secondary indexes cannot be directly specified in the schema,
+   * for each of them a separate Cassandra query and Future will be executed.
+   * @return The sequence of secondary index creation queries.
+   */
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => {
       val query = s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});"
@@ -137,14 +182,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
-  this.runSafe {
-    val tArray = new ListBuffer[FieldHolder]
-    introspect {
-      case (name, ac) =>
-        tArray += FieldHolder(name, ac)
-    }
-
-  val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
-    sorted.foreach(_columns += _.metaField)
+  introspect {
+    case (name, ac) => _columns += ac
   }
 }

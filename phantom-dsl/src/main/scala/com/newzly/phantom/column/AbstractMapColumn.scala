@@ -1,10 +1,10 @@
 package com.newzly.phantom.column
 
-import com.datastax.driver.core.Row
-import com.newzly.phantom.CassandraTable
 import java.util.{ Map => JavaMap }
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
+import com.datastax.driver.core.Row
+import com.newzly.phantom.CassandraTable
 
 abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V](table: CassandraTable[Owner, Record])
     extends Column[Owner, Record, Map[K, V]](table) with CollectionValueDefinition[V] {

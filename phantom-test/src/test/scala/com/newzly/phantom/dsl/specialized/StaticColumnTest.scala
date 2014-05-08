@@ -1,3 +1,4 @@
+
 package com.newzly.phantom.dsl.specialized
 
 import scala.concurrent.blocking

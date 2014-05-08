@@ -1,10 +1,10 @@
 package com.newzly.phantom.column
 
-import com.datastax.driver.core.Row
-import com.newzly.phantom.CassandraTable
 import java.util.{ List => JavaList }
 import scala.collection.JavaConverters._
 import scala.util.Try
+import com.datastax.driver.core.Row
+import com.newzly.phantom.CassandraTable
 
 abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
     extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
