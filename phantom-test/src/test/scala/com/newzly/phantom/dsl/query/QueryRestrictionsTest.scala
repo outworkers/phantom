@@ -1,9 +1,9 @@
 package com.newzly.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{ParallelTestExecution, FlatSpec, Matchers}
 import com.newzly.phantom.tables._
 
-class QueryRestrictionsTest extends FlatSpec with Matchers {
+class QueryRestrictionsTest extends FlatSpec with Matchers with ParallelTestExecution {
 
   it should "not allow using a wrong type for a value method" in {
     "Primitives.insert.value(_.boolean, 5).future()" shouldNot compile
