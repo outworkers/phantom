@@ -121,9 +121,7 @@ object Recipes extends Recipes with DBConnector {
   // Enumerators, iterators and iteratees are based on Play iteratees.
   // You can keep the async behaviour or collect through the Iteratee.
   def getEntireTable: ScalaFuture[Seq[Recipe]] = {
-    select.fetchEnumerator() flatMap {
-      res => res run Iteratee.collect()
-    }
+    select.fetchEnumerator() run Iteratee.collect()
   }
 
 
@@ -131,9 +129,7 @@ object Recipes extends Recipes with DBConnector {
   // However, if you are looking to guarantee ordering and paginate "the old way"
   // You need an OrderPreservingPartitioner.
   def getRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {
-    select.fetchEnumerator() flatMap {
-      res => res run Iteratee.slice(start, limit)
-    }
+    select.fetchEnumerator() run Iteratee.slice(start, limit)
   }
 
 

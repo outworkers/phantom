@@ -41,9 +41,7 @@ class TimeSeriesTest extends BaseTest {
 
     val chain = for {
       insert <- batch.future()
-      select <- TimeSeriesTable.select.fetchEnumerator() flatMap {
-        res => res run Iteratee.chunks()
-      }
+      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
     } yield select
 
 

@@ -8,6 +8,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Primitives, Primitive, PrimitivesJoda, JodaRow }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.cassandra.BaseTest
+import scala.concurrent.Future
 
 
 class IterateeTest extends BaseTest {
@@ -26,7 +27,7 @@ class IterateeTest extends BaseTest {
       b.add(statement)
     })
 
-    val w = batch.future() flatMap (_ => PrimitivesJoda.select.setFetchSize(100).fetchEnumerator)
+    val w = batch.future() map (_ => PrimitivesJoda.select.setFetchSize(100).fetchEnumerator)
     w successful {
       en => {
         val result = en run Iteratee.collect()
@@ -58,10 +59,8 @@ class IterateeTest extends BaseTest {
         .value(_.bi, row.bi)
       b.add(statement)
     })
-    val w = for {
-      b <- batch.future()
-      all <- Primitives.select.fetchEnumerator
-    } yield all
+    val w = batch.future().map(_ => Primitives.select.fetchEnumerator)
+
     val counter: AtomicInteger = new AtomicInteger(0)
     val m = w flatMap {
       en => en run Iteratee.forEach(x => {
