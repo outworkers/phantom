@@ -15,13 +15,12 @@
  */
 package com.newzly.phantom
 
-import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
+import scala.collection.mutable.ArrayBuffer
+import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import scala.reflect.runtime.{ universe => ru }
-import scala.reflect.runtime.{ currentMirror => cm }
 import com.newzly.phantom.column.AbstractColumn
 import com.newzly.phantom.query.{
   CreateQuery,

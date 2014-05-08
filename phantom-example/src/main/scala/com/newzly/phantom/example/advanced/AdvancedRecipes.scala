@@ -2,10 +2,10 @@ package com.newzly.phantom.example.advanced
 
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
-import com.datastax.driver.core.{ResultSet, Row}
+import org.joda.time.DateTime
+import com.datastax.driver.core.{ ResultSet, Row }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.example.basics.{ DBConnector, Recipe, Recipes }
-import org.joda.time.DateTime
 
 /**
  * In this example we will create a  table storing recipes.

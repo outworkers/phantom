@@ -15,12 +15,12 @@
  */
 package com.newzly.phantom.thrift
 
+import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.column.{ AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
+import com.newzly.phantom.column.{ AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn }
 import com.twitter.scrooge.{ CompactThriftSerializer, ThriftStruct}
 import com.twitter.util.Try
-import scala.annotation.implicitNotFound
 
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {

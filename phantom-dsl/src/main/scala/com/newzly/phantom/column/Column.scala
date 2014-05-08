@@ -18,7 +18,6 @@ package com.newzly.phantom.column
 import com.datastax.driver.core.Row
 import com.newzly.phantom.CassandraTable
 
-
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
   def optional(r: Row): Option[T]
