@@ -35,10 +35,7 @@ class IterateeTakeTest extends BaseTest {
     }
 
     val traverse = Future.sequence(batch)
-    val w = for {
-      b <- traverse
-      all <- Primitives.select.fetchEnumerator
-    } yield all
+    val w = traverse.map(_ => Primitives.select.fetchEnumerator)
 
     val m = w flatMap {
       en => en run Iteratee.take(10)

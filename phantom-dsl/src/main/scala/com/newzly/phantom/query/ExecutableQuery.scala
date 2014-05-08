@@ -61,15 +61,16 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
    * @param ctx The Execution Context.
    * @return
    */
-  def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[PlayEnumerator[R]] = {
-    future() map {
+  def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext): PlayEnumerator[R] = {
+    val eventualEnum = future() map {
       resultSet => {
         Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
       }
     }
+    PlayEnumerator.flatten(eventualEnum)
   }
 
-  def enumerate()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[PlayEnumerator[R]] = {
+  private[query] def enumerate()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[PlayEnumerator[R]] = {
     execute() map {
       resultSet => {
         Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
@@ -100,7 +101,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOp
    * @return
    */
   def fetch()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Seq[R]] = {
-    fetchEnumerator flatMap(_ run Iteratee.collect())
+    fetchEnumerator run Iteratee.collect()
   }
 
   /**

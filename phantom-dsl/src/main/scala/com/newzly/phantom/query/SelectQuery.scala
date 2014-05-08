@@ -58,7 +58,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    query.fetchEnumerator flatMap(_ run PlayIteratee.head)
+    query.fetchEnumerator run PlayIteratee.head
   }
 
   /**
@@ -96,7 +96,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    */
   def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    query.fetchEnumerator flatMap(_ run PlayIteratee.head)
+    query.fetchEnumerator run PlayIteratee.head
   }
 
   /**
