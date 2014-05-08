@@ -15,13 +15,12 @@
  */
 package com.newzly.phantom.thrift
 
-import scala.collection.breakOut
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.column.{ Column, OptionalColumn }
+import com.newzly.phantom.column.{ AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
 import com.twitter.scrooge.{ CompactThriftSerializer, ThriftStruct}
 import com.twitter.util.Try
+import scala.annotation.implicitNotFound
 
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
@@ -44,6 +43,15 @@ trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
   }
 
   val primitive = implicitly[CassandraPrimitive[String]]
+}
+
+trait CollectionThriftColumnDefinition[ValueType <: ThriftStruct] extends ThriftColumnDefinition[ValueType] with CollectionValueDefinition[ValueType] {
+
+  override val valueCls: Class[_] = classOf[java.lang.String]
+
+  override def valueToCType(v: ValueType): AnyRef = itemToCType(v)
+
+  override def valueFromCType(c: AnyRef): ValueType = serializer.fromString(c.asInstanceOf[String])
 }
 
 
@@ -82,50 +90,30 @@ abstract class OptionalThriftColumn[T <: CassandraTable[T, R], R, ValueType <: T
 
 }
 
-abstract class ThriftSetColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R]) extends Column[T, R, Set[ValueType]](table) with ThriftColumnDefinition[ValueType] {
+abstract class ThriftSetColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R])
+    extends AbstractSetColumn[T, R, ValueType](table) with CollectionThriftColumnDefinition[ValueType] {
   
   override val cassandraType = "set<text>"
-
-  override def toCType(v: Set[ValueType]): AnyRef = {
-    v.map(itemToCType)(breakOut).toSeq.asJava
-  }
-
-  override def optional(r: Row): Option[Set[ValueType]] = {
-    Option(r.getSet(name, primitive.cls)).map(_.asScala.map(
-      e => serializer.fromString(primitive.fromCType(e.asInstanceOf[String]))
-    ).toSet[ValueType])
-  }
 }
 
 
-abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R]) extends Column[T, R, List[ValueType]](table) with ThriftColumnDefinition[ValueType] {
+abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R])
+    extends AbstractListColumn[T, R, ValueType](table) with CollectionThriftColumnDefinition[ValueType] {
+
   override val cassandraType = "list<text>"
-
-  override def toCType(v: List[ValueType]): AnyRef = {
-    v.map(serializer.toString)(breakOut).toList.asJava
-  }
-
-  override def optional(r: Row): Option[List[ValueType]] = {
-    Option(r.getList(name, primitive.cls)).map(_.asScala.map(
-      e => serializer.fromString(primitive.fromCType(e.asInstanceOf[String]))
-    ).toList)
-  }
 }
 
-abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : CassandraPrimitive, ValueType <: ThriftStruct](table: CassandraTable[T, R]) extends Column[T, R, Map[KeyType, ValueType]](table) with ThriftColumnDefinition[ValueType] {
+@implicitNotFound(msg = "Type ${KeyType} must be a Cassandra primitive")
+abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : CassandraPrimitive, ValueType <: ThriftStruct](table: CassandraTable[T, R])
+  extends AbstractMapColumn[T, R, KeyType, ValueType](table) with CollectionThriftColumnDefinition[ValueType] {
+
   override val cassandraType = s"map<${CassandraPrimitive[KeyType].cassandraType}, text>"
 
-  override def toCType(v: Map[KeyType, ValueType]): AnyRef = {
-    mapAsJavaMapConverter(v.map {
-      case (key, value) => CassandraPrimitive[KeyType].toCType(key) -> primitive.toCType(serializer.toString(value))
-    }).asJava
-  }
+  val keyPrimitive = CassandraPrimitive[KeyType]
 
-  def optional(r: Row): Option[Map[KeyType, ValueType]] = {
-    val ki = implicitly[CassandraPrimitive[KeyType]]
-    Option(r.getMap(name, ki.cls, primitive.cls)).map(_.asScala.map {
-      case (k, v) =>
-        ki.fromCType(k.asInstanceOf[AnyRef]) -> serializer.fromString(primitive.fromCType(v.asInstanceOf[AnyRef]))
-    }(breakOut) toMap)
-  }
+  override def keyCls: Class[_] = keyPrimitive.cls
+
+  override def keyToCType(v: KeyType): AnyRef = keyPrimitive.toCType(v)
+
+  override def keyFromCType(c: AnyRef): KeyType = keyPrimitive.fromCType(c)
 }
