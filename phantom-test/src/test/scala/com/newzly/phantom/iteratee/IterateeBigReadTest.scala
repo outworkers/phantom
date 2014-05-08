@@ -11,9 +11,9 @@ class IterateeBigReadTest extends BigTest with ScalaFutures {
 
   it should "read the records found in the table" in {
     val counter: AtomicLong = new AtomicLong(0)
-    val result = PrimitivesJoda.select.fetchEnumerator  flatMap (_ run Iteratee.forEach {
+    val result = PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach {
       r => counter.incrementAndGet()
-    })
+    }
 
     result.successful {
       query => {
