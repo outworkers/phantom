@@ -184,8 +184,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   introspect {
-    case (name, ac) =>
-      Console.println(name)
-      _columns += ac
+    case (name, ac) => _columns += ac
   }
 }
