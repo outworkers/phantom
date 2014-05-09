@@ -1,0 +1,30 @@
+package com.newzly.phantom.scalatra.server
+
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.DefaultServlet
+import org.eclipse.jetty.webapp.WebAppContext
+import org.scalatra.servlet.ScalatraListener
+
+object JettyLauncher {
+  lazy val port = if (System.getenv("PORT") != null) System.getenv("PORT") else "8080"
+
+  private[this] var started = false
+
+  def startEmbeddedJetty() {
+    if (!started) {
+      started = true
+
+      val server = new Server(port.toInt)
+      val context = new WebAppContext()
+      context setContextPath "/"
+      context.setResourceBase("src/main/webapp")
+      context.setInitParameter(ScalatraListener.LifeCycleKey, "com.newzly.phantom.scalatra.server.ScalatraBootstrap")
+      context.addEventListener(new ScalatraListener)
+      context.addServlet(classOf[DefaultServlet], "/")
+
+      server.setHandler(context)
+
+      server.start()
+    }
+  }
+}
