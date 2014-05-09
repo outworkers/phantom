@@ -44,7 +44,8 @@ object phantom extends Build {
       "-deprecation",
       "-feature",
       "-unchecked"
-     )
+     ),
+     libraryDependencies <+= scalaVersion(v => "org.scala-lang" % "scala-reflect" % v)
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ jacoco.settings
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(

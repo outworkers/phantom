@@ -5,7 +5,17 @@ import com.newzly.phantom.tables._
 
 class CreateTableQueryString extends FlatSpec {
 
-  ignore should "create the right keys" in {
+  it should "create valid keys for Prices" in {
+    val eqPrices = EquityPrices.schema()
+    println(eqPrices)
+    assert(eqPrices.contains("PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t)"))
+
+    val optPrices = OptionPrices.schema()
+    println(optPrices)
+    assert(optPrices.contains("PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t, strikePrice)"))
+  }
+
+  it should "create the right keys" in {
     val q = TwoKeys.schema()
 
     assert(q.contains("PRIMARY KEY (pkey, " +
@@ -19,7 +29,7 @@ class CreateTableQueryString extends FlatSpec {
       ")"))
   }
 
-  ignore should "get the right query in primitives table" in {
+  it should "get the right query in primitives table" in {
     assert(Primitives.tableName === "Primitives")
     val q = Primitives.schema()
 

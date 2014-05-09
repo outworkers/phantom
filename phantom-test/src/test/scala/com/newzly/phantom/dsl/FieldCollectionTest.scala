@@ -1,7 +1,5 @@
 package com.newzly.phantom.dsl
 
-import org.scalacheck.Properties
-import org.scalacheck.Prop.forAll
 import org.scalatest.{ FlatSpec, Matchers }
 import com.newzly.phantom.tables.{ Articles, Primitives }
 
