@@ -711,6 +711,7 @@ Contributions
 =============
 
 * Bartosz Jankiewicz (@bjankie1)
+* Eugene Zhulenev (@ezhulenev)
 
 Contributions are most welcome! 
 
