@@ -15,8 +15,9 @@
  */
 package com.newzly.phantom
 
-import scala.collection.mutable.ArrayBuffer
-import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
+import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
+import scala.reflect.runtime.{ universe => ru}
+import scala.reflect.runtime.{ currentMirror => cm }
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
@@ -33,7 +34,6 @@ import com.newzly.phantom.query.{
 
 case class FieldHolder(name: String, metaField: AbstractColumn[_])
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
-
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
   val order = new ArrayBuffer[String] with collection.mutable.SynchronizedBuffer[String]
@@ -78,7 +78,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
-  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary)
+  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
 
   def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
@@ -118,8 +118,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
     // Get the list of partition keys that are not primary keys
     // This is done to avoid including the same columns twice.
-    val partitions = primaryKeys.filter(_.isPartitionKey).toList
-
+    val partitions = partitionKeys.toList
     val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
 
     val key = partitions match {
@@ -157,13 +156,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
-  /**
-   * This creates a sequence of string queries to execute for creating secondary indexes.
-   * The queries are then processed with table.create().
-   * As secondary indexes cannot be directly specified in the schema,
-   * for each of them a separate Cassandra query and Future will be executed.
-   * @return The sequence of secondary index creation queries.
-   */
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => {
       val query = s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});"
@@ -182,7 +174,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
-  introspect {
-    case (name, ac) => _columns += ac
+  this.runSafe {
+    val tArray = new ListBuffer[FieldHolder]
+    introspect {
+      case (name, ac) =>
+        tArray += FieldHolder(name, ac)
+    }
+
+    val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
+    sorted.foreach(_columns += _.metaField)
   }
 }
