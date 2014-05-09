@@ -67,8 +67,8 @@ object phantom extends Build {
       <url>https://github.com/newzly.phantom</url>
         <licenses>
           <license>
-            <name>BSD-style</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
@@ -147,6 +147,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     libraryDependencies ++= Seq(
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
       "com.twitter"                  %% "util-core"                         % finagleVersion,
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",

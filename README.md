@@ -697,6 +697,9 @@ Maintainers and contributors
 Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
 
 - Flavian Alexandru flavian@newzly.com
+- Bartosz Jankiewicz (@bjankie1)
+- Viktor Taranenko (viktortnk)
+- Eugene Zhulenev (ezhulenev)
 
 Pre newzly fork
 ===============
@@ -710,7 +713,6 @@ Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
 Contributions
 =============
 
-* Bartosz Jankiewicz (@bjankie1)
 
 Contributions are most welcome! 
 

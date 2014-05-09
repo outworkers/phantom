@@ -16,15 +16,20 @@
 package com.newzly.phantom.column
 
 import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Ordering => TableOrdering }
+import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
-import com.newzly.phantom.query._
 import com.newzly.phantom.batch.BatchableStatement
-import com.newzly.phantom.query.QueryCondition
-
+import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
+import com.newzly.phantom.query.{
+  AssignmentsQuery,
+  AssignmentOptionQuery,
+  DeleteQuery,
+  DeleteWhere,
+  InsertQuery,
+  QueryCondition,
+  QueryOrdering
+}
 
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
   def asc: QueryOrdering = {
@@ -110,32 +115,29 @@ sealed trait CollectionOperators {
     def decrement(value: Long = 1L): Assignment = QueryBuilder.decr(col.name, value)
   }
 
-  implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: ListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
+  implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
 
-    def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, CassandraPrimitive[RR].toCType(value))
-    def prependAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.prependAll(col.name, values.map(CassandraPrimitive[RR].toCType).toList.asJava)
-    def append(value: RR): Assignment = QueryBuilder.append(col.name, CassandraPrimitive[RR].toCType(value))
-    def appendAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.appendAll(col.name, values.map(CassandraPrimitive[RR].toCType).toList.asJava)
-    def discard(value: RR): Assignment = QueryBuilder.discard(col.name, CassandraPrimitive[RR].toCType(value))
-    def discardAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.discardAll(col.name, values.map(CassandraPrimitive[RR].toCType).asJava)
-    def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, CassandraPrimitive[RR].toCType(value))
+    def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, col.valueToCType(value))
+    def prependAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.prependAll(col.name, col.valuesToCType(values))
+    def append(value: RR): Assignment = QueryBuilder.append(col.name, col.valueToCType(value))
+    def appendAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.appendAll(col.name, col.valuesToCType(values))
+    def discard(value: RR): Assignment = QueryBuilder.discard(col.name, col.valueToCType(value))
+    def discardAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.discardAll(col.name, col.valuesToCType(values))
+    def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, col.valueToCType(value))
   }
 
-  implicit class SetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](col: SetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
+  implicit class SetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractSetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
 
-    def add(value: RR): Assignment = QueryBuilder.add(col.name, CassandraPrimitive[RR].toCType(value))
-    def addAll(values: Set[RR]): Assignment = QueryBuilder.addAll(col.name, values.map(CassandraPrimitive[RR].toCType).toSet.asJava)
-    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, CassandraPrimitive[RR].toCType(value))
-    def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, values.map(CassandraPrimitive[RR].toCType).toSet.asJava)
+    def add(value: RR): Assignment = QueryBuilder.add(col.name, col.valueToCType(value))
+    def addAll(values: Set[RR]): Assignment = QueryBuilder.addAll(col.name, col.valuesToCType(values))
+    def remove(value: RR): Assignment = QueryBuilder.remove(col.name, col.valueToCType(value))
+    def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, col.valuesToCType(values))
   }
 
-  implicit class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A: CassandraPrimitive, B: CassandraPrimitive](col: MapColumn[Owner, Record, A, B]) extends ModifyColumn[Map[A, B]](col) {
+  implicit class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A, B](col: AbstractMapColumn[Owner, Record, A, B]) extends ModifyColumn[Map[A, B]](col) {
 
-    def put(value: (A, B)): Assignment = QueryBuilder.put(col.name, CassandraPrimitive[A].toCType(value._1), CassandraPrimitive[B].toCType(value._2))
-    def putAll[L <% Traversable[(A, B)]](values: L): Assignment = {
-      val map = values.map({ case (k, v) => CassandraPrimitive[A].toCType(k) -> CassandraPrimitive[B].toCType(v) }).toMap.asJava
-      QueryBuilder.putAll(col.name, map)
-    }
+    def put(value: (A, B)): Assignment = QueryBuilder.put(col.name, col.keyToCType(value._1), col.valueToCType(value._2))
+    def putAll[L <% Traversable[(A, B)]](values: L): Assignment = QueryBuilder.putAll(col.name, col.valuesToCType(values))
   }
 }
 
