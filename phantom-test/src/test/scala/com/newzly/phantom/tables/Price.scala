@@ -70,6 +70,15 @@ object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPr
     new DateTime(),
     BigDecimal(Sampler.getARandomInteger())
   )
+
+  def insertPrice(price: EquityPrice) =
+    insert.
+      value(_.instrumentId, price.instrumentId).
+      value(_.tradeDate, price.tradeDate.toDate).
+      value(_.exchangeCode, price.exchangeCode).
+      value(_.t, price.t).
+      value(_.value, price.value)
+
 }
 
 object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] {
@@ -83,4 +92,13 @@ object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPr
     BigDecimal(Sampler.getARandomInteger()),
     BigDecimal(Sampler.getARandomInteger())
   )
+
+  def insertPrice(price: OptionPrice) =
+    insert.
+      value(_.instrumentId, price.instrumentId).
+      value(_.tradeDate, price.tradeDate.toDate).
+      value(_.exchangeCode, price.exchangeCode).
+      value(_.t, price.t).
+      value(_.strikePrice, price.strikePrice).
+      value(_.value, price.value)
 }
