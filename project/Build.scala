@@ -101,8 +101,8 @@ object phantom extends Build {
       pomExtra := <url>https://github.com/newzly.phantom</url>
         <licenses>
           <license>
-            <name>BSD-style</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
+            <name>Apache V2 License</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
