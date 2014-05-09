@@ -16,8 +16,8 @@
 package com.newzly.phantom
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.runtime.{ universe => ru}
-import scala.reflect.runtime.{ currentMirror => cm }
+import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
+import scala.reflect.runtime.universe.Symbol
 import scala.util.Try
 import org.slf4j.LoggerFactory
 import com.datastax.driver.core.Row
@@ -35,8 +35,6 @@ import com.newzly.phantom.query.{
 case class FieldHolder(name: String, metaField: AbstractColumn[_])
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
-
-  val order = new ArrayBuffer[String] with collection.mutable.SynchronizedBuffer[String]
 
   def runSafe[A](f : => A) : A = {
     Safe.runSafe(System.identityHashCode(this))(f)
@@ -164,21 +162,24 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  private[this] def introspect(f: (String, AbstractColumn[_]) => Any): Unit = {
-    val im = cm.reflect(this)
-    val members = im.symbol.selfType.members
-    val objectMembers = members.filter(_.isModule).map(_.asModule)
-    val metaDataMembers = objectMembers.filter(_.moduleClass.asClass.toType.<:<(ru.typeOf[AbstractColumn[_]]))
-    metaDataMembers.foreach { m =>
-      f(m.name.decoded, im.reflectModule(m).instance.asInstanceOf[AbstractColumn[_]])
-    }
-  }
-
   this.runSafe {
-    introspect {
-      case (name, ac) => {
-        _columns += ac
-      }
+    val instanceMirror = cm.reflect(this)
+
+    val selfType = instanceMirror.symbol.toType
+
+    // Collect all column definitions starting from base class
+    val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
+    selfType.baseClasses.reverse.foreach {
+      baseClass =>
+        val baseClassMembers = baseClass.typeSignature.members.sorted
+        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
+        baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
+    }
+
+    columnMembers.foreach {
+      symbol =>
+        val column = instanceMirror.reflectModule(symbol.asModule).instance
+        _columns += column.asInstanceOf[AbstractColumn[_]]
     }
   }
 }

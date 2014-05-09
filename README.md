@@ -713,6 +713,8 @@ Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
 Contributions
 =============
 
+* Bartosz Jankiewicz (@bjankie1)
+* Eugene Zhulenev (@ezhulenev)
 
 Contributions are most welcome! 
 
