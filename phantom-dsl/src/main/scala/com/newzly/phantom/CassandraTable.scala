@@ -15,7 +15,7 @@
  */
 package com.newzly.phantom
 
-import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.runtime.{ universe => ru}
 import scala.reflect.runtime.{ currentMirror => cm }
 import scala.util.Try
@@ -175,13 +175,10 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   this.runSafe {
-    val tArray = new ListBuffer[FieldHolder]
     introspect {
-      case (name, ac) =>
-        tArray += FieldHolder(name, ac)
+      case (name, ac) => {
+        _columns += ac
+      }
     }
-
-    val sorted = tArray.sortWith((field1, field2) => order.indexWhere(field1.name == _ ) < order.indexWhere(field2.name == _ ))
-    sorted.foreach(_columns += _.metaField)
   }
 }
