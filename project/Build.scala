@@ -4,6 +4,8 @@ import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
 
 object phantom extends Build {
 
@@ -13,11 +15,13 @@ object phantom extends Build {
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
   val thriftVersion = "0.5.0"
+  val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
     version := "0.5.0",
     scalaVersion := "2.10.4",
+    shellPrompt := ShellPrompt.buildShellPrompt,
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -42,10 +46,11 @@ object phantom extends Build {
       "-deprecation",
       "-feature",
       "-unchecked"
-     )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+     ),
+     libraryDependencies <+= scalaVersion(v => "org.scala-lang" % "scala-reflect" % v)
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ jacoco.settings
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply{
@@ -85,7 +90,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
@@ -128,7 +133,8 @@ object phantom extends Build {
     phantomDsl,
     phantomExample,
     phantomThrift,
-    phantomTest
+    phantomTest,
+    phantomScalatraTest
   )
 
   lazy val phantomDsl = Project(
@@ -146,7 +152,6 @@ object phantom extends Build {
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
-
     )
   )
 
@@ -232,7 +237,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang"           %  "scala-compiler"                    % "2.10.4",
+      "org.scalacheck"           %% "scalacheck"                        % "1.11.3",
       "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
@@ -240,4 +245,65 @@ object phantom extends Build {
     phantomCassandraUnit,
     phantomThrift
   )
+
+
+  lazy val phantomScalatraTest = Project(
+    id = "phantom-scalatra-test",
+    base = file("phantom-scalatra-test"),
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings
+  ).settings(
+      name := "phantom-scalatra-test",
+      fork := true,
+      fork in Test := true,
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      )
+    ).settings(
+      libraryDependencies ++= Seq(
+        "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+        "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
+        "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+        "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
+        "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
+        "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
+        "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+        "com.newzly"               %% "util-testing"                      % newzlyUtilVersion      % "provided"
+      )
+    ).dependsOn(
+      phantomDsl,
+      phantomCassandraUnit,
+      phantomThrift,
+      phantomTest % "compile->compile;test->test"
+    )
+
+}
+
+object ShellPrompt {
+  object devnull extends ProcessLogger {
+    def info (s: => String) {}
+    def error (s: => String) {}
+    def buffer[T] (f: => T): T = f
+  }
+
+  val current = """\*\s+([\w-/]+)""".r
+
+  def gitBranches = "git branch --no-color" lines_! devnull mkString
+
+  val buildShellPrompt = {
+    (state: State) => {
+      val currBranch =
+        current findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-"
+      val currProject = Project.extract (state).currentProject.id
+      "%s:%s> ".format (
+        currProject, currBranch
+      )
+    }
+  }
 }
