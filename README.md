@@ -9,8 +9,8 @@ Using phantom
 The current version is: ```val phantomVersion = 0.6.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
-Table of contents
-=================
+<a id="table-of-contents">Table of contents</a>
+===============================================
 
 <ol>
     <li><a href="#issues-and-questions">Issues and questions</a></li>
@@ -91,8 +91,8 @@ Table of contents
 </ol>
 
 
-<a id="issues-and-questions">Issues and questions</a>
-=====================================================
+<a id="issues-and-questions">Issues and questions</a><a href="#table-of-contents">back to top</a>
+==================================================================================================
 
 We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
 Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
