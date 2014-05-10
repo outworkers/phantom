@@ -6,11 +6,93 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.5.0```.
+The current version is: ```val phantomVersion = 0.6.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
-Issues and questions
-====================
+Table of contents
+=================
+
+<ol>
+    <li><a href="#issues-and-questions">Issues and questions</a></li>
+    <li><a href="#integrating-phantom">Integrating phantom in your project</a></li>
+    <li>
+        <p>phantom columns</p>
+        <ul>
+            <li>Primitive columns</li>
+            <li>Optional primitive columns</li>
+            <li>Collection columns</li>
+            <li>Special columns</li>
+            <li>Using special columns</li>
+            <li>Thrift columns</li>
+        </ul>
+    </li>
+    <li>Data modeling with phantom</li>
+    <li>
+        <p>Querying with phantom</p>
+        <ul>
+            <li>SELECT queries</li>
+            <li>Partial SELECT queries</li>
+            <li>WHERE and AND clause operators</li>
+            <li>INSERT queries</li>
+            <li>UPDATE queries</li>
+            <li>DELETE queries</li>
+            <li>TRUNCATE queries</li>
+            <li>CREATE queries</li>
+            <li>ALTER queries</li>
+        </ul>
+    </li>
+    <li>
+        <p>Basic query examples</p>
+        <ul>
+            <li>Using Scala Futures to query</li>
+            <li>Examples with Scala Futures</li>
+            <li>Using Twitter Futures to query</li>
+            <li>Examples with Twitter Futures</li>
+        </ul>
+    </li>
+    <li>
+        <p>Collection operators</p>
+        <ul>
+            <li>List operators</li>
+            <li>Set operators</li>
+            <li>Map operators</li>
+        </ul>
+    </li>
+    <li>Automated schema generation</li>
+    <li>
+        <p>Cassandra indexing</p>
+        <ul>
+            <li>Using partition tokens</li>
+            <li>Partition token operators</li>
+            <li>Compound Keys</li>
+            <li>Composite Keys</li>
+            <li>Cassandra Time Series and ClusteringOrder</li>
+            <li>Secondary Keys</li>
+        </ul>
+    </li>
+    <li>Asynchronous iterators</li>
+    <li>
+        <p>Batch statements</p>
+        <ul>
+            <li>LOGGED Batch statements</li>
+            <li>COUNTER Batch statements</li>
+            <li>UNLOGGED Batch statements</li>
+        </ul>
+    </li>
+    <li>Contributors</li>
+    <li>
+        <p>Contributing to phantom</p>
+        <ul>
+            <li>Using GitFlow as a branching model</li>
+            <li>Scala style guidelines for contributions</li>
+            <li>Using the testing utilities to write tests</li>
+        </ul>
+    <li>Copyright</li>
+</ol>
+
+
+<a id="issues-and-questions">Issues and questions</a>
+=====================================================
 
 We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
 Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
@@ -25,8 +107,8 @@ We are very happy to help implement missing features in phantom, answer question
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
-Integrating phantom in your project
-===================================
+<a id="integrating-phantom">Integrating phantom in your project</a>
+===================================================================
 
 For most things, all you need is ```phantom-dsl```. Read through for information on other modules.
 
@@ -44,6 +126,7 @@ libraryDependencies ++= Seq(
   "com.newzly"  %% "phantom-cassandra-unit"        % phantomVersion,
   "com.newzly"  %% "phantom-example"               % phantomVersion,
   "com.newzly"  %% "phantom-thrift"                % phantomVersion,
+  "com.newzly"  %% "phantom-scalatra-test"         % phantomVersion,
   "com.newzly"  %% "phantom-test"                  % phantomVersion
 )
 ```
@@ -319,17 +402,6 @@ ExampleRecord.select.fetchEnumerator // when you need an Enumerator
 ExampleRecord.select.fetch // When you want to fetch a Seq[Record]
 ```
 
-Twitter Futures
-=============
-
-```scala
-ExampleRecord.select.get() // When you only want to select one record
-ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").execute() // When you don't care about the return type.
-ExampleRecord.select.enumerate // when you need an Enumerator
-ExampleRecord.select.collect // When you want to fetch a Seq[Record]
-```
-
-
 More examples with Scala Futures
 ================================
 
@@ -353,6 +425,16 @@ object ExampleRecord extends ExampleRecord {
     ExampleRecord.select.where(_.name eqs name).and(_.id eqs someId).one()
   }
 }
+```
+
+Twitter Futures
+=============
+
+```scala
+ExampleRecord.select.get() // When you only want to select one record
+ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").execute() // When you don't care about the return type.
+ExampleRecord.select.enumerate // when you need an Enumerator
+ExampleRecord.select.collect // When you want to fetch a Seq[Record]
 ```
 
 More examples with Twitter Futures
@@ -694,29 +776,24 @@ test
 Maintainers and contributors
 ============================
 
-Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
+Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through phantom.
 
-- Flavian Alexandru flavian@newzly.com
-- Bartosz Jankiewicz (@bjankie1)
-- Viktor Taranenko (viktortnk)
-- Eugene Zhulenev (ezhulenev)
-
-Pre newzly fork
-===============
-Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
-
-Copyright
-=========
-Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
-
-
-Contributions
-=============
-
+* Flavian Alexandru flavian@newzly.com(maintainer)
+* Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
 
-Contributions are most welcome! 
+Copyright
+=========
+Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
+
+Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
+
+
+Contributing to phantom
+=======================
+
+Contributions are most welcome!
 
 To contribute, simply submit a "Pull request" via GitHub.
 

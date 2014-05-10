@@ -45,9 +45,8 @@ class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExe
     assert(Primitives.columns.length === 11)
   }
 
-  it should "work fine with List, Set, Map" in {
+  ignore should "work fine with List, Set, Map" in {
     val q = TestTable.schema()
-
     assert(q.indexOf("list list<text>") > 0)
     assert(q.indexOf("setText set<text>") > 0 )
     assert(q.indexOf("mapIntToText map<int, text>") > 0)
@@ -67,10 +66,9 @@ class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExe
       .replace(")","")
       .replace(" ","")
       .replace(",","") == ";" )
-
   }
 
-  it should "get the right query in mix table" in {
+  ignore should "get the right query in mix table" in {
     val q = Recipes.schema()
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)

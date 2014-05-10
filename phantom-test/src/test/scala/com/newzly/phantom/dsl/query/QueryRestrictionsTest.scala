@@ -71,7 +71,10 @@ class QueryRestrictionsTest extends FlatSpec with Matchers with ParallelTestExec
   it should "not allow using Select queries in a batch" in {
     "BatchStatement().add(Primitives.select)" shouldNot compile
   }
+  it should "not allow using a primary key in a conditional clause" in {
+    """Recipes.update.where(_.url eqs "someUrl").modify(_.name setTo "test").onlyIf(_.id eqs secondary)""" shouldNot compile
 
+  }
   it should "not allow using SelectWhere queries in a batch" in {
     "BatchStatement().add(Primitives.select.where(_.pkey eqs Sampler.getARandomString))" shouldNot compile
   }

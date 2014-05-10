@@ -40,9 +40,8 @@ class QuerySerializationTest extends BaseTest {
 
   it should "serialize a condition query to a query condition" in {
     val someId = UUIDs.timeBased()
-    val secondary = UUIDs.timeBased()
-    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.id eqs secondary).qb.toString
-    query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF id=$secondary;"
+    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").qb.toString
+    query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF name='update';"
   }
 
   it should "correctly serialize a 2 column partial select query" in {
