@@ -71,6 +71,7 @@ class IterateeTest extends BaseTest {
         .value(_.bi, row.bi)
       b.add(statement)
     })
+
     val w = batch.future().map(_ => Primitives.select.fetchEnumerator)
 
     val counter: AtomicInteger = new AtomicInteger(0)

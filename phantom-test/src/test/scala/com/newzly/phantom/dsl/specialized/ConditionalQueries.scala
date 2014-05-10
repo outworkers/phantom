@@ -62,6 +62,57 @@ class ConditionalQueries extends BaseTest {
     }
   }
 
+
+  it should "throw an InvalidQueryException when a primary key is used in a conditional clause" in {
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val updated = Some(Sampler.getARandomString)
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val chain = for {
+      insert <- insert
+      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.description setTo updated).onlyIf(_.url eqs recipe.url).future()
+      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+    } yield (select1, select2)
+
+    chain.failing[InvalidQueryException]
+  }
+
+  it should "throw an InvalidQueryException when a primary key is used in a conditional clause with Twitter Futures" in {
+
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val updated = Some(Sampler.getARandomString)
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val chain = for {
+      insert <- insert
+      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.description setTo updated).onlyIf(_.url eqs recipe.url).execute()
+      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+    } yield (select1, select2)
+
+    chain.failing[InvalidQueryException]
+  }
+
   it should "update the record if the optional column based condition matches with Twitter Futures" in {
 
     val recipe = Recipe.sample
