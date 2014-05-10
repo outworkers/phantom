@@ -39,7 +39,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
     import ScalatraBootstrap._
 
     val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
-    val prices = request.map(json => json.extract[Seq[EquityPrice]]), 10.seconds
+    val prices = request.map(json => json.extract[Seq[EquityPrice]])
 
     prices.successful {
       res => {
