@@ -100,6 +100,22 @@ class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR]
 
 class QueryColumn[RR : CassandraPrimitive](col: AbstractColumn[RR]) extends AbstractQueryColumn[RR](col)
 
+class ConditionalOperations[T](val col: AbstractColumn[T]) {
+
+  /**
+   * The equals operator. Will return a match if the value equals the database value.
+   * @param value The value to search for in the database.
+   * @return A QueryCondition, wrapping a QueryBuilder clause.
+   */
+  def eqs(value: T): QueryCondition = {
+    QueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
+  }
+}
+
+sealed trait ConditionalOperators extends LowPriorityImplicits {
+  final implicit def columnToConditionalUpdateColumn[T](col: AbstractColumn[T]): ConditionalOperations[T] = new ConditionalOperations(col)
+}
+
 sealed trait BatchRestrictions {
   implicit def insertQueryIsBatchable[T <: CassandraTable[T, R], R](query: InsertQuery[T, R]): BatchableStatement = new BatchableStatement(query)
   implicit def assignmentsQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentsQuery[T, R]): BatchableStatement = new BatchableStatement(query)
@@ -203,4 +219,4 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   }
 }
 
-private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with OrderingOperators with IndexRestrictions with BatchRestrictions {}
+private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with OrderingOperators with IndexRestrictions with BatchRestrictions with ConditionalOperators {}
