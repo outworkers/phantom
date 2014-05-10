@@ -12,7 +12,7 @@ object JettyLauncher {
   private[this] val started = new AtomicBoolean(false)
 
   def startEmbeddedJetty() {
-    if (!started.compareAndSet(false, true)) {
+    if (started.compareAndSet(false, true)) {
       val server = new Server(port.toInt)
       val context = new WebAppContext()
       context setContextPath "/"
@@ -22,7 +22,6 @@ object JettyLauncher {
       context.addServlet(classOf[DefaultServlet], "/")
 
       server.setHandler(context)
-
       server.start()
     }
   }

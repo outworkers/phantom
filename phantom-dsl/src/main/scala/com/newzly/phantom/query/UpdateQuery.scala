@@ -22,7 +22,7 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
   extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) with ExecutableStatement {
 
 
-  def onlyIf[RR](condition: T => QueryCondition): ConditionalUpdateQuery[T, R] = {
+  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
   }
 
@@ -60,7 +60,7 @@ class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
   extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) {
 
-  def onlyIf[RR](condition: T => QueryCondition): ConditionalUpdateQuery[T, R] = {
+  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
   }
 
@@ -91,7 +91,7 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
   }
 
-  def onlyIf[RR](condition: T => QueryCondition): ConditionalUpdateQuery[T, R] = {
+  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
   }
 

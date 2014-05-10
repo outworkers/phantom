@@ -28,7 +28,8 @@ import com.newzly.phantom.query.{
   DeleteWhere,
   InsertQuery,
   QueryCondition,
-  QueryOrdering
+  QueryOrdering,
+  SecondaryQueryCondition
 }
 
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
@@ -107,8 +108,8 @@ class ConditionalOperations[T](val col: AbstractColumn[T]) {
    * @param value The value to search for in the database.
    * @return A QueryCondition, wrapping a QueryBuilder clause.
    */
-  def eqs(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
+  def eqs(value: T): SecondaryQueryCondition = {
+    SecondaryQueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
   }
 }
 
