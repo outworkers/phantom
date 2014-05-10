@@ -133,7 +133,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       case Nil =>  throw InvalidPrimaryKeyException()
     }
 
-    s"PRIMARY_KEY ($key)"
+    s"PRIMARY KEY ($key)"
   }
 
   def schema(): String = {
@@ -162,24 +162,21 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  this.runSafe {
-    val instanceMirror = cm.reflect(this)
+  val instanceMirror = cm.reflect(this)
+  val selfType = instanceMirror.symbol.toType
 
-    val selfType = instanceMirror.symbol.toType
+  // Collect all column definitions starting from base class
+  val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
+  selfType.baseClasses.reverse.foreach {
+    baseClass =>
+      val baseClassMembers = baseClass.typeSignature.members.sorted
+      val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
+      baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
+  }
 
-    // Collect all column definitions starting from base class
-    val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
-    selfType.baseClasses.reverse.foreach {
-      baseClass =>
-        val baseClassMembers = baseClass.typeSignature.members.sorted
-        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
-        baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
-    }
-
-    columnMembers.foreach {
-      symbol =>
-        val column = instanceMirror.reflectModule(symbol.asModule).instance
-        _columns += column.asInstanceOf[AbstractColumn[_]]
-    }
+  columnMembers.foreach {
+    symbol =>
+      val column = instanceMirror.reflectModule(symbol.asModule).instance
+      _columns += column.asInstanceOf[AbstractColumn[_]]
   }
 }

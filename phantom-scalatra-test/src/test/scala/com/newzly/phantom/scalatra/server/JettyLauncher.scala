@@ -1,5 +1,6 @@
 package com.newzly.phantom.scalatra.server
 
+import java.util.concurrent.atomic.AtomicBoolean
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.webapp.WebAppContext
@@ -8,12 +9,10 @@ import org.scalatra.servlet.ScalatraListener
 object JettyLauncher {
   lazy val port = if (System.getenv("PORT") != null) System.getenv("PORT") else "8080"
 
-  private[this] var started = false
+  private[this] val started = new AtomicBoolean(false)
 
   def startEmbeddedJetty() {
-    if (!started) {
-      started = true
-
+    if (!started.compareAndSet(false, true)) {
       val server = new Server(port.toInt)
       val context = new WebAppContext()
       context setContextPath "/"

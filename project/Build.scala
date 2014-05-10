@@ -21,7 +21,6 @@ object phantom extends Build {
     organization := "com.newzly",
     version := "0.5.0",
     scalaVersion := "2.10.4",
-    shellPrompt := ShellPrompt.buildShellPrompt,
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -264,6 +263,7 @@ object phantom extends Build {
       )
     ).settings(
       libraryDependencies ++= Seq(
+        "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
         "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
         "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
         "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
@@ -283,27 +283,4 @@ object phantom extends Build {
       phantomTest % "compile->compile;test->test"
     )
 
-}
-
-object ShellPrompt {
-  object devnull extends ProcessLogger {
-    def info (s: => String) {}
-    def error (s: => String) {}
-    def buffer[T] (f: => T): T = f
-  }
-
-  val current = """\*\s+([\w-/]+)""".r
-
-  def gitBranches = "git branch --no-color" lines_! devnull mkString
-
-  val buildShellPrompt = {
-    (state: State) => {
-      val currBranch =
-        current findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-"
-      val currProject = Project.extract (state).currentProject.id
-      "%s:%s> ".format (
-        currProject, currBranch
-      )
-    }
-  }
 }

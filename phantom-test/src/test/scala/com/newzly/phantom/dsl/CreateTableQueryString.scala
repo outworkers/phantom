@@ -1,18 +1,24 @@
 package com.newzly.phantom.dsl
 
-import org.scalatest.FlatSpec
-import com.newzly.phantom.tables._
+import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import com.newzly.phantom.tables.{
+  EquityPrices,
+  OptionPrices,
+  Primitives,
+  Recipes,
+  TestTable,
+  TwoKeys
+}
 
-class CreateTableQueryString extends FlatSpec {
+class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExecution {
 
-  it should "create valid keys for Prices" in {
-    val eqPrices = EquityPrices.schema()
-    println(eqPrices)
-    assert(eqPrices.contains("PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t)"))
+  it should "create the correct table key for EquityPrices table" in {
+    Console.println(EquityPrices.defineTableKey())
+    EquityPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t)"
+  }
 
-    val optPrices = OptionPrices.schema()
-    println(optPrices)
-    assert(optPrices.contains("PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t, strikePrice)"))
+  it should "create the correct table key for OptionPrices table" in {
+    OptionPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t, strikePrice)"
   }
 
   it should "create the right keys" in {
@@ -30,9 +36,7 @@ class CreateTableQueryString extends FlatSpec {
   }
 
   it should "get the right query in primitives table" in {
-    assert(Primitives.tableName === "Primitives")
     val q = Primitives.schema()
-
     val manual = s"CREATE TABLE ${Primitives.tableName}} " +
         "( pkey int, " +
         "longName bigint, " +
@@ -54,7 +58,7 @@ class CreateTableQueryString extends FlatSpec {
     assert(Primitives.columns.length === 11)
   }
 
-  ignore should "work fine with List, Set, Map" in {
+  it should "work fine with List, Set, Map" in {
     val q = TestTable.schema()
 
     assert(q.indexOf("list list<text>") > 0)
@@ -79,7 +83,7 @@ class CreateTableQueryString extends FlatSpec {
 
   }
 
-  ignore should "get the right query in mix table" in {
+  it should "get the right query in mix table" in {
     val q = Recipes.schema()
     assert(q.indexOf("url text") > 0)
     assert(q.indexOf("description text") > 0)

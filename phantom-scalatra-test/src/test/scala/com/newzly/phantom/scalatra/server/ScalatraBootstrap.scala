@@ -1,16 +1,14 @@
 package com.newzly.phantom.scalatra.server
 
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.batch.BatchStatement
-import com.newzly.phantom.tables.{OptionPrice, EquityPrice, OptionPrices, EquityPrices}
-
 import javax.servlet.ServletContext
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 import org.joda.time.{DateTime, LocalDate}
 import org.scalatra.LifeCycle
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.tables.{ EquityPrice, EquityPrices, OptionPrice, OptionPrices }
 
 object ScalatraBootstrap {
   val now = new DateTime()
@@ -49,7 +47,6 @@ class ScalatraBootstrap extends LifeCycle with CassandraCluster {
     Await.result(OptionPrices.create.future(), 10.seconds)
 
     // Insert prices
-
     val insertApplePrices = ApplePrices.map(EquityPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
@@ -58,6 +55,7 @@ class ScalatraBootstrap extends LifeCycle with CassandraCluster {
     val insertAppleOptionPrices = AppleOptionPrices.map(OptionPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
+
     Await.result(insertAppleOptionPrices.future(), 10.seconds)
 
     // Mount prices servlet

@@ -1,15 +1,24 @@
 package com.newzly.phantom.dsl
 
-import org.scalacheck.Properties
-import org.scalacheck.Prop.forAll
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import com.newzly.phantom.tables.{ Articles, Primitives }
 
-class FieldCollectionTest extends FlatSpec with Matchers {
+class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecution with GeneratorDrivenPropertyChecks {
 
-  ignore should "collect objects in the same order they are written" in {
+  it should "corrrectly initialise objects in the order they are written in" in {
+    forAll(minSuccessful(300)) { (d: String) =>
+      whenever (d.length > 0) {
+        val collected = Articles.columns.map(_.name).mkString(" ")
+        val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
+        collected shouldBe expected
+      }
+    }
+  }
+
+  it should "collect objects in the same order they are written" in {
     val collected = Articles.columns.map(_.name).mkString(" ")
-    val expected = s"${Articles.id.name} ${Articles.order_id.name} ${Articles.name.name}"
+    val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
     collected shouldBe expected
   }
 

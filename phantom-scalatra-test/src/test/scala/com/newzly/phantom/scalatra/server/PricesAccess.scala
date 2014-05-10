@@ -1,17 +1,18 @@
 package com.newzly.phantom.scalatra.server
 
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.{OptionPrices, EquityPrices}
-
-import org.joda.time.format.DateTimeFormat
-import org.json4s.{DefaultFormats, Formats}
-
-import org.scalatra._
-import org.scalatra.json._
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scalate.ScalateSupport
+
+import org.joda.time.format.DateTimeFormat
+import org.json4s.{ DefaultFormats, Formats }
+
+import org.scalatra.ScalatraServlet
+import org.scalatra.json.JacksonJsonSupport
+import org.scalatra.scalate.ScalateSupport
+
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.tables.{ EquityPrices, OptionPrices }
+
 
 class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateSupport with CassandraCluster {
 
