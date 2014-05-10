@@ -38,18 +38,26 @@ class QuerySerializationTest extends BaseTest {
     Articles.select(_.id).where(_.id eqs someId).qb.toString shouldBe s"SELECT ${Articles.id.name} FROM ${Articles.tableName} WHERE id=$someId;"
   }
 
-  it should "correctly serialize a 2 column partial select query" in {
+  it should "serialize a condition query to a query condition" in {
     val someId = UUIDs.timeBased()
-    Articles.select(_.id, _.name).where(_.id eqs someId).qb.toString shouldBe s"SELECT ${Articles.id.name},${Articles.name.name} FROM ${Articles.tableName} WHERE id=$someId;"
+    val secondary = UUIDs.timeBased()
+    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.id eqs secondary).qb.toString
+    query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF id=$secondary;"
+
   }
 
-  ignore should "correctly serialize a 3 column partial select query" in {
+  it should "correctly serialize a 2 column partial select query" in {
+    val someId = UUIDs.timeBased()
+    Articles.select(_.id, _.name).where(_.id eqs someId).qb.toString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
+  }
+
+  it should "correctly serialize a 3 column partial select query" in {
     val someId = Sampler.getARandomString
     Recipes.select(
       _.url,
       _.description,
       _.ingredients
-    ).where(_.url eqs someId).qb.toString shouldBe s"SELECT ${Recipes.url.name},${Recipes.description.name},${Recipes.ingredients.name} FROM ${Recipes.tableName} WHERE url=$someId;"
+    ).where(_.url eqs someId).qb.toString shouldBe s"SELECT url,description,ingredients FROM Recipes WHERE url='$someId';"
   }
 
 }

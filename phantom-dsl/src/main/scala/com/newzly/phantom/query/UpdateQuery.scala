@@ -21,6 +21,11 @@ import com.newzly.phantom.CassandraTable
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
   extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) with ExecutableStatement {
 
+
+  def onlyIf[RR](condition: T => QueryCondition): ConditionalUpdateQuery[T, R] = {
+    new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
+  }
+
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.and(a(table)))
   }

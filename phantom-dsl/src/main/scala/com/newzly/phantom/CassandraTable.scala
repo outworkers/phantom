@@ -111,8 +111,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[phantom] def defineTableKey(): String = {
 
     // Get the list of primary keys that are not partition keys.
-    val primaries = primaryKeys.filterNot(_.isPartitionKey)
-    val primaryString = primaries.map(_.name).mkString("")
+    val primaries = primaryKeys
+    val primaryString = primaryKeys.map(_.name).mkString(", ")
 
     // Get the list of partition keys that are not primary keys
     // This is done to avoid including the same columns twice.
@@ -132,7 +132,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
           s"${head.name}, $primaryString"
       case Nil =>  throw InvalidPrimaryKeyException()
     }
-
     s"PRIMARY KEY ($key)"
   }
 

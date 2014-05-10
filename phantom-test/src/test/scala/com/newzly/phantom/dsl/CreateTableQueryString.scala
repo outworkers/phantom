@@ -2,8 +2,6 @@ package com.newzly.phantom.dsl
 
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.newzly.phantom.tables.{
-  EquityPrices,
-  OptionPrices,
   Primitives,
   Recipes,
   TestTable,
@@ -11,19 +9,8 @@ import com.newzly.phantom.tables.{
 }
 
 class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExecution {
-
-  it should "create the correct table key for EquityPrices table" in {
-    Console.println(EquityPrices.defineTableKey())
-    EquityPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t)"
-  }
-
-  it should "create the correct table key for OptionPrices table" in {
-    OptionPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t, strikePrice)"
-  }
-
   it should "create the right keys" in {
     val q = TwoKeys.schema()
-
     assert(q.contains("PRIMARY KEY (pkey, " +
       "intColumn1, " +
       "intColumn2, " +

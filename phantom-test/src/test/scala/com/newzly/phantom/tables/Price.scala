@@ -41,6 +41,7 @@ sealed class EquityPrices extends CassandraTable[EquityPrices, EquityPrice] {
   object exchangeCode extends StringColumn(this) with PrimaryKey[String]
 
   object t extends DateTimeColumn(this) with PrimaryKey[DateTime]
+
   object value extends BigDecimalColumn(this)
 
   override def fromRow(r: Row): EquityPrice =
