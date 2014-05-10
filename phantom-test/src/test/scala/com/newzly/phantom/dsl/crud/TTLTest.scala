@@ -49,7 +49,7 @@ class TTLTest extends BaseTest {
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-        .ttl(5)
+        .ttl(3)
         .future() flatMap {
           _ =>  Primitives.select.one
         }
@@ -58,11 +58,11 @@ class TTLTest extends BaseTest {
       record => {
         record.isEmpty shouldEqual false
         record.get should be (row)
-        Thread.sleep(Duration.fromSeconds(6).inMillis)
+        Thread.sleep(Duration.fromSeconds(4).inMillis)
         val test2 = Primitives.select.one
         test2 successful {
           expired => {
-            assert(expired.isEmpty)
+            expired.isEmpty shouldEqual true
           }
         }
       }
@@ -83,7 +83,7 @@ class TTLTest extends BaseTest {
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-      .ttl(5)
+      .ttl(3)
       .execute() flatMap {
       _ =>  Primitives.select.get
     }
@@ -91,12 +91,12 @@ class TTLTest extends BaseTest {
     test.successful {
       record => {
         record.isEmpty shouldEqual false
-        record.get should be (row)
-        Thread.sleep(Duration.fromSeconds(6).inMillis)
+        record.get shouldEqual row
+        Thread.sleep(Duration.fromSeconds(4).inMillis)
         val test2 = Primitives.select.get
         test2 successful {
           expired => {
-            assert(expired.isEmpty)
+            expired.isEmpty shouldEqual true
           }
         }
       }

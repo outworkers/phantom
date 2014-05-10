@@ -1,16 +1,13 @@
 package com.newzly.phantom.tables
 
-import com.datastax.driver.core.Row
-
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.Implicits.{BigDecimalColumn, StringColumn}
-import com.newzly.phantom.column.{DateTimeColumn, DateColumn}
-import com.newzly.phantom.helper.{ModelSampler, TestSampler}
-import com.newzly.phantom.keys.{PrimaryKey, PartitionKey}
-import com.newzly.util.testing.Sampler
 
 import java.util.Date
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.{ DateTime, LocalDate }
+import com.datastax.driver.core.Row
+import com.newzly.phantom.Implicits._
+import com.newzly.phantom.helper.{ ModelSampler, TestSampler }
+import com.newzly.util.testing.Sampler
+
 
 sealed trait Price {
   def instrumentId: String
@@ -19,20 +16,38 @@ sealed trait Price {
   def t: DateTime
 }
 
-case class EquityPrice(instrumentId: String,
-                       tradeDate: LocalDate,
-                       exchangeCode: String,
-                       t: DateTime,
-                       value: BigDecimal)
+case class EquityPrice(
+  instrumentId: String,
+  tradeDate: LocalDate,
+  exchangeCode: String,
+  t: DateTime,
+  value: BigDecimal
+)
 
-case class OptionPrice(instrumentId: String,
-                       tradeDate: LocalDate,
-                       exchangeCode: String,
-                       t: DateTime,
-                       strikePrice: BigDecimal,
-                       value: BigDecimal)
+case class OptionPrice(
+  instrumentId: String,
+  tradeDate: LocalDate,
+  exchangeCode: String,
+  t: DateTime,
+  strikePrice: BigDecimal,
+  value: BigDecimal
+)
 
-sealed trait Prices[T <: CassandraTable[T, R], R] extends CassandraTable[T, R] {
+sealed class EquityPrices extends CassandraTable[EquityPrices, EquityPrice] {
+  object instrumentId extends StringColumn(this) with PartitionKey[String]
+
+  object tradeDate extends DateColumn(this) with PrimaryKey[Date]
+
+  object exchangeCode extends StringColumn(this) with PrimaryKey[String]
+
+  object t extends DateTimeColumn(this) with PrimaryKey[DateTime]
+  object value extends BigDecimalColumn(this)
+
+  override def fromRow(r: Row): EquityPrice =
+    EquityPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), value(r))
+}
+
+sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
 
   object instrumentId extends StringColumn(this) with PartitionKey[String]
 
@@ -41,16 +56,6 @@ sealed trait Prices[T <: CassandraTable[T, R], R] extends CassandraTable[T, R] {
   object exchangeCode extends StringColumn(this) with PrimaryKey[String]
 
   object t extends DateTimeColumn(this) with PrimaryKey[DateTime]
-}
-
-sealed class EquityPrices extends Prices[EquityPrices, EquityPrice] {
-  object value extends BigDecimalColumn(this)
-
-  override def fromRow(r: Row): EquityPrice =
-    EquityPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), value(r))
-}
-
-sealed class OptionPrices extends Prices[OptionPrices, OptionPrice] {
 
   object strikePrice extends BigDecimalColumn(this) with PrimaryKey[BigDecimal]
 
