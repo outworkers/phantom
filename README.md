@@ -61,26 +61,28 @@ Phantom is published to Maven Central and it's actively and avidly developed.
     <li>
         <p>Cassandra indexing</p>
         <ul>
-            <li>Using partition tokens</li>
-            <li>Partition token operators</li>
-            <li>Compound Keys</li>
-            <li>Composite Keys</li>
-            <li>Cassandra Time Series and ClusteringOrder</li>
-            <li>Secondary Keys</li>
+            <li><a href="#partition-tokens">Using partition tokens</a></li>
+            <li><a href="#partition-token-operators">Partition token operators</a></li>
+            <li><a href="#compound-keys">Compound Keys</a></li>
+            <li><a href="#composite-keys">Composite Keys</a></li>
+            <li><a href="#time-series">Cassandra Time Series and ClusteringOrder</a></li>
+            <li><a href="#secondary-keys">Secondary Keys</a></li>
         </ul>
     </li>
-    <li>Asynchronous iterators</li>
+    <li><a href="#async-iterators">Asynchronous iterators</a></li>
     <li>
         <p>Batch statements</p>
         <ul>
-            <li>LOGGED Batch statements</li>
-            <li>COUNTER Batch statements</li>
-            <li>UNLOGGED Batch statements</li>
+            <li><a href="#logged-batch-statements">LOGGED Batch statements</a></li>
+            <li><a href="#counter-batch-statements">COUNTER Batch statements</li>
+            <li><a href="#<a id="logged-batch-statements">UNLOGGED Batch statements</a></li>
         </ul>
     </li>
+    <li><a href="#thrift-integration">Thrift integration</a></li>
+    <li><a href="#running-tests">Running the tests locally</a></li>
     <li>Contributors</li>
     <li>
-        <p>Contributing to phantom</p>
+        <p><a href="#contributors">Contributing to phantom</a></p>
         <ul>
             <li>Using GitFlow as a branching model</li>
             <li>Scala style guidelines for contributions</li>
@@ -523,8 +525,8 @@ Await.result(ExampleRecord.create().future(), 5000 millis)
 Of course, you don't have to block unless you want to.
 
 
-Partition tokens, token functions and paginated queries
-======================================================
+<a id="partition-tokens">Partition tokens</a>
+==============================================
 
 ```scala
 
@@ -550,8 +552,8 @@ val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id )
 
 ```
 
-PartitionToken operators
-========================
+<a id="partition-token-operators">PartitionToken operators</a>
+===============================================================
 
 | Operator name      | Description                                                              |
 | ------------------ | ------------------------------------------------------------                                             |
@@ -564,8 +566,8 @@ PartitionToken operators
 For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/SkipRecordsByToken.scala)
 
 
-Cassandra Time Series
-=====================
+<a id="time-series">Cassandra Time Series</a>
+=============================================
 
 phantom supports Cassandra Time Series with both ```java.util.Date``` and ```org.joda.time.DateTime ```. To use them, simply mixin ```com.newzly.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
 
@@ -592,8 +594,9 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 Automatic schema generation can do all the setup for you.
 
 
-Compound keys
-==============
+<a id="compound-keys">Compound keys</a>
+=======================================
+
 Phantom also supports using Compound keys out of the box. The schema can once again by auto-generated.
 
 A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the compound key: ```(id, timestamp, name)```
@@ -617,15 +620,19 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 }
 ```
 
-CQL 3 index and non-primary index columns
-=========================================
+<a id="secondary-keys">CQL 3 Secondary Keys</a>
+===============================================
 
 When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, but phantom offers ```com.newzly.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
+```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/specialized/SecondaryIndexTest.scala).
+
+
 ```scala
 
+import java.util.UUID
 import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
@@ -643,9 +650,8 @@ sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel]
 }
 ```
 
-
-Asynchronous iterators for large record sets
-============================================
+<a id="async-iterators">Asynchronous iterators for large record sets</a>
+========================================================================
 
 Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal with billions of records.
 phantom iterators are based on Play iterators with very lightweight integration.
@@ -688,8 +694,8 @@ object ExampleRecord3 extends ExampleRecord3 {
 
 ```
 
-Batch statements
-================
+<a id="batch-statements">Batch statements</a>
+=============================================
 
 phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/iteratee/IterateeBigTest.scala)
 
@@ -698,6 +704,12 @@ We have tested with 10,000 statements per batch, and 1000 batches processed simu
 Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
+
+phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+
+
+<a id="logged-batch-statements">LOGGED batch statements</a>
+===========================================================
 
 ```scala
 
@@ -710,7 +722,8 @@ BatchStatement()
 
 ```
 
-phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+<a id="counter-batch-statements">COUNTER batch statements</a>
+============================================================
 
 ```scala
 
@@ -721,6 +734,9 @@ CounterBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
     .future()
 ```
+
+<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
+============================================================
 
 ```scala
 
@@ -733,8 +749,8 @@ UnloggedBatchStatement()
 
 ```
 
-Thrift integration
-==================
+<a id="thrift-integration">Thrift integration</a>
+=================================================
 
 We use Apache Thrift extensively for our backend services. ```phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "phantom-thrift"  % phantomVersion```.
 
@@ -751,8 +767,8 @@ stuct ExampleModel {
 ```
 
 
-Running the tests
-=================
+<a id="running-tests">Running the tests locally</a>
+==================================================
 
 phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
 You need two terminals to run the tests, one for Embedded Cassandra and one for the actual tests.
@@ -771,8 +787,8 @@ project phantom-test
 test
 ```
 
-Maintainers and contributors
-============================
+<a id="contributors">Contributors</a>
+=====================================
 
 Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through phantom.
 
@@ -783,6 +799,7 @@ Phantom was developed at newzly as an in-house project. All Cassandra integratio
 
 Copyright
 =========
+
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
 Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
