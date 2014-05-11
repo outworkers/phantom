@@ -2,8 +2,6 @@ package com.newzly.phantom.tables
 
 import com.newzly.phantom.CassandraTable
 import com.datastax.driver.core.Row
-import com.newzly.phantom.column.{DateTimeColumn, PrimitiveColumn}
-import com.newzly.phantom.keys.{PrimaryKey, PartitionKey}
 import com.newzly.phantom.Implicits._
 
 class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {

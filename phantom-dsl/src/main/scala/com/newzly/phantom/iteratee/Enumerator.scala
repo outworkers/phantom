@@ -37,7 +37,8 @@ object Enumerator {
     })(Execution.defaultExecutionContext)
   }
 
-  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext) = enumerate[Row](r.iterator())
+  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext) =
+    enumerate[Row](r.iterator())
 }
 
 /**
