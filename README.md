@@ -412,6 +412,7 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
 | ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
+| ```onflyIf```                     | Addition update condition. Used on non-primary columns                                |
 
 
 <a id="delete-queries">"Delete" queries</a>
@@ -420,6 +421,7 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 
 
