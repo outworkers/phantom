@@ -1,20 +1,26 @@
 
 package com.newzly.phantom.dsl
 
+import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Article, Articles }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-
+import com.newzly.util.testing.cassandra.BaseTest
 
 class SkippingRecordsTest extends BaseTest {
   val keySpace: String = "SkippingRecordsTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
+  override def beforeAll(): Unit = {
+    blocking {
+      super.beforeAll()
+      Articles.insertSchema()
+    }
+  }
+
   it should "allow skipping records " in {
-    Articles.insertSchema()
     val article1 = Article.sample
     val article2 = article1.copy(order_id = article1.order_id + 1)
     val article3 = article1.copy(order_id = article1.order_id + 2)
@@ -42,8 +48,10 @@ class SkippingRecordsTest extends BaseTest {
       r => {
         val allSize = r._1
         val row = r._2
-        assert(allSize === 3)
-        assert(row.get === article2)
+
+        allSize shouldEqual 3
+        row.isDefined shouldEqual true
+        row.get shouldEqual article2
       }
     }
   }

@@ -17,7 +17,24 @@ package com.newzly.phantom.query
 
 import com.datastax.driver.core.querybuilder.{ Assignment, Clause, Ordering }
 
+/**
+ * This is a wrapper clause for primary conditions.
+ * They wrap the Clause used in a "WHERE" or "AND" query.
+ *
+ * Only indexed columns can produce a QueryCondition via "WHERE" and "AND" operators.
+ * @param clause The clause to use.
+ */
 case class QueryCondition(clause: Clause)
+
+/**
+ * This is wrapper clause for non-primary conditionals, the "onlyIf" part of CQL query.
+ * It's used to enable queries such as "Records.update.where(_.bla eqs bla).onlyIf(_.someRecord eqs "something")
+ *
+ * Even if they both wrap a Clause, QueryCondition and SecondaryCondition are not interchangeable.
+ * Using an indexed column in an "onlyIf" query throws an error.
+ * @param clause The clause to use.
+ */
+case class SecondaryQueryCondition(clause: Clause)
 
 case class QueryAssignment(assignment: Assignment)
 
