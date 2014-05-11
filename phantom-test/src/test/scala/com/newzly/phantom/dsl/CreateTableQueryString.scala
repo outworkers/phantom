@@ -1,13 +1,16 @@
 package com.newzly.phantom.dsl
 
-import org.scalatest.FlatSpec
-import com.newzly.phantom.tables._
+import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import com.newzly.phantom.tables.{
+  Primitives,
+  Recipes,
+  TestTable,
+  TwoKeys
+}
 
-class CreateTableQueryString extends FlatSpec {
-
-  ignore should "create the right keys" in {
+class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExecution {
+  it should "create the right keys" in {
     val q = TwoKeys.schema()
-
     assert(q.contains("PRIMARY KEY (pkey, " +
       "intColumn1, " +
       "intColumn2, " +
@@ -19,10 +22,8 @@ class CreateTableQueryString extends FlatSpec {
       ")"))
   }
 
-  ignore should "get the right query in primitives table" in {
-    assert(Primitives.tableName === "Primitives")
+  it should "get the right query in primitives table" in {
     val q = Primitives.schema()
-
     val manual = s"CREATE TABLE ${Primitives.tableName}} " +
         "( pkey int, " +
         "longName bigint, " +
@@ -46,7 +47,6 @@ class CreateTableQueryString extends FlatSpec {
 
   ignore should "work fine with List, Set, Map" in {
     val q = TestTable.schema()
-
     assert(q.indexOf("list list<text>") > 0)
     assert(q.indexOf("setText set<text>") > 0 )
     assert(q.indexOf("mapIntToText map<int, text>") > 0)
@@ -66,7 +66,6 @@ class CreateTableQueryString extends FlatSpec {
       .replace(")","")
       .replace(" ","")
       .replace(",","") == ";" )
-
   }
 
   ignore should "get the right query in mix table" in {
