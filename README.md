@@ -91,7 +91,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 </ol>
 
 
-<h1><a id="issues-and-questions">Issues and questions</a></h1><a href="#table-of-contents">back to top</a>
+<h1 style="display:inline-block"><a id="issues-and-questions">Issues and questions</a></h1><a href="#table-of-contents">back to top</a>
 
 We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
 Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
