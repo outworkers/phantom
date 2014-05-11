@@ -21,7 +21,15 @@ Phantom is published to Maven Central and it's actively and avidly developed.
             <li><a href="#primitive-columns">Primitive columns</a></li>
             <li><a href="#optional-primitive-columns">Optional primitive columns</a></li>
             <li><a href="#collection-columns">Collection columns</a></li>
-            <li><a href="#special-columns">Indexing columns</a></li>
+            <li>
+                <p><a href="#indexing-columns">Indexing columns</a></p>
+                <ul>
+                    <li><a href="#partition-key">Partition Key</a></li>
+                    <li><a href="#primary-key">Partition Key</a></li>
+                    <li><a href="#secondary-key">Secondary Index Key</a></li>
+                    <li><a href="#secondary-key">Secondary Index Key</a></li>
+                    <li><a href="#clustering-order">Clustering Order Key</a></li>
+                </ul>
             <li><a href="#thrift-columns">Thrift columns</a></li>
         </ul>
     </li>
@@ -201,7 +209,7 @@ The ```type``` in the below example is always a default C* type.
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
-<a id="#special-columns">Indexing columns</a>
+<a id="#indexing-columns">Indexing columns</a>
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
@@ -213,8 +221,12 @@ For example:
 - You cannot set index columns to a different value
 - You cannot query on a column that's not an index
 
+For more of the above, have a look at [QueryRestrictions.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/query/QueryRestrictionsTest.scala).
 
-- ```PartitionKey[T]```
+
+<a id="partition-key">```PartitionKey[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 This is the default partitioning key of the table, telling Cassandra how to divide data into partitions and store them accordingly.
 You must define at least one partition key for a table. Phantom will gently remind you of this with a fatal error.
@@ -226,7 +238,10 @@ It looks like this in CQL: ```PRIMARY_KEY(your_partition_key, primary_key_1, pri
 Using more than one ```PartitionKey[T]``` in your schema definition will output a Composite Key in Cassandra.
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
-- ```PrimaryKey[T]```
+
+<a id="primary-key">```PrimaryKey[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
 The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
@@ -238,7 +253,9 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-- ```Index[T]```
+<a id="secondary-index">```Index[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 This is a SecondaryIndex in Cassandra. It can help you enable querying really fast, but it's not exactly high performance.
 It's generally best to avoid it, we implemented it to show off what good guys we are.
@@ -246,7 +263,9 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-- ```ClusteringOrder```
+<a id="clustering-order">```ClusteringOrder```</a>
+=================================================
+<a href="#table-of-contents">back to top</a>
 
 This can be used with either ```java.util.Date``` or ```org.joda.time.DateTime```. It tells Cassandra to store records in a certain order based on this field.
 
