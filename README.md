@@ -6,11 +6,102 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.5.0```.
+The current version is: ```val phantomVersion = 0.6.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
-Issues and questions
-====================
+<a id="table-of-contents">Table of contents</a>
+===============================================
+
+<ol>
+    <li><a href="#issues-and-questions">Issues and questions</a></li>
+    <li><a href="#integrating-phantom">Integrating phantom in your project</a></li>
+    <li>
+        <p>phantom columns</p>
+        <ul>
+            <li><a href="#primitive-columns">Primitive columns</a></li>
+            <li><a href="#optional-primitive-columns">Optional primitive columns</a></li>
+            <li><a href="#collection-columns">Collection columns</a></li>
+            <li>
+                <p><a href="#indexing-columns">Indexing columns</a></p>
+                <ul>
+                    <li><a href="#partition-key">Partition Key</a></li>
+                    <li><a href="#primary-key">Primary Key</a></li>
+                    <li><a href="#secondary-key">Secondary Index Key</a></li>
+                    <li><a href="#secondary-key">Secondary Index Key</a></li>
+                    <li><a href="#clustering-order">Clustering Order Key</a></li>
+                </ul>
+            <li><a href="#thrift-columns">Thrift columns</a></li>
+        </ul>
+    </li>
+    <li><a href="#data-modeling">Data modeling with phantom</a></li>
+    <li>
+        <p><a href="#querying-with-phantom">Querying with phantom</a></p>
+        <ul>
+            <li><a href="#select-queries">SELECT queries</a></li>
+            <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
+            <li><a href="#where-and-operators">WHERE and AND clause operators</a></li>
+            <li><a href="#insert-queries">INSERT queries</a></li>
+            <li><a href="#update-queries">UPDATE queries</a></li>
+            <li><a href="#delete-queries">DELETE queries</a></li>
+            <li><a href="#truncate-queries">TRUNCATE queries</a></li>
+            <li><a href="#create-queries">CREATE queries</a></li>
+            <li><a href="#alter-queries">ALTER queries</a></li>
+        </ul>
+    </li>
+    <li>
+        <p>Basic query examples</p>
+        <ul>
+            <li><a href="#scala-futures">Using Scala Futures to query</a></li>
+            <li><a href="#scala-futures-examples">Examples with Scala Futures</a></li>
+            <li><a href="#twitter-futures">Using Twitter Futures to query</a></li>
+            <li><a href="#twitter-futures-examples">Examples with Twitter Futures</a></li>
+        </ul>
+    </li>
+    <li>
+        <p><a href="#collections-and-operators">Collection operators</a></p>
+        <ul>
+            <li><a href="#list-operators">List operators</a></li>
+            <li><a href="#set-operators">Set operators</a></li>
+            <li><a href="#map-operators">Map operators</a></li>
+        </ul>
+    </li>
+    <li><a href="#automated-schema-generation">Automated schema generation</a></li>
+    <li>
+        <p>Cassandra indexing</p>
+        <ul>
+            <li><a href="#partition-tokens">Using partition tokens</a></li>
+            <li><a href="#partition-token-operators">Partition token operators</a></li>
+            <li><a href="#compound-keys">Compound Keys</a></li>
+            <li><a href="#composite-keys">Composite Keys</a></li>
+            <li><a href="#time-series">Cassandra Time Series and ClusteringOrder</a></li>
+            <li><a href="#secondary-keys">Secondary Keys</a></li>
+        </ul>
+    </li>
+    <li><a href="#async-iterators">Asynchronous iterators</a></li>
+    <li>
+        <p>Batch statements</p>
+        <ul>
+            <li><a href="#logged-batch-statements">LOGGED Batch statements</a></li>
+            <li><a href="#counter-batch-statements">COUNTER Batch statements</li>
+            <li><a href="#<a id="logged-batch-statements">UNLOGGED Batch statements</a></li>
+        </ul>
+    </li>
+    <li><a href="#thrift-integration">Thrift integration</a></li>
+    <li><a href="#running-tests">Running the tests locally</a></li>
+    <li>
+        <p><a href="#contributors">Contributing to phantom</a></p>
+        <ul>
+            <li>Using GitFlow as a branching model</li>
+            <li>Scala style guidelines for contributions</li>
+            <li>Using the testing utilities to write tests</li>
+        </ul>
+    <li><a href="#copyright">Copyright</a></li>
+</ol>
+
+
+<a id="issues-and-questions">Issues and questions</a>
+=====================================================
+<a href="#table-of-contents">back to top</a>
 
 We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
 Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
@@ -25,8 +116,9 @@ We are very happy to help implement missing features in phantom, answer question
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
-Integrating phantom in your project
-===================================
+<a id="integrating-phantom">Integrating phantom in your project</a>
+===================================================================
+<a href="#table-of-contents">back to top</a>
 
 For most things, all you need is ```phantom-dsl```. Read through for information on other modules.
 
@@ -44,13 +136,14 @@ libraryDependencies ++= Seq(
   "com.newzly"  %% "phantom-cassandra-unit"        % phantomVersion,
   "com.newzly"  %% "phantom-example"               % phantomVersion,
   "com.newzly"  %% "phantom-thrift"                % phantomVersion,
+  "com.newzly"  %% "phantom-scalatra-test"         % phantomVersion,
   "com.newzly"  %% "phantom-test"                  % phantomVersion
 )
 ```
 
-
-Available primitive columns
-==========================
+<a id="primitive-columns">Primitive columns</a>
+====================================================
+<a href="#table-of-contents">back to top</a>
 
 This is the list of available columns and how they map to C* data types.
 This also includes the newly introduced ```static``` columns in C* 2.0.6.
@@ -77,8 +170,9 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
 
-Optional primitive columns
-================
+<a id="optional-primitive-columns">Optional primitive columns</a>
+===================================================================
+<a href="#table-of-contents">back to top</a>
 
 Optional columns allow you to set a column to a ```null``` or a ```None```. Use them when you really want something to be optional.
 The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can ```match, fold, flatMap, map``` on a ```None```.
@@ -102,8 +196,9 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
 
-Collection columns
-==============
+<a id="#collection-columns">Collection columns</a>
+======================================================
+<a href="#table-of-contents">back to top</a>
 
 Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
 The ```type``` in the below example is always a default C* type.
@@ -114,8 +209,9 @@ The ```type``` in the below example is always a default C* type.
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
-Special columns
-=====================
+<a id="#indexing-columns">Indexing columns</a>
+==========================================
+<a href="#table-of-contents">back to top</a>
 
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 
@@ -125,11 +221,12 @@ For example:
 - You cannot set index columns to a different value
 - You cannot query on a column that's not an index
 
+For more of the above, have a look at [QueryRestrictions.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/query/QueryRestrictionsTest.scala).
 
-List of special columns
-=======================
 
-- ```PartitionKey[T]```
+<a id="partition-key">```PartitionKey[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 This is the default partitioning key of the table, telling Cassandra how to divide data into partitions and store them accordingly.
 You must define at least one partition key for a table. Phantom will gently remind you of this with a fatal error.
@@ -141,7 +238,10 @@ It looks like this in CQL: ```PRIMARY_KEY(your_partition_key, primary_key_1, pri
 Using more than one ```PartitionKey[T]``` in your schema definition will output a Composite Key in Cassandra.
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
-- ```PrimaryKey[T]```
+
+<a id="primary-key">```PrimaryKey[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
 The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
@@ -153,7 +253,9 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-- ```Index[T]```
+<a id="secondary-index">```Index[T]```</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 This is a SecondaryIndex in Cassandra. It can help you enable querying really fast, but it's not exactly high performance.
 It's generally best to avoid it, we implemented it to show off what good guys we are.
@@ -161,7 +263,9 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-- ```ClusteringOrder```
+<a id="clustering-order">```ClusteringOrder```</a>
+=================================================
+<a href="#table-of-contents">back to top</a>
 
 This can be used with either ```java.util.Date``` or ```org.joda.time.DateTime```. It tells Cassandra to store records in a certain order based on this field.
 
@@ -170,8 +274,9 @@ To fully define a clustering column, you MUST also mixin either ```Ascending``` 
 
 
 
-Thrift Columns
-==============
+<a id="thrift-columns">Thrift Columns</a>
+==========================================
+<a href="#table-of-contents">back to top</a>
 
 These columns are especially useful if you are building Thrift services. They are deeply integrated with Twitter Scrooge and relevant to the Twitter ecosystem(Finagle, Zipkin, Storm etc)
 They are available via the ```phantom-thrift``` module and you need to ```import com.newzly.phantom.thrift.Implicits._``` to get them.
@@ -191,8 +296,9 @@ You generally use these to store collections(small number of items), not big thi
 
 
 
-Data modeling with phantom
-==========================
+<a id="data-modeling">Data modeling with phantom</a>
+====================================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -224,16 +330,18 @@ sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
 
 ```
 
-Querying with Phantom
-=====================
+<a id="querying-with-phantom">Querying with Phantom</a>
+=======================================================
+<a href="#table-of-contents">back to top</a>
 
 The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
 
 Phantom works with both Scala Futures and Twitter Futures as first class citizens.
 
 
-"Select" queries
-================
+<a id="select-queries">"Select" queries</a>
+================================================
+<a href="#table-of-contents">back to top</a>
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
@@ -249,8 +357,10 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 Select queries are very straightforward and enforce most limitations at compile time.
 
 
-```where``` and ```and``` clause operators
+<a id="where-and-operators">```where``` and ```and``` clause operators</a>
 ==========================================
+<a href="#table-of-contents">back to top</a>
+
 | Operator name      | Description                                                              |
 | ------------------ | ------------------------------------------------------------                                             |
 | eqs                | The "equals" operator. Will match if the objects are equal                                               |
@@ -261,11 +371,12 @@ Select queries are very straightforward and enforce most limitations at compile 
 | lte                | The "lower than or equals" operator. Will match a the record that is less than the argument and exists   |
 
 
-Partial selects
-===============
+<a id="partial-select-queries">Partial selects</a>
+===================================================
+<a href="#table-of-contents">back to top</a>
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
-We haven't yet bothered to add more than 11 fields in the select, but you can always do a Pull Request.
+We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
 The file you are looking for is [here](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/SelectTable.scala).
 The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
@@ -279,8 +390,9 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
   }
 ```
 
-"Insert" queries
-==============
+<a id="insert-queries">"Insert" queries</a>
+==========================================
+<a href="#table-of-contents">back to top</a>
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
@@ -290,8 +402,9 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```ttl```                         | Sets the "Time-To-Live" for the record.                                               |
 
 
-"Update" queries
-==============
+<a id="update-queries">"Update" queries</a>
+==========================================
+<a href="#table-of-contents">back to top</a>
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
@@ -299,18 +412,22 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
 | ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
+| ```onflyIf```                     | Addition update condition. Used on non-primary columns                                |
 
 
-"Delete" queries
-==============
+<a id="delete-queries">"Delete" queries</a>
+===========================================
+<a href="#table-of-contents">back to top</a>
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 
 
-Scala Futures
-=============
+<a id="scala-futures">Scala Futures</a>
+=======================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 ExampleRecord.select.one() // When you only want to select one record
@@ -319,19 +436,9 @@ ExampleRecord.select.fetchEnumerator // when you need an Enumerator
 ExampleRecord.select.fetch // When you want to fetch a Seq[Record]
 ```
 
-Twitter Futures
-=============
-
-```scala
-ExampleRecord.select.get() // When you only want to select one record
-ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").execute() // When you don't care about the return type.
-ExampleRecord.select.enumerate // when you need an Enumerator
-ExampleRecord.select.collect // When you want to fetch a Seq[Record]
-```
-
-
-More examples with Scala Futures
-================================
+<a id="scala-futures-examples">Examples with Scala Futures</a>
+================================================================
+<a href="#table-of-contents">back to top</a>
 
 
 ```scala
@@ -355,8 +462,20 @@ object ExampleRecord extends ExampleRecord {
 }
 ```
 
-More examples with Twitter Futures
-================================
+<a id="twitter-futures">Twitter Futures</a>
+===========================================
+<a href="#table-of-contents">back to top</a>
+
+```scala
+ExampleRecord.select.get() // When you only want to select one record
+ExampleRecord.update.where(_.name eqs name).modify(_.name setTo "someOtherName").execute() // When you don't care about the return type.
+ExampleRecord.select.enumerate // when you need an Enumerator
+ExampleRecord.select.collect // When you want to fetch a Seq[Record]
+```
+
+<a id="twitter-futures-examples">More examples with Twitter Futures</a>
+=======================================================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -378,16 +497,18 @@ object ExampleRecord extends ExampleRecord {
 }
 ```
 
-Collections and operators
-=========================
+<a id="collections-and-operators">Collections and operators</a>
+================================================================
+<a href="#table-of-contents">back to top</a>
 
 Based on the above list of columns, phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, map```.
 All operators will be available in an update query, specifically:
 
 ```ExampleRecord.update.where(_.id eqs someId).modify(_.someList $OPERATOR $args).future()```.
 
-List operators
-==============
+<a id="list-operators">List operators</a>
+==========================================
+<a href="#table-of-contents">back to top</a>
 
 Examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/ListOperatorsTest.scala).
 
@@ -401,8 +522,9 @@ Examples in [ListOperatorsTest.scala](https://github.com/newzly/phantom/blob/dev
 | ```discardAll```              | Removes all given items from the list.        |
 | ```setIdIx```                 | Updates a specific index in the list          |
 
-Set operators
-=============
+<a id="set-operators">Set operators</a>
+=======================================
+<a href="#table-of-contents">back to top</a>
 
 Sets have a better performance than lists, as the Cassandra documentation suggests.
 Examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/SetOperationsTest.scala).
@@ -415,8 +537,9 @@ Examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/dev
 | ```removeAll```               | Removes all given items from the set.         |
 
 
-Map operators
-=============
+<a id="map-operators">Map operators</a>
+=======================================
+<a href="#table-of-contents">back to top</a>
 
 Both the key and value types of a Map must be Cassandra primitives.
 Examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/crud/MapOperationsTest.scala):
@@ -427,8 +550,9 @@ Examples in [MapOperationsTest.scala](https://github.com/newzly/phantom/blob/dev
 | ```putAll```                  | Adds multiple (key -> value) pairs to the map |
 
 
-Automated schema generation
-===========================
+<a id="automated-schema-generation">Automated schema generation</a>
+===================================================================
+<a href="#table-of-contents">back to top</a>
 
 Replication strategies and more advanced features are not yet available in phantom, but CQL 3 Table schemas are  automatically generated from the Scala code. To create a schema in Cassandra from a table definition:
 
@@ -443,8 +567,9 @@ Await.result(ExampleRecord.create().future(), 5000 millis)
 Of course, you don't have to block unless you want to.
 
 
-Partition tokens, token functions and paginated queries
-======================================================
+<a id="partition-tokens">Partition tokens</a>
+==============================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -470,8 +595,9 @@ val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id )
 
 ```
 
-PartitionToken operators
-========================
+<a id="partition-token-operators">PartitionToken operators</a>
+===============================================================
+<a href="#table-of-contents">back to top</a>
 
 | Operator name      | Description                                                              |
 | ------------------ | ------------------------------------------------------------                                             |
@@ -484,8 +610,9 @@ PartitionToken operators
 For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/SkipRecordsByToken.scala)
 
 
-Cassandra Time Series
-=====================
+<a id="time-series">Cassandra Time Series</a>
+=============================================
+<a href="#table-of-contents">back to top</a>
 
 phantom supports Cassandra Time Series with both ```java.util.Date``` and ```org.joda.time.DateTime ```. To use them, simply mixin ```com.newzly.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
 
@@ -512,8 +639,10 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 Automatic schema generation can do all the setup for you.
 
 
-Compound keys
-==============
+<a id="compound-keys">Compound keys</a>
+=======================================
+<a href="#table-of-contents">back to top</a>
+
 Phantom also supports using Compound keys out of the box. The schema can once again by auto-generated.
 
 A table can have only one ```PartitionKey``` but several ```PrimaryKey``` definitions. Phantom will use these keys to build a compound value. Example scenario, with the compound key: ```(id, timestamp, name)```
@@ -537,15 +666,20 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 }
 ```
 
-CQL 3 index and non-primary index columns
-=========================================
+<a id="secondary-keys">CQL 3 Secondary Keys</a>
+===============================================
+<a href="#table-of-contents">back to top</a>
 
 When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, but phantom offers ```com.newzly.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
+```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/specialized/SecondaryIndexTest.scala).
+
+
 ```scala
 
+import java.util.UUID
 import org.joda.time.DateTime
 import com.newzly.phantom.Implicits._
 
@@ -563,9 +697,9 @@ sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel]
 }
 ```
 
-
-Asynchronous iterators for large record sets
-============================================
+<a id="async-iterators">Asynchronous iterators for large record sets</a>
+========================================================================
+<a href="#table-of-contents">back to top</a>
 
 Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal with billions of records.
 phantom iterators are based on Play iterators with very lightweight integration.
@@ -608,8 +742,9 @@ object ExampleRecord3 extends ExampleRecord3 {
 
 ```
 
-Batch statements
-================
+<a id="batch-statements">Batch statements</a>
+=============================================
+<a href="#table-of-contents">back to top</a>
 
 phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/iteratee/IterateeBigTest.scala)
 
@@ -618,6 +753,13 @@ We have tested with 10,000 statements per batch, and 1000 batches processed simu
 Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
+
+phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+
+
+<a id="logged-batch-statements">LOGGED batch statements</a>
+===========================================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -630,7 +772,9 @@ BatchStatement()
 
 ```
 
-phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+<a id="counter-batch-statements">COUNTER batch statements</a>
+============================================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -641,6 +785,10 @@ CounterBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
     .future()
 ```
+
+<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
+============================================================
+<a href="#table-of-contents">back to top</a>
 
 ```scala
 
@@ -653,8 +801,9 @@ UnloggedBatchStatement()
 
 ```
 
-Thrift integration
-==================
+<a id="thrift-integration">Thrift integration</a>
+=================================================
+<a href="#table-of-contents">back to top</a>
 
 We use Apache Thrift extensively for our backend services. ```phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "phantom-thrift"  % phantomVersion```.
 
@@ -671,8 +820,9 @@ stuct ExampleModel {
 ```
 
 
-Running the tests
-=================
+<a id="running-tests">Running the tests locally</a>
+==================================================
+<a href="#table-of-contents">back to top</a>
 
 phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
 You need two terminals to run the tests, one for Embedded Cassandra and one for the actual tests.
@@ -691,28 +841,31 @@ project phantom-test
 test
 ```
 
-Maintainers and contributors
-============================
+<a id="contributors">Contributors</a>
+=====================================
+<a href="#table-of-contents">back to top</a>
 
-Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through Phantom.
+Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through phantom.
 
-- Flavian Alexandru flavian@newzly.com
+* Flavian Alexandru flavian@newzly.com(maintainer)
+* Viktor Taranenko (viktortnk)
+* Bartosz Jankiewicz (@bjankie1)
+* Eugene Zhulenev (@ezhulenev)
 
-Pre newzly fork
-===============
+<a id="copyright">Copyright</a>
+===============================
+<a href="#table-of-contents">back to top</a>
+
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright
-=========
 Copyright 2013 WhiskLabs, Copyright 2013 - 2014 newzly.
 
 
-Contributions
-=============
+Contributing to phantom
+=======================
+<a href="#table-of-contents">back to top</a>
 
-* Bartosz Jankiewicz (@bjankie1)
-
-Contributions are most welcome! 
+Contributions are most welcome!
 
 To contribute, simply submit a "Pull request" via GitHub.
 

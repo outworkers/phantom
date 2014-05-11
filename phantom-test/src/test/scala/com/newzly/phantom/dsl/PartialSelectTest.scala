@@ -21,9 +21,9 @@ class PartialSelectTest extends BaseTest {
     }
   }
 
-  "Partially selecting 2 fields" should "work fine" in {
+  "Partially selecting 2 fields" should "correctly select the fields" in {
     val row = Primitive.sample
-    val rcp =  Primitives.insert
+    val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
       .value(_.boolean, row.boolean)
@@ -34,20 +34,50 @@ class PartialSelectTest extends BaseTest {
       .value(_.int, row.int)
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        for {
-          a <- Primitives.select(_.pkey).fetch
-          b <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
-        } yield (a, b)
+      .value(_.bi, row.bi)
 
+    val chain = for {
+      truncate <- Primitives.truncate.future()
+      insertDone <- insert.future()
+      listSelect <- Primitives.select(_.pkey).fetch
+      oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
+    } yield (listSelect, oneSelect)
+
+    chain successful {
+      result => {
+        result._1 shouldEqual List(row.pkey)
+        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
       }
     }
+  }
 
-    rcp successful {
-      r => {
-        assert(r._1 === List(row.pkey))
-        assert(r._2 === Some(Tuple2(row.long, row.boolean)))
+
+  "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
+    val row = Primitive.sample
+    val insert =  Primitives.insert
+      .value(_.pkey, row.pkey)
+      .value(_.long, row.long)
+      .value(_.boolean, row.boolean)
+      .value(_.bDecimal, row.bDecimal)
+      .value(_.double, row.double)
+      .value(_.float, row.float)
+      .value(_.inet, row.inet)
+      .value(_.int, row.int)
+      .value(_.date, row.date)
+      .value(_.uuid, row.uuid)
+      .value(_.bi, row.bi)
+
+    val chain = for {
+      truncate <- Primitives.truncate.execute()
+      insertDone <- insert.execute()
+      listSelect <- Primitives.select(_.pkey).collect
+      oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
+    } yield (listSelect, oneSelect)
+
+    chain successful {
+      result => {
+        result._1.toList shouldEqual List(row.pkey)
+        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
       }
     }
   }
