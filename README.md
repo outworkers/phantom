@@ -27,7 +27,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
     </li>
     <li><a href="#data-modeling">Data modeling with phantom</a></li>
     <li>
-        <p>Querying with phantom</p>
+        <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
             <li><a href="#select-queries">SELECT queries</a></li>
             <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
@@ -311,8 +311,8 @@ sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
 
 ```
 
-Querying with Phantom
-=====================
+<a id="querying-with-phantom">Querying with Phantom</a>
+=======================================================
 <a href="#table-of-contents">back to top</a>
 
 The query syntax is inspired by the Foursquare Rogue library and aims to replicate CQL 3 as much as possible.
