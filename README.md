@@ -25,7 +25,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
                 <p><a href="#indexing-columns">Indexing columns</a></p>
                 <ul>
                     <li><a href="#partition-key">Partition Key</a></li>
-                    <li><a href="#primary-key">Partition Key</a></li>
+                    <li><a href="#primary-key">Primary Key</a></li>
                     <li><a href="#secondary-key">Secondary Index Key</a></li>
                     <li><a href="#secondary-key">Secondary Index Key</a></li>
                     <li><a href="#clustering-order">Clustering Order Key</a></li>
