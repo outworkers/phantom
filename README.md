@@ -103,16 +103,15 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra, but don't let this mislead you.
-Cassandra is not another MongoDB JSON/BSON good marketing team technology, it is highly scalable, it's pretty difficult to use and get right and for most projects it is serious overkill.
-All queries need to be planned in advance, schema is not flexible and people who can help are very rare.
+We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra.
 
-Documentation is not plentiful and you to spend some serious hours on IRC channels looking for basic things.
+Cassandra is highly scalable and it's by far the most powerful database technology available, open source or otherwise.
 
-Unless you are planning on multi-datacenter financial timeseries data or 100 000 writes per second, you are going to waste a lot of time and money dealing with problems that won't do much for you, your app or business.
-For your own sake, research Cassandra use cases and see if it is truly a fit.
+Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting. 
 
-We are very happy to help implement missing features in phantom, answer questions strictly about phantom, but Cassandra Data modeling is out of that scope.
+If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html)
+
+We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
