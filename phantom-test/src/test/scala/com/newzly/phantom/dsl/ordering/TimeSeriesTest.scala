@@ -37,7 +37,7 @@ class TimeSeriesTest extends BaseTest {
     }
   }
 
-  ignore should "allow using naturally fetch the records in descending order for a descending clustering order" in {
+  it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(2500L)
@@ -67,7 +67,7 @@ class TimeSeriesTest extends BaseTest {
 
         val set = session.execute(TimeSeriesTable.select.limit(5).qb.getQueryString).all()
         Console.println(set.asScala)
-        val mapped = set.asScala.toList.map(TimeSeriesTable.fromRow).map(_.timestamp.getSecondOfDay)
+        val mapped = set.asScala.toList.map(TimeSeriesTable.fromRow).map(_.timestamp.getSecondOfDay).reverse
         mapped shouldEqual ts
 
         val manual = set.asScala.map(_.getDate("timestamp").getSeconds)
