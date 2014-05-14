@@ -1,9 +1,10 @@
 import sbt._
 import Keys._
-import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
+import ScoverageSbtPlugin.instrumentSettings
+import CoverallsPlugin.coverallsSettings
 
 object phantom extends Build {
 
@@ -11,7 +12,7 @@ object phantom extends Build {
   val datastaxDriverVersion = "2.0.1"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
-  val scroogeVersion = "3.11.2"
+  val scroogeVersion = "3.14.1"
   val thriftVersion = "0.8.0"
 
   val thriftLibs = Seq(
@@ -50,7 +51,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
 
   val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -127,7 +128,7 @@ object phantom extends Build {
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings
   ).settings(
     name := "phantom"
   ).aggregate(
@@ -142,7 +143,6 @@ object phantom extends Build {
     id = "phantom-dsl",
     base = file("phantom-dsl"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings
   ).settings(
@@ -162,7 +162,6 @@ object phantom extends Build {
     base = file("phantom-cassandra-unit"),
     settings = Project.defaultSettings ++
       assemblySettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++ publishSettings
   ).settings(
     name := "phantom-cassandra-unit",
@@ -191,7 +190,6 @@ object phantom extends Build {
     id = "phantom-thrift",
     base = file("phantom-thrift"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings ++
       ScroogeSBT.newSettings
@@ -211,7 +209,6 @@ object phantom extends Build {
     id = "phantom-example",
     base = file("phantom-example"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings ++
       ScroogeSBT.newSettings
@@ -227,7 +224,6 @@ object phantom extends Build {
     base = file("phantom-test"),
     settings = Project.defaultSettings ++
       assemblySettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings
   ).settings(
