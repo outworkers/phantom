@@ -15,17 +15,18 @@
  */
 package com.newzly.phantom.dsl.ordering
 
-import scala.collection.JavaConverters._
-import scala.concurrent.blocking
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.iteratee.Iteratee
-import com.newzly.phantom.tables.{ TimeSeriesRecord, TimeSeriesTable }
+import com.newzly.phantom.tables.{TimeSeriesRecord, TimeSeriesTable}
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.cassandra.BaseTest
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.PatienceConfiguration
+import scala.collection.JavaConverters._
+import scala.concurrent.blocking
+import scala.concurrent.duration._
 
-class TimeSeriesTest extends BaseTest {
+class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
   val keySpace = "clustering_order_tests"
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -37,7 +38,11 @@ class TimeSeriesTest extends BaseTest {
     }
   }
 
-  ignore should "allow using naturally fetch the records in descending order for a descending clustering order" in {
+  override protected def afterEach() {
+    TimeSeriesTable.delete.where(_.id eqs TimeSeriesRecord.testUUID).future()
+  }
+
+  it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(2500L)
@@ -59,26 +64,70 @@ class TimeSeriesTest extends BaseTest {
       select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
     } yield select
 
-
     chain.successful {
-      res => {
+      res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
-        ts.sorted shouldEqual ts
-
         val set = session.execute(TimeSeriesTable.select.limit(5).qb.getQueryString).all()
-        Console.println(set.asScala)
-        val mapped = set.asScala.toList.map(TimeSeriesTable.fromRow).map(_.timestamp.getSecondOfDay)
+        val mapped = set.asScala.toList.map(TimeSeriesTable.fromRow).map(_.timestamp.getSecondOfDay).reverse
         mapped shouldEqual ts
-
-        val manual = set.asScala.map(_.getDate("timestamp").getSeconds)
-
-        Console.println(manual)
-
-        Console.println(ts.mkString("\n"))
-
-        Console.println(res.map(_.timestamp.getSecondOfDay))
-        //recordList.map(_.name) shouldEqual res.map(_.name)
-      }
     }
   }
+
+  it should "allow fetching the records in ascending order for a descending clustering order using order by clause" in {
+    val recordList = List.range(0, 5).map {
+      res => {
+        Thread.sleep(2500L)
+        TimeSeriesRecord.sample
+      }
+    }
+
+    val batch = recordList.foldLeft(BatchStatement()) {
+      (b, record) => {
+        b.add(TimeSeriesTable.insert
+          .value(_.id, record.id)
+          .value(_.name, record.name)
+          .value(_.timestamp, record.timestamp))
+      }
+    }
+    val chain = for {
+      insert <- batch.future()
+      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
+    } yield select
+
+    chain.successful {
+      res =>
+        val ts = recordList.map(_.timestamp.getSecondOfDay)
+        TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).fetch().successful {
+          timeSeriesRecords => timeSeriesRecords.map(_.timestamp.getSecondOfDay) shouldEqual ts
+        }
+    }
+  }
+
+  it should "allow fetching the records in descending order for a descending clustering order using order by clause" in {
+    val recordList = List.range(0, 5).map {
+      res =>
+        Thread.sleep(2500L)
+        TimeSeriesRecord.sample
+    }
+    val batch = recordList.foldLeft(BatchStatement()) {
+      (b, record) =>
+        b.add(TimeSeriesTable.insert
+          .value(_.id, record.id)
+          .value(_.name, record.name)
+          .value(_.timestamp, record.timestamp))
+    }
+    val chain = for {
+      insert <- batch.future()
+      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
+    } yield select
+
+    chain.successful {
+      res =>
+        val ts = recordList.map(_.timestamp.getSecondOfDay)
+        TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).fetch().successful {
+          timeSeriesRecords => timeSeriesRecords.map(_.timestamp.getSecondOfDay) shouldEqual ts.reverse
+        }
+    }
+  }
+
 }
