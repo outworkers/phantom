@@ -245,7 +245,6 @@ object phantom extends Build {
     base = file("phantom-scalatra-test"),
     settings = Project.defaultSettings ++
       assemblySettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings
   ).settings(

@@ -1,4 +1,5 @@
-phantom [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
+phantom [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom) [![Coverage Status](https://coveralls.io/repos/newzly/phantom/badge.png)](https://coveralls.io/r/newzly/phantom)
+
 ==============
 Asynchronous Scala DSL for Cassandra
 
