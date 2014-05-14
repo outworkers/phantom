@@ -16,8 +16,7 @@
 package com.newzly.phantom.column
 
 import com.datastax.driver.core.Row
-import com.newzly.phantom.{CassandraPrimitive, CassandraTable}
-
+import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 
 private [phantom] trait CounterRestriction[T]
 

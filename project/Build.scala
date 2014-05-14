@@ -13,18 +13,12 @@ object phantom extends Build {
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.14.1"
-  val thriftVersion = "0.8.0"
-
-  val thriftLibs = Seq(
-    "org.apache.thrift" % "libthrift" % thriftVersion intransitive()
-  )
-  val scroogeLibs = thriftLibs ++ Seq(
-    "com.twitter" %% "scrooge-runtime" % scroogeVersion
-  )
+  val thriftVersion = "0.5.0"
+  val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.4.5",
+    version := "0.6.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -51,7 +45,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -70,8 +64,8 @@ object phantom extends Build {
       <url>https://github.com/newzly.phantom</url>
         <licenses>
           <license>
-            <name>BSD-style</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
@@ -102,8 +96,8 @@ object phantom extends Build {
       pomExtra := <url>https://github.com/newzly.phantom</url>
         <licenses>
           <license>
-            <name>BSD-style</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
+            <name>Apache V2 License</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
@@ -136,7 +130,8 @@ object phantom extends Build {
     phantomDsl,
     phantomExample,
     phantomThrift,
-    phantomTest
+    phantomTest,
+    phantomScalatraTest
   )
 
   lazy val phantomDsl = Project(
@@ -148,12 +143,12 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     libraryDependencies ++= Seq(
+      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
       "com.twitter"                  %% "util-core"                         % finagleVersion,
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j"),
-      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4"
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
     )
   )
 
@@ -235,6 +230,7 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
+      "org.scalacheck"           %% "scalacheck"                        % "1.11.3",
       "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
     )
   ).dependsOn(
@@ -242,4 +238,43 @@ object phantom extends Build {
     phantomCassandraUnit,
     phantomThrift
   )
+
+
+  lazy val phantomScalatraTest = Project(
+    id = "phantom-scalatra-test",
+    base = file("phantom-scalatra-test"),
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      VersionManagement.newSettings ++
+      sharedSettings ++
+      publishSettings
+  ).settings(
+      name := "phantom-scalatra-test",
+      fork := true,
+      fork in Test := true,
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      )
+    ).settings(
+      libraryDependencies ++= Seq(
+        "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
+        "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+        "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
+        "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+        "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
+        "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
+        "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
+        "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+        "com.newzly"               %% "util-testing"                      % newzlyUtilVersion      % "provided"
+      )
+    ).dependsOn(
+      phantomDsl,
+      phantomCassandraUnit,
+      phantomThrift,
+      phantomTest % "compile->compile;test->test"
+    )
+
 }
