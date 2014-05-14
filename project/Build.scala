@@ -52,7 +52,7 @@ object phantom extends Build {
      )
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply{
@@ -92,7 +92,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
