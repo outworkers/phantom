@@ -30,9 +30,10 @@ case class TimeSeriesRecord(
 )
 
 object TimeSeriesRecord extends ModelSampler[TimeSeriesRecord] {
+  val testUUID = UUIDs.timeBased()
   def sample: TimeSeriesRecord = {
     TimeSeriesRecord(
-      UUIDs.timeBased(),
+      testUUID,
       Sampler.getARandomString,
       new DateTime()
     )
