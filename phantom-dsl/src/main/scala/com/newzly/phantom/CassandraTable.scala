@@ -36,10 +36,6 @@ case class FieldHolder(name: String, metaField: AbstractColumn[_])
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  def runSafe[A](f : => A) : A = {
-    Safe.runSafe(System.identityHashCode(this))(f)
-  }
-
   private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with collection.mutable.SynchronizedBuffer[AbstractColumn[_]]
 
   final def addColumn(column: AbstractColumn[_]): Unit = {
