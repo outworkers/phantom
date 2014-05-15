@@ -40,3 +40,4 @@ case class QueryAssignment(assignment: Assignment)
 
 case class QueryOrdering(ordering: Ordering)
 
+
