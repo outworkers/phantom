@@ -1,12 +1,13 @@
 package com.newzly.phantom.scalatra
 
 import scala.concurrent.blocking
+import scala.concurrent.duration._
 import scala.util.Random
 import dispatch.{Http, url}, dispatch.Defaults._, dispatch.as
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
-import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import com.newzly.phantom.scalatra.server.{ScalatraBootstrap, JettyLauncher}
 import com.newzly.phantom.tables.{OptionPrice, EquityPrice}
@@ -16,6 +17,8 @@ import com.newzly.util.testing.AsyncAssertionsHelper._
 class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
 
   private val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
+
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   private implicit val jsonFormats: Formats =
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all
@@ -60,7 +63,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
       AppleOptionPrices.filter { case OptionPrice(_, tradeDate, _, _, _, _) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)}
 
     (1 to 30).par.foreach { i =>
-      Thread.sleep(Random.nextInt(5000).toLong)
+      Thread.sleep(Random.nextInt(2500).toLong)
       val startDay = Random.nextInt(8) + 1 // 1 to 8
       val endDay = startDay + Random.nextInt(10 - startDay) + 1
       val from: LocalDate = new LocalDate(2014, 1, startDay)
