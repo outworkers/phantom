@@ -21,9 +21,8 @@ import com.newzly.phantom.column.{ AbstractColumn, TimeSeries }
  * A trait mixable into a Column to allow clustering order.
  * @tparam ValueType The value stored in the column.
  */
-trait ClusteringOrder[ValueType] extends Key[ValueType, ClusteringOrder[ValueType]]{
+trait ClusteringOrder[ValueType] extends PrimaryKey[ValueType]{
   self: AbstractColumn[ValueType] =>
-  override val isPrimary = true
   override val isClusteringKey = true
   private[phantom] implicit val timeSeries: TimeSeries[ValueType]
 }
