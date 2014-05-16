@@ -180,7 +180,8 @@ object phantom extends Build {
     }
   ).settings(
     libraryDependencies ++= Seq(
-      "org.cassandraunit"        %  "cassandra-unit"                    % "2.0.2.1"
+      "org.cassandraunit"    %  "cassandra-unit"  % "2.0.2.1" exclude("org.apache.cassandra", "cassandra-all"),
+      "org.apache.cassandra" % "cassandra-all"    % "2.0.7"   exclude("org.slf4j", "slf4j-log4j12") exclude("log4j", "log4j") exclude("commons-logging", "commons-logging")
     )
   )
 

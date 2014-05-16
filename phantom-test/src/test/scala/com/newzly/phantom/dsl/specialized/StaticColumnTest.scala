@@ -22,7 +22,7 @@ class StaticColumnTest extends BaseTest {
     }
   }
 
-  ignore should "use a static value for a static column" in {
+  it should "use a static value for a static column" in {
 
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
@@ -32,20 +32,20 @@ class StaticColumnTest extends BaseTest {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.staticTest, static).execute()
-      insert2 <- StaticTableTest.insert.value(_.id, id2).execute()
-      select <- StaticTableTest.select.where(_.id eqs id2).get()
+      insert <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
+      insert2 <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id2).execute()
+      select <- StaticTableTest.select.where(_.id eqs id).and(_.clusteringId eqs id2).get()
     } yield select
 
     chain.successful {
       res => {
         res.isDefined shouldEqual true
-        res.get._2 shouldEqual static
+        res.get._3 shouldEqual static
       }
     }
   }
 
-  ignore should "update values in all rows" in {
+  it should "update values in all rows" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val id = UUIDs.timeBased()
@@ -55,20 +55,20 @@ class StaticColumnTest extends BaseTest {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.staticTest, static).execute()
+      insert <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
 
       // The second insert updates the static value
-      insert2 <- StaticTableTest.insert.value(_.id, id2).value(_.staticTest, static2).execute()
+      insert2 <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).execute()
 
       // We query for the first record inserted.
-      select <- StaticTableTest.select.where(_.id eqs id).get()
+      select <- StaticTableTest.select.where(_.id eqs id).and(_.clusteringId eqs id).get()
     } yield select
 
     chain.successful {
       res => {
         res.isDefined shouldEqual true
         // The first record should hold the updated value.
-        res.get._2 shouldEqual static2
+        res.get._3 shouldEqual static2
       }
     }
   }
