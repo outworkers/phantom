@@ -126,7 +126,24 @@ class ConditionalQueries extends BaseTest {
       select2 <- Recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.failing[InvalidQueryException]
+    chain.successful {
+      res => {
+        val initial = res._1
+        val second = res._2
+
+        info("The first record should not be empty")
+        initial.isDefined shouldEqual true
+
+        info("And it should match the inserted values")
+        initial.get.url shouldEqual recipe.url
+
+        info("The updated record should not be empty")
+        second.isDefined shouldEqual true
+
+        info("And it should contain the updated value of the uid")
+        second.get.description shouldEqual(updated)
+      }
+    }
   }
 
   it should "throw an error when a list column is used a conditional clause with Twitter Futures" in {
@@ -151,7 +168,24 @@ class ConditionalQueries extends BaseTest {
       select2 <- Recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
-    chain.failing[InvalidQueryException]
+    chain.successful {
+      res => {
+        val initial = res._1
+        val second = res._2
+
+        info("The first record should not be empty")
+        initial.isDefined shouldEqual true
+
+        info("And it should match the inserted values")
+        initial.get.url shouldEqual recipe.url
+
+        info("The updated record should not be empty")
+        second.isDefined shouldEqual true
+
+        info("And it should contain the updated value of the uid")
+        second.get.description shouldEqual(updated)
+      }
+    }
   }
 
   it should "not update the record if the optional column based condition doesn't match" in {
