@@ -30,12 +30,12 @@ class QuerySerializationTest extends BaseTest {
 
   it should "correctly serialize a full select query" in {
     val someId = UUIDs.timeBased()
-    Articles.select.where(_.id eqs someId).qb.toString shouldBe s"SELECT * FROM ${Articles.tableName} WHERE id=$someId;"
+    Articles.select.where(_.id eqs someId).qb.toString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
   }
 
   it should "correctly serialize a single column partial select query" in {
     val someId = UUIDs.timeBased()
-    Articles.select(_.id).where(_.id eqs someId).qb.toString shouldBe s"SELECT ${Articles.id.name} FROM ${Articles.tableName} WHERE id=$someId;"
+    Articles.select(_.id).where(_.id eqs someId).qb.toString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
   }
 
   it should "serialize a condition query to a query condition" in {

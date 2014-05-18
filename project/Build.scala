@@ -9,7 +9,7 @@ import CoverallsPlugin.CoverallsKeys._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.27"
+  val newzlyUtilVersion = "0.0.28"
   val datastaxDriverVersion = "2.0.1"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
@@ -270,7 +270,7 @@ object phantom extends Build {
         "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
         "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
         "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-        "com.newzly"               %% "util-testing"                      % newzlyUtilVersion      % "provided"
+        "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided"
       )
     ).dependsOn(
       phantomDsl,
