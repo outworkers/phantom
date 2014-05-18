@@ -5,6 +5,7 @@ import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
 import ScoverageSbtPlugin.instrumentSettings
 import CoverallsPlugin.coverallsSettings
+import CoverallsPlugin.CoverallsKeys._
 
 object phantom extends Build {
 
@@ -32,6 +33,8 @@ object phantom extends Build {
       "newzly snapshots"                 at "http://maven.newzly.com/repository/snapshots",
       "newzly repository"                at "http://maven.newzly.com/repository/internal"
     ),
+    coverallsToken in ThisBuild := "yoaTKGbT4i3PUR4L1QQ6bCAeSadMIf5Ru",
+    parallelExecution in ScoverageSbtPlugin.scoverageTest := false,
     unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)),
     scalacOptions ++= Seq(
       "-language:postfixOps",

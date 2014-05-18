@@ -531,8 +531,8 @@ Examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/dev
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
-| ```append```                  | Adds an item to the tail of the set           |
-| ```appendAll```               | Adds multiple items to the tail of the set    |
+| ```add```                     | Adds an item to the tail of the set           |
+| ```addAll```                  | Adds multiple items to the tail of the set    |
 | ```remove ```                 | Removes the given item from the set.          |
 | ```removeAll```               | Removes all given items from the set.         |
 
@@ -734,9 +734,7 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 
 object ExampleRecord3 extends ExampleRecord3 {
   def getRecords(start: Int, limit: Int): Future[Set[ExampleModel]] = {
-    select.fetchEnumerator.map {
-      _.slice(start, limit).collect
-    }
+    select.fetchEnumerator.slice(start, limit).collect
   }
 }
 

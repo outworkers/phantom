@@ -62,6 +62,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def fromRow(r: Row): R
 
+
   def update = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
 
   def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
