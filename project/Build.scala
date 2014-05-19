@@ -10,7 +10,7 @@ import JacocoPlugin._
 object phantom extends Build {
 
   val newzlyUtilVersion = "0.0.27"
-  val datastaxDriverVersion = "2.0.1"
+  val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.1.0"
   val finagleVersion = "6.10.0"
   val scroogeVersion = "3.11.2"
@@ -150,7 +150,7 @@ object phantom extends Build {
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion
     )
   )
 
