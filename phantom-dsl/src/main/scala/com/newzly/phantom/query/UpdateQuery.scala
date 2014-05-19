@@ -19,7 +19,7 @@ import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update,
 import com.newzly.phantom.CassandraTable
 
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
-  extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) with ExecutableStatement {
+  extends SharedQueryMethods[AssignmentsQuery[T, R], Update.Assignments](qb) {
 
 
   def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
@@ -34,7 +34,7 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
 }
 
 class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options)
-  extends SharedQueryMethods[AssignmentOptionQuery[T, R], Update.Options](qb) with ExecutableStatement {
+  extends SharedQueryMethods[AssignmentOptionQuery[T, R], Update.Options](qb) {
 
   def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
@@ -46,7 +46,7 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
 }
 
 class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
-  extends SharedQueryMethods[ConditionalUpdateQuery[T, R], Update.Conditions](qb) with ExecutableStatement {
+  extends SharedQueryMethods[ConditionalUpdateQuery[T, R], Update.Conditions](qb) {
 
   def where[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.where(condition(table).clause))
@@ -54,11 +54,11 @@ class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upd
 }
 
 class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
-  extends SharedQueryMethods[ConditionalUpdateWhereQuery[T, R], Update.Conditions](qb) with ExecutableStatement {
+  extends SharedQueryMethods[ConditionalUpdateWhereQuery[T, R], Update.Conditions](qb) {
 }
 
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
-  extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) {
+  extends SharedQueryMethods[UpdateQuery[T, R], Update](qb) with ExecutableStatement {
 
   def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))

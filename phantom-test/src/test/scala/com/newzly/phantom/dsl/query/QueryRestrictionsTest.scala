@@ -116,7 +116,6 @@ class QueryRestrictionsTest extends FeatureSpec with Matchers with ParallelTestE
 
     scenario("not allow using a primary key in a conditional clause") {
       """Recipes.update.where(_.url eqs "someUrl").modify(_.name setTo "test").onlyIf(_.id eqs secondary)""" shouldNot compile
-
     }
 
     scenario("not allow using SelectWhere queries in a batch") {
@@ -130,6 +129,41 @@ class QueryRestrictionsTest extends FeatureSpec with Matchers with ParallelTestE
     scenario("not allow using Create queries in a batch") {
       "BatchStatement().add(Primitives.create)" shouldNot compile
     }
+  }
+
+  feature("Allow the right queries in a Batch") {
+    scenario("Insert queries are batchable") {
+      "BatchStatement().add(Primitives.insert)" should compile
+    }
+
+    scenario("Insert.Value queries should be batchable") {
+      "BatchStatement().add(Primitives.insert.value(_.long, 4L))" should compile
+    }
+
+    scenario("Update.Assignments queries should be batchable") {
+      "BatchStatement().add(Primitives.update.modify(_.long setTo 5L))" should compile
+    }
+
+    scenario("Update.Where queries should be batchable") {
+      "BatchStatement().add(Primitives.update.where(_.pkey eqs Sampler.getARandomString))" should compile
+    }
+
+    scenario("Conditional Update.Where queries should be batchable") {
+      "BatchStatement().add(Primitives.update.where(_.pkey eqs Sampler.getARandomString).onlyIf(_.long eqs 5L))" should compile
+    }
+
+    scenario("Conditional Assignments queries should be batchable") {
+      "BatchStatement().add(Primitives.update.where(_.pkey eqs Sampler.getARandomString).modify(_.long setTo 10L).onlyIf(_.long eqs 5L))" should compile
+    }
+
+    scenario("Delete queries should be batchable") {
+      "BatchStatement().add(Primitives.delete)" should compile
+    }
+
+    scenario("Delete.Where queries should be batchable") {
+      "BatchStatement().add(Primitives.delete)" should compile
+    }
+
 
   }
 
