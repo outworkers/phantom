@@ -9,12 +9,12 @@ import JacocoPlugin._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.27"
+  val newzlyUtilVersion = "0.0.28"
   val datastaxDriverVersion = "2.0.2"
-  val scalatestVersion = "2.1.0"
-  val finagleVersion = "6.10.0"
-  val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.5.0"
+  val scalatestVersion = "2.2.0-M1"
+  val finagleVersion = "6.16.0"
+  val scroogeVersion = "3.15.0"
+  val thriftVersion = "0.9.1"
   val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
