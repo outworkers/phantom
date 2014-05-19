@@ -9,12 +9,12 @@ import JacocoPlugin._
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.27"
-  val datastaxDriverVersion = "2.0.1"
-  val scalatestVersion = "2.1.0"
-  val finagleVersion = "6.10.0"
-  val scroogeVersion = "3.11.2"
-  val thriftVersion = "0.5.0"
+  val newzlyUtilVersion = "0.0.28"
+  val datastaxDriverVersion = "2.0.2"
+  val scalatestVersion = "2.2.0-M1"
+  val finagleVersion = "6.16.0"
+  val scroogeVersion = "3.15.0"
+  val thriftVersion = "0.9.1"
   val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
@@ -150,7 +150,7 @@ object phantom extends Build {
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion exclude("log4j", "log4j")
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion
     )
   )
 
