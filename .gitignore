@@ -3,6 +3,8 @@
 
 atlassian-ide-plugin.xml
 
+cassandra.jar
+
 # Eclipse specific
 .classpath
 .project
