@@ -15,27 +15,34 @@
  */
 package com.newzly.phantom.dsl.query
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
+import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Articles, Recipes }
 import com.newzly.util.testing.Sampler
-import com.newzly.util.testing.cassandra.BaseTest
 
-class QuerySerializationTest extends BaseTest {
+class QuerySerializationTest extends FlatSpec with Matchers with ParallelTestExecution {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-  val keySpace: String = "deleteTest"
+  it should "compile a full select query" in {
+    "Articles.select.where(_.id eqs UUIDs.timeBased())" should compile
+  }
 
   it should "correctly serialize a full select query" in {
     val someId = UUIDs.timeBased()
     Articles.select.where(_.id eqs someId).qb.toString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
   }
 
+  it should "compile a single column partial select query" in {
+    "Articles.select(_.id).where(_.id eqs UUIDs.timeBased())" should compile
+  }
+
   it should "correctly serialize a single column partial select query" in {
     val someId = UUIDs.timeBased()
     Articles.select(_.id).where(_.id eqs someId).qb.toString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
+  }
+
+  it should "compile a query to query condition clause" in {
+    """Articles.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo "test").onlyIf(_.name eqs "update")""" should compile
   }
 
   it should "serialize a condition query to a query condition" in {
