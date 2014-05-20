@@ -5,7 +5,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.Primitives
 import com.newzly.util.testing.Sampler
 
-class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with ParallelTestExecution {
+class IndexOperatorsRestrictionTests extends FlatSpec with Matchers {
   
     it should "allow using the eqs operator on index columns" in {
       "Primitives.select.where(_.pkey eqs Sampler.getARandomString)" should compile

@@ -4,7 +4,7 @@ import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Primitives, Recipes }
 
-class BatchRestrictionTest extends FlatSpec with Matchers with ParallelTestExecution {
+class BatchRestrictionTest extends FlatSpec with Matchers {
   
   it should "not allow using Select queries in a batch" in {
     "BatchStatement().add(Primitives.select)" shouldNot compile

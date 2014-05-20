@@ -4,7 +4,7 @@ import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.Primitives
 
-class TypeRestrictionsTest extends FlatSpec with Matchers with ParallelTestExecution {
+class TypeRestrictionsTest extends FlatSpec with Matchers {
   it should "allow using a correct type for a value method" in {
     "Primitives.insert.value(_.boolean, true)" should compile
   }

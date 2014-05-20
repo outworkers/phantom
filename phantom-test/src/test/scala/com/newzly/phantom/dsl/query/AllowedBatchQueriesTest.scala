@@ -5,7 +5,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Primitives, Recipes }
 import com.newzly.util.testing.Sampler
 
-class AllowedBatchQueriesTest extends FlatSpec with Matchers with ParallelTestExecution {
+class AllowedBatchQueriesTest extends FlatSpec with Matchers {
 
   it should "allow using Insert queries in a Batch statement" in {
     "BatchStatement().add(Primitives.insert)" should compile

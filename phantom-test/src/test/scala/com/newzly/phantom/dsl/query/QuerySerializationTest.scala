@@ -21,7 +21,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Articles, Recipes }
 import com.newzly.util.testing.Sampler
 
-class QuerySerializationTest extends FlatSpec with Matchers with ParallelTestExecution {
+class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "compile a full select query" in {
     "Articles.select.where(_.id eqs UUIDs.timeBased())" should compile

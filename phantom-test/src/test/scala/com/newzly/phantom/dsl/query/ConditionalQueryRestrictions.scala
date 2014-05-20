@@ -6,7 +6,7 @@ import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ Primitives, TimeSeriesTable }
 import com.newzly.util.testing.Sampler
 
-class ConditionalQueryRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
+class ConditionalQueryRestrictions extends FlatSpec with Matchers {
 
   it should "allow using a non-index column in a conditional update clause" in {
     "Primitives.update.where(_.pkey eqs Sampler.getARandomString).onlyIf(_.long eqs 5L)" should compile
