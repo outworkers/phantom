@@ -24,7 +24,7 @@ class WhereClauseBuilderTest extends FlatSpec with Matchers {
     "Primitives.select.where(_.pkey eqs Sampler.getARandomString).and(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
   }
 
-  it should "Should not allow chaining two  Update.Where clauses" in {
+  it should "Should not allow chaining two Update.Where clauses" in {
     "Primitives.update.where(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
   }
 
