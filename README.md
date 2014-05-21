@@ -30,6 +30,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
                     <li><a href="#secondary-key">Secondary Index Key</a></li>
                     <li><a href="#clustering-order">Clustering Order Key</a></li>
                 </ul>
+            </li>
             <li><a href="#thrift-columns">Thrift columns</a></li>
         </ul>
     </li>
