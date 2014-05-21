@@ -28,7 +28,6 @@ Phantom is published to Maven Central and it's actively and avidly developed.
                     <li><a href="#partition-key">Partition Key</a></li>
                     <li><a href="#primary-key">Primary Key</a></li>
                     <li><a href="#secondary-key">Secondary Index Key</a></li>
-                    <li><a href="#secondary-key">Secondary Index Key</a></li>
                     <li><a href="#clustering-order">Clustering Order Key</a></li>
                 </ul>
             <li><a href="#thrift-columns">Thrift columns</a></li>
@@ -253,7 +252,7 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-<a id="secondary-index">```Index[T]```</a>
+<a id="secondary-key">```Index[T]```</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 

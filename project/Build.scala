@@ -235,6 +235,7 @@ object phantom extends Build {
   ).dependsOn(
     phantomDsl,
     phantomCassandraUnit,
+    phantomScalatraTest,
     phantomThrift
   )
 
@@ -243,7 +244,6 @@ object phantom extends Build {
     id = "phantom-scalatra-test",
     base = file("phantom-scalatra-test"),
     settings = Project.defaultSettings ++
-      assemblySettings ++
       sharedSettings ++
       publishSettings
   ).settings(
@@ -270,9 +270,7 @@ object phantom extends Build {
       )
     ).dependsOn(
       phantomDsl,
-      phantomCassandraUnit,
-      phantomThrift,
-      phantomTest % "compile->compile;test->test"
+      phantomThrift
     )
 
 }
