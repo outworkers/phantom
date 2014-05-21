@@ -195,7 +195,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
 
-<a id="#collection-columns">Collection columns</a>
+<a id="collection-columns">Collection columns</a>
 ======================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -208,20 +208,11 @@ The ```type``` in the below example is always a default C* type.
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
-<a id="#indexing-columns">Indexing columns</a>
+<a id="indexing-columns">Indexing columns</a>
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
-
-For example:
-
-- You cannot mix in more than one index on a single column
-- You cannot set index columns to a different value
-- You cannot query on a column that's not an index
-
-For more of the above, have a look at [QueryRestrictions.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/query/QueryRestrictionsTest.scala).
-
 
 <a id="partition-key">PartitionKey[T]</a>
 ==============================================
