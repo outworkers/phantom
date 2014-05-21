@@ -3,26 +3,15 @@ import Keys._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
-import ScoverageSbtPlugin.instrumentSettings
-import CoverallsPlugin.coverallsSettings
-import CoverallsPlugin.CoverallsKeys._
 
 object phantom extends Build {
 
   val newzlyUtilVersion = "0.0.28"
-<<<<<<< HEAD
-  val datastaxDriverVersion = "2.0.1"
-  val scalatestVersion = "2.1.0"
-  val finagleVersion = "6.10.0"
-  val scroogeVersion = "3.14.1"
-  val thriftVersion = "0.5.0"
-=======
   val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.16.0"
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
->>>>>>> 1eb957e9336d7ac43e9b11a0cece5cde4c17f7a2
   val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
@@ -41,8 +30,6 @@ object phantom extends Build {
       "newzly snapshots"                 at "http://maven.newzly.com/repository/snapshots",
       "newzly repository"                at "http://maven.newzly.com/repository/internal"
     ),
-    coverallsToken in ThisBuild := "yoaTKGbT4i3PUR4L1QQ6bCAeSadMIf5Ru",
-    parallelExecution in ScoverageSbtPlugin.scoverageTest := false,
     unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)),
     scalacOptions ++= Seq(
       "-language:postfixOps",
@@ -56,7 +43,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ coverallsSettings ++ instrumentSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
