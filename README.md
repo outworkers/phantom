@@ -837,6 +837,7 @@ test
 Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through phantom.
 
 * Flavian Alexandru flavian@newzly.com(maintainer)
+* Tomasz Perek tomasz.perek@newzly.com
 * Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
@@ -858,5 +859,5 @@ Contributions are most welcome!
 
 To contribute, simply submit a "Pull request" via GitHub.
 
-We use GitFlow as a branching model and SemVer for versioning.
+We use GitFlow as a branching model and SemVer for versioning. When you submit a "Pull request" we require all changes to be squashed.
 
