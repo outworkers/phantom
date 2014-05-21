@@ -15,4 +15,10 @@ addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.14.1")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.98.2")
 
+<<<<<<< HEAD
 addSbtPlugin("com.sksamuel.scoverage" %% "sbt-coveralls" % "0.0.5")
+=======
+addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.14.1")
+
+addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.0.0")
+>>>>>>> 1eb957e9336d7ac43e9b11a0cece5cde4c17f7a2
