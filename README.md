@@ -223,7 +223,7 @@ For example:
 For more of the above, have a look at [QueryRestrictions.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/query/QueryRestrictionsTest.scala).
 
 
-<a id="partition-key">```PartitionKey[T]```</a>
+<a id="partition-key">PartitionKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -238,7 +238,7 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
 
-<a id="primary-key">```PrimaryKey[T]```</a>
+<a id="primary-key">PrimaryKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -252,7 +252,7 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-<a id="secondary-key">```Index[T]```</a>
+<a id="secondary-key">Index</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -262,7 +262,7 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-<a id="clustering-order">```ClusteringOrder```</a>
+<a id="clustering-order">ClusteringOrder</a>
 =================================================
 <a href="#table-of-contents">back to top</a>
 
