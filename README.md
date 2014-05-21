@@ -1,4 +1,5 @@
 phantom [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
+
 ==============
 Asynchronous Scala DSL for Cassandra
 
@@ -27,9 +28,9 @@ Phantom is published to Maven Central and it's actively and avidly developed.
                     <li><a href="#partition-key">Partition Key</a></li>
                     <li><a href="#primary-key">Primary Key</a></li>
                     <li><a href="#secondary-key">Secondary Index Key</a></li>
-                    <li><a href="#secondary-key">Secondary Index Key</a></li>
                     <li><a href="#clustering-order">Clustering Order Key</a></li>
                 </ul>
+            </li>
             <li><a href="#thrift-columns">Thrift columns</a></li>
         </ul>
     </li>
@@ -91,8 +92,8 @@ Phantom is published to Maven Central and it's actively and avidly developed.
     <li>
         <p><a href="#contributors">Contributing to phantom</a></p>
         <ul>
-            <li>Using GitFlow as a branching model</li>
-            <li>Scala style guidelines for contributions</li>
+            <li><a href="#git-flow">Using GitFlow as a branching model</a></li>
+            <li><a href="#style-guide">Scala style guidelines for contributions</a></li>
             <li>Using the testing utilities to write tests</li>
         </ul>
     <li><a href="#copyright">Copyright</a></li>
@@ -195,7 +196,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
 
-<a id="#collection-columns">Collection columns</a>
+<a id="collection-columns">Collection columns</a>
 ======================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -208,22 +209,13 @@ The ```type``` in the below example is always a default C* type.
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
 
-<a id="#indexing-columns">Indexing columns</a>
+<a id="indexing-columns">Indexing columns</a>
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 
-For example:
-
-- You cannot mix in more than one index on a single column
-- You cannot set index columns to a different value
-- You cannot query on a column that's not an index
-
-For more of the above, have a look at [QueryRestrictions.scala](https://github.com/newzly/phantom/blob/develop/phantom-test/src/test/scala/com/newzly/phantom/dsl/query/QueryRestrictionsTest.scala).
-
-
-<a id="partition-key">```PartitionKey[T]```</a>
+<a id="partition-key">PartitionKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -238,7 +230,7 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
 
-<a id="primary-key">```PrimaryKey[T]```</a>
+<a id="primary-key">PrimaryKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -252,7 +244,7 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-<a id="secondary-index">```Index[T]```</a>
+<a id="secondary-key">Index</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -262,7 +254,7 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-<a id="clustering-order">```ClusteringOrder```</a>
+<a id="clustering-order">ClusteringOrder</a>
 =================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -530,8 +522,8 @@ Examples in [SetOperationsTest.scala](https://github.com/newzly/phantom/blob/dev
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
-| ```append```                  | Adds an item to the tail of the set           |
-| ```appendAll```               | Adds multiple items to the tail of the set    |
+| ```add```                     | Adds an item to the tail of the set           |
+| ```addAll```                  | Adds multiple items to the tail of the set    |
 | ```remove ```                 | Removes the given item from the set.          |
 | ```removeAll```               | Removes all given items from the set.         |
 
@@ -733,9 +725,7 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 
 object ExampleRecord3 extends ExampleRecord3 {
   def getRecords(start: Int, limit: Int): Future[Set[ExampleModel]] = {
-    select.fetchEnumerator.map {
-      _.slice(start, limit).collect
-    }
+    select.fetchEnumerator.slice(start, limit).collect
   }
 }
 
@@ -847,6 +837,7 @@ test
 Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through phantom.
 
 * Flavian Alexandru flavian@newzly.com(maintainer)
+* Tomasz Perek tomasz.perek@newzly.com
 * Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
@@ -866,7 +857,28 @@ Contributing to phantom
 
 Contributions are most welcome!
 
+<a id="git-flow">Using GitFlow</a>
+==================================
+
 To contribute, simply submit a "Pull request" via GitHub.
 
 We use GitFlow as a branching model and SemVer for versioning.
+
+- When you submit a "Pull request" we require all changes to be squashed.
+- We never merge more than one commit at a time. All the n commits on your feature branch must be squashed.
+- We won't look at the pull request until Travis CI says the tests pass, make sure tests go well.
+
+<a id="style-guidelines">Scala Style Guidelines</a>
+===================================================
+
+In spirit, we follow the [Twitter Scala Style Guidelines](http://twitter.github.io/effectivescala/).
+We will reject your pull request if it doesn't meet code standards, but we'll happily give you a hand to get it right.
+
+Some of the things that will make us seriously frown:
+
+- Blocking when you don't have to. It just makes our eyes hurt when we see useless blocking.
+- Testing should be thread safe and fully async, use ```ParallelTestExecution``` if you want to show off.
+- Use the common patterns you already see here, we've done a lot of work to make it easy.
+- Don't randomly import stuff. We are very big on alphabetized clean imports.
+
 

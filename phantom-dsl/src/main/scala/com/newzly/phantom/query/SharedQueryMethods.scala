@@ -2,10 +2,10 @@ package com.newzly.phantom.query
 
 import java.nio.ByteBuffer
 import com.datastax.driver.core.ConsistencyLevel
-import com.datastax.driver.core.querybuilder.BuiltStatement
 import com.datastax.driver.core.policies.RetryPolicy
+import com.datastax.driver.core.querybuilder.BuiltStatement
 
-private[query] abstract class SharedQueryMethods[Q, T <: BuiltStatement](builder: T) {
+private[query] abstract class SharedQueryMethods[Q, T <: BuiltStatement](builder: T) extends ExecutableStatement {
   self: Q =>
 
   def consistencyLevel: ConsistencyLevel = builder.getConsistencyLevel

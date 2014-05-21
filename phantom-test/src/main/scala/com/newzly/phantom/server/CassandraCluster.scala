@@ -1,4 +1,4 @@
-package com.newzly.phantom.scalatra.server
+package com.newzly.phantom.server
 
 import scala.concurrent.{ blocking, ExecutionContext }
 import scala.concurrent.ExecutionContext.global

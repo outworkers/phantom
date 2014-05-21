@@ -47,6 +47,7 @@ class IterateeBigTest extends BigTest {
       r = Await.result(f, 200 seconds)
     } yield f map (_ => r)
 
+
     val combinedFuture = Future.sequence(fs) map {
       r => session.execute(s"select count(*) from ${PrimitivesJoda.tableName}")
     } map {
