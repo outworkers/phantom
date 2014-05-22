@@ -6,6 +6,7 @@ Changelog
 
 <ul>
     <li><a href="#version-0.6.0">0.6.0 - 11.05.2014</a></li>
+    <li><a href="#version-0.7.0">0.7.0 - 22.05.2014</a></li>
 </ul>
 
 
@@ -29,3 +30,17 @@ Changelog
 - Fixed license issue in Maven Central publishing license.
 - Vastly simplified structure of collection operators and removed ```com.newzly.phantom.thrift.Implicits._```
 - Fixed ```null``` handling bug in ```OptionalColumns```.
+
+<a id="version-0.7.0">0.7.0</a>
+===============================
+
+- Added a variety of compilation tests for the phantom query builder. They test what should compile and what shouldn't, to verify compile time restrictions.
+- Fixed support for Static columns.
+- Bumped Twitter Scrooge version to 3.15.0
+- Bumped Cassandra version to 2.0.7
+- Fixed tests for TimeSeries
+- Fixed tests for orderBy clauses.
+- Fixed support for static columns.
+- Fixed issues with using the ```setIdX``` List operator.
+- Integrated Scalatra servlet container tests in the same test project.
+- Removed phantom-scalatra-test module
