@@ -7,7 +7,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.6.0```.
+The current version is: ```val phantomVersion = 0.7.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 <a id="table-of-contents">Table of contents</a>
@@ -136,7 +136,6 @@ libraryDependencies ++= Seq(
   "com.newzly"  %% "phantom-cassandra-unit"        % phantomVersion,
   "com.newzly"  %% "phantom-example"               % phantomVersion,
   "com.newzly"  %% "phantom-thrift"                % phantomVersion,
-  "com.newzly"  %% "phantom-scalatra-test"         % phantomVersion,
   "com.newzly"  %% "phantom-test"                  % phantomVersion
 )
 ```
