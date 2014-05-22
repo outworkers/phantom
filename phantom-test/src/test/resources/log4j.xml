@@ -15,8 +15,11 @@
         <level value="error" />
     </logger>
 
-
     <logger name="com.datastax.driver.core">
+        <level value="error" />
+    </logger>
+
+    <logger name="jetty">
         <level value="error" />
     </logger>
 
@@ -28,9 +31,8 @@
         <level value="error" />
     </logger>
 
-
     <root>
-        <priority value="debug" />
+        <priority value="error" />
         <appender-ref ref="outputConsole" />
     </root>
 

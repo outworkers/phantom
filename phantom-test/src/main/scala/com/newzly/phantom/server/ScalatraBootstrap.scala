@@ -1,4 +1,4 @@
-package com.newzly.phantom.scalatra.server
+package com.newzly.phantom.server
 
 import javax.servlet.ServletContext
 import scala.concurrent.Await

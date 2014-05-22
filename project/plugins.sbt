@@ -7,14 +7,10 @@ resolvers ++= Seq(
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
 
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.5.0")
-
-addSbtPlugin("com.twitter" % "sbt-package-dist" % "1.1.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
 
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.14.1")
+addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.15.0")
 
-addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.0.0")
+addSbtPlugin("com.twitter" % "sbt-package-dist" % "1.1.0")
