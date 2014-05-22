@@ -58,7 +58,91 @@ class ListOperatorsTest extends BaseTest {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
-        Console.println(items.get)
+      }
+    }
+  }
+
+  it should "store items in a list in the same order with Twitter Futures" in {
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val list = List("test, test2, test3, test4, test5")
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, list)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .execute()
+
+    val operation = for {
+      insertDone <- insert
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldEqual list
+      }
+    }
+  }
+
+  it should "store the same list size in Cassandra as it does in Scala" in {
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val limit = 100
+    val list = List.range(0, limit).map(_.toString)
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, list)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldEqual list
+        items.get.size shouldEqual limit
+      }
+    }
+  }
+
+  it should "store the same list size in Cassandra as it does in Scala with Twitter Futures" in {
+    val recipe = Recipe.sample
+    val id = UUIDs.timeBased()
+    val limit = 100
+    val list = List.range(0, limit).map(_.toString)
+
+    val insert = Recipes.insert
+      .value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, list)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldEqual list
+        items.get.size shouldEqual limit
       }
     }
   }
@@ -439,8 +523,8 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
-  ignore should "set the third index inside a List" in {
-    val list = List("test, test2, test3, test4, test5")
+  it should "set the third index inside a List" in {
+    val list = List.range(0, 100).map(_.toString)
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
     val insert = Recipes.insert
@@ -466,8 +550,8 @@ class ListOperatorsTest extends BaseTest {
     }
   }
 
-  ignore should "set the third index inside a List with Twitter Futures" in {
-    val list = List("test, test2, test3, test4, test5")
+  it should "set the third index inside a List with Twitter Futures" in {
+    val list = List.range(0, 100).map(_.toString)
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
     val insert = Recipes.insert

@@ -4,8 +4,6 @@ import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
-import de.johoop.jacoco4sbt._
-import JacocoPlugin._
 
 object phantom extends Build {
 
@@ -19,7 +17,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
     organization := "com.newzly",
-    version := "0.6.0",
+    version := "0.7.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -46,9 +44,9 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ jacoco.settings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings
 
-  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply{
@@ -88,7 +86,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
       publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       publishMavenStyle := true,
@@ -123,7 +121,7 @@ object phantom extends Build {
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Project.defaultSettings ++ VersionManagement.newSettings ++ sharedSettings ++ publishSettings
+    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings
   ).settings(
     name := "phantom"
   ).aggregate(
@@ -131,15 +129,13 @@ object phantom extends Build {
     phantomDsl,
     phantomExample,
     phantomThrift,
-    phantomTest,
-    phantomScalatraTest
+    phantomTest
   )
 
   lazy val phantomDsl = Project(
     id = "phantom-dsl",
     base = file("phantom-dsl"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings
   ).settings(
@@ -159,7 +155,6 @@ object phantom extends Build {
     base = file("phantom-cassandra-unit"),
     settings = Project.defaultSettings ++
       assemblySettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++ publishSettings
   ).settings(
     name := "phantom-cassandra-unit",
@@ -189,7 +184,6 @@ object phantom extends Build {
     id = "phantom-thrift",
     base = file("phantom-thrift"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings ++
       ScroogeSBT.newSettings
@@ -209,7 +203,6 @@ object phantom extends Build {
     id = "phantom-example",
     base = file("phantom-example"),
     settings = Project.defaultSettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings ++
       ScroogeSBT.newSettings
@@ -225,7 +218,6 @@ object phantom extends Build {
     base = file("phantom-test"),
     settings = Project.defaultSettings ++
       assemblySettings ++
-      VersionManagement.newSettings ++
       sharedSettings ++
       publishSettings
   ).settings(
@@ -237,51 +229,22 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.scalacheck"           %% "scalacheck"                        % "1.11.3",
-      "com.newzly"               %% "util-testing"                      % newzlyUtilVersion     % "provided"
+      "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
+      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+      "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
+      "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+      "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
+      "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
+      "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
+      "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided"
     )
   ).dependsOn(
     phantomDsl,
     phantomCassandraUnit,
     phantomThrift
   )
-
-
-  lazy val phantomScalatraTest = Project(
-    id = "phantom-scalatra-test",
-    base = file("phantom-scalatra-test"),
-    settings = Project.defaultSettings ++
-      assemblySettings ++
-      VersionManagement.newSettings ++
-      sharedSettings ++
-      publishSettings
-  ).settings(
-      name := "phantom-scalatra-test",
-      fork := true,
-      fork in Test := true,
-      concurrentRestrictions in Test := Seq(
-        Tags.limit(Tags.ForkedTestGroup, 4)
-      )
-    ).settings(
-      libraryDependencies ++= Seq(
-        "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
-        "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
-        "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
-        "org.json4s"                %% "json4s-ext"                       % "3.2.6",
-        "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
-        "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
-        "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
-        "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-        "com.newzly"               %% "util-testing"                      % newzlyUtilVersion      % "provided"
-      )
-    ).dependsOn(
-      phantomDsl,
-      phantomCassandraUnit,
-      phantomThrift,
-      phantomTest % "compile->compile;test->test"
-    )
-
 }

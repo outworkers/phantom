@@ -1,4 +1,4 @@
-package com.newzly.phantom.scalatra.server
+package com.newzly.phantom.server
 
 import java.util.concurrent.atomic.AtomicBoolean
 import org.eclipse.jetty.server.Server
@@ -17,7 +17,7 @@ object JettyLauncher {
       val context = new WebAppContext()
       context setContextPath "/"
       context.setResourceBase("src/main/webapp")
-      context.setInitParameter(ScalatraListener.LifeCycleKey, "com.newzly.phantom.scalatra.server.ScalatraBootstrap")
+      context.setInitParameter(ScalatraListener.LifeCycleKey, "com.newzly.phantom.server.ScalatraBootstrap")
       context.addEventListener(new ScalatraListener)
       context.addServlet(classOf[DefaultServlet], "/")
 

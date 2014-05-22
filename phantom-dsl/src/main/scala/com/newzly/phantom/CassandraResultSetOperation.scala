@@ -130,5 +130,4 @@ private [phantom] trait CassandraResultSetOperations {
     }
     promise
   }
-
 }
