@@ -1,17 +1,19 @@
-package com.newzly.phantom.scalatra
+package com.newzly.phantom.api
 
 import scala.concurrent.blocking
 import scala.concurrent.duration._
 import scala.util.Random
-import dispatch.{Http, url}, dispatch.Defaults._, dispatch.as
+
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
-import com.newzly.phantom.scalatra.server.{ScalatraBootstrap, JettyLauncher}
-import com.newzly.phantom.tables.{OptionPrice, EquityPrice}
+import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
+import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
+
+import com.newzly.phantom.server.{ JettyLauncher, ScalatraBootstrap }
+import com.newzly.phantom.tables.{ EquityPrice, OptionPrice }
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import dispatch.{ as, Http, url }
 
 
 class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
@@ -19,6 +21,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
   private val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  implicit val executor = scala.concurrent.ExecutionContext.Implicits.global
 
   private implicit val jsonFormats: Formats =
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all

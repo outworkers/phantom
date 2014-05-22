@@ -45,51 +45,12 @@ class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExe
     assert(Primitives.columns.length === 11)
   }
 
-  ignore should "work fine with List, Set, Map" in {
-    val q = TestTable.schema()
-    assert(q.indexOf("list list<text>") > 0)
-    assert(q.indexOf("setText set<text>") > 0 )
-    assert(q.indexOf("mapIntToText map<int, text>") > 0)
-    assert(q.indexOf("setInt set<int>") > 0)
-    assert(q.indexOf("key text") > 0)
-    assert(q.indexOf("mapTextToText map<text, text>") > 0)
-    assert(q.indexOf("PRIMARY KEY (key)") > 0 )
-
-    assert( q.replace(s"CREATE TABLE ${TestTable.tableName} ( ","" )
-      .replace("list list<text>","")
-      .replace("setText set<text>","")
-      .replace("mapIntToText map<int, text>","")
-      .replace("setInt set<int>","")
-      .replace("key text","")
-      .replace("mapTextToText map<text, text>","")
-      .replace("PRIMARY KEY (key)","")
-      .replace(")","")
-      .replace(" ","")
-      .replace(",","") == ";" )
+  it should "work fine with List, Set, Map" in {
+    TestTable.schema() shouldEqual "CREATE TABLE IF NOT EXISTS TestTable ( key text, list list<text>, setText set<text>, mapTextToText map<text, text>, setInt set<int>, mapIntToText map<int, text>, PRIMARY KEY (key));"
   }
 
-  ignore should "get the right query in mix table" in {
-    val q = Recipes.schema()
-    assert(q.indexOf("url text") > 0)
-    assert(q.indexOf("description text") > 0)
-    assert(q.indexOf("ingredients list<text>") > 0)
-    assert(q.indexOf("servings int") > 0)
-    assert(q.indexOf("last_checked_at timestamp") > 0)
-    assert(q.indexOf("props map<text, text>") > 0)
-    assert(q.indexOf("uid uuid") > 0)
-    assert(q.indexOf("PRIMARY KEY (url)") > 0)
-    assert( q.replace(s"CREATE TABLE ${Recipes.tableName} ( ","" )
-      .replace("url text","")
-      .replace("description text","")
-      .replace("ingredients list<text>","")
-      .replace("servings int","")
-      .replace("last_checked_at timestamp","")
-      .replace("props map<text, text>","")
-      .replace("uid uuid","")
-      .replace("PRIMARY KEY (url)","")
-      .replace(")","")
-      .replace(" ","")
-      .replace(",","") == ";" )
+  it should "get the right query in mix table" in {
+    Recipes.schema() shouldEqual "CREATE TABLE IF NOT EXISTS Recipes ( url text, description text, ingredients list<text>, servings int, last_checked_at timestamp, props map<text, text>, uid uuid, PRIMARY KEY (url));"
   }
 }
 

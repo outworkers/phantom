@@ -32,29 +32,21 @@ import com.newzly.phantom.query.{
   UpdateQuery
 }
 
-case class FieldHolder(name: String, metaField: AbstractColumn[_])
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
+
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  def runSafe[A](f : => A) : A = {
-    Safe.runSafe(System.identityHashCode(this))(f)
-  }
-
   private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with collection.mutable.SynchronizedBuffer[AbstractColumn[_]]
-
-  final def addColumn(column: AbstractColumn[_]): Unit = {
-    _columns += column
-  }
-
-  def columns: ArrayBuffer[AbstractColumn[_]] = _columns
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
-  def extractCount(r: Row): Option[Long] = {
+  private[this] def extractCount(r: Row): Option[Long] = {
     Try { r.getLong("count") }.toOption
   }
+
+  def columns: ArrayBuffer[AbstractColumn[_]] = _columns
 
   lazy val logger = LoggerFactory.getLogger(tableName)
 
@@ -80,6 +72,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
+  /**
+   * This method will filter the columns from a Clustering Order definition.
+   * It is used to define TimeSeries tables, using the ClusteringOrder trait
+   * combined with a directional trait, either Ascending or Descending.
+   *
+   * This method will simply add to the trailing of a query.
+   * @param query The schema creation query, already formed.
+   * @return
+   */
   private[phantom] def clusterOrderSchema(query: String): String = {
     if (columns.count(_.isClusteringKey) == 1) {
       val clusteringColumn = columns.filter(_.isClusteringKey).head
@@ -161,11 +162,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  val instanceMirror = cm.reflect(this)
-  val selfType = instanceMirror.symbol.toType
+  private[this] val instanceMirror = cm.reflect(this)
+  private[this] val selfType = instanceMirror.symbol.toType
 
   // Collect all column definitions starting from base class
-  val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
+  private[this] val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
   selfType.baseClasses.reverse.foreach {
     baseClass =>
       val baseClassMembers = baseClass.typeSignature.members.sorted
