@@ -24,16 +24,18 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
 
   final def value[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
-    qb.value(col.name, col.toCType(value))
-    this
+    new InsertQuery[T, R](table, qb.value(col.name, col.toCType(value)))
   }
 
   final def valueOrNull[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
-    qb.value(col.name, Try {
+    new InsertQuery[T, R](table, qb.value(col.name, Try {
       col.toCType(value)
-    } getOrElse null.asInstanceOf[T])
-    this
+    } getOrElse null.asInstanceOf[T]))
+  }
+
+  final def ifNotExists[RR] = {
+    new InsertQuery[T, R](table, qb.ifNotExists())
   }
 
   /**

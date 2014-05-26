@@ -18,7 +18,7 @@ package com.newzly.phantom.dsl.query
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.{ Articles, Recipes }
+import com.newzly.phantom.tables.{ Articles, Primitives, Recipes }
 import com.newzly.util.testing.Sampler
 
 class QuerySerializationTest extends FlatSpec with Matchers {
@@ -63,6 +63,35 @@ class QuerySerializationTest extends FlatSpec with Matchers {
       _.description,
       _.ingredients
     ).where(_.url eqs someId).qb.toString shouldBe s"SELECT url,description,ingredients FROM Recipes WHERE url='$someId';"
+  }
+
+  it should "corectly serialise a simple conditional update query" in {
+    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).qb.toString
+    qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false;"
+  }
+
+  it should "corectly serialise a multi-part conditional update query" in {
+    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).and(_.long eqs 5L).qb.toString
+    qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false AND long=5;"
+  }
+
+  it should "corectly serialise a conditional update query with a single List column based clause" in {
+    val qb = Recipes.update.where(_.url eqs "test")
+      .modify(_.description setTo Some("blabla"))
+      .onlyIf(_.ingredients eqs List("1", "2", "3"))
+      .qb.toString
+
+    qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'];"
+  }
+
+  it should "corectly serialise a multi-part conditional update query with a List column part" in {
+    val qb = Recipes.update.where(_.url eqs "test")
+      .modify(_.description setTo Some("blabla"))
+      .onlyIf(_.ingredients eqs List("1", "2", "3"))
+      .and(_.description eqs Some("test"))
+      .qb.toString
+
+    qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'] AND description='test';"
   }
 
 }
