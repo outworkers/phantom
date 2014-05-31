@@ -23,7 +23,15 @@ import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
 
+sealed abstract class BaseSelectQuery[T <: Select, Q](val qb: T) {
+  self: CQLQuery[_] =>
 
+  def setFetchSize(n: Int): CQLQuery[Q] = {
+    qb.setFetchSize(n)
+    this
+  }
+
+}
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
@@ -169,4 +177,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     this
   }
 }
+
+class SelectCountWhere
 
