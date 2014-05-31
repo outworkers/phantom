@@ -28,6 +28,7 @@ import com.newzly.phantom.query.{
   DeleteQuery,
   InsertQuery,
   SelectQuery,
+  SelectCountQuery,
   TruncateQuery,
   UpdateQuery
 }
@@ -42,8 +43,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
   }
 
-  private[this] def extractCount(r: Row): Option[Long] = {
-    Try { r.getLong("count") }.toOption
+  private[this] def extractCount(r: Row): Long = {
+    Try { r.getLong("count") }.toOption.getOrElse(0L)
   }
 
   def columns: ArrayBuffer[AbstractColumn[_]] = _columns
@@ -64,7 +65,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def truncate = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
 
-  def count = new SelectQuery[T, Option[Long]](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
+  def count = new SelectCountQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 

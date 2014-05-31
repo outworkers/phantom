@@ -29,7 +29,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "correctly serialize a full select query" in {
     val someId = UUIDs.timeBased()
-    Articles.select.where(_.id eqs someId).qb.toString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
+    Articles.select.where(_.id eqs someId).queryString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
   }
 
   it should "compile a single column partial select query" in {
@@ -38,7 +38,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "correctly serialize a single column partial select query" in {
     val someId = UUIDs.timeBased()
-    Articles.select(_.id).where(_.id eqs someId).qb.toString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
+    Articles.select(_.id).where(_.id eqs someId).queryString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
   }
 
   it should "compile a query to query condition clause" in {
@@ -47,13 +47,13 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "serialize a condition query to a query condition" in {
     val someId = UUIDs.timeBased()
-    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").qb.toString
+    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").queryString
     query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF name='update';"
   }
 
   it should "correctly serialize a 2 column partial select query" in {
     val someId = UUIDs.timeBased()
-    Articles.select(_.id, _.name).where(_.id eqs someId).qb.toString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
+    Articles.select(_.id, _.name).where(_.id eqs someId).queryString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
   }
 
   it should "correctly serialize a 3 column partial select query" in {
@@ -66,7 +66,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
   }
 
   it should "corectly serialise a simple conditional update query" in {
-    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).qb.toString
+    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).queryString
     qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false;"
   }
 
@@ -79,7 +79,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
     val qb = Recipes.update.where(_.url eqs "test")
       .modify(_.description setTo Some("blabla"))
       .onlyIf(_.ingredients eqs List("1", "2", "3"))
-      .qb.toString
+      .queryString
 
     qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'];"
   }
@@ -89,9 +89,12 @@ class QuerySerializationTest extends FlatSpec with Matchers {
       .modify(_.description setTo Some("blabla"))
       .onlyIf(_.ingredients eqs List("1", "2", "3"))
       .and(_.description eqs Some("test"))
-      .qb.toString
+      .queryString
 
     qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'] AND description='test';"
   }
 
+  it should "serialize a simple count query" in {
+    Recipes.count.queryString shouldEqual "SELECT count(*) FROM Recipes;"
+  }
 }

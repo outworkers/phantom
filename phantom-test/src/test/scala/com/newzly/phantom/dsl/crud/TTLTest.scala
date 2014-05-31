@@ -35,7 +35,7 @@ class TTLTest extends BaseTest {
     }
   }
 
-  it should "expire inserted records" in {
+  it should "expire inserted records after 2 seconds" in {
     val row = Primitive.sample
     val test = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -49,7 +49,7 @@ class TTLTest extends BaseTest {
         .value(_.date, row.date)
         .value(_.uuid, row.uuid)
         .value(_.bi, row.bi)
-        .ttl(5)
+        .ttl(2)
         .future() flatMap {
           _ =>  Primitives.select.one
         }
@@ -57,19 +57,19 @@ class TTLTest extends BaseTest {
     test.successful {
       record => {
         record.isEmpty shouldEqual false
-        record.get should be (row)
-        Thread.sleep(Duration.fromSeconds(6).inMillis)
+        record.get shouldEqual row
+        Thread.sleep(Duration.fromSeconds(3).inMillis)
         val test2 = Primitives.select.one
         test2 successful {
           expired => {
-            assert(expired.isEmpty)
+            expired.isEmpty shouldEqual true
           }
         }
       }
     }
   }
 
-  it should "expire inserted records with Twitter Futures" in {
+  it should "expire inserted records after 2 seconds with Twitter Futures" in {
     val row = Primitive.sample
     val test = Primitives.insert
       .value(_.pkey, row.pkey)
@@ -83,7 +83,7 @@ class TTLTest extends BaseTest {
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
-      .ttl(5)
+      .ttl(2)
       .execute() flatMap {
       _ =>  Primitives.select.get
     }
@@ -91,12 +91,12 @@ class TTLTest extends BaseTest {
     test.successful {
       record => {
         record.isEmpty shouldEqual false
-        record.get should be (row)
-        Thread.sleep(Duration.fromSeconds(6).inMillis)
+        record.get shouldEqual row
+        Thread.sleep(Duration.fromSeconds(3).inMillis)
         val test2 = Primitives.select.get
         test2 successful {
           expired => {
-            assert(expired.isEmpty)
+            expired.isEmpty shouldEqual true
           }
         }
       }

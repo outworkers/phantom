@@ -24,6 +24,7 @@ class BatchTruncateTest extends BaseTest {
   val keySpace = "batch_truncate_test"
 
   it should "truncate multiple tables in a single batch" in {
+
     val row = JodaRow.sample
     val row2 = JodaRow.sample.copy(pkey = row.pkey)
     val row3 = JodaRow.sample
@@ -57,8 +58,7 @@ class BatchTruncateTest extends BaseTest {
     chain.successful {
       res => {
         res.isDefined shouldEqual true
-        res.get.isDefined shouldEqual true
-        res.get.get shouldEqual 1L
+        res.get shouldEqual 1L
       }
     }
 

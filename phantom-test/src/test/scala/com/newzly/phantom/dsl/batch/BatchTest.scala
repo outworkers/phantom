@@ -62,13 +62,15 @@ class BatchTest extends BaseTest {
       s3 <- statement2.future()
       b <- batch.future()
       updated <- PrimitivesJoda.select.where(_.pkey eqs row.pkey).future()
-      deleted <- PrimitivesJoda.select.where(_.pkey eqs row3.pkey).future()
+      deleted <- PrimitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
 
     w successful {
-      case res =>
-        assert(PrimitivesJoda.fromRow(res._1.one()) === row2)
-        assert(res._2.all().isEmpty)
+      res => {
+        PrimitivesJoda.fromRow(res._1.one()) shouldEqual row2
+        res._2.isEmpty shouldEqual true
+
+      }
     }
   }
 }

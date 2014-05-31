@@ -17,12 +17,15 @@ package com.newzly.phantom.query
 
 import scala.concurrent.{ ExecutionContext, Future }
 import com.datastax.driver.core.{ Row, Session }
-import com.datastax.driver.core.querybuilder.Select
+import com.datastax.driver.core.querybuilder.{BuiltStatement, Select}
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
-class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, rowFunc: Row => R) extends ExecutableQuery[T, R] {
+
+
+
+class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
 
@@ -77,7 +80,47 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, val qb: Select, ro
   }
 }
 
-class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Where, rowFunc: Row => R) extends ExecutableQuery[T, R] {
+class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFunc: Row => R) extends SelectQuery[T, R](table, qb, rowFunc) {
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This method will not enforce a LIMIT 1 on the "one" query method.
+   * It is used to extract the record count obtained from a SELECT COUNT(*).
+   * If a count query is executed with a LIMIT, Cassandra will limit the records before counting.
+   *
+   * In this case, the count is always less or equal to the limit.
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return A Future wrapping an Optional result.
+   */
+  override def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb, fromRow)
+    query.fetchEnumerator run PlayIteratee.head
+  }
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This method will not enforce a LIMIT 1 on the "one" query method.
+   * It is used to extract the record count obtained from a SELECT COUNT(*).
+   * If a count query is executed with a LIMIT, Cassandra will limit the records before counting.
+   *
+   * In this case, the count is always less or equal to the limit.
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return A Future wrapping an Optional result.
+   */
+  override def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb, fromRow)
+    query.enumerate() flatMap {
+      res => {
+        scalaFutureToTwitter(res run PlayIteratee.head)
+      }
+    }
+  }
+}
+
+
+class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Where, rowFunc: Row => R) extends CQLQuery[SelectWhere[T, R]] with ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
 
@@ -126,3 +169,4 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     this
   }
 }
+

@@ -19,7 +19,7 @@ import com.datastax.driver.core.querybuilder.Delete
 import com.newzly.phantom.CassandraTable
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
-  extends SharedQueryMethods[DeleteQuery[T, R], Delete](qb) with ExecutableStatement {
+  extends CQLQuery[DeleteQuery[T, R]] {
 
   def where[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.where(condition(table).clause))
@@ -27,11 +27,9 @@ class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
 }
 
 class DeleteWhere[T <: CassandraTable[T, R], R](table: T, val qb: Delete.Where)
-  extends SharedQueryMethods[DeleteWhere[T, R], Delete.Where](qb) with ExecutableStatement {
+  extends CQLQuery[DeleteWhere[T, R]] {
 
-  def where[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
+  def and[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.and(condition(table).clause))
   }
-
-  def and  = where _
 }

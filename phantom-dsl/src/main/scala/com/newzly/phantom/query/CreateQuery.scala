@@ -21,7 +21,7 @@ import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.Implicits.context
 import com.twitter.util.{ Future => TwitterFuture }
 
-class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends ExecutableStatement {
+class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CQLQuery[CreateQuery[T, R]] {
   val qb = null
 
   override def future()(implicit session: Session): ScalaFuture[ResultSet] = {

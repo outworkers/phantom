@@ -52,8 +52,8 @@ class SkipRecordsByToken extends BaseTest {
 
     result successful {
       r => {
-        assert(r.size === 3)
         info (s"got exactly ${r.size} records")
+        r.size shouldEqual 3
       }
     }
   }
@@ -93,8 +93,8 @@ class SkipRecordsByToken extends BaseTest {
 
     result successful {
       r => {
-        assert(r.size === 3)
         info (s"got exactly ${r.size} records")
+        r.size shouldEqual 3
       }
     }
   }
@@ -133,8 +133,8 @@ class SkipRecordsByToken extends BaseTest {
 
     result successful {
       r => {
-        assert(r.size === 3)
-        info (s"got exactly ${r.size} records")
+        info(s"got exactly ${r.size} records")
+        r.size shouldEqual 3
       }
     }
   }
@@ -173,11 +173,11 @@ class SkipRecordsByToken extends BaseTest {
 
     result successful {
       r => {
+        info(s"got exactly ${r.size} records")
         r.size shouldEqual 3
         r(0).id shouldEqual article1.id
         r(1).id shouldEqual article2.id
         r(2).id shouldEqual article3.id
-        info (s"got exactly ${r.size} records")
       }
     }
   }
@@ -215,8 +215,8 @@ class SkipRecordsByToken extends BaseTest {
 
     result successful {
       r => {
-        r.size shouldEqual 1
         info (s"got exactly ${r.size} records")
+        r.size shouldEqual 1
       }
     }
   }

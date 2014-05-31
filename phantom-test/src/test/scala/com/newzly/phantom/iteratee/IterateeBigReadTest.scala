@@ -33,7 +33,7 @@ class IterateeBigReadTest extends BigTest with ScalaFutures {
     result.successful {
       query => {
         info(s"done, reading: ${counter.get}")
-        assert(counter.get() === 2000000)
+        counter.get() shouldEqual 2000000
       }
     }
   }
