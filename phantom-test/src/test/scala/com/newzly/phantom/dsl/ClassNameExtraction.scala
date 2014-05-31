@@ -15,7 +15,7 @@
  */
 package com.newzly.phantom.dsl
 
-import org.scalatest.FlatSpec
+import org.scalatest.{ FlatSpec, Matchers }
 import com.datastax.driver.core.Row
 import com.newzly.phantom.Implicits._
 
@@ -65,45 +65,42 @@ class TestNames {
 class Parent extends TestNames
 class Parent2 extends Parent
 
-class ClassNameExtraction extends FlatSpec {
+class ClassNameExtraction extends FlatSpec with Matchers {
 
   it should "get rid of extra naming inside the object" in {
     val test = "$$anonfun23primitives3key$"
     val res = test.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)", "")
-    assert(res === "key")
+    res shouldEqual "key"
   }
 
   it should "correctly name objects inside record classes " in {
-    assert(TestTableNames.record.name === "record")
+    TestTableNames.record.name shouldEqual "record"
   }
 
   it should "correctly extract long object name definitions in nested record classes" in {
-    assert(TestTableNames.sampleLongTextColumnDefinition.name === "sampleLongTextColumnDefinition")
+    TestTableNames.sampleLongTextColumnDefinition.name shouldEqual "sampleLongTextColumnDefinition"
   }
 
   it should "correctly name Cassandra Tables" in {
-    assert(TestTableNames.tableName === "TestTableNames")
+    TestTableNames.tableName shouldEqual "TestTableNames"
   }
 
   it should "correctly extract the object name " in {
-    assert(Test.name === "Test")
+    Test.name shouldEqual "Test"
   }
 
   it should "correctly extract the table name" in {
     object TestNames extends TestNames
-
-    assert(TestNames.name === "TestNames")
+    TestNames.name shouldEqual "TestNames"
   }
 
   it should "correctly extract the parent name" in {
     object Parent extends Parent
-
-    assert(Parent.name === "Parent")
+    Parent.name shouldEqual "Parent"
   }
 
   it should "correctly extract the column names" in {
     object Parent2 extends Parent2
-    assert(Parent2.name === "Parent2")
+    Parent2.name shouldEqual "Parent2"
   }
-
 }

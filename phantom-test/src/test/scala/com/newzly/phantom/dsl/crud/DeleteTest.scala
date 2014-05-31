@@ -55,15 +55,14 @@ class DeleteTest extends BaseTest {
           inserted <- Primitives.select.fetch
           delete <- Primitives.delete.where(_.pkey eqs row.pkey).future()
           deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
-        } yield (inserted.contains(row), deleted.isEmpty)
+        } yield (inserted, deleted)
       }
     }
 
     result successful {
       r => {
-        assert(r._1)
-        assert(r._2)
-        info("success")
+        r._1 contains row shouldEqual true
+        r._2.isEmpty shouldEqual true
       }
     }
   }
@@ -95,9 +94,8 @@ class DeleteTest extends BaseTest {
 
     result successful {
       r => {
-        assert(r._1)
-        assert(r._2)
-        info("success")
+        r._1 shouldEqual true
+        r._2 shouldEqual true
       }
     }
   }

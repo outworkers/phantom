@@ -72,20 +72,23 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
             b2 <- Primitives.select.fetch
 
           } yield (
-            a.get === row,
-            b.contains(row),
-            a2.get === updatedRow,
-            b2.contains(updatedRow)
+            a,
+            b,
+            a2,
+            b2
           )
         }
       }
 
     rcp successful {
       r => {
-        assert(r._1)
-        assert(r._2)
-        assert(r._3)
-        assert(r._4)
+        r._1.isDefined shouldEqual true
+        r._1.get shouldEqual row
+        r._2 contains row shouldEqual true
+
+        r._3.isDefined shouldEqual true
+        r._3.get shouldEqual updatedRow
+        r._4 contains updatedRow shouldEqual true
       }
     }
   }
