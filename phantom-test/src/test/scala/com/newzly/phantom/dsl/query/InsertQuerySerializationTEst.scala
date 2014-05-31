@@ -15,16 +15,8 @@
  */
 package com.newzly.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
-import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.Primitives
+import org.scalatest.{ FlatSpec, Matchers }
 
-class TypeRestrictionsTest extends FlatSpec with Matchers {
-  it should "allow using a correct type for a value method" in {
-    "Primitives.insert.value(_.boolean, true)" should compile
-  }
+class InsertQuerySerializationTest extends FlatSpec with Matchers {
 
-  it should "not allow using a wrong type for a value method" in {
-    "Primitives.insert.value(_.boolean, 5)" shouldNot compile
-  }
 }

@@ -60,14 +60,16 @@ class SelectOptionalTest extends BaseTest {
         for {
           a <- OptionalPrimitives.select.fetch
           b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
-        } yield (a contains row, b.get === row)
+        } yield (a, b)
       }
     }
 
     rcp successful {
       r => {
-        assert(r._1)
-        assert(r._2)
+        r._1 contains row shouldEqual true
+
+        r._2.isDefined shouldEqual true
+        r._2.get shouldEqual row
       }
     }
   }

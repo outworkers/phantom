@@ -3,33 +3,45 @@ package com.newzly.phantom.query
 import java.nio.ByteBuffer
 import com.datastax.driver.core.ConsistencyLevel
 import com.datastax.driver.core.policies.RetryPolicy
-import com.datastax.driver.core.querybuilder.BuiltStatement
 
-private[query] abstract class SharedQueryMethods[Q, T <: BuiltStatement](builder: T) extends ExecutableStatement {
+private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
+
   self: Q =>
 
-  def consistencyLevel: ConsistencyLevel = builder.getConsistencyLevel
+  def enableTracing(): Unit = {
+    qb.enableTracing()
+  }
+
+  def disableTracing(): Unit = {
+    qb.disableTracing()
+  }
+
+  def queryString: String = {
+    qb.toString
+  }
+
+  def consistencyLevel: ConsistencyLevel = qb.getConsistencyLevel
 
   def consistencyLevel_=(level: ConsistencyLevel): Q = {
-    builder.setConsistencyLevel(level)
+    qb.setConsistencyLevel(level)
     this
   }
 
   def retryPolicy(): RetryPolicy = {
-    builder.getRetryPolicy
+    qb.getRetryPolicy
   }
 
   def retryPolicy_= (policy: RetryPolicy): Q = {
-    builder.setRetryPolicy(policy)
+    qb.setRetryPolicy(policy)
     this
   }
 
   def setSerialConsistencyLevel(level: ConsistencyLevel): Q = {
-    builder.setSerialConsistencyLevel(level)
+    qb.setSerialConsistencyLevel(level)
     this
   }
 
   def routingKey(): ByteBuffer = {
-    builder.getRoutingKey
+    qb.getRoutingKey
   }
 }

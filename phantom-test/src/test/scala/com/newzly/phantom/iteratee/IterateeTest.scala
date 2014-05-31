@@ -46,7 +46,7 @@ class IterateeTest extends BaseTest {
         result successful {
           seqR =>
             for (row <- seqR)
-              assert(rows.contains(row))
+              rows.contains(row) shouldEqual true
             assert(seqR.size === rows.size)
         }
       }

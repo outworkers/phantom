@@ -11,7 +11,7 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
       whenever (d.length > 0) {
         val collected = Articles.columns.map(_.name).mkString(" ")
         val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
-        collected shouldBe expected
+        collected shouldEqual expected
       }
     }
   }
@@ -19,16 +19,16 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
   it should "collect objects in the same order they are written" in {
     val collected = Articles.columns.map(_.name).mkString(" ")
     val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
-    collected shouldBe expected
+    collected shouldEqual expected
   }
 
 
   it should "correctly reference the same table" in {
-     assert(Primitives.pkey.table eq Primitives)
+     Primitives.pkey.table shouldEqual Primitives
   }
 
 
   it should "initialise fields by default" in {
-    assert(Articles.columns.length === 3)
+    Articles.columns.length shouldEqual 3
   }
 }

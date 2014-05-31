@@ -20,7 +20,7 @@ import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
 
-class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends SharedQueryMethods[InsertQuery[T, R], Insert](qb) with ExecutableStatement {
+class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends CQLQuery[InsertQuery[T, R]] {
 
   final def value[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
@@ -34,7 +34,7 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     } getOrElse null.asInstanceOf[T]))
   }
 
-  final def ifNotExists[RR] = {
+  final def ifNotExists[RR](): InsertQuery[T, R] = {
     new InsertQuery[T, R](table, qb.ifNotExists())
   }
 

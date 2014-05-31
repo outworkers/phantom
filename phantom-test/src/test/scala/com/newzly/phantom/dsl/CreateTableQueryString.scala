@@ -42,7 +42,7 @@ class CreateTableQueryString extends FlatSpec with Matchers with ParallelTestExe
   }
 
   it should "get the correct count the primitives table" in {
-    assert(Primitives.columns.length === 11)
+    Primitives.columns.length shouldEqual 11
   }
 
   it should "work fine with List, Set, Map" in {

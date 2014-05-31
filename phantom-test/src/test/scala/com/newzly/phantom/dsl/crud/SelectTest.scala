@@ -52,15 +52,17 @@ class SelectTest extends BaseTest {
           for {
             a <- Primitives.select.fetch
             b <- Primitives.select.where(_.pkey eqs row.pkey).one
-          } yield (a contains row, b.get === row)
+          } yield (a, b)
 
         }
       }
 
     rcp successful {
       r => {
-        assert(r._1)
-        assert(r._2)
+        r._1 contains row shouldEqual true
+
+        r._2.isDefined shouldEqual true
+        r._2.get shouldEqual row
       }
     }
   }
