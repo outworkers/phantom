@@ -35,7 +35,23 @@ class CountTest extends BaseTest {
     }
   }
 
-  it should "correctly retrieve a count" in {
+
+  it should "retrieve a count of 0 if the table has been truncated" in {
+
+    val chain = for {
+      truncate <- PrimitivesJoda.truncate.future()
+      count <- PrimitivesJoda.count.fetch()
+    } yield count
+
+    chain successful {
+      res => {
+        res.isEmpty shouldEqual false
+        res.head shouldEqual 0L
+      }
+    }
+  }
+
+  it should "correctly retrieve a count of 1000" in {
     val limit = 1000
 
     val rows = Iterator.fill(limit)(JodaRow.sample)
@@ -46,19 +62,23 @@ class CountTest extends BaseTest {
         .value(_.intColumn, row.int)
         .value(_.timestamp, row.bi)
       b.add(statement)
-    }).future() flatMap {
-      _ => PrimitivesJoda.count.one()
-    }
+    })
 
-    batch successful {
+    val chain = for {
+      truncate <- PrimitivesJoda.truncate.future()
+      batch <- batch.future()
+      count <- PrimitivesJoda.count.one()
+    } yield count
+
+    chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get.get shouldBe 1
+        res.get shouldEqual 1000L
       }
     }
   }
 
-  it should "correctly retrieve a count in a Twitter future" in {
+  it should "correctly retrieve a count of 1000 with Twitter futures" in {
     val limit = 1000
 
     val rows = Iterator.fill(limit)(JodaRow.sample)
@@ -69,14 +89,18 @@ class CountTest extends BaseTest {
         .value(_.intColumn, row.int)
         .value(_.timestamp, row.bi)
       b.add(statement)
-    }).execute() flatMap {
-      _ => PrimitivesJoda.count.get()
-    }
+    })
 
-    batch successful {
+    val chain = for {
+      truncate <- PrimitivesJoda.truncate.execute()
+      batch <- batch.execute()
+      count <- PrimitivesJoda.count.get()
+    } yield count
+
+    chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get.get shouldBe 1
+        res.get shouldEqual 1000L
       }
     }
   }

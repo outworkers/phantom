@@ -39,8 +39,9 @@ object RecipesDatabaseService {
   // This is a trivial example showing how you can map and flatMap your path to glory.
   // Non blocking, 3 lines of code, 15 seconds of typing effort. Done.
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
-    AdvancedRecipes.insertRecipe(recipe) flatMap {
-      _ => AdvancedRecipesByTitle.insertRecipe(recipe.title, recipe.id)
-    }
+    for {
+      insert <- AdvancedRecipes.insertRecipe(recipe)
+      byTitle <- AdvancedRecipesByTitle.insertRecipe(Tuple2(recipe.title, recipe.id))
+    } yield byTitle
   }
 }

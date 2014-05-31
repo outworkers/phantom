@@ -21,10 +21,11 @@ import com.newzly.phantom.{ CassandraResultSetOperations, CassandraTable }
 import com.newzly.phantom.iteratee.{ Enumerator, Iteratee }
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Enumerator => PlayEnumerator, Enumeratee }
+import com.datastax.driver.core.querybuilder.BuiltStatement
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
-  def qb: Statement
+  protected[phantom] val qb: BuiltStatement
 
   def future()(implicit session: Session): ScalaFuture[ResultSet] = {
     scalaStatementToFuture(qb)
@@ -40,19 +41,12 @@ trait ExecutableStatement extends CassandraResultSetOperations {
  * @tparam T The class owning the table.
  * @tparam R The record type to store.
  */
-trait ExecutableQuery[T <: CassandraTable[T, _], R] extends CassandraResultSetOperations {
+trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement {
 
-  def qb: Statement
+  self: CQLQuery[_] =>
+
   def table: CassandraTable[T, _]
   def fromRow(r: Row): R
-
-  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    scalaStatementToFuture(qb)
-  }
-
-  def execute()(implicit  session: Session): TwitterFuture[ResultSet] = {
-    twitterStatementToFuture(qb)
-  }
 
   /**
    * Produces an Enumerator for [R]ows

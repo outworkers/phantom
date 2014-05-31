@@ -48,8 +48,6 @@ class InsertTest extends BaseTest {
   }
 
   "Insert" should "work fine for primitives columns" in {
-    //char is not supported
-    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
@@ -81,8 +79,6 @@ class InsertTest extends BaseTest {
   }
 
   "Insert" should "work fine for primitives columns with twitter futures" in {
-    //char is not supported
-    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = Primitive.sample
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -154,13 +150,15 @@ class InsertTest extends BaseTest {
         for {
           one <- TestTable.select.where(_.key eqs row.key).get
           multi <- TestTable.select.collect()
-        }  yield (one.get === row, multi.contains(row))
+        }  yield (one, multi)
       }
     }
     rcp successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res._1.isDefined shouldEqual true
+        res._1.get shouldEqual row
+
+        res._2.contains(row) shouldEqual true
       }
     }
   }
@@ -182,7 +180,8 @@ class InsertTest extends BaseTest {
 
     rcp successful {
       res => {
-        assert (res.get === r)
+        res.isDefined shouldEqual true
+        res.get shouldEqual r
       }
     }
   }
@@ -204,7 +203,7 @@ class InsertTest extends BaseTest {
 
     rcp successful {
       res => {
-        assert (res.get === r)
+        res.get shouldEqual r
       }
     }
   }
@@ -256,7 +255,7 @@ class InsertTest extends BaseTest {
     recipeF successful  {
       res => {
         res.isEmpty shouldEqual false
-        res.get should be(row)
+        res.get shouldEqual row
       }
     }
   }
@@ -275,7 +274,7 @@ class InsertTest extends BaseTest {
     recipeF successful  {
       res => {
         res.isEmpty shouldEqual false
-        res.get should be(row)
+        res.get shouldEqual row
       }
     }
   }

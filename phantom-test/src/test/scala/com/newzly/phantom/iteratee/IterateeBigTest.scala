@@ -17,6 +17,7 @@ package com.newzly.phantom.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 import scala.concurrent.{ Await, Future }
+import org.scalatest.Matchers
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.newzly.phantom.Implicits._
@@ -24,7 +25,7 @@ import com.newzly.phantom.tables.{ PrimitivesJoda, JodaRow }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 
 
-class IterateeBigTest extends BigTest {
+class IterateeBigTest extends BigTest with Matchers {
   val keySpace: String = "BigIterateeTestSpace"
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
@@ -49,9 +50,7 @@ class IterateeBigTest extends BigTest {
 
 
     val combinedFuture = Future.sequence(fs) map {
-      r => session.execute(s"select count(*) from ${PrimitivesJoda.tableName}")
-    } map {
-      rs =>  rs.one().getLong(0)
+      r => PrimitivesJoda.count.one()
     }
 
     val counter: AtomicLong = new AtomicLong(0)
@@ -65,7 +64,7 @@ class IterateeBigTest extends BigTest {
     (result flatMap (_ => combinedFuture)) successful {
       r => {
         info(s"done, reading: ${counter.get}")
-        assert(counter.get() === r)
+        counter.get() shouldEqual r
       }
     }
   }
