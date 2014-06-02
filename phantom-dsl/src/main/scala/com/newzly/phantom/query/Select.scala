@@ -22,20 +22,36 @@ import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
-
-sealed abstract class BaseSelectQuery[T <: Select, Q](val qb: T) {
-  self: CQLQuery[_] =>
-
-  def setFetchSize(n: Int): CQLQuery[Q] = {
-    qb.setFetchSize(n)
-    this
-  }
-
-}
-
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
+
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return
+   */
+  def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
+    query.fetchEnumerator run PlayIteratee.head
+  }
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This will always use a LIMIT 1 in the Cassandra query.
+   * @param session The Cassandra session in use.
+   * @return
+   */
+  def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+    val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
+    query.enumerate() flatMap {
+      res => {
+        scalaFutureToTwitter(res run PlayIteratee.head)
+      }
+    }
+  }
 
   def setFetchSize(n: Int) = {
     qb.setFetchSize(n)
@@ -61,31 +77,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom]
     new SelectQuery(table, qb.limit(l), fromRow)
   }
 
-  /**
-   * Returns the first row from the select ignoring everything else
-   * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
-   * @return
-   */
-  def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    query.fetchEnumerator run PlayIteratee.head
-  }
-
-  /**
-   * Returns the first row from the select ignoring everything else
-   * This will always use a LIMIT 1 in the Cassandra query.
-   * @param session The Cassandra session in use.
-   * @return
-   */
-  def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    query.enumerate() flatMap {
-      res => {
-        scalaFutureToTwitter(res run PlayIteratee.head)
-      }
-    }
-  }
 }
 
 class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFunc: Row => R) extends SelectQuery[T, R](table, qb, rowFunc) {
