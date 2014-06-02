@@ -90,7 +90,7 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
    * @param condition The Query condition to execute, based on index operators.
    * @tparam RR The type of the underlying abstract column.
    * @return A SelectCountWhere.
-
+   */
   override def where[RR](condition: T => QueryCondition): SelectCountWhere[T, R] = {
     new SelectCountWhere[T, R](table, qb.where(condition(table).clause), fromRow)
   }

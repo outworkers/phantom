@@ -47,6 +47,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
             <li><a href="#truncate-queries">TRUNCATE queries</a></li>
             <li><a href="#create-queries">CREATE queries</a></li>
             <li><a href="#alter-queries">ALTER queries</a></li>
+            <li><a href="#common-query-methods">Common query methods</a></li>
         </ul>
     </li>
     <li>
@@ -413,6 +414,21 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
+
+
+<a id="common-query-methods">Common query methods</a>
+=====================================================
+<a href="#table-of-contents">back to top</a>
+
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```enableTracing```               | The Cassandra utility method. Enables tracing.                                        |
+| ```disableTracing```              | The Cassandra utility method. Disables tracing.                                       |
+| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
+| ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
+| ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
+| ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
+| ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
 
 
 <a id="scala-futures">Scala Futures</a>
