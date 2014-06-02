@@ -420,15 +420,20 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
+The full list can be found in [CQLQuery.scala](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/query/CQLQuery.scala).
+
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
-| ```enableTracing```               | The Cassandra utility method. Enables tracing.                                        |
-| ```disableTracing```              | The Cassandra utility method. Disables tracing.                                       |
+| ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
 | ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
 | ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
 | ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
 | ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
 | ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
+| ```serialConsistencyLevel```      | Retrieves the serial consistency level in use.                                        |
+| ```serialConsistencyLevel_=```    | Sets the serial consistency level to use.                                             |
+| ```forceNoValues_=```             | Sets the serial consistency level to use.                                             |
+| ```routingKey```                  | Retrieves the Routing Key as a ByteBuffer.                                            |
 
 
 <a id="scala-futures">Scala Futures</a>

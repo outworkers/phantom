@@ -8,12 +8,12 @@ private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
 
   self: Q =>
 
-  def enableTracing(): Unit = {
-    qb.enableTracing()
-  }
-
-  def disableTracing(): Unit = {
-    qb.disableTracing()
+  def tracing_=(flag: Boolean): Q = {
+    if (flag)
+      qb.enableTracing()
+    else
+      qb.disableTracing()
+    this
   }
 
   def queryString: String = {
@@ -36,8 +36,15 @@ private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
     this
   }
 
-  def setSerialConsistencyLevel(level: ConsistencyLevel): Q = {
+  def serialConsistencyLevel_=(level: ConsistencyLevel): Q = {
     qb.setSerialConsistencyLevel(level)
+    this
+  }
+
+  def serialConsistencyLevel: ConsistencyLevel = qb.getSerialConsistencyLevel
+
+  def forceNoValues_=(flag: Boolean): Q = {
+    qb.setForceNoValues(flag)
     this
   }
 
