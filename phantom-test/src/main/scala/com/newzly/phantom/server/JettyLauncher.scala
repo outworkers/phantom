@@ -7,7 +7,7 @@ import org.eclipse.jetty.webapp.WebAppContext
 import org.scalatra.servlet.ScalatraListener
 
 object JettyLauncher {
-  lazy val port = if (System.getenv("PORT") != null) System.getenv("PORT") else "8080"
+  lazy val port = if (System.getenv("PORT") != null) System.getenv("PORT") else "8900"
 
   private[this] val started = new AtomicBoolean(false)
 

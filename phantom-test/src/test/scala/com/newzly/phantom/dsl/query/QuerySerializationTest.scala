@@ -15,10 +15,17 @@
  */
 package com.newzly.phantom.dsl.query
 
+import java.util.UUID
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.{ Articles, Primitives, Recipes }
+import com.newzly.phantom.tables.{
+  Articles,
+  Primitives,
+  Recipes,
+  TableWithCompoundKey,
+  TwoKeys
+}
 import com.newzly.util.testing.Sampler
 
 class QuerySerializationTest extends FlatSpec with Matchers {
@@ -97,4 +104,16 @@ class QuerySerializationTest extends FlatSpec with Matchers {
   it should "serialize a simple count query" in {
     Recipes.count.queryString shouldEqual "SELECT count(*) FROM Recipes;"
   }
+
+  it should "serialize a count query with a where clause" in {
+    val key = Sampler.getARandomString
+    Recipes.count.where(_.url eqs key).queryString shouldEqual s"SELECT count(*) FROM Recipes WHERE url='$key';"
+  }
+
+  it should "serialize a count query with a where-and clause" in {
+    val id = UUID.randomUUID()
+    val key = id.toString
+    TableWithCompoundKey.count.where(_.id eqs id).and(_.second eqs id).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key;"
+  }
+
 }
