@@ -16,10 +16,13 @@
 package com.newzly.phantom.query
 
 import scala.concurrent.{ ExecutionContext, Future }
+
 import com.datastax.driver.core.{ Row, Session }
-import com.datastax.driver.core.querybuilder.{BuiltStatement, Select}
+import com.datastax.driver.core.querybuilder.Select
+
 import com.newzly.phantom.CassandraTable
 import com.twitter.util.{ Future => TwitterFuture }
+
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
 class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
@@ -82,12 +85,24 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom]
 class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFunc: Row => R) extends SelectQuery[T, R](table, qb, rowFunc) {
 
   /**
+   * Where clauses require overriding for count queries for the same purpose.
+   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
+   * @param condition The Query condition to execute, based on index operators.
+   * @tparam RR The type of the underlying abstract column.
+   * @return A SelectCountWhere.
+
+  override def where[RR](condition: T => QueryCondition): SelectCountWhere[T, R] = {
+    new SelectCountWhere[T, R](table, qb.where(condition(table).clause), fromRow)
+  }
+
+  /**
    * Returns the first row from the select ignoring everything else
    * This method will not enforce a LIMIT 1 on the "one" query method.
    * It is used to extract the record count obtained from a SELECT COUNT(*).
    * If a count query is executed with a LIMIT, Cassandra will limit the records before counting.
    *
-   * In this case, the count is always less or equal to the limit.
+   * If that count has a limit, the return is always less or equal to the limit, which is wrong.
+   *
    * @param session The Cassandra session in use.
    * @param ctx The Execution Context.
    * @return A Future wrapping an Optional result.
@@ -169,5 +184,53 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   }
 }
 
-class SelectCountWhere
+class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where, rowFunc: Row => R) extends SelectWhere[T, R](table, qb, rowFunc) {
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This method will not enforce a LIMIT 1 on the "one" query method.
+   * It is used to extract the record count obtained from a SELECT COUNT(*).
+   * If a count query is executed with a LIMIT, Cassandra will limit the records before counting.
+   *
+   * In this case, the count is always less or equal to the limit.
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return A Future wrapping an Optional result.
+   */
+  override def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+    val query = new SelectCountWhere[T, R](table, qb, fromRow)
+    query.fetchEnumerator run PlayIteratee.head
+  }
+
+  /**
+   * Returns the first row from the select ignoring everything else
+   * This method will not enforce a LIMIT 1 on the "one" query method.
+   * It is used to extract the record count obtained from a SELECT COUNT(*).
+   * If a count query is executed with a LIMIT, Cassandra will limit the records before counting.
+   *
+   * In this case, the count is always less or equal to the limit.
+   * @param session The Cassandra session in use.
+   * @param ctx The Execution Context.
+   * @return A Future wrapping an Optional result.
+   */
+  override def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+    val query = new SelectCountWhere[T, R](table, qb, fromRow)
+    query.enumerate() flatMap {
+      res => {
+        scalaFutureToTwitter(res run PlayIteratee.head)
+      }
+    }
+  }
+
+  /**
+   * And clauses require overriding for count queries for the same purpose.
+   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
+   * @param condition The Query condition to execute, based on index operators.
+   * @tparam RR The type of the underlying abstract column.
+   * @return A SelectCountWhere.
+   */
+  override def and[RR](condition: T => QueryCondition): SelectCountWhere[T, R] = {
+    new SelectCountWhere[T, R](table, qb.and(condition(table).clause), fromRow)
+  }
+}
 
