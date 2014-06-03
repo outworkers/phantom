@@ -45,7 +45,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
 
   self: CQLQuery[_] =>
 
-  def table: CassandraTable[T, _]
   def fromRow(r: Row): R
 
   /**
