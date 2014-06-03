@@ -25,10 +25,10 @@ import com.twitter.util.{ Future => TwitterFuture }
 
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
-class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
+
+class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
   override def fromRow(r: Row) = rowFunc(r)
-
 
   /**
    * Returns the first row from the select ignoring everything else
@@ -54,11 +54,6 @@ class SelectQuery[T <: CassandraTable[T, _], R](val table: T, protected[phantom]
         scalaFutureToTwitter(res run PlayIteratee.head)
       }
     }
-  }
-
-  def setFetchSize(n: Int) = {
-    qb.setFetchSize(n)
-    this
   }
 
   def allowFiltering() : SelectQuery[T, R] = {
@@ -177,11 +172,6 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
   def limit(l: Int) = {
     new SelectQuery(table, qb.limit(l), fromRow)
   }
-
-  def setFetchSize(n: Int) = {
-    qb.setFetchSize(n)
-    this
-  }
 }
 
 class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where, rowFunc: Row => R) extends SelectWhere[T, R](table, qb, rowFunc) {
@@ -200,6 +190,10 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
   override def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
     val query = new SelectCountWhere[T, R](table, qb, fromRow)
     query.fetchEnumerator run PlayIteratee.head
+  }
+
+  override def limit(l: Int) = {
+    new SelectCountQuery(table, qb.limit(l), fromRow)
   }
 
   /**

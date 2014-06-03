@@ -116,4 +116,16 @@ class QuerySerializationTest extends FlatSpec with Matchers {
     TableWithCompoundKey.count.where(_.id eqs id).and(_.second eqs id).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key;"
   }
 
+  it should "allow setting a limit on a count query" in {
+    val id = UUID.randomUUID()
+    val key = id.toString
+    TableWithCompoundKey.count.where(_.id eqs id).and(_.second eqs id).limit(10).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10;"
+  }
+
+  it should "allow filtering on a count query" in {
+    val id = UUID.randomUUID()
+    val key = id.toString
+    TableWithCompoundKey.count.allowFiltering().where(_.id eqs id).and(_.second eqs id).limit(10).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10 ALLOW FILTERING;"
+  }
+
 }

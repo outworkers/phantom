@@ -8,6 +8,11 @@ private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
 
   self: Q =>
 
+  def setFetchSize(n: Int) = {
+    qb.setFetchSize(n)
+    this
+  }
+
   def tracing_=(flag: Boolean): Q = {
     if (flag)
       qb.enableTracing()
