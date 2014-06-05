@@ -16,12 +16,16 @@
 package com.newzly.phantom.dsl.query
 
 import java.util.UUID
+import org.joda.time.DateTime
+
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
+
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{
   Articles,
   Primitives,
+  Recipe,
   Recipes,
   TableWithCompoundKey,
   TwoKeys

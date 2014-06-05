@@ -18,45 +18,7 @@ package com.newzly.phantom.query
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
 import com.newzly.phantom.CassandraTable
 
-class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends CQLQuery[AssignmentsQuery[T, R]] {
-
-  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
-    new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
-  }
-
-  def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
-    new AssignmentsQuery[T, R](table, qb.and(a(table)))
-  }
-
-  def and = modify _
-}
-
-class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends CQLQuery[AssignmentOptionQuery[T, R]] {
-
-  def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
-    new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
-  }
-
-  def using(u: Using): AssignmentOptionQuery[T, R] = {
-    new AssignmentOptionQuery[T, R](table, qb.and(u))
-  }
-}
-
-class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateQuery[T, R]] {
-
-  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
-    new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
-  }
-}
-
-class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateWhereQuery[T, R]] {
-
-  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
-    new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
-  }
-}
-
-class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) extends CQLQuery[UpdateQuery[T, R]] {
+class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) extends CQLQuery[UpdateQuery[T, R]] with BatchableQuery[UpdateQuery[T, R]] {
 
   def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
@@ -80,9 +42,14 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) extend
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
   }
+
+  def timestamp(l: Long): UpdateQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
+  }
 }
 
-class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) extends CQLQuery[UpdateWhere[T, R]] {
+class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) extends CQLQuery[UpdateWhere[T, R]] with BatchableQuery[UpdateWhere[T, R]] {
 
   def and[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
@@ -94,6 +61,67 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) 
 
   def modify(a: T => Assignment): AssignmentsQuery[T, R] = {
     new AssignmentsQuery[T, R](table, qb.`with`(a(table)))
+  }
+
+  def timestamp(l: Long): UpdateWhere[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
+  }
+}
+
+class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends CQLQuery[AssignmentsQuery[T, R]] with BatchableQuery[AssignmentsQuery[T, R]] {
+
+  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+    new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
+  }
+
+  def and(a: T => Assignment): AssignmentsQuery[T, R] = {
+    new AssignmentsQuery[T, R](table, qb.and(a(table)))
+  }
+
+  def timestamp(l: Long): AssignmentsQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
+  }
+}
+
+class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends CQLQuery[AssignmentOptionQuery[T, R]] with BatchableQuery[AssignmentOptionQuery[T, R]] {
+
+  def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
+    new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
+  }
+
+  def using(u: Using): AssignmentOptionQuery[T, R] = {
+    new AssignmentOptionQuery[T, R](table, qb.and(u))
+  }
+
+  def timestamp(l: Long): AssignmentOptionQuery[T, R] = {
+    qb.and(QueryBuilder.timestamp(l))
+    this
+  }
+}
+
+class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateQuery[T, R]] with BatchableQuery[ConditionalUpdateQuery[T, R]] {
+
+  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+    new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
+  }
+
+  def timestamp(l: Long): ConditionalUpdateQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
+  }
+}
+
+class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateWhereQuery[T, R]] with BatchableQuery[ConditionalUpdateWhereQuery[T, R]] {
+
+  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+    new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
+  }
+
+  def timestamp(l: Long): ConditionalUpdateWhereQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
   }
 }
 

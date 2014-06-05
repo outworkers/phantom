@@ -19,7 +19,6 @@ import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
 import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
-import com.newzly.phantom.batch.BatchableStatement
 import com.newzly.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
 import com.newzly.phantom.query.{
   AssignmentsQuery,
@@ -122,14 +121,6 @@ sealed trait ConditionalOperators extends LowPriorityImplicits {
 }
 
 sealed trait BatchRestrictions {
-  implicit def insertQueryIsBatchable[T <: CassandraTable[T, R], R](query: InsertQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def assignmentsQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentsQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def assignmentsOptionQueryIsBatchable[T <: CassandraTable[T, R], R](query: AssignmentOptionQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def conditionalQueryIsBatchable[T <: CassandraTable[T, R], R](query: ConditionalUpdateQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def conditionalWhereQueryIsBatchable[T <: CassandraTable[T, R], R](query: ConditionalUpdateWhereQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def deleteQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteQuery[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def deleteWhereQueryIsBatchable[T <: CassandraTable[T, R], R](query: DeleteWhere[T, R]): BatchableStatement = new BatchableStatement(query)
-  implicit def updateWhereQueryIsBatchable[T <: CassandraTable[T, R], R](query: UpdateWhere[T, R]): BatchableStatement = new BatchableStatement(query)
 }
 
 sealed trait CollectionOperators {
@@ -191,8 +182,7 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   implicit final def clusteringKeysAreNotModifiable2[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR] = new ModifiableColumn[T]
 
   implicit final def partitionKeysAreNotModifiable[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
-  implicit final def partitionKeysAreNotModifiable2[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
-
+  implicit final def partitionKeysAreNotModifiable2[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn
   implicit final def indexesAreNotModifiable[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
   implicit final def indexesAreNotModifiable2[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
 
@@ -227,4 +217,9 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   }
 }
 
-private [phantom] trait Operations extends ModifyImplicits with CollectionOperators with OrderingOperators with IndexRestrictions with BatchRestrictions with ConditionalOperators {}
+private [phantom] trait Operations extends ModifyImplicits
+  with CollectionOperators
+  with OrderingOperators
+  with IndexRestrictions
+  with BatchRestrictions
+  with ConditionalOperators {}

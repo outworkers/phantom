@@ -19,15 +19,17 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
 import scala.reflect.runtime.universe.Symbol
 import scala.util.Try
+
 import org.slf4j.LoggerFactory
+
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
+
 import com.newzly.phantom.column.AbstractColumn
 import com.newzly.phantom.query.{
   CreateQuery,
   DeleteQuery,
   InsertQuery,
-  SelectQuery,
   SelectCountQuery,
   TruncateQuery,
   UpdateQuery
@@ -167,7 +169,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[this] val selfType = instanceMirror.symbol.toType
 
   // Collect all column definitions starting from base class
-  private[this] val columnMembers = scala.collection.mutable.ArrayBuffer.empty[Symbol]
+  private[this] val columnMembers = ArrayBuffer.empty[Symbol]
   selfType.baseClasses.reverse.foreach {
     baseClass =>
       val baseClassMembers = baseClass.typeSignature.members.sorted

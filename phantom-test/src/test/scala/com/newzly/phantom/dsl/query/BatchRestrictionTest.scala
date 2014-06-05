@@ -15,9 +15,12 @@
  */
 package com.newzly.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import org.joda.time.DateTime
+import org.scalatest.{ FlatSpec, Matchers }
+
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.tables.{ Primitives, Recipes }
+import com.newzly.phantom.tables.{ Primitives, Recipe, Recipes }
+import com.newzly.util.testing.Sampler
 
 class BatchRestrictionTest extends FlatSpec with Matchers {
   
@@ -40,4 +43,25 @@ class BatchRestrictionTest extends FlatSpec with Matchers {
   it should "not allow using Create queries in a batch" in {
     "BatchStatement().add(Primitives.create)" shouldNot compile
   }
+
+  it should "allow setting a timestamp on a Batch query" in {
+    val url = Sampler.getARandomString
+    "BatchStatement().timestamp(new DateTime().getMillis).add(Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis))" should compile
+  }
+
+  it should "allow setting a timestamp on an Update query" in {
+    val url = Sampler.getARandomString
+    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis)" should compile
+  }
+
+  it should "allow setting a timestamp on a Compare-and-Set Update query" in {
+    val url = Sampler.getARandomString
+    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).onlyIf(_.description eqs Some(url)).timestamp(new DateTime().getMillis)" should compile
+  }
+
+  it should "allow using a timestamp on an Insert query" in {
+    val sample = Recipe.sample
+    "Recipes.insert.value(_.url, sample.url).value(_.description, sample.description).timestamp(new DateTime().getMillis)" should compile
+  }
+
 }
