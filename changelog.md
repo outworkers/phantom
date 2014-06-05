@@ -7,7 +7,7 @@ Changelog
 <ul>
     <li><a href="#version-0.6.0">0.6.0 - 11.05.2014</a></li>
     <li><a href="#version-0.7.0">0.7.0 - 22.05.2014</a></li>
-    <li><a href="#version-0.7.0">0.7.0 - 04.06.2014</a></li>
+    <li><a href="#version-0.8.0">0.8.0 - 04.06.2014</a></li>
 </ul>
 
 
