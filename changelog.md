@@ -7,6 +7,7 @@ Changelog
 <ul>
     <li><a href="#version-0.6.0">0.6.0 - 11.05.2014</a></li>
     <li><a href="#version-0.7.0">0.7.0 - 22.05.2014</a></li>
+    <li><a href="#version-0.7.0">0.7.0 - 04.06.2014</a></li>
 </ul>
 
 
@@ -44,3 +45,19 @@ Changelog
 - Fixed issues with using the ```setIdX``` List operator.
 - Integrated Scalatra servlet container tests in the same test project.
 - Removed phantom-scalatra-test module
+
+<a id="version-0.8.0">0.8.0</a>
+===============================
+
+- PHANTOM-43: Added timestamp support for BatchStatements.
+- PHANTOM-62: Added timestamp support for queries used in batch statements.
+- PHANTOM-66: Added support for ```SELECT DISTINCT``` queries.
+- PHANTOM-72: Added ability to enable/disable tracing on all queries.
+- PHANTOM-75: Restructure the query mechanism to allow sharing methods easily.
+- PHANTOM-76: Added a ```ifNotExists``` method to Insert statements.
+- PHANTOM-78: Added ability to set a default consistency per table.
+- PHANTOM-79: Added ability to chain multiple clauses on a secondary condition.
+- PHANTOM-81: Fixed bug where count queries were always returning 1 because a ```LIMIT 1``` was improperly enforced.
+- PHANTOM-82: Changed the return type of a count query from ```Option[Option[Long]]``` to ```Option[Long]```.
+- PHANTOM-83: Enhanced phantom query builder to allow using ```where``` clauses for ```COUNT``` queries.
+- PHANTOM-84: Added common methods to GitHub documentation.

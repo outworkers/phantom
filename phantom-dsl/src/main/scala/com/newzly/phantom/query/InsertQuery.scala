@@ -20,7 +20,7 @@ import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.newzly.phantom.CassandraTable
 import com.newzly.phantom.column.AbstractColumn
 
-class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends CQLQuery[InsertQuery[T, R]] {
+class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends CQLQuery[InsertQuery[T, R]] with BatchableQuery[InsertQuery[T, R]] {
 
   final def value[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
     val col = c(table)
@@ -46,6 +46,11 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
    */
   def ttl(expiry: Int): InsertQuery[T, R] = {
     qb.using(QueryBuilder.ttl(expiry))
+    this
+  }
+
+  def timestamp(l: Long): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
     this
   }
 

@@ -122,9 +122,9 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
           .where(_.key eqs row.key)
           .modify(_.list setTo updatedRow.list)
           .and(_.setText setTo updatedRow.setText)
-          .modify(_.mapTextToText setTo updatedRow.mapTextToText)
-          .modify(_.setInt setTo updatedRow.setInt)
-          .modify(_.mapIntToText setTo updatedRow.mapIntToText).future()
+          .and(_.mapTextToText setTo updatedRow.mapTextToText)
+          .and(_.setInt setTo updatedRow.setInt)
+          .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
         a2 <- TestTable.select.where(_.key eqs row.key).one
         b2 <- TestTable.select.fetch
         } yield (
