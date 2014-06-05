@@ -15,85 +15,77 @@
  */
 package com.newzly.phantom.batch
 
-import scala.annotation.implicitNotFound
-import scala.concurrent.{ Future => ScalaFuture }
-import com.datastax.driver.core.{ BatchStatement => DatastaxBatchStatement, ResultSet, Session }
-import com.newzly.phantom.CassandraResultSetOperations
-import com.newzly.phantom.query.ExecutableStatement
-import com.twitter.util.{ Future => TwitterFuture }
+import com.datastax.driver.core.querybuilder.{ Batch, QueryBuilder }
+import com.newzly.phantom.query.{ BatchableQuery, CQLQuery, ExecutableStatement }
 
-private [phantom] class BatchableStatement(val executable: ExecutableStatement)
 
-sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends CassandraResultSetOperations {
+sealed abstract class BatchableTypes {
+  type BatchableStatement = BatchableQuery[_] with ExecutableStatement
+}
+
+sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends CQLQuery[X] {
   self: X =>
+
+
+  type BatchableStatement = BatchableTypes#BatchableStatement
+
+  protected[phantom] val qb = create()
 
   protected[this] lazy val statements: Iterator[BatchableStatement] =  Iterator.empty
 
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): X
 
-  protected[this] def create(): DatastaxBatchStatement
+  protected[this] def create(): Batch
 
-  final def apply(list: Iterator[BatchableStatement] = Iterator.empty): X = {
-    newSubclass(list)
+  final def add(statements: BatchableStatement*): X = {
+    for (st <- statements) qb.add(st.qb)
+    this
   }
 
-  @implicitNotFound("SELECT, CREATE and TRUNCATE queries cannot be used in a BATCH.")
-  final def add[T <: ExecutableStatement <% BatchableStatement](statement: => T): X = {
-    apply(qbList ++ Iterator(statement))
-  }
-
-  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    val batch = create()
-    for (s <- qbList) {
-      batch.add(s.executable.qb)
-    }
-    scalaStatementToFuture(batch)
-  }
-
-  def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
-    val batch = create()
-    for (s <- qbList) {
-      batch.add(s.executable.qb)
-    }
-    twitterStatementToFuture(batch)
+  final def timestamp(t: Long): X = {
+    qb.using(QueryBuilder.timestamp(t))
+    this
   }
 }
 
 /**
  * !!! Attention !!!
- * This class is not meant to be used for concurrent operations on the same row inside one batch.
+ * This class is not meant to be used for concurrent operations on the same row inside the same batch.
+ * If you are updating the same record twice or performing an update and delete of the same record in the same batch,
+ * you should use timestamps to define a custom execution order.
+ *
  * In order to have concurrent operation on the same row in the same batch, custom timestamp needs to be inserted
- * on each statement. This is not in the scope of this class.(for now)
+ * on each statement, using the "timestamp" method available on every batchable query(INSERT, UPDATE, DELETE).
  */
-sealed class BatchStatement(qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[BatchStatement](qbList) {
-  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.LOGGED)
+sealed class BatchStatement(qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[BatchStatement](qbList) {
+
+  protected[this] def create(): Batch = QueryBuilder.batch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): BatchStatement = new BatchStatement(sts)
 }
 
-sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[CounterBatchStatement](qbList) {
+sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[CounterBatchStatement](qbList) {
+  protected[this] def create(): Batch = QueryBuilder.batch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(sts)
-  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.COUNTER)
 }
 
-sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[UnloggedBatchStatement](qbList) {
+sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[UnloggedBatchStatement](qbList) {
+  protected[this] def create(): Batch = QueryBuilder.unloggedBatch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(sts)
-  protected[this] def create(): DatastaxBatchStatement = new DatastaxBatchStatement(DatastaxBatchStatement.Type.UNLOGGED)
 }
 
 object BatchStatement {
   def apply(): BatchStatement = new BatchStatement()
-  def apply(statements: Iterator[BatchableStatement]): BatchStatement = new BatchStatement(statements)
+  def apply(statements: Iterator[BatchableTypes#BatchableStatement]): BatchStatement = new BatchStatement(statements)
 }
 
 object CounterBatchStatement {
   def apply(): CounterBatchStatement = new CounterBatchStatement()
-  def apply(statements: Iterator[BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(statements)
+  def apply(statements: Iterator[BatchableTypes#BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(statements)
 }
 
 object UnloggedBatchStatement {
   def apply(): UnloggedBatchStatement = new UnloggedBatchStatement()
-  def apply(statements: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(statements)
+  def apply(statements: Iterator[BatchableTypes#BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(statements)
 }
-
 
 
