@@ -15,21 +15,31 @@
  */
 package com.newzly.phantom.query
 
-import com.datastax.driver.core.querybuilder.Delete
+import com.datastax.driver.core.querybuilder.{QueryBuilder, Delete}
 import com.newzly.phantom.CassandraTable
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
-  extends CQLQuery[DeleteQuery[T, R]] {
+  extends CQLQuery[DeleteQuery[T, R]] with BatchableQuery[DeleteQuery[T, R]]{
 
   def where[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.where(condition(table).clause))
   }
+
+  def timestamp(l: Long): DeleteQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
+  }
 }
 
 class DeleteWhere[T <: CassandraTable[T, R], R](table: T, val qb: Delete.Where)
-  extends CQLQuery[DeleteWhere[T, R]] {
+  extends CQLQuery[DeleteWhere[T, R]] with BatchableQuery[DeleteWhere[T, R]] {
 
   def and[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.and(condition(table).clause))
+  }
+
+  def timestamp(l: Long): DeleteWhere[T, R] = {
+    qb.using(QueryBuilder.timestamp(l))
+    this
   }
 }
