@@ -16,7 +16,10 @@
 package com.newzly.phantom.dsl.query
 
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import com.datastax.driver.core.utils.UUIDs
+import com.newzly.phantom.Implicits._
 import com.newzly.phantom.tables.{ CounterTableTest, TimeSeriesTable, TwoKeys }
+import com.newzly.util.testing.Sampler
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
   
@@ -33,10 +36,25 @@ class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTes
   }
 
   it should "allow using setTo operators for non index columns" in {
-    """TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo "test")""" shouldNot compile
+    """TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo "test")""" should compile
   }
 
   it should "not allow using the setTo operator on a Clustering column" in {
     "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.timestamp setTo new DateTime)" shouldNot compile
+  }
+
+  it should "not allow chaining 2 modify operators on a single update query" in {
+   val update = Sampler.getARandomString
+   "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).modify(_.name setTo Sampler.getARandomString)" shouldNot compile
+  }
+
+  it should """allow chaining one "modify" operator followed by one "and" operator on a single update query""" in {
+    val update = Sampler.getARandomString
+    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
+  }
+
+  it should """allow chaining one "modify" operator followed by multiple "and" operators on a single update query""" in {
+    val update = Sampler.getARandomString
+    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
   }
 }
