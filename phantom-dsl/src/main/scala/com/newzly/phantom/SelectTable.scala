@@ -233,4 +233,10 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
       ).from(tableName), r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r), c10(r)))
   }
 
+  def distinct[A](f1: T => SelectColumn[A]): SelectQuery[T, A] = {
+    val t = this.asInstanceOf[T]
+    val c = f1(t)
+    new SelectQuery[T, A](t, QueryBuilder.select.distinct().from(tableName), c.apply)
+  }
+
 }
