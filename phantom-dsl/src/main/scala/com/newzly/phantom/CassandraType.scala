@@ -135,5 +135,4 @@ object CassandraPrimitive {
     def fromRow(row: Row, name: String): Option[BigInt] =
       if (row.isNull(name)) None else Try(BigInt(row.getVarint(name))).toOption
   }
-
 }

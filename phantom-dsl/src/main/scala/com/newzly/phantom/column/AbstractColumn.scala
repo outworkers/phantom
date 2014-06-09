@@ -17,7 +17,7 @@ package com.newzly.phantom.column
 
 import com.newzly.phantom.CassandraWrites
 
-private [phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
+private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   type Value = T
   private[phantom] val isPrimary = false

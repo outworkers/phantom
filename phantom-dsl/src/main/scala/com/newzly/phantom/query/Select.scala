@@ -28,7 +28,7 @@ import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
 class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
-  override def fromRow(r: Row) = rowFunc(r)
+  override def fromRow(r: Row): R = rowFunc(r)
 
   /**
    * Returns the first row from the select ignoring everything else
@@ -71,7 +71,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val
     new SelectQuery[T, R](table, qb.orderBy(applied: _*), fromRow)
   }
 
-  def limit(l: Int) = {
+  def limit(l: Int): SelectQuery[T, R] = {
     new SelectQuery(table, qb.limit(l), fromRow)
   }
 
@@ -131,7 +131,7 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
 
 class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Where, rowFunc: Row => R) extends CQLQuery[SelectWhere[T, R]] with ExecutableQuery[T, R] {
 
-  override def fromRow(r: Row) = rowFunc(r)
+  override def fromRow(r: Row): R = rowFunc(r)
 
   def orderBy[RR](conditions: (T => QueryOrdering)*): SelectQuery[T, R] = {
     val applied = conditions map {
@@ -169,7 +169,7 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
     new SelectWhere[T, R](table, qb.and(condition(table).clause), fromRow)
   }
 
-  def limit(l: Int) = {
+  def limit(l: Int): SelectQuery[T, R] = {
     new SelectQuery(table, qb.limit(l), fromRow)
   }
 }
@@ -192,7 +192,7 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
     query.fetchEnumerator run PlayIteratee.head
   }
 
-  override def limit(l: Int) = {
+  override def limit(l: Int): SelectCountQuery[T, R] = {
     new SelectCountQuery(table, qb.limit(l), fromRow)
   }
 

@@ -44,31 +44,31 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
-      def codec = ThriftTest
+      val codec = ThriftTest
     }
   }
 
   object thriftSet extends ThriftSetColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
-      def codec = ThriftTest
+      val codec = ThriftTest
     }
   }
 
   object thriftList extends ThriftListColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
-      def codec = ThriftTest
+      val codec = ThriftTest
     }
   }
 
   object thriftMap extends ThriftMapColumn[ThriftColumnTable, Output, String, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
-      def codec = ThriftTest
+      val codec = ThriftTest
     }
   }
 
   object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
-      def codec = ThriftTest
+      val codec = ThriftTest
     }
   }
 

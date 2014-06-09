@@ -86,7 +86,7 @@ sealed abstract class AbstractQueryColumn[T: CassandraPrimitive](col: AbstractCo
 }
 
 
-private [phantom] abstract class AbstractModifyColumn[RR](name: String) {
+private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
 
   def toCType(v: RR): AnyRef
 
@@ -130,7 +130,8 @@ sealed trait CollectionOperators {
     def decrement(value: Long = 1L): Assignment = QueryBuilder.decr(col.name, value)
   }
 
-  implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractListColumn[Owner, Record, RR]) extends ModifyColumn[List[RR]](col) {
+  implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractListColumn[Owner, Record, RR])
+    extends ModifyColumn[List[RR]](col) {
 
     def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, col.valueToCType(value))
     def prependAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.prependAll(col.name, col.valuesToCType(values))
@@ -141,7 +142,8 @@ sealed trait CollectionOperators {
     def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, col.valueToCType(value))
   }
 
-  implicit class SetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractSetColumn[Owner, Record, RR]) extends ModifyColumn[Set[RR]](col) {
+  implicit class SetLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractSetColumn[Owner, Record, RR])
+    extends ModifyColumn[Set[RR]](col) {
 
     def add(value: RR): Assignment = QueryBuilder.add(col.name, col.valueToCType(value))
     def addAll(values: Set[RR]): Assignment = QueryBuilder.addAll(col.name, col.valuesToCType(values))
@@ -149,7 +151,8 @@ sealed trait CollectionOperators {
     def removeAll(values: Set[RR]): Assignment = QueryBuilder.removeAll(col.name, col.valuesToCType(values))
   }
 
-  implicit class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A, B](col: AbstractMapColumn[Owner, Record, A, B]) extends ModifyColumn[Map[A, B]](col) {
+  implicit class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A, B](col: AbstractMapColumn[Owner, Record, A, B])
+    extends ModifyColumn[Map[A, B]](col) {
 
     def put(value: (A, B)): Assignment = QueryBuilder.put(col.name, col.keyToCType(value._1), col.valueToCType(value._2))
     def putAll[L <% Traversable[(A, B)]](values: L): Assignment = QueryBuilder.putAll(col.name, col.valuesToCType(values))
@@ -157,8 +160,9 @@ sealed trait CollectionOperators {
 }
 
 sealed trait OrderingOperators {
-  implicit def clusteringKeyToOrderingOperator[T : CassandraPrimitive](col: AbstractColumn[T] with ClusteringOrder[T]): OrderingColumn[T] = new OrderingColumn[T](col)
-
+  implicit def clusteringKeyToOrderingOperator[T : CassandraPrimitive](col: AbstractColumn[T] with ClusteringOrder[T]): OrderingColumn[T] = {
+    new OrderingColumn[T](col)
+  }
 }
 
 sealed trait IndexRestrictions {
@@ -170,40 +174,46 @@ sealed trait IndexRestrictions {
 sealed class ModifiableColumn[T]
 sealed trait ModifyImplicits extends LowPriorityImplicits {
 
-  implicit final def columnsAreModifiable[T <: AbstractColumn[_]] = new ModifiableColumn[T]
+  implicit final def columnsAreModifiable[T <: AbstractColumn[_]]: ModifiableColumn[T] = new ModifiableColumn[T]
 
-  implicit final def countersAreNotModifiable[T <: AbstractColumn[RR] with CounterRestriction[RR], RR] = new ModifiableColumn[T]
-  implicit final def countersAreNotModifiable2[T <: AbstractColumn[RR] with CounterRestriction[RR], RR] = new ModifiableColumn[T]
+  implicit final def countersAreNotModifiable[T <: AbstractColumn[RR] with CounterRestriction[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
+  implicit final def countersAreNotModifiable2[T <: AbstractColumn[RR] with CounterRestriction[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
 
-  implicit final def primaryKeysAreNotModifiable[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
-  implicit final def primaryKeysAreNotModifiable2[T <: AbstractColumn[RR] with PrimaryKey[RR], RR] = new ModifiableColumn[T]
+  implicit final def primaryKeysAreNotModifiable[T <: AbstractColumn[RR] with PrimaryKey[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
+  implicit final def primaryKeysAreNotModifiable2[T <: AbstractColumn[RR] with PrimaryKey[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
 
-  implicit final def clusteringKeysAreNotModifiable[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR] = new ModifiableColumn[T]
-  implicit final def clusteringKeysAreNotModifiable2[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR] = new ModifiableColumn[T]
+  implicit final def clusteringKeysAreNotModifiable[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
+  implicit final def clusteringKeysAreNotModifiable2[T <: AbstractColumn[RR] with ClusteringOrder[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
 
-  implicit final def partitionKeysAreNotModifiable[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn[T]
+  implicit final def partitionKeysAreNotModifiable[T <: AbstractColumn[RR] with PartitionKey[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
   implicit final def partitionKeysAreNotModifiable2[T <: AbstractColumn[RR] with PartitionKey[RR], RR] = new ModifiableColumn
-  implicit final def indexesAreNotModifiable[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
-  implicit final def indexesAreNotModifiable2[T <: AbstractColumn[RR] with Index[RR], RR] = new ModifiableColumn[T]
+  implicit final def indexesAreNotModifiable[T <: AbstractColumn[RR] with Index[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
+  implicit final def indexesAreNotModifiable2[T <: AbstractColumn[RR] with Index[RR], RR]: ModifiableColumn[T] = new ModifiableColumn[T]
 
   implicit final def columnToModifyColumn[T](col: AbstractColumn[T]): ModifyColumn[T] = new ModifyColumn[T](col)
 
   @implicitNotFound(msg = "CounterColumns can only be incremented or decremented.")
-  implicit final def nonCounterColumns[T <: CounterRestriction[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with CounterRestriction[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+  implicit final def nonCounterColumns[T <: CounterRestriction[RR] : ModifiableColumn, RR]
+    (obj: AbstractColumn[RR] with CounterRestriction[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   @implicitNotFound(msg = "The value of primary key columns cannot be updated as per the Cassandra specification")
-  implicit final def notPrimaryKeys[T <: PrimaryKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with PrimaryKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+  implicit final def notPrimaryKeys[T <: PrimaryKey[RR] : ModifiableColumn, RR]
+    (obj: AbstractColumn[RR] with PrimaryKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   @implicitNotFound(msg = "The value of partition key columns cannot be updated as per the Cassandra specification")
-  implicit final def notPartitionKeys[T <: PartitionKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with PartitionKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+  implicit final def notPartitionKeys[T <: PartitionKey[RR] : ModifiableColumn, RR]
+    (obj: AbstractColumn[RR] with PartitionKey[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   @implicitNotFound(msg = "The value of indexed columns cannot be updated as per the Cassandra specification")
-  implicit final def notIndexKeys[T <: PartitionKey[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with Index[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+  implicit final def notIndexKeys[T <: PartitionKey[RR] : ModifiableColumn, RR]
+  (obj: AbstractColumn[RR] with Index[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
   @implicitNotFound(msg = "The value of clustering columns cannot be updated as per the Cassandra specification")
-  implicit final def notClusteringKeys[T <: ClusteringOrder[RR] : ModifiableColumn, RR](obj: AbstractColumn[RR] with ClusteringOrder[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
+  implicit final def notClusteringKeys[T <: ClusteringOrder[RR] : ModifiableColumn, RR]
+    (obj: AbstractColumn[RR] with ClusteringOrder[RR]): ModifyColumn[RR] = new ModifyColumn(obj)
 
-  implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR]) extends AbstractModifyColumn[Option[RR]](col.name) {
+  implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
+    extends AbstractModifyColumn[Option[RR]](col.name) {
 
     def toCType(v: Option[RR]): AnyRef = col.toCType(v)
   }
@@ -212,12 +222,13 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
     def apply(r: Row): T = col.apply(r)
   }
 
-  implicit class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
+  implicit class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T])
+    extends SelectColumn[Option[T]](col) {
     def apply(r: Row): Option[T] = col.apply(r)
   }
 }
 
-private [phantom] trait Operations extends ModifyImplicits
+private[phantom] trait Operations extends ModifyImplicits
   with CollectionOperators
   with OrderingOperators
   with IndexRestrictions

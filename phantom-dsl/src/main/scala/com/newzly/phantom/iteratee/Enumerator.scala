@@ -25,15 +25,17 @@ import play.api.libs.iteratee.{ Enumerator => PlayE }
 object Enumerator {
   private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayE[E] = {
     PlayE.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
-      if (currentIt.hasNext)
+      if (currentIt.hasNext) {
         Future[Option[(scala.collection.Iterator[E], E)]]({
           val next = currentIt.next()
           Some(currentIt -> next)
         })(ctx)
-      else
+      }
+      else {
         Future.successful[Option[(scala.collection.Iterator[E], E)]]({
           None
         })
+      }
     })(Execution.defaultExecutionContext)
   }
 
