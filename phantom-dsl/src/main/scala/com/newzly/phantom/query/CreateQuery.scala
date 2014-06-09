@@ -25,9 +25,9 @@ class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) ext
   val qb = null
 
   override def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    if (table.createIndexes().isEmpty)
+    if (table.createIndexes().isEmpty) {
       scalaQueryStringExecuteToFuture(table.schema())
-    else {
+    } else {
       scalaQueryStringExecuteToFuture(table.schema()) flatMap {
         _=> {
           ScalaFuture.sequence(table.createIndexes() map scalaQueryStringExecuteToFuture) map (_.head)
@@ -37,9 +37,9 @@ class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) ext
   }
 
   override def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
-    if (table.createIndexes().isEmpty)
+    if (table.createIndexes().isEmpty) {
       twitterQueryStringExecuteToFuture(table.schema())
-    else {
+    } else {
       twitterQueryStringExecuteToFuture(table.schema())  flatMap {
         _=> {
           TwitterFuture.collect(table.createIndexes() map twitterQueryStringExecuteToFuture) map (_.head)

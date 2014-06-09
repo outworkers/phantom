@@ -46,13 +46,20 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     new SelectQuery[T, (A, B, C)](t, QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name).from(tableName), r => (c1(r), c2(r), c3(r)))
   }
 
-  def select[A, B, C, D](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C], f4: T => SelectColumn[D]): SelectQuery[T, (A, B, C, D)] = {
+  def select[A, B, C, D](
+    f1: T =>SelectColumn[A],
+   f2: T => SelectColumn[B],
+   f3: T => SelectColumn[C],
+   f4: T => SelectColumn[D]): SelectQuery[T, (A, B, C, D)] = {
     val t = this.asInstanceOf[T]
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
     val c4 = f4(t)
-    new SelectQuery[T, (A, B, C, D)](t, QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name, c4.col.name).from(tableName), r => (c1(r), c2(r), c3(r), c4(r)))
+    new SelectQuery[T, (A, B, C, D)](t,
+      QueryBuilder.select(c1.col.name, c2.col.name, c3.col.name, c4.col.name).from(tableName),
+      r => (c1(r), c2(r), c3(r), c4(r))
+    )
   }
 
   def select[A, B, C, D, E](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C], f4: T => SelectColumn[D], f5: T => SelectColumn[E]): SelectQuery[T, (A, B, C, D, E)] = {

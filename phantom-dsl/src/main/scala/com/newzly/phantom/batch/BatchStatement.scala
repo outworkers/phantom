@@ -23,7 +23,7 @@ sealed abstract class BatchableTypes {
   type BatchableStatement = BatchableQuery[_] with ExecutableStatement
 }
 
-sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends CQLQuery[X] {
+sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends CQLQuery[X] {
   self: X =>
 
 
@@ -57,18 +57,23 @@ sealed abstract class BatchQueryListTrait[X](protected[this] val qbList: Iterato
  * In order to have concurrent operation on the same row in the same batch, custom timestamp needs to be inserted
  * on each statement, using the "timestamp" method available on every batchable query(INSERT, UPDATE, DELETE).
  */
-sealed class BatchStatement(qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[BatchStatement](qbList) {
+sealed class BatchStatement(qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty)
+  extends RootBatch[BatchStatement](qbList) {
 
   protected[this] def create(): Batch = QueryBuilder.batch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): BatchStatement = new BatchStatement(sts)
 }
 
-sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[CounterBatchStatement](qbList) {
+sealed class CounterBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty)
+  extends RootBatch[CounterBatchStatement](qbList) {
+
   protected[this] def create(): Batch = QueryBuilder.batch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): CounterBatchStatement = new CounterBatchStatement(sts)
 }
 
-sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends BatchQueryListTrait[UnloggedBatchStatement](qbList) {
+sealed class UnloggedBatchStatement(override protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty)
+  extends RootBatch[UnloggedBatchStatement](qbList) {
+
   protected[this] def create(): Batch = QueryBuilder.unloggedBatch()
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): UnloggedBatchStatement = new UnloggedBatchStatement(sts)
 }

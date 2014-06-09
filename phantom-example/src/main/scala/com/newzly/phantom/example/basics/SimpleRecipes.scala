@@ -17,10 +17,15 @@ package com.newzly.phantom.example.basics
 
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
+
 import org.joda.time.DateTime
+
 import com.datastax.driver.core.{ ResultSet, Row }
+
 import com.newzly.phantom.Implicits._
 import com.newzly.phantom.iteratee.Iteratee
+
+import com.twitter.conversions.time._
 
 /**
  * In this example we will create a simple table storing recipes.
@@ -98,7 +103,7 @@ object Recipes extends Recipes with DBConnector {
       .value(_.name, recipe.name)
       .value(_.props, recipe.props)
       .value(_.timestamp, recipe.timestamp)
-      .ttl(4500) // you can use TTL if you want to.
+      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
       .future()
   }
 
