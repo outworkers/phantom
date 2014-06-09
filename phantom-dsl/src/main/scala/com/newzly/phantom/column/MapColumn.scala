@@ -20,7 +20,7 @@ import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
 class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record])
-    extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollecitonValue[V] {
+    extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
 
   val keyPrimitive = CassandraPrimitive[K]
 

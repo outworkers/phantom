@@ -19,12 +19,12 @@ import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
 import com.datastax.driver.core.{ ResultSet, Row }
-import play.api.libs.iteratee.{ Enumerator => PlayE }
+import play.api.libs.iteratee.{ Enumerator => PlayEnum }
 
 
 object Enumerator {
-  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayE[E] = {
-    PlayE.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
+  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[E] = {
+    PlayEnum.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
       if (currentIt.hasNext) {
         Future[Option[(scala.collection.Iterator[E], E)]]({
           val next = currentIt.next()
@@ -39,7 +39,7 @@ object Enumerator {
     })(Execution.defaultExecutionContext)
   }
 
-  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext) =
+  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] =
     enumerate[Row](r.iterator())
 }
 
@@ -66,7 +66,7 @@ private object Execution {
    */
   val trampoline: ExecutionContext = new ExecutionContext {
 
-    private val local = new ThreadLocal[JavaDeque[Runnable]]
+    private[this] val local = new ThreadLocal[JavaDeque[Runnable]]
 
     def execute(runnable: Runnable): Unit = {
       @volatile var queue = local.get()
@@ -74,7 +74,7 @@ private object Execution {
         // Since there is no local queue, we need to install one and
         // start our trampolining loop.
         try {
-          queue = new JavaArrayDeque(4)
+          queue = new JavaArrayDeque(Runtime.getRuntime.availableProcessors())
           queue.addLast(runnable)
           local.set(queue)
           while (!queue.isEmpty) {
@@ -110,7 +110,5 @@ private object Execution {
     }
 
     def reportFailure(t: Throwable): Unit = t.printStackTrace()
-
   }
-
 }

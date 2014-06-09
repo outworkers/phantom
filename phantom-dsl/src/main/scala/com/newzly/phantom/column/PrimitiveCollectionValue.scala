@@ -15,22 +15,16 @@
  */
 package com.newzly.phantom.column
 
-import com.datastax.driver.core.Row
-import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
+import com.newzly.phantom.CassandraPrimitive
 
-private[phantom] trait CounterRestriction[T]
+trait PrimitiveCollectionValue[R] extends CollectionValueDefinition[R] {
 
-class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
-  extends Column[Owner, Record, Long](table) with CounterRestriction[Long] {
+  def valuePrimitive: CassandraPrimitive[R]
 
-  val cassandraType = "counter"
-  val primitive = CassandraPrimitive[Long]
-  override val isCounterColumn = true
+  override def valueCls: Class[_] = valuePrimitive.cls
 
-  def toCType(values: Long): AnyRef = primitive.toCType(values)
+  override def valueToCType(v: R): AnyRef = valuePrimitive.toCType(v)
 
-  def optional(r: Row): Option[Long] = {
-    primitive.fromRow(r, name)
-  }
+  override def valueFromCType(c: AnyRef): R = valuePrimitive.fromCType(c)
 
 }

@@ -44,7 +44,7 @@ sealed class Articles private() extends CassandraTable[Articles, Article] with L
   object name extends StringColumn(this)
 
   override def fromRow(row: Row): Article = {
-    Article(name(row), id(row), order_id(row))
+    Article(name(row), id(row), orderId(row))
   }
 }
 

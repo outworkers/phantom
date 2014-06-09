@@ -15,7 +15,7 @@
  */
 package com.newzly.phantom
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer }
 import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
 import scala.reflect.runtime.universe.Symbol
 import scala.util.Try
@@ -39,7 +39,7 @@ case class InvalidPrimaryKeyException(msg: String = "You need to define at least
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[this] lazy val _columns: ArrayBuffer[AbstractColumn[_]] = new ArrayBuffer[AbstractColumn[_]] with collection.mutable.SynchronizedBuffer[AbstractColumn[_]]
+  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]] with MutableSyncBuffer[AbstractColumn[_]]
 
   private[this] lazy val _name: String = {
     getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
@@ -49,7 +49,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     Try { r.getLong("count") }.toOption.getOrElse(0L)
   }
 
-  def columns: ArrayBuffer[AbstractColumn[_]] = _columns
+  def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
   lazy val logger = LoggerFactory.getLogger(tableName)
 
@@ -171,7 +171,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[this] val selfType = instanceMirror.symbol.toType
 
   // Collect all column definitions starting from base class
-  private[this] val columnMembers = ArrayBuffer.empty[Symbol]
+  private[this] val columnMembers = MutableArrayBuffer.empty[Symbol]
   selfType.baseClasses.reverse.foreach {
     baseClass =>
       val baseClassMembers = baseClass.typeSignature.members.sorted

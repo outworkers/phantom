@@ -19,7 +19,7 @@ import com.datastax.driver.core.querybuilder.{QueryBuilder, Delete}
 import com.newzly.phantom.CassandraTable
 
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
-  extends CQLQuery[DeleteQuery[T, R]] with BatchableQuery[DeleteQuery[T, R]]{
+  extends CQLQuery[DeleteQuery[T, R]] with BatchableQuery[DeleteQuery[T, R]] {
 
   def where[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.where(condition(table).clause))

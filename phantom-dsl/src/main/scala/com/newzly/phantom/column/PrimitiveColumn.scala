@@ -22,7 +22,8 @@ import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 import com.datastax.driver.core.Row
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long) RR: CassandraPrimitive](t: CassandraTable[Owner, Record]) extends Column[Owner, Record, RR](t) {
+class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Float, Long) RR: CassandraPrimitive](t: CassandraTable[T, R])
+  extends Column[T, R, RR](t) {
 
   def cassandraType: String = CassandraPrimitive[RR].cassandraType
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
@@ -43,7 +44,8 @@ private[phantom] class TimeSeries[T]
  * @tparam Owner The Owner of the Record.
  * @tparam Record The Record type.
  */
-class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, Date](table) {
+class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
+  extends PrimitiveColumn[Owner, Record, Date](table) {
   private[phantom] implicit val timeSeries = new TimeSeries[Date]
 }
 
@@ -53,6 +55,7 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  * @tparam Owner The Owner of the Record.
  * @tparam Record The Record type.
  */
-class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record]) extends PrimitiveColumn[Owner, Record, DateTime](table) {
+class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
+  extends PrimitiveColumn[Owner, Record, DateTime](table) {
   private[phantom] implicit val timeSeries = new TimeSeries[DateTime]
 }

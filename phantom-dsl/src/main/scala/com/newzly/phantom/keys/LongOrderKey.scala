@@ -26,5 +26,5 @@ import com.newzly.phantom.Implicits.LongColumn
 trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] =>
 
-  object order_id extends LongColumn(this) with PrimaryKey[Long]
+  object orderId extends LongColumn(this) with PrimaryKey[Long]
 }

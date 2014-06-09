@@ -42,23 +42,23 @@ class TruncateTest extends BaseTest {
     val result = for {
       i1 <- Articles.insert
         .value(_.name, article1.name).value(_.id, article1.id)
-        .value(_.order_id, article1.order_id)
+        .value(_.orderId, article1.order_id)
         .future()
       i2 <- Articles.insert
         .value(_.name, article2.name)
         .value(_.id, article2.id)
-        .value(_.order_id, article2.order_id)
+        .value(_.orderId, article2.order_id)
         .future()
       i3 <- Articles.insert
         .value(_.name, article3.name)
         .value(_.id, article3.id)
-        .value(_.order_id, article3.order_id)
+        .value(_.orderId, article3.order_id)
         .future()
 
       i4 <- Articles.insert
         .value(_.name, article4.name)
         .value(_.id, article4.id)
-        .value(_.order_id, article4.order_id)
+        .value(_.orderId, article4.order_id)
         .future()
       records <- Articles.select.fetch
       truncate <- Articles.truncate.future()
@@ -86,23 +86,23 @@ class TruncateTest extends BaseTest {
     val result = for {
       i1 <- Articles.insert
         .value(_.name, article1.name).value(_.id, article1.id)
-        .value(_.order_id, article1.order_id)
+        .value(_.orderId, article1.order_id)
         .execute()
       i2 <- Articles.insert
         .value(_.name, article2.name)
         .value(_.id, article2.id)
-        .value(_.order_id, article2.order_id)
+        .value(_.orderId, article2.order_id)
         .execute()
       i3 <- Articles.insert
         .value(_.name, article3.name)
         .value(_.id, article3.id)
-        .value(_.order_id, article3.order_id)
+        .value(_.orderId, article3.order_id)
         .execute()
 
       i4 <- Articles.insert
         .value(_.name, article4.name)
         .value(_.id, article4.id)
-        .value(_.order_id, article4.order_id)
+        .value(_.orderId, article4.order_id)
         .execute()
       records <- Articles.select.collect()
       truncate <- Articles.truncate.execute()

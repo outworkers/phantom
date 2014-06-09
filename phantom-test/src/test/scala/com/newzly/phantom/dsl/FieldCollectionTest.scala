@@ -10,7 +10,7 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
     forAll(minSuccessful(300)) { (d: String) =>
       whenever (d.length > 0) {
         val collected = Articles.columns.map(_.name).mkString(" ")
-        val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
+        val expected = s"${Articles.orderId.name} ${Articles.id.name} ${Articles.name.name}"
         collected shouldEqual expected
       }
     }
@@ -18,7 +18,7 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
 
   it should "collect objects in the same order they are written" in {
     val collected = Articles.columns.map(_.name).mkString(" ")
-    val expected = s"${Articles.order_id.name} ${Articles.id.name} ${Articles.name.name}"
+    val expected = s"${Articles.orderId.name} ${Articles.id.name} ${Articles.name.name}"
     collected shouldEqual expected
   }
 

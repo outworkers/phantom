@@ -31,7 +31,7 @@ object Iteratee {
     PIteratee.getChunks
   }
 
-  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext) = PIteratee.foreach(f: E => Unit)
+  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PIteratee[E, Unit] = PIteratee.foreach(f: E => Unit)
 
   def drop[R](num: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
     PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.drop(num))

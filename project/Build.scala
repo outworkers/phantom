@@ -45,7 +45,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ ScalastylePlugin.Settings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings
 
   val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -122,7 +122,7 @@ object phantom extends Build {
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings
+    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings ++ ScalastylePlugin.Settings
   ).settings(
     name := "phantom"
   ).aggregate(

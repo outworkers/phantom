@@ -20,7 +20,7 @@ import com.newzly.phantom.{ CassandraPrimitive, CassandraTable }
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : CassandraPrimitive](table: CassandraTable[Owner, Record])
-    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollecitonValue[RR] {
+    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = CassandraPrimitive[RR]
 
