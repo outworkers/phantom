@@ -50,7 +50,7 @@ object phantom extends Build {
   val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
-    publishTo <<= version.apply{
+    publishTo <<= version.apply {
       v =>
         val nexus = "https://oss.sonatype.org/"
         if (v.trim.endsWith("SNAPSHOT"))
