@@ -57,17 +57,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def fromRow(r: Row): R
 
-  def update = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
+  def update: UpdateQuery[T, R] = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
 
-  def insert = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
+  def insert: InsertQuery[T, R] = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
 
-  def delete = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
+  def delete: DeleteQuery[T, R] = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  def create = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  def create: CreateQuery[T, R] = new CreateQuery[T, R](this.asInstanceOf[T], "")
 
-  def truncate = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
+  def truncate: TruncateQuery[T, R] = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
 
-  def count = new SelectCountQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
+  def count: SelectCountQuery[T, Long] = new SelectCountQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 

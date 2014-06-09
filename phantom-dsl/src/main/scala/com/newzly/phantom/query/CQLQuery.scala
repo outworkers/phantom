@@ -14,10 +14,12 @@ private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
   }
 
   def tracing_=(flag: Boolean): Q = {
-    if (flag)
+    if (flag) {
       qb.enableTracing()
-    else
+
+    } else {
       qb.disableTracing()
+    }
     this
   }
 

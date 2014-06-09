@@ -24,19 +24,19 @@ import com.newzly.phantom.Implicits._
 import com.newzly.util.testing.Sampler
 
 case class OptionalPrimitive(
-                      pkey: String,
-                      string: Option[String],
-                      long: Option[Long],
-                      boolean: Option[Boolean],
-                      bDecimal: Option[BigDecimal],
-                      double: Option[Double],
-                      float: Option[Float],
-                      inet: Option[java.net.InetAddress],
-                      int: Option[Int],
-                      date: Option[java.util.Date],
-                      uuid: Option[java.util.UUID],
-                      bi: Option[BigInt]
-                      )
+  pkey: String,
+  string: Option[String],
+  long: Option[Long],
+  boolean: Option[Boolean],
+  bDecimal: Option[BigDecimal],
+  double: Option[Double],
+  float: Option[Float],
+  inet: Option[java.net.InetAddress],
+  int: Option[Int],
+  date: Option[java.util.Date],
+  uuid: Option[java.util.UUID],
+  bi: Option[BigInt]
+)
 
 object OptionalPrimitive extends ModelSampler[OptionalPrimitive] {
   def sample: OptionalPrimitive = {

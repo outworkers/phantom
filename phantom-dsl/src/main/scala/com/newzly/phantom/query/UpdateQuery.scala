@@ -18,7 +18,8 @@ package com.newzly.phantom.query
 import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
 import com.newzly.phantom.CassandraTable
 
-class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) extends CQLQuery[UpdateQuery[T, R]] with BatchableQuery[UpdateQuery[T, R]] {
+class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
+  extends CQLQuery[UpdateQuery[T, R]] with BatchableQuery[UpdateQuery[T, R]] {
 
   def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
@@ -49,7 +50,8 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update) extend
   }
 }
 
-class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) extends CQLQuery[UpdateWhere[T, R]] with BatchableQuery[UpdateWhere[T, R]] {
+class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
+  extends CQLQuery[UpdateWhere[T, R]] with BatchableQuery[UpdateWhere[T, R]] {
 
   def and[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
@@ -69,7 +71,8 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where) 
   }
 }
 
-class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments) extends CQLQuery[AssignmentsQuery[T, R]] with BatchableQuery[AssignmentsQuery[T, R]] {
+class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
+  extends CQLQuery[AssignmentsQuery[T, R]] with BatchableQuery[AssignmentsQuery[T, R]] {
 
   def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
@@ -85,7 +88,8 @@ class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.As
   }
 }
 
-class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options) extends CQLQuery[AssignmentOptionQuery[T, R]] with BatchableQuery[AssignmentOptionQuery[T, R]] {
+class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Options)
+  extends CQLQuery[AssignmentOptionQuery[T, R]] with BatchableQuery[AssignmentOptionQuery[T, R]] {
 
   def ttl(seconds: Int): AssignmentOptionQuery[T, R] = {
     new AssignmentOptionQuery[T, R](table, qb.and(QueryBuilder.ttl(seconds)))
@@ -101,7 +105,8 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
   }
 }
 
-class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateQuery[T, R]] with BatchableQuery[ConditionalUpdateQuery[T, R]] {
+class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
+  extends CQLQuery[ConditionalUpdateQuery[T, R]] with BatchableQuery[ConditionalUpdateQuery[T, R]] {
 
   def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
@@ -113,7 +118,8 @@ class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upd
   }
 }
 
-class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions) extends CQLQuery[ConditionalUpdateWhereQuery[T, R]] with BatchableQuery[ConditionalUpdateWhereQuery[T, R]] {
+class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
+  extends CQLQuery[ConditionalUpdateWhereQuery[T, R]] with BatchableQuery[ConditionalUpdateWhereQuery[T, R]] {
 
   def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
