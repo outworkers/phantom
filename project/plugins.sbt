@@ -14,3 +14,5 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
 addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.15.0")
 
 addSbtPlugin("com.twitter" % "sbt-package-dist" % "1.1.0")
+
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")

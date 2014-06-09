@@ -104,6 +104,7 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       setInt = Set(3,4,7),
       mapIntToText = Map (-1 -> "&&&")
     )
+    scala.util.Right(5)
 
     TestTable.insertSchema()
 
@@ -143,5 +144,4 @@ class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssert
       }
     }
   }
-
 }
