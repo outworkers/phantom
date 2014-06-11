@@ -61,15 +61,14 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
 
     val chain = for {
       insert <- batch.future()
-      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
-    } yield select
+      chunks <- TimeSeriesTable.select.limit(5).fetch()
+    } yield chunks
 
     chain.successful {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
-        val set = session.execute(TimeSeriesTable.select.limit(5).qb.getQueryString).all()
-        val mapped = set.asScala.toList.map(TimeSeriesTable.fromRow).map(_.timestamp.getSecondOfDay).reverse
-        mapped shouldEqual ts
+        val mapped = res.map(_.timestamp.getSecondOfDay)
+        mapped.toList shouldEqual ts.reverse
     }
   }
 
@@ -91,15 +90,13 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
     }
     val chain = for {
       insert <- batch.future()
-      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
-    } yield select
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).fetch()
+    } yield chunks
 
     chain.successful {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
-        TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).fetch().successful {
-          timeSeriesRecords => timeSeriesRecords.map(_.timestamp.getSecondOfDay) shouldEqual ts
-        }
+        res.map(_.timestamp.getSecondOfDay).toList shouldEqual ts
     }
   }
 
@@ -118,15 +115,13 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
     }
     val chain = for {
       insert <- batch.future()
-      select <- TimeSeriesTable.select.fetchEnumerator() run Iteratee.chunks()
-    } yield select
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).fetch()
+    } yield chunks
 
     chain.successful {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
-        TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).fetch().successful {
-          timeSeriesRecords => timeSeriesRecords.map(_.timestamp.getSecondOfDay) shouldEqual ts.reverse
-        }
+        res.map(_.timestamp.getSecondOfDay).toList shouldEqual ts.reverse
     }
   }
 
