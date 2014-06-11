@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.blocking
 import scala.concurrent.duration._
 
-class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
+class TimeSeriesTest extends BaseTest {
   val keySpace = "clustering_order_tests"
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -38,14 +38,10 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
     }
   }
 
-  override protected def afterEach() {
-    TimeSeriesTable.delete.where(_.id eqs TimeSeriesRecord.testUUID).future()
-  }
-
   it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
     val recordList = List.range(0, 5).map {
       res => {
-        Thread.sleep(2500L)
+        Thread.sleep(50L)
         TimeSeriesRecord.sample
       }
     }
@@ -60,8 +56,40 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
     }
 
     val chain = for {
+      truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
       chunks <- TimeSeriesTable.select.limit(5).fetch()
+    } yield chunks
+
+    chain.successful {
+      res =>
+        val ts = recordList.map(_.timestamp.getSecondOfDay)
+        val mapped = res.map(_.timestamp.getSecondOfDay)
+        mapped.toList shouldEqual ts.reverse
+    }
+  }
+
+  it should "allow using naturally fetch the records in descending order for a descending clustering order with Twitter Futures" in {
+    val recordList = List.range(0, 5).map {
+      res => {
+        Thread.sleep(50L)
+        TimeSeriesRecord.sample
+      }
+    }
+
+    val batch = recordList.foldLeft(BatchStatement()) {
+      (b, record) => {
+        b.add(TimeSeriesTable.insert
+          .value(_.id, record.id)
+          .value(_.name, record.name)
+          .value(_.timestamp, record.timestamp))
+      }
+    }
+
+    val chain = for {
+      truncate <- TimeSeriesTable.truncate.execute()
+      insert <- batch.execute()
+      chunks <- TimeSeriesTable.select.limit(5).collect()
     } yield chunks
 
     chain.successful {
@@ -75,7 +103,7 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
   it should "allow fetching the records in ascending order for a descending clustering order using order by clause" in {
     val recordList = List.range(0, 5).map {
       res => {
-        Thread.sleep(2500L)
+        Thread.sleep(50L)
         TimeSeriesRecord.sample
       }
     }
@@ -89,8 +117,38 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
       }
     }
     val chain = for {
+      truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
       chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).fetch()
+    } yield chunks
+
+    chain.successful {
+      res =>
+        val ts = recordList.map(_.timestamp.getSecondOfDay)
+        res.map(_.timestamp.getSecondOfDay).toList shouldEqual ts
+    }
+  }
+
+  it should "allow fetching the records in ascending order for a descending clustering order using order by clause with Twitter Futures" in {
+    val recordList = List.range(0, 5).map {
+      res => {
+        Thread.sleep(50L)
+        TimeSeriesRecord.sample
+      }
+    }
+
+    val batch = recordList.foldLeft(BatchStatement()) {
+      (b, record) => {
+        b.add(TimeSeriesTable.insert
+          .value(_.id, record.id)
+          .value(_.name, record.name)
+          .value(_.timestamp, record.timestamp))
+      }
+    }
+    val chain = for {
+      truncate <- TimeSeriesTable.truncate.execute()
+      insert <- batch.execute()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).collect()
     } yield chunks
 
     chain.successful {
@@ -103,7 +161,7 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
   it should "allow fetching the records in descending order for a descending clustering order using order by clause" in {
     val recordList = List.range(0, 5).map {
       res =>
-        Thread.sleep(2500L)
+        Thread.sleep(50L)
         TimeSeriesRecord.sample
     }
     val batch = recordList.foldLeft(BatchStatement()) {
@@ -114,8 +172,35 @@ class TimeSeriesTest extends BaseTest with BeforeAndAfterEach {
           .value(_.timestamp, record.timestamp))
     }
     val chain = for {
+      truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
       chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).fetch()
+    } yield chunks
+
+    chain.successful {
+      res =>
+        val ts = recordList.map(_.timestamp.getSecondOfDay)
+        res.map(_.timestamp.getSecondOfDay).toList shouldEqual ts.reverse
+    }
+  }
+
+  it should "allow fetching the records in descending order for a descending clustering order using order by clause with Twitter Futures" in {
+    val recordList = List.range(0, 5).map {
+      res =>
+        Thread.sleep(50L)
+        TimeSeriesRecord.sample
+    }
+    val batch = recordList.foldLeft(BatchStatement()) {
+      (b, record) =>
+        b.add(TimeSeriesTable.insert
+          .value(_.id, record.id)
+          .value(_.name, record.name)
+          .value(_.timestamp, record.timestamp))
+    }
+    val chain = for {
+      truncate <- TimeSeriesTable.truncate.execute()
+      insert <- batch.execute()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).collect()
     } yield chunks
 
     chain.successful {
