@@ -2,7 +2,13 @@ package com.newzly.phantom
 
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import com.newzly.phantom.tables.{ BasicTable, ClusteringTable, ComplexCompoundKeyTable, SimpleCompoundKeyTable }
+import com.newzly.phantom.tables.{
+  BasicTable,
+  ClusteringTable,
+  ComplexCompoundKeyTable,
+  ComplexClusteringTable,
+  SimpleCompoundKeyTable
+}
 
 class BasicTableMethods extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks with ParallelTestExecution {
 
@@ -39,11 +45,20 @@ class BasicTableMethods extends FlatSpec with Matchers with GeneratorDrivenPrope
     }
   }
 
-  it should "create the correct CLUSTERING_ORDER key for a 2 part clustering key" in {
+  it should "create the correct CLUSTERING_ORDER key for a 3 part clustering key" in {4
     forAll(minSuccessful(300)) { (d: String) =>
       whenever (d.length > 0) {
         val key = ClusteringTable.clusteringKey
         key shouldEqual "WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC)"
+      }
+    }
+  }
+
+  it should "create the correct CLUSTERING_ORDER key for a 2 part clustering key" in {4
+    forAll(minSuccessful(300)) { (d: String) =>
+      whenever (d.length > 0) {
+        val key = ComplexClusteringTable.clusteringKey
+        key shouldEqual "WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC, placeholder DESC)"
       }
     }
   }

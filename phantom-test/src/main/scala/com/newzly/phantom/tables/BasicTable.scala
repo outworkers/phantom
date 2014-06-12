@@ -47,6 +47,20 @@ sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
 
 object ClusteringTable extends ClusteringTable
 
+sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
+
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id2 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Ascending
+  object id3 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
+  object placeholder extends StringColumn(this) with ClusteringOrder[String] with Descending
+
+  def fromRow(r: Row): String = {
+    placeholder(r)
+  }
+}
+
+object ComplexClusteringTable extends ComplexClusteringTable
+
 sealed class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
