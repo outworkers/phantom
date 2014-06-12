@@ -75,22 +75,29 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
+  def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
+
   /**
    * This method will filter the columns from a Clustering Order definition.
    * It is used to define TimeSeries tables, using the ClusteringOrder trait
    * combined with a directional trait, either Ascending or Descending.
    *
    * This method will simply add to the trailing of a query.
-   * @param query The schema creation query, already formed.
-   * @return
+   * @return The clustering key, defined as a string or the empty string.
    */
-  private[phantom] def clusterOrderSchema(query: String): String = {
-    if (columns.count(_.isClusteringKey) == 1) {
-      val clusteringColumn = columns.filter(_.isClusteringKey).head
-      val direction = if (clusteringColumn.isAscending) "ASC" else "DESC"
-      s"$query WITH CLUSTERING ORDER BY (${clusteringColumn.name} $direction);"
+  private[phantom] def clusteringKey: String = {
+    if (!clusteringColumns.isEmpty) {
+      val key = clusteringColumns.map(col => {
+        val direction = if (col.isAscending) {
+          "ASC"
+        } else {
+          "DESC"
+        }
+        s"${col.name} $direction"
+      })
+      s"WITH CLUSTERING ORDER BY (${key.mkString(", ")})"
     } else {
-      query
+      ""
     }
   }
 
@@ -155,7 +162,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (tableKey.length > 0) s", ${defineTableKey()}" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = clusterOrderSchema(query)
+    val finalQuery = query + clusteringKey
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 

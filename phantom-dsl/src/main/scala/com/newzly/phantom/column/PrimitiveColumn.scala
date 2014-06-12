@@ -33,12 +33,6 @@ class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Fl
 }
 
 /**
- * Simple mechanism to restrict ClusteringOrder mixin to a union type bound.
- * @tparam T The type of the value to store.
- */
-private[phantom] class TimeSeries[T]
-
-/**
  * A Date Column, used to enforce restrictions on clustering order.
  * @param table The Cassandra Table to which the column belongs to.
  * @tparam Owner The Owner of the Record.
@@ -46,7 +40,6 @@ private[phantom] class TimeSeries[T]
  */
 class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
   extends PrimitiveColumn[Owner, Record, Date](table) {
-  private[phantom] implicit val timeSeries = new TimeSeries[Date]
 }
 
 /**
@@ -57,5 +50,4 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  */
 class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
   extends PrimitiveColumn[Owner, Record, DateTime](table) {
-  private[phantom] implicit val timeSeries = new TimeSeries[DateTime]
 }

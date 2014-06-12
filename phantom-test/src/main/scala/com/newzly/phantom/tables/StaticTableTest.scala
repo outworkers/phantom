@@ -19,15 +19,12 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.newzly.phantom.helper.TestSampler
 import com.newzly.phantom.Implicits._
-import com.newzly.phantom.column.TimeSeries
 
 sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID, String)] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
-  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending {
-    override private[phantom] implicit val timeSeries: TimeSeries[UUID] = new TimeSeries[UUID]
-  }
+  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
   object staticTest extends StringColumn(this) with StaticColumn[String]
 
   def fromRow(row: Row): (UUID, UUID, String) = (id(row), clusteringId(row), staticTest(row))
