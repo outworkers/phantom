@@ -130,20 +130,22 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val partitions = partitionKeys.toList
     val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
 
-    val key = partitions match {
-      case head :: tail if !tail.isEmpty =>
-        if (primaries.isEmpty) {
-          partitionString
-        } else {
-          s"$partitionString, $primaryString"
-        }
-      case head :: tail =>
-        if (primaries.isEmpty) {
-          s"${head.name}"
-        } else {
-          s"${head.name}, $primaryString"
-        }
-      case Nil =>  throw InvalidPrimaryKeyException()
+
+    val operand = partitions.lengthCompare(1)
+    val key = if (operand < 0) {
+      throw InvalidPrimaryKeyException()
+    } else if (operand == 0) {
+      if (primaries.isEmpty) {
+        s"${partitions.head.name}"
+      } else {
+        s"${partitions.head.name}, $primaryString"
+      }
+    } else {
+      if (primaries.isEmpty) {
+        partitionString
+      } else {
+        s"$partitionString, $primaryString"
+      }
     }
     s"PRIMARY KEY ($key)"
   }

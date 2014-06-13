@@ -4,7 +4,6 @@ import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
-import org.scalastyle.sbt.ScalastylePlugin
 
 object phantom extends Build {
 
@@ -122,7 +121,7 @@ object phantom extends Build {
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings ++ ScalastylePlugin.Settings
+    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings
   ).settings(
     name := "phantom"
   ).aggregate(
