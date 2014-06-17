@@ -29,7 +29,7 @@ import com.twitter.conversions.time._
 
 /**
  * In this example we will create a simple table storing recipes.
- * Data modeling with phantom is trivial and covers some of the more advanced features of Cassandra.
+ * Data modeling with com.websudos.phantom is trivial and covers some of the more advanced features of Cassandra.
  *
  * Phantom will auto-generate the CQL3 table definition from your Scala code.
  * And you can automatically insert the schema during tests or even live environments.
@@ -119,7 +119,7 @@ object Recipes extends Recipes with DBConnector {
     select.where(_.id eqs id).one()
   }
 
-  // phantom allows partial selects from any query.
+  // com.websudos.phantom allows partial selects from any query.
   // this is currently limited to 22 fields.
   def getRecipeIngredients(id: UUID): ScalaFuture[Option[Set[String]]] = {
     select(_.ingredients).where(_.id eqs id).one()
@@ -145,7 +145,7 @@ object Recipes extends Recipes with DBConnector {
   }
 
 
-  // phantom supports a few more Iteratee methods.
+  // com.websudos.phantom supports a few more Iteratee methods.
   // However, if you are looking to guarantee ordering and paginate "the old way"
   // You need an OrderPreservingPartitioner.
   def getRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {

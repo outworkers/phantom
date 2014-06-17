@@ -35,7 +35,7 @@ private[phantom] object Manager {
 
   lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
 
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
+  lazy val logger = LoggerFactory.getLogger("com.websudos.com.websudos.phantom")
 }
 
 private[phantom] trait CassandraResultSetOperations {

@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.websudos.phantom.dsl.specialized
+package com.websudos.phantom.thrift
 
 import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.thrift.ThriftTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
 import com.newzly.util.testing.cassandra.BaseTest

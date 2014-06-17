@@ -17,7 +17,7 @@ object JettyLauncher {
       val context = new WebAppContext()
       context setContextPath "/"
       context.setResourceBase("src/main/webapp")
-      context.setInitParameter(ScalatraListener.LifeCycleKey, "com.websudos.phantom.server.ScalatraBootstrap")
+      context.setInitParameter(ScalatraListener.LifeCycleKey, "com.websudos.com.websudos.phantom.server.ScalatraBootstrap")
       context.addEventListener(new ScalatraListener)
       context.addServlet(classOf[DefaultServlet], "/")
 

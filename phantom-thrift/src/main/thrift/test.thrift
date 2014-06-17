@@ -1,4 +1,4 @@
-namespace java com.websudos.phantom.thrift
+namespace java com.websudos.com.websudos.phantom.thrift
 
 struct ThriftTest {
     1: required i32 id,

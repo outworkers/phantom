@@ -20,7 +20,7 @@ import com.datastax.driver.core.ResultSet
 import com.websudos.phantom.Implicits.context
 import com.websudos.phantom.example.basics.Recipe
 
-// In this section, we will show how you can create a real-world Cassandra service with phantom.
+// In this section, we will show how you can create a real-world Cassandra service with com.websudos.phantom.
 // First you have to think of what queries you need to perform. The usual.
 // Say you come up with id and author.
 

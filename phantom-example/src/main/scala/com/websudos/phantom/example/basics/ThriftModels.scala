@@ -22,7 +22,7 @@ import com.websudos.phantom.thrift.ThriftColumn
 import com.twitter.scrooge.CompactThriftSerializer
 
 // Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
+// The IDL is available in com.websudos.phantom-example/src/main/thrift.
 case class SampleRecord(
   stuff: String,
   someList: List[String],
@@ -35,7 +35,7 @@ sealed class ThriftTable extends CassandraTable[ThriftTable,  SampleRecord] {
   object someList extends ListColumn[ThriftTable, SampleRecord, String](this)
 
 
-  // As you can see, phantom will use a compact Thrift serializer.
+  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.
   object thriftModel extends ThriftColumn[ThriftTable, SampleRecord, SampleModel](this) {
     def serializer = new CompactThriftSerializer[SampleModel] {

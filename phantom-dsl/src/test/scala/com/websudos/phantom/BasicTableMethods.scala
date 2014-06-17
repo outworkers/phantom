@@ -45,7 +45,7 @@ class BasicTableMethods extends FlatSpec with Matchers with GeneratorDrivenPrope
     }
   }
 
-  it should "create the correct CLUSTERING_ORDER key for a 3 part clustering key" in {4
+  it should "create the correct CLUSTERING_ORDER key for a 3 part clustering key" in {
     forAll(minSuccessful(300)) { (d: String) =>
       whenever (d.length > 0) {
         val key = ClusteringTable.clusteringKey
@@ -54,7 +54,7 @@ class BasicTableMethods extends FlatSpec with Matchers with GeneratorDrivenPrope
     }
   }
 
-  it should "create the correct CLUSTERING_ORDER key for a 2 part clustering key" in {4
+  it should "create the correct CLUSTERING_ORDER key for a 2 part clustering key" in {
     forAll(minSuccessful(300)) { (d: String) =>
       whenever (d.length > 0) {
         val key = ComplexClusteringTable.clusteringKey

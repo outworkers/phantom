@@ -140,13 +140,30 @@ object phantom extends Build {
       publishSettings
   ).settings(
     name := "phantom-dsl",
+    fork := true,
+    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, 4)
+    ),
     libraryDependencies ++= Seq(
       "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
       "com.twitter"                  %% "util-core"                         % finagleVersion,
       "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+      "org.scalacheck"               %% "scalacheck"                        % "1.11.4",
+      "org.scalatra"                 %% "scalatra"                          % ScalatraVersion           % "test, provided",
+      "org.scalatra"                 %% "scalatra-scalate"                  % ScalatraVersion           % "test, provided",
+      "org.scalatra"                 %% "scalatra-json"                     % ScalatraVersion           % "test, provided",
+      "org.scalatra"                 %% "scalatra-specs2"                   % ScalatraVersion           % "test, provided",
+      "org.json4s"                   %% "json4s-jackson"                    % "3.2.6"                   % "test, provided",
+      "org.json4s"                   %% "json4s-ext"                        % "3.2.6"                   % "test, provided",
+      "net.databinder.dispatch"      %% "dispatch-core"                     % "0.11.0"                  % "test, provided",
+      "net.databinder.dispatch"      %% "dispatch-json4s-jackson"           % "0.11.0"                  % "test, provided",
+      "org.eclipse.jetty"            % "jetty-webapp"                       % "8.1.8.v20121106"         % "test, provided",
+      "org.eclipse.jetty.orbit"      % "javax.servlet"                      % "3.0.0.v201112011016"     % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
     )
   )
 
@@ -189,11 +206,16 @@ object phantom extends Build {
       ScroogeSBT.newSettings
   ).settings(
     name := "phantom-thrift",
+    fork := true,
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, 4)
+    ),
     libraryDependencies ++= Seq(
       "org.apache.thrift"            %  "libthrift"                         % thriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
-      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion
+      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
     )
   ).dependsOn(
     phantomDsl
