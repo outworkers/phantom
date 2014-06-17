@@ -23,7 +23,7 @@
         <level value="error" />
     </logger>
 
-    <logger name="com.newzly.phantom">
+    <logger name="com.websudos.phantom">
         <level value="info"/>
     </logger>
 
