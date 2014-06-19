@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
@@ -44,7 +43,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),

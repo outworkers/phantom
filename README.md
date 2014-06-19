@@ -1,4 +1,4 @@
-com.websudos.phantom [![Build Status](https://travis-ci.org/websudosuk/com.websudos.phantom.png?branch=develop)](https://travis-ci.org/websudosuk/com.websudos.phantom)
+phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom)
 
 ==============
 Asynchronous Scala DSL for Cassandra
