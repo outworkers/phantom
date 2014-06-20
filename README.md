@@ -15,9 +15,9 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 
 <ol>
     <li><a href="#issues-and-questions">Issues and questions</a></li>
-    <li><a href="#integrating-com.websudos.phantom-in-your-project">Integrating com.websudos.phantom in your project</a></li>
+    <li><a href="#integrating-phantom-in-your-project">Using phantom in your project</a></li>
     <li>
-        <p>com.websudos.phantom columns</p>
+        <p>phantom columns</p>
         <ul>
             <li><a href="#primitive-columns">Primitive columns</a></li>
             <li><a href="#optional-primitive-columns">Optional primitive columns</a></li>
@@ -36,7 +36,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
     </li>
     <li><a href="#data-modeling">Data modeling with com.websudos.phantom</a></li>
     <li>
-        <p><a href="#querying-with-com.websudos.phantom">Querying with com.websudos.phantom</a></p>
+        <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
             <li><a href="#select-queries">SELECT queries</a></li>
             <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
@@ -91,7 +91,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
     <li><a href="#thrift-integration">Thrift integration</a></li>
     <li><a href="#running-tests">Running the tests locally</a></li>
     <li>
-        <p><a href="#contributors">Contributing to com.websudos.phantom</a></p>
+        <p><a href="#contributors">Contributing to phantom</a></p>
         <ul>
             <li><a href="#using-gitflow">Using GitFlow as a branching model</a></li>
             <li><a href="#scala-style-guidelines">Scala style guidelines for contributions</a></li>
@@ -105,7 +105,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-We love Cassandra to bits and use it in every bit our stack. com.websudos.phantom makes it super trivial for Scala users to embrace Cassandra.
+We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra.
 
 Cassandra is highly scalable and it's by far the most powerful database technology available, open source or otherwise.
 
@@ -113,19 +113,19 @@ Phantom is built on top of the [Datastax Java Driver](https://github.com/datasta
 
 If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html)
 
-We are very happy to help implement missing features in com.websudos.phantom, answer questions about com.websudos.phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
+We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
 
-You can get in touch via the [newzly-com.websudos.phantom](https://groups.google.com/forum/#!forum/newzly-com.websudos.phantom) Google Group.
+You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
-<a id="integrating-com.websudos.phantom">Integrating com.websudos.phantom in your project</a>
+<a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
 <a href="#table-of-contents">back to top</a>
 
-For most things, all you need is ```com.websudos.phantom-dsl```. Read through for information on other modules.
+For most things, all you need is ```phantom-dsl```. Read through for information on other modules.
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.newzly"  %% "com.websudos.phantom-dsl"                   % phantomVersion
+  "com.websudos"  %% "phantom-dsl"                   % phantomVersion
 )
 ```
 
@@ -133,11 +133,11 @@ The full list of available modules is:
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.newzly"  %% "com.websudos.phantom-dsl"                   % phantomVersion,
-  "com.newzly"  %% "com.websudos.phantom-cassandra-unit"        % phantomVersion,
-  "com.newzly"  %% "com.websudos.phantom-example"               % phantomVersion,
-  "com.newzly"  %% "com.websudos.phantom-thrift"                % phantomVersion,
-  "com.newzly"  %% "com.websudos.phantom-test"                  % phantomVersion
+  "com.websudos"  %% "phantom-dsl"                   % phantomVersion,
+  "com.websudos"  %% "phantom-cassandra-unit"        % phantomVersion,
+  "com.websudos"  %% "phantom-example"               % phantomVersion,
+  "com.websudos"  %% "phantom-thrift"                % phantomVersion,
+  "com.websudos"  %% "phantom-test"                  % phantomVersion
 )
 ```
 
@@ -149,9 +149,9 @@ This is the list of available columns and how they map to C* data types.
 This also includes the newly introduced ```static``` columns in C* 2.0.6.
 
 The type of a static column can be any of the allowed primitive Cassandra types.
-com.websudos.phantom won't let you mixin a non-primitive via implicit magic.
+phantom won't let you mixin a non-primitive via implicit magic.
 
-| com.websudos.phantom columns               | Java/Scala type           | Cassandra type    |
+| phantom columns               | Java/Scala type           | Cassandra type    |
 | ---------------               |-------------------        | ----------------- |
 | BigDecimalColumn              | scala.math.BigDecimal     | decimal           |
 | BigIntColumn                  | scala.math.BigInt         | varint            |
@@ -179,7 +179,7 @@ The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can 
 
 The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
 
-| com.websudos.phantom columns               | Java/Scala type                   | Cassandra columns |
+| phantom columns               | Java/Scala type                   | Cassandra columns |
 | ---------------               | -------------------------         | ----------------- |
 | OptionalBigDecimalColumn      | Option[scala.math.BigDecimal]     | decimal           |
 | OptionalBigIntColumn          | Option[scala.math.BigInt]         | varint            |
@@ -203,7 +203,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
 The ```type``` in the below example is always a default C* type.
 
-| com.websudos.phantom columns                     | Cassandra columns       |
+| phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
 | ListColumn.&lt;type&gt;             | list&lt;type&gt;        |
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
@@ -213,7 +213,7 @@ The ```type``` in the below example is always a default C* type.
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
-com.websudos.phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
+phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 
 <a id="partition-key">PartitionKey[T]</a>
 ==============================================
@@ -235,14 +235,14 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 <a href="#table-of-contents">back to top</a>
 
 As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
-The first ```PrimaryKey``` is used to partition data. com.websudos.phantom will force you to always define a ```PartitionKey``` so you don't forget
+The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
 about how your data is partitioned. We also use this DSL restriction because we hope to do more clever things with it in the future.
 
 A compound key in C* looks like this:
 ```PRIMARY_KEY(primary_key, primary_key_1, primary_key_2)```.
 
 Before you add too many of these, remember they all have to go into a ```where``` clause.
-You can only query with a full primary key, even if it's compound. com.websudos.phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
+You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
 <a id="secondary-key">Index</a>
 ==============================================
@@ -251,7 +251,7 @@ You can only query with a full primary key, even if it's compound. com.websudos.
 This is a SecondaryIndex in Cassandra. It can help you enable querying really fast, but it's not exactly high performance.
 It's generally best to avoid it, we implemented it to show off what good guys we are.
 
-When you mix in ```Index[T]``` on a column, com.websudos.phantom will let you use it in a ```where``` clause.
+When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
 <a id="clustering-order">ClusteringOrder</a>
@@ -270,15 +270,15 @@ To fully define a clustering column, you MUST also mixin either ```Ascending``` 
 <a href="#table-of-contents">back to top</a>
 
 These columns are especially useful if you are building Thrift services. They are deeply integrated with Twitter Scrooge and relevant to the Twitter ecosystem(Finagle, Zipkin, Storm etc)
-They are available via the ```com.websudos.phantom-thrift``` module and you need to ```import com.newzly.com.websudos.phantom.thrift.Implicits._``` to get them.
+They are available via the ```phantom-thrift``` module and you need to ```import com.websudos.phantom.thrift.Implicits._``` to get them.
 
 In the below scenario, the C* type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge.ThriftStruct```.
-com.websudos.phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
+phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
 
 Thrift serialization and de-serialization is extremely fast, so you don't need to worry about speed or performance overhead.
 You generally use these to store collections(small number of items), not big things.
 
-| com.websudos.phantom columns                     | Cassandra columns       |
+| phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
 | ThriftColumn.&lt;type&gt;           | text                    |
 | ThriftListColumn.&lt;type&gt;       | list&lt;text&gt;        |
@@ -287,7 +287,7 @@ You generally use these to store collections(small number of items), not big thi
 
 
 
-<a id="data-modeling">Data modeling with com.websudos.phantom</a>
+<a id="data-modeling">Data modeling with phantom</a>
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -295,8 +295,8 @@ You generally use these to store collections(small number of items), not big thi
 
 import java.util.{ Date, UUID }
 import com.datastax.driver.core.Row
-import com.newzly.com.websudos.phantom.sample.ExampleModel
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.sample.ExampleModel
+import com.websudos.phantom.Implicits._
 
 case class ExampleModel (
   id: Int,
@@ -321,7 +321,7 @@ sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
 
 ```
 
-<a id="querying-with-com.websudos.phantom">Querying with Phantom</a>
+<a id="querying-with-phantom">Querying with Phantom</a>
 =======================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -368,8 +368,8 @@ Select queries are very straightforward and enforce most limitations at compile 
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
 We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
-The file you are looking for is [here](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-dsl/src/main/scala/com/newzly/com.websudos.phantom/SelectTable.scala).
-The 22 field limitation will change in Scala 2.11 and com.websudos.phantom will be updated once cross version compilation is enabled.
+The file you are looking for is [here](https://github.com/websudosuk/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
+The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
 ```scala
   def getNameById(id: UUID): Future[Option[String]] = {
@@ -420,12 +420,13 @@ The 22 field limitation will change in Scala 2.11 and com.websudos.phantom will 
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-The full list can be found in [CQLQuery.scala](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-dsl/src/main/scala/com/newzly/com.websudos.phantom/query/CQLQuery.scala).
+The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
+.scala).
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
-| ```queryString```                 | Get the output CQL 3 query of a com.websudos.phantom query.                                        |
+| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
 | ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
 | ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
 | ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
@@ -512,7 +513,7 @@ object ExampleRecord extends ExampleRecord {
 ================================================================
 <a href="#table-of-contents">back to top</a>
 
-Based on the above list of columns, com.websudos.phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, map```.
+Based on the above list of columns, phantom supports CQL 3 modify operations for CQL 3 collections: ```list, set, map```.
 All operators will be available in an update query, specifically:
 
 ```ExampleRecord.update.where(_.id eqs someId).modify(_.someList $OPERATOR $args).future()```.
@@ -521,7 +522,7 @@ All operators will be available in an update query, specifically:
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
-Examples in [ListOperatorsTest.scala](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/dsl/crud/ListOperatorsTest.scala).
+Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/ListOperatorsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
@@ -538,7 +539,7 @@ Examples in [ListOperatorsTest.scala](https://github.com/newzly/com.websudos.pha
 <a href="#table-of-contents">back to top</a>
 
 Sets have a better performance than lists, as the Cassandra documentation suggests.
-Examples in [SetOperationsTest.scala](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/dsl/crud/SetOperationsTest.scala).
+Examples in [SetOperationsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/SetOperationsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
@@ -553,7 +554,7 @@ Examples in [SetOperationsTest.scala](https://github.com/newzly/com.websudos.pha
 <a href="#table-of-contents">back to top</a>
 
 Both the key and value types of a Map must be Cassandra primitives.
-Examples in [MapOperationsTest.scala](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/dsl/crud/MapOperationsTest.scala):
+Examples in [MapOperationsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/MapOperationsTest.scala):
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
@@ -565,7 +566,7 @@ Examples in [MapOperationsTest.scala](https://github.com/newzly/com.websudos.pha
 ===================================================================
 <a href="#table-of-contents">back to top</a>
 
-Replication strategies and more advanced features are not yet available in com.websudos.phantom, but CQL 3 Table schemas are  automatically generated from the Scala code. To create a schema in Cassandra from a table definition:
+Replication strategies and more advanced features are not yet available in phantom, but CQL 3 Table schemas are  automatically generated from the Scala code. To create a schema in Cassandra from a table definition:
 
 ```scala
 
@@ -586,7 +587,7 @@ Of course, you don't have to block unless you want to.
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.newzly.com.websudos.phantom.Implicits._
+import phantom.Implicits._
 
 sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
 
@@ -618,20 +619,20 @@ val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id )
 | ltToken            | The "lower than" operator. Will match a the record that is less than the argument and exists             |
 | lteToken           | The "lower than or equals" operator. Will match a the record that is less than the argument              |
 
-For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/dsl/SkipRecordsByToken.scala)
+For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/SkipRecordsByToken.scala)
 
 
 <a id="time-series">Cassandra Time Series</a>
 =============================================
 <a href="#table-of-contents">back to top</a>
 
-com.websudos.phantom supports Cassandra Time Series with both ```java.util.Date``` and ```org.joda.time.DateTime ```. To use them, simply mixin ```com.newzly.com.websudos.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
+phantom supports Cassandra Time Series. To use them, simply mixin ```com.websudos.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
 
 Restrictions are enforced at compile time.
 
 ```scala
 
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
@@ -661,7 +662,7 @@ A table can have only one ```PartitionKey``` but several ```PrimaryKey``` defini
 ```scala
 
 import org.joda.time.DateTime
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
@@ -681,18 +682,19 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 ===============================================
 <a href="#table-of-contents">back to top</a>
 
-When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, but com.websudos.phantom offers ```com.newzly.com.websudos.phantom.keys.Index``` to enable querying.
+When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, 
+but com.websudos.phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
-```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/dsl/specialized/SecondaryIndexTest.scala).
+```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/specialized/SecondaryIndexTest.scala).
 
 
 ```scala
 
 import java.util.UUID
 import org.joda.time.DateTime
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
 
@@ -713,7 +715,7 @@ sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel]
 <a href="#table-of-contents">back to top</a>
 
 Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal with billions of records.
-com.websudos.phantom iterators are based on Play iterators with very lightweight integration.
+phantom iterators are based on Play iterators with very lightweight integration.
 
 The functionality is identical with respect to asynchronous, lazy behaviour and available methods.
 For more on this, see this [Play tutorial](
@@ -727,7 +729,7 @@ Usage is trivial. If you want to use ```slice, take or drop``` with iterators, t
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.joda.time.DateTime
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
@@ -755,7 +757,8 @@ object ExampleRecord3 extends ExampleRecord3 {
 =============================================
 <a href="#table-of-contents">back to top</a>
 
-com.websudos.phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github.com/newzly/com.websudos.phantom/blob/develop/com.websudos.phantom-test/src/test/scala/com/newzly/com.websudos.phantom/iteratee/IterateeBigTest.scala)
+phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github
+.com/websudosuk/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
 
 We have tested with 10,000 statements per batch, and 1000 batches processed simulatenously. Before you run the test, beware that it takes ~40 minutes.
 
@@ -763,7 +766,7 @@ Batches use lazy iterators and daisy chain them to offer thread safe behaviour. 
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
 
-com.websudos.phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
 
 <a id="logged-batch-statements">LOGGED batch statements</a>
@@ -772,7 +775,7 @@ com.websudos.phantom also supports COUNTER batch updates and UNLOGGED batch upda
 
 ```scala
 
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 BatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
@@ -787,7 +790,7 @@ BatchStatement()
 
 ```scala
 
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 CounterBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
@@ -801,7 +804,7 @@ CounterBatchStatement()
 
 ```scala
 
-import com.newzly.com.websudos.phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 UnloggedBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
@@ -814,10 +817,11 @@ UnloggedBatchStatement()
 =================================================
 <a href="#table-of-contents">back to top</a>
 
-We use Apache Thrift extensively for our backend services. ```com.websudos.phantom``` is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. Thrift integration is optional and available via ```"com.newzly" %% "com.websudos.phantom-thrift"  % phantomVersion```.
+We use Apache Thrift extensively for our backend services. phantom is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. 
+Thrift integration is optional and available via ```"com.websudos" %% "phantom-thrift"  % phantomVersion```.
 
 ```thrift
-namespace java com.newzly.com.websudos.phantom.sample.ExampleModel
+namespace java com.websudos.phantom.sample.ExampleModel
 
 stuct ExampleModel {
   1: required i32 id,
@@ -833,12 +837,12 @@ stuct ExampleModel {
 ==================================================
 <a href="#table-of-contents">back to top</a>
 
-com.websudos.phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
+phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
 You need two terminals to run the tests, one for Embedded Cassandra and one for the actual tests.
 
 ```scala
 sbt
-project com.websudos.phantom-cassandra-unit
+project phantom-cassandra-unit
 run
 ```
 
@@ -854,7 +858,7 @@ test
 =====================================
 <a href="#table-of-contents">back to top</a>
 
-Phantom was developed at newzly as an in-house project. All Cassandra integration at newzly goes through com.websudos.phantom.
+Phantom was developed at websudos as an in-house project. All Cassandra integration at websudos goes through phantom.
 
 * Flavian Alexandru flavian@newzly.com(maintainer)
 * Tomasz Perek tomasz.perek@newzly.com
@@ -871,7 +875,7 @@ Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea
 Copyright 2013 - 2014 websudos.
 
 
-Contributing to com.websudos.phantom
+Contributing to phantom
 =======================
 <a href="#table-of-contents">back to top</a>
 
