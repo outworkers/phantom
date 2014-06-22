@@ -7,7 +7,7 @@ Changelog
 <ul>
     <li><a href="#version-0.6.0">0.6.0 - 11.05.2014</a></li>
     <li><a href="#version-0.7.0">0.7.0 - 22.05.2014</a></li>
-    <li><a href="#version-0.7.0">0.7.0 - 04.06.2014</a></li>
+    <li><a href="#version-0.8.0">0.8.0 - 04.06.2014</a></li>
 </ul>
 
 
@@ -29,13 +29,13 @@ Changelog
 - Improved structure of test project.
 - Added copyright information to a lot of files.
 - Fixed license issue in Maven Central publishing license.
-- Vastly simplified structure of collection operators and removed ```com.newzly.com.websudos.phantom.thrift.Implicits._```
+- Vastly simplified structure of collection operators and removed ```com.newzly.phantom.thrift.Implicits._```
 - Fixed ```null``` handling bug in ```OptionalColumns```.
 
 <a id="version-0.7.0">0.7.0</a>
 ===============================
 
-- Added a variety of compilation tests for the com.websudos.phantom query builder. They test what should compile and what shouldn't, to verify compile time restrictions.
+- Added a variety of compilation tests for the phantom query builder. They test what should compile and what shouldn't, to verify compile time restrictions.
 - Fixed support for Static columns.
 - Bumped Twitter Scrooge version to 3.15.0
 - Bumped Cassandra version to 2.0.7
@@ -44,7 +44,7 @@ Changelog
 - Fixed support for static columns.
 - Fixed issues with using the ```setIdX``` List operator.
 - Integrated Scalatra servlet container tests in the same test project.
-- Removed com.websudos.phantom-scalatra-test module
+- Removed phantom-scalatra-test module
 
 <a id="version-0.8.0">0.8.0</a>
 ===============================
@@ -59,5 +59,5 @@ Changelog
 - PHANTOM-79: Added ability to chain multiple clauses on a secondary condition.
 - PHANTOM-81: Fixed bug where count queries were always returning 1 because a ```LIMIT 1``` was improperly enforced.
 - PHANTOM-82: Changed the return type of a count query from ```Option[Option[Long]]``` to ```Option[Long]```.
-- PHANTOM-83: Enhanced com.websudos.phantom query builder to allow using ```where``` clauses for ```COUNT``` queries.
+- PHANTOM-83: Enhanced phantom query builder to allow using ```where``` clauses for ```COUNT``` queries.
 - PHANTOM-84: Added common methods to GitHub documentation.
