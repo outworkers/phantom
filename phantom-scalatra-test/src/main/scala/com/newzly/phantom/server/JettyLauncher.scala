@@ -1,10 +1,11 @@
-package com.websudos.phantom.server
+package com.newzly.phantom.server
 
 import java.util.concurrent.atomic.AtomicBoolean
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.webapp.WebAppContext
 import org.scalatra.servlet.ScalatraListener
+
 
 object JettyLauncher {
   lazy val port = if (System.getenv("PORT") != null) System.getenv("PORT") else "8900"

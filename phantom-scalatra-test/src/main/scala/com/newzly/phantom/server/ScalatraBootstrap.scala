@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.websudos.phantom.server
+package com.newzly.phantom.server
 
 import javax.servlet.ServletContext
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.{ DateTime, LocalDate }
 import org.scalatra.LifeCycle
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ EquityPrice, EquityPrices, OptionPrice, OptionPrices }
 
 object ScalatraBootstrap {
   val now = new DateTime()
@@ -51,7 +50,6 @@ object ScalatraBootstrap {
 }
 
 class ScalatraBootstrap extends LifeCycle with CassandraCluster {
-  import ScalatraBootstrap._
 
   override def init(context: ServletContext) {
     // Create cassandra keyspace in startup

@@ -127,6 +127,7 @@ object phantom extends Build {
     phantomCassandraUnit,
     phantomDsl,
     phantomExample,
+    phantomScalatraTest,
     phantomThrift,
     phantomTest
   )
@@ -151,18 +152,8 @@ object phantom extends Build {
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-      "org.scalacheck"               %% "scalacheck"                        % "1.11.4",
-      "org.scalatra"                 %% "scalatra"                          % ScalatraVersion           % "test, provided",
-      "org.scalatra"                 %% "scalatra-scalate"                  % ScalatraVersion           % "test, provided",
-      "org.scalatra"                 %% "scalatra-json"                     % ScalatraVersion           % "test, provided",
-      "org.scalatra"                 %% "scalatra-specs2"                   % ScalatraVersion           % "test, provided",
-      "org.json4s"                   %% "json4s-jackson"                    % "3.2.6"                   % "test, provided",
-      "org.json4s"                   %% "json4s-ext"                        % "3.2.6"                   % "test, provided",
-      "net.databinder.dispatch"      %% "dispatch-core"                     % "0.11.0"                  % "test, provided",
-      "net.databinder.dispatch"      %% "dispatch-json4s-jackson"           % "0.11.0"                  % "test, provided",
-      "org.eclipse.jetty"            % "jetty-webapp"                       % "8.1.8.v20121106"         % "test, provided",
-      "org.eclipse.jetty.orbit"      % "javax.servlet"                      % "3.0.0.v201112011016"     % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
+      "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided"
     )
   )
 
@@ -268,4 +259,40 @@ object phantom extends Build {
     phantomCassandraUnit,
     phantomThrift
   )
+
+  lazy val phantomScalatraTest = Project(
+    id = "phantom-scalatra-test",
+    base = file("phantom-scalatra-test"),
+    settings = Project.defaultSettings ++
+      assemblySettings ++
+      sharedSettings
+  ).settings(
+      name := "phantom-scalatra-test",
+      fork := true,
+      fork in Test := true,
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      )
+    ).settings(
+      libraryDependencies ++= Seq(
+        "org.scalacheck"            %% "scalacheck"                       % "1.11.4"              % "test",
+        "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+        "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+        "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
+        "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+        "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
+        "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
+        "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
+        "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+        "com.newzly"                %% "util-testing"                      % newzlyUtilVersion      % "provided"
+      )
+    ).dependsOn(
+      phantomDsl,
+      phantomCassandraUnit,
+      phantomThrift,
+      phantomTest % "compile->compile;test->test"
+    )
+
 }

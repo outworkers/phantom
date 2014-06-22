@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.websudos.phantom.server
+package com.newzly.phantom.server
 
 import scala.concurrent.{ blocking, ExecutionContext }
-import scala.concurrent.ExecutionContext.global
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import com.datastax.driver.core.Session
 import com.newzly.util.testing.cassandra.BaseTestHelper
+
 
 object CassandraCluster {
   val keySpace: String = s"phantom_scalatra_test_${System.currentTimeMillis()}"

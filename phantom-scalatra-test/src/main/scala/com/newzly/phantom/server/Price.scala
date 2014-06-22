@@ -1,12 +1,12 @@
-package com.websudos.phantom.tables
-
+package com.newzly.phantom.server
 
 import java.util.Date
-import org.joda.time.{ DateTime, LocalDate }
+
 import com.datastax.driver.core.Row
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
 import com.newzly.util.testing.Sampler
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.helper.{ModelSampler, TestSampler}
+import org.joda.time.{DateTime, LocalDate}
 
 
 sealed trait Price {

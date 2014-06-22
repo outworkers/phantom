@@ -1,5 +1,7 @@
 package com.websudos.phantom.api
 
+import com.newzly.phantom.server._
+
 import scala.concurrent.blocking
 import scala.concurrent.duration._
 import scala.util.Random
@@ -10,8 +12,8 @@ import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
 
-import com.websudos.phantom.server.{ JettyLauncher, ScalatraBootstrap }
-import com.websudos.phantom.tables.{ EquityPrice, OptionPrice }
+import com.websudos.phantom.server.ScalatraBootstrap
+import com.websudos.phantom.tables.OptionPrice
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import dispatch.{ as, Http, url }
 

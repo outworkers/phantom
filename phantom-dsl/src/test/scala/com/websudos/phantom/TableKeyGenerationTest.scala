@@ -1,9 +1,8 @@
 package com.websudos.phantom
 
+import com.newzly.phantom.server.{OptionPrices, EquityPrices}
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.websudos.phantom.tables.{
-  EquityPrices,
-  OptionPrices,
   TableWithSingleKey,
   TableWithCompoundKey,
   TableWithCompositeKey,
