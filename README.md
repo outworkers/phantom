@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom)
+phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom) [![Coverage Status](https://coveralls.io/repos/websudosuk/phantom/badge.png)](https://coveralls.io/r/websudosuk/phantom)
 
 ==============
 Asynchronous Scala DSL for Cassandra

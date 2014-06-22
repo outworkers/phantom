@@ -3,6 +3,9 @@ import Keys._
 import com.twitter.scrooge.ScroogeSBT
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
+import scoverage.ScoverageSbtPlugin.instrumentSettings
+
+import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
 object phantom extends Build {
 
@@ -43,7 +46,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
