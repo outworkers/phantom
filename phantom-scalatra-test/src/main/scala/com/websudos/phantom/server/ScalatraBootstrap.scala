@@ -60,12 +60,12 @@ class ScalatraBootstrap extends LifeCycle with CassandraCluster {
     Await.result(OptionPrices.create.future(), 10.seconds)
 
     // Insert prices
-    val insertApplePrices = ApplePrices.map(EquityPrices.insertPrice).foldLeft(BatchStatement()) {
+    val insertApplePrices = ScalatraBootstrap.ApplePrices.map(EquityPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
     Await.result(insertApplePrices.future(), 10.seconds)
 
-    val insertAppleOptionPrices = AppleOptionPrices.map(OptionPrices.insertPrice).foldLeft(BatchStatement()) {
+    val insertAppleOptionPrices = ScalatraBootstrap.AppleOptionPrices.map(OptionPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
 

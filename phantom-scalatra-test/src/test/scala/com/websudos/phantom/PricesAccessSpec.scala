@@ -1,17 +1,20 @@
 package com.websudos.phantom
 
-import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
-import dispatch.as
+import scala.concurrent.blocking
+import scala.concurrent.duration._
+import scala.util.Random
+
+
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.concurrent.blocking
-import scala.concurrent.duration._
-import scala.util.Random
-
+import com.websudos.phantom.server.ScalatraBootstrap.{ AAPL, AAPLOption, ApplePrices, AppleOptionPrices }
+import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import dispatch.{ as, Http, url }
 
 class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
 
@@ -40,7 +43,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
     url(accessUrl)
   }
 
-  "Prices Servlet" should "return correct equity prices for Apple" in {
+  "Prices Servlet" should "return correct equity prices for Apple stock" in {
     import com.websudos.phantom.server.ScalatraBootstrap._
 
     val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
@@ -53,8 +56,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
       }
     }
   }
-  it should "return correct equity and option prices for Apple / several pararel requests" in {
-    import com.websudos.phantom.server.ScalatraBootstrap._
+  it should "return correct equity and option prices for Apple stock after several parallel requests" in {
 
     def expectedEquityForDateRange(start: LocalDate, end: LocalDate): Seq[EquityPrice] =
       ApplePrices.filter { case EquityPrice(_, tradeDate, _, _, _ ) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)}
