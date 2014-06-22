@@ -352,7 +352,7 @@ class BatchTest extends BaseTest {
     val row = JodaRow.sample
 
     val last = new DateTime()
-    val last2 = last.withDurationAdded(20, 5)
+    val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
