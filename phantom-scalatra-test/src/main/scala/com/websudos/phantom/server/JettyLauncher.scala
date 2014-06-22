@@ -1,6 +1,7 @@
-package com.newzly.phantom.server
+package com.websudos.phantom.server
 
 import java.util.concurrent.atomic.AtomicBoolean
+
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.webapp.WebAppContext

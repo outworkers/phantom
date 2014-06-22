@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.newzly.phantom.server
-
-import scala.concurrent.{ blocking, ExecutionContext }
-import scala.concurrent.ExecutionContext.Implicits.global
+package com.websudos.phantom.server
 
 import com.datastax.driver.core.Session
 import com.newzly.util.testing.cassandra.BaseTestHelper
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, blocking}
 
 
 object CassandraCluster {

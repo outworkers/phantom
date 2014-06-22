@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.newzly.phantom.server
+package com.websudos.phantom.server
 
 import javax.servlet.ServletContext
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-import org.joda.time.{ DateTime, LocalDate }
-import org.scalatra.LifeCycle
 
 import com.websudos.phantom.Implicits._
+import org.joda.time.{DateTime, LocalDate}
+import org.scalatra.LifeCycle
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 object ScalatraBootstrap {
   val now = new DateTime()

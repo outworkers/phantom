@@ -1,6 +1,5 @@
 package com.websudos.phantom
 
-import com.newzly.phantom.server.{OptionPrices, EquityPrices}
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.websudos.phantom.tables.{
   TableWithSingleKey,
@@ -10,14 +9,6 @@ import com.websudos.phantom.tables.{
 }
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {
-
-  it should "create the correct table key for EquityPrices table" in {
-    EquityPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t)"
-  }
-
-  it should "create the correct table key for OptionPrices table" in {
-    OptionPrices.defineTableKey() shouldEqual "PRIMARY KEY (instrumentId, tradeDate, exchangeCode, t, strikePrice)"
-  }
 
   it should "correctly create a Compound key from a table with a single Partition key" in {
     TableWithSingleKey.defineTableKey() shouldEqual s"PRIMARY KEY (id)"

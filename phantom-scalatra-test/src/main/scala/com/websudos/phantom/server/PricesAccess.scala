@@ -1,15 +1,14 @@
-package com.newzly.phantom.server
+package com.websudos.phantom.server
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
+import com.websudos.phantom.Implicits._
 import org.joda.time.format.DateTimeFormat
-import org.json4s.{ DefaultFormats, Formats }
+import org.json4s.{DefaultFormats, Formats}
 import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.scalate.ScalateSupport
 
-import com.websudos.phantom.Implicits._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 
 

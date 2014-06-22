@@ -1,21 +1,16 @@
-package com.websudos.phantom.api
+package com.websudos.phantom
 
-import com.newzly.phantom.server._
+import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
+import dispatch.as
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
+import org.json4s.{DefaultFormats, Formats}
+import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.blocking
 import scala.concurrent.duration._
 import scala.util.Random
-
-import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormat
-import org.json4s.{DefaultFormats, Formats}
-import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
-import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
-
-import com.websudos.phantom.server.ScalatraBootstrap
-import com.websudos.phantom.tables.OptionPrice
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import dispatch.{ as, Http, url }
 
 
 class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
@@ -46,7 +41,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
   }
 
   "Prices Servlet" should "return correct equity prices for Apple" in {
-    import ScalatraBootstrap._
+    import com.websudos.phantom.server.ScalatraBootstrap._
 
     val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
     val prices = request.map(json => json.extract[Seq[EquityPrice]])
@@ -59,7 +54,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
     }
   }
   it should "return correct equity and option prices for Apple / several pararel requests" in {
-    import ScalatraBootstrap._
+    import com.websudos.phantom.server.ScalatraBootstrap._
 
     def expectedEquityForDateRange(start: LocalDate, end: LocalDate): Seq[EquityPrice] =
       ApplePrices.filter { case EquityPrice(_, tradeDate, _, _, _ ) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)}

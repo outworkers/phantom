@@ -1,4 +1,4 @@
-package com.newzly.phantom.server
+package com.websudos.phantom.server
 
 import java.util.Date
 
