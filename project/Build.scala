@@ -46,7 +46,7 @@ object phantom extends Build {
       "-feature",
       "-unchecked"
      )
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ coverallsSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -123,7 +123,7 @@ object phantom extends Build {
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings
+    settings = Project.defaultSettings ++ sharedSettings ++ publishSettings ++ coverallsSettings
   ).settings(
     name := "phantom"
   ).aggregate(
