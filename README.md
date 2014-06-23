@@ -15,6 +15,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 
 <ol>
     <li><a href="#issues-and-questions">Issues and questions</a></li>
+    <li><a href="#commercial-support">Commercial support</a></li>
     <li><a href="#integrating-phantom-in-your-project">Using phantom in your project</a></li>
     <li>
         <p>phantom columns</p>
@@ -116,6 +117,12 @@ If you're completely new to Cassandra, a much better place to start is the [Data
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
+
+Commercial support
+==================
+
+We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
+training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!  
 
 <a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
