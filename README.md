@@ -122,7 +122,17 @@ Commercial support
 ==================
 
 We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
-training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!  
+training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!
+
+We offer a comprehensive range of services, including but not limited to:
+
+- Training
+- In house software development
+- Team building
+- Architecture planning
+- Startup product development
+
+As we love open source, all the things that we can open source, we will!
 
 <a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
