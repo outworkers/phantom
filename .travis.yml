@@ -8,7 +8,11 @@ scala:
 # Emails to notify
 notifications:
   email:
-    - dev@newzly.com
+  - dev@newzly.com
+
+
+services:
+    - cassandra
 
 # Branches to build.
 branches:
@@ -20,5 +24,4 @@ jdk:
   - oraclejdk7
   - openjdk7
 
-before_script: "./scripts/test_util.sh"
 script: "./scripts/run_tests.sh"

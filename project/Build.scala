@@ -9,7 +9,7 @@ import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.0.28"
+  val newzlyUtilVersion = "0.1.1"
   val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.16.0"
@@ -127,7 +127,6 @@ object phantom extends Build {
   ).settings(
     name := "phantom"
   ).aggregate(
-    phantomCassandraUnit,
     phantomDsl,
     phantomExample,
     phantomScalatraTest,
@@ -155,37 +154,8 @@ object phantom extends Build {
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided"
-    )
-  )
-
-  lazy val phantomCassandraUnit = Project(
-    id = "phantom-cassandra-unit",
-    base = file("phantom-cassandra-unit"),
-    settings = Project.defaultSettings ++
-      assemblySettings ++
-      sharedSettings ++ publishSettings
-  ).settings(
-    name := "phantom-cassandra-unit",
-    jarName in assembly := "cassandra.jar",
-    outputPath in assembly := file("cassandra.jar"),
-    test in assembly := {},
-    fork in run := true,
-    assemblyOption in assembly ~= {  _.copy(includeScala = true) } ,
-    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-      cp filter { x =>
-        x.data.getName.indexOf("specs2_2.") >= 0 ||
-          x.data.getName.indexOf("scalap-2.") >= 0 ||
-          x.data.getName.indexOf("scala-compiler.jar") >= 0 ||
-          x.data.getName.indexOf("scala-json_") >= 0 ||
-          x.data.getName.indexOf("netty-3.2.9") >= 0 ||
-          x.data.getName.indexOf("com.twitter") >= 0
-      }
-    }
-  ).settings(
-    libraryDependencies ++= Seq(
-      "org.cassandraunit"    %  "cassandra-unit"  % "2.0.2.1" exclude("org.apache.cassandra", "cassandra-all"),
-      "org.apache.cassandra" % "cassandra-all"    % "2.0.7"   exclude("org.slf4j", "slf4j-log4j12") exclude("log4j", "log4j") exclude("commons-logging", "commons-logging")
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided",
+      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided"
     )
   )
 
@@ -207,7 +177,8 @@ object phantom extends Build {
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided",
+      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided"
     )
   ).dependsOn(
     phantomDsl
@@ -234,31 +205,30 @@ object phantom extends Build {
       assemblySettings ++
       sharedSettings
   ).settings(
-      name := "phantom-scalatra-test",
-      fork := true,
-      fork in Test := true,
-      concurrentRestrictions in Test := Seq(
-        Tags.limit(Tags.ForkedTestGroup, 4)
-      )
-    ).settings(
-      libraryDependencies ++= Seq(
-        "org.scalacheck"            %% "scalacheck"                       % "1.11.4"              % "test",
-        "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
-        "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
-        "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
-        "org.json4s"                %% "json4s-ext"                       % "3.2.6",
-        "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
-        "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
-        "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
-        "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-        "com.newzly"                %% "util-testing"                      % newzlyUtilVersion      % "provided"
-      )
-    ).dependsOn(
-      phantomDsl,
-      phantomCassandraUnit,
-      phantomThrift
+    name := "phantom-test",
+    fork := true,
+    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, 4)
     )
-
+  ).settings(
+    libraryDependencies ++= Seq(
+      "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
+      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+      "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
+      "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+      "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
+      "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
+      "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
+      "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
+      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided",
+      "com.newzly"                %% "util-testing-cassandra"           % newzlyUtilVersion      % "provided"
+    )
+  ).dependsOn(
+    phantomDsl,
+    phantomThrift
+  )
 }
