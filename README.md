@@ -3,8 +3,8 @@ phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=dev
 ==============
 Asynchronous Scala DSL for Cassandra
 
-Using com.websudos.phantom
 
+Using phantom
 =============
 
 The current version is: ```val phantomVersion = 0.8.0```.
@@ -35,7 +35,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
             <li><a href="#thrift-columns">Thrift columns</a></li>
         </ul>
     </li>
-    <li><a href="#data-modeling">Data modeling with com.websudos.phantom</a></li>
+    <li><a href="#data-modeling">Data modeling with phantom</a></li>
     <li>
         <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
@@ -118,21 +118,26 @@ We are very happy to help implement missing features in phantom, answer question
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
 
+
 Commercial support
-==================
+===================
+<a href="#table-of-contents">back to top</a>
 
 We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
 training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!
 
 We offer a comprehensive range of services, including but not limited to:
 
-- Training
-- In house software development
-- Team building
-- Architecture planning
-- Startup product development
+Training
+In house software development
+Team building
+Architecture planning
+Startup product development
 
-As we love open source, all the things that we can open source, we will!
+
+We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, 
+click [here](http://www.websudos.co.uk/work).
+
 
 <a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
@@ -385,7 +390,7 @@ Select queries are very straightforward and enforce most limitations at compile 
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
 We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
-The file you are looking for is [here](https://github.com/websudosuk/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
+The file you are looking for is [here](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/SelectTable.scala).
 The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
 ```scala
@@ -604,7 +609,7 @@ Of course, you don't have to block unless you want to.
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import phantom.Implicits._
+import com.websudos.phantom.Implicits._
 
 sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
 
