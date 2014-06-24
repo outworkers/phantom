@@ -168,10 +168,6 @@ object phantom extends Build {
       ScroogeSBT.newSettings
   ).settings(
     name := "phantom-thrift",
-    fork := true,
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, 4)
-    ),
     libraryDependencies ++= Seq(
       "org.apache.thrift"            %  "libthrift"                         % thriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
