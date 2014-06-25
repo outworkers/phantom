@@ -12,14 +12,14 @@ object phantom extends Build {
   val newzlyUtilVersion = "0.1.1"
   val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.2.0-M1"
-  val finagleVersion = "6.16.0"
+  val finagleVersion = "6.13.2"
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
   val ScalatraVersion = "2.2.2"
 
   val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
-    organization := "com.newzly",
-    version := "0.8.1",
+    organization := "com.websudos",
+    version := "0.8.4",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -62,7 +62,7 @@ object phantom extends Build {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
-      <url>https://github.com/newzly.phantom</url>
+      <url>https://github.com/websudosuk/phantom</url>
         <licenses>
           <license>
             <name>Apache License, Version 2.0</name>
@@ -94,7 +94,7 @@ object phantom extends Build {
       publishMavenStyle := true,
       publishArtifact in Test := false,
       pomIncludeRepository := { _ => true },
-      pomExtra := <url>https://github.com/newzly.phantom</url>
+      pomExtra := <url>https://github.com/websudosuk/phantom</url>
         <licenses>
           <license>
             <name>Apache V2 License</name>
