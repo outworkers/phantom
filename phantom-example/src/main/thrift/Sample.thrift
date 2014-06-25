@@ -1,4 +1,4 @@
-namespace java com.websudos.com.websudos.phantom.example.basics
+namespace java com.websudos.phantom.example.basics
 
 struct SampleModel {
     1: required string id,

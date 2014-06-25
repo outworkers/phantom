@@ -86,7 +86,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    * @return The clustering key, defined as a string or the empty string.
    */
   private[phantom] def clusteringKey: String = {
-    if (!clusteringColumns.isEmpty) {
+    if (clusteringColumns.nonEmpty) {
       val key = clusteringColumns.map(col => {
         val direction = if (col.isAscending) {
           "ASC"
@@ -185,7 +185,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     baseClass =>
       val baseClassMembers = baseClass.typeSignature.members.sorted
       val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
-      baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
+      baseClassColumns.foreach(symbol => if (!columnMembers.contains(symbol)) columnMembers += symbol)
   }
 
   columnMembers.foreach {
