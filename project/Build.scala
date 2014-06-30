@@ -9,7 +9,7 @@ import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.1.1"
+  val newzlyUtilVersion = "0.1.14"
   val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.16.0"
@@ -142,6 +142,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     fork := true,
+    logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
@@ -203,6 +204,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-test",
     fork := true,
+    logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
