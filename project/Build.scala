@@ -155,7 +155,6 @@ object phantom extends Build {
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided",
       "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided"
     )
   )
@@ -174,7 +173,6 @@ object phantom extends Build {
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided",
       "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided"
     )
   ).dependsOn(
@@ -220,9 +218,8 @@ object phantom extends Build {
       "org.json4s"                %% "json4s-ext"                       % "3.2.6",
       "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
       "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
-      "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
-      "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided",
+      "org.eclipse.jetty"         %  "jetty-webapp"                     % "8.1.8.v20121106",
+      "org.eclipse.jetty.orbit"   %  "javax.servlet"                    % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
       "com.newzly"                %% "util-testing-cassandra"           % newzlyUtilVersion      % "provided"
     )
   ).dependsOn(
