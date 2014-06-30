@@ -9,7 +9,7 @@ import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.1.14"
+  val newzlyUtilVersion = "0.1.16"
   val datastaxDriverVersion = "2.0.2"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.16.0"
