@@ -193,6 +193,8 @@ object phantom extends Build {
       "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion
     )
+  ).dependsOn(
+    phantomDsl
   )
 
   lazy val phantomExample = Project(
