@@ -11,10 +11,6 @@ notifications:
   email:
   - dev@newzly.com
 
-
-services:
-    - cassandra
-
 # Branches to build.
 branches:
   only:

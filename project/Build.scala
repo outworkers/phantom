@@ -144,6 +144,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     fork := true,
+    logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
@@ -212,6 +213,7 @@ object phantom extends Build {
   ).settings(
     name := "phantom-test",
     fork := true,
+    logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
