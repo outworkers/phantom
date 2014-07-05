@@ -19,11 +19,13 @@
 package com.websudos.phantom.zookeeper
 
 
+import com.datastax.driver.core.Cluster
 import com.websudos.phantom.CassandraTable
-
 
 trait ZookeeperConnector {
   self: CassandraTable =>
+
+  val cluster: Cluster
 
 
 

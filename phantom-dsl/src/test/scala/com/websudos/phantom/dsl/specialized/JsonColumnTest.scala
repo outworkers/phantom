@@ -1,0 +1,85 @@
+/*
+ *
+ *  * Copyright 2014 newzly ltd.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+package com.websudos.phantom.dsl.specialized
+
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.newzly.util.testing.cassandra.BaseTest
+
+import com.twitter.conversions.time._
+import com.twitter.util.Await
+
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.JsonTable
+
+class JsonColumnTest extends BaseTest {
+  val keySpace = "json_columns"
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Await.ready(JsonTable.create.execute(), 2.seconds)
+  }
+
+  it should "allow storing a JSON record" in {
+    val sample = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .future()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).one
+    } yield select
+
+    chain.successful {
+      res => {
+        res.isEmpty shouldEqual false
+        res.get shouldEqual sample
+      }
+    }
+  }
+
+  it should "allow storing a JSON record with Twitter Futures" in {
+    val sample = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .execute()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).get
+    } yield select
+
+    chain.successful {
+      res => {
+        res.isEmpty shouldEqual false
+        res.get shouldEqual sample
+      }
+    }
+  }
+}

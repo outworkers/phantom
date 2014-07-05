@@ -17,7 +17,9 @@ package com.websudos.phantom.helper
 
 import com.datastax.driver.core.Session
 import com.websudos.phantom.Implicits._
-import com.newzly.util.testing.AsyncAssertionsHelper._
+
+import com.twitter.conversions.time._
+import com.twitter.util.Await
 
 /**
  * A basic trait implemented by all test tables.
@@ -38,7 +40,7 @@ trait TestSampler[Owner <: CassandraTable[Owner, Row], Row] {
       logger.info("Schema agreement in progress: ")
       try {
         logger.info(schema())
-        create.future().sync()
+        Await.ready(create.execute(), 2.seconds)
       } catch {
         case e: Throwable =>
           logger.error(s"schema for $tableName could not be created. ")

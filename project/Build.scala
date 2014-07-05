@@ -13,7 +13,7 @@ object phantom extends Build {
   val finagleVersion = "6.17.0"
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
-  val ScalatraVersion = "2.2.2"
+  val scalatraVersion = "2.2.2"
 
 
   val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
@@ -158,7 +158,8 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
       "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided",
-      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14")
+      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14"),
+      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
     )
   )
 
@@ -223,10 +224,10 @@ object phantom extends Build {
   ).settings(
     libraryDependencies ++= Seq(
       "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
-      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+      "org.scalatra"              %% "scalatra"                         % scalatraVersion,
+      "org.scalatra"              %% "scalatra-scalate"                 % scalatraVersion,
+      "org.scalatra"              %% "scalatra-json"                    % scalatraVersion,
+      "org.scalatra"              %% "scalatra-specs2"                  % scalatraVersion        % "test",
       "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
       "org.json4s"                %% "json4s-ext"                       % "3.2.6",
       "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
