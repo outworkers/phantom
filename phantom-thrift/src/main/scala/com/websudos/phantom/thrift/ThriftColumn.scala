@@ -79,7 +79,7 @@ abstract class OptionalThriftColumn[T <: CassandraTable[T, R], R, ValueType <: T
   val cassandraType = "text"
 
   def toCType(v: Option[ValueType]): AnyRef = {
-    v map serializer.toString getOrElse null
+    v.map(serializer.toString).orNull
   }
 
   def optional(r: Row): Option[ValueType] = {
