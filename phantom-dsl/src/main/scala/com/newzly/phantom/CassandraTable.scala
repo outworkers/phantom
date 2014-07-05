@@ -164,22 +164,25 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       query
     })
   }
+  Lock.synchronized {
+    val instanceMirror = cm.reflect(this)
+    val selfType = instanceMirror.symbol.toType
 
-  private[this] val instanceMirror = cm.reflect(this)
-  private[this] val selfType = instanceMirror.symbol.toType
+    // Collect all column definitions starting from base class
+    val columnMembers = ArrayBuffer.empty[Symbol]
+    selfType.baseClasses.reverse.foreach {
+      baseClass =>
+        val baseClassMembers = baseClass.typeSignature.members.sorted
+        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
+        baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
+    }
 
-  // Collect all column definitions starting from base class
-  private[this] val columnMembers = ArrayBuffer.empty[Symbol]
-  selfType.baseClasses.reverse.foreach {
-    baseClass =>
-      val baseClassMembers = baseClass.typeSignature.members.sorted
-      val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
-      baseClassColumns.foreach(symbol => if (!columnMembers.exists(_ == symbol)) columnMembers += symbol)
-  }
-
-  columnMembers.foreach {
-    symbol =>
-      val column = instanceMirror.reflectModule(symbol.asModule).instance
-      _columns += column.asInstanceOf[AbstractColumn[_]]
+    columnMembers.foreach {
+      symbol =>
+        val column = instanceMirror.reflectModule(symbol.asModule).instance
+        _columns += column.asInstanceOf[AbstractColumn[_]]
+    }
   }
 }
+
+private[phantom] case object Lock
