@@ -16,7 +16,7 @@ object phantom extends Build {
   val scalatraVersion = "2.2.2"
 
 
-  val mavenPublishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -56,7 +56,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[sbt.Project.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
@@ -88,7 +88,7 @@ object phantom extends Build {
       </developers>
   )
 
-  val sharedSettings: Seq[sbt.Project.Setting[_]] = Seq(
+  val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
     version := "0.8.5",
     scalaVersion := "2.10.4",

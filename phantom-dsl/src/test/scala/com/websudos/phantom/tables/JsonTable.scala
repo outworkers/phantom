@@ -26,8 +26,7 @@ import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 
-import net.liftweb.json.{ DefaultFormats, Extraction }
-import net.liftweb.json.JsonParser
+import net.liftweb.json.{ DefaultFormats, Extraction, JsonParser, pretty, render }
 
 
 case class JsonTest(prop1: String, prop2: String)
@@ -61,8 +60,8 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
       JsonParser.parse(obj).extract[JsonTest]
     }
 
-    override def toJson(obj: JsonTest): AnyRef = {
-      Extraction.decompose(obj)
+    override def toJson(obj: JsonTest): String = {
+      pretty(render(Extraction.decompose(obj)))
     }
   }
 
@@ -71,8 +70,8 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
       JsonParser.parse(obj).extract[JsonTest]
     }
 
-    override def toJson(obj: JsonTest): AnyRef = {
-      Extraction.decompose(obj)
+    override def toJson(obj: JsonTest): String = {
+      pretty(render(Extraction.decompose(obj)))
     }
   }
 
@@ -81,8 +80,8 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
       JsonParser.parse(obj).extract[JsonTest]
     }
 
-    override def toJson(obj: JsonTest): AnyRef = {
-      Extraction.decompose(obj)
+    override def toJson(obj: JsonTest): String = {
+      pretty(render(Extraction.decompose(obj)))
     }
   }
 

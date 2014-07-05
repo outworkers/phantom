@@ -26,7 +26,7 @@ sealed trait JsonDefinition[T] {
 
   def fromJson(obj: String): T
 
-  def toJson(obj: T): AnyRef
+  def toJson(obj: T): String
 
   def valueToCType(obj: T): AnyRef = toJson(obj)
 
