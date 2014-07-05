@@ -142,4 +142,124 @@ class JsonColumnTest extends BaseTest {
       }
     }
   }
+
+  it should "allow updating a JSON record in a List of JSON records" in {
+    val sample = JsonTable.sample
+    val sample2 = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .future()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).one
+      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
+      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+    } yield (select, select2)
+
+    chain.successful {
+      res => {
+        res._1.isEmpty shouldEqual false
+        res._1.get shouldEqual sample
+
+        res._2.isEmpty shouldEqual false
+        res._2.get.jsonList(0) shouldEqual sample2.json
+      }
+    }
+  }
+
+  it should "allow updating a JSON record in a List of JSON records with Twitter Futures" in {
+    val sample = JsonTable.sample
+    val sample2 = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .execute()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).get
+      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
+      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+    } yield (select, select2)
+
+    chain.successful {
+      res => {
+        res._1.isEmpty shouldEqual false
+        res._1.get shouldEqual sample
+
+        res._2.isEmpty shouldEqual false
+        res._2.get.jsonList(0) shouldEqual sample2.json
+      }
+    }
+  }
+
+  it should "allow updating a JSON record in a Set of JSON records" in {
+    val sample = JsonTable.sample
+    val sample2 = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .future()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).one
+      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
+      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+    } yield (select, select2)
+
+    chain.successful {
+      res => {
+        res._1.isEmpty shouldEqual false
+        res._1.get shouldEqual sample
+
+        res._2.isEmpty shouldEqual false
+        res._2.get.jsonSet.last shouldEqual sample2.json
+      }
+    }
+  }
+
+  it should "allow updating a JSON record in a Set of JSON records with Twitter Futures" in {
+    val sample = JsonTable.sample
+    val sample2 = JsonTable.sample
+
+    val insert = JsonTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.json, sample.json)
+      .value(_.jsonList, sample.jsonList)
+      .value(_.jsonSet, sample.jsonSet)
+      .execute()
+
+    val chain = for {
+      done <- insert
+      select <- JsonTable.select.where(_.id eqs sample.id).get
+      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
+      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+    } yield (select, select2)
+
+    chain.successful {
+      res => {
+        res._1.isEmpty shouldEqual false
+        res._1.get shouldEqual sample
+
+        res._2.isEmpty shouldEqual false
+        res._2.get.jsonSet.last shouldEqual sample2.json
+      }
+    }
+  }
 }
