@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/newzly/phantom.png?branch=develop)](https://travis-ci.org/newzly/phantom)
+phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom)
 
 ==============
 Asynchronous Scala DSL for Cassandra
@@ -15,6 +15,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 
 <ol>
     <li><a href="#issues-and-questions">Issues and questions</a></li>
+    <li><a href="#commercial-support">Commercial support</a></li>
     <li><a href="#integrating-phantom-in-your-project">Integrating phantom in your project</a></li>
     <li>
         <p>phantom columns</p>
@@ -116,6 +117,27 @@ If you're completely new to Cassandra, a much better place to start is the [Data
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
 
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
+
+
+Commercial support
+===================
+<a href="#table-of-contents">back to top</a>
+
+We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
+training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!
+
+We offer a comprehensive range of services, including but not limited to:
+
+Training
+In house software development
+Team building
+Architecture planning
+Startup product development
+
+
+We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, 
+click [here](http://www.websudos.co.uk/work).
+
 
 <a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
