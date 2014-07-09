@@ -7,8 +7,9 @@ scala:
 
 # Emails to notify
 notifications:
+  slack: newzly:nfmIGqhmrfJb6pIH6I50mnCO
   email:
-    - dev@newzly.com
+  - dev@newzly.com
 
 # Branches to build.
 branches:
@@ -20,5 +21,5 @@ jdk:
   - oraclejdk7
   - openjdk7
 
-before_script: "./scripts/test_util.sh"
 script: "./scripts/run_tests.sh"
+
