@@ -132,6 +132,7 @@ object phantom extends Build {
     phantomDsl,
     phantomExample,
     phantomScalatraTest,
+    phantomSpark,
     phantomThrift
   )
 
@@ -161,6 +162,17 @@ object phantom extends Build {
       "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14"),
       "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
     )
+  )
+
+  lazy val phantomSpark = Project(
+    id = "phantom-spark",
+    base = file("phantom-spark"),
+    settings = Defaults.coreDefaultSettings ++
+      sharedSettings ++ publishSettings
+  ).settings(
+    name := "phantom-spark"
+  ).dependsOn(
+    phantomDsl
   )
 
   lazy val phantomThrift = Project(
