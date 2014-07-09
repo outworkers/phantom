@@ -11,6 +11,7 @@ abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Sho
 
 }
 
+
 abstract class UDT[T <: UDT[T]] extends AbstractColumn[T] {
 
   private[this] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]] with MutableSyncBuffer[AbstractField[_]]

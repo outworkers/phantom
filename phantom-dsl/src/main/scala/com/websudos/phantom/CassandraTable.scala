@@ -161,7 +161,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
     val tableKey = defineTableKey()
     logger.info(s"Adding Primary keys indexes: $tableKey}")
-    val queryPrimaryKey  = if (tableKey.length > 0) s", ${defineTableKey()}" else ""
+    val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
     val finalQuery = query + clusteringKey
