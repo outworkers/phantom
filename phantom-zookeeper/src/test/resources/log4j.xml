@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ /*
+  ~  * Copyright 2014 newzly ltd.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *     http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="outputConsole" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p %c{3} - %m%n" />
+        </layout>
+    </appender>
+
+    <logger name="org.cassandraunit">
+        <level value="debug" />
+    </logger>
+    <logger name="org.apache.cassandra">
+        <level value="error" />
+    </logger>
+
+    <logger name="com.datastax.driver.core">
+        <level value="error" />
+    </logger>
+
+    <logger name="jetty">
+        <level value="error" />
+    </logger>
+
+    <logger name="com.websudos.phantom">
+        <level value="info"/>
+    </logger>
+
+    <logger name="com.websudos.phantom.zookeeper">
+        <level value="info"/>
+    </logger>
+
+
+    <logger name="me.prettyprint">
+        <level value="error" />
+    </logger>
+
+    <root>
+        <priority value="error" />
+        <appender-ref ref="outputConsole" />
+    </root>
+
+</log4j:configuration>
