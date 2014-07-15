@@ -18,8 +18,19 @@
 
 package com.websudos.phantom.zookeeper
 
-import org.slf4j.LoggerFactory
+import java.util.UUID
+import com.datastax.driver.core.Row
+import com.websudos.phantom.Implicits._
 
-object ZookeeperManager {
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
+case class TestRecord(id: UUID, name: String)
+
+
+
+class TestTable extends CassandraTable[TestTable, TestRecord] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object name extends StringColumn(this)
+
+  def fromRow(row: Row): TestRecord = TestRecord(id(row), name(row))
 }
+
+object TestTable extends TestTable with DefaultZookeeperConnector
