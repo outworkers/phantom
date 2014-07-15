@@ -7,8 +7,8 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.1.16"
-  val datastaxDriverVersion = "2.0.3"
+  val newzlyUtilVersion = "0.1.19"
+  val datastaxDriverVersion = "2.1.0-beta1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
   val scroogeVersion = "3.15.0"
@@ -39,7 +39,7 @@ object phantom extends Build {
           </license>
         </licenses>
         <scm>
-          <url>git@github.com:newzly/phantom.git</url>
+          <url>git@github.com:websudosuk/phantom.git</url>
           <connection>scm:git:git@github.com:newzly/phantom.git</connection>
         </scm>
         <developers>
@@ -71,7 +71,7 @@ object phantom extends Build {
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:newzly/phantom.git</url>
+        <url>git@github.com:websudosuk/phantom.git</url>
         <connection>scm:git:git@github.com:newzly/phantom.git</connection>
       </scm>
       <developers>
@@ -90,7 +90,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "0.8.5",
+    version := "0.8.10",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -133,6 +133,7 @@ object phantom extends Build {
     phantomExample,
     phantomScalatraTest,
     phantomSpark,
+    phantomZookeeper,
     phantomThrift
   )
 
@@ -170,7 +171,10 @@ object phantom extends Build {
     settings = Defaults.coreDefaultSettings ++
       sharedSettings ++ publishSettings
   ).settings(
-    name := "phantom-spark"
+    name := "phantom-spark",
+    libraryDependencies ++= Seq(
+      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-beta1"
+    )
   ).dependsOn(
     phantomDsl
   )
