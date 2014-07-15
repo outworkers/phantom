@@ -16,10 +16,21 @@
  *
  */
 
-package com.websudos.phantom.zookeeper
+package com.websudos.phantom.udt
 
-import org.slf4j.LoggerFactory
+import com.newzly.util.testing.cassandra.BaseTest
 
-object ZookeeperManager {
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
+class TypeDefinitionTest extends BaseTest {
+  val keySpace = "udt_test"
+
+
+}
+
+
+class Address extends UDT[Address] {
+
+  object id extends UUIDField(this)
+  object name extends StringField(this)
+
+  object postcode extends StringField(this)
 }

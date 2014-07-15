@@ -15,25 +15,17 @@
  */
 package com.websudos.phantom
 
-import scala.collection.mutable.{ ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer }
-import scala.reflect.runtime.{ currentMirror => cm, universe => ru }
+import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
 import scala.reflect.runtime.universe.Symbol
+import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
 
 import org.slf4j.LoggerFactory
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
-
 import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.query.{
-  CreateQuery,
-  DeleteQuery,
-  InsertQuery,
-  SelectCountQuery,
-  TruncateQuery,
-  UpdateQuery
-}
+import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 
@@ -176,21 +168,25 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     })
   }
 
-  private[this] val instanceMirror = cm.reflect(this)
-  private[this] val selfType = instanceMirror.symbol.toType
+  Lock.synchronized {
+    val instanceMirror = cm.reflect(this)
+    val selfType = instanceMirror.symbol.toType
 
-  // Collect all column definitions starting from base class
-  private[this] val columnMembers = MutableArrayBuffer.empty[Symbol]
-  selfType.baseClasses.reverse.foreach {
-    baseClass =>
-      val baseClassMembers = baseClass.typeSignature.members.sorted
-      val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
-      baseClassColumns.foreach(symbol => if (!columnMembers.contains(symbol)) columnMembers += symbol)
-  }
+    // Collect all column definitions starting from base class
+    val columnMembers = MutableArrayBuffer.empty[Symbol]
+    selfType.baseClasses.reverse.foreach {
+      baseClass =>
+        val baseClassMembers = baseClass.typeSignature.members.sorted
+        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
+        baseClassColumns.foreach(symbol => if (!columnMembers.contains(symbol)) columnMembers += symbol)
+    }
 
-  columnMembers.foreach {
-    symbol =>
-      val column = instanceMirror.reflectModule(symbol.asModule).instance
-      _columns += column.asInstanceOf[AbstractColumn[_]]
+    columnMembers.foreach {
+      symbol =>
+        val column = instanceMirror.reflectModule(symbol.asModule).instance
+        _columns += column.asInstanceOf[AbstractColumn[_]]
+    }
   }
 }
+
+private[phantom] case object Lock

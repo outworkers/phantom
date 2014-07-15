@@ -7,7 +7,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 0.8.0```.
+The current version is: ```val phantomVersion = 1.0.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 <a id="table-of-contents">Table of contents</a>
@@ -15,6 +15,8 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 
 <ol>
     <li><a href="#issues-and-questions">Issues and questions</a></li>
+    <li><a href="#adopters">Adopters</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#commercial-support">Commercial support</a></li>
     <li><a href="#integrating-phantom-in-your-project">Using phantom in your project</a></li>
     <li>
@@ -116,7 +118,59 @@ If you're completely new to Cassandra, a much better place to start is the [Data
 
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
 
-You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group.
+You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group or via the below listed emails.
+
+We are also extremely grateful if you add your company to our list of adopters, as it makes it easy for us to further increase adoption, 
+contributions and make phantom even more awesome.
+
+
+Adopters
+========
+
+This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
+
+- [CreditSuisse](https://www.credit-suisse.com/global/en/)
+- [Sphonic](http://www.sphonic.com/)
+- [Newzly](https://www.newzly.com/)
+- [Equens](http://www.equens.com/)
+
+Roadmap
+========
+
+While dates are not fixed, we will use this list to tell you about our plans for the future. If you have great ideas about what could benefit all phantom 
+adopters, please get in touch. We are very happy and eager to listen.
+
+- User defined types
+
+We are working closely around the latest features in the Datastax Java driver and Apache Cassandra 2.1 to offer a fully type safe DSL for user defined types.
+This feature is well in progress and you can expect to see it live roughly at the same time as the release of the Datastax 2.1 driver, planned for July 2014.
+
+Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
+
+- Zookeeper support
+
+Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation, 
+we figured a pre-build integration based on ```finagle-zookeeper``` would be awesome.
+
+We've even taken it one step further, writing some pretty cool tools for testing automations. With a simple trait you can run asynchronous tests against an embedded Cassandra instance and an 
+embedded Zookeeper instance. This process is completely transparent and you don't really need to do anything. No config or starting tools is necessary, 
+everything will start and stop automatically, configure itself automatically and run tests in parallel using async assertions, 
+all automatic and with our tools.
+ 
+This awesome feature is still in battle-testing while we iron out some last few bugs and nastiness from its API, 
+you can expect to see it live around phantom 0.9.0 or 1.0.0, but it's coming together quite nicely and we have already upgraded a lot of our testing to use 
+the fancy new tooling.
+
+We are also testing it in production in a massive enterprise to make sure it's reliable with a few dozen nodes in a cluster, 
+not just the local embedded flavour.
+
+- Spark integration
+
+Thanks to the awesome partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with an awesome integration. We won't be slow to 
+follow up with a fully type safe Scala implementation of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
+ storage through the simple and hopefully awesome DSL we've gotten you used to.
+ 
+You can expect to see the spark integration live in a new ```phantom-spark``` module in the 1.1.0 or 1.2.0 version, planned sometime in September 2014.
 
 
 Commercial support
@@ -128,11 +182,12 @@ training or support for using phantom, [Websudos](http://www.websudos.co.uk) is 
 
 We offer a comprehensive range of services, including but not limited to:
 
-Training
-In house software development
-Team building
-Architecture planning
-Startup product development
+- Remote contractors for hire
+- Training
+- In house software development
+- Team building
+- Architecture planning
+- Startup product development
 
 
 We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, 
@@ -156,10 +211,11 @@ The full list of available modules is:
 ```scala
 libraryDependencies ++= Seq(
   "com.websudos"  %% "phantom-dsl"                   % phantomVersion,
-  "com.websudos"  %% "phantom-cassandra-unit"        % phantomVersion,
   "com.websudos"  %% "phantom-example"               % phantomVersion,
+  "com.websudos"  %% "phantom-spark"                 % phantomVersion,
   "com.websudos"  %% "phantom-thrift"                % phantomVersion,
   "com.websudos"  %% "phantom-test"                  % phantomVersion
+  "com.websudos"  %% "phantom-zookeeper"             % phantomVersion
 )
 ```
 
@@ -188,6 +244,7 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | StringColumn                  | java.lang.String          | text              |
 | UUIDColumn                    | java.util.UUID            | uuid              |
 | TimeUUIDColumn                | java.util.UUID            | timeuuid          |
+| CounterColumn                 | scala.Long                | counter           |
 | CounterColumn                 | scala.Long                | counter           |
 | StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
@@ -225,17 +282,26 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 Cassandra collections do not allow custom data types. Storing JSON as a string is possible, but it's still a ```text``` column as far as Cassandra is concerned.
 The ```type``` in the below example is always a default C* type.
 
+JSON columns require you to define a ```toJson``` and ```fromJson``` method, telling phantom how to go from a ```String``` to the type you need. 
+It makes no assumptions as to what library you are using, although we have tested with ```lift-json``` and ```play-json```.
+
+Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https://github.com/websudosuk/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/dsl/specialized/JsonColumnTest.scala)
+
 | phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
 | ListColumn.&lt;type&gt;             | list&lt;type&gt;        |
 | SetColumn.&lt;type&gt;              | set&lt;type&gt;         |
 | MapColumn.&lt;type, type&gt;        | map&lt;type, type&gt;   |
+| JsonColumn.&lt;type&gt;             | text                    |
+| JsonListColumn.&lt;type&gt;         | list&lt;text&gt;        |
+| JsonSetColumn.&lt;type&gt;          | set&lt;type&gt;         |
 
 <a id="indexing-columns">Indexing columns</a>
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
+Instead of waiting for Cassandra to tell you you've done bad things, phantom won't let you compile them, saving you a lot of time.
 
 <a id="partition-key">PartitionKey[T]</a>
 ==============================================
@@ -924,6 +990,7 @@ Some of the things that will make us seriously frown:
 
 - Blocking when you don't have to. It just makes our eyes hurt when we see useless blocking.
 - Testing should be thread safe and fully async, use ```ParallelTestExecution``` if you want to show off.
+- Writing tests should use the pre-existing tools, they bring in EmbeddedCassandra, Zookeeper and other niceties, allowing us to run multi-datacenter tests.
 - Use the common patterns you already see here, we've done a lot of work to make it easy.
 - Don't randomly import stuff. We are very big on alphabetized clean imports.
 
