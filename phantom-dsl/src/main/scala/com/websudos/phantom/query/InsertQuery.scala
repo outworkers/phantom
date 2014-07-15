@@ -53,10 +53,4 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     qb.using(QueryBuilder.timestamp(l))
     this
   }
-
-  override def toString: String = {
-    val query = s"${qb.getQueryString}(${qb.getValues}: ${qb.toString})}"
-    table.logger.info(s"$query")
-    query
-  }
 }
