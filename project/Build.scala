@@ -8,7 +8,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 object phantom extends Build {
 
   val newzlyUtilVersion = "0.1.19"
-  val datastaxDriverVersion = "2.1.0-beta1"
+  val datastaxDriverVersion = "2.1.0-rc1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
   val scroogeVersion = "3.15.0"
@@ -17,7 +17,7 @@ object phantom extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -57,7 +57,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
@@ -73,7 +73,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.0.0",
+    version := "1.0.2",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -232,7 +232,7 @@ object phantom extends Build {
       "org.fluttercode.datafactory"      %  "datafactory"              % "0.8",
       "com.twitter"                      %% "finagle-serversets"       % finagleVersion,
       "com.twitter"                      %% "finagle-zookeeper"        % finagleVersion,
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.3"  excludeAll (
+      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       ),
