@@ -46,6 +46,8 @@ trait ZookeeperManager {
   protected[this] val defaultAddress = new InetSocketAddress("localhost", 2181)
 }
 
+private[zookeeper] case object Lock
+
 class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
 
 /**
@@ -95,15 +97,15 @@ trait ClusterStore {
     }
   }
 
-  def isInited: Boolean = synchronized {
+  def isInited: Boolean = Lock.synchronized {
     inited
   }
 
-  def setInited(value: Boolean) = synchronized {
+  def setInited(value: Boolean) = Lock.synchronized {
     inited = value
   }
 
-  def initStore(keySpace: String, address: InetSocketAddress ): Unit = synchronized {
+  def initStore(keySpace: String, address: InetSocketAddress ): Unit = Lock.synchronized {
     assert(address != null)
 
     if (!isInited) {

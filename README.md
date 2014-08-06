@@ -7,8 +7,15 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The current version is: ```val phantomVersion = 1.0.0```.
+The latest major release is: ```val phantomVersion = 1.0.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
+
+
+Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
+The latest development version is ```val phantomVersion = 1.0.2```, found only on our internal Maven repository.
+
+The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
+
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
@@ -88,33 +95,32 @@ Phantom is published to Maven Central and it's actively and avidly developed.
         <ul>
             <li><a href="#logged-batch-statements">LOGGED Batch statements</a></li>
             <li><a href="#counter-batch-statements">COUNTER Batch statements</li>
-            <li><a href="#<a id="logged-batch-statements">UNLOGGED Batch statements</a></li>
+            <li><a href="logged-batch-statements">UNLOGGED Batch statements</a></li>
         </ul>
     </li>
     <li><a href="#thrift-integration">Thrift integration</a></li>
     <li>
-      <p>Apache ZooKeeper integration</p>
+      <p><a href="apache-zookeeper-integration">Apache ZooKeeper integration</a></p>
       <ul>
-        <li>ZooKeeper connectors</li>
-        <li>The ```DefaultZooKeeperConnector``` and ```DefaultZooKeeperManager```</li>
-        <li>Using a ```ZooKeeper Instance```</li>
+        <li><a href="#zookeeper-connectors">ZooKeeper connectors</a></li>
+        <li><a href="#the-default-zookeeper-connector-and-default-zookeeper-manager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</li>
+        <li><a href="#using-a-zookeeper-instance">Using a ZooKeeperInstance</a></li>
+      </ul>
+    </li>
+    <li>
+      <p><a href="#testing-utilities">Testing Utilities</a></p>
+      <ul>
+        <li><a href="#auto-embedded-cassandra">Auto-embeddeded Cassandra</a></li>
+        <li><a href="#using-the-default-suite">Using the default ```PhantomCassandraSuite``` to write tests</a></li>
+        <li><a href="#running-tests">Running the tests locally</a></li>
       </ul>
     </li>
     <li><a href="#thrift-integration">Thrift integration</a></li>
-    <li>
-      <p><a href="#test utilities>Test Utilities</a></p>
-      <ul>
-        <li><a href="#embedded-cassandra">Embedded Cassandra</a></li>
-        <li><a href="#auto-embedding">Auto-embedding</a></li>
-      </ul>
-    </li>
-    <li><a href="#running-tests">Running the tests locally</a></li>
     <li>
         <p><a href="#contributors">Contributing to phantom</a></p>
         <ul>
             <li><a href="#using-gitflow">Using GitFlow as a branching model</a></li>
             <li><a href="#scala-style-guidelines">Scala style guidelines for contributions</a></li>
-            <li><a href="#using-the-default-suite">Using the default ```PhantomCassandraSuite``` to write tests</a></li>
         </ul>
     <li><a href="#copyright">Copyright</a></li>
 </ol>
@@ -146,6 +152,7 @@ Adopters
 This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
+- [Pellucid Analytics](http://www.pellucid.com/)
 - [Sphonic](http://www.sphonic.com/)
 - [Newzly](https://www.newzly.com/)
 - [Equens](http://www.equens.com/)
@@ -940,27 +947,92 @@ stuct ExampleModel {
 }
 ```
 
-
-<a id="running-tests">Running the tests locally</a>
+<a id="apache-zookeeper-integration">Apache ZooKeeper Integration</a>
 ==================================================
 <a href="#table-of-contents">back to top</a>
 
-phantom uses Embedded Cassandra to run tests without a local Cassandra server running.
-You need two terminals to run the tests, one for Embedded Cassandra and one for the actual tests.
+If you have never heard of Apache ZooKeeper before, a much better place to start is [here](http://zookeeper.apache.org/). Phantom offers a complete set of features for ZooKeeper integration using the [finagle-zookeeper](https://github.com/p-antoine/finagle-zookeeper) project.
 
-```scala
-sbt
-project phantom-cassandra-unit
-run
-```
 
-Then in a new terminal
+<a id="zookeeper-connectors">ZooKeeper Connectors</a>
+===========================================================================
+<a href="#table-of-contents">back to top</a>
 
-```scala
-sbt
-project com.websudos.phantom-test
-test
-```
+Using a set of conventions phantom can automate the entire process of using ZooKeeper in a distributed environment. Phantom will deal with a large series of concerns for you, specifically:
+
+- Creating a ZooKeeper client and initilising it in due time.
+- Fetching and parsing a sequence of Cassandra ports from ZooKeeper.
+- Creating a Cluster configuration based on the sequence of Cassandra ports available in ZooKeeper.
+- Creating an implicit session for queries to execute.
+
+The entire process described above is entirely automated with a series of sensible defaults available. More details on default implementations are available below. Bottom line, if you want to go custom, you may override at will, if you just want to get something working as fast as possible, then ```phantom-zookeeper``` can do everything for you.
+
+<a id="the-default-zookeeper-connector-and-default-zookeeper-mananager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</a>
+==========================================================================================================
+<a href="#table-of-contents">back to top</a>
+
+The default implementation expects Cassandra IPs to be listed in a Sequence of ```host:port``` combinations, with ```:``` as a separator literal. It also expects the default path in ZooKeeper for Cassandra ports to be ```/cassandra``` and the sequence of ports should look like this:
+
+```host1:port1, host2:port2, host3:port3, host4:port4```
+
+Phantom will fetch the data found on the  ```/cassandra``` path on the ZooKeeper master and attempt to parse all ```host:port``` pairs to a ```Seq[InetSocketAddress]``` and build a ```com.datastax.driver.core.Cluster``` using the sequence of addresses.
+
+Using that ```Cluster``` phantom will spawn an ```implicit session: com.datastax.driver.core.Session```. This session is the execution context of all queries inside a table definition. The ```DefaultZooKeeperManager```, found [here](https://github.com/websudosuk/phantom/blob/develop/phantom-zookeeper/src/main/scala/com/websudos/phantom/zookeeper/ZookeeperManager.scala), will do all the plumbing work for you. More details on the internals are available [here](https://github.com/websudosuk/phantom/blob/develop/phantom-zookeeper/src/main/scala/com/websudos/phantom/zookeeper/ZookeeperManager.scala#L51).
+
+<a id="using-a-zookeeperinstance">Using a ZooKeeperInstance</a>
+====================================================================================================
+<a href="#table-of-contents">back to top</a>
+
+For testing automation purposes, ```phantom-zookeeper``` contains a simple implementation of a ZooKeeper node. The implementation is available [here]
+(https://github.com/websudosuk/phantom/blob/develop/phantom-zookeeper/src/main/scala/com/websudos/phantom/zookeeper/ZookeeperInstance.scala), 
+and it's used mainly for testing purposes. If you are using ZooKeeper in a production environment and you are using the ```phantom-zookeeper``` module to 
+automate your Cassandra connections, the phantom testing utilities will automatically spawn a ```ZooKeeperInstance``` if no local ZooKeeper server is found 
+running on the default ```localhost:2181``` address.
+
+The ```ZooKeeper Instance``` will pick a free port by itself, spawn a ZooKeeper instance, create the ```/cassandra``` path, 
+add ```localhost:9142``` to it, and propagate the ```host:port``` combination through an environment variable. The testing utilities will then read an 
+environment variable, spawn ZooKeeper Client based on ```finagle-zookeeper```,  spawn an ```EmbeddedCassandra``` server if none is found running, fetch the settings from ZooKeeper and create 
+all the plumbing you need to run the tests. You get all that for free by mixing in a single trait, 
+just like we do [here](https://github.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/BaseTest.scala).
+
+<a id="testing-utilities">Testing utilities</a>
+==================================================
+<a href="#table-of-contents">back to top</a>
+
+Naturally, no job is considered truly done with the full power testing automation provided out-of-the box. This is exactly what we tried to achieve with the 
+testing utilities, giving you a very simple, easily extensible, yet highly sensible defaults. We wanted something that works for most things most of the time
+with 0 integration work on your behalf, yet allowing you to go crazy and custom as you please if the scenario warrants it. 
+
+With that design philosophy in mind, we've created two kinds of tests, 1 running with a ```SimpleCassandraConnector```, 
+with the implementation found [here](https://github.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing
+/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings, 
+run all the tests and cleanup after tests are done.
+
+The other, more complex implementation, targets people who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
+multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above. The ```BaseTest``` implementation, 
+which uses a ```DefaultZooKeeperConnector```, is found [here](https://github
+.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/BaseTest.scala), and it follows the pattern described above.
+ 
+
+<a id="auto-embedded-cassandra">Auto-embedded Cassandra</a>
+===========================================================
+<a href="#table-of-contents">back to top</a>
+
+Phantom spares you of the trouble to spawn your own Cassandra server during tests. The implementation of this is based on the [cassandra-unit]
+(https://github.com/jsevellec/cassandra-unit) project. Phantom will automatically pick the right version of Cassandra, 
+however do be careful. We often tend to use the latest version as we do our best to keep up with the latest features.
+
+You may use a brand new phantom feature, see the tests passing with flying colours locally and then get bad errors in production. The version of Cassandra 
+covered by the latest phantom release and used for embedding is written at the very top of this readme.
+
+<a id="running-the-tests-locally">Running the tests locally</a>
+==================================================
+<a href="#table-of-contents">back to top</a>
+
+phantom uses the ```phantom-testing``` module to run tests without a local Cassandra server running.
+There are no pre-requisites for running the tests. Phantom will automatically load an Embedded Cassandra with the right version, 
+run all the tests and do the cleanup afterwards. Read more on the testing utilities to see how you can achieve the same thing in your own database tests.
+
 
 <a id="contributors">Contributors</a>
 =====================================
