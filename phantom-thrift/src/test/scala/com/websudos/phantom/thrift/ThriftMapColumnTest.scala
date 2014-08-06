@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.websudos.phantom.dsl.specialized
+package com.websudos.phantom.thrift
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.thrift.ThriftTest
+
+import com.datastax.driver.core.utils.UUIDs
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 
-class ThriftMapColumnTest extends BaseTest {
+class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
-  val keySpace = "thrift_map_operators"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      ThriftColumnTable.insertSchema
-    }
+    super.beforeAll()
+    ThriftColumnTable.insertSchema
   }
 
   it should "put an item to a thrift map column" in {
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -50,13 +49,13 @@ class ThriftMapColumnTest extends BaseTest {
       test = true
     )
 
-    val map = Map("first" -> sample)
-    val toAdd = "second" -> sample2
+    val map = Map(Sampler.getARandomString -> sample)
+    val toAdd = Sampler.getARandomString -> sample2
     val expected = map + toAdd
 
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -68,8 +67,8 @@ class ThriftMapColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
     } yield {
       select
     }
@@ -83,6 +82,8 @@ class ThriftMapColumnTest extends BaseTest {
   }
 
   it should "put an item to a thrift map column with Twitter Futures" in {
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -95,13 +96,13 @@ class ThriftMapColumnTest extends BaseTest {
       test = true
     )
 
-    val map = Map("first" -> sample)
-    val toAdd = "second" -> sample2
+    val map = Map(Sampler.getARandomString -> sample)
+    val toAdd = Sampler.getARandomString -> sample2
     val expected = map + toAdd
 
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -112,8 +113,8 @@ class ThriftMapColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -126,6 +127,8 @@ class ThriftMapColumnTest extends BaseTest {
 
 
   it should "put several items to a thrift map column" in {
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -144,13 +147,13 @@ class ThriftMapColumnTest extends BaseTest {
       test = true
     )
 
-    val map = Map("first" -> sample)
-    val toAdd = Map("second" -> sample2, "third" -> sample3)
+    val map = Map(Sampler.getARandomString -> sample)
+    val toAdd = Map(Sampler.getARandomString -> sample2, Sampler.getARandomString -> sample3)
     val expected = map ++ toAdd
 
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -161,8 +164,8 @@ class ThriftMapColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
     } yield {
       select
     }
@@ -176,6 +179,8 @@ class ThriftMapColumnTest extends BaseTest {
   }
 
   it should "put several items to a thrift map column with Twitter Futures" in {
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -194,13 +199,13 @@ class ThriftMapColumnTest extends BaseTest {
       test = true
     )
 
-    val map = Map("first" -> sample)
-    val toAdd = Map("second" -> sample2, "third" -> sample3)
+    val map = Map(Sampler.getARandomString -> sample)
+    val toAdd = Map(Sampler.getARandomString -> sample2, Sampler.getARandomString -> sample3)
     val expected = map ++ toAdd
 
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -210,8 +215,8 @@ class ThriftMapColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
+      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
     } yield select
 
     operation.successful {

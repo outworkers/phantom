@@ -4,17 +4,17 @@ import scala.concurrent.blocking
 import scala.concurrent.duration._
 import scala.util.Random
 
-
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
 
-import com.websudos.phantom.server.ScalatraBootstrap.{ AAPL, AAPLOption, ApplePrices, AppleOptionPrices }
-import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import dispatch.{ as, Http, url }
+import com.websudos.phantom.server.ScalatraBootstrap.{ AAPL, AAPLOption, AppleOptionPrices, ApplePrices }
+import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
+
+import dispatch.{Http, as, url}
 
 class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
 
@@ -44,7 +44,6 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
   }
 
   "Prices Servlet" should "return correct equity prices for Apple stock" in {
-    import com.websudos.phantom.server.ScalatraBootstrap._
 
     val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
     val prices = request.map(json => json.extract[Seq[EquityPrice]])

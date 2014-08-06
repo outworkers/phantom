@@ -2,11 +2,14 @@ package com.websudos.phantom.server
 
 import java.util.Date
 
+import org.joda.time.{DateTime, LocalDate}
+
 import com.datastax.driver.core.Row
 import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import org.joda.time.{DateTime, LocalDate}
+import com.websudos.phantom.query.InsertQuery
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 
 sealed trait Price {
@@ -66,8 +69,10 @@ sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
     OptionPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), strikePrice(r), value(r))
 }
 
-object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with ModelSampler[EquityPrice] {
+object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with ModelSampler[EquityPrice] with DefaultZookeeperConnector {
   override val tableName: String = "EquityPrices"
+
+  val keySpace = "phantom"
 
   override def sample: EquityPrice = EquityPrice(
     Sampler.getARandomString,
@@ -87,8 +92,10 @@ object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPr
 
 }
 
-object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] {
+object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] with DefaultZookeeperConnector {
   override val tableName: String = "OptionPrices"
+
+  val keySpace = "phantom"
 
   override def sample: OptionPrice = OptionPrice(
     Sampler.getARandomString,
@@ -99,12 +106,14 @@ object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPr
     BigDecimal(Sampler.getARandomInteger())
   )
 
-  def insertPrice(price: OptionPrice) =
-    insert.
-      value(_.instrumentId, price.instrumentId).
-      value(_.tradeDate, price.tradeDate.toDate).
-      value(_.exchangeCode, price.exchangeCode).
-      value(_.t, price.t).
-      value(_.strikePrice, price.strikePrice).
-      value(_.value, price.value)
+  def insertPrice(price: OptionPrice): InsertQuery[OptionPrices, OptionPrice] = {
+    insert
+      .value(_.instrumentId, price.instrumentId)
+      .value(_.tradeDate, price.tradeDate.toDate)
+      .value(_.exchangeCode, price.exchangeCode)
+      .value(_.t, price.t)
+      .value(_.strikePrice, price.strikePrice)
+      .value(_.value, price.value)
+  }
+
 }

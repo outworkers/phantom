@@ -1,24 +1,21 @@
 package com.websudos.phantom.dsl
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ Primitives, Primitive }
+
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{Primitive, Primitives}
 
 
-class PartialSelectTest extends BaseTest {
+class PartialSelectTest extends PhantomCassandraTestSuite {
 
-  val keySpace: String = "PartialSelect"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Primitives.insertSchema()
-    }
+    super.beforeAll()
+    Primitives.insertSchema()
   }
 
   "Partially selecting 2 fields" should "correctly select the fields" in {

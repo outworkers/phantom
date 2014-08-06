@@ -15,24 +15,22 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.blocking
+import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.batch.BatchStatement
-import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class CountTest extends BaseTest {
-  val keySpace: String = "counttests"
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.batch.BatchStatement
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+
+class CountTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      PrimitivesJoda.insertSchema()
-    }
+    super.beforeAll()
+    PrimitivesJoda.insertSchema()
   }
 
 

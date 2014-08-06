@@ -19,9 +19,11 @@ import java.util.UUID
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
 import com.websudos.phantom.Implicits._
 import com.newzly.util.testing.Sampler
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 case class TimeSeriesRecord(
   id: UUID,
@@ -29,7 +31,9 @@ case class TimeSeriesRecord(
   timestamp: DateTime
 )
 
-object TimeSeriesRecord extends ModelSampler[TimeSeriesRecord] {
+object TimeSeriesRecord extends ModelSampler[TimeSeriesRecord] with DefaultZookeeperConnector {
+  val keySpace = "phantom"
+
   val testUUID = UUIDs.timeBased()
   def sample: TimeSeriesRecord = {
     TimeSeriesRecord(
@@ -54,4 +58,4 @@ sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesR
   }
 }
 
-object TimeSeriesTable extends TimeSeriesTable with TestSampler[TimeSeriesTable, TimeSeriesRecord]
+object TimeSeriesTable extends TimeSeriesTable with TestSampler[TimeSeriesTable, TimeSeriesRecord] with PhantomCassandraConnector

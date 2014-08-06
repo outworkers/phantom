@@ -18,6 +18,7 @@ package com.websudos.phantom.tables
 import java.util.UUID
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
 import com.websudos.phantom.Implicits._
 import com.newzly.util.testing.Sampler
@@ -41,7 +42,7 @@ class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] {
   }
 }
 
-object CounterTableTest extends CounterTableTest with TestSampler[CounterTableTest, CounterRecord] {
+object CounterTableTest extends CounterTableTest with TestSampler[CounterTableTest, CounterRecord] with PhantomCassandraConnector {
   override val tableName = "counter_column_tests"
 }
 
@@ -54,6 +55,6 @@ class SecondaryCounterTable extends CassandraTable[SecondaryCounterTable, Counte
   }
 }
 
-object SecondaryCounterTable extends SecondaryCounterTable with TestSampler[SecondaryCounterTable, CounterRecord] {
+object SecondaryCounterTable extends SecondaryCounterTable with TestSampler[SecondaryCounterTable, CounterRecord]  with PhantomCassandraConnector {
   override val tableName = "secondary_column_tests"
 }

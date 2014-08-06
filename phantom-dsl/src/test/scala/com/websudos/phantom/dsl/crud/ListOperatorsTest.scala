@@ -23,20 +23,18 @@ import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ Recipe, Recipes }
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{Primitives, Recipe, Recipes}
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class ListOperatorsTest extends BaseTest {
+class ListOperatorsTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-  val keySpace = "listoperators"
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Recipes.insertSchema()
-    }
+    super.beforeAll()
+    Recipes.insertSchema()
   }
 
   it should "store items in a list in the same order" in {

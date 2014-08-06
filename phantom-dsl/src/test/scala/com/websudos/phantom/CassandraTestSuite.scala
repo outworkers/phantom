@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2014 newzly ltd.
+ *  * Copyright 2014 websudos ltd.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -16,21 +16,12 @@
  *
  */
 
-package com.websudos.phantom.udt
+package com.websudos.phantom
 
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.testing.{SimpleCassandraConnector, CassandraFlatSpec}
 
-class TypeDefinitionTest extends BaseTest {
-  val keySpace = "udt_test"
-
-
+trait PhantomCassandraConnector extends SimpleCassandraConnector {
+  val keySpace = "phantom"
 }
 
-
-class Address extends UDT[Address] {
-
-  object id extends UUIDField(this)
-  object name extends StringField(this)
-
-  object postcode extends StringField(this)
-}
+trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

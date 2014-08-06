@@ -16,13 +16,13 @@
 package com.websudos.phantom.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import org.scalatest.concurrent.ScalaFutures
 import com.websudos.phantom.tables.PrimitivesJoda
 import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class IterateeBigReadTest extends BigTest with ScalaFutures {
-
-  val keySpace: String = "BigIterateeTestSpace"
 
   it should "read the records found in the table" in {
     val counter: AtomicLong = new AtomicLong(0)

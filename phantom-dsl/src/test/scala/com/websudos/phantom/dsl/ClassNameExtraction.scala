@@ -31,7 +31,8 @@ trait Test {
       fullName.replaceAll("[(\\$\\d+\\$)]", "")
     }
   }
-  val name: String = _name
+
+  def name: String = _name
 }
 
 

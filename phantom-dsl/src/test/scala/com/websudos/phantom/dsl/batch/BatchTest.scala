@@ -16,17 +16,18 @@
 package com.websudos.phantom.dsl.batch
 
 import scala.concurrent.blocking
+
 import org.joda.time.DateTime
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ JodaRow, PrimitivesJoda, Recipe, Recipes }
+
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
 
+class BatchTest extends PhantomCassandraTestSuite {
 
-class BatchTest extends BaseTest {
-  val keySpace: String = "batch_tests"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {

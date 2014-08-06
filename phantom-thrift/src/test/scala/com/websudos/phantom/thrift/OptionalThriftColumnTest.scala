@@ -15,28 +15,29 @@
  */
 package com.websudos.phantom.thrift
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.ThriftColumnTable
+
+import com.datastax.driver.core.utils.UUIDs
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 
-class OptionalThriftColumnTest extends BaseTest {
+class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      ThriftColumnTable.insertSchema()
-    }
+    super.beforeAll()
+    ThriftColumnTable.insertSchema()
   }
 
-  val keySpace = "optional_thrift_columns"
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "find an item if it was defined" in {
+
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -44,7 +45,7 @@ class OptionalThriftColumnTest extends BaseTest {
     )
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -54,7 +55,7 @@ class OptionalThriftColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs sample.id).one
+      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     operation.successful {
@@ -66,6 +67,8 @@ class OptionalThriftColumnTest extends BaseTest {
   }
 
   it should "not find an item if was not defined" in {
+    val id = UUIDs.timeBased()
+
     val sample = ThriftTest(
       Sampler.getARandomInteger(),
       Sampler.getARandomString,
@@ -73,7 +76,7 @@ class OptionalThriftColumnTest extends BaseTest {
     )
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
@@ -83,7 +86,7 @@ class OptionalThriftColumnTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs sample.id).one
+      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     operation.successful {

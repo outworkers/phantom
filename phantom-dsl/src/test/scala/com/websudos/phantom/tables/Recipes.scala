@@ -16,11 +16,12 @@
 package com.websudos.phantom.tables
 
 import org.joda.time.DateTime
+
 import com.datastax.driver.core.Row
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
-import com.websudos.phantom.Implicits._
 import com.newzly.util.testing.Sampler
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.helper.{ModelSampler, TestSampler}
+import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
 
 case class Recipe(
   url: String,
@@ -76,7 +77,6 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object uid extends UUIDColumn(this)
 }
 
-object Recipes extends Recipes with TestSampler[Recipes, Recipe] {
+object Recipes extends Recipes with TestSampler[Recipes, Recipe] with PhantomCassandraConnector {
   override def tableName = "Recipes"
-
 }

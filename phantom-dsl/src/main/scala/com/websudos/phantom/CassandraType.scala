@@ -15,10 +15,14 @@
  */
 package com.websudos.phantom
 
-import java.util.{ UUID, Date }
 import java.net.InetAddress
+import java.nio.ByteBuffer
+import java.util.{Date, UUID}
+
 import scala.util.Try
+
 import org.joda.time.DateTime
+
 import com.datastax.driver.core.Row
 
 trait CassandraWrites[T] {
@@ -134,5 +138,13 @@ object CassandraPrimitive {
     def cls: Class[_] = classOf[BigInt]
     def fromRow(row: Row, name: String): Option[BigInt] =
       if (row.isNull(name)) None else Try(BigInt(row.getVarint(name))).toOption
+  }
+
+  implicit object BlobIsCassandraPrimitive extends CassandraPrimitive[ByteBuffer] {
+    val cassandraType = "blob"
+    def cls: Class[_] = classOf[ByteBuffer]
+
+    def fromRow(row: Row, name: String): Option[ByteBuffer] =
+      if (row.isNull(name)) None else Try(row.getBytes(name)).toOption
   }
 }
