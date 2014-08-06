@@ -26,6 +26,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
     val article4 = Article.sample
 
     val result = for {
+      truncate <- Articles.truncate.future()
       i1 <- Articles.insert
         .value(_.name, article1.name).value(_.id, article1.id)
         .value(_.orderId, article1.order_id)

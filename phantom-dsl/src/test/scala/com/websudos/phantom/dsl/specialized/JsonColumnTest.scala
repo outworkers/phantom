@@ -104,10 +104,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
+        res._1.get.json shouldEqual sample.json
 
         res._2.isEmpty shouldEqual false
-        res._2.get shouldEqual sample2
+        res._2.get.json shouldEqual sample2.json
       }
     }
   }
@@ -134,10 +134,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
+        res._1.get.json shouldEqual sample.json
 
         res._2.isEmpty shouldEqual false
-        res._2.get shouldEqual sample2
+        res._2.get.json shouldEqual sample2.json
       }
     }
   }

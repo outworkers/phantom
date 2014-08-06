@@ -8,6 +8,8 @@ Changelog
     <li><a href="#version-0.6.0">0.6.0 - 11.05.2014</a></li>
     <li><a href="#version-0.7.0">0.7.0 - 22.05.2014</a></li>
     <li><a href="#version-0.8.0">0.8.0 - 04.06.2014</a></li>
+    <li><a href="#version-0.9.0">0.9.0 - 24.06.2014</a></li>
+    <li><a href="#version-1.0.0">1.0.0 - 04.08.2014</a></li>
 </ul>
 
 
@@ -62,5 +64,13 @@ Changelog
 - PHANTOM-83: Enhanced phantom query builder to allow using ```where``` clauses for ```COUNT``` queries.
 - PHANTOM-84: Added common methods to GitHub documentation.
 
-<a id="version-0.8.0">0.8.0</a>
+<a id="version-0.9.0">0.9.0</a>
 ===============================
+
+- PHANTOM-106: Fix broken links in the phantom documentation.
+
+<a id="version-1.0.0">1.0.0</a>
+===============================
+- PHANTOM-108: Adding an example Cassandra connector.
+- PHANTOM-112: Fixing race condition in the default ZooKeeper connector implementation
+
