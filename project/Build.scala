@@ -7,7 +7,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.1.18"
+  val newzlyUtilVersion = "0.1.19"
   val datastaxDriverVersion = "2.1.0-beta1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
