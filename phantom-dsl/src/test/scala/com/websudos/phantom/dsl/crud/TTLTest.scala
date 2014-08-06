@@ -15,14 +15,14 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.twitter.util.Duration
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{Primitive, Primitives}
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 
 class TTLTest extends PhantomCassandraTestSuite {
 
@@ -49,7 +49,7 @@ class TTLTest extends PhantomCassandraTestSuite {
         .value(_.bi, row.bi)
         .ttl(2)
         .future() flatMap {
-          _ =>  Primitives.select.one
+          _ =>  Primitives.select.where(_.pkey eqs row.pkey).one()
         }
 
     test.successful {
@@ -57,7 +57,7 @@ class TTLTest extends PhantomCassandraTestSuite {
         record.isEmpty shouldEqual false
         record.get shouldEqual row
         Thread.sleep(Duration.fromSeconds(3).inMillis)
-        val test2 = Primitives.select.one
+        val test2 = Primitives.select.where(_.pkey eqs row.pkey).one()
         test2 successful {
           expired => {
             expired.isEmpty shouldEqual true
@@ -83,7 +83,7 @@ class TTLTest extends PhantomCassandraTestSuite {
       .value(_.bi, row.bi)
       .ttl(2)
       .execute() flatMap {
-      _ =>  Primitives.select.get
+      _ =>  Primitives.select.where(_.pkey eqs row.pkey).get()
     }
 
     test.successful {
@@ -91,7 +91,7 @@ class TTLTest extends PhantomCassandraTestSuite {
         record.isEmpty shouldEqual false
         record.get shouldEqual row
         Thread.sleep(Duration.fromSeconds(3).inMillis)
-        val test2 = Primitives.select.get
+        val test2 = Primitives.select.where(_.pkey eqs row.pkey).get
         test2 successful {
           expired => {
             expired.isEmpty shouldEqual true
