@@ -16,13 +16,12 @@
 package com.websudos.phantom.tables
 
 import java.util.UUID
+
 import com.datastax.driver.core.Row
-import com.websudos.phantom.helper.{
-  ModelSampler,
-  TestSampler
-}
-import com.websudos.phantom.Implicits._
 import com.newzly.util.testing.Sampler
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 
 case class Article(
   name: String,
@@ -48,6 +47,7 @@ sealed class Articles private() extends CassandraTable[Articles, Article] with L
   }
 }
 
-object Articles extends Articles with TestSampler[Articles, Article] {
+object Articles extends Articles with TestSampler[Articles, Article] with PhantomCassandraConnector {
+
   override def tableName = "articles"
 }

@@ -15,22 +15,18 @@
  */
 package com.websudos.phantom.tables
 
+import java.util.UUID
+
 import com.datastax.driver.core.Row
-import com.websudos.phantom.helper.TestSampler
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.keys.PartitionKey
-import com.websudos.phantom.thrift.{
-  OptionalThriftColumn,
-  ThriftColumn,
-  ThriftListColumn,
-  ThriftMapColumn,
-  ThriftSetColumn,
-  ThriftTest
-}
 import com.twitter.scrooge.CompactThriftSerializer
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.helper.TestSampler
+import com.websudos.phantom.testing.PhantomCassandraConnector
+import com.websudos.phantom.thrift.{OptionalThriftColumn, ThriftColumn, ThriftListColumn, ThriftMapColumn, ThriftSetColumn, ThriftTest}
 
 case class Output(
-  id: Int, name: String,
+  id: UUID,
+  name: String,
   struct: ThriftTest,
   list: Set[ThriftTest],
   thriftList: List[ThriftTest],
@@ -40,7 +36,7 @@ case class Output(
 
 sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
 
-  object id extends IntColumn(this) with PartitionKey[Int]
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
@@ -85,4 +81,6 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
   }
 }
 
-object ThriftColumnTable extends ThriftColumnTable with TestSampler[ThriftColumnTable, Output] {}
+object ThriftColumnTable extends ThriftColumnTable with TestSampler[ThriftColumnTable, Output] with PhantomCassandraConnector {
+  override val tableName = "thrift_column_table"
+}

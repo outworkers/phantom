@@ -16,9 +16,11 @@
 package com.websudos.phantom.tables
 
 import java.util.UUID
+
 import com.datastax.driver.core.Row
-import com.websudos.phantom.helper.TestSampler
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.helper.TestSampler
 
 sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID, String)] {
 
@@ -30,4 +32,4 @@ sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID
   def fromRow(row: Row): (UUID, UUID, String) = (id(row), clusteringId(row), staticTest(row))
 }
 
-object StaticTableTest extends StaticTableTest with TestSampler[StaticTableTest, (UUID, UUID, String)]
+object StaticTableTest extends StaticTableTest with TestSampler[StaticTableTest, (UUID, UUID, String)] with PhantomCassandraConnector

@@ -15,8 +15,9 @@ object phantom extends Build {
   val thriftVersion = "0.9.1"
   val scalatraVersion = "2.2.2"
 
+  val publishUrl = "http://maven.websudos.co.uk"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -40,7 +41,7 @@ object phantom extends Build {
         </licenses>
         <scm>
           <url>git@github.com:websudosuk/phantom.git</url>
-          <connection>scm:git:git@github.com:newzly/phantom.git</connection>
+          <connection>scm:git:git@github.com:websudosuk/phantom.git</connection>
         </scm>
         <developers>
           <developer>
@@ -56,41 +57,23 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
-    publishTo := Some("newzly releases" at "http://maven.newzly.com/repository/internal"),
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+    publishTo <<= version { (v: String) => {
+        if (v.trim.endsWith("SNAPSHOT"))
+          Some("snapshots" at publishUrl + "/ext-snapshot-local")
+        else
+          Some("releases"  at publishUrl + "/ext-release-local")
+      }
+    },
     publishMavenStyle := true,
     publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true },
-    pomExtra := <url>https://github.com/websudosuk/phantom</url>
-      <licenses>
-        <license>
-          <name>Apache V2 License</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-      <scm>
-        <url>git@github.com:websudosuk/phantom.git</url>
-        <connection>scm:git:git@github.com:newzly/phantom.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>creyer</id>
-          <name>Sorin Chiprian</name>
-          <url>http://github.com/creyer</url>
-        </developer>
-        <developer>
-          <id>alexflav</id>
-          <name>Flavian Alexandru</name>
-          <url>http://github.com/alexflav23</url>
-        </developer>
-      </developers>
+    pomIncludeRepository := { _ => true }
   )
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "0.8.10",
+    version := "1.0.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -101,10 +84,9 @@ object phantom extends Build {
       "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
       "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
       "Twitter Repository"               at "http://maven.twttr.com",
-      "newzly snapshots"                 at "http://maven.newzly.com/repository/snapshots",
-      "newzly repository"                at "http://maven.newzly.com/repository/internal"
+      "Websudos releases"                at "http://maven.websudos.co.uk/ext-release-local",
+      "Websudos snapshots"               at "http://maven.websudos.co.uk/ext-snapshot-local"
     ),
-    unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)),
     scalacOptions ++= Seq(
       "-language:postfixOps",
       "-language:implicitConversions",
@@ -133,8 +115,10 @@ object phantom extends Build {
     phantomExample,
     phantomScalatraTest,
     phantomSpark,
-    phantomZookeeper,
-    phantomThrift
+    phantomTesting,
+    phantomThrift,
+    phantomUdt,
+    phantomZookeeper
   )
 
   lazy val phantomDsl = Project(
@@ -146,7 +130,8 @@ object phantom extends Build {
   ).settings(
     name := "phantom-dsl",
     fork := true,
-    logBuffered in Test := false,
+    testOptions in Test += Tests.Argument("-oF"),
+    logBuffered in Test := true,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
@@ -160,10 +145,26 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
       "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided",
-      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14"),
       "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
     )
+  ).dependsOn(
+    phantomTesting % "test, provided"
   )
+
+  lazy val phantomUdt = Project(
+    id = "phantom-udt",
+    base = file("phantom-udt"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-udt",
+    scalacOptions ++= Seq(
+      "-language:experimental.macros"
+    )
+  ).dependsOn(
+    phantomDsl,
+    phantomTesting % "test, provided"
+  )
+
 
   lazy val phantomSpark = Project(
     id = "phantom-spark",
@@ -173,10 +174,11 @@ object phantom extends Build {
   ).settings(
     name := "phantom-spark",
     libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-beta1"
+      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-beta1" exclude("com.datastax.cassandra", "cassandra-driver-core")
     )
   ).dependsOn(
-    phantomDsl
+    phantomDsl,
+    phantomTesting % "test, provided"
   )
 
   lazy val phantomThrift = Project(
@@ -193,11 +195,12 @@ object phantom extends Build {
       "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided",
-      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14")
+      "org.scalatest"                %% "scalatest"                         % scalatestVersion          % "test, provided",
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
     )
   ).dependsOn(
-    phantomDsl
+    phantomDsl,
+    phantomTesting % "test, provided"
   )
 
   lazy val phantomZookeeper = Project(
@@ -207,11 +210,36 @@ object phantom extends Build {
   ).settings(
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
-      "com.newzly"                   %% "util-testing-cassandra"            % newzlyUtilVersion         % "provided" exclude("org.slf4j", "slf4j-jdk14"),
-      "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion
+      "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
+      "org.scalatest"                %% "scalatest"                         % scalatestVersion,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+      "com.twitter"                  %% "finagle-serversets"                % finagleVersion,
+      "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided"
+    )
+  )
+
+  lazy val phantomTesting = Project(
+    id = "phantom-testing",
+    base = file("phantom-testing"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-testing",
+    libraryDependencies ++= Seq(
+      "com.twitter"                      %% "util-core"                % finagleVersion,
+      "org.scalatest"                    %% "scalatest"                % scalatestVersion,
+      "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
+      "org.fluttercode.datafactory"      %  "datafactory"              % "0.8",
+      "com.twitter"                      %% "finagle-serversets"       % finagleVersion,
+      "com.twitter"                      %% "finagle-zookeeper"        % finagleVersion,
+      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.3"  excludeAll (
+        ExclusionRule("org.slf4j", "slf4j-log4j12"),
+        ExclusionRule("org.slf4j", "slf4j-jdk14")
+      ),
+      "com.google.guava"                 %  "guava"                    % "0.17"
     )
   ).dependsOn(
-    phantomDsl
+    phantomZookeeper
   )
 
   lazy val phantomExample = Project(
@@ -250,11 +278,12 @@ object phantom extends Build {
       "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
       "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
       "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided",
-      "com.newzly"                %% "util-testing-cassandra"           % newzlyUtilVersion      % "test, provided" exclude("org.slf4j", "slf4j-jdk14")
+      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided"
     )
   ).dependsOn(
     phantomDsl,
-    phantomThrift
+    phantomThrift,
+    phantomZookeeper,
+    phantomTesting % "test, provided"
   )
 }

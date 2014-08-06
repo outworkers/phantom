@@ -92,13 +92,29 @@ Phantom is published to Maven Central and it's actively and avidly developed.
         </ul>
     </li>
     <li><a href="#thrift-integration">Thrift integration</a></li>
+    <li>
+      <p>Apache ZooKeeper integration</p>
+      <ul>
+        <li>ZooKeeper connectors</li>
+        <li>The ```DefaultZooKeeperConnector``` and ```DefaultZooKeeperManager```</li>
+        <li>Using a ```ZooKeeper Instance```</li>
+      </ul>
+    </li>
+    <li><a href="#thrift-integration">Thrift integration</a></li>
+    <li>
+      <p><a href="#test utilities>Test Utilities</a></p>
+      <ul>
+        <li><a href="#embedded-cassandra">Embedded Cassandra</a></li>
+        <li><a href="#auto-embedding">Auto-embedding</a></li>
+      </ul>
+    </li>
     <li><a href="#running-tests">Running the tests locally</a></li>
     <li>
         <p><a href="#contributors">Contributing to phantom</a></p>
         <ul>
             <li><a href="#using-gitflow">Using GitFlow as a branching model</a></li>
             <li><a href="#scala-style-guidelines">Scala style guidelines for contributions</a></li>
-            <li>Using the testing utilities to write tests</li>
+            <li><a href="#using-the-default-suite">Using the default ```PhantomCassandraSuite``` to write tests</a></li>
         </ul>
     <li><a href="#copyright">Copyright</a></li>
 </ol>
@@ -214,7 +230,9 @@ libraryDependencies ++= Seq(
   "com.websudos"  %% "phantom-example"               % phantomVersion,
   "com.websudos"  %% "phantom-spark"                 % phantomVersion,
   "com.websudos"  %% "phantom-thrift"                % phantomVersion,
-  "com.websudos"  %% "phantom-test"                  % phantomVersion
+  "com.websudos"  %% "phantom-test"                  % phantomVersion,
+  "com.websudos"  %% "phantom-testing"               % phantomVersion,
+  "com.websudos"  %% "phantom-udt"                   % phantomVersion,
   "com.websudos"  %% "phantom-zookeeper"             % phantomVersion
 )
 ```
@@ -231,6 +249,7 @@ phantom won't let you mixin a non-primitive via implicit magic.
 
 | phantom columns               | Java/Scala type           | Cassandra type    |
 | ---------------               |-------------------        | ----------------- |
+| BlobColumn                    | java.nio.ByteBuffer       | blog              |
 | BigDecimalColumn              | scala.math.BigDecimal     | decimal           |
 | BigIntColumn                  | scala.math.BigInt         | varint            |
 | BooleanColumn                 | scala.Boolean             | boolean           |
@@ -260,6 +279,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 
 | phantom columns               | Java/Scala type                   | Cassandra columns |
 | ---------------               | -------------------------         | ----------------- |
+| OptionalBlobColumn            | Option[java.nio.ByteBuffer]       | blog              |
 | OptionalBigDecimalColumn      | Option[scala.math.BigDecimal]     | decimal           |
 | OptionalBigIntColumn          | Option[scala.math.BigInt]         | varint            |
 | OptionalBooleanColumn         | Option[scala.Boolean]             | boolean           |

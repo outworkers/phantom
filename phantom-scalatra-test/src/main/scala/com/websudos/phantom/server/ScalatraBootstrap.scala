@@ -17,12 +17,14 @@ package com.websudos.phantom.server
 
 import javax.servlet.ServletContext
 
-import com.websudos.phantom.Implicits._
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 import org.joda.time.{DateTime, LocalDate}
 import org.scalatra.LifeCycle
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 object ScalatraBootstrap {
   val now = new DateTime()
@@ -49,27 +51,27 @@ object ScalatraBootstrap {
   )
 }
 
-class ScalatraBootstrap extends LifeCycle with CassandraCluster {
+class ScalatraBootstrap extends LifeCycle with DefaultZookeeperConnector {
+
+  val keySpace = "phantom"
 
   override def init(context: ServletContext) {
     // Create cassandra keyspace in startup
-    ensureKeyspaceExists()
-
     // Create prices tables
-    Await.result(EquityPrices.create.future(), 10.seconds)
-    Await.result(OptionPrices.create.future(), 10.seconds)
+    Await.ready(EquityPrices.create.future(), 10.seconds)
+    Await.ready(OptionPrices.create.future(), 10.seconds)
 
     // Insert prices
     val insertApplePrices = ScalatraBootstrap.ApplePrices.map(EquityPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
-    Await.result(insertApplePrices.future(), 10.seconds)
+    Await.ready(insertApplePrices.future(), 10.seconds)
 
     val insertAppleOptionPrices = ScalatraBootstrap.AppleOptionPrices.map(OptionPrices.insertPrice).foldLeft(BatchStatement()) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
 
-    Await.result(insertAppleOptionPrices.future(), 10.seconds)
+    Await.ready(insertAppleOptionPrices.future(), 10.seconds)
 
     // Mount prices servlet
     context mount (new PricesAccess, "/*")

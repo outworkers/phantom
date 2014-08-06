@@ -18,20 +18,17 @@ package com.websudos.phantom.dsl.specialized
 import scala.concurrent.blocking
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Recipe, Recipes }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.util.testing.Sampler
 
 
-class ConditionalQueries extends BaseTest {
-  val keySpace = "conditional_queries"
+class ConditionalQueries extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Recipes.insertSchema()
-    }
+    super.beforeAll()
+    Recipes.insertSchema()
   }
 
   it should "update the record if the optional column based condition matches" in {

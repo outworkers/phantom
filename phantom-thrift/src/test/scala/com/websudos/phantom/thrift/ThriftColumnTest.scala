@@ -13,37 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.websudos.phantom.dsl.specialized
+package com.websudos.phantom.thrift
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.thrift.ThriftTest
+
+import com.datastax.driver.core.utils.UUIDs
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
+import com.newzly.util.testing.Sampler
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 
-class ThriftColumnTest extends BaseTest {
-  val keySpace = "thrift"
-
+class ThriftColumnTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      ThriftColumnTable.insertSchema
-    }
+    super.beforeAll()
+    ThriftColumnTable.insertSchema
   }
 
   it should "allow storing thrift columns" in {
-    val sample = ThriftTest(5, "test", test = true)
+    val id = UUIDs.timeBased()
+    val sample = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = true)
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .future() flatMap {
-      _ => ThriftColumnTable.select.one
+      _ => ThriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {
@@ -55,17 +54,18 @@ class ThriftColumnTest extends BaseTest {
   }
 
   it should "allow storing lists of thrift objects" in {
-    val sample = ThriftTest(5, "test", test = true)
-    val sample2 = ThriftTest(6, "asasf", test = false)
+    val id = UUIDs.timeBased()
+    val sample = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = true)
+    val sample2 = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = false)
     val sampleList = Set(sample, sample2)
 
     val insert = ThriftColumnTable.insert
-      .value(_.id, sample.id)
+      .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-      _ => ThriftColumnTable.select.one
+      _ => ThriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {

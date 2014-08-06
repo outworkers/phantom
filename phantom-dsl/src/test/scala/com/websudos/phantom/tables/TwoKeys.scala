@@ -1,8 +1,8 @@
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.CassandraTable
 import com.datastax.driver.core.Row
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
 
 class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {
   override def fromRow(r: Row): Option[TwoKeys] = None
@@ -18,4 +18,4 @@ class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {
   object timestamp8 extends DateTimeColumn(this)
 }
 
-object TwoKeys extends TwoKeys{}
+object TwoKeys extends TwoKeys with PhantomCassandraConnector

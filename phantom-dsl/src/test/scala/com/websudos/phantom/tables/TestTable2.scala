@@ -17,6 +17,7 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.helper.ModelSampler
 import com.newzly.util.testing.Sampler
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 case class SimpleStringClass(something: String)
 
@@ -38,7 +39,10 @@ object SimpleMapOfStringsClass extends ModelSampler[SimpleMapOfStringsClass] {
 
 case class TestList(key: String, l: List[String])
 
-object TestList extends ModelSampler[TestList] {
+object TestList extends ModelSampler[TestList]  with DefaultZookeeperConnector {
+
+  val keySpace = "phantom"
+
   def sample: TestList = TestList(
     Sampler.getARandomString,
     List.range(0, 20).map(x => Sampler.getARandomString)
@@ -57,7 +61,8 @@ case class TestRow2(
   mapOfStringToCaseClass: Map[String, SimpleMapOfStringsClass]
 )
 
-object TestRow2 extends ModelSampler[TestRow2] {
+object TestRow2 extends ModelSampler[TestRow2]  with DefaultZookeeperConnector {
+  val keySpace = "phantom"
   def sample = sample(5)
   def sample(limit: Int = 5): TestRow2 = {
     TestRow2(

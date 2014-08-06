@@ -15,15 +15,16 @@
  */
 package com.websudos.phantom.iteratee
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Primitive, Primitives }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class IterateeDropTest extends BaseTest {
-  val keySpace: String = "iteratee_drop_tests"
+class IterateeDropTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
   ignore should "take records from the iterator" in {

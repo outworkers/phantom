@@ -61,3 +61,6 @@ Changelog
 - PHANTOM-82: Changed the return type of a count query from ```Option[Option[Long]]``` to ```Option[Long]```.
 - PHANTOM-83: Enhanced phantom query builder to allow using ```where``` clauses for ```COUNT``` queries.
 - PHANTOM-84: Added common methods to GitHub documentation.
+
+<a id="version-0.8.0">0.8.0</a>
+===============================

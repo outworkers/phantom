@@ -15,16 +15,13 @@
  */
 package com.websudos.phantom.dsl.batch
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ CounterTableTest, SecondaryCounterTable }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{CounterTableTest, SecondaryCounterTable}
 
-class CounterBatchTest extends BaseTest {
-  val keySpace = "counter_batch_test"
+class CounterBatchTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
