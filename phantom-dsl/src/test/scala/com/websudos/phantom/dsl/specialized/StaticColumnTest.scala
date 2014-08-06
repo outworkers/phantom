@@ -1,31 +1,24 @@
 
 package com.websudos.phantom.dsl.specialized
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.StaticTableTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class StaticColumnTest extends BaseTest {
-  val keySpace = "static_columns_test"
+class StaticColumnTest extends PhantomCassandraTestSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      StaticTableTest.insertSchema()
-    }
+    super.beforeAll()
+    StaticTableTest.insertSchema()
   }
 
   it should "use a static value for a static column" in {
-
-    //char is not supported
-    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
 
     val id = UUIDs.timeBased()
     val static = "this_is_static"
@@ -46,8 +39,7 @@ class StaticColumnTest extends BaseTest {
   }
 
   it should "update values in all rows" in {
-    //char is not supported
-    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
+
     val id = UUIDs.timeBased()
     val static = "this_is_static"
     val static2 = "this_is_updated_static"

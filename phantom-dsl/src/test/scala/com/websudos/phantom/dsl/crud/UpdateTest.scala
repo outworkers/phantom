@@ -19,6 +19,7 @@ import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{
   Primitive,
   Primitives,
@@ -26,11 +27,9 @@ import com.websudos.phantom.tables.{
   TestTable
 }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
+class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
 
-class UpdateTest extends BaseTest with Matchers with Assertions with AsyncAssertions {
-  val keySpace: String = "UpdateTest"
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   "Update" should "work fine for primitives columns" in {

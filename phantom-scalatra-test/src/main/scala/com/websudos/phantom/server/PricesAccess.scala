@@ -1,21 +1,24 @@
 package com.websudos.phantom.server
 
-import com.websudos.phantom.Implicits._
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
+
 import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.scalate.ScalateSupport
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 
-
-
-class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateSupport with CassandraCluster {
+class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateSupport with DefaultZookeeperConnector {
 
   private[this] val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
+
+  val keySpace = "phantom"
 
   protected implicit val jsonFormats: Formats =
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all
@@ -29,10 +32,11 @@ class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateS
     val from = dateFormat.parseLocalDate(params("from"))
     val to = dateFormat.parseLocalDate(params("to"))
 
-    val prices = EquityPrices.select.
-      where(_.instrumentId eqs id).
-      and(_.tradeDate gte from.toDate).
-      and(_.tradeDate lte to.toDate).fetch()
+    val prices = EquityPrices.select
+      .where(_.instrumentId eqs id)
+      .and(_.tradeDate gte from.toDate)
+      .and(_.tradeDate lte to.toDate)
+      .fetch()
 
     Await.result(prices, 10.seconds)
   }
@@ -45,7 +49,8 @@ class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateS
     val prices = OptionPrices.select
       .where(_.instrumentId eqs id)
       .and(_.tradeDate gte from.toDate)
-      .and(_.tradeDate lte to.toDate).fetch()
+      .and(_.tradeDate lte to.toDate)
+      .fetch()
 
     Await.result(prices, 10.seconds)
   }

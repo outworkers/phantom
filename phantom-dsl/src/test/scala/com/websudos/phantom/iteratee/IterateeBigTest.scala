@@ -26,7 +26,6 @@ import com.newzly.util.testing.AsyncAssertionsHelper._
 
 
 class IterateeBigTest extends BigTest with Matchers {
-  val keySpace: String = "BigIterateeTestSpace"
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
 

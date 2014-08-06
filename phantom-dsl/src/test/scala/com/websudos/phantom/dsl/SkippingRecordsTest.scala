@@ -4,12 +4,12 @@ import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Article, Articles }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class SkippingRecordsTest extends BaseTest {
-  val keySpace: String = "SkippingRecordsTest"
+class SkippingRecordsTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   override def beforeAll(): Unit = {

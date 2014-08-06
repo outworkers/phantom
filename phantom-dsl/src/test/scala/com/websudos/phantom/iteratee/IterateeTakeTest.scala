@@ -15,19 +15,24 @@
  */
 package com.websudos.phantom.iteratee
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Primitive, Primitives }
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
 
-class IterateeTakeTest extends BaseTest {
-  val keySpace: String = "iteratee_take_tests"
+class IterateeTakeTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
-  ignore should "take records from the iterator" in {
+  override def beforeAll(): Unit = {
+    super.beforeAll()
     Primitives.insertSchema()
+  }
+
+  ignore should "take records from the iterator" in {
     val rows = for (i <- 1 to 100) yield  Primitive.sample
     var count = 0
     val batch = Iterator.fill(100) {
@@ -58,7 +63,7 @@ class IterateeTakeTest extends BaseTest {
 
     m successful {
       res =>
-        res.toIndexedSeq shouldBe rows.take(10)
+        res.toIndexedSeq shouldEqual rows.take(10)
     }
   }
 

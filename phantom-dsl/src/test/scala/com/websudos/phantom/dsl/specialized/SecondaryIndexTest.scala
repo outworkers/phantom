@@ -15,22 +15,18 @@
  */
 package com.websudos.phantom.dsl.specialized
 
-import scala.concurrent.blocking
-import com.websudos.phantom.Implicits._
 import com.datastax.driver.core.exceptions.InvalidQueryException
-import com.websudos.phantom.tables.{ SecondaryIndexRecord, SecondaryIndexTable }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{SecondaryIndexRecord, SecondaryIndexTable}
 
-class SecondaryIndexTest extends BaseTest {
-  val keySpace = "secondary_index_test"
+class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      SecondaryIndexTable.insertSchema()
-    }
+    super.beforeAll()
+    SecondaryIndexTable.insertSchema()
   }
 
   it should "allow fetching a record by its secondary index" in {

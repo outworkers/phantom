@@ -15,23 +15,21 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ OptionalPrimitive, OptionalPrimitives }
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class SelectOptionalTest extends BaseTest {
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{OptionalPrimitive, OptionalPrimitives}
+
+class SelectOptionalTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-  val keySpace: String = "selectOptionalTest"
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      OptionalPrimitives.insertSchema()
-    }
+    super.beforeAll()
+    OptionalPrimitives.insertSchema()
   }
 
   "Selecting the whole row" should "work fine when optional value defined" in {

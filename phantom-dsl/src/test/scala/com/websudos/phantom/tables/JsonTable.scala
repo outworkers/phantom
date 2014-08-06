@@ -20,13 +20,14 @@
 package com.websudos.phantom.tables
 
 import java.util.UUID
+
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
 import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-
-import net.liftweb.json.{ DefaultFormats, Extraction, JsonParser, pretty, render }
+import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, pretty, render}
 
 
 case class JsonTest(prop1: String, prop2: String)
@@ -96,7 +97,7 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
   }
 }
 
-object JsonTable extends JsonTable with TestSampler[JsonTable, JsonClass] {
+object JsonTable extends JsonTable with TestSampler[JsonTable, JsonClass] with PhantomCassandraConnector {
 
   def sample: JsonClass = {
     JsonClass(
