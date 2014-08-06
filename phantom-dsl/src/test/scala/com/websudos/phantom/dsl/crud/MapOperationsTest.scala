@@ -15,30 +15,25 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Recipe, Recipes }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class MapOperationsTest extends BaseTest {
+class MapOperationsTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-  val keySpace = "map_operators"
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Recipes.insertSchema()
-    }
+    super.beforeAll()
+    Recipes.insertSchema()
   }
 
   it should "support a single item map put operation" in {
     val recipe = Recipe.sample
     val id = UUIDs.timeBased()
-
     val props = Map("test" -> "test_val", "test2" -> "test_val")
     val item = "test3" -> "test_val"
 
@@ -53,7 +48,7 @@ class MapOperationsTest extends BaseTest {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()(Recipes.session)
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
       select

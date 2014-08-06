@@ -1,12 +1,14 @@
-package com.newzly.phantom.threads
+package com.websudos.phantom
+
+import java.util.UUID
+import java.util.concurrent.{Callable, Executors}
+
+import scala.collection.JavaConversions._
 
 import org.scalatest.FunSuite
-import java.util.UUID
-import com.newzly.phantom.CassandraTable
-import com.newzly.phantom.Implicits._
+
 import com.datastax.driver.core.Row
-import java.util.concurrent.{Callable, Executors}
-import scala.collection.JavaConversions._
+import com.websudos.phantom.Implicits._
 
 class RaceCondition extends FunSuite {
 

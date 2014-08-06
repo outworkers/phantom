@@ -15,26 +15,22 @@
  */
 package com.websudos.phantom.dsl.batch
 
-import scala.concurrent.blocking
 import org.joda.time.DateTime
-
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ JodaRow, PrimitivesJoda }
-import com.newzly.util.testing.cassandra.BaseTest
 import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
 
-class UnloggedBatchTest extends BaseTest {
-  val keySpace: String = "BatchTestSpace"
+class UnloggedBatchTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      PrimitivesJoda.insertSchema()
-    }
+    super.beforeAll()
+    PrimitivesJoda.insertSchema()
   }
 
   it should "get the correct count for batch queries" in {

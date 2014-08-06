@@ -15,20 +15,16 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.blocking
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ TestRow, TestTable }
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{TestRow, TestTable}
 
-class SetOperationsTest extends BaseTest {
-  val keySpace = "set_operations_test"
+class SetOperationsTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      TestTable.insertSchema()
-    }
+    super.beforeAll()
+    TestTable.insertSchema()
   }
 
   it should "append an item to a set column" in {

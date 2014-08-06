@@ -15,23 +15,21 @@
  */
 package com.websudos.phantom.dsl.specialized
 
-import scala.concurrent.blocking
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ CounterRecord, CounterTableTest }
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.cassandra.BaseTest
 
-class CounterColumnTest extends BaseTest {
-  val keySpace = "counter_column_test"
+import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.tables.{CounterRecord, CounterTableTest}
+
+class CounterColumnTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      CounterTableTest.insertSchema()
-    }
+    super.beforeAll()
+    CounterTableTest.insertSchema()
   }
 
 

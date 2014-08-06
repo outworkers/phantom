@@ -15,22 +15,18 @@
  */
 package com.websudos.phantom.dsl.specialized
 
-import scala.concurrent.blocking
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Recipe, Recipes }
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.newzly.util.testing.Sampler
-import com.newzly.util.testing.cassandra.BaseTest
 
-class InOperatorTest extends BaseTest {
-  val keySpace = "in_operators_test"
+class InOperatorTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Recipes.insertSchema()
-    }
+    super.beforeAll()
+    Recipes.insertSchema()
   }
 
   it should "find a record with a in operator if the record exists" in {
