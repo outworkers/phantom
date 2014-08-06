@@ -149,6 +149,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Sphonic](http://www.sphonic.com/)
 - [Newzly](https://www.newzly.com/)
 - [Equens](http://www.equens.com/)
+- [VictorOps](http://www.victorops.com/)
 
 Roadmap
 ========
