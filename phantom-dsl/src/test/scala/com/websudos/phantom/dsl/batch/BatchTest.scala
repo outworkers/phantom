@@ -362,8 +362,8 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     val batch = BatchStatement()
       .add(statement1)
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last2.getMillis))
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15)))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last.getMillis))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
 
     val chain = for {
       done <- batch.future()
@@ -382,7 +382,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val row = JodaRow.sample
 
     val last = new DateTime()
-    val last2 = last.withDurationAdded(20, 5)
+    val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -392,8 +392,8 @@ class BatchTest extends PhantomCassandraTestSuite {
     val batch = BatchStatement()
       .add(statement1)
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.int))
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last2.getMillis))
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15)))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last.getMillis))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
 
     val chain = for {
       done <- batch.execute()
