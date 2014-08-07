@@ -38,8 +38,6 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   def isStarted: Boolean = status.get()
 
-  throw new Exception("How the fuck")
-
   val zookeeperAddress = address
   val zookeeperConnectString  = zookeeperAddress.getHostName + ":" + zookeeperAddress.getPort
 

@@ -66,7 +66,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = BatchStatement().add(statement3, statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE  FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
+    batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
   it should "serialize a multiple table batch query chained from adding statements" in {
@@ -84,7 +84,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = BatchStatement().add(statement3).add(statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE  FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
+    batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
   it should "correctly execute a chain of INSERT queries" in {
@@ -321,7 +321,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "prioritise batch updates in a last first order with Twitter Futures" in {
+  ignore should "prioritise batch updates in a last first order with Twitter Futures" in {
     val row = JodaRow.sample
 
     val statement1 = PrimitivesJoda.insert

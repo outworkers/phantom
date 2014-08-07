@@ -21,5 +21,3 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.99.5.1")
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "0.98.0")
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.4")

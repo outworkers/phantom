@@ -62,7 +62,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = UnloggedBatchStatement().add(statement3, statement4)
-    batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE  FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
+    batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
   it should "serialize a multiple table batch query chained from adding statements" in {
@@ -80,7 +80,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = UnloggedBatchStatement().add(statement3).add(statement4)
-    batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE  FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
+    batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
   it should "correctly execute a chain of INSERT queries" in {

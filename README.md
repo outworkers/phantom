@@ -44,7 +44,7 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
             <li><a href="#thrift-columns">Thrift columns</a></li>
         </ul>
     </li>
-    <li><a href="#data-modeling">Data modeling with phantom</a></li>
+    <li><a href="#data-modeling-with-phantom">Data modeling with phantom</a></li>
     <li>
         <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
