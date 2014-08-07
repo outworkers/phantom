@@ -16,6 +16,8 @@ The latest development version is ```val phantomVersion = 1.0.2```, found only o
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
 
+To stay up-to-date with our latest releases and news, follow us on Twitter: @websudos.
+
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
