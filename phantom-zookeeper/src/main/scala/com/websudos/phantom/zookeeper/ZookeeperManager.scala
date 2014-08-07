@@ -83,7 +83,7 @@ trait ClusterStore {
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
 
   def hostnamePortPairs: Future[Seq[InetSocketAddress]] = {
-    if (inited) {
+    if (isInited) {
       zkClientStore.getData("/cassandra", watch = false) map {
         res => Try {
           val data = new String(res.data)
