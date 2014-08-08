@@ -289,7 +289,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "prioritise batch updates in a last first order" in {
+  ignore should "prioritise batch updates in a last first order" in {
     val row = JodaRow.sample
 
     val statement1 = PrimitivesJoda.insert
@@ -317,7 +317,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "prioritise batch updates in a last first order with Twitter Futures" in {
+  ignore should "prioritise batch updates in a last first order with Twitter Futures" in {
     val row = JodaRow.sample
 
     val statement1 = PrimitivesJoda.insert
@@ -345,7 +345,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "prioritise batch updates based on a timestamp" in {
+  ignore should "prioritise batch updates based on a timestamp" in {
     val row = JodaRow.sample
 
     val last = new DateTime()
@@ -375,7 +375,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "prioritise batch updates based on a timestamp with Twitter futures" in {
+  ignore should "prioritise batch updates based on a timestamp with Twitter futures" in {
     val row = JodaRow.sample
 
     val last = new DateTime()
