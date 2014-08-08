@@ -18,11 +18,13 @@
 
 package com.websudos.phantom.zookeeper
 
+import java.net.ServerSocket
 import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.concurrent.blocking
 
 import com.datastax.driver.core.{Cluster, Session}
+import com.twitter.util.Try
 
 trait CassandraManager {
   val cluster: Cluster
@@ -34,9 +36,14 @@ object DefaultCassandraManager extends CassandraManager {
   private[this] val inited = new AtomicBoolean(false)
   @volatile private[this] var _session: Session = null
 
+
+  def getCassandraPort: Int = {
+    Try { new ServerSocket(9042) }.toOption.fold(9142)(r => 9042)
+  }
+
   lazy val cluster: Cluster = Cluster.builder()
     .addContactPoint("localhost")
-    .withPort(9142)
+    .withPort(getCassandraPort)
     .withoutJMXReporting()
     .withoutMetrics()
     .build()
