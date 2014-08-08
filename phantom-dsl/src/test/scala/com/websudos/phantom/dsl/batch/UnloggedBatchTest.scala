@@ -349,6 +349,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     val row = JodaRow.sample
 
     val last = new DateTime()
+    val last1 = last.withDurationAdded(100, 5)
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
@@ -378,6 +379,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     val row = JodaRow.sample
 
     val last = new DateTime()
+    val last1 = last.withDurationAdded(100, 5)
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert

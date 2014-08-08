@@ -16,7 +16,10 @@ The latest development version is ```val phantomVersion = 1.0.2```, found only o
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
 
-To stay up-to-date with our latest releases and news, follow us on Twitter: @websudos.
+If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, 
+but the more adopters our projects have, the more people from our company will actively work to make them better.
+
+To stay up-to-date with our latest releases and news, follow us on Twitter: [@websudos](https://twitter.com/websudos).
 
 
 <a id="table-of-contents">Table of contents</a>

@@ -321,7 +321,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     }
   }
 
-  ignore should "prioritise batch updates in a last first order with Twitter Futures" in {
+  it should "prioritise batch updates in a last first order with Twitter Futures" in {
     val row = JodaRow.sample
 
     val statement1 = PrimitivesJoda.insert
@@ -353,6 +353,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val row = JodaRow.sample
 
     val last = new DateTime()
+    val last1 = last.withDurationAdded(100, 5)
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
@@ -361,8 +362,8 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.timestamp, row.bi)
 
     val batch = BatchStatement()
-      .add(statement1)
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last.getMillis))
+      .add(statement1.timestamp(last.getMillis))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last1.getMillis))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
 
     val chain = for {
@@ -382,6 +383,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val row = JodaRow.sample
 
     val last = new DateTime()
+    val last1 = last.withDurationAdded(100, 5)
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
@@ -390,9 +392,8 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.timestamp, row.bi)
 
     val batch = BatchStatement()
-      .add(statement1)
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.int))
-      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last.getMillis))
+      .add(statement1.timestamp(last))
+      .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last1.getMillis))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
 
     val chain = for {
