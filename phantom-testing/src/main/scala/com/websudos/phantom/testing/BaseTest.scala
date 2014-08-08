@@ -32,55 +32,6 @@ import com.twitter.util.{ NonFatal, Try }
 import com.websudos.phantom.zookeeper.{ DefaultZookeeperConnector, ZookeeperInstance }
 
 
-private[testing] object CassandraStateManager {
-  /**
-   * This does a dummy check to see if Cassandra is started.
-   * It checks for default ports for embedded Cassandra and local Cassandra.
-   * @return A boolean saying if Cassandra is started.
-   */
-  def isCassandraStarted: Boolean = {
-    Try { new ServerSocket(9142) }.toOption.isEmpty
-  }
-
-  def isLocalCassandraRunning: Boolean = {
-    Try { new ServerSocket(9042) }.toOption.isEmpty
-  }
-}
-
-
-private[testing] object ZookeperManager {
-  lazy val zkInstance = new ZookeeperInstance()
-
-  private[this] var isStarted = false
-
-  def start(): Unit = {
-    if (!isStarted) {
-      zkInstance.start()
-      isStarted = true
-    }
-  }
-}
-
-private[testing] object Lock
-
-trait CassandraSetup {
-
-  def setupCassandra(): Unit = {
-    Lock.synchronized {
-      blocking {
-        if (!CassandraStateManager.isCassandraStarted) {
-          try {
-            EmbeddedCassandraServerHelper.mkdirs()
-          } catch {
-            case NonFatal(e) => println(e.getMessage)
-          }
-          EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml")
-        }
-      }
-    }
-  }
-
-}
 
 trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
   val keySpace = "phantom"

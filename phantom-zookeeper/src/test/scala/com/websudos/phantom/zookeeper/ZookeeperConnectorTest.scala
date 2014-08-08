@@ -19,11 +19,11 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
-import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
+
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.twitter.conversions.time._
-import com.twitter.util.Await
+import com.websudos.phantom.testing.CassandraSetup
 
 object TestTable extends DefaultZookeeperConnector {
   val keySpace = "phantom"
@@ -34,11 +34,12 @@ object TestTable2 extends DefaultZookeeperConnector {
 }
 
 
-class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll {
+class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {
   val instance = new ZookeeperInstance()
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    setupCassandra()
     instance.start()
   }
 
@@ -47,30 +48,30 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     instance.stop()
   }
 
-  ignore should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
-    System.setProperty(TestTable.zkManager.envString, "")
+  it should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
+    System.setProperty(TestTable.manager.envString, "")
 
-    TestTable.zkManager.defaultZkAddress.getHostName shouldEqual "localhost"
+    TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
 
-    TestTable.zkManager.defaultZkAddress.getPort shouldEqual 2181
+    TestTable.manager.defaultZkAddress.getPort shouldEqual 2181
 
   }
 
-  ignore should "use the values from the environment variable if they are set" in {
-    System.setProperty(TestTable.zkManager.envString, "localhost:4902")
+  it should "use the values from the environment variable if they are set" in {
+    System.setProperty(TestTable.manager.envString, "localhost:4902")
 
-    TestTable.zkManager.defaultZkAddress.getHostName shouldEqual "localhost"
+    TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
 
-    TestTable.zkManager.defaultZkAddress.getPort shouldEqual 4902
+    TestTable.manager.defaultZkAddress.getPort shouldEqual 4902
   }
 
-  ignore should "return the default if the environment property is in invalid format" in {
+  it should "return the default if the environment property is in invalid format" in {
 
-    System.setProperty(TestTable.zkManager.envString, "localhost:invalidint")
+    System.setProperty(TestTable.manager.envString, "localhost:invalidint")
 
-    TestTable.zkManager.defaultZkAddress.getHostName shouldEqual "localhost"
+    TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
 
-    TestTable.zkManager.defaultZkAddress.getPort shouldEqual 2181
+    TestTable.manager.defaultZkAddress.getPort shouldEqual 2181
   }
 
   it should "correctly retrieve the Cassandra series of ports from the Zookeeper cluster" in {
@@ -82,15 +83,15 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     }
   }
 
-  ignore should "match the Zookeeper connector string to the spawned instance settings" in {
-    System.setProperty(TestTable.zkManager.envString, instance.zookeeperConnectString)
-    TestTable.zkManager.defaultZkAddress shouldEqual instance.address
+  it should "match the Zookeeper connector string to the spawned instance settings" in {
+    System.setProperty(TestTable.manager.envString, instance.zookeeperConnectString)
+    TestTable.manager.defaultZkAddress shouldEqual instance.address
   }
 
   it should "correctly retrieve the Sequence of InetSocketAddresses from zookeeper" in {
-    val pairs = TestTable.zkManager.store.hostnamePortPairs
+    val pairs = TestTable.manager.store.hostnamePortPairs
 
-    TestTable.zkManager.store.zkClient.getData(TestTable.zkPath, watch = false).successful {
+    TestTable.manager.store.zkClient.getData(TestTable.zkPath, watch = false).successful {
       res => {
         val data = new String(res.data)
         data shouldEqual "localhost:9142"
@@ -102,8 +103,8 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
 
   it should "correctly parse multiple pairs of hostname:port from Zookeeper" in {
     val chain = for {
-      set <- TestTable.zkManager.store.zkClient.setData(TestTable.zkPath, "localhost:9142, localhost:9900, 127.131.211.23:3402".getBytes, -1)
-      get <- TestTable.zkManager.store.zkClient.getData("/cassandra", watch = false)
+      set <- TestTable.manager.store.zkClient.setData(TestTable.zkPath, "localhost:9142, localhost:9900, 127.131.211.23:3402".getBytes, -1)
+      get <- TestTable.manager.store.zkClient.getData("/cassandra", watch = false)
     } yield new String(get.data)
 
     chain.successful {
@@ -114,7 +115,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "use the same Zookeeper connector and client instance for all tables" in {
-    TestTable.zkManager.store.zkClient eq TestTable2.zkManager.store.zkClient shouldEqual true
+    TestTable.manager.store.zkClient eq TestTable2.manager.store.zkClient shouldEqual true
   }
 
 

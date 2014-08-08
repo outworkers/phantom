@@ -27,7 +27,9 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.Try
 
 trait CassandraManager {
-  val cluster: Cluster
+  def cluster: Cluster
+  def initIfNotInited(keySpace: String)
+
   implicit def session: Session
 }
 
@@ -35,6 +37,7 @@ object DefaultCassandraManager extends CassandraManager {
 
   private[this] val inited = new AtomicBoolean(false)
   @volatile private[this] var _session: Session = null
+
 
 
   def getCassandraPort: Int = {
@@ -65,5 +68,8 @@ object DefaultCassandraManager extends CassandraManager {
 
 
 trait SimpleCassandraConnector extends CassandraConnector {
+
+  manager.initIfNotInited(keySpace)
+
   implicit lazy val session: Session = DefaultCassandraManager.session
 }
