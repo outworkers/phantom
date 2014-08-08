@@ -24,7 +24,7 @@ import org.joda.time.{DateTime, LocalDate}
 import org.scalatra.LifeCycle
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.websudos.phantom.testing.PhantomCassandraConnector
 
 object ScalatraBootstrap {
   val now = new DateTime()
@@ -51,11 +51,10 @@ object ScalatraBootstrap {
   )
 }
 
-class ScalatraBootstrap extends LifeCycle with DefaultZookeeperConnector {
-
-  val keySpace = "phantom"
+class ScalatraBootstrap extends LifeCycle with PhantomCassandraConnector {
 
   override def init(context: ServletContext) {
+
     // Create cassandra keyspace in startup
     // Create prices tables
     Await.ready(EquityPrices.create.future(), 10.seconds)

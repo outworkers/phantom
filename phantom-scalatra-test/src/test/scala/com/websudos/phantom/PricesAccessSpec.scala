@@ -7,16 +7,14 @@ import scala.util.Random
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
-import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration}
-import org.scalatest.{ BeforeAndAfterAll, FlatSpec, Matchers }
+import org.scalatest.concurrent.PatienceConfiguration
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.websudos.phantom.server.ScalatraBootstrap.{ AAPL, AAPLOption, AppleOptionPrices, ApplePrices }
+import com.websudos.phantom.server.ScalatraBootstrap.{AAPL, AAPLOption, AppleOptionPrices, ApplePrices}
 import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
-
 import dispatch.{Http, as, url}
 
-class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAssertions with Matchers {
+class PricesAccessSpec extends com.websudos.phantom.testing.PhantomCassandraTestSuite {
 
   private val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
 
@@ -26,7 +24,7 @@ class PricesAccessSpec extends FlatSpec with BeforeAndAfterAll with AsyncAsserti
   private implicit val jsonFormats: Formats =
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all
 
-  override protected def beforeAll() {
+  override def beforeAll() {
     blocking {
       super.beforeAll()
       JettyLauncher.startEmbeddedJetty()

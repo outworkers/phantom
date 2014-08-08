@@ -9,7 +9,7 @@ import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 import com.websudos.phantom.query.InsertQuery
-import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.websudos.phantom.testing.PhantomCassandraConnector
 
 
 sealed trait Price {
@@ -69,10 +69,8 @@ sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
     OptionPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), strikePrice(r), value(r))
 }
 
-object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with ModelSampler[EquityPrice] with DefaultZookeeperConnector {
+object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with ModelSampler[EquityPrice] with PhantomCassandraConnector {
   override val tableName: String = "EquityPrices"
-
-  val keySpace = "phantom"
 
   override def sample: EquityPrice = EquityPrice(
     Sampler.getARandomString,
@@ -92,10 +90,8 @@ object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPr
 
 }
 
-object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] with DefaultZookeeperConnector {
+object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] with PhantomCassandraConnector {
   override val tableName: String = "OptionPrices"
-
-  val keySpace = "phantom"
 
   override def sample: OptionPrice = OptionPrice(
     Sampler.getARandomString,
