@@ -18,7 +18,8 @@
 
 package com.websudos.phantom.zookeeper
 
-import java.net.InetSocketAddress
+import java.io.IOException
+import java.net.{Socket, InetSocketAddress}
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
@@ -40,6 +41,7 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   val zookeeperAddress = address
   val zookeeperConnectString  = zookeeperAddress.getHostName + ":" + zookeeperAddress.getPort
+  val defaultZookeeperConnectorString = "localhost:2181"
 
   protected[this] val envString = "TEST_ZOOKEEPER_CONNECTOR"
 
@@ -61,12 +63,26 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   lazy val richClient = ZooKeeper.newRichClient(zookeeperConnectString)
 
-  def resetEnvironment(): Unit = {
-    System.setProperty(envString, zookeeperConnectString)
+
+  private[this] def isPortAvailable(port: Int): Boolean = {
+    try {
+      new Socket("localhost", port)
+      true
+    } catch  {
+      case ex: IOException => false
+    }
+  }
+
+  def isZooKeeperRunning: Boolean = {
+    !isPortAvailable(2181)
+  }
+
+  def resetEnvironment(cn: String = zookeeperConnectString): Unit = {
+    System.setProperty(envString, cn)
   }
 
   def start() {
-    if (status.compareAndSet(false, true)) {
+    if (status.compareAndSet(false, true) && !isZooKeeperRunning) {
       resetEnvironment()
       connectionFactory.startup(zookeeperServer)
 
@@ -84,6 +100,8 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
       // Disable noise from zookeeper logger
       java.util.logging.LogManager.getLogManager.reset()
+    } else {
+      resetEnvironment(defaultZookeeperConnectorString)
     }
   }
 

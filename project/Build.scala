@@ -213,9 +213,14 @@ object phantom extends Build {
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
       "org.scalatest"                %% "scalatest"                         % scalatestVersion,
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-      "com.twitter"                  %% "finagle-serversets"                % finagleVersion,
+      "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided"
+      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided",
+      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+        ExclusionRule("org.slf4j", "slf4j-log4j12"),
+        ExclusionRule("org.slf4j", "slf4j-jdk14")
+        ),
+      "com.google.guava"                 %  "guava"                    % "0.17"
     )
   )
 

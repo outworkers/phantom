@@ -38,8 +38,6 @@ object DefaultCassandraManager extends CassandraManager {
   private[this] val inited = new AtomicBoolean(false)
   @volatile private[this] var _session: Session = null
 
-
-
   def getCassandraPort: Int = {
     Try { new ServerSocket(9042) }.toOption.fold(9142)(r => 9042)
   }
@@ -71,5 +69,5 @@ trait SimpleCassandraConnector extends CassandraConnector {
 
   manager.initIfNotInited(keySpace)
 
-  implicit lazy val session: Session = DefaultCassandraManager.session
+  override implicit lazy val session: Session = manager.session
 }

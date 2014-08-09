@@ -62,7 +62,7 @@ object DefaultCassandraManager extends CassandraManager {
 
 
 trait SimpleCassandraConnector extends CassandraSetup with CassandraConnector {
-  implicit lazy val session: Session = DefaultCassandraManager.session
+  override implicit lazy val session: Session = DefaultCassandraManager.session
 }
 
 trait SimpleCassandraTest extends ScalaFutures with SimpleCassandraConnector with Matchers with Assertions with AsyncAssertions with BeforeAndAfterAll {

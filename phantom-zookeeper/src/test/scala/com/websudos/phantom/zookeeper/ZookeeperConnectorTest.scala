@@ -23,15 +23,6 @@ import java.net.InetSocketAddress
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.websudos.phantom.testing.CassandraSetup
-
-object TestTable extends DefaultZookeeperConnector {
-  val keySpace = "phantom"
-}
-
-object TestTable2 extends DefaultZookeeperConnector {
-  val keySpace = "phantom"
-}
 
 
 class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {

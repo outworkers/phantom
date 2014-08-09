@@ -18,24 +18,24 @@
 
 package com.websudos.phantom.zookeeper
 
-import java.net.InetSocketAddress
+import java.io.IOException
+import java.net.{InetSocketAddress, Socket}
 
 import org.slf4j.{Logger, LoggerFactory}
 
 import com.datastax.driver.core.{Cluster, Session}
-import com.twitter.util.Try
 
 trait ZookeeperManager extends CassandraManager {
 
-  protected[this] val store: ClusterStore
+  protected[this] def store: ClusterStore
 
   def cluster: Cluster = store.cluster
 
   def session: Session = store.session
 
-  val logger: Logger
+  def logger: Logger
 
-  protected[zookeeper] val envString = "TEST_ZOOKEEPER_CONNECTOR"
+  protected[zookeeper] def envString = "TEST_ZOOKEEPER_CONNECTOR"
 
   protected[this] val defaultAddress = new InetSocketAddress("localhost", 2181)
 }
@@ -43,6 +43,15 @@ trait ZookeeperManager extends CassandraManager {
 
 
 class DefaultZookeeperManager extends ZookeeperManager {
+
+  private[this] def isPortAvailable(port: Int): Boolean = {
+    try {
+      new Socket("localhost", port)
+      true
+    } catch  {
+      case ex: IOException => false
+    }
+  }
 
   /**
    * This is the default way a ZooKeeper connector will obtain the HOST:IP port of the ZooKeeper coordinator(master) node.
@@ -56,21 +65,8 @@ class DefaultZookeeperManager extends ZookeeperManager {
    * If the environment variable is null or an InetSocketAddress cannot be parsed from it, the ZooKeeper default, localhost:2181 will be used.
    * @return The InetSocketAddress of the ZooKeeper master node.
    */
-  def defaultZkAddress: InetSocketAddress = if (System.getProperty(envString) != null) {
-    val inetPair: String = System.getProperty(envString)
-    val split = inetPair.split(":")
-
-    Try {
-      logger.info(s"Using ZooKeeper settings from the $envString environment variable")
-      logger.info(s"Connecting to ZooKeeper address: ${split(0)}:${split(1)}")
-      new InetSocketAddress(split(0), split(1).toInt)
-    } getOrElse {
-      logger.warn(s"Failed to parse address from $envString environment variable with value: $inetPair")
+  def defaultZkAddress: InetSocketAddress = {
       defaultAddress
-    }
-  } else {
-    logger.info(s"No custom settings for Zookeeper found in $envString. Using localhost:2181 as default.")
-    defaultAddress
   }
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")

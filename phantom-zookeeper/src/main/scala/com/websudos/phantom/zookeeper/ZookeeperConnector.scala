@@ -22,11 +22,11 @@ import com.datastax.driver.core.Session
 
 
 trait CassandraConnector {
-  val keySpace: String
+  def keySpace: String
 
   def manager: CassandraManager = DefaultCassandraManager
 
-  implicit val session: Session
+  implicit def session: Session = manager.session
 }
 
 
@@ -39,9 +39,7 @@ trait CassandraConnector {
  */
 trait ZookeeperConnector extends CassandraConnector {
 
-  implicit lazy val session: Session = manager.session
-
-  val zkPath = "/cassandra"
+  def zkPath = "/cassandra"
 }
 
 /**
