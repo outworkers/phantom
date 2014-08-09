@@ -40,18 +40,18 @@ trait CassandraManager {
 object DefaultCassandraManager extends CassandraManager {
 
   val livePort = 9042
-  val embeddedPort = 9042
+  val embeddedPort = 9142
 
   private[this] val inited = new AtomicBoolean(false)
   @volatile private[this] var _session: Session = null
 
-  def getCassandraPort: Int = {
+  def cassandraPort: Int = {
     Try { new Socket("0.0.0.0", livePort) }.toOption.fold(embeddedPort)(r => livePort)
   }
 
   lazy val cluster: Cluster = Cluster.builder()
     .addContactPoint("localhost")
-    .withPort(getCassandraPort)
+    .withPort(cassandraPort)
     .withoutJMXReporting()
     .withoutMetrics()
     .build()

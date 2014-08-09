@@ -11,10 +11,13 @@ import org.scalatest.concurrent.PatienceConfiguration
 
 import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.server.ScalatraBootstrap.{AAPL, AAPLOption, AppleOptionPrices, ApplePrices}
-import com.websudos.phantom.server.{EquityPrice, JettyLauncher, OptionPrice, ScalatraBootstrap}
+import com.websudos.phantom.server._
+import com.websudos.phantom.testing.CassandraFlatSpec
 import dispatch.{Http, as, url}
 
-class PricesAccessSpec extends com.websudos.phantom.testing.PhantomCassandraTestSuite {
+class PricesAccessSpec extends CassandraFlatSpec {
+
+  val keySpace = "phantom"
 
   private val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
 
@@ -25,8 +28,8 @@ class PricesAccessSpec extends com.websudos.phantom.testing.PhantomCassandraTest
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all
 
   override def beforeAll() {
+    super.beforeAll()
     blocking {
-      super.beforeAll()
       JettyLauncher.startEmbeddedJetty()
     }
   }
@@ -44,15 +47,20 @@ class PricesAccessSpec extends com.websudos.phantom.testing.PhantomCassandraTest
   "Prices Servlet" should "return correct equity prices for Apple stock" in {
 
     val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
-    val prices = request.map(json => json.extract[Seq[EquityPrice]])
+    val prices = request
 
-    prices.successful {
+    val chain = for {
+      req <- Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json).map(json => json.extract[Seq[EquityPrice]])
+    } yield req
+
+    chain.successful {
       res => {
         res.size shouldEqual ScalatraBootstrap.ApplePrices.size
         res.map(_.value) shouldEqual ScalatraBootstrap.ApplePrices.map(_.value)
       }
     }
   }
+
   it should "return correct equity and option prices for Apple stock after several parallel requests" in {
 
     def expectedEquityForDateRange(start: LocalDate, end: LocalDate): Seq[EquityPrice] =
@@ -70,12 +78,17 @@ class PricesAccessSpec extends com.websudos.phantom.testing.PhantomCassandraTest
       val eqRespFuture = Http(equityPrices(AAPL, from, to) OK as.json4s.Json).map(_.extract[Seq[EquityPrice]])
       val eqOptionRespFuture = Http(optionPrices(AAPLOption, from, to) OK as.json4s.Json).map(_.extract[Seq[OptionPrice]])
 
-      eqRespFuture.successful(_.map(_.value) shouldEqual expectedEquityForDateRange(from, to).map(_.value))
-      eqOptionRespFuture.successful(_.map(_.value) shouldEqual expectedEquityOptionsForDateRange(from, to).map(_.value))
+      val chain = for {
+        resp1 <- eqRespFuture
+        resp2 <- eqOptionRespFuture
+      } yield (resp1, resp2)
+
+      chain.successful {
+        res => {
+          res._1.map(_.value) shouldEqual expectedEquityForDateRange(from, to).map(_.value)
+          res._2.map(_.value) shouldEqual expectedEquityOptionsForDateRange(from, to).map(_.value)
+        }
+      }
     }
-
-
   }
-
-
 }

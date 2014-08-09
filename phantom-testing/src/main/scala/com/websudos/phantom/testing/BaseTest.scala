@@ -89,11 +89,14 @@ trait CassandraSetup {
       blocking {
         if (!CassandraStateManager.isCassandraStarted) {
           try {
+            Console.println("Starting cassandra")
             EmbeddedCassandraServerHelper.mkdirs()
           } catch {
             case NonFatal(e) => println(e.getMessage)
           }
           EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml")
+        } else {
+            Console.println("Cassandra already running")
         }
       }
     }

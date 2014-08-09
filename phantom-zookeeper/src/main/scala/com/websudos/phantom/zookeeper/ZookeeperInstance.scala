@@ -18,8 +18,7 @@
 
 package com.websudos.phantom.zookeeper
 
-import java.io.IOException
-import java.net.{Socket, InetSocketAddress}
+import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
@@ -31,7 +30,7 @@ import com.twitter.common.zookeeper.{ServerSetImpl, ZooKeeperClient}
 import com.twitter.conversions.time._
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.zookeeper.ZookeeperServerSetCluster
-import com.twitter.util.{Await, Future, RandomSocket, Try }
+import com.twitter.util.{Await, Future, RandomSocket, Try}
 
 class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddress()) {
 
@@ -63,26 +62,12 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   lazy val richClient = ZooKeeper.newRichClient(zookeeperConnectString)
 
-
-  private[this] def isPortAvailable(port: Int): Boolean = {
-    try {
-      new Socket("localhost", port)
-      true
-    } catch  {
-      case ex: IOException => false
-    }
-  }
-
-  def isZooKeeperRunning: Boolean = {
-    !isPortAvailable(2181)
-  }
-
   def resetEnvironment(cn: String = zookeeperConnectString): Unit = {
     System.setProperty(envString, cn)
   }
 
   def start() {
-    if (status.compareAndSet(false, true) && !isZooKeeperRunning) {
+    if (status.compareAndSet(false, true)) {
       resetEnvironment()
       connectionFactory.startup(zookeeperServer)
 
@@ -96,7 +81,7 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
       cluster.join(zookeeperAddress)
 
       Await.ready(richClient.connect(2.seconds), 2.seconds)
-      Await.ready(richClient.setData(zkPath, "localhost:9142".getBytes, -1), 3.seconds)
+      Await.ready(richClient.setData(zkPath, s"localhost:${DefaultCassandraManager.cassandraPort}".getBytes, -1), 3.seconds)
 
       // Disable noise from zookeeper logger
       java.util.logging.LogManager.getLogManager.reset()

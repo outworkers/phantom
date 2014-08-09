@@ -69,13 +69,12 @@ trait ClusterStore {
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
 
+  def parsePorts(data: String): Seq[InetSocketAddress]
+
   def hostnamePortPairs: Future[Seq[InetSocketAddress]] = Lock.synchronized {
     zkClientStore.getData("/cassandra", watch = false) map {
       res => Try {
-        val data = new String(res.data)
-        data.split("\\s*,\\s*").map(_.split(":")).map {
-          case Array(hostname, port) => new InetSocketAddress(hostname, port.toInt)
-        }.toSeq
+        parsePorts(new String(res.data))
       } getOrElse Seq.empty[InetSocketAddress]
     }
   }
@@ -144,4 +143,14 @@ trait ClusterStore {
   }
 }
 
-object DefaultClusterStore extends ClusterStore
+class DefaultClusterStore extends ClusterStore {
+
+  def parsePorts(data: String): Seq[InetSocketAddress] = {
+    data.split("\\s*,\\s*").map(_.split(":")).map {
+      case Array(hostname, port) => new InetSocketAddress(hostname, port.toInt)
+    }.toSeq
+  }
+
+}
+
+object DefaultClusterStore extends DefaultClusterStore

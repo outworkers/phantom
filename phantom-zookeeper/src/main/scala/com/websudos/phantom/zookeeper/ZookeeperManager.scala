@@ -31,7 +31,9 @@ trait ZookeeperManager extends CassandraManager {
 
   /**
    * Interestingly enough binding to a port with a simple java.net.Socket or java.net.ServerSocket to check if a local ZooKeeper exists is not enough in this
-   * day and age. We take a slightly different approach, by performing a single check when the default address is initialised.
+   * day and age. We take a slightly different approach, by performing a single check when the default address is initialised. We spawn an actual ZooKeeper
+   * Client using the finagle-zookeeper integration and attempt to connect. If the initial ping is successful, we conclude a ZooKeeper is found. Otherwise,
+   * we conclude it doesn't exist.
    *
    * At present times the Phantom connectors are not capable of monitoring for state change system wide, e.g a move from a local ZooKeeper to an embedded and
    * so on, therefore this check can be done a single time, as any major state change in the system with regards to ZooKeeper going down would not affect
