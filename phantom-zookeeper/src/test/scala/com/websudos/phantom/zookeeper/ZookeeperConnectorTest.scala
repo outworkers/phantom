@@ -32,6 +32,8 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     super.beforeAll()
     setupCassandra()
     instance.start()
+    val s = TestTable.session
+    val s2 = TestTable2.session
   }
 
   override def afterAll(): Unit = {

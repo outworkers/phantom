@@ -108,6 +108,7 @@ To stay up-to-date with our latest releases and news, follow us on Twitter: [@we
       <p><a href="apache-zookeeper-integration">Apache ZooKeeper integration</a></p>
       <ul>
         <li><a href="#zookeeper-connectors">ZooKeeper connectors</a></li>
+        <li><a href="#the-simple-cassandra-connector">The simple Cassandra connector</a></li>
         <li><a href="#the-default-zookeeper-connector-and-default-zookeeper-manager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</li>
         <li><a href="#using-a-zookeeper-instance">Using a ZooKeeperInstance</a></li>
       </ul>
@@ -116,7 +117,7 @@ To stay up-to-date with our latest releases and news, follow us on Twitter: [@we
       <p><a href="#testing-utilities">Testing Utilities</a></p>
       <ul>
         <li><a href="#auto-embedded-cassandra">Auto-embeddeded Cassandra</a></li>
-        <li><a href="#using-the-default-suite">Using the default ```PhantomCassandraSuite``` to write tests</a></li>
+        <li><a href="#using-the-default-suite">Using the default PhantomCassandraSuite to write tests</a></li>
         <li><a href="#running-tests">Running the tests locally</a></li>
       </ul>
     </li>
@@ -972,6 +973,20 @@ Using a set of conventions phantom can automate the entire process of using ZooK
 - Creating an implicit session for queries to execute.
 
 The entire process described above is entirely automated with a series of sensible defaults available. More details on default implementations are available below. Bottom line, if you want to go custom, you may override at will, if you just want to get something working as fast as possible, then ```phantom-zookeeper``` can do everything for you.
+
+<a id="the-simple-cassandra-connector">The simple Cassandra Connector</a>
+==========================================================================================================
+
+This implementation is a very simple way to connect to a running Cassandra node. This is not using ZooKeeper and it's not really indented for multi-node 
+testing or connections, but sometimes you just want to get things working immediately.
+
+The implementation details are available [here](https://github
+.com/websudosuk/phantom/blob/develop/phantom-zookeeper/src/main/scala/com/websudos/phantom/zookeeper/SimpleCassandraConnector.scala), 
+but without further ado, this connector will attempt to connector to a local Cassandra, either embedded or not.
+
+Inside Websudos, our port convention is ```9042``` for local Cassandra and ```9142``` for embedded. This is reflected in our ```cassandra.yaml``` 
+configuration files. Overidding this is quite simple, although you will need to create your own pair of manager and connector.
+
 
 <a id="the-default-zookeeper-connector-and-default-zookeeper-mananager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</a>
 ==========================================================================================================

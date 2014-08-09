@@ -18,7 +18,7 @@
 
 package com.websudos.phantom.zookeeper
 
-import java.net.ServerSocket
+import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.concurrent.blocking
@@ -27,6 +27,10 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.Try
 
 trait CassandraManager {
+
+  def livePort: Int
+  def embeddedPort: Int
+
   def cluster: Cluster
   def initIfNotInited(keySpace: String)
 
@@ -35,11 +39,14 @@ trait CassandraManager {
 
 object DefaultCassandraManager extends CassandraManager {
 
+  val livePort = 9042
+  val embeddedPort = 9042
+
   private[this] val inited = new AtomicBoolean(false)
   @volatile private[this] var _session: Session = null
 
   def getCassandraPort: Int = {
-    Try { new ServerSocket(9042) }.toOption.fold(9142)(r => 9042)
+    Try { new Socket("0.0.0.0", livePort) }.toOption.fold(embeddedPort)(r => livePort)
   }
 
   lazy val cluster: Cluster = Cluster.builder()
@@ -61,9 +68,7 @@ object DefaultCassandraManager extends CassandraManager {
       }
     }
   }
-
 }
-
 
 trait SimpleCassandraConnector extends CassandraConnector {
 

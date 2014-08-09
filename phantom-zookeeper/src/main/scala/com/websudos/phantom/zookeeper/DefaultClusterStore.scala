@@ -105,17 +105,13 @@ trait ClusterStore {
         .withoutMetrics()
         .build()
 
-
-
       _session = blocking {
         val s = clusterStore.connect()
         s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
         s.execute(s"use $keySpace;")
         s
       }
-
       sessions.put(keySpace, _session)
-
       setInited(value = true)
     }
   }
