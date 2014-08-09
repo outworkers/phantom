@@ -48,7 +48,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()(Recipes.session)
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
       select

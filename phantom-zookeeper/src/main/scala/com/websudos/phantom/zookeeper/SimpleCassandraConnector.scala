@@ -67,7 +67,9 @@ object DefaultCassandraManager extends CassandraManager {
 
 trait SimpleCassandraConnector extends CassandraConnector {
 
-  manager.initIfNotInited(keySpace)
+  override implicit lazy val session: Session = {
+    manager.initIfNotInited(keySpace)
+    manager.session
+  }
 
-  override implicit lazy val session: Session = manager.session
 }

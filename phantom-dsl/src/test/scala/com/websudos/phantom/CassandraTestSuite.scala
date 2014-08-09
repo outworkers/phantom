@@ -18,7 +18,8 @@
 
 package com.websudos.phantom
 
-import com.websudos.phantom.testing.{SimpleCassandraConnector, CassandraFlatSpec}
+import com.websudos.phantom.testing.CassandraFlatSpec
+import com.websudos.phantom.zookeeper.SimpleCassandraConnector
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
   val keySpace = "phantom"

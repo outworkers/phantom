@@ -49,5 +49,9 @@ trait ZookeeperConnector extends CassandraConnector {
 trait DefaultZookeeperConnector extends ZookeeperConnector {
 
   override val manager = DefaultZookeeperManagers.defaultManager
-  manager.initIfNotInited(keySpace)
+
+  override implicit lazy val session: Session = {
+    manager.initIfNotInited(keySpace)
+    manager.session
+  }
 }

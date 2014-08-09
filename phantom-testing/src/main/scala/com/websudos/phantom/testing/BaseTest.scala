@@ -18,32 +18,51 @@
 
 package com.websudos.phantom.testing
 
-import java.net.ServerSocket
+import java.io.IOException
+import java.net.Socket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, blocking}
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
 import com.datastax.driver.core.Session
-import com.twitter.util.{ NonFatal, Try }
-import com.websudos.phantom.zookeeper.{ DefaultZookeeperConnector, ZookeeperInstance }
+import com.twitter.util.NonFatal
+import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
 
 
 private[testing] object CassandraStateManager {
+
+  private[this] def isPortAvailable(port: Int): Boolean = {
+    try {
+      new Socket("localhost", port)
+      true
+    } catch  {
+      case ex: IOException => false
+    }
+  }
+
   /**
    * This does a dummy check to see if Cassandra is started.
    * It checks for default ports for embedded Cassandra and local Cassandra.
    * @return A boolean saying if Cassandra is started.
    */
-  def isCassandraStarted: Boolean = {
-    Try { new ServerSocket(9142) }.toOption.isEmpty
+  def isEmbeddedCassandraRunning: Boolean = {
+    !isPortAvailable(9142)
   }
 
   def isLocalCassandraRunning: Boolean = {
-    Try { new ServerSocket(9042) }.toOption.isEmpty
+    !isPortAvailable(9042)
+  }
+
+  /**
+   * This checks if the default ports for embedded Cassandra and
+   * @return
+   */
+  def isCassandraStarted: Boolean = {
+    isEmbeddedCassandraRunning || isLocalCassandraRunning
   }
 }
 
@@ -92,7 +111,7 @@ trait CassandraTest extends ScalaFutures with Matchers with Assertions with Asyn
 
   self : BeforeAndAfterAll with Suite =>
 
-  implicit val session: Session
+  implicit def session: Session
   implicit lazy val context: ExecutionContext = global
 
   override def beforeAll() {

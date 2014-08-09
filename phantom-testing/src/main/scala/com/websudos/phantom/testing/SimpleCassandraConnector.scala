@@ -18,60 +18,24 @@
 
 package com.websudos.phantom.testing
 
-import java.util.concurrent.atomic.AtomicBoolean
-
-import scala.concurrent.blocking
-
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
 
-import com.datastax.driver.core.{Cluster, Session}
-import com.websudos.phantom.zookeeper.CassandraConnector
+import com.websudos.phantom.zookeeper.SimpleCassandraConnector
 
-trait CassandraManager {
-  val cluster: Cluster
-  implicit def session: Session
-}
-
-object DefaultCassandraManager extends CassandraManager {
-
-  private[this] val inited = new AtomicBoolean(false)
-  @volatile private[this] var _session: Session = null
-
-  lazy val cluster: Cluster = Cluster.builder()
-    .addContactPoint("localhost")
-    .withPort(9142)
-    .withoutJMXReporting()
-    .withoutMetrics()
-    .build()
-
-  def session = _session
-
-  def initIfNotInited(keySpace: String): Unit = {
-    if (inited.compareAndSet(false, true)) {
-      _session = blocking {
-          val s = cluster.connect()
-          s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
-          s.execute(s"USE $keySpace;")
-          s
-        }
-    }
-  }
-
-}
-
-
-trait SimpleCassandraConnector extends CassandraSetup with CassandraConnector {
-  override implicit lazy val session: Session = DefaultCassandraManager.session
-}
-
-trait SimpleCassandraTest extends ScalaFutures with SimpleCassandraConnector with Matchers with Assertions with AsyncAssertions with BeforeAndAfterAll {
+trait SimpleCassandraTest extends ScalaFutures
+  with SimpleCassandraConnector
+  with Matchers
+  with Assertions
+  with AsyncAssertions
+  with BeforeAndAfterAll
+  with CassandraSetup{
   self : BeforeAndAfterAll with Suite =>
 
   override def beforeAll() {
     super.beforeAll()
     setupCassandra()
-    DefaultCassandraManager.initIfNotInited(keySpace)
+    manager.initIfNotInited(keySpace)
   }
 }
 
