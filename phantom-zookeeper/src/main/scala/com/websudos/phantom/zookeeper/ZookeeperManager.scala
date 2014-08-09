@@ -18,15 +18,31 @@
 
 package com.websudos.phantom.zookeeper
 
-import java.io.IOException
-import java.net.{Socket, InetSocketAddress}
+import java.net.InetSocketAddress
 
 import org.slf4j.{Logger, LoggerFactory}
 
 import com.datastax.driver.core.{Cluster, Session}
-import com.twitter.util.Try
+import com.twitter.conversions.time._
+import com.twitter.finagle.exp.zookeeper.ZooKeeper
+import com.twitter.util.{Await, Try}
 
 trait ZookeeperManager extends CassandraManager {
+
+  /**
+   * Interestingly enough binding to a port with a simple java.net.Socket or java.net.ServerSocket to check if a local ZooKeeper exists is not enough in this
+   * day and age. We take a slightly different approach, by performing a single check when the default address is initialised.
+   *
+   * At present times the Phantom connectors are not capable of monitoring for state change system wide, e.g a move from a local ZooKeeper to an embedded and
+   * so on, therefore this check can be done a single time, as any major state change in the system with regards to ZooKeeper going down would not affect
+   * existing Cassandra connections and any failure in a Cassandra node is handled by the Datastax driver.
+   */
+  protected[this] lazy val isLocalZooKeeperRunning: Boolean = {
+    Try {
+      val richClient = ZooKeeper.newRichClient(s"${defaultAddress.getHostName}:${defaultAddress.getPort}")
+      Await.result(richClient.connect(), 2.seconds)
+    }.toOption.nonEmpty
+  }
 
   protected[this] val store: ClusterStore
 
@@ -38,7 +54,7 @@ trait ZookeeperManager extends CassandraManager {
 
   protected[zookeeper] val envString = "TEST_ZOOKEEPER_CONNECTOR"
 
-  protected[this] val defaultAddress = new InetSocketAddress("localhost", 2181)
+  protected[this] val defaultAddress = new InetSocketAddress("0.0.0.0", 2181)
 }
 
 
@@ -46,15 +62,6 @@ class DefaultZookeeperManager extends ZookeeperManager {
 
   val livePort = 9042
   val embeddedPort = 9042
-
-  private[this] def isPortAvailable(port: Int): Boolean = {
-    try {
-      new Socket("localhost", port)
-      true
-    } catch  {
-      case ex: IOException => false
-    }
-  }
 
   /**
    * This is the default way a ZooKeeper connector will obtain the HOST:IP port of the ZooKeeper coordinator(master) node.
@@ -68,7 +75,7 @@ class DefaultZookeeperManager extends ZookeeperManager {
    * If the environment variable is null or an InetSocketAddress cannot be parsed from it, the ZooKeeper default, localhost:2181 will be used.
    * @return The InetSocketAddress of the ZooKeeper master node.
    */
-  def defaultZkAddress: InetSocketAddress = if (!isPortAvailable(2181)) {
+  def defaultZkAddress: InetSocketAddress = if (isLocalZooKeeperRunning) {
     defaultAddress
   } else {
     if (System.getProperty(envString) != null) {
