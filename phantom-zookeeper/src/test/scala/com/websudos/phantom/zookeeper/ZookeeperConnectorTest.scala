@@ -32,8 +32,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     super.beforeAll()
     setupCassandra()
     instance.start()
-    val s = TestTable.session
-    val s2 = TestTable2.session
+    DefaultZookeeperManagers.defaultManager.initIfNotInited(TestTable.keySpace)
   }
 
   override def afterAll(): Unit = {
@@ -89,11 +88,4 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
       }
     }
   }
-
-  it should "use the same Zookeeper connector and client instance for all tables" in {
-    TestTable.manager.store.zkClient eq TestTable2.manager.store.zkClient shouldEqual true
-  }
-
-
-
 }

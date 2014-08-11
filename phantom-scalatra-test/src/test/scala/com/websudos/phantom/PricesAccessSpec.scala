@@ -46,9 +46,6 @@ class PricesAccessSpec extends CassandraFlatSpec {
 
   "Prices Servlet" should "return correct equity prices for Apple stock" in {
 
-    val request = Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json)
-    val prices = request
-
     val chain = for {
       req <- Http(equityPrices(AAPL, new LocalDate(2014, 1, 1), new LocalDate(2014, 1, 10)) OK as.json4s.Json).map(json => json.extract[Seq[EquityPrice]])
     } yield req
@@ -64,10 +61,14 @@ class PricesAccessSpec extends CassandraFlatSpec {
   it should "return correct equity and option prices for Apple stock after several parallel requests" in {
 
     def expectedEquityForDateRange(start: LocalDate, end: LocalDate): Seq[EquityPrice] =
-      ApplePrices.filter { case EquityPrice(_, tradeDate, _, _, _ ) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)}
+      ApplePrices.filter {
+        case EquityPrice(_, tradeDate, _, _, _ ) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)
+      }
 
     def expectedEquityOptionsForDateRange(start: LocalDate, end: LocalDate): Seq[OptionPrice] =
-      AppleOptionPrices.filter { case OptionPrice(_, tradeDate, _, _, _, _) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)}
+      AppleOptionPrices.filter {
+        case OptionPrice(_, tradeDate, _, _, _, _) => !tradeDate.isBefore(start) && !tradeDate.isAfter(end)
+      }
 
     (1 to 30).par.foreach { i =>
       Thread.sleep(Random.nextInt(2500).toLong)

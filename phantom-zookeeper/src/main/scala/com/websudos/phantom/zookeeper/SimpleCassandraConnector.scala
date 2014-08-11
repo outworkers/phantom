@@ -18,13 +18,13 @@
 
 package com.websudos.phantom.zookeeper
 
+import java.io.IOException
 import java.net.Socket
-import java.util.concurrent.atomic.AtomicBoolean
-
 import scala.concurrent.blocking
 
 import com.datastax.driver.core.{Cluster, Session}
-import com.twitter.util.Try
+
+private[zookeeper] case object CassandraInitLock
 
 trait CassandraManager {
 
@@ -41,16 +41,23 @@ object DefaultCassandraManager extends CassandraManager {
 
   val livePort = 9042
   val embeddedPort = 9142
+  def cassandraHost: String = "localhost"
 
-  private[this] val inited = new AtomicBoolean(false)
+  private[this] var inited = false
   @volatile private[this] var _session: Session = null
 
+
   def cassandraPort: Int = {
-    Try { new Socket("0.0.0.0", livePort) }.toOption.fold(embeddedPort)(r => livePort)
+    try {
+      new Socket(cassandraHost, livePort)
+      livePort
+    } catch {
+      case ex: IOException => embeddedPort
+    }
   }
 
   lazy val cluster: Cluster = Cluster.builder()
-    .addContactPoint("localhost")
+    .addContactPoint(cassandraHost)
     .withPort(cassandraPort)
     .withoutJMXReporting()
     .withoutMetrics()
@@ -58,14 +65,15 @@ object DefaultCassandraManager extends CassandraManager {
 
   def session = _session
 
-  def initIfNotInited(keySpace: String): Unit = {
-    if (inited.compareAndSet(false, true)) {
+  def initIfNotInited(keySpace: String): Unit = CassandraInitLock.synchronized {
+    if (!inited) {
       _session = blocking {
         val s = cluster.connect()
         s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
         s.execute(s"USE $keySpace;")
         s
       }
+      inited = true
     }
   }
 }
