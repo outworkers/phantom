@@ -30,7 +30,7 @@ import com.twitter.common.zookeeper.{ServerSetImpl, ZooKeeperClient}
 import com.twitter.conversions.time._
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.zookeeper.ZookeeperServerSetCluster
-import com.twitter.util.{Await, Future, RandomSocket, Try }
+import com.twitter.util.{Await, Future, RandomSocket, Try}
 
 class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddress()) {
 
@@ -38,10 +38,9 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   def isStarted: Boolean = status.get()
 
-  throw new Exception("How the fuck")
-
   val zookeeperAddress = address
   val zookeeperConnectString  = zookeeperAddress.getHostName + ":" + zookeeperAddress.getPort
+  val defaultZookeeperConnectorString = "localhost:2181"
 
   protected[this] val envString = "TEST_ZOOKEEPER_CONNECTOR"
 
@@ -63,8 +62,8 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
 
   lazy val richClient = ZooKeeper.newRichClient(zookeeperConnectString)
 
-  def resetEnvironment(): Unit = {
-    System.setProperty(envString, zookeeperConnectString)
+  def resetEnvironment(cn: String = zookeeperConnectString): Unit = {
+    System.setProperty(envString, cn)
   }
 
   def start() {
@@ -82,10 +81,12 @@ class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddres
       cluster.join(zookeeperAddress)
 
       Await.ready(richClient.connect(2.seconds), 2.seconds)
-      Await.ready(richClient.setData(zkPath, "localhost:9142".getBytes, -1), 3.seconds)
+      Await.ready(richClient.setData(zkPath, s"localhost:${DefaultCassandraManager.cassandraPort}".getBytes, -1), 3.seconds)
 
       // Disable noise from zookeeper logger
       java.util.logging.LogManager.getLogManager.reset()
+    } else {
+      resetEnvironment(defaultZookeeperConnectorString)
     }
   }
 

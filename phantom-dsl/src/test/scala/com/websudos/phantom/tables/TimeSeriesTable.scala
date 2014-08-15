@@ -16,14 +16,15 @@
 package com.websudos.phantom.tables
 
 import java.util.UUID
+
 import org.joda.time.DateTime
+
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.PhantomCassandraConnector
-import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
-import com.websudos.phantom.Implicits._
 import com.newzly.util.testing.Sampler
-import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 
 case class TimeSeriesRecord(
   id: UUID,
@@ -31,9 +32,7 @@ case class TimeSeriesRecord(
   timestamp: DateTime
 )
 
-object TimeSeriesRecord extends ModelSampler[TimeSeriesRecord] with DefaultZookeeperConnector {
-  val keySpace = "phantom"
-
+object TimeSeriesRecord extends ModelSampler[TimeSeriesRecord] with PhantomCassandraConnector {
   val testUUID = UUIDs.timeBased()
   def sample: TimeSeriesRecord = {
     TimeSeriesRecord(

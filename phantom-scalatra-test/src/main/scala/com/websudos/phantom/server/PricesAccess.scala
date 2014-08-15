@@ -5,20 +5,17 @@ import scala.concurrent.duration._
 
 import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
-
 import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.scalate.ScalateSupport
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.websudos.phantom.testing.PhantomCassandraConnector
 
 
-class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateSupport with DefaultZookeeperConnector {
+class PricesAccess extends ScalatraServlet with JacksonJsonSupport with ScalateSupport with PhantomCassandraConnector {
 
   private[this] val dateFormat = DateTimeFormat.forPattern("YYYYMMdd")
-
-  val keySpace = "phantom"
 
   protected implicit val jsonFormats: Formats =
     DefaultFormats.withBigDecimal ++ org.json4s.ext.JodaTimeSerializers.all

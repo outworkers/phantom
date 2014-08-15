@@ -16,38 +16,32 @@
  *
  */
 
-package com.websudos.phantom.testing
+package com.websudos.phantom.zookeeper
 
 import java.io.IOException
-import java.net.ServerSocket
+import java.net.Socket
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, blocking}
+import scala.concurrent._
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
-import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
-import com.datastax.driver.core.Session
 import com.twitter.util.NonFatal
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
 
 
-private[testing] object CassandraStateManager {
+/**
+ * This is a duplicate implementation of
+ */
+private[zookeeper] object CassandraStateManager {
 
   private[this] def isPortAvailable(port: Int): Boolean = {
     try {
-      new ServerSocket(port)
-      Console.println(s"$port available")
+      new Socket("localhost", port)
       true
-    } catch {
-      case ex: IOException => {
-        Console.println(ex.getMessage)
-        Console.println(s"$port unavailable")
-        false
-      }
+    } catch  {
+      case ex: IOException => false
     }
   }
+
 
   /**
    * This does a dummy check to see if Cassandra is started.
@@ -62,17 +56,13 @@ private[testing] object CassandraStateManager {
     !isPortAvailable(9042)
   }
 
-  /**
-   * This checks if the default ports for embedded Cassandra and
-   * @return
-   */
   def isCassandraStarted: Boolean = {
-    isLocalCassandraRunning
+    isEmbeddedCassandraRunning || isLocalCassandraRunning
   }
 }
 
 
-private[testing] object ZookeperManager {
+private[zookeeper] object ZookeperManager {
   lazy val zkInstance = new ZookeeperInstance()
 
   private[this] var isStarted = false
@@ -85,12 +75,12 @@ private[testing] object ZookeperManager {
   }
 }
 
-private[testing] object Lock
+private[zookeeper] object CassandraLock
 
-trait CassandraSetup {
+private[zookeeper] trait CassandraSetup {
 
   def setupCassandra(): Unit = {
-    Lock.synchronized {
+    CassandraLock.synchronized {
       blocking {
         if (!CassandraStateManager.isCassandraStarted) {
           try {
@@ -101,35 +91,10 @@ trait CassandraSetup {
           }
           EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml")
         } else {
-            Console.println("Cassandra already running")
+          Console.println("Cassandra is already running")
         }
       }
     }
   }
 
 }
-
-trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
-  val keySpace = "phantom"
-  ZookeperManager.start()
-
-}
-
-trait CassandraTest extends ScalaFutures with Matchers with Assertions with AsyncAssertions with CassandraSetup with BeforeAndAfterAll {
-
-  self : BeforeAndAfterAll with Suite =>
-
-  implicit def session: Session
-  implicit lazy val context: ExecutionContext = global
-
-  override def beforeAll() {
-    super.beforeAll()
-    setupCassandra()
-  }
-}
-
-trait BaseTest extends FlatSpec with CassandraTest with TestZookeeperConnector
-
-trait FeatureBaseTest extends FeatureSpec with CassandraTest with TestZookeeperConnector
-
-
