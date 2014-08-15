@@ -16,6 +16,8 @@
 package com.websudos.phantom.query
 
 import scala.util.Try
+import org.joda.time.DateTime
+
 import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.column.AbstractColumn
@@ -51,6 +53,11 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
 
   def timestamp(l: Long): InsertQuery[T, R] = {
     qb.using(QueryBuilder.timestamp(l))
+    this
+  }
+
+  def timestamp(time: DateTime): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.timestamp(time.getMillis))
     this
   }
 }

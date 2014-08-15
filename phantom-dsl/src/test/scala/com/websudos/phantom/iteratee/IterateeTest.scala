@@ -27,9 +27,13 @@ class IterateeTest extends PhantomCassandraTestSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
-  ignore should "get result fine" in {
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Primitives.insertSchema()
     PrimitivesJoda.insertSchema()
+  }
 
+  ignore should "get result fine" in {
     val rows = for (i <- 1 to 1000) yield  JodaRow.sample
     val batch = rows.foldLeft(BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
@@ -54,7 +58,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
   }
 
   it should "get mapResult fine" in {
-    Primitives.insertSchema()
+
     val rows = for (i <- 1 to 2000) yield Primitive.sample
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = Primitives.insert
@@ -72,7 +76,9 @@ class IterateeTest extends PhantomCassandraTestSuite {
       b.add(statement)
     })
 
-    val w = batch.future().map(_ => Primitives.select.fetchEnumerator)
+    val w = Primitives.truncate.future().flatMap {
+      _ => batch.future().map(_ => Primitives.select.fetchEnumerator())
+    }
 
     val counter: AtomicInteger = new AtomicInteger(0)
     val m = w flatMap {
