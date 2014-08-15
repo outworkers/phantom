@@ -16,13 +16,13 @@
  *
  */
 
-package com.websudos.phantom
+package com.websudos.phantom.zookeeper
 
-import com.websudos.phantom.testing.CassandraFlatSpec
-import com.websudos.phantom.zookeeper.SimpleCassandraConnector
-
-trait PhantomCassandraConnector extends SimpleCassandraConnector {
+object TestTable extends DefaultZookeeperConnector {
   val keySpace = "phantom"
 }
 
-trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector
+object TestTable2 extends DefaultZookeeperConnector {
+  val keySpace = "phantom"
+}
+

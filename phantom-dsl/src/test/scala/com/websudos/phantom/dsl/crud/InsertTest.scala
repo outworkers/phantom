@@ -163,7 +163,7 @@ class InsertTest extends PhantomCassandraTestSuite {
         .value(_.props, r.props)
         .value(_.uid, UUIDs.timeBased()).future() flatMap {
         _ => {
-         Recipes.select.one
+         Recipes.select.where(_.url eqs r.url).one
         }
       }
 

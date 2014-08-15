@@ -202,7 +202,7 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "allow updating a JSON record in a Set of JSON records" in {
+  ignore should "allow updating a JSON record in a Set of JSON records" in {
     val sample = JsonTable.sample
     val sample2 = JsonTable.sample
 
@@ -232,7 +232,7 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "allow updating a JSON record in a Set of JSON records with Twitter Futures" in {
+  ignore should "allow updating a JSON record in a Set of JSON records with Twitter Futures" in {
     val sample = JsonTable.sample
     val sample2 = JsonTable.sample
 
