@@ -48,7 +48,7 @@ class ZooKeeperInstanceTest extends FlatSpec with Matchers with BeforeAndAfterAl
       res => {
         res shouldNot equal(null)
         res.data shouldNot equal(null)
-        new String(res.data) shouldEqual "localhost:9142"
+        new String(res.data) shouldEqual s"localhost:${DefaultCassandraManager.cassandraPort}"
       }
 
     }
@@ -57,7 +57,7 @@ class ZooKeeperInstanceTest extends FlatSpec with Matchers with BeforeAndAfterAl
   it should "correctly parse the retrieved data into a Sequence of InetSocketAddresses" in {
     instance.hostnamePortPairs.successful {
       res => {
-        res shouldEqual Seq(new InetSocketAddress("localhost", 9142))
+        res shouldEqual Seq(new InetSocketAddress("localhost", DefaultCassandraManager.cassandraPort))
       }
     }
   }

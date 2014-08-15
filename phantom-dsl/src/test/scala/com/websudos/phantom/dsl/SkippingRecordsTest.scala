@@ -25,6 +25,7 @@ class SkippingRecordsTest extends PhantomCassandraTestSuite {
     val article3 = article1.copy(order_id = article1.order_id + 2)
 
     val result = for {
+      truncate <- Articles.truncate.future()
       i1 <- Articles.insert
         .value(_.name, article1.name).value(_.id, article1.id)
         .value(_.orderId, article1.order_id)

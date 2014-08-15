@@ -16,13 +16,21 @@
  *
  */
 
-package com.websudos.phantom
+package com.websudos.phantom.zookeeper
 
-import com.websudos.phantom.testing.CassandraFlatSpec
-import com.websudos.phantom.zookeeper.SimpleCassandraConnector
+import java.net.InetSocketAddress
 
-trait PhantomCassandraConnector extends SimpleCassandraConnector {
-  val keySpace = "phantom"
+import org.scalatest.{Matchers, FlatSpec}
+
+class DefaultClusterStoreTest extends FlatSpec with Matchers {
+  ignore should "correctly parse multiple pairs of hostname:port from Zookeeper" in {
+    val expected = Seq(
+      new InetSocketAddress("localhost", 9042),
+      new InetSocketAddress("localhost", 9900),
+      new InetSocketAddress("127.131.211.23", 3402)
+    )
+    val ports = expected.map(inet => s"${inet.getHostName}:${inet.getPort}").mkString(", ")
+
+    DefaultClusterStore.parsePorts(ports) shouldEqual expected
+  }
 }
-
-trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector
