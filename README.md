@@ -12,7 +12,7 @@ Phantom is published to Maven Central and it's actively and avidly developed.
 
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.0.2```, found only on our internal Maven repository.
+The latest development version is ```val phantomVersion = 1.0.7```, found only on our internal Maven repository.
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
 
