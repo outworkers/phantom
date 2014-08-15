@@ -19,7 +19,7 @@
 package com.websudos.phantom.testing
 
 import java.io.IOException
-import java.net.Socket
+import java.net.ServerSocket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, blocking}
@@ -37,10 +37,15 @@ private[testing] object CassandraStateManager {
 
   private[this] def isPortAvailable(port: Int): Boolean = {
     try {
-      new Socket("localhost", port)
+      new ServerSocket(port)
+      Console.println(s"$port available")
       true
-    } catch  {
-      case ex: IOException => false
+    } catch {
+      case ex: IOException => {
+        Console.println(ex.getMessage)
+        Console.println(s"$port unavailable")
+        false
+      }
     }
   }
 
@@ -62,7 +67,7 @@ private[testing] object CassandraStateManager {
    * @return
    */
   def isCassandraStarted: Boolean = {
-    isEmbeddedCassandraRunning || isLocalCassandraRunning
+    isLocalCassandraRunning
   }
 }
 
