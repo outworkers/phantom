@@ -882,7 +882,7 @@ object ExampleRecord3 extends ExampleRecord3 {
 phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github
 .com/websudosuk/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
 
-We have tested with 10,000 statements per batch, and 1000 batches processed simulatenously. Before you run the test, beware that it takes ~40 minutes.
+We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
 Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
 
