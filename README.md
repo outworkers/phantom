@@ -7,7 +7,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The latest major release is: ```val phantomVersion = 1.0.0```.
+The latest major release is: ```val phantomVersion = 1.1.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
