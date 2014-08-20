@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom) [![Coverage Status](https://coveralls.io/repos/websudosuk/phantom/badge.png)](https://coveralls.io/r/websudosuk/phantom)
+phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom)
 
 ==============
 Asynchronous Scala DSL for Cassandra
@@ -7,7 +7,7 @@ Asynchronous Scala DSL for Cassandra
 Using phantom
 =============
 
-The latest major release is: ```val phantomVersion = 1.0.0```.
+The latest major release is: ```val phantomVersion = 1.1.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
