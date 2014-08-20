@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom) [![Coverage Status](https://coveralls.io/repos/websudosuk/phantom/badge.png)](https://coveralls.io/r/websudosuk/phantom)
+phantom [![Build Status](https://travis-ci.org/websudosuk/phantom.svg?branch=develop)](https://travis-ci.org/websudosuk/phantom)
 
 ==============
 Asynchronous Scala DSL for Cassandra
@@ -882,7 +882,7 @@ object ExampleRecord3 extends ExampleRecord3 {
 phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github
 .com/websudosuk/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
 
-We have tested with 10,000 statements per batch, and 1000 batches processed simulatenously. Before you run the test, beware that it takes ~40 minutes.
+We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
 Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
 
@@ -1025,14 +1025,12 @@ testing utilities, giving you a very simple, easily extensible, yet highly sensi
 with 0 integration work on your behalf, yet allowing you to go crazy and custom as you please if the scenario warrants it. 
 
 With that design philosophy in mind, we've created two kinds of tests, 1 running with a ```SimpleCassandraConnector```, 
-with the implementation found [here](https://github.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing
-/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings, 
+with the implementation found [here](https://github.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings, 
 run all the tests and cleanup after tests are done.
 
 The other, more complex implementation, targets people who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
 multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above. The ```BaseTest``` implementation, 
-which uses a ```DefaultZooKeeperConnector```, is found [here](https://github
-.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/BaseTest.scala), and it follows the pattern described above.
+which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com/websudosuk/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/BaseTest.scala), and it follows the pattern described above.
  
 
 <a id="auto-embedded-cassandra">Auto-embedded Cassandra</a>
