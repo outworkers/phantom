@@ -31,7 +31,7 @@ case class QueryCondition(clause: Clause)
  * It's used to enable queries such as "Records.update.where(_.bla eqs bla).onlyIf(_.someRecord eqs "something")
  *
  * Even if they both wrap a Clause, QueryCondition and SecondaryCondition are not interchangeable.
- * Using an indexed column in an "onlyIf" query throws an error.
+ * This is because using an indexed column in an "onlyIf" query throws an error, and this we can prevent it.
  * @param clause The clause to use.
  */
 case class SecondaryQueryCondition(clause: Clause)
