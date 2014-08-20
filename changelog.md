@@ -10,6 +10,7 @@ Changelog
     <li><a href="#version-0.8.0">0.8.0 - 04.06.2014</a></li>
     <li><a href="#version-0.9.0">0.9.0 - 24.06.2014</a></li>
     <li><a href="#version-1.0.0">1.0.0 - 04.08.2014</a></li>
+    <li><a href="#version-1.1.0">1.1.0 - 20.08.2014</a></li>
 </ul>
 
 
@@ -71,6 +72,15 @@ Changelog
 
 <a id="version-1.0.0">1.0.0</a>
 ===============================
+
 - PHANTOM-108: Adding an example Cassandra connector.
 - PHANTOM-112: Fixing race condition in the default ZooKeeper connector implementation
+
+
+<a id="version-1.1.0">1.1.0</a>
+===============================
+
+- PHANTOM-105: The embedded Zookeeper client needs to connect before fetching data. Fixed connection state in Zk clients.
+- PHANTOM-107: Add documentation for using our Zookeeper testing utilities.
+- PHANTOM-113: Using a ZooKeeper Manager implementation to track availability and instantiation of ZooKeeper nodes.
 
