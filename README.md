@@ -7,12 +7,12 @@ Reactive type-safe Scala DSL for Cassandra
 Using phantom
 =============
 
-The latest major release is: ```val phantomVersion = 1.1.0```.
+The latest major release is: ```val phantomVersion = 1.2.0```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.0.7```, found only on our internal Maven repository.
+The latest development version is ```val phantomVersion = 1.2.0```, found only on our internal Maven repository.
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
 
