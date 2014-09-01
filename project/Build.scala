@@ -73,7 +73,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.1.0",
+    version := "1.2.3",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -216,10 +216,10 @@ object phantom extends Build {
       "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
       "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided",
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+      "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
-        ),
+      ) ,
       "com.google.guava"                 %  "guava"                    % "0.17"
     )
   )
