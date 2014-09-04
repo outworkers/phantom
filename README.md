@@ -177,7 +177,7 @@ This feature is well in progress and you can expect to see it live roughly at th
 
 Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
 
-- Zookeeper support
+- Zookeeper support(available as of 1.1.0).
 
 Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation, 
 we figured a pre-build integration based on ```finagle-zookeeper``` would be awesome.
