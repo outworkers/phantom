@@ -42,16 +42,39 @@ case class CQLStatement(queryString: String) {
 
 
 sealed class CQLSyntax {
+
+  val into = "INTO"
+  val values = "VALUES"
   val select = "SELECT"
+  val writetime = "WRITETIME"
+
+  val create = "CREATE"
+  val insert = "INSERT"
+  val ifNotExists = "IF NOT EXISTS"
+
+  val where = "WHERE"
+  val update = "UPDATE"
+  val delete = "DELETE"
+  val orderBy = "ORDER BY"
+  val limit = "LIMIT"
+  val and = "AND"
+  val or = "OR"
+  val set = "SET"
+  val from = "FROM"
+  val table = "TABLE"
+  val eqs = "="
+  val `(` = "("
+  val comma = ","
+  val `)` = ")"
+  val asc = "ASC"
+  val desc = "DESC"
 }
 
 object CQLSyntax extends CQLSyntax
 
 sealed class QueryBuilder {
 
-
-
-  def select(qb: )
-
-
 }
+
+
+object QueryBuilder extends QueryBuilder
