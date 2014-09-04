@@ -31,7 +31,7 @@ object phantom extends Build {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
-      <url>https://github.com/websudosuk/phantom</url>
+      <url>https://github.com/websudos/phantom</url>
         <licenses>
           <license>
             <name>Apache License, Version 2.0</name>
@@ -40,8 +40,8 @@ object phantom extends Build {
           </license>
         </licenses>
         <scm>
-          <url>git@github.com:websudosuk/phantom.git</url>
-          <connection>scm:git:git@github.com:websudosuk/phantom.git</connection>
+          <url>git@github.com:websudos/phantom.git</url>
+          <connection>scm:git:git@github.com:websudos/phantom.git</connection>
         </scm>
         <developers>
           <developer>
