@@ -180,7 +180,7 @@ Some of the cool features include automatic schema generation, fully type safe r
 
 - Zookeeper support(available as of 1.1.0).
 
-Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation, 
+Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation and service discovery, 
 we figured a pre-build integration based on ```finagle-zookeeper``` would be awesome.
 
 We've even taken it one step further, writing some pretty cool tools for testing automations. With a simple trait you can run asynchronous tests against an embedded Cassandra instance and an 
@@ -195,13 +195,19 @@ the fancy new tooling.
 We are also testing it in production in a massive enterprise to make sure it's reliable with a few dozen nodes in a cluster, 
 not just the local embedded flavour.
 
+- A new QueryBuilder
+
+At present times, phantom is relying on the underlying Datastax Java Driver to serialise queries to CQL and while the querybuilder implementation is 
+excellent for Java standards, it doesn't add any Scala features, since it was a Java only product. With a Scala based builder we plan to add more advanced 
+behaviour, such as immutable builders and phantom types.
+
 - Spark integration
 
 Thanks to the awesome partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with an awesome integration. We won't be slow to 
 follow up with a fully type safe Scala implementation of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
  storage through the simple and hopefully awesome DSL we've gotten you used to.
  
-You can expect to see the spark integration live in a new ```phantom-spark``` module in the 1.1.0 or 1.2.0 version, planned sometime in September 2014.
+You can expect to see the spark integration live in a new ```phantom-spark``` module in the 1.3.0 or 1.4.0 version, planned sometime in September 2014.
 
 
 Commercial support
