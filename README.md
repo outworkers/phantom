@@ -1038,10 +1038,8 @@ which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com
 There are 4 core implementations available:
 
 
-| Name                          | Description                                                                         | ZooKeeper support | Auto-embedding support |
-| ----------------------------- | ----------------------------------------------------------------------------------- | ----------------- | 
----------------------- |
----------------------- |
+| Name    | Description                                                                         | ZooKeeper support | Auto-embedding support |
+| ------- | --------------------------------------------------------------------------------------------------------- | ----------- | ---------------------- |
 | CassandraFlatSpec             | Simple FlatSpec trait mixin, based on ```org.scalatest.FlatSpec```                  | No          | Yes                    |
 | CassandraFeatureSpec          | Simple FeatureSpec trait mixin, based on ```org.scalatest.FeatureSpec```            | No          | Yes                    |
 | BaseTest                      | ZooKeeper powered FlatSpec trait mixin, based on ```org.scalatest.FlatSpec```       | Yes         | Yes                    |
