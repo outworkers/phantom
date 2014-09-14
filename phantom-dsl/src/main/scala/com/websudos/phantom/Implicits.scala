@@ -88,6 +88,11 @@ object Implicits extends Operations {
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
 
 
+  type Row = com.datastax.driver.core.Row
+  type ResultSet = com.datastax.driver.core.ResultSet
+  type Session = com.datastax.driver.core.Session
+
+
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
     final def skip(l: Int): SelectWhere[T, R] = {
       select.where(_.orderId gt l.toLong)

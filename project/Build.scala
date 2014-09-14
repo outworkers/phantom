@@ -8,7 +8,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 object phantom extends Build {
 
   val newzlyUtilVersion = "0.1.19"
-  val datastaxDriverVersion = "2.1.0-rc1"
+  val datastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
   val scroogeVersion = "3.15.0"
@@ -73,7 +73,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.2.3",
+    version := "1.2.6",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -174,10 +174,11 @@ object phantom extends Build {
   ).settings(
     name := "phantom-spark",
     libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-beta1" exclude("com.datastax.cassandra", "cassandra-driver-core")
+      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-rc6" exclude("com.datastax.cassandra", "cassandra-driver-core")
     )
   ).dependsOn(
     phantomDsl,
+    phantomZookeeper,
     phantomTesting % "test, provided"
   )
 
@@ -255,7 +256,9 @@ object phantom extends Build {
     name := "phantom-example"
   ).dependsOn(
     phantomDsl,
-    phantomThrift
+    phantomThrift,
+    phantomZookeeper,
+    phantomTesting
   )
 
   lazy val phantomScalatraTest = Project(

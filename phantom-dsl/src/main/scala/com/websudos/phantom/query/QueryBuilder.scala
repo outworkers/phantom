@@ -77,4 +77,4 @@ sealed class QueryBuilder {
 }
 
 
-object QueryBuilder extends QueryBuilder
+object CQLQueryBuilder extends QueryBuilder
