@@ -149,7 +149,7 @@ We are very happy to help implement missing features in phantom, answer question
 You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group or via the below listed emails.
 
 We are also extremely grateful if you add your company to our list of adopters, as it makes it easy for us to further increase adoption, 
-contributions and make phantom even more awesome.
+contributions and make phantom better and better.
 
 
 Adopters
@@ -180,16 +180,12 @@ Some of the cool features include automatic schema generation, fully type safe r
 - Zookeeper support(available as of 1.1.0).
 
 Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation and service discovery, 
-we figured a pre-build integration based on ```finagle-zookeeper``` would be awesome.
+we figured a pre-build integration based on ```finagle-zookeeper``` would be useful.
 
 We've even taken it one step further, writing some pretty cool tools for testing automations. With a simple trait you can run asynchronous tests against an embedded Cassandra instance and an 
 embedded Zookeeper instance. This process is completely transparent and you don't really need to do anything. No config or starting tools is necessary, 
 everything will start and stop automatically, configure itself automatically and run tests in parallel using async assertions, 
 all automatic and with our tools.
- 
-This awesome feature is still in battle-testing while we iron out some last few bugs and nastiness from its API, 
-you can expect to see it live around phantom 0.9.0 or 1.0.0, but it's coming together quite nicely and we have already upgraded a lot of our testing to use 
-the fancy new tooling.
 
 We are also testing it in production in a massive enterprise to make sure it's reliable with a few dozen nodes in a cluster, 
 not just the local embedded flavour.
@@ -202,9 +198,9 @@ behaviour, such as immutable builders and phantom types.
 
 - Spark integration
 
-Thanks to the awesome partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with an awesome integration. We won't be slow to 
-follow up with a fully type safe Scala implementation of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
- storage through the simple and hopefully awesome DSL we've gotten you used to.
+Thanks to the recent partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with a Datastax backed integration. We won't be slow to 
+follow up with a type safe Scala variant of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
+ storage through the simple high power DSL we've gotten you used to.
  
 You can expect to see the spark integration live in a new ```phantom-spark``` module in the 1.3.0 or 1.4.0 version, planned sometime in September 2014.
 
@@ -1034,9 +1030,31 @@ With that design philosophy in mind, we've created two kinds of tests, 1 running
 with the implementation found [here](https://github.com/websudos/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings, 
 run all the tests and cleanup after tests are done.
 
-The other, more complex implementation, targets people who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
+The other, more complex implementation, targets users who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
 multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above. The ```BaseTest``` implementation, 
 which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com/websudos/phantom/blob/develop/phantom-testing/src/main/scala/com/websudos/phantom/testing/BaseTest.scala), and it follows the pattern described above.
+
+
+There are 4 core implementations available:
+
+
+| Name                          | Description                                                                         | ZooKeeper support | Auto-embedding support |
+| ----------------------------- | ----------------------------------------------------------------------------------- | ----------------- | 
+---------------------- |
+---------------------- |
+| CassandraFlatSpec             | Simple FlatSpec trait mixin, based on ```org.scalatest.FlatSpec```                  | No          | Yes                    |
+| CassandraFeatureSpec          | Simple FeatureSpec trait mixin, based on ```org.scalatest.FeatureSpec```            | No          | Yes                    |
+| BaseTest                      | ZooKeeper powered FlatSpec trait mixin, based on ```org.scalatest.FlatSpec```       | Yes         | Yes                    |
+| FeatureBestTest               | ZooKeeper powered FeatureSpec trait mixin, based on ```org.scalatest.FeatureSpec``` | Yes         | Yes                    |
+
+ 
+ 
+Using the built in testing utilities is very simple. In most cases, you use one of the first two base implementations, 
+either ```CassandraFlatSpec``` or ```CassandraFeatureSpec```, based on what kind of tests you like writing(flat or feature).
+
+If you are using ZooKeeper and you want to run tests through a full ZooKeeper powered cycle, where Cassandra settings are retrieved from a ZooKeeper that 
+can either be running locally or auto-spawned if none is found, pick one of the last two base suites.
+ 
  
 
 <a id="auto-embedded-cassandra">Auto-embedded Cassandra</a>
