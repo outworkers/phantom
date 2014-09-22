@@ -8,7 +8,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 object phantom extends Build {
 
   val newzlyUtilVersion = "0.1.19"
-  val datastaxDriverVersion = "2.1.0-rc1"
+  val datastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
   val scroogeVersion = "3.15.0"
@@ -31,7 +31,7 @@ object phantom extends Build {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
-      <url>https://github.com/websudosuk/phantom</url>
+      <url>https://github.com/websudos/phantom</url>
         <licenses>
           <license>
             <name>Apache License, Version 2.0</name>
@@ -40,8 +40,8 @@ object phantom extends Build {
           </license>
         </licenses>
         <scm>
-          <url>git@github.com:websudosuk/phantom.git</url>
-          <connection>scm:git:git@github.com:websudosuk/phantom.git</connection>
+          <url>git@github.com:websudos/phantom.git</url>
+          <connection>scm:git:git@github.com:websudos/phantom.git</connection>
         </scm>
         <developers>
           <developer>
@@ -73,7 +73,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.1.0",
+    version := "1.2.8",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -174,10 +174,11 @@ object phantom extends Build {
   ).settings(
     name := "phantom-spark",
     libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-beta1" exclude("com.datastax.cassandra", "cassandra-driver-core")
+      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-rc6" exclude("com.datastax.cassandra", "cassandra-driver-core")
     )
   ).dependsOn(
     phantomDsl,
+    phantomZookeeper,
     phantomTesting % "test, provided"
   )
 
@@ -216,11 +217,10 @@ object phantom extends Build {
       "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
       "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided",
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+      "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
-        ),
-      "com.google.guava"                 %  "guava"                    % "0.17"
+      )
     )
   )
 
@@ -240,8 +240,7 @@ object phantom extends Build {
       "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
-      ),
-      "com.google.guava"                 %  "guava"                    % "0.17"
+      )
     )
   ).dependsOn(
     phantomZookeeper
@@ -255,7 +254,9 @@ object phantom extends Build {
     name := "phantom-example"
   ).dependsOn(
     phantomDsl,
-    phantomThrift
+    phantomThrift,
+    phantomZookeeper,
+    phantomTesting
   )
 
   lazy val phantomScalatraTest = Project(
