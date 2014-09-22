@@ -18,11 +18,13 @@ package com.websudos.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.util.{ Date, UUID }
+import java.util.Date
+
 import org.joda.time.DateTime
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.websudos.phantom.column.{ AbstractColumn, Operations }
-import com.websudos.phantom.query.{ QueryCondition, SelectQuery, SelectWhere }
+import com.websudos.phantom.column.{AbstractColumn, Operations}
+import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
 
 object Implicits extends Operations {
 
@@ -86,6 +88,12 @@ object Implicits extends Operations {
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
+
+
+  type UUID = java.util.UUID
+  type Row = com.datastax.driver.core.Row
+  type ResultSet = com.datastax.driver.core.ResultSet
+  type Session = com.datastax.driver.core.Session
 
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {

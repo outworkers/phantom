@@ -11,6 +11,8 @@ Changelog
     <li><a href="#version-0.9.0">0.9.0 - 24.06.2014</a></li>
     <li><a href="#version-1.0.0">1.0.0 - 04.08.2014</a></li>
     <li><a href="#version-1.1.0">1.1.0 - 20.08.2014</a></li>
+    <li><a href="#version-1.2.0">1.2.0 - 27.08.2014</a></li>
+    <li><a href="#version-1.3.0">1.3.0 - 05.09.2014</a></li>
 </ul>
 
 
@@ -84,3 +86,14 @@ Changelog
 - PHANTOM-107: Add documentation for using our Zookeeper testing utilities.
 - PHANTOM-113: Using a ZooKeeper Manager implementation to track availability and instantiation of ZooKeeper nodes.
 
+
+<a id="version-1.2.0">1.2.0</a>
+===============================
+
+- PHANTOM-115: Fix SBT plugin dependency caused by ```publishSigned``` task in the GPG plugin. Kudos to Stephen Samuel.
+
+
+<a id="version-1.3.0">1.3.0</a>
+===============================
+
+- PHANTOM-
