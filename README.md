@@ -46,10 +46,10 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
             <li>
                 <p><a href="#indexing-columns">Indexing columns</a></p>
                 <ul>
-                    <li><a href="#partition-key">Partition Key</a></li>
-                    <li><a href="#primary-key">Primary Key</a></li>
-                    <li><a href="#secondary-key">Secondary Index Key</a></li>
-                    <li><a href="#clustering-order">Clustering Order Key</a></li>
+                    <li><a href="#partitionkey">PartitionKey</a></li>
+                    <li><a href="#primarykey">PrimaryKey</a></li>
+                    <li><a href="#secondaryindex">SecondaryIndex</a></li>
+                    <li><a href="#clusteringorder">ClusteringOrder</a></li>
                 </ul>
             </li>
             <li><a href="#thrift-columns">Thrift columns</a></li>
@@ -280,7 +280,6 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | UUIDColumn                    | java.util.UUID            | uuid              |
 | TimeUUIDColumn                | java.util.UUID            | timeuuid          |
 | CounterColumn                 | scala.Long                | counter           |
-| CounterColumn                 | scala.Long                | counter           |
 | StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
 
@@ -339,7 +338,7 @@ Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 Instead of waiting for Cassandra to tell you you've done bad things, phantom won't let you compile them, saving you a lot of time.
 
-<a id="partition-key">PartitionKey[T]</a>
+<a id="partitionkey">PartitionKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -354,7 +353,7 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
 
-<a id="primary-key">PrimaryKey[T]</a>
+<a id="primarykey">PrimaryKey[T]</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -368,7 +367,7 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-<a id="secondary-key">Index</a>
+<a id="secondaryindex">SecondaryIndex</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -378,7 +377,7 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-<a id="clustering-order">ClusteringOrder</a>
+<a id="clusteringorder">ClusteringOrder</a>
 =================================================
 <a href="#table-of-contents">back to top</a>
 
