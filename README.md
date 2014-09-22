@@ -150,13 +150,7 @@ Phantom is built on top of the [Datastax Java Driver](https://github.com/datasta
 
 If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html). An even bette introduction is available on [our blog](http://blog.websudos.com/category/nosql/cassandra/), where we have a full series of introductory posts to Cassandra with phantom.
 
-We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
-
-You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group or via the below listed emails.
-
-We are also extremely grateful if you add your company to our list of adopters, as it makes it easy for us to further increase adoption, 
-contributions and make phantom better and better.
-
+We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions! Please use GitHub for any issues or bug reports.
 
 Adopters
 ========
