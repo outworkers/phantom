@@ -3,6 +3,10 @@ phantom [![Build Status](https://travis-ci.org/websudos/phantom.svg?branch=devel
 ==============
 Reactive type-safe Scala DSL for Cassandra
 
+To stay up-to-date with our latest releases and news, follow us on Twitter: [@websudos](https://twitter.com/websudos).
+
+If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, 
+but the more adopters our projects have, the more people from our company will actively work to make them better.
 
 Using phantom
 =============
@@ -10,17 +14,19 @@ Using phantom
 The latest major release is: ```val phantomVersion = 1.2.2```.
 Phantom is published to Maven Central and it's actively and avidly developed.
 
+### Scala 2.10 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
 The latest development version is ```val phantomVersion = 1.2.7```. This version is likely only available on our Maven repository as an intermediary release.
 
+### Scala 2.11 releases ###
+
+The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point in time, the only Scala 2.11 compatible modules are:
+ 
+- ```phantom-dsl```.
+
+
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
-
-If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, 
-but the more adopters our projects have, the more people from our company will actively work to make them better.
-
-To stay up-to-date with our latest releases and news, follow us on Twitter: [@websudos](https://twitter.com/websudos).
-
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
