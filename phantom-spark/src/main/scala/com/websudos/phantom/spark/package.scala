@@ -18,9 +18,6 @@
 
 package com.websudos.phantom
 
-
-
-
 package object spark {
 
   implicit class AugmentedCassandraTable[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
