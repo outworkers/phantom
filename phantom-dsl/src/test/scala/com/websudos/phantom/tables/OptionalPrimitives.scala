@@ -19,7 +19,7 @@ import java.net.InetAddress
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.Row
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}

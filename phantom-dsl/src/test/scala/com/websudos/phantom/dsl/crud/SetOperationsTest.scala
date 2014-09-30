@@ -15,7 +15,7 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{TestRow, TestTable}

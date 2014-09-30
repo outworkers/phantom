@@ -21,7 +21,7 @@ import org.joda.time.DateTime
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.helper.{ModelSampler, TestSampler}

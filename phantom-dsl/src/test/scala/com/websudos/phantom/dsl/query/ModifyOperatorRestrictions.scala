@@ -19,7 +19,7 @@ import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ CounterTableTest, TimeSeriesTable, TwoKeys }
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
   

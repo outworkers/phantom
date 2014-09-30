@@ -19,8 +19,8 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite

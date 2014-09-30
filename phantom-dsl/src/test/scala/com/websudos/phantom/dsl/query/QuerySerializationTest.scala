@@ -30,7 +30,7 @@ import com.websudos.phantom.tables.{
   TableWithCompoundKey,
   TwoKeys
 }
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 class QuerySerializationTest extends FlatSpec with Matchers {
 
