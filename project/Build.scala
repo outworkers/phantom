@@ -45,11 +45,6 @@ object phantom extends Build {
         </scm>
         <developers>
           <developer>
-            <id>creyer</id>
-            <name>Sorin Chiprian</name>
-            <url>http://github.com/creyer</url>
-          </developer>
-          <developer>
             <id>alexflav</id>
             <name>Flavian Alexandru</name>
             <url>http://github.com/alexflav23</url>
@@ -73,7 +68,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.2.8",
+    version := "1.2.9",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
