@@ -43,22 +43,25 @@ object Records extends Enumeration {
 
 case class EnumRecord(
   name: String,
-  enum: Records.type#Value
+  enum: Records.type#Value,
+  optEnum: Option[Records.type#Value]
 )
 
 sealed class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
   object enum extends EnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
+  object optEnum extends OptionalEnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
 
   def fromRow(row: Row): EnumRecord = {
     EnumRecord(
       id(row),
-      enum(row)
+      enum(row),
+      optEnum(row)
     )
   }
 }
 
-object EnumTable extends EnumTable
+object EnumTable extends EnumTable with PhantomCassandraConnector
 
 sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
 

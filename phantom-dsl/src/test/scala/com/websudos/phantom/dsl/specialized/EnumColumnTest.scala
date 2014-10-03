@@ -21,22 +21,23 @@ package com.websudos.phantom.dsl.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.twitter.conversions.time._
 import com.twitter.util.Await
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{Records, EnumRecord, EnumTable}
+import com.websudos.phantom.tables.{EnumRecord, EnumTable, Records}
+import com.websudos.util.testing.AsyncAssertionsHelper._
 
 class EnumColumnTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(EnumTable.create.execute(), 2.seconds)
+    Await.result(EnumTable.create.execute(), 2.seconds)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
-    val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne)
+    val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, None)
 
 
     val chain = for {
-      insert <- EnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).execute()
+      insert <- EnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
       get <- EnumTable.select.where(_.id eqs sample.name).get()
     } yield get
 
@@ -44,6 +45,27 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
       res => {
         res.isDefined shouldEqual true
         res.get.enum shouldEqual sample.enum
+        res.get.optEnum.isDefined shouldEqual false
+        res.get.optEnum shouldEqual None
+      }
+    }
+  }
+
+  it should "store a simple record and parse an Enumeration value and an Optional value back from the stored value" in {
+    val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, Some(Records.TypeTwo))
+
+
+    val chain = for {
+      insert <- EnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      get <- EnumTable.select.where(_.id eqs sample.name).get()
+    } yield get
+
+    chain.successful {
+      res => {
+        res.isDefined shouldEqual true
+        res.get.enum shouldEqual sample.enum
+        res.get.optEnum.isDefined shouldEqual true
+        res.get.optEnum shouldEqual sample.optEnum
       }
     }
   }
