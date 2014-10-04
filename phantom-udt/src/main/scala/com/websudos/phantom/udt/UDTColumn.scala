@@ -83,7 +83,7 @@ abstract class UDTColumn[
 
   def connector: CassandraConnector
 
-  private[this] lazy val typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
+  private[this] def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
 
   override def apply(row: Row): T = {
     val instance: T = this.clone().asInstanceOf[T]
