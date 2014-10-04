@@ -68,7 +68,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.2.9",
+    version := "1.3.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -157,9 +157,9 @@ object phantom extends Build {
     )
   ).dependsOn(
     phantomDsl,
+    phantomZookeeper,
     phantomTesting % "test, provided"
   )
-
 
   lazy val phantomSpark = Project(
     id = "phantom-spark",
