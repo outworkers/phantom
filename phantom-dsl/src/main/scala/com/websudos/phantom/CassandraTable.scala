@@ -115,6 +115,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   @throws(classOf[InvalidPrimaryKeyException])
   private[phantom] def defineTableKey(): String = {
 
+    preconditions()
+
     // Get the list of primary keys that are not partition keys.
     val primaries = primaryKeys
     val primaryString = primaryKeys.map(_.name).mkString(", ")

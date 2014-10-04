@@ -15,11 +15,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-import com.datastax.driver.core.Row
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraConnector
-import com.websudos.phantom.column.EnumColumn
 
 sealed class BasicTable extends CassandraTable[BasicTable, String] {
 
@@ -80,8 +77,8 @@ object ClusteringTable extends ClusteringTable with PhantomCassandraConnector
 sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object id2 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Ascending
-  object id3 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
+  object id2 extends UUIDColumn(this) with ClusteringOrder[UUID] with Ascending
+  object id3 extends UUIDColumn(this) with ClusteringOrder[UUID] with Descending
   object placeholder extends StringColumn(this) with ClusteringOrder[String] with Descending
 
   def fromRow(r: Row): String = {
@@ -90,6 +87,22 @@ sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTabl
 }
 
 object ComplexClusteringTable extends ComplexClusteringTable with PhantomCassandraConnector
+
+
+sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable, String] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+
+  object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
+  object id3 extends UUIDColumn(this) with ClusteringOrder[UUID] with Descending
+  object placeholder extends StringColumn(this) with ClusteringOrder[String] with Descending
+
+  def fromRow(r: Row): String = {
+    placeholder(r)
+  }
+}
+
+object BrokenClusteringTable extends BrokenClusteringTable
+
 
 sealed class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
 

@@ -1,12 +1,8 @@
 package com.websudos.phantom
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
-import com.websudos.phantom.tables.{
-  TableWithSingleKey,
-  TableWithCompoundKey,
-  TableWithCompositeKey,
-  TableWithNoKey
-}
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+
+import com.websudos.phantom.tables.{BrokenClusteringTable, TableWithCompositeKey, TableWithCompoundKey, TableWithNoKey, TableWithSingleKey}
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {
 
@@ -25,6 +21,12 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
   it should "throw an error if the schema has no PartitionKey" in {
     intercept[InvalidPrimaryKeyException] {
       TableWithNoKey.defineTableKey()
+    }
+  }
+
+  it should "throw an error if the table uses a ClusteringColumn with PrimaryKeys" in {
+    intercept[InvalidPrimaryKeyException] {
+      BrokenClusteringTable.defineTableKey()
     }
   }
 
