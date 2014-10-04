@@ -22,7 +22,7 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ ResultSet, Row }
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.example.basics.{ DBConnector, Recipe, Recipes }
+import com.websudos.phantom.example.basics.{ExampleConnector, DBConnector, Recipe, Recipes}
 import com.twitter.conversions.time._
 
 /**
@@ -70,7 +70,7 @@ sealed class AdvancedRecipes private() extends CassandraTable[Recipes, Recipe] {
 }
 
 
-object AdvancedRecipes extends AdvancedRecipes with DBConnector {
+object AdvancedRecipes extends AdvancedRecipes with ExampleConnector {
 
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)

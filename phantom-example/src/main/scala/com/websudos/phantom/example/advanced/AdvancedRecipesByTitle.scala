@@ -19,7 +19,7 @@ import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Row }
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.example.basics.DBConnector
+import com.websudos.phantom.example.basics.{ExampleConnector, DBConnector}
 
 
 // Now you want to enable querying Recipes by author.
@@ -41,7 +41,7 @@ sealed class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitl
   }
 }
 
-object AdvancedRecipesByTitle extends AdvancedRecipesByTitle with DBConnector {
+object AdvancedRecipesByTitle extends AdvancedRecipesByTitle with ExampleConnector {
   override lazy val tableName = "recipes_by_title"
 
 

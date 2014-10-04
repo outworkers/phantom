@@ -68,7 +68,7 @@ sealed class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Rec
 }
 
 
-object CompositeKeyRecipes extends CompositeKeyRecipes with DBConnector {
+object CompositeKeyRecipes extends CompositeKeyRecipes with ExampleConnector {
 
   // now you can use composite keys in the normal way.
   // If you would select only by id,
