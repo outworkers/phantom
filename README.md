@@ -59,6 +59,7 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
     <li>
         <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
+            <li><a href="#common-query-methods">Common query methods</a></li>
             <li><a href="#select-queries">SELECT queries</a></li>
             <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
             <li><a href="#where-and-operators">WHERE and AND clause operators</a></li>
@@ -68,7 +69,6 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
             <li><a href="#truncate-queries">TRUNCATE queries</a></li>
             <li><a href="#create-queries">CREATE queries</a></li>
             <li><a href="#alter-queries">ALTER queries</a></li>
-            <li><a href="#common-query-methods">Common query methods</a></li>
         </ul>
     </li>
     <li>
@@ -454,7 +454,28 @@ The query syntax is inspired by the Foursquare Rogue library and aims to replica
 Phantom works with both Scala Futures and Twitter Futures as first class citizens.
 
 
-<a id="select-queries">"Select" queries</a>
+<a id="common-query-methods">Common query methods</a>
+=====================================================
+<a href="#table-of-contents">back to top</a>
+
+The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
+.scala).
+
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
+| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
+| ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
+| ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
+| ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
+| ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
+| ```serialConsistencyLevel```      | Retrieves the serial consistency level in use.                                        |
+| ```serialConsistencyLevel_=```    | Sets the serial consistency level to use.                                             |
+| ```forceNoValues_=```             | Sets the serial consistency level to use.                                             |
+| ```routingKey```                  | Retrieves the Routing Key as a ByteBuffer.                                            |
+
+
+<a id="select-queries">Select queries</a>
 ================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -464,8 +485,6 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```orderBy```                     | Adds an ```ORDER_BY column_name``` to the query                                       |
 | ```allowFiltering```              | Allows Cassandra to filter records in memory. This is an expensive operation.         |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
-| ```setFetchSize       ```         | Sets the maximum number of records to retrieve. Default is 10000                      |
 | ```limit```                       | Sets the exact number of records to retrieve.                                         |
 
 
@@ -513,7 +532,6 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```value```                       | A type safe Insert query builder. Throws an error for ```null``` values.              |
 | ```valueOrNull```                 | This will accept a ```null``` without throwing an error.                              |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 | ```ttl```                         | Sets the "Time-To-Live" for the record.                                               |
 
 
@@ -526,7 +544,6 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 | ```onflyIf```                     | Addition update condition. Used on non-primary columns                                |
 
 
@@ -537,28 +554,7 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
-
-
-<a id="common-query-methods">Common query methods</a>
-=====================================================
-<a href="#table-of-contents">back to top</a>
-
-The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
-.scala).
-
-| Method name                       | Description                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------- |
-| ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
-| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
-| ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
-| ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
-| ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
-| ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
-| ```serialConsistencyLevel```      | Retrieves the serial consistency level in use.                                        |
-| ```serialConsistencyLevel_=```    | Sets the serial consistency level to use.                                             |
-| ```forceNoValues_=```             | Sets the serial consistency level to use.                                             |
-| ```routingKey```                  | Retrieves the Routing Key as a ByteBuffer.                                            |
+| ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 
 
 <a id="scala-futures">Scala Futures</a>
