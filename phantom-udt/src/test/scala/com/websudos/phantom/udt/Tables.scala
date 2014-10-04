@@ -1,9 +1,9 @@
 package com.websudos.phantom.udt
 
 
+import com.twitter.util.Future
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.zookeeper.SimpleCassandraConnector
-
 
 case class TestRecord(id: UUID, name: String)
 
@@ -35,4 +35,8 @@ sealed class TestFields extends CassandraTable[TestFields, TestRecord] {
   }
 }
 
-object TestFields extends TestFields with Connector
+object TestFields extends TestFields with Connector {
+  def getAddressById(id: UUID): Future[Option[address.type]] = {
+    select(_.address).where(_.id eqs id).get()
+  }
+}

@@ -1,14 +1,9 @@
 package com.websudos.phantom.udt
 
-import java.net.InetAddress
-import java.util.{Date, UUID}
-
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.DynamicVariable
-
-import org.joda.time.DateTime
 
 import com.datastax.driver.core.{Row, UDTValue, UserType}
 import com.websudos.phantom.column.Column
@@ -31,7 +26,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 
   type ValueType = T
 
-  lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
+  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decoded
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
@@ -49,7 +44,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 }
 
 
-sealed abstract class Field[
+private[udt] abstract class Field[
   Owner <: CassandraTable[Owner, Record],
   Record,
   FieldOwner <: UDTColumn[Owner, Record, _],
@@ -72,6 +67,8 @@ abstract class UDTColumn[
   Record,
   T <: UDTColumn[Owner, Record, T]
 ](table: CassandraTable[Owner, Record]) extends Column[Owner,Record, T](table) {
+
+  type UDT = T
 
   /**
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
@@ -102,14 +99,12 @@ abstract class UDTColumn[
     Some(instance)
   }
 
-  private[this] lazy val _name: String = {
-    getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
-  }
+  private[this] lazy val _name: String = cm.reflect(this).symbol.name.toTypeName.decoded
+
 
   def toCType(v: T): AnyRef = {
     val data = typeDef.newValue()
     fields.foreach(field => {
-      typeDef.asCQLQuery()
       field.setSerialise(data)
     })
     data
@@ -139,75 +134,16 @@ abstract class UDTColumn[
   }
 
   def schema(): String = {
-    val queryInit = s"CREATE TYPE IF NOT EXISTS $cassandraType ("
+    val queryInit = s"CREATE TYPE IF NOT EXISTS $name("
     val queryColumns = _fields.foldLeft("")((qb, c) => {
+      if (qb.isEmpty) {
+        s"${c.name} ${c.cassandraType}"
+      } else {
         s"$qb, ${c.name} ${c.cassandraType}"
+      }
     })
-    queryInit + queryColumns + """");""""
+    queryInit + queryColumns + ");"
   }
 }
 
-class StringField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, String](column) {
-  def apply(row: UDTValue): Option[String] = Option(row.getString(name))
 
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setString(name, value)
-}
-
-class InetField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, InetAddress](column) {
-  def apply(row: UDTValue): Option[InetAddress] = Option(row.getInet(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setInet(name, value)
-}
-
-class IntField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Int](column) {
-  def apply(row: UDTValue): Option[Int] = Option(row.getInt(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setInt(name, value)
-}
-
-class DoubleField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Double](column) {
-  def apply(row: UDTValue): Option[Double] = Option(row.getDouble(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDouble(name, value)
-}
-
-class LongField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Long](column) {
-  def apply(row: UDTValue): Option[Long] = Option(row.getLong(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setLong(name, value)
-}
-
-class BigIntField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, BigInt](column) {
-  def apply(row: UDTValue): Option[BigInt] = Option(row.getVarint(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setVarint(name, value.bigInteger)
-}
-
-class BigDecimalField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, BigDecimal](column) {
-  def apply(row: UDTValue): Option[BigDecimal] = Option(row.getDecimal(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDecimal(name, value.bigDecimal)
-}
-
-class DateField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, Date](column) {
-  def apply(row: UDTValue): Option[Date] = Option(row.getDate(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value)
-}
-
-class DateTimeField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, DateTime](column) {
-  def apply(row: UDTValue): Option[DateTime] = Option(new DateTime(row.getDate(name)))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value.toDate)
-}
-
-/*
-class UDTField[Owner <: UDTColumn[Owner, ], T <: UDTColumn[_]](column: Owner) extends Field[Owner, T](column) {
-  def apply(row: Row): DateTime = new DateTime(row.getDate(name))
-}*/
-
-class UUIDField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, UUID](column) {
-  def apply(row: UDTValue): Option[UUID] = Option(row.getUUID(name))
-
-  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setUUID(name, value)
-}

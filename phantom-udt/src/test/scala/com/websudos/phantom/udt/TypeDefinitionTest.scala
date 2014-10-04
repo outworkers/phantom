@@ -18,21 +18,16 @@
 
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.testing.BaseTest
+import org.scalatest.{FlatSpec, Matchers}
 
-class TypeDefinitionTest extends BaseTest {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
+class TypeDefinitionTest extends FlatSpec with Matchers {
+
+  it should "extract the name of an UDT column" in {
+    TestFields.address.name shouldEqual "address"
   }
 
   it should "correctly serialise a UDT definition into a schema" in {
     TestFields.address.schema() shouldEqual
-      s"""
-        |CREATE TYPE ${Connector.keySpace}.address (
-        |   postCode text,
-        |   street text,
-        |   test int
-        |);
-      """.stripMargin
+      s"""CREATE TYPE IF NOT EXISTS address(postCode text, street text, test int);""".stripMargin
   }
 }

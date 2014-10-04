@@ -69,6 +69,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
+  def clustered: Boolean = clusteringColumns.nonEmpty
+
   /**
    * This method will filter the columns from a Clustering Order definition.
    * It is used to define TimeSeries tables, using the ClusteringOrder trait
@@ -142,7 +144,26 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     s"PRIMARY KEY ($key)"
   }
 
+  /**
+   * This method will check for common Cassandra anti-patterns during the intialisation of a schema.
+   * If the Schema definition violates valid CQL standard, this function will throw an error.
+   *
+   * A perfect example is using a mixture of Primary keys and Clustering keys in the same schema.
+   * While a Clustering key is also a primary key, when defining a clustering key all other keys must become clustering keys and specify their order.
+   *
+   * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
+   */
+  private[this] def preconditions(): Unit = {
+    if (clustered && primaryKeys.diff(clusteringColumns).nonEmpty) {
+      logger.error("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
+      throw new InvalidPrimaryKeyException("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
+    }
+  }
+
+  @throws[InvalidPrimaryKeyException]
   def schema(): String = {
+    preconditions()
+
     val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
     val queryColumns = columns.foldLeft("")((qb, c) => {
       if (c.isStaticColumn) {
@@ -152,7 +173,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       }
     })
     val tableKey = defineTableKey()
-    logger.info(s"Adding Primary keys indexes: $tableKey}")
+    logger.info(s"Adding Primary keys indexes: $tableKey")
     val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
@@ -163,6 +184,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => {
       val query = s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});"
+      logger.info("Auto-generating CQL queries for secondary indexes")
       logger.info(query)
       query
     })
