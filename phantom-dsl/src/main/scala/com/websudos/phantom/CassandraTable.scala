@@ -34,7 +34,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]] with MutableSyncBuffer[AbstractColumn[_]]
 
   private[this] lazy val _name: String = {
-    getClass.getName.split("\\.").toList.last.replaceAll("[^$]*\\$\\$[^$]*\\$[^$]*\\$|\\$\\$[^\\$]*\\$", "").dropRight(1)
+    cm.reflect(this).symbol.name.toTypeName.decoded
   }
 
   private[this] def extractCount(r: Row): Long = {
