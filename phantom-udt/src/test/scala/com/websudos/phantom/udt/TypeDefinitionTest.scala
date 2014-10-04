@@ -18,54 +18,21 @@
 
 package com.websudos.phantom.udt
 
-import java.util.UUID
-
-import com.datastax.driver.core.Row
-
-import com.twitter.conversions.time._
-import com.twitter.util.Await
-
-import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.BaseTest
 
-/*
 class TypeDefinitionTest extends BaseTest {
-  val keySpace = "udt_test"
-
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestTable.create.execute(), 2.seconds)
   }
 
   it should "correctly serialise a UDT definition into a schema" in {
-    val address = new Address
-
-    address.schema() shouldEqual "fsa"
+    TestFields.address.schema() shouldEqual
+      s"""
+        |CREATE TYPE ${Connector.keySpace}.address (
+        |   postCode text,
+        |   street text,
+        |   test int
+        |);
+      """.stripMargin
   }
 }
-
-case class TestRecord(id: UUID, str: String, address: Address)
-
-class TestTable extends CassandraTable[TestTable, TestRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object str extends StringColumn(this)
-  object address extends UDT[TestTable, TestRecord, Address](this) {
-
-    val keySpace = "udt_test"
-  }
-
-  def fromRow(r: Row): TestRecord = TestRecord(id(r), str(r), address(r))
-}
-
-object TestTable extends TestTable
-
-class Address extends UDT[TestTable, TestRecord, Address](TestTable) {
-
-  object id extends UUIDField[TestTable, TestRecord, Address](this)
-  object street extends StringField[TestTable, TestRecord, Address](this)
-
-  object postcode extends StringField[TestTable, TestRecord, Address](this)
-
-  val keySpace = "udt_test"
-}
-*/

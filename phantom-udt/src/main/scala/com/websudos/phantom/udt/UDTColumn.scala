@@ -10,7 +10,7 @@ import scala.util.DynamicVariable
 
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.{UDTValue, Cluster, Row, UserType}
+import com.datastax.driver.core.{Row, UDTValue, UserType}
 import com.websudos.phantom.column.Column
 import com.websudos.phantom.zookeeper.CassandraConnector
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
@@ -28,15 +28,20 @@ private[phantom] object Lock
  * @tparam T The Scala type corresponding the underlying Cassandra type of the UDT field.
 */
 sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Short) T : CassandraPrimitive](owner: UDTColumn[_, _, _]) {
+
+  type ValueType = T
+
   lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
   def value: T = valueBox.value.getOrElse(null.asInstanceOf[T])
 
-  private[udt] def setSerialise(value: T, data: UDTValue): UDTValue
+  private[udt] def setSerialise(data: UDTValue): UDTValue
 
   private[udt] def set(value: Option[T]): Unit = valueBox.value_=(value)
+
+  private[udt] def set(data: UDTValue): Unit = valueBox.value_=(apply(data))
 
   def cassandraType: String = CassandraPrimitive[T].cassandraType
 
@@ -62,7 +67,7 @@ object PrimitiveBoxedManifests {
 }
 
 
-class UDTColumn[
+abstract class UDTColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
   T <: UDTColumn[Owner, Record, T]
@@ -74,25 +79,18 @@ class UDTColumn[
    */
   private[udt] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]] with MutableSyncBuffer[AbstractField[_]]
 
-
-
-
-  def fieldByName(name: String): Option[AbstractField[_]] = _fields.find(_.name == name)
-
   def fields: List[AbstractField[_]] = _fields.toList
 
   def connector: CassandraConnector
 
-  val cluster: Cluster
-
-  private[this] lazy val typeDef: UserType = cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
+  private[this] lazy val typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
 
   override def apply(row: Row): T = {
     val instance: T = this.clone().asInstanceOf[T]
     val data = row.getUDTValue(this.name)
 
     instance.fields.foreach(field => {
-      field.set(field(data))
+      field.set(data)
     })
 
     instance
@@ -112,7 +110,7 @@ class UDTColumn[
     val data = typeDef.newValue()
     fields.foreach(field => {
       typeDef.asCQLQuery()
-      field.setSerialise(field.value, data)
+      field.setSerialise(data)
     })
     data
   }
@@ -152,55 +150,55 @@ class UDTColumn[
 class StringField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, String](column) {
   def apply(row: UDTValue): Option[String] = Option(row.getString(name))
 
-  override private[udt] def setSerialise(value: String, data: UDTValue): UDTValue = data.setString(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setString(name, value)
 }
 
 class InetField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, InetAddress](column) {
   def apply(row: UDTValue): Option[InetAddress] = Option(row.getInet(name))
 
-  override private[udt] def setSerialise(value: InetAddress, data: UDTValue): UDTValue = data.setInet(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setInet(name, value)
 }
 
 class IntField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Int](column) {
   def apply(row: UDTValue): Option[Int] = Option(row.getInt(name))
 
-  override private[udt] def setSerialise(value: Int, data: UDTValue): UDTValue = data.setInt(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setInt(name, value)
 }
 
 class DoubleField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Double](column) {
   def apply(row: UDTValue): Option[Double] = Option(row.getDouble(name))
 
-  override private[udt] def setSerialise(value: Double, data: UDTValue): UDTValue = data.setDouble(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDouble(name, value)
 }
 
 class LongField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, Long](column) {
   def apply(row: UDTValue): Option[Long] = Option(row.getLong(name))
 
-  override private[udt] def setSerialise(value: Long, data: UDTValue): UDTValue = data.setLong(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setLong(name, value)
 }
 
 class BigIntField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, BigInt](column) {
   def apply(row: UDTValue): Option[BigInt] = Option(row.getVarint(name))
 
-  override private[udt] def setSerialise(value: BigInt, data: UDTValue): UDTValue = data.setVarint(name, value.bigInteger)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setVarint(name, value.bigInteger)
 }
 
 class BigDecimalField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T)  extends Field[Owner, Record, T, BigDecimal](column) {
   def apply(row: UDTValue): Option[BigDecimal] = Option(row.getDecimal(name))
 
-  override private[udt] def setSerialise(value: BigDecimal, data: UDTValue): UDTValue = data.setDecimal(name, value.bigDecimal)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDecimal(name, value.bigDecimal)
 }
 
 class DateField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, Date](column) {
   def apply(row: UDTValue): Option[Date] = Option(row.getDate(name))
 
-  override private[udt] def setSerialise(value: Date, data: UDTValue): UDTValue = data.setDate(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value)
 }
 
 class DateTimeField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, DateTime](column) {
   def apply(row: UDTValue): Option[DateTime] = Option(new DateTime(row.getDate(name)))
 
-  override private[udt] def setSerialise(value: DateTime, data: UDTValue): UDTValue = data.setDate(name, value.toDate)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value.toDate)
 }
 
 /*
@@ -211,5 +209,5 @@ class UDTField[Owner <: UDTColumn[Owner, ], T <: UDTColumn[_]](column: Owner) ex
 class UUIDField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, UUID](column) {
   def apply(row: UDTValue): Option[UUID] = Option(row.getUUID(name))
 
-  override private[udt] def setSerialise(value: UUID, data: UDTValue): UDTValue = data.setUUID(name, value)
+  override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setUUID(name, value)
 }
