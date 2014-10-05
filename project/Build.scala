@@ -154,6 +154,9 @@ object phantom extends Build {
     name := "phantom-udt",
     scalacOptions ++= Seq(
       "-language:experimental.macros"
+    ),
+    libraryDependencies ++= Seq(
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
     )
   ).dependsOn(
     phantomDsl,

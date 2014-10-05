@@ -213,4 +213,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 }
 
+
+
+
 private[phantom] case object Lock

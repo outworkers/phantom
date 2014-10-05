@@ -18,6 +18,10 @@
 
 package com.websudos.phantom
 
+import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
+import com.datastax.driver.core.{Session, ResultSet}
+import com.twitter.util.Future
+
 package object udt {
 
   type BooleanField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.BooleanField[Owner,
@@ -53,4 +57,17 @@ package object udt {
 
   type DateTimeField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.DateTimeField[Owner,
     Record, Col]
+
+  implicit class CassandraUDT[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
+    def udtExecute()(implicit session: Session): Future[ResultSet] = {
+      UDTCollector.execute()
+    }
+
+    def udtFuture()(implicit session: Session, ec: ExecutionContext): ScalaFuture[ResultSet] = {
+      UDTCollector.future()
+    }
+  }
+
+
+
 }

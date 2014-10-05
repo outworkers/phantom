@@ -36,7 +36,9 @@ sealed class TestFields extends CassandraTable[TestFields, TestRecord] {
 }
 
 object TestFields extends TestFields with Connector {
+
   def getAddressById(id: UUID): Future[Option[address.type]] = {
-    select(_.address).where(_.id eqs id).get()
+    select(table => { SelectColumnRequired(table.address) }).where(_.id eqs id).get()
   }
+
 }
