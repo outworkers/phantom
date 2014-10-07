@@ -22,7 +22,7 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ ResultSet, Row }
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.example.basics.{ExampleConnector, DBConnector, Recipe, Recipes}
+import com.websudos.phantom.example.basics.{ExampleConnector, Recipe, Recipes}
 import com.twitter.conversions.time._
 
 /**

@@ -19,7 +19,7 @@ import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Row }
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.example.basics.{ExampleConnector, DBConnector}
+import com.websudos.phantom.example.basics.ExampleConnector
 
 
 // Now you want to enable querying Recipes by author.
