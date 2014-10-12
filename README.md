@@ -26,7 +26,8 @@ The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point
 - ```phantom-dsl```.
 
 
-The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
+The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
+Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant. 
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
