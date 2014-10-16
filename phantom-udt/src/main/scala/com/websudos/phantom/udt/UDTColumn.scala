@@ -1,15 +1,15 @@
 package com.websudos.phantom.udt
 
-import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.DynamicVariable
 
 import com.datastax.driver.core.querybuilder.BuiltStatement
-import com.datastax.driver.core.{ResultSet, Session, Row, UDTValue, UserType}
+import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
-import com.websudos.phantom.column.{AbstractColumn, Column}
+import com.websudos.phantom.column.Column
 import com.websudos.phantom.query.ExecutableStatement
 import com.websudos.phantom.zookeeper.CassandraConnector
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
@@ -98,8 +98,7 @@ private[udt] object UDTCollector {
 
 
 sealed trait UDTDefinition[T] {
-
-  column: AbstractColumn[T] =>
+  def name: String
 
   def fields: List[AbstractField[_]] = _fields.toList
 
@@ -158,7 +157,7 @@ abstract class UDTColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
   T <: UDTColumn[Owner, Record, T]
-](table: CassandraTable[Owner, Record]) extends Column[Owner,Record, T](table) with UDTDefinition[T] {
+](table: CassandraTable[Owner, Record]) extends Column[Owner,Record, T](table: CassandraTable[Owner, Record]) with UDTDefinition[T] {
 
   override def apply(row: Row): T = {
     val instance: T = clone().asInstanceOf[T]
