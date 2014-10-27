@@ -18,7 +18,7 @@
 
 package com.websudos.phantom.dsl.specialized
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 
 import com.twitter.conversions.time._

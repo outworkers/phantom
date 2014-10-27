@@ -21,7 +21,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.helper.{ ModelSampler, TestSampler }
 import com.websudos.phantom.Implicits._
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 case class CounterRecord(id: UUID, count: Long)
 

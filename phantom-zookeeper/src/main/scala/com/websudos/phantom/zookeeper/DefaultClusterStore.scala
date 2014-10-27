@@ -19,17 +19,16 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.concurrent._
 
 import org.slf4j.LoggerFactory
 
-import com.datastax.driver.core.{Session, Cluster}
+import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
-import com.twitter.conversions.time._
-import com.twitter.util.{Await, Try, Future}
+import com.twitter.util.{Await, Duration, Future, Try}
 
 private[zookeeper] case object Lock
 
@@ -87,16 +86,16 @@ trait ClusterStore {
     inited = value
   }
 
-  def initStore(keySpace: String, address: InetSocketAddress ): Unit = Lock.synchronized {
+  def initStore(keySpace: String, address: InetSocketAddress)(implicit timeout: Duration): Unit = Lock.synchronized {
     if (!isInited) {
       val conn = s"${address.getHostName}:${address.getPort}"
       zkClientStore = ZooKeeper.newRichClient(conn)
 
-      Console.println(s"Connecting to ZooKeeper server instance on $conn")
+      logger.info(s"Connecting to ZooKeeper server instance on $conn")
 
-      val res = Await.result(zkClientStore.connect(), 2.seconds)
+      val res = Await.result(zkClientStore.connect(), timeout)
 
-      val ports = Await.result(hostnamePortPairs, 2.seconds)
+      val ports = Await.result(hostnamePortPairs, timeout)
 
       clusterStore = Cluster.builder()
         .addContactPointsWithPorts(ports.asJava)

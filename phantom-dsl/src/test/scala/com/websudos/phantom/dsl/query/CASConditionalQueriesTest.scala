@@ -19,7 +19,7 @@ import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ Primitives, SecondaryIndexTable, TimeSeriesTable }
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 class CASConditionalQueriesTest extends FlatSpec with Matchers {
   it should "allow using a non-index column in a conditional update clause" in {

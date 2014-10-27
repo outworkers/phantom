@@ -16,7 +16,7 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.helper.ModelSampler
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 case class SimpleStringClass(something: String)

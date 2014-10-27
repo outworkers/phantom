@@ -7,7 +7,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val newzlyUtilVersion = "0.1.19"
+  val UtilVersion = "0.1.22"
   val datastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
@@ -45,11 +45,6 @@ object phantom extends Build {
         </scm>
         <developers>
           <developer>
-            <id>creyer</id>
-            <name>Sorin Chiprian</name>
-            <url>http://github.com/creyer</url>
-          </developer>
-          <developer>
             <id>alexflav</id>
             <name>Flavian Alexandru</name>
             <url>http://github.com/alexflav23</url>
@@ -73,7 +68,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.2.8",
+    version := "1.3.2",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -144,7 +139,7 @@ object phantom extends Build {
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "provided",
       "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
     )
   ).dependsOn(
@@ -159,12 +154,15 @@ object phantom extends Build {
     name := "phantom-udt",
     scalacOptions ++= Seq(
       "-language:experimental.macros"
+    ),
+    libraryDependencies ++= Seq(
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
     )
   ).dependsOn(
     phantomDsl,
+    phantomZookeeper,
     phantomTesting % "test, provided"
   )
-
 
   lazy val phantomSpark = Project(
     id = "phantom-spark",
@@ -197,7 +195,7 @@ object phantom extends Build {
       "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
       "org.scalatest"                %% "scalatest"                         % scalatestVersion          % "test, provided",
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided"
+      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
     phantomDsl,
@@ -216,7 +214,7 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
-      "com.newzly"                   %% "util-testing"                      % newzlyUtilVersion      % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
       "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
@@ -284,7 +282,7 @@ object phantom extends Build {
       "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
       "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
       "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-      "com.newzly"                %% "util-testing"                     % newzlyUtilVersion      % "provided"
+      "com.websudos"              %% "util-testing"                     % UtilVersion            % "provided"
     )
   ).dependsOn(
     phantomDsl,

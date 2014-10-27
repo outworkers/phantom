@@ -37,7 +37,7 @@ trait CassandraManager {
   implicit def session: Session
 }
 
-object DefaultCassandraManager extends CassandraManager {
+trait DefaultCassandraManager extends CassandraManager {
 
   val livePort = 9042
   val embeddedPort = 9142
@@ -77,6 +77,8 @@ object DefaultCassandraManager extends CassandraManager {
     }
   }
 }
+
+object DefaultCassandraManager extends DefaultCassandraManager
 
 trait SimpleCassandraConnector extends CassandraConnector {
 

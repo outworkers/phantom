@@ -26,7 +26,7 @@ import com.websudos.phantom.tables.{
   Recipes,
   TestTable
 }
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 
 class InsertCasTest extends PhantomCassandraTestSuite {
 

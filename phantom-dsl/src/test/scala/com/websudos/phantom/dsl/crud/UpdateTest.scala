@@ -26,7 +26,7 @@ import com.websudos.phantom.tables.{
   TestRow,
   TestTable
 }
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 
 class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
 
