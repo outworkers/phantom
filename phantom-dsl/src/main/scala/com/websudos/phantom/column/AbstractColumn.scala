@@ -30,8 +30,10 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   private[phantom] val isClusteringKey = false
   private[phantom] val isAscending = false
 
-  lazy val name: String = {
+  private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decoded
   }
+  
+  def name: String = _name
 }
 
