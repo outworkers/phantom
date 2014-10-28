@@ -20,7 +20,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ Primitives, Recipe, Recipes }
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 class BatchRestrictionTest extends FlatSpec with Matchers {
   

@@ -18,7 +18,7 @@ package com.websudos.phantom.dsl.query
 import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ Primitives, Recipes }
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing.Sampler
 
 class AllowedBatchQueriesTest extends FlatSpec with Matchers {
 

@@ -22,7 +22,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 
 
 class IterateeBigTest extends BigTest with Matchers {

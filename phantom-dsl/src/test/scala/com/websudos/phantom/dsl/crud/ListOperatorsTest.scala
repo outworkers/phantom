@@ -26,7 +26,7 @@ import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{Primitives, Recipe, Recipes}
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing.AsyncAssertionsHelper._
 
 class ListOperatorsTest extends PhantomCassandraTestSuite {
 
