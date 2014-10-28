@@ -15,15 +15,12 @@
  */
 package com.websudos.phantom.thrift
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
-import com.datastax.driver.core.utils.UUIDs
-import com.websudos.util.testing.AsyncAssertionsHelper._
-import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
@@ -35,22 +32,14 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "put an item to a thrift map column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.getARandomString -> sample)
-    val toAdd = Sampler.getARandomString -> sample2
+    val map = Map(Sampler.string -> sample)
+    val toAdd = Sampler.string -> sample2
     val expected = map + toAdd
 
 
@@ -82,22 +71,14 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "put an item to a thrift map column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.getARandomString -> sample)
-    val toAdd = Sampler.getARandomString -> sample2
+    val map = Map(Sampler.string -> sample)
+    val toAdd = Sampler.string -> sample2
     val expected = map + toAdd
 
 
@@ -127,28 +108,16 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
 
   it should "put several items to a thrift map column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
-    val map = Map(Sampler.getARandomString -> sample)
-    val toAdd = Map(Sampler.getARandomString -> sample2, Sampler.getARandomString -> sample3)
+    val map = Map(Sampler.string -> sample)
+    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
     val expected = map ++ toAdd
 
 
@@ -179,28 +148,15 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "put several items to a thrift map column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
+    val sample3 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val map = Map(Sampler.getARandomString -> sample)
-    val toAdd = Map(Sampler.getARandomString -> sample2, Sampler.getARandomString -> sample3)
+    val map = Map(Sampler.string -> sample)
+    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
     val expected = map ++ toAdd
 
 

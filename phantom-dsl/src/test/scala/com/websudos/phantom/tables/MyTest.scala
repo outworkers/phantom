@@ -15,11 +15,8 @@
  */
 package com.websudos.phantom.tables
 
-import com.datastax.driver.core.Row
-import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.PhantomCassandraConnector
 
 case class MyTestRow(
   key: String,
@@ -27,13 +24,6 @@ case class MyTestRow(
   stringlist: List[String]
 )
 
-object MyTestRow extends ModelSampler[MyTestRow] {
-  def sample: MyTestRow = MyTestRow(
-    Sampler.getARandomString,
-    Some(Sampler.getARandomInteger()),
-    List.range(0, 20).map(x => Sampler.getARandomString)
-  )
-}
 
 sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
   def fromRow(r: Row): MyTestRow = {
@@ -48,7 +38,7 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 
 }
 
-object MyTest extends MyTest with TestSampler[MyTest, MyTestRow] with PhantomCassandraConnector {
+object MyTest extends MyTest with PhantomCassandraConnector {
 
   override val tableName = "mytest"
 

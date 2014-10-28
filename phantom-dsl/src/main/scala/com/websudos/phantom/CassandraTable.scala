@@ -15,6 +15,7 @@
  */
 package com.websudos.phantom
 
+
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
@@ -22,8 +23,11 @@ import scala.util.Try
 
 import org.slf4j.LoggerFactory
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{Session, Row}
 import com.datastax.driver.core.querybuilder.QueryBuilder
+
+import com.twitter.util.{Duration, Await}
+
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 
@@ -32,6 +36,8 @@ case class InvalidPrimaryKeyException(msg: String = "You need to define at least
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
   private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]] with MutableSyncBuffer[AbstractColumn[_]]
+
+  private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
 
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decoded

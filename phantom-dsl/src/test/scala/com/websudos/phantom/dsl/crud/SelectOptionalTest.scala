@@ -18,10 +18,10 @@ package com.websudos.phantom.dsl.crud
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{OptionalPrimitive, OptionalPrimitives}
+import com.websudos.util.testing._
 
 class SelectOptionalTest extends PhantomCassandraTestSuite {
 
@@ -33,7 +33,7 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting the whole row" should "work fine when optional value defined" in {
-    checkRow(OptionalPrimitive.sample)
+    checkRow(gen[OptionalPrimitive])
   }
 
   it should "work fine when optional value is empty" in {

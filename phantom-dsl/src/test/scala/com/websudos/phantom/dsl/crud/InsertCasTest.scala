@@ -17,16 +17,11 @@ package com.websudos.phantom.dsl.crud
 
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{
-  MyTest,
-  Primitive,
-  Primitives,
-  Recipes,
-  TestTable
-}
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class InsertCasTest extends PhantomCassandraTestSuite {
 
@@ -41,7 +36,7 @@ class InsertCasTest extends PhantomCassandraTestSuite {
   }
 
   "Standard inserts" should "create multiple database entries" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -89,7 +84,7 @@ class InsertCasTest extends PhantomCassandraTestSuite {
 
 
   "Conditional inserts" should "not create duplicate database entries" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -139,7 +134,7 @@ class InsertCasTest extends PhantomCassandraTestSuite {
   "Conditional inserts" should "not create duplicate database entries with Twitter Futures" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

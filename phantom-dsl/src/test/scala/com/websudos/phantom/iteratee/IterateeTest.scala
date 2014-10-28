@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{ Primitives, Primitive, PrimitivesJoda, JodaRow }
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class IterateeTest extends PhantomCassandraTestSuite {
 
@@ -34,7 +34,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "get result fine" in {
-    val rows = for (i <- 1 to 1000) yield  JodaRow.sample
+    val rows = for (i <- 1 to 1000) yield gen[JodaRow]
     val batch = rows.foldLeft(BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
@@ -59,7 +59,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
 
   it should "get mapResult fine" in {
 
-    val rows = for (i <- 1 to 2000) yield Primitive.sample
+    val rows = for (i <- 1 to 2000) yield gen[Primitive]
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)

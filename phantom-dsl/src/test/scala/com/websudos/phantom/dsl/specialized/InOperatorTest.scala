@@ -15,12 +15,10 @@
  */
 package com.websudos.phantom.dsl.specialized
 
-import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.{Recipe, Recipes}
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{ Recipe, Recipes }
-import com.websudos.util.testing.AsyncAssertionsHelper._
-import com.websudos.util.testing.Sampler
+import com.websudos.util.testing._
 
 class InOperatorTest extends PhantomCassandraTestSuite {
 
@@ -30,8 +28,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "find a record with a in operator if the record exists" in {
-    val id = UUIDs.timeBased()
-    val recipe = Recipe.sample
+    val id = gen[UUID]
+    val recipe = gen[Recipe]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -43,7 +41,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       done <- insert
-      select <- Recipes.select.where(_.url in List(recipe.url, Sampler.getAUniqueEmailAddress)).one()
+      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).one()
     } yield select
 
     chain.successful {
@@ -55,8 +53,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "find a record with a in operator if the record exists with Twitter Futures" in {
-    val id = UUIDs.timeBased()
-    val recipe = Recipe.sample
+    val id = gen[UUID]
+    val recipe = gen[Recipe]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -68,7 +66,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       done <- insert
-      select <- Recipes.select.where(_.url in List(recipe.url, Sampler.getAUniqueEmailAddress)).get()
+      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).get()
     } yield select
 
     chain.successful {
@@ -80,8 +78,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "not find a record with a in operator if the record doesn't exists" in {
-    val id = UUIDs.timeBased()
-    val recipe = Recipe.sample
+    val id = gen[UUID]
+    val recipe = gen[Recipe]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -93,7 +91,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       done <- insert
-      select <- Recipes.select.where(_.url in List(Sampler.getAUniqueEmailAddress)).get()
+      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).get()
     } yield select
 
     chain.successful {
@@ -104,8 +102,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "not find a record with a in operator if the record doesn't exists with Twitter Futures" in {
-    val id = UUIDs.timeBased()
-    val recipe = Recipe.sample
+    val id = gen[UUID]
+    val recipe = gen[Recipe]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -117,7 +115,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       done <- insert
-      select <- Recipes.select.where(_.url in List(Sampler.getAUniqueEmailAddress)).get()
+      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).get()
     } yield select
 
     chain.successful {

@@ -19,17 +19,23 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{ Primitive, Primitives }
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.tables._
+import com.websudos.util.testing._
 
 class IterateeDropTest extends PhantomCassandraTestSuite {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Primitives.insertSchema()
+  }
 
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
   ignore should "take records from the iterator" in {
-    Primitives.insertSchema()
-    val rows = for (i <- 1 to 100) yield  Primitive.sample
+
+    val rows = for (i <- 1 to 100) yield gen[Primitive]
     var count = 0
     val batch = Iterator.fill(100) {
       val row = rows(count)

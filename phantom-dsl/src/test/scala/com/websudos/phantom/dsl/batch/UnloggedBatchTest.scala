@@ -19,10 +19,10 @@ import org.joda.time.DateTime
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
@@ -34,7 +34,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "get the correct count for batch queries" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
     val statement3 = PrimitivesJoda.update
       .where(_.pkey eqs row.pkey)
       .modify(_.intColumn setTo row.int)
@@ -49,9 +49,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
   it should "serialize a multiple table batch query applied to multiple statements" in {
 
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample.copy(pkey = row.pkey)
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow].copy(pkey = row.pkey)
+    val row3 = gen[JodaRow]
 
     val statement3 = PrimitivesJoda.update
       .where(_.pkey eqs row2.pkey)
@@ -67,9 +67,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
   it should "serialize a multiple table batch query chained from adding statements" in {
 
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample.copy(pkey = row.pkey)
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow].copy(pkey = row.pkey)
+    val row3 = gen[JodaRow]
 
     val statement3 = PrimitivesJoda.update
       .where(_.pkey eqs row2.pkey)
@@ -84,9 +84,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute a chain of INSERT queries" in {
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow]
+    val row3 = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -120,9 +120,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute a chain of INSERT queries with Twitter Futures" in {
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow]
+    val row3 = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -156,7 +156,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute a chain of INSERT queries and not perform multiple inserts" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -180,7 +180,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute a chain of INSERT queries and not perform multiple inserts with Twitter Futures" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -204,9 +204,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute an UPDATE/DELETE pair batch query" in {
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample.copy(pkey = row.pkey)
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow].copy(pkey = row.pkey)
+    val row3 = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -247,9 +247,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly execute a batch query with Twitter Futures" in {
-    val row = JodaRow.sample
-    val row2 = JodaRow.sample.copy(pkey = row.pkey)
-    val row3 = JodaRow.sample
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow].copy(pkey = row.pkey)
+    val row3 = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -290,7 +290,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "prioritise batch updates in a last first order" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -318,7 +318,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "prioritise batch updates in a last first order with Twitter Futures" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
     val statement1 = PrimitivesJoda.insert
       .value(_.pkey, row.pkey)
@@ -346,10 +346,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "prioritise batch updates based on a timestamp" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
-    val last = new DateTime()
-    val last1 = last.withDurationAdded(100, 5)
+    val last = gen[DateTime]
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert
@@ -376,10 +375,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "prioritise batch updates based on a timestamp with Twitter futures" in {
-    val row = JodaRow.sample
+    val row = gen[JodaRow]
 
-    val last = new DateTime()
-    val last1 = last.withDurationAdded(100, 5)
+    val last = gen[DateTime]
     val last2 = last.withDurationAdded(1000, 5)
 
     val statement1 = PrimitivesJoda.insert

@@ -18,11 +18,11 @@ package com.websudos.phantom.dsl.crud
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.twitter.util.Duration
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{Primitive, Primitives}
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class TTLTest extends PhantomCassandraTestSuite {
 
@@ -34,7 +34,7 @@ class TTLTest extends PhantomCassandraTestSuite {
   }
 
   it should "expire inserted records after 2 seconds" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val test = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -68,7 +68,7 @@ class TTLTest extends PhantomCassandraTestSuite {
   }
 
   it should "expire inserted records after 2 seconds with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val test = Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

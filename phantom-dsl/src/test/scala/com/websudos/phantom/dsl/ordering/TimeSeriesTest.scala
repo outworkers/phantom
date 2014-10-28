@@ -19,10 +19,10 @@ import scala.concurrent.duration._
 
 import org.scalatest.concurrent.PatienceConfiguration
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{TimeSeriesRecord, TimeSeriesTable}
+import com.websudos.util.testing._
 
 class TimeSeriesTest extends PhantomCassandraTestSuite {
 
@@ -37,7 +37,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
       }
     }
 
@@ -68,7 +68,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
       }
     }
 
@@ -99,7 +99,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
       }
     }
 
@@ -114,7 +114,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).fetch()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.asc).fetch()
     } yield chunks
 
     chain.successful {
@@ -128,7 +128,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res => {
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
       }
     }
 
@@ -143,7 +143,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- TimeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.asc).collect()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.asc).collect()
     } yield chunks
 
     chain.successful {
@@ -157,7 +157,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res =>
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
     }
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) =>
@@ -169,7 +169,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).fetch()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.desc).fetch()
     } yield chunks
 
     chain.successful {
@@ -183,7 +183,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = List.range(0, 5).map {
       res =>
         Thread.sleep(50L)
-        TimeSeriesRecord.sample
+        gen[TimeSeriesRecord]
     }
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) =>
@@ -195,7 +195,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- TimeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesRecord.testUUID).orderBy(_.timestamp.desc).collect()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.desc).collect()
     } yield chunks
 
     chain.successful {

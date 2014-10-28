@@ -18,10 +18,10 @@ package com.websudos.phantom.dsl.crud
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{Primitive, Primitives}
+import com.websudos.phantom.tables._
+import com.websudos.util.testing._
 
 class SelectTest extends PhantomCassandraTestSuite {
 
@@ -33,7 +33,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting the whole row" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -66,7 +66,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting the whole row" should "work fine with Twitter futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -97,7 +97,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 2 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -125,7 +125,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 2 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -153,7 +153,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 3 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -181,7 +181,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 3 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -209,7 +209,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 4 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -237,7 +237,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 4 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -266,7 +266,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
 
   "Selecting 5 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -294,7 +294,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 5 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -322,7 +322,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 6 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -350,7 +350,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 6 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -378,7 +378,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 7 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -406,7 +406,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 7 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -434,7 +434,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 8 columns" should "work fine" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
@@ -462,7 +462,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 8 columns" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)

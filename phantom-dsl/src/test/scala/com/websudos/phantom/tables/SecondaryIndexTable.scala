@@ -17,23 +17,10 @@ package com.websudos.phantom.tables
 
 import java.util.UUID
 
-import com.datastax.driver.core.Row
-import com.datastax.driver.core.utils.UUIDs
-import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraConnector
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-
 
 case class SecondaryIndexRecord(primary: UUID, secondary: UUID, name: String)
-
-object SecondaryIndexRecord extends ModelSampler[SecondaryIndexRecord] {
-  def sample: SecondaryIndexRecord = SecondaryIndexRecord(
-    UUIDs.timeBased(),
-    UUIDs.timeBased(),
-    Sampler.getARandomString
-  )
-}
 
 sealed class SecondaryIndexTable extends CassandraTable[SecondaryIndexTable, SecondaryIndexRecord] {
   
@@ -48,4 +35,4 @@ sealed class SecondaryIndexTable extends CassandraTable[SecondaryIndexTable, Sec
   )
 }
 
-object SecondaryIndexTable extends SecondaryIndexTable with TestSampler[SecondaryIndexTable, SecondaryIndexRecord] with PhantomCassandraConnector
+object SecondaryIndexTable extends SecondaryIndexTable with PhantomCassandraConnector

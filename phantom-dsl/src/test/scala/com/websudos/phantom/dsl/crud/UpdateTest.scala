@@ -18,15 +18,11 @@ package com.websudos.phantom.dsl.crud
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
+
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{
-  Primitive,
-  Primitives,
-  TestRow,
-  TestTable
-}
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
 
@@ -35,9 +31,9 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
   "Update" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
-    val row = Primitive.sample
+    val row = gen[Primitive]
 
-    val updatedRow = Primitive.sample.copy(pkey = row.pkey)
+    val updatedRow = gen[Primitive].copy(pkey = row.pkey)
     Primitives.insertSchema()
     val rcp = Primitives.insert
         .value(_.pkey, row.pkey)
@@ -94,7 +90,7 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
 
   it should "work fine with List, Set, Map" in {
 
-    val row = TestRow.sample()
+    val row = gen[TestRow]
 
     val updatedRow = row.copy(
       list = List("new"),

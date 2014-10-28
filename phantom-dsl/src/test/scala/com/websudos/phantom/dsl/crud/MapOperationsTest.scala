@@ -15,13 +15,12 @@
  */
 package com.websudos.phantom.dsl.crud
 
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables.{Recipe, Recipes}
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{ Recipe, Recipes }
-import com.websudos.util.testing.AsyncAssertionsHelper._
 
 class MapOperationsTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -32,10 +31,10 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   }
 
   it should "support a single item map put operation" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val props = Map("test" -> "test_val", "test2" -> "test_val")
-    val item = "test3" -> "test_val"
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val props = genMap[String]()
+    val item = gen[String, String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -56,18 +55,18 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe props + item
+        items.isDefined shouldEqual true
+        items.get shouldEqual props + item
       }
     }
   }
 
   it should "support a single item map put operation with Twitter futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
 
-    val props = Map("test" -> "test_val", "test2" -> "test_val")
-    val item = "test3" -> "test_val"
+    val props = genMap[String]()
+    val item = gen[String, String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -88,18 +87,17 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe props + item
+        items.isDefined shouldEqual true
+        items.get shouldEqual props + item
       }
     }
   }
 
   it should "support a multiple item map put operation" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-
-    val props = Map("test" -> "test_val", "test2" -> "test_val")
-    val mapItems = Map("test3" -> "test_val", "test4" -> "test_val")
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val props = genMap[String]()
+    val mapItems = genMap[String]()
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -120,18 +118,17 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe props ++ mapItems
+        items.isDefined shouldEqual true
+        items.get shouldEqual props ++ mapItems
       }
     }
   }
 
   it should "support a multiple item map put operation with Twitter futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-
-    val props = Map("test" -> "test_val", "test2" -> "test_val")
-    val mapItems = Map("test3" -> "test_val", "test4" -> "test_val")
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val props = genMap[String]()
+    val mapItems = genMap[String]()
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -152,8 +149,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe props ++ mapItems
+        items.isDefined shouldEqual true
+        items.get shouldEqual props ++ mapItems
       }
     }
   }

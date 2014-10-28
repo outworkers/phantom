@@ -15,14 +15,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.net.InetAddress
-import java.util.{Date, UUID}
-
-import com.datastax.driver.core.Row
-import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.PhantomCassandraConnector
 
 case class Primitive(
   pkey: String,
@@ -38,28 +32,21 @@ case class Primitive(
   bi: BigInt
 )
 
-object Primitive extends ModelSampler[Primitive] {
-  def sample: Primitive = {
-    Primitive(
-      Sampler.getARandomString,
-      Sampler.getARandomInteger().toLong,
-      boolean = false,
-      BigDecimal(Sampler.getARandomInteger()),
-      Sampler.getARandomInteger().toDouble,
-      Sampler.getARandomInteger().toFloat,
-      InetAddress.getByName("127.0.0.1"),
-      Sampler.getARandomInteger(),
-      new Date(),
-      UUID.randomUUID(),
-      BigInt(Sampler.getARandomInteger())
-    )
-  }
-}
-
 sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   override def fromRow(r: Row): Primitive = {
-    Primitive(pkey(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
-      int(r), date(r), uuid(r), bi(r))
+    Primitive(
+      pkey(r),
+      long(r),
+      boolean(r),
+      bDecimal(r),
+      double(r),
+      float(r),
+      inet(r),
+      int(r),
+      date(r),
+      uuid(r),
+      bi(r)
+    )
   }
 
   object pkey extends StringColumn(this) with PartitionKey[String]
@@ -85,7 +72,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   object bi extends BigIntColumn(this)
 }
 
-object Primitives extends Primitives with TestSampler[Primitives, Primitive] with PhantomCassandraConnector {
+object Primitives extends Primitives with PhantomCassandraConnector {
   override val tableName = "Primitives"
 
 }

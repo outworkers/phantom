@@ -17,12 +17,14 @@ package com.websudos.phantom.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 import scala.concurrent.{ Await, Future }
+
 import org.scalatest.Matchers
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 
 class IterateeBigTest extends BigTest with Matchers {
@@ -33,7 +35,7 @@ class IterateeBigTest extends BigTest with Matchers {
     PrimitivesJoda.insertSchema()
     val fs = for {
       step <- 1 to 100
-      rows = Iterator.fill(10000)(JodaRow.sample)
+      rows = Iterator.fill(10000)(gen[JodaRow])
 
       batch = rows.foldLeft(new BatchStatement())((b, row) => {
         val statement = PrimitivesJoda.insert

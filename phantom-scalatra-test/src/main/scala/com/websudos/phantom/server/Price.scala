@@ -1,13 +1,12 @@
 package com.websudos.phantom.server
 
 import java.util.Date
+import org.joda.time.{DateTime, LocalDate}
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.TestSampler
 import com.websudos.phantom.query.InsertQuery
 import com.websudos.phantom.testing.PhantomCassandraConnector
-import org.joda.time.{DateTime, LocalDate}
 
 
 sealed trait Price {
@@ -67,7 +66,7 @@ sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
     OptionPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), strikePrice(r), value(r))
 }
 
-object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with PhantomCassandraConnector {
+object EquityPrices extends EquityPrices with PhantomCassandraConnector {
   override val tableName: String = "EquityPrices"
 
 
@@ -81,7 +80,7 @@ object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPr
 
 }
 
-object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with PhantomCassandraConnector {
+object OptionPrices extends OptionPrices with PhantomCassandraConnector {
   override val tableName: String = "OptionPrices"
 
   def insertPrice(price: OptionPrice): InsertQuery[OptionPrices, OptionPrice] = {

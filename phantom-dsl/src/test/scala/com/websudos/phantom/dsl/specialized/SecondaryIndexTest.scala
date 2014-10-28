@@ -16,11 +16,10 @@
 package com.websudos.phantom.dsl.specialized
 
 import com.datastax.driver.core.exceptions.InvalidQueryException
-import com.websudos.util.testing.AsyncAssertionsHelper._
-import com.websudos.util.testing.Sampler
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{SecondaryIndexRecord, SecondaryIndexTable}
+import com.websudos.util.testing._
 
 class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
@@ -30,7 +29,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow fetching a record by its secondary index" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -58,7 +57,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow fetching a record by its secondary index with Twitter Futures" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -86,7 +85,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "not throw an error if filtering is not enabled when querying by secondary keys" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -105,7 +104,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "not throw an error if filtering is not enabled when querying by secondary keys with Twitter Futures" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -124,8 +123,8 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "throw an error when updating a record by it's secondary key" in {
-    val sample = SecondaryIndexRecord.sample
-    val updatedName = Sampler.getARandomString
+    val sample = gen[SecondaryIndexRecord]
+    val updatedName = gen[String]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -141,8 +140,8 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "throw an error when updating a record by it's secondary key with Twitter Futures" in {
-    val sample = SecondaryIndexRecord.sample
-    val updatedName = Sampler.getARandomString
+    val sample = gen[SecondaryIndexRecord]
+    val updatedName = gen[String]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -159,7 +158,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "throw an error when deleting a record by its secondary index" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)
@@ -175,7 +174,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   }
 
   it should "throw an error when deleting a record by its secondary index with Twitter Futures" in {
-    val sample = SecondaryIndexRecord.sample
+    val sample = gen[SecondaryIndexRecord]
     val chain = for {
       insert <- SecondaryIndexTable.insert
         .value(_.id, sample.primary)

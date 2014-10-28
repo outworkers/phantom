@@ -18,10 +18,10 @@ package com.websudos.phantom.dsl.specialized
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{CounterRecord, CounterTableTest}
+import com.websudos.phantom.tables._
+import com.websudos.util.testing._
 
 class CounterColumnTest extends PhantomCassandraTestSuite {
 
@@ -34,7 +34,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
 
   it should "increment counter values by 1" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).future()
@@ -55,7 +55,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "increment counter values by 1 with Twitter Futures" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).execute()
@@ -77,7 +77,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
 
   it should "allow selecting a counter" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 500).future()
@@ -98,7 +98,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow selecting a counter with Twitter Futures" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 500).execute()
@@ -119,7 +119,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "increment counter values by a given value" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
     val diff = 200L
 
     val chain = for {
@@ -141,7 +141,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "increment counter values by a given value with Twitter Futures" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
     val diff = 200L
 
     val chain = for {
@@ -163,7 +163,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "decrement counter values by 1" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 1L).future()
@@ -184,7 +184,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "decrement counter values by 1 with Twitter Futures" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
 
     val chain = for {
       incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 1L).execute()
@@ -205,7 +205,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "decrement counter values by a given value" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
     val diff = 200L
     val initial = 500L
 
@@ -227,7 +227,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "decrement counter values by a given value with Twitter Futures" in {
-    val sample = CounterRecord.sample
+    val sample = gen[CounterRecord]
     val diff = 200L
     val initial = 500L
 

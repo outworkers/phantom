@@ -19,10 +19,10 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
+import com.websudos.util.testing._
 
 class InsertTest extends PhantomCassandraTestSuite {
 
@@ -37,7 +37,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   "Insert" should "work fine for primitives columns" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val rcp =  Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)
@@ -68,7 +68,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   "Insert" should "work fine for primitives columns with twitter futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val rcp =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -99,7 +99,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = TestRow.sample()
+    val row = gen[TestRow]
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -125,7 +125,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with List, Set, Map and Twitter futures" in {
-    val row = TestRow.sample()
+    val row = gen[TestRow]
 
     val rcp = TestTable.insert
       .value(_.key, row.key)
@@ -153,7 +153,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with Mix" in {
-    val r = Recipe.sample
+    val r = gen[Recipe]
     val rcp = Recipes.insert
         .value(_.url, r.url)
         .valueOrNull(_.description, r.description)
@@ -176,7 +176,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with Mix and Twitter futures" in {
-    val r = Recipe.sample
+    val r = gen[Recipe]
     val rcp = Recipes.insert
       .value(_.url, r.url)
       .valueOrNull(_.description, r.description)
@@ -198,7 +198,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    val row = MyTestRow.sample
+    val row = gen[MyTestRow]
     val f = MyTest.insert
       .value(_.key, row.key)
       .value(_.stringlist, List.empty[String])
@@ -214,7 +214,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "support serializing/de-serializing empty lists with Twitter futures" in {
-    val row = MyTestRow.sample
+    val row = gen[MyTestRow]
 
     val f = MyTest.insert
       .value(_.key, row.key)
@@ -231,7 +231,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "support serializing/de-serializing to List " in {
-    val row = MyTestRow.sample
+    val row = gen[MyTestRow]
 
     val recipeF = MyTest.insert
       .value(_.key, row.key)
@@ -250,7 +250,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "support serializing/de-serializing to List with Twitter futures" in {
-    val row = MyTestRow.sample
+    val row = gen[MyTestRow]
 
     val recipeF = MyTest.insert
       .value(_.key, row.key)

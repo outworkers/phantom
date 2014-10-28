@@ -15,10 +15,10 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{TestRow, TestTable}
+import com.websudos.util.testing._
 
 class SetOperationsTest extends PhantomCassandraTestSuite {
 
@@ -28,7 +28,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append an item to a set column" in {
-    val item = TestRow.sample()
+    val item = gen[TestRow]
     val someItem = "test5"
 
     val insert = TestTable.insert
@@ -55,7 +55,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append an item to a set column with Twitter Futures" in {
-    val item = TestRow.sample()
+    val item = gen[TestRow]
     val someItem = "test5"
 
     val insert = TestTable.insert
@@ -82,7 +82,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a set column" in {
-    val item = TestRow.sample()
+    val item = gen[TestRow]
     val someItems = Set("test5", "test6")
 
     val insert = TestTable.insert
@@ -109,7 +109,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a set column with Twitter Futures" in {
-    val item = TestRow.sample()
+    val item = gen[TestRow]
     val someItems = Set("test5", "test6")
 
     val insert = TestTable.insert
@@ -137,7 +137,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "remove an item from a set column" in {
     val someItems = Set("test3", "test4", "test5", "test6")
-    val item = TestRow.sample().copy(setText = someItems)
+    val item = gen[TestRow].copy(setText = someItems)
     val removal = "test6"
 
     val insert = TestTable.insert
@@ -165,7 +165,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "remove an item from a set column with Twitter Futures" in {
     val someItems = Set("test3", "test4", "test5", "test6")
-    val item = TestRow.sample().copy(setText = someItems)
+    val item = gen[TestRow].copy(setText = someItems)
     val removal = "test6"
 
     val insert = TestTable.insert
@@ -193,7 +193,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "remove several items from a set column" in {
     val someItems = Set("test3", "test4", "test5", "test6")
-    val item = TestRow.sample().copy(setText = someItems)
+    val item = gen[TestRow].copy(setText = someItems)
     val removal = Set("test5", "test6")
 
     val insert = TestTable.insert
@@ -221,7 +221,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "remove several items from a set column with Twitter Futures" in {
     val someItems = Set("test3", "test4", "test5", "test6")
-    val item = TestRow.sample().copy(setText = someItems)
+    val item = gen[TestRow].copy(setText = someItems)
     val removal = Set("test5", "test6")
 
     val insert = TestTable.insert
