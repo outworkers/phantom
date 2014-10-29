@@ -191,7 +191,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => {
-      val query = s"CREATE INDEX IF NOT EXISTS ${k.name} ON $tableName (${k.name});"
+      val query = s"CREATE INDEX IF NOT EXISTS ${tableName}_${k.name} ON $tableName (${k.name});"
       logger.info("Auto-generating CQL queries for secondary indexes")
       logger.info(query)
       query
