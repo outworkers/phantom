@@ -19,6 +19,7 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
+import java.nio.channels.ClosedChannelException
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
@@ -33,6 +34,8 @@ import com.twitter.util.{Await, Duration, Future, Try}
 private[zookeeper] case object Lock
 
 class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
+
+class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
 
 /**
  * This is a simple implementation that will allow for singleton synchronisation of Cassandra clusters and sessions.
@@ -95,13 +98,7 @@ trait ClusterStore {
 
       val res = Await.result(zkClientStore.connect(), timeout)
 
-      val ports = Await.result(hostnamePortPairs, timeout)
-
-      clusterStore = Cluster.builder()
-        .addContactPointsWithPorts(ports.asJava)
-        .withoutJMXReporting()
-        .withoutMetrics()
-        .build()
+      clusterStore = createCluster()
 
       _session = blocking {
         val s = clusterStore.connect()
@@ -114,10 +111,28 @@ trait ClusterStore {
     }
   }
 
+  private[this] def createCluster()(implicit timeout: Duration): Cluster = {
+    val ports = Await.result(hostnamePortPairs, timeout)
+    ports match {
+      case head :: tail => {
+        Cluster.builder()
+          .addContactPointsWithPorts(ports.asJava)
+          .withoutJMXReporting()
+          .withoutMetrics()
+          .build()
+      }
+      case Nil => throw new Exception("")
+    }
+  }
+
   @throws[EmptyClusterStoreException]
   def cluster: Cluster = {
     if (isInited) {
-      clusterStore
+      try {
+        clusterStore
+      } catch  {
+        case err: ClosedChannelException => createCluster()
+      }
     } else {
       throw new EmptyClusterStoreException
     }
