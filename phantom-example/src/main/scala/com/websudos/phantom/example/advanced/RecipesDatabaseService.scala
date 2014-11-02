@@ -17,8 +17,10 @@ package com.websudos.phantom.example.advanced
 
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.ResultSet
-import com.websudos.phantom.Implicits.context
-import com.websudos.phantom.example.basics.Recipe
+import com.twitter.conversions.time._
+import com.twitter.util.{Await, Future}
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.example.basics.{ExampleConnector, Recipe}
 
 // In this section, we will show how you can create a real-world Cassandra service with com.websudos.phantom.
 // First you have to think of what queries you need to perform. The usual.
@@ -29,7 +31,28 @@ import com.websudos.phantom.example.basics.Recipe
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-object RecipesDatabaseService {
+object RecipesDatabaseService extends ExampleConnector {
+
+  /**
+   * Right now you can go for a really neat trick of the trade.
+   * You can automatically initialise all your tables using phnatom's schema auto-generation capabilities.
+   * We are using the same connector as the tables do, which will link to the exact same database session.
+   *
+   * The bellow example uses the Future.join method which Twitter specific and not available in the less advanced Scala API.
+   * Nonetheless, if you are using Scala you can almost replicate the below with a Future.sequence or Future.traverse over a List.
+   *
+   * This is a very neat and simple trick which will initialise all your tables in parallel at any time you want. The initialisation will automatically
+   * trigger the mecbanism that connects to Cassandra and gives you back a session.
+   */
+  def init(): Unit = {
+    val creation = Future.join(
+      AdvancedRecipes.create.execute(),
+      AdvancedRecipesByTitle.create.execute()
+    )
+
+    Await.ready(creation, 2.seconds)
+  }
+
 
   // For instance, right now when you want to insert a new recipe.
   // Say from a JavaScript client with a fancy interface.

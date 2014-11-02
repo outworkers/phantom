@@ -15,17 +15,14 @@
  */
 package com.websudos.phantom.thrift
 
-import java.util.UUID
 
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
@@ -38,19 +35,11 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "add an item to a thrift set column" in {
 
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -77,25 +66,10 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "add several items a thrift set column" in {
 
-    val id = UUIDs.timeBased()
-
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val id = gen[UUID]
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -122,25 +96,10 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
   it should "remove one item from a thrift set column" in {
 
-    val id = UUIDs.timeBased()
-
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val id = gen[UUID]
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -153,9 +112,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
       insertDone <- insert
       update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
       select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
@@ -167,26 +124,10 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
 
   it should "remove several items from thrift set column" in {
-
-    val id = UUIDs.timeBased()
-
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val id = gen[UUID]
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)

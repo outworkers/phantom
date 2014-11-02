@@ -16,24 +16,12 @@
 package com.websudos.phantom.column
 
 import scala.annotation.implicitNotFound
+
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder }
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
-import com.websudos.phantom.keys.{ ClusteringOrder, Index, PartitionKey, PrimaryKey }
-import com.websudos.phantom.query.{
-  AssignmentsQuery,
-  AssignmentOptionQuery,
-  ConditionalUpdateQuery,
-  ConditionalUpdateWhereQuery,
-  DeleteQuery,
-  DeleteWhere,
-  InsertQuery,
-  QueryCondition,
-  QueryOrdering,
-  SecondaryQueryCondition,
-  UpdateQuery,
-  UpdateWhere
-}
+import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
+import com.websudos.phantom.keys.{ClusteringOrder, Index, PartitionKey, PrimaryKey}
+import com.websudos.phantom.query.{QueryCondition, QueryOrdering, SecondaryQueryCondition}
+import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
   def asc: QueryOrdering = {
@@ -118,9 +106,6 @@ class ConditionalOperations[T](val col: AbstractColumn[T]) {
 
 sealed trait ConditionalOperators extends LowPriorityImplicits {
   final implicit def columnToConditionalUpdateColumn[T](col: AbstractColumn[T]): ConditionalOperations[T] = new ConditionalOperations(col)
-}
-
-sealed trait BatchRestrictions {
 }
 
 sealed trait CollectionOperators {
@@ -218,9 +203,12 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
     def toCType(v: Option[RR]): AnyRef = col.toCType(v)
   }
 
-  implicit class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
+  class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
     def apply(r: Row): T = col.apply(r)
   }
+
+  implicit def columnToSelection[Owner <: CassandraTable[Owner, Record], Record, T](column: Column[Owner, Record, T]) = new SelectColumnRequired[Owner,
+    Record, T](column)
 
   implicit class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T])
     extends SelectColumn[Option[T]](col) {
@@ -232,5 +220,4 @@ private[phantom] trait Operations extends ModifyImplicits
   with CollectionOperators
   with OrderingOperators
   with IndexRestrictions
-  with BatchRestrictions
   with ConditionalOperators {}

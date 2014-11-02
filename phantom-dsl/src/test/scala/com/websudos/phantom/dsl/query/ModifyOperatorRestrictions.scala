@@ -15,11 +15,8 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
-import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ CounterTableTest, TimeSeriesTable, TwoKeys }
-import com.newzly.util.testing.Sampler
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+import com.websudos.util.testing._
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
   
@@ -44,17 +41,17 @@ class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTes
   }
 
   it should "not allow chaining 2 modify operators on a single update query" in {
-   val update = Sampler.getARandomString
-   "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).modify(_.name setTo Sampler.getARandomString)" shouldNot compile
+   val update = gen[String]
+   "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo gen[String]).modify(_.name setTo gen[String])" shouldNot compile
   }
 
   it should """allow chaining one "modify" operator followed by one "and" operator on a single update query""" in {
-    val update = Sampler.getARandomString
-    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
+    val update = gen[String]
+    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo gen[String]).and(_.name setTo gen[String])" should compile
   }
 
   it should """allow chaining one "modify" operator followed by multiple "and" operators on a single update query""" in {
-    val update = Sampler.getARandomString
-    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
+    val update = gen[String]
+    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo gen[String]).and(_.name setTo gen[String]).and(_.name setTo gen[String]).and(_.name setTo gen[String])" should compile
   }
 }

@@ -19,11 +19,10 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testing._
 
 class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
@@ -38,11 +37,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     val id = UUIDs.timeBased()
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -69,11 +64,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
   it should "not find an item if was not defined" in {
     val id = UUIDs.timeBased()
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)

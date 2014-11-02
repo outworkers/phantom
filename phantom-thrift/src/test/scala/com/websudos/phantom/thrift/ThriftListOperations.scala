@@ -15,15 +15,12 @@
  */
 package com.websudos.phantom.thrift
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
-import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class ThriftListOperations extends PhantomCassandraTestSuite {
 
@@ -35,19 +32,10 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "prepend an item to a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -74,19 +62,11 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "prepend an item to a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -111,25 +91,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "prepend several items to a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val toAppend = List(sample2, sample3)
 
@@ -158,25 +126,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "prepend several items to a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val toAppend = List(sample2, sample3)
 
@@ -203,20 +159,11 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "append an item to a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
-
+    val sample2 = gen[ThriftTest]
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
@@ -242,19 +189,11 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "append an item to a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -279,25 +218,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val toAppend = List(sample2, sample3)
 
@@ -326,25 +253,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val toAppend = List(sample2, sample3)
 
@@ -371,19 +286,11 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "remove an item from a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -410,19 +317,11 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "remove an item from a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -447,25 +346,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "remove several items from a thrift list column" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -492,25 +379,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "remove several items from a thrift list column with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -535,25 +410,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "set an index to a given value" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -580,25 +443,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "set an index to a given value with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -623,25 +474,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "set a non-zero index to a given value" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -666,25 +505,13 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "set a non-zero index to a given value with Twitter Futures" in {
-    val id = UUIDs.timeBased()
+    val id = gen[UUID]
 
-    val sample = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample = gen[ThriftTest]
 
-    val sample2 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample2 = gen[ThriftTest]
 
-    val sample3 = ThriftTest(
-      Sampler.getARandomInteger(),
-      Sampler.getARandomString,
-      test = true
-    )
+    val sample3 = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
