@@ -131,7 +131,7 @@ trait ClusterStore {
   }
 
   @throws[EmptyClusterStoreException]
-  def cluster: Cluster = {
+  def cluster()(implicit duration: Duration): Cluster = {
     if (isInited) {
       try {
         clusterStore

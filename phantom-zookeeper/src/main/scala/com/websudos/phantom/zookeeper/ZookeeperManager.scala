@@ -48,6 +48,8 @@ trait ZookeeperManager extends CassandraManager {
 
   protected[this] val store: ClusterStore
 
+  implicit val timeout: Duration
+
   def cluster: Cluster = store.cluster
 
   def session: Session = store.session
