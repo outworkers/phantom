@@ -89,6 +89,10 @@ trait ClusterStore {
     inited = value
   }
 
+  protected[this] def keySpaceCql(keySpace: String): String = {
+    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
+  }
+
   def initStore(keySpace: String, address: InetSocketAddress)(implicit timeout: Duration): Unit = Lock.synchronized {
     if (!isInited) {
       val conn = s"${address.getHostName}:${address.getPort}"
@@ -102,8 +106,8 @@ trait ClusterStore {
 
       _session = blocking {
         val s = clusterStore.connect()
-        s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
-        s.execute(s"use $keySpace;")
+        s.execute(keySpaceCql(keySpace))
+        s.execute(s"USE $keySpace;")
         s
       }
       sessions.put(keySpace, _session)
@@ -111,6 +115,7 @@ trait ClusterStore {
     }
   }
 
+  @throws[EmptyPortListException]
   private[this] def createCluster()(implicit timeout: Duration): Cluster = {
     val ports = Await.result(hostnamePortPairs, timeout)
     ports match {
@@ -121,7 +126,7 @@ trait ClusterStore {
           .withoutMetrics()
           .build()
       }
-      case Nil => throw new Exception("")
+      case Nil => throw new EmptyPortListException
     }
   }
 
