@@ -18,7 +18,7 @@ some utilities there: ```http://maven.websudos.co.uk/ext-release-local```
 ### Scala 2.10 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.3.2```. This version is likely only available on our Maven repository as an intermediary release.
+The latest development version is ```val phantomVersion = 1.3.3```. This version is likely only available on our Maven repository as an intermediary release.
 
 ### Scala 2.11 releases ###
 
