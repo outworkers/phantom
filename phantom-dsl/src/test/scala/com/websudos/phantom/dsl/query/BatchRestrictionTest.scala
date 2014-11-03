@@ -15,12 +15,14 @@
  */
 package com.websudos.phantom.dsl.query
 
-import com.websudos.phantom.tables.Recipe
+import com.websudos.phantom.tables.{Recipes, Recipe}
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class BatchRestrictionTest extends FlatSpec with Matchers {
-  
+
+  val s = Recipes
+
   it should "not allow using Select queries in a batch" in {
     "BatchStatement().add(Primitives.select)" shouldNot compile
   }
