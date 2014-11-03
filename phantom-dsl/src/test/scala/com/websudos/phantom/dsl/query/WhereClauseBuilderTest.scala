@@ -15,35 +15,39 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import org.scalatest.{FlatSpec, Matchers}
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.Primitives
-import com.websudos.util.testing.Sampler
+import com.websudos.util.testing._
 
 class WhereClauseBuilderTest extends FlatSpec with Matchers {
 
 
+  val s = gen[String]
+  val p = Primitives
+  val b = BatchStatement
+
   it should "allow using a Select.Where clause" in {
-    "Primitives.select.where(_.pkey eqs Sampler.getARandomString)" should compile
+    "Primitives.select.where(_.pkey eqs gen[String])" should compile
   }
 
   it should "allow using a Select.Where clause with AND chain" in {
-    "Primitives.select.where(_.pkey eqs Sampler.getARandomString).and(_.pkey eqs Sampler.getARandomString)" should compile
+    "Primitives.select.where(_.pkey eqs gen[String]).and(_.pkey eqs gen[String])" should compile
   }
 
   it should "not allow chaining two  Select.Where clauses" in {
-    "Primitives.select.where(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
+    "Primitives.select.where(_.pkey eqs gen[String]).where(_.pkey eqs gen[String])" shouldNot compile
   }
 
   it should "not allow re-using a Where clause after an WHERE/AND chain" in {
-    "Primitives.select.where(_.pkey eqs Sampler.getARandomString).and(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
+    "Primitives.select.where(_.pkey eqs gen[String]).and(_.pkey eqs gen[String]).where(_.pkey eqs gen[String])" shouldNot compile
   }
 
   it should "Should not allow chaining two Update.Where clauses" in {
-    "Primitives.update.where(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
+    "Primitives.update.where(_.pkey eqs gen[String]).where(_.pkey eqs gen[String])" shouldNot compile
   }
 
   it should "not allow chaining two Delete.Where clauses" in {
-    "Primitives.update.where(_.pkey eqs Sampler.getARandomString).where(_.pkey eqs Sampler.getARandomString)" shouldNot compile
+    "Primitives.update.where(_.pkey eqs gen[String]).where(_.pkey eqs gen[String])" shouldNot compile
   }
 }
