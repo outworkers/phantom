@@ -21,6 +21,7 @@ package com.websudos.phantom.testing
 import java.io.IOException
 import java.net.ServerSocket
 
+import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,12 +66,32 @@ private[testing] object CassandraStateManager {
     !isPortAvailable(9042)
   }
 
+  def cassandraRunning(): Boolean = {
+    try {
+      val runtime = Runtime.getRuntime
+
+      val p1 = runtime.exec("ps -ef")
+      val input = p1.getInputStream
+
+      val p2 = runtime.exec("grep cassandra")
+      val output = p2.getOutputStream
+
+      IOUtils.copy(input, output)
+      output.close(); // signals grep to finish
+      val result = IOUtils.readLines(p2.getInputStream)
+      result.size() > 1
+    } catch  {
+      case NonFatal(e) => false
+    }
+  }
+
+
   /**
    * This checks if the default ports for embedded Cassandra and
    * @return
    */
   def isCassandraStarted: Boolean = {
-    isLocalCassandraRunning
+    !isPortAvailable(9042) || !isPortAvailable(9142)
   }
 }
 
@@ -95,7 +116,7 @@ trait CassandraSetup {
   def setupCassandra(): Unit = {
     Lock.synchronized {
       blocking {
-        if (!CassandraStateManager.isCassandraStarted) {
+        if (!CassandraStateManager.cassandraRunning()) {
           try {
             CassandraStateManager.logger.info("Starting Cassandra in Embedded mode.")
             EmbeddedCassandraServerHelper.mkdirs()
