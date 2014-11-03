@@ -19,21 +19,23 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
-import scala.collection.JavaConverters._
+import java.nio.channels.ClosedChannelException
 
+import scala.collection.JavaConverters._
 import scala.concurrent._
 
 import org.slf4j.LoggerFactory
 
-import com.datastax.driver.core.{Session, Cluster}
+import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
-import com.twitter.conversions.time._
-import com.twitter.util.{Await, Try, Future}
+import com.twitter.util.{Await, Duration, Future, Try}
 
 private[zookeeper] case object Lock
 
 class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
+
+class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
 
 /**
  * This is a simple implementation that will allow for singleton synchronisation of Cassandra clusters and sessions.
@@ -87,27 +89,25 @@ trait ClusterStore {
     inited = value
   }
 
-  def initStore(keySpace: String, address: InetSocketAddress ): Unit = Lock.synchronized {
+  protected[this] def keySpaceCql(keySpace: String): String = {
+    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
+  }
+
+  def initStore(keySpace: String, address: InetSocketAddress)(implicit timeout: Duration): Unit = Lock.synchronized {
     if (!isInited) {
       val conn = s"${address.getHostName}:${address.getPort}"
       zkClientStore = ZooKeeper.newRichClient(conn)
 
-      Console.println(s"Connecting to ZooKeeper server instance on $conn")
+      logger.info(s"Connecting to ZooKeeper server instance on $conn")
 
-      val res = Await.result(zkClientStore.connect(), 2.seconds)
+      val res = Await.result(zkClientStore.connect(), timeout)
 
-      val ports = Await.result(hostnamePortPairs, 2.seconds)
-
-      clusterStore = Cluster.builder()
-        .addContactPointsWithPorts(ports.asJava)
-        .withoutJMXReporting()
-        .withoutMetrics()
-        .build()
+      clusterStore = createCluster()
 
       _session = blocking {
         val s = clusterStore.connect()
-        s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
-        s.execute(s"use $keySpace;")
+        s.execute(keySpaceCql(keySpace))
+        s.execute(s"USE $keySpace;")
         s
       }
       sessions.put(keySpace, _session)
@@ -115,10 +115,30 @@ trait ClusterStore {
     }
   }
 
+  @throws[EmptyPortListException]
+  private[this] def createCluster()(implicit timeout: Duration): Cluster = {
+    val ports = Await.result(hostnamePortPairs, timeout)
+    ports match {
+      case head :: tail => {
+        Cluster.builder()
+          .addContactPointsWithPorts(ports.asJava)
+          .withoutJMXReporting()
+          .withoutMetrics()
+          .build()
+      }
+      case Nil => throw new EmptyPortListException
+    }
+  }
+
   @throws[EmptyClusterStoreException]
-  def cluster: Cluster = {
+  def cluster()(implicit duration: Duration): Cluster = {
     if (isInited) {
-      clusterStore
+      try {
+        clusterStore
+      } catch  {
+        case closed: IllegalStateException => createCluster()
+        case err: ClosedChannelException => createCluster()
+      }
     } else {
       throw new EmptyClusterStoreException
     }
