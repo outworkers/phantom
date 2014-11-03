@@ -136,6 +136,7 @@ trait ClusterStore {
       try {
         clusterStore
       } catch  {
+        case closed: IllegalStateException => createCluster()
         case err: ClosedChannelException => createCluster()
       }
     } else {
