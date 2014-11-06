@@ -118,15 +118,15 @@ trait ClusterStore {
   @throws[EmptyPortListException]
   private[this] def createCluster()(implicit timeout: Duration): Cluster = {
     val ports = Await.result(hostnamePortPairs, timeout)
-    ports match {
-      case head :: tail => {
-        Cluster.builder()
-          .addContactPointsWithPorts(ports.asJava)
-          .withoutJMXReporting()
-          .withoutMetrics()
-          .build()
-      }
-      case Nil => throw new EmptyPortListException
+
+    if (ports.isEmpty) {
+      throw new EmptyPortListException
+    } else {
+      Cluster.builder()
+        .addContactPointsWithPorts(ports.asJava)
+        .withoutJMXReporting()
+        .withoutMetrics()
+        .build()
     }
   }
 
