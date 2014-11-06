@@ -13,6 +13,7 @@ object phantom extends Build {
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
   val scalatraVersion = "2.2.2"
+  val PlayVersion = "2.2.0"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -133,7 +134,7 @@ object phantom extends Build {
     libraryDependencies ++= Seq(
       "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
       "com.twitter"                  %% "util-core"                         % finagleVersion,
-      "com.typesafe.play"            %% "play-iteratees"                    % "2.3.5",
+      "com.typesafe.play"            %% "play-iteratees"                    % PlayVersion,
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
