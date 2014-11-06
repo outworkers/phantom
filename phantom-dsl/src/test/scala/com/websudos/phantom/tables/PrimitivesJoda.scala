@@ -18,27 +18,14 @@ package com.websudos.phantom.tables
 import org.joda.time.DateTime
 
 import com.datastax.driver.core.Row
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.testing.PhantomCassandraConnector
 
 case class JodaRow(
   pkey: String,
   int: Int,
   bi: DateTime
 )
-
-object JodaRow extends ModelSampler[JodaRow] {
-  def sample: JodaRow = {
-    val d = new DateTime()
-    JodaRow(
-      Sampler.getARandomString,
-      Sampler.getARandomInteger(),
-      new DateTime(d.plus(Sampler.getARandomInteger().toLong))
-    )
-  }
-}
 
 sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
   override def fromRow(r: Row): JodaRow = {
@@ -50,7 +37,7 @@ sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
   object timestamp extends DateTimeColumn(this)
 }
 
-object PrimitivesJoda extends PrimitivesJoda with TestSampler[PrimitivesJoda, JodaRow] with PhantomCassandraConnector {
+object PrimitivesJoda extends PrimitivesJoda with PhantomCassandraConnector {
 
   override val tableName = "PrimitivesJoda"
 

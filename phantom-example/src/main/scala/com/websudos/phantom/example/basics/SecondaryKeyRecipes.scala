@@ -67,7 +67,7 @@ sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Rec
 }
 
 
-object SecondaryKeyRecipes extends SecondaryKeyRecipes with DBConnector {
+object SecondaryKeyRecipes extends SecondaryKeyRecipes with ExampleConnector {
 
   // Now say you want to get a Recipe by author.
   // author is a Index, you can now use it in a "where" clause.
