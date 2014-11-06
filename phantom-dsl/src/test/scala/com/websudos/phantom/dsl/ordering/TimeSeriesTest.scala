@@ -34,12 +34,14 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
-    val recordList = List.range(0, 5).map {
-      res => {
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-      }
-    }
+
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
 
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) => {
@@ -65,12 +67,13 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow using naturally fetch the records in descending order for a descending clustering order with Twitter Futures" in {
-    val recordList = List.range(0, 5).map {
-      res => {
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-      }
-    }
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
 
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) => {
@@ -96,12 +99,13 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow fetching the records in ascending order for a descending clustering order using order by clause" in {
-    val recordList = List.range(0, 5).map {
-      res => {
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-      }
-    }
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
 
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) => {
@@ -120,17 +124,19 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     chain.successful {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
+
         res.map(_.timestamp.getSecondOfDay).toList shouldEqual ts
     }
   }
 
   it should "allow fetching the records in ascending order for a descending clustering order using order by clause with Twitter Futures" in {
-    val recordList = List.range(0, 5).map {
-      res => {
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-      }
-    }
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
 
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) => {
@@ -154,11 +160,14 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow fetching the records in descending order for a descending clustering order using order by clause" in {
-    val recordList = List.range(0, 5).map {
-      res =>
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-    }
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
+
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) =>
         b.add(TimeSeriesTable.insert
@@ -180,11 +189,14 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow fetching the records in descending order for a descending clustering order using order by clause with Twitter Futures" in {
-    val recordList = List.range(0, 5).map {
-      res =>
-        Thread.sleep(50L)
-        gen[TimeSeriesRecord]
-    }
+    var i = 0
+
+    val recordList = genList[TimeSeriesRecord](6).map(
+      item => {
+        i += 1
+        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+      })
+
     val batch = recordList.foldLeft(BatchStatement()) {
       (b, record) =>
         b.add(TimeSeriesTable.insert

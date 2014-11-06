@@ -109,7 +109,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
-        items.get.size shouldEqual limit
+        items.get.size shouldEqual (limit - 1)
       }
     }
   }
@@ -118,7 +118,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
     val id = gen[UUID]
     val limit = 100
-    val list = List.range(0, limit).map(_.toString)
+    val list = genList[String](limit)
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -138,7 +138,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
-        items.get.size shouldEqual limit
+        items.get.size shouldEqual (limit - 1)
       }
     }
   }

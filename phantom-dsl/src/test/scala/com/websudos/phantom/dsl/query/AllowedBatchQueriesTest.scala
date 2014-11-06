@@ -15,6 +15,7 @@
  */
 package com.websudos.phantom.dsl.query
 
+import com.websudos.phantom.tables.Primitives
 import org.scalatest.{FlatSpec, Matchers}
 import com.websudos.phantom.Implicits._
 import com.websudos.util.testing._
@@ -23,6 +24,7 @@ class AllowedBatchQueriesTest extends FlatSpec with Matchers {
 
   val s = gen[String]
   val b = BatchStatement
+  val p = Primitives
   
   it should "allow using Insert queries in a Batch statement" in {
     "BatchStatement().add(Primitives.insert)" should compile

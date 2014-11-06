@@ -5,6 +5,9 @@ language: scala
 scala:
  - "2.10.4"
 
+services:
+  - cassandra
+
 # Emails to notify
 notifications:
   slack: newzly:nfmIGqhmrfJb6pIH6I50mnCO

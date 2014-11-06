@@ -2,7 +2,6 @@ import com.twitter.scrooge.ScroogeSBT
 import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 import sbt.Keys._
 import sbt._
-import sbtassembly.Plugin._
 import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
@@ -134,7 +133,7 @@ object phantom extends Build {
     libraryDependencies ++= Seq(
       "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
       "com.twitter"                  %% "util-core"                         % finagleVersion,
-      "com.typesafe.play"            %% "play-iteratees"                    % "2.2.0",
+      "com.typesafe.play"            %% "play-iteratees"                    % "2.3.5",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
@@ -232,7 +231,6 @@ object phantom extends Build {
       "com.twitter"                      %% "util-core"                % finagleVersion,
       "org.scalatest"                    %% "scalatest"                % scalatestVersion,
       "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
-      "org.fluttercode.datafactory"      %  "datafactory"              % "0.8",
       "com.twitter"                      %% "finagle-serversets"       % finagleVersion,
       "com.twitter"                      %% "finagle-zookeeper"        % finagleVersion,
       "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
@@ -260,7 +258,7 @@ object phantom extends Build {
   lazy val phantomScalatraTest = Project(
     id = "phantom-scalatra-test",
     base = file("phantom-scalatra-test"),
-    settings = Defaults.coreDefaultSettings ++ assemblySettings ++ sharedSettings
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
     name := "phantom-test",
     fork := true,
