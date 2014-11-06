@@ -420,6 +420,7 @@ You generally use these to store collections(small number of items), not big thi
 ```scala
 
 import java.util.{ Date, UUID }
+import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.websudos.phantom.sample.ExampleModel
 import com.websudos.phantom.Implicits._
@@ -435,7 +436,7 @@ case class ExampleModel (
 sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Ascending
   object name extends StringColumn(this)
   object props extends MapColumn[ExampleRecord, ExampleModel, String, String](this)
   object test extends OptionalIntColumn(this)
@@ -546,7 +547,7 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
-| ```onflyIf```                     | Addition update condition. Used on non-primary columns                                |
+| ```onlyIf```                     | Addition update condition. Used on non-primary columns                                |
 
 
 <a id="delete-queries">"Delete" queries</a>
@@ -562,6 +563,18 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 <a id="scala-futures">Scala Futures</a>
 =======================================
 <a href="#table-of-contents">back to top</a>
+
+
+Phantom offers a dual asynchronous Future API for the completion of tasks, ```scala.concurrent.Future``` and ```com.twitter.util.Future```.
+However, the concurrency primitives are all based on Google Guava executors and listening decorators. The future API is just for the convenience of users.
+The Scala Future methods are: 
+
+| Method name                        | Description                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| ```future```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.|
+| ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. This will add a ```LIMIT 1``` to the CQL query. |
+| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence ```Seq[T]```of matches.|
+| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        |
 
 ```scala
 ExampleRecord.select.one() // When you only want to select one record
@@ -599,6 +612,16 @@ object ExampleRecord extends ExampleRecord {
 <a id="twitter-futures">Twitter Futures</a>
 ===========================================
 <a href="#table-of-contents">back to top</a>
+
+Phantom doesn't depend on Finagle for this, we are simply using ```"com.twitter" %% "util-core" % Version"``` to return a ```com.twitter.util.Future```. 
+However, the concurrency primitives are all based on Google Guava executors and listening decorators. The future API is just for the convenience of users.
+
+| Method name                        | Description                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| ```execute```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.|
+| ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. This will add a ```LIMIT 1``` to the CQL query. |
+| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence ```Seq[T]```of matches.|
+| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        |
 
 ```scala
 ExampleRecord.select.get() // When you only want to select one record
@@ -754,12 +777,13 @@ Restrictions are enforced at compile time.
 
 ```scala
 
+import org.joda.time.DateTime
 import com.websudos.phantom.Implicits._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Ascending
   object name extends StringColumn(this)
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
   object test extends OptionalIntColumn(this)
@@ -967,7 +991,7 @@ If you have never heard of Apache ZooKeeper before, a much better place to start
 
 Using a set of conventions phantom can automate the entire process of using ZooKeeper in a distributed environment. Phantom will deal with a large series of concerns for you, specifically:
 
-- Creating a ZooKeeper client and initilising it in due time.
+- Creating a ZooKeeper client and initialising it in due time.
 - Fetching and parsing a sequence of Cassandra ports from ZooKeeper.
 - Creating a Cluster configuration based on the sequence of Cassandra ports available in ZooKeeper.
 - Creating an implicit session for queries to execute.

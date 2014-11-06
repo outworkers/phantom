@@ -19,17 +19,15 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
-import java.nio.channels.ClosedChannelException
-
-import scala.collection.JavaConverters._
-import scala.concurrent._
-
-import org.slf4j.LoggerFactory
 
 import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
-import com.twitter.util.{Await, Duration, Future, Try}
+import com.twitter.util.{Await, Future, _}
+import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConverters._
+import scala.concurrent._
 
 private[zookeeper] case object Lock
 
@@ -102,7 +100,7 @@ trait ClusterStore {
 
       val res = Await.result(zkClientStore.connect(), timeout)
 
-      clusterStore = createCluster()
+      createCluster()
 
       _session = blocking {
         val s = clusterStore.connect()
@@ -116,27 +114,28 @@ trait ClusterStore {
   }
 
   @throws[EmptyPortListException]
-  private[this] def createCluster()(implicit timeout: Duration): Cluster = {
+  protected[this] def createCluster()(implicit timeout: Duration): Cluster = {
     val ports = Await.result(hostnamePortPairs, timeout)
 
     if (ports.isEmpty) {
       throw new EmptyPortListException
     } else {
-      Cluster.builder()
+      clusterStore = Cluster.builder()
         .addContactPointsWithPorts(ports.asJava)
         .withoutJMXReporting()
         .withoutMetrics()
         .build()
+      clusterStore
     }
   }
 
   @throws[EmptyClusterStoreException]
   def cluster()(implicit duration: Duration): Cluster = {
     if (isInited) {
-      try {
+      if (clusterStore.isClosed) {
+        createCluster()
+      } else {
         clusterStore
-      } catch  {
-        case err: ClosedChannelException => createCluster()
       }
     } else {
       throw new EmptyClusterStoreException
