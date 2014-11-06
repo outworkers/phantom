@@ -15,12 +15,14 @@
  */
 package com.websudos.phantom.dsl.query
 
+import com.websudos.phantom.tables.Primitives
 import org.scalatest.{FlatSpec, Matchers}
 import com.websudos.util.testing._
 
 class IndexOperatorsRestrictionTests extends FlatSpec with Matchers {
 
   val s = gen[String]
+  val p = Primitives
   
   it should "allow using the eqs operator on index columns" in {
     "Primitives.select.where(_.pkey eqs gen[String])" should compile

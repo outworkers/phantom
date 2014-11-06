@@ -15,15 +15,18 @@
  */
 package com.websudos.phantom.dsl.query
 
+import org.joda.time.DateTime
+import org.scalatest.{FlatSpec, Matchers}
+
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.{Recipes, Recipe}
 import com.websudos.util.testing._
-import org.scalatest.{FlatSpec, Matchers}
 
 class BatchRestrictionTest extends FlatSpec with Matchers {
 
   val s = Recipes
   val b = BatchStatement
+  val d = new DateTime
 
   it should "not allow using Select queries in a batch" in {
     "BatchStatement().add(Primitives.select)" shouldNot compile
@@ -47,22 +50,22 @@ class BatchRestrictionTest extends FlatSpec with Matchers {
 
   it should "allow setting a timestamp on a Batch query" in {
     val url = gen[String]
-    "BatchStatement().timestamp(new DateTime().getMillis).add(Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis))" should compile
+    "BatchStatement().timestamp(gen[DateTime].getMillis).add(Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(gen[DateTime].getMillis))" should compile
   }
 
   it should "allow setting a timestamp on an Update query" in {
     val url = gen[String]
-    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis)" should compile
+    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(gen[DateTime].getMillis)" should compile
   }
 
   it should "allow setting a timestamp on a Compare-and-Set Update query" in {
     val url = gen[String]
-    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).onlyIf(_.description eqs Some(url)).timestamp(new DateTime().getMillis)" should compile
+    "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).onlyIf(_.description eqs Some(url)).timestamp(gen[DateTime].getMillis)" should compile
   }
 
   it should "allow using a timestamp on an Insert query" in {
     val sample = gen[Recipe]
-    "Recipes.insert.value(_.url, sample.url).value(_.description, sample.description).timestamp(new DateTime().getMillis)" should compile
+    "Recipes.insert.value(_.url, sample.url).value(_.description, sample.description).timestamp(gen[DateTime].getMillis)" should compile
   }
 
 }

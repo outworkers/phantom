@@ -71,7 +71,7 @@ class CountTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldEqual 1000L
+        res.get shouldEqual 999L
       }
     }
   }
@@ -98,7 +98,7 @@ class CountTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldEqual 1000L
+        res.get shouldEqual 999L
       }
     }
   }

@@ -16,13 +16,17 @@
 package com.websudos.phantom.dsl.query
 
 import org.scalatest.{FlatSpec, Matchers}
+import com.websudos.phantom.tables.{TimeSeriesTable, Primitives}
 import com.websudos.util.testing._
 
 class CASConditionalQueriesTest extends FlatSpec with Matchers {
+
+  val p = Primitives
+  val t = TimeSeriesTable
+
   it should "allow using a non-index column in a conditional update clause" in {
 
     val s = gen[String]
-
     "Primitives.update.where(_.pkey eqs gen[String]).onlyIf(_.long eqs 5L)" should compile
   }
 
