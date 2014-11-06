@@ -16,6 +16,8 @@
 package com.websudos.phantom.iteratee
 
 import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
+import com.websudos.phantom.Manager
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
 import com.datastax.driver.core.{ ResultSet, Row }
@@ -48,12 +50,13 @@ object Enumerator {
  */
 private object Execution {
 
-  def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
+  val defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
 
   object Implicits {
     implicit def defaultExecutionContext: ExecutionContext = Execution.trampoline
     implicit def trampoline: ExecutionContext = Execution.trampoline
   }
+
 
   /**
    * Executes in the current thread. Uses a thread local trampoline to make sure the stack
@@ -74,7 +77,7 @@ private object Execution {
         // Since there is no local queue, we need to install one and
         // start our trampolining loop.
         try {
-          queue = new JavaArrayDeque(Runtime.getRuntime.availableProcessors())
+          queue = new JavaArrayDeque(Manager.cores)
           queue.addLast(runnable)
           local.set(queue)
           while (!queue.isEmpty) {
@@ -92,7 +95,10 @@ private object Execution {
       }
     }
 
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
+    def reportFailure(t: Throwable): Unit = {
+      Manager.logger.error("Execution error:", t)
+      t.printStackTrace()
+    }
   }
 
   /**
@@ -109,6 +115,9 @@ private object Execution {
       runnable.run()
     }
 
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
+    def reportFailure(t: Throwable): Unit = {
+      Manager.logger.error("Execution error:", t)
+      t.printStackTrace()
+    }
   }
 }

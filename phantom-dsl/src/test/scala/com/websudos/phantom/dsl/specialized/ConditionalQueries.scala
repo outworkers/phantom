@@ -15,13 +15,10 @@
  */
 package com.websudos.phantom.dsl.specialized
 
-import scala.concurrent.blocking
-import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Recipe, Recipes }
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
+import com.websudos.util.testing._
 
 
 class ConditionalQueries extends PhantomCassandraTestSuite {
@@ -33,9 +30,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "update the record if the optional column based condition matches" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = genOpt[String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -75,9 +72,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "update the record if the optional column based condition matches with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = genOpt[String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -117,9 +114,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update when a list column is used a conditional clause" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = genOpt[String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -158,11 +155,10 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
   }
 
   it should "not execute the update when the list column in a conditional clause doesn't match" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-
-    val invalidMatch = List("invalid1", "invalid2")
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val invalidMatch = genList[String](2)
+    val updated = genOpt[String]
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -202,9 +198,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update when a list column is used a conditional clause with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -243,11 +239,11 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
   }
 
   it should "not execute the update when the list column in a conditional clause doesn't match with Twitter Futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
 
     val invalidMatch = List("invalid1", "invalid2")
-    val updated = Some(Sampler.getARandomString)
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -287,9 +283,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "not update the record if the optional column based condition doesn't match" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -329,9 +325,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "not update the record if the optional column based condition doesn't match when using Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -371,9 +367,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a multi-part CAS conditional query with no collection columns in the CAS part" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -413,9 +409,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a multi-part CAS conditional query with no collection columns in the CAS part with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -455,9 +451,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a tri-part CAS conditional query with no collection columns in the CAS part" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -501,9 +497,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a tri-part CAS conditional query with no collection columns in the CAS part with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -548,9 +544,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns in the CAS part" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -594,9 +590,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns in the CAS part with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -640,9 +636,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns and simple comparisons in the CAS part" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -688,9 +684,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
 
   it should "execute an update with a dual-part CAS query with a mixture of columns with Twitter Futures" in {
 
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val updated = Some(Sampler.getARandomString)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = Some(gen[String])
 
     val insert = Recipes.insert
       .value(_.uid, id)
