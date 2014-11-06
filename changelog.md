@@ -96,4 +96,9 @@ Changelog
 <a id="version-1.3.0">1.3.0</a>
 ===============================
 
-- PHANTOM-
+- PHANTOM-123: Fixed some documentation links.
+- PHANTOM-127: Automatically collecting references to all UDT definitions.
+- PHANTOM-131: Throwing an error when ```PrimaryKey``` and ```ClusteringOrder``` definitions are used in the same schema.
+- PHANTOM-134: Allowing users of ```DefaultZooKeeperManager``` to specify their own timeout for ZooKeeper connections.
+- PHANTOM-136: Added UDT examples to the UDT example module.
+- PHANTOM-109: Added a reference collector to all fields of an UDT.

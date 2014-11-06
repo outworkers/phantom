@@ -17,11 +17,9 @@ package com.websudos.phantom.tables
 
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.Row
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.query.InsertQuery
 
 case class Recipe(
   url: String,
@@ -31,23 +29,6 @@ case class Recipe(
   lastCheckedAt: DateTime,
   props: Map[String, String]
 )
-
-object Recipe extends ModelSampler[Recipe] {
-  def sample: Recipe = {
-    Recipe(
-      Sampler.getARandomString,
-      Some(Sampler.getARandomString),
-      List(Sampler.getARandomString, Sampler.getARandomString),
-      Some(Sampler.getARandomInteger()),
-      new DateTime(),
-      Map.empty[String, String]
-    )
-  }
-
-  def samples(num: Int = 20): List[Recipe] = {
-    List.range(1, num).map(x => { Recipe.sample })
-  }
-}
 
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
@@ -77,6 +58,16 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object uid extends UUIDColumn(this)
 }
 
-object Recipes extends Recipes with TestSampler[Recipes, Recipe] with PhantomCassandraConnector {
+object Recipes extends Recipes with PhantomCassandraConnector {
+
   override def tableName = "Recipes"
+
+  def store(recipe: Recipe, id: UUID): InsertQuery[Recipes, Recipe] = {
+    insert.value(_.uid, id)
+      .value(_.url, recipe.url)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.props, recipe.props)
+  }
 }

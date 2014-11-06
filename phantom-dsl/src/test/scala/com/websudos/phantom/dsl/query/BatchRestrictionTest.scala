@@ -15,15 +15,16 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.joda.time.DateTime
-import org.scalatest.{ FlatSpec, Matchers }
-
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ Primitives, Recipe, Recipes }
-import com.newzly.util.testing.Sampler
+import com.websudos.phantom.tables.{Recipes, Recipe}
+import com.websudos.util.testing._
+import org.scalatest.{FlatSpec, Matchers}
 
 class BatchRestrictionTest extends FlatSpec with Matchers {
-  
+
+  val s = Recipes
+  val b = BatchStatement
+
   it should "not allow using Select queries in a batch" in {
     "BatchStatement().add(Primitives.select)" shouldNot compile
   }
@@ -33,7 +34,7 @@ class BatchRestrictionTest extends FlatSpec with Matchers {
   }
 
   it should "not allow using SelectWhere queries in a batch" in {
-    "BatchStatement().add(Primitives.select.where(_.pkey eqs Sampler.getARandomString))" shouldNot compile
+    "BatchStatement().add(Primitives.select.where(_.pkey eqs gen[String]))" shouldNot compile
   }
 
   it should "not allow using Truncate queries in a batch" in {
@@ -45,22 +46,22 @@ class BatchRestrictionTest extends FlatSpec with Matchers {
   }
 
   it should "allow setting a timestamp on a Batch query" in {
-    val url = Sampler.getARandomString
+    val url = gen[String]
     "BatchStatement().timestamp(new DateTime().getMillis).add(Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis))" should compile
   }
 
   it should "allow setting a timestamp on an Update query" in {
-    val url = Sampler.getARandomString
+    val url = gen[String]
     "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).timestamp(new DateTime().getMillis)" should compile
   }
 
   it should "allow setting a timestamp on a Compare-and-Set Update query" in {
-    val url = Sampler.getARandomString
+    val url = gen[String]
     "Recipes.update.where(_.url eqs url).modify(_.description setTo Some(url)).onlyIf(_.description eqs Some(url)).timestamp(new DateTime().getMillis)" should compile
   }
 
   it should "allow using a timestamp on an Insert query" in {
-    val sample = Recipe.sample
+    val sample = gen[Recipe]
     "Recipes.insert.value(_.url, sample.url).value(_.description, sample.description).timestamp(new DateTime().getMillis)" should compile
   }
 

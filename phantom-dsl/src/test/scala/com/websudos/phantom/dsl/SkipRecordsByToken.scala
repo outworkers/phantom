@@ -6,7 +6,7 @@ import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{ Article, Articles }
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class SkipRecordsByToken extends PhantomCassandraTestSuite {
 
@@ -20,10 +20,10 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
   }
 
   it should "allow skipping records using gtToken" in {
-    val article1 = Article.sample
-    val article2 = Article.sample
-    val article3 = Article.sample
-    val article4 = Article.sample
+    val article1 = gen[Article]
+    val article2 = gen[Article]
+    val article3 = gen[Article]
+    val article4 = gen[Article]
 
     val result = for {
       truncate <- Articles.truncate.future()
@@ -60,10 +60,10 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow skipping records using eqsToken" in {
-    val article1 = Article.sample
-    val article2 = Article.sample
-    val article3 = Article.sample
-    val article4 = Article.sample
+    val article1 = gen[Article]
+    val article2 = gen[Article]
+    val article3 = gen[Article]
+    val article4 = gen[Article]
 
     val result = for {
       truncate <- Articles.truncate.future()
@@ -101,10 +101,10 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow skipping records using gteToken" in {
-    val article1 = Article.sample
-    val article2 = Article.sample
-    val article3 = Article.sample
-    val article4 = Article.sample
+    val article1 = gen[Article]
+    val article2 = gen[Article]
+    val article3 = gen[Article]
+    val article4 = gen[Article]
 
     val result = for {
       truncate <- Articles.truncate.future()
@@ -141,10 +141,10 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow skipping records using ltToken" in {
-    val article1 = Article.sample
-    val article2 = Article.sample
-    val article3 = Article.sample
-    val article4 = Article.sample
+    val article1 = gen[Article]
+    val article2 = gen[Article]
+    val article3 = gen[Article]
+    val article4 = gen[Article]
 
     val result = for {
       truncate <- Articles.truncate.future()
@@ -184,10 +184,10 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow skipping records using lteToken" in {
-    val article1 = Article.sample
-    val article2 = Article.sample
-    val article3 = Article.sample
-    val article4 = Article.sample
+    val article1 = gen[Article]
+    val article2 = gen[Article]
+    val article3 = gen[Article]
+    val article4 = gen[Article]
 
     val result = for {
       truncate <- Articles.truncate.future()

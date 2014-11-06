@@ -1,12 +1,14 @@
 package com.websudos.phantom.dsl
 
 import scala.concurrent.blocking
+
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testing._
 import com.websudos.phantom.tables.{ Article, Articles }
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class SkippingRecordsTest extends PhantomCassandraTestSuite {
 
@@ -20,7 +22,7 @@ class SkippingRecordsTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow skipping records " in {
-    val article1 = Article.sample
+    val article1 = gen[Article]
     val article2 = article1.copy(order_id = article1.order_id + 1)
     val article3 = article1.copy(order_id = article1.order_id + 2)
 

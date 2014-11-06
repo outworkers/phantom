@@ -15,6 +15,8 @@
  */
 package com.websudos.phantom.column
 
+import scala.reflect.runtime.{currentMirror => cm, universe => ru}
+
 import com.websudos.phantom.CassandraWrites
 
 private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
@@ -28,6 +30,10 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   private[phantom] val isClusteringKey = false
   private[phantom] val isAscending = false
 
-  lazy val name: String = getClass.getSimpleName.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)|", "")
+  private[this] lazy val _name: String = {
+    cm.reflect(this).symbol.name.toTypeName.decoded
+  }
+  
+  def name: String = _name
 }
 

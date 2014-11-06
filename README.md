@@ -11,13 +11,14 @@ but the more adopters our projects have, the more people from our company will a
 Using phantom
 =============
 
-The latest major release is: ```val phantomVersion = 1.2.2```.
-Phantom is published to Maven Central and it's actively and avidly developed.
+The latest major release is: ```val phantomVersion = 1.2.7```.
+Phantom is published to Maven Central and it's actively and avidly developed. You will likely require the resolver of our internal repo too, as we publish
+some utilities there: ```http://maven.websudos.co.uk/ext-release-local```
 
 ### Scala 2.10 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.2.7```. This version is likely only available on our Maven repository as an intermediary release.
+The latest development version is ```val phantomVersion = 1.3.3```. This version is likely only available on our Maven repository as an intermediary release.
 
 ### Scala 2.11 releases ###
 
@@ -26,7 +27,8 @@ The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point
 - ```phantom-dsl```.
 
 
-The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```.
+The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
+Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant. 
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
@@ -46,10 +48,10 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
             <li>
                 <p><a href="#indexing-columns">Indexing columns</a></p>
                 <ul>
-                    <li><a href="#partition-key">Partition Key</a></li>
-                    <li><a href="#primary-key">Primary Key</a></li>
-                    <li><a href="#secondary-key">Secondary Index Key</a></li>
-                    <li><a href="#clustering-order">Clustering Order Key</a></li>
+                    <li><a href="#partitionkey">PartitionKey</a></li>
+                    <li><a href="#primarykey">PrimaryKey</a></li>
+                    <li><a href="#secondaryindex">SecondaryIndex</a></li>
+                    <li><a href="#clusteringorder">ClusteringOrder</a></li>
                 </ul>
             </li>
             <li><a href="#thrift-columns">Thrift columns</a></li>
@@ -59,6 +61,7 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
     <li>
         <p><a href="#querying-with-phantom">Querying with phantom</a></p>
         <ul>
+            <li><a href="#common-query-methods">Common query methods</a></li>
             <li><a href="#select-queries">SELECT queries</a></li>
             <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
             <li><a href="#where-and-operators">WHERE and AND clause operators</a></li>
@@ -68,7 +71,6 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
             <li><a href="#truncate-queries">TRUNCATE queries</a></li>
             <li><a href="#create-queries">CREATE queries</a></li>
             <li><a href="#alter-queries">ALTER queries</a></li>
-            <li><a href="#common-query-methods">Common query methods</a></li>
         </ul>
     </li>
     <li>
@@ -148,15 +150,10 @@ Cassandra is highly scalable and it's by far the most powerful database technolo
 
 Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting. 
 
-If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html)
+If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax
+.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html). An even better introduction is available on [our blog](http://blog.websudos.com/category/nosql/cassandra/), where we have a full series of introductory posts to Cassandra with phantom.
 
-We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions, although do note we're a bit short staffed!
-
-You can get in touch via the [newzly-phantom](https://groups.google.com/forum/#!forum/newzly-phantom) Google Group or via the below listed emails.
-
-We are also extremely grateful if you add your company to our list of adopters, as it makes it easy for us to further increase adoption, 
-contributions and make phantom better and better.
-
+We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions! Please use GitHub for any issues or bug reports.
 
 Adopters
 ========
@@ -286,7 +283,6 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | UUIDColumn                    | java.util.UUID            | uuid              |
 | TimeUUIDColumn                | java.util.UUID            | timeuuid          |
 | CounterColumn                 | scala.Long                | counter           |
-| CounterColumn                 | scala.Long                | counter           |
 | StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
 
@@ -345,7 +341,7 @@ Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https
 phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 Instead of waiting for Cassandra to tell you you've done bad things, phantom won't let you compile them, saving you a lot of time.
 
-<a id="partition-key">PartitionKey[T]</a>
+<a id="partitionkey">PartitionKey</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -360,7 +356,7 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 ```PRIMARY_KEY((your_partition_key_1, your_partition_key2), primary_key_1, primary_key_2)```.
 
 
-<a id="primary-key">PrimaryKey[T]</a>
+<a id="primarykey">PrimaryKey</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -374,7 +370,7 @@ A compound key in C* looks like this:
 Before you add too many of these, remember they all have to go into a ```where``` clause.
 You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
-<a id="secondary-key">Index</a>
+<a id="secondaryindex">SecondaryIndex</a>
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
@@ -384,7 +380,7 @@ It's generally best to avoid it, we implemented it to show off what good guys we
 When you mix in ```Index[T]``` on a column, phantom will let you use it in a ```where``` clause.
 However, don't forget to ```allowFiltering``` for such queries, otherwise C* will give you an error.
 
-<a id="clustering-order">ClusteringOrder</a>
+<a id="clusteringorder">ClusteringOrder</a>
 =================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -460,7 +456,28 @@ The query syntax is inspired by the Foursquare Rogue library and aims to replica
 Phantom works with both Scala Futures and Twitter Futures as first class citizens.
 
 
-<a id="select-queries">"Select" queries</a>
+<a id="common-query-methods">Common query methods</a>
+=====================================================
+<a href="#table-of-contents">back to top</a>
+
+The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
+.scala).
+
+| Method name                       | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
+| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
+| ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
+| ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
+| ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
+| ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
+| ```serialConsistencyLevel```      | Retrieves the serial consistency level in use.                                        |
+| ```serialConsistencyLevel_=```    | Sets the serial consistency level to use.                                             |
+| ```forceNoValues_=```             | Sets the serial consistency level to use.                                             |
+| ```routingKey```                  | Retrieves the Routing Key as a ByteBuffer.                                            |
+
+
+<a id="select-queries">Select queries</a>
 ================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -470,8 +487,6 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```orderBy```                     | Adds an ```ORDER_BY column_name``` to the query                                       |
 | ```allowFiltering```              | Allows Cassandra to filter records in memory. This is an expensive operation.         |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
-| ```setFetchSize       ```         | Sets the maximum number of records to retrieve. Default is 10000                      |
 | ```limit```                       | Sets the exact number of records to retrieve.                                         |
 
 
@@ -519,7 +534,6 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```value```                       | A type safe Insert query builder. Throws an error for ```null``` values.              |
 | ```valueOrNull```                 | This will accept a ```null``` without throwing an error.                              |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 | ```ttl```                         | Sets the "Time-To-Live" for the record.                                               |
 
 
@@ -532,7 +546,6 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
 | ```onflyIf```                     | Addition update condition. Used on non-primary columns                                |
 
 
@@ -543,28 +556,7 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | ```where```                       | The ```WHERE``` clause in CQL                                                         |
-| ```useConsistencyLevel```         | Sets the consistency level to use.                                                    |
-
-
-<a id="common-query-methods">Common query methods</a>
-=====================================================
-<a href="#table-of-contents">back to top</a>
-
-The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
-.scala).
-
-| Method name                       | Description                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------- |
-| ```tracing_=```                   | The Cassandra utility method. Enables or disables tracing.                            |
-| ```queryString```                 | Get the output CQL 3 query of a phantom query.                                        |
-| ```consistencyLevel```            | Retrieves the consistency level in use.                                               |
-| ```consistencyLevel_=```          | Sets the consistency level to use.                                                    |
-| ```retryPolicy```                 | Retrieves the RetryPolicy in use.                                                     |
-| ```retryPolicy_=```               | Sets the RetryPolicy to use.                                                          |
-| ```serialConsistencyLevel```      | Retrieves the serial consistency level in use.                                        |
-| ```serialConsistencyLevel_=```    | Sets the serial consistency level to use.                                             |
-| ```forceNoValues_=```             | Sets the serial consistency level to use.                                             |
-| ```routingKey```                  | Retrieves the Routing Key as a ByteBuffer.                                            |
+| ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 
 
 <a id="scala-futures">Scala Futures</a>

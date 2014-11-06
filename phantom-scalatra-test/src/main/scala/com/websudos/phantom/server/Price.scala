@@ -1,13 +1,10 @@
 package com.websudos.phantom.server
 
 import java.util.Date
-
 import org.joda.time.{DateTime, LocalDate}
 
 import com.datastax.driver.core.Row
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
 import com.websudos.phantom.query.InsertQuery
 import com.websudos.phantom.testing.PhantomCassandraConnector
 
@@ -69,16 +66,9 @@ sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
     OptionPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), strikePrice(r), value(r))
 }
 
-object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPrice] with ModelSampler[EquityPrice] with PhantomCassandraConnector {
+object EquityPrices extends EquityPrices with PhantomCassandraConnector {
   override val tableName: String = "EquityPrices"
 
-  override def sample: EquityPrice = EquityPrice(
-    Sampler.getARandomString,
-    new LocalDate(),
-    Sampler.getARandomString,
-    new DateTime(),
-    BigDecimal(Sampler.getARandomInteger())
-  )
 
   def insertPrice(price: EquityPrice) =
     insert.
@@ -90,17 +80,8 @@ object EquityPrices extends EquityPrices with TestSampler[EquityPrices, EquityPr
 
 }
 
-object OptionPrices extends OptionPrices with TestSampler[OptionPrices, OptionPrice] with ModelSampler[OptionPrice] with PhantomCassandraConnector {
+object OptionPrices extends OptionPrices with PhantomCassandraConnector {
   override val tableName: String = "OptionPrices"
-
-  override def sample: OptionPrice = OptionPrice(
-    Sampler.getARandomString,
-    new LocalDate(),
-    Sampler.getARandomString,
-    new DateTime(),
-    BigDecimal(Sampler.getARandomInteger()),
-    BigDecimal(Sampler.getARandomInteger())
-  )
 
   def insertPrice(price: OptionPrice): InsertQuery[OptionPrices, OptionPrice] = {
     insert
