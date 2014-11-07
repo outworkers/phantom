@@ -18,24 +18,20 @@
 
 package com.websudos.phantom.dsl.specialized
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
-
-import com.twitter.conversions.time._
-import com.twitter.util.Await
-
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.JsonTable
+import com.websudos.phantom.tables._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class JsonColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(JsonTable.create.execute(), 2.seconds)
+    JsonTable.insertSchema()
   }
 
   it should "allow storing a JSON record" in {
-    val sample = JsonTable.sample
+    val sample = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -59,7 +55,7 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow storing a JSON record with Twitter Futures" in {
-    val sample = JsonTable.sample
+    val sample = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -83,8 +79,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow updating a JSON record" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -113,8 +109,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow updating a JSON record with Twitter Futures" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -143,8 +139,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow updating a JSON record in a List of JSON records" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -173,8 +169,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   it should "allow updating a JSON record in a List of JSON records with Twitter Futures" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -203,8 +199,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow updating a JSON record in a Set of JSON records" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)
@@ -233,8 +229,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   }
 
   ignore should "allow updating a JSON record in a Set of JSON records with Twitter Futures" in {
-    val sample = JsonTable.sample
-    val sample2 = JsonTable.sample
+    val sample = gen[JsonClass]
+    val sample2 = gen[JsonClass]
 
     val insert = JsonTable.insert
       .value(_.id, sample.id)

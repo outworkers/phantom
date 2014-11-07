@@ -20,8 +20,8 @@ package com.websudos.phantom.zookeeper
 
 import com.datastax.driver.core.Session
 
-
 trait CassandraConnector {
+
   def keySpace: String
 
   def manager: CassandraManager = DefaultCassandraManager

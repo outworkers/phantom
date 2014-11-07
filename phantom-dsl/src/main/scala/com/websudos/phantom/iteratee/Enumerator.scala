@@ -16,9 +16,12 @@
 package com.websudos.phantom.iteratee
 
 import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
+
 import com.datastax.driver.core.{ ResultSet, Row }
+import com.websudos.phantom.Manager
 import play.api.libs.iteratee.{ Enumerator => PlayEnum }
 
 
@@ -48,12 +51,24 @@ object Enumerator {
  */
 private object Execution {
 
+  /**
+   * This is the default execution context of all things based on iteratees.
+   * All queries are first enumerated and then manipulated at DSL level to obtain the correct result.
+   *
+   * Limits are enforced by the features of the CQL protocol, either via the SELECT clause LIMIT or fetch size.
+   * Changing this method to a val causes every query to stop working.
+   *
+   * Why you ask? Who knows, just don't do it!!
+   *
+   * @return A reference to the default execution context of queries.
+   */
   def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
 
   object Implicits {
     implicit def defaultExecutionContext: ExecutionContext = Execution.trampoline
     implicit def trampoline: ExecutionContext = Execution.trampoline
   }
+
 
   /**
    * Executes in the current thread. Uses a thread local trampoline to make sure the stack
@@ -74,7 +89,7 @@ private object Execution {
         // Since there is no local queue, we need to install one and
         // start our trampolining loop.
         try {
-          queue = new JavaArrayDeque(Runtime.getRuntime.availableProcessors())
+          queue = new JavaArrayDeque(Manager.cores)
           queue.addLast(runnable)
           local.set(queue)
           while (!queue.isEmpty) {
@@ -92,7 +107,10 @@ private object Execution {
       }
     }
 
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
+    def reportFailure(t: Throwable): Unit = {
+      Manager.logger.error("Execution error:", t)
+      t.printStackTrace()
+    }
   }
 
   /**
@@ -109,6 +127,9 @@ private object Execution {
       runnable.run()
     }
 
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
+    def reportFailure(t: Throwable): Unit = {
+      Manager.logger.error("Execution error:", t)
+      t.printStackTrace()
+    }
   }
 }
