@@ -15,8 +15,6 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-import com.datastax.driver.core.Row
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraConnector
 
@@ -33,6 +31,34 @@ sealed class BasicTable extends CassandraTable[BasicTable, String] {
 }
 
 object BasicTable extends BasicTable with PhantomCassandraConnector
+
+
+object Records extends Enumeration {
+  type Records = Value
+  val TypeOne, TypeTwo, TypeThree = Value
+}
+
+case class EnumRecord(
+  name: String,
+  enum: Records.type#Value,
+  optEnum: Option[Records.type#Value]
+)
+
+sealed class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
+  object id extends StringColumn(this) with PartitionKey[String]
+  object enum extends EnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
+  object optEnum extends OptionalEnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
+
+  def fromRow(row: Row): EnumRecord = {
+    EnumRecord(
+      id(row),
+      enum(row),
+      optEnum(row)
+    )
+  }
+}
+
+object EnumTable extends EnumTable with PhantomCassandraConnector
 
 sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
 
@@ -51,8 +77,8 @@ object ClusteringTable extends ClusteringTable with PhantomCassandraConnector
 sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object id2 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Ascending
-  object id3 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
+  object id2 extends UUIDColumn(this) with ClusteringOrder[UUID] with Ascending
+  object id3 extends UUIDColumn(this) with ClusteringOrder[UUID] with Descending
   object placeholder extends StringColumn(this) with ClusteringOrder[String] with Descending
 
   def fromRow(r: Row): String = {
@@ -61,6 +87,22 @@ sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTabl
 }
 
 object ComplexClusteringTable extends ComplexClusteringTable with PhantomCassandraConnector
+
+
+sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable, String] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+
+  object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
+  object id3 extends UUIDColumn(this) with ClusteringOrder[UUID] with Descending
+  object placeholder extends StringColumn(this) with ClusteringOrder[String] with Descending
+
+  def fromRow(r: Row): String = {
+    placeholder(r)
+  }
+}
+
+object BrokenClusteringTable extends BrokenClusteringTable
+
 
 sealed class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
 
@@ -95,3 +137,5 @@ sealed class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTabl
 }
 
 object SimpleCompoundKeyTable extends SimpleCompoundKeyTable with PhantomCassandraConnector
+
+

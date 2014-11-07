@@ -21,9 +21,9 @@ import scala.concurrent.Future
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
+import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{ Primitive, Primitives }
+import com.websudos.util.testing._
 
 class IterateeSliceTest extends PhantomCassandraTestSuite {
 
@@ -31,7 +31,7 @@ class IterateeSliceTest extends PhantomCassandraTestSuite {
 
   ignore should "get a slice of the iterator" in {
     Primitives.insertSchema()
-    val rows = for (i <- 1 to 100) yield  Primitive.sample
+    val rows = for (i <- 1 to 100) yield gen[Primitive]
     var count = 0
     val batch = Iterator.fill(100) {
       val row = rows(count)

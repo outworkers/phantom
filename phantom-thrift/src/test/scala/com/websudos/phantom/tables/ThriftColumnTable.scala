@@ -20,7 +20,6 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.TestSampler
 import com.websudos.phantom.testing.PhantomCassandraConnector
 import com.websudos.phantom.thrift.{OptionalThriftColumn, ThriftColumn, ThriftListColumn, ThriftMapColumn, ThriftSetColumn, ThriftTest}
 
@@ -81,6 +80,6 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
   }
 }
 
-object ThriftColumnTable extends ThriftColumnTable with TestSampler[ThriftColumnTable, Output] with PhantomCassandraConnector {
+object ThriftColumnTable extends ThriftColumnTable with PhantomCassandraConnector {
   override val tableName = "thrift_column_table"
 }
