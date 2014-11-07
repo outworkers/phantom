@@ -15,18 +15,12 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.blocking
-
+import com.websudos.phantom.Implicits._
+import com.websudos.phantom.tables._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-
-import com.datastax.driver.core.utils.UUIDs
-
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{Primitives, Recipe, Recipes}
-
-import com.newzly.util.testing.AsyncAssertionsHelper._
 
 class ListOperatorsTest extends PhantomCassandraTestSuite {
 
@@ -38,9 +32,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "store items in a list in the same order" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val list = List("test, test2, test3, test4, test5")
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val list = genList[String]()
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -65,9 +59,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "store items in a list in the same order with Twitter Futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
-    val list = List("test, test2, test3, test4, test5")
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val list = genList[String]()
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -92,10 +86,10 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "store the same list size in Cassandra as it does in Scala" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val limit = 100
-    val list = List.range(0, limit).map(_.toString)
+    val list = genList[String](limit)
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -115,16 +109,16 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
-        items.get.size shouldEqual limit
+        items.get.size shouldEqual (limit - 1)
       }
     }
   }
 
   it should "store the same list size in Cassandra as it does in Scala with Twitter Futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val limit = 100
-    val list = List.range(0, limit).map(_.toString)
+    val list = genList[String](limit)
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -144,14 +138,14 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
       items => {
         items.isDefined shouldBe true
         items.get shouldEqual list
-        items.get.size shouldEqual limit
+        items.get.size shouldEqual (limit - 1)
       }
     }
   }
 
   it should "append an item to a list" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -176,8 +170,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append an item to a list with Twitter futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -202,8 +196,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a list" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -230,8 +224,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "append several items to a list with Twitter futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -258,8 +252,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "prepend an item to a list" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -284,8 +278,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "prepend an item to a list with Twitter Futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -310,8 +304,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "prepend several items to a list" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -337,8 +331,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "prepend several items to a list with Twitter futures" in {
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -364,9 +358,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "remove an item from a list" in {
-    val list = List("test, test2")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -391,9 +385,10 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "remove an item from a list with Twitter Futures" in {
-    val list = List("test, test2")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+    val list = genList[String]()
+
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -418,9 +413,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "remove multiple items from a list" in {
-    val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -445,9 +440,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "remove multiple items from a list with Twitter futures" in {
-    val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -472,9 +467,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "set a 0 index inside a List" in {
-    val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -499,9 +494,11 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "set an index inside a List with Twitter futures" in {
-    val list = List("test, test2, test3, test4, test5")
-    val recipe = Recipe.sample.copy(ingredients = list)
-    val id = UUIDs.timeBased()
+
+    val list = genList[String]()
+
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -526,9 +523,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "set the third index inside a List" in {
-    val list = List.range(0, 100).map(_.toString)
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val list = genList[String](100)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -553,9 +550,12 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "set the third index inside a List with Twitter Futures" in {
-    val list = List.range(0, 100).map(_.toString)
-    val recipe = Recipe.sample
-    val id = UUIDs.timeBased()
+    val list = genList[String](100)
+    val recipe = gen[Recipe]
+    val id = gen[UUID]
+    val updated = gen[String]
+
+
     val insert = Recipes.insert
       .value(_.uid, id)
       .value(_.url, recipe.url)
@@ -567,14 +567,14 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, "updated")).execute()
+      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updated)).execute()
       select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get(3) shouldEqual "updated"
+        items.get(3) shouldEqual updated
       }
     }
   }

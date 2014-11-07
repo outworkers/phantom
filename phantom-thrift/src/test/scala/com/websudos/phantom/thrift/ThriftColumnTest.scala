@@ -19,11 +19,10 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class ThriftColumnTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -35,7 +34,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()
-    val sample = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = true)
+    val sample = gen[ThriftTest]
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
@@ -55,8 +54,8 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
   it should "allow storing lists of thrift objects" in {
     val id = UUIDs.timeBased()
-    val sample = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = true)
-    val sample2 = ThriftTest(Sampler.getARandomInteger(), Sampler.getARandomString, test = false)
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
     val sampleList = Set(sample, sample2)
 
     val insert = ThriftColumnTable.insert

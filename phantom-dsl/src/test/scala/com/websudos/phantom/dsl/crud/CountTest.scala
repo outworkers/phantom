@@ -19,10 +19,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.batch.BatchStatement
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.tables._
+import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 
 class CountTest extends PhantomCassandraTestSuite {
 
@@ -52,7 +52,7 @@ class CountTest extends PhantomCassandraTestSuite {
   it should "correctly retrieve a count of 1000" in {
     val limit = 1000
 
-    val rows = Iterator.fill(limit)(JodaRow.sample)
+    val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
@@ -71,7 +71,7 @@ class CountTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldEqual 1000L
+        res.get shouldEqual 999L
       }
     }
   }
@@ -79,7 +79,7 @@ class CountTest extends PhantomCassandraTestSuite {
   it should "correctly retrieve a count of 1000 with Twitter futures" in {
     val limit = 1000
 
-    val rows = Iterator.fill(limit)(JodaRow.sample)
+    val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(new BatchStatement())((b, row) => {
       val statement = PrimitivesJoda.insert
@@ -98,7 +98,7 @@ class CountTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         res.isDefined shouldBe true
-        res.get shouldEqual 1000L
+        res.get shouldEqual 999L
       }
     }
   }
