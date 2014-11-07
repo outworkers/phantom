@@ -51,6 +51,17 @@ object Enumerator {
  */
 private object Execution {
 
+  /**
+   * This is the default execution context of all things based on iteratees.
+   * All queries are first enumerated and then manipulated at DSL level to obtain the correct result.
+   *
+   * Limits are enforced by the features of the CQL protocol, either via the SELECT clause LIMIT or fetch size.
+   * Changing this method to a val causes every query to stop working.
+   *
+   * Why you ask? Who knows, just don't do it!!
+   *
+   * @return A reference to the default execution context of queries.
+   */
   def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
 
   object Implicits {
