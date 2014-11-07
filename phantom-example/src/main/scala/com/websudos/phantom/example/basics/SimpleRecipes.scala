@@ -88,7 +88,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 }
 
 
-object Recipes extends Recipes with DBConnector {
+object Recipes extends Recipes with ExampleConnector {
   // you can even rename the table in the schema to whatever you like.
   override lazy val tableName = "my_custom_table"
 

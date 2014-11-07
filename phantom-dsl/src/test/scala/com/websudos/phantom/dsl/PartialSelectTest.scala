@@ -3,10 +3,10 @@ package com.websudos.phantom.dsl
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.newzly.util.testing.AsyncAssertionsHelper._
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{Primitive, Primitives}
+import com.websudos.phantom.tables._
+import com.websudos.util.testing._
 
 
 class PartialSelectTest extends PhantomCassandraTestSuite {
@@ -19,7 +19,7 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
   }
 
   "Partially selecting 2 fields" should "correctly select the fields" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
@@ -48,9 +48,8 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
     }
   }
 
-
   "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
-    val row = Primitive.sample
+    val row = gen[Primitive]
     val insert =  Primitives.insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

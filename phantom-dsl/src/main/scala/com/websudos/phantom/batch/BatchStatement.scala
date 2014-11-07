@@ -31,7 +31,7 @@ sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[Batchabl
 
   protected[phantom] val qb = create()
 
-  protected[this] lazy val statements: Iterator[BatchableStatement] =  Iterator.empty
+  protected[this] lazy val statements: Iterator[BatchableStatement] = qbList
 
   protected[this] def newSubclass(sts: Iterator[BatchableStatement]): X
 
