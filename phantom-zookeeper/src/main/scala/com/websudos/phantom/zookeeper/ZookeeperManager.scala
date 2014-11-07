@@ -25,7 +25,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.conversions.time._
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
-import com.twitter.util.{Await, Try}
+import com.twitter.util.{Duration, Await, Try}
 
 trait ZookeeperManager extends CassandraManager {
 
@@ -48,6 +48,8 @@ trait ZookeeperManager extends CassandraManager {
 
   protected[this] val store: ClusterStore
 
+  implicit val timeout: Duration
+
   def cluster: Cluster = store.cluster
 
   def session: Session = store.session
@@ -64,6 +66,8 @@ class DefaultZookeeperManager extends ZookeeperManager {
 
   val livePort = 9042
   val embeddedPort = 9042
+
+  implicit val timeout: Duration = 2.seconds
 
   /**
    * This is the default way a ZooKeeper connector will obtain the HOST:IP port of the ZooKeeper coordinator(master) node.

@@ -20,9 +20,10 @@ package com.websudos.phantom.zookeeper
 
 import java.io.IOException
 import java.net.Socket
-import scala.concurrent.blocking
 
 import com.datastax.driver.core.{Cluster, Session}
+
+import scala.concurrent.blocking
 
 private[zookeeper] case object CassandraInitLock
 
@@ -37,7 +38,7 @@ trait CassandraManager {
   implicit def session: Session
 }
 
-object DefaultCassandraManager extends CassandraManager {
+trait DefaultCassandraManager extends CassandraManager {
 
   val livePort = 9042
   val embeddedPort = 9142
@@ -46,6 +47,14 @@ object DefaultCassandraManager extends CassandraManager {
   private[this] var inited = false
   @volatile private[this] var _session: Session = null
 
+
+  def clusterRef: Cluster = {
+    if (cluster.isClosed) {
+      createCluster()
+    } else {
+      cluster
+    }
+  }
 
   def cassandraPort: Int = {
     try {
@@ -56,19 +65,30 @@ object DefaultCassandraManager extends CassandraManager {
     }
   }
 
-  lazy val cluster: Cluster = Cluster.builder()
-    .addContactPoint(cassandraHost)
-    .withPort(cassandraPort)
-    .withoutJMXReporting()
-    .withoutMetrics()
-    .build()
+  /**
+   * This method tells the manager how to create a Cassandra cluster out of the provided settings.
+   * It deals with the underlying Datastax Cluster builder with a set of defaults that can be easily overridden.
+   *
+   * The purpose of this method, beyond DRY, is to allow users to override the building of a cluster with whatever they need.
+   * @return A reference to a Datastax cluster.
+   */
+  protected[this] def createCluster(): Cluster = {
+    Cluster.builder()
+      .addContactPoint(cassandraHost)
+      .withPort(cassandraPort)
+      .withoutJMXReporting()
+      .withoutMetrics()
+      .build()
+  }
+
+  lazy val cluster = createCluster()
 
   def session = _session
 
   def initIfNotInited(keySpace: String): Unit = CassandraInitLock.synchronized {
     if (!inited) {
       _session = blocking {
-        val s = cluster.connect()
+        val s = clusterRef.connect()
         s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
         s.execute(s"USE $keySpace;")
         s
@@ -77,6 +97,8 @@ object DefaultCassandraManager extends CassandraManager {
     }
   }
 }
+
+object DefaultCassandraManager extends DefaultCassandraManager
 
 trait SimpleCassandraConnector extends CassandraConnector {
 

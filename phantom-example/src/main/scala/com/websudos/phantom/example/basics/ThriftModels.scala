@@ -47,3 +47,7 @@ sealed class ThriftTable extends CassandraTable[ThriftTable,  SampleRecord] {
     SampleRecord(stuff(r), someList(r), thriftModel(r))
   }
 }
+
+object ThriftTable extends ThriftTable with ExampleConnector {
+
+}
