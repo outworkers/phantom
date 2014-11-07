@@ -17,7 +17,7 @@ object phantom extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -52,7 +52,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mpublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
