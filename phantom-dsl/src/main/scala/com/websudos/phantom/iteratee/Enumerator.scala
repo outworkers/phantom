@@ -16,11 +16,12 @@
 package com.websudos.phantom.iteratee
 
 import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
-import com.websudos.phantom.Manager
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
+
 import com.datastax.driver.core.{ ResultSet, Row }
+import com.websudos.phantom.Manager
 import play.api.libs.iteratee.{ Enumerator => PlayEnum }
 
 
@@ -50,7 +51,7 @@ object Enumerator {
  */
 private object Execution {
 
-  val defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
+  def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
 
   object Implicits {
     implicit def defaultExecutionContext: ExecutionContext = Execution.trampoline

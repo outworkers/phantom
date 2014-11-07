@@ -26,6 +26,15 @@ class TypeDefinitionTest extends FlatSpec with Matchers {
     TestFields.address.name shouldEqual "address"
   }
 
+  it should "extract the name of an UDT sub-field" in {
+    TestFields.address.street.name shouldEqual "street"
+  }
+
+  it should "extract the name of a non string UDT sub-field" in {
+    TestFields.address.postCode.name shouldEqual "postCode"
+  }
+
+
   it should "correctly serialise a UDT definition into a schema" in {
     TestFields.address.schema() shouldEqual
       s"""CREATE TYPE IF NOT EXISTS address(postCode text, street text, test int);""".stripMargin
