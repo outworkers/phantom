@@ -49,7 +49,10 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
-  lazy val logger = LoggerFactory.getLogger(tableName)
+  lazy val logger = {
+    val klass = getClass.getName.stripSuffix("$")
+    LoggerFactory.getLogger(klass)
+  }
 
   def tableName: String = _name
 
