@@ -34,7 +34,7 @@ Changelog
 - Improved structure of test project.
 - Added copyright information to a lot of files.
 - Fixed license issue in Maven Central publishing license.
-- Vastly simplified structure of collection operators and removed ```com.newzly.phantom.thrift.Implicits._```
+- Vastly simplified structure of collection operators and removed ```com.websudos.phantom.thrift.Implicits._```
 - Fixed ```null``` handling bug in ```OptionalColumns```.
 
 <a id="version-0.7.0">0.7.0</a>

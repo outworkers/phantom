@@ -6,7 +6,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val UtilVersion = "0.3.11"
+  val UtilVersion = "0.4.0"
   val datastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.0-M1"
   val finagleVersion = "6.17.0"
@@ -214,6 +214,7 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
+      "com.websudos"                 %% "util-zookeeper"                    % UtilVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
       "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),

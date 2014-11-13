@@ -10,9 +10,9 @@ services:
 
 # Emails to notify
 notifications:
-  slack: newzly:nfmIGqhmrfJb6pIH6I50mnCO
+  slack: websudos:nfmIGqhmrfJb6pIH6I50mnCO
   email:
-  - dev@newzly.com
+  - dev@websudos.com
 
 # Branches to build.
 branches:

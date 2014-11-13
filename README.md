@@ -159,7 +159,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Sphonic](http://www.sphonic.com/)
-- [Newzly](https://www.newzly.com/)
+- [websudos](https://www.websudos.com/)
 - [Equens](http://www.equens.com/)
 - [VictorOps](http://www.victorops.com/)
 
@@ -510,7 +510,7 @@ Select queries are very straightforward and enforce most limitations at compile 
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
 We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
-The file you are looking for is [here](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/SelectTable.scala).
+The file you are looking for is [here](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
 The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
 ```scala
@@ -1099,8 +1099,8 @@ run all the tests and do the cleanup afterwards. Read more on the testing utilit
 
 Phantom was developed at websudos as an in-house project. All Cassandra integration at websudos goes through phantom.
 
-* Flavian Alexandru flavian@newzly.com(maintainer)
-* Tomasz Perek tomasz.perek@newzly.com
+* Flavian Alexandru flavian@websudos.com(maintainer)
+* Tomasz Perek tomasz.perek@websudos.com
 * Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
