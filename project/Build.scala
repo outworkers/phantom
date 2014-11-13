@@ -9,7 +9,7 @@ object phantom extends Build {
   val UtilVersion = "0.4.0"
   val datastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.0-M1"
-  val finagleVersion = "6.17.0"
+  val finagleVersion = "6.20.0"
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
   val scalatraVersion = "2.2.2"
@@ -17,7 +17,7 @@ object phantom extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -52,7 +52,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val mpublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
@@ -68,7 +68,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.4.0",
+    version := "1.4.1",
     scalaVersion := "2.10.4",
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
