@@ -13,7 +13,7 @@ object phantom extends Build {
   val scroogeVersion = "3.15.0"
   val thriftVersion = "0.9.1"
   val scalatraVersion = "2.2.2"
-  val PlayVersion = "2.2.0"
+  val PlayVersion = "2.3.0"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -126,8 +126,9 @@ object phantom extends Build {
     name := "phantom-dsl",
     fork := true,
     testOptions in Test += Tests.Argument("-oF"),
-    logBuffered in Test := true,
+    logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
     ),
@@ -140,7 +141,8 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "provided",
-      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
+      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided",
+      "com.storm-enroute"            %% "scalameter"                        % "0.6"                     % "test"
     )
   ).dependsOn(
     phantomTesting % "test, provided"
