@@ -251,6 +251,13 @@ libraryDependencies ++= Seq(
   "com.websudos"  %% "phantom-zookeeper"             % phantomVersion
 )
 ```
+If you include ```phantom-zookeeper```, make sure to add the following resolvers:
+
+```scala
+resolvers += "twitter-repo" at "http://maven.twttr.com"
+
+resolvers += "websudos-repo" at "http://maven.websudos.co.uk/ext-release-local"
+```
 
 <a id="primitive-columns">Primitive columns</a>
 ====================================================
