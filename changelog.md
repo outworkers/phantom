@@ -113,3 +113,11 @@ Changelog
 - Allowing users to override how ports are parsed once retrieved from ZooKeeper.
 - Allowing users to override cluster builders with their own custom implementation.
 - PHANTOM-93: Finalising ScalaStyle build integration.
+
+<a id="version-1.5.0">1.5.0</a>
+
+- Fixed several typos and broken links in the README.
+- Added documentation for resolver requirements at the top of the repository.
+- Added clarification for Scala 2.11 release.
+- Improved UDT implementation.
+- Heavy performance improvements for iterator processing (thanks @benjumanji for diligently profiling every bit).
