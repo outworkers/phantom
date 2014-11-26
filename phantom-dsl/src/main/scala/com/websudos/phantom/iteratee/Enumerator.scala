@@ -22,114 +22,63 @@ import scala.collection.JavaConversions._
 
 import com.datastax.driver.core.{ ResultSet, Row }
 import com.websudos.phantom.Manager
-import play.api.libs.iteratee.{ Enumerator => PlayEnum }
+import play.api.libs.iteratee.{
+  Cont,
+  Done,
+  Error,
+  Enumerator => PlayEnum,
+  Input,
+  Iteratee => PlayIter,
+  Step
+}
+import play.api.libs.iteratee.Execution.{ defaultExecutionContext => dec }
 
 
 object Enumerator {
-  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[E] = {
-    PlayEnum.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
-      if (currentIt.hasNext) {
-        Future[Option[(scala.collection.Iterator[E], E)]]({
-          val next = currentIt.next()
-          Some(currentIt -> next)
-        })(ctx)
-      }
-      else {
-        Future.successful[Option[(scala.collection.Iterator[E], E)]]({
-          None
-        })
-      }
-    })(Execution.defaultExecutionContext)
-  }
 
-  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] =
-    enumerate[Row](r.iterator())
-}
+  def enumerator(resultSet: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] = {
 
-/**
- * Contains the default ExecutionContext used by Iteratees.
- */
-private object Execution {
+    new PlayEnum[Row] {
 
-  /**
-   * This is the default execution context of all things based on iteratees.
-   * All queries are first enumerated and then manipulated at DSL level to obtain the correct result.
-   *
-   * Limits are enforced by the features of the CQL protocol, either via the SELECT clause LIMIT or fetch size.
-   * Changing this method to a val causes every query to stop working.
-   *
-   * Why you ask? Who knows, just don't do it!!
-   *
-   * @return A reference to the default execution context of queries.
-   */
-  def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
+      val rs = resultSet
+      val it = rs.iterator
 
-  object Implicits {
-    implicit def defaultExecutionContext: ExecutionContext = Execution.trampoline
-    implicit def trampoline: ExecutionContext = Execution.trampoline
-  }
+      def apply[A](iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
 
-
-  /**
-   * Executes in the current thread. Uses a thread local trampoline to make sure the stack
-   * doesn't overflow. Since this ExecutionContext executes on the current thread, it should
-   * only be used to run small bits of fast-running code. We use it here to run the internal
-   * iteratee code.
-   *
-   * Blocking should be strictly avoided as it could hog the current thread.
-   * Also, since we're running on a single thread, blocking code risks deadlock.
-   */
-  val trampoline: ExecutionContext = new ExecutionContext {
-
-    private[this] val local = new ThreadLocal[JavaDeque[Runnable]]
-
-    def execute(runnable: Runnable): Unit = {
-      @volatile var queue = local.get()
-      if (queue == null) {
-        // Since there is no local queue, we need to install one and
-        // start our trampolining loop.
-        try {
-          queue = new JavaArrayDeque(Manager.cores)
-          queue.addLast(runnable)
-          local.set(queue)
-          while (!queue.isEmpty) {
-            val runnable = queue.removeFirst()
-            runnable.run()
-          }
-        } finally {
-          // We've emptied the queue, so tidy up.
-          local.set(null)
+        def step(iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
+          iter.fold {
+            case Step.Cont(k) => fetch[A](step, k)
+            case Step.Done(a, e) => Future.successful(Done(a, e))
+            case Step.Error(msg, inp) => Future.successful(Error(msg, inp))
+          }(dec)
         }
-      } else {
-        // There's already a local queue that is being executed.
-        // Just stick our runnable on the end of that queue.
-        queue.addLast(runnable)
+
+        step(iter)
       }
-    }
 
-    def reportFailure(t: Throwable): Unit = {
-      Manager.logger.error("Execution error:", t)
-      t.printStackTrace()
-    }
-  }
+      def fetch[A](loop: PlayIter[Row, A] => Future[PlayIter[Row, A]], k: Input[Row] => PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
 
-  /**
-   * Executes in the current thread. Calls Runnables directly so it is possible for the
-   * stack to overflow. To avoid overflow the `trampoline`
-   * can be used instead.
-   *
-   * Blocking should be strictly avoided as it could hog the current thread.
-   * Also, since we're running on a single thread, blocking code risks deadlock.
-   */
-  val overflowingExecutionContext: ExecutionContext = new ExecutionContext {
+        val available = resultSet.getAvailableWithoutFetching
 
-    def execute(runnable: Runnable): Unit = {
-      runnable.run()
-    }
-
-    def reportFailure(t: Throwable): Unit = {
-      Manager.logger.error("Execution error:", t)
-      t.printStackTrace()
+        if (!rs.isExhausted) {
+          // prefetch if we are running low on results.
+          if (available < 100 && !resultSet.isFullyFetched)
+            rs.fetchMoreResults
+          // if we have less than one result available non-blocking
+          // we send the next invocation of the iterator to the thread
+          // pool as blocking
+          if (available < 1) {
+            Future(it.next)(ctx).flatMap(row => loop(k(Input.El(row))))(dec)
+          }
+          // otherwise we can just carry on.
+          else {
+            loop(k(Input.El(it.next)))
+          }
+        } else {
+          Future.successful(Cont(k))
+        }
+      }
     }
   }
 }
+
