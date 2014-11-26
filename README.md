@@ -832,7 +832,7 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 <a href="#table-of-contents">back to top</a>
 
 When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, 
-but com.websudos.phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
+but phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
@@ -1104,13 +1104,16 @@ run all the tests and do the cleanup afterwards. Read more on the testing utilit
 =====================================
 <a href="#table-of-contents">back to top</a>
 
-Phantom was developed at websudos as an in-house project. All Cassandra integration at websudos goes through phantom.
+Phantom was developed at websudos as an in-house project. All Cassandra integration at Websudos goes through phantom, and nowadays it's safe to say most
+Scala/Cassandra users in the world rely on phantom.
 
-* Flavian Alexandru flavian@websudos.com(maintainer)
-* Tomasz Perek tomasz.perek@websudos.com
+* Flavian Alexandru (@alexflav23) - maintainer
 * Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
+* Benjamin Edwards (@benjumanji)
+* Stephen Samuel (@sksamuel)
+* Tomasz Perek (@tperek)
 
 <a id="copyright">Copyright</a>
 ===============================
@@ -1118,7 +1121,7 @@ Phantom was developed at websudos as an in-house project. All Cassandra integrat
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright 2013 - 2014 websudos.
+Copyright 2013 - 2015 websudos.
 
 
 Contributing to phantom

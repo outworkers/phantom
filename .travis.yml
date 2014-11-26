@@ -10,9 +10,10 @@ services:
 
 # Emails to notify
 notifications:
-  slack: websudos:nfmIGqhmrfJb6pIH6I50mnCO
+  slack:
+    - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
-  - dev@websudos.com
+    - dev@websudos.com
 
 # Branches to build.
 branches:
