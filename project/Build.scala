@@ -8,13 +8,14 @@ object phantom extends Build {
 
   val UtilVersion = "0.5.0"
   val DatastaxDriverVersion = "2.1.1"
-  val scalatestVersion = "2.2.1"
+  val ScalaTestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
   val TwitterUtilVersion = "6.23.0"
-  val scroogeVersion = "3.15.0"
-  val thriftVersion = "0.9.1"
-  val scalatraVersion = "2.2.2"
-  val PlayVersion = "2.3.0"
+  val ScroogeVersion = "3.17.0"
+  val ThriftVersion = "0.9.1"
+  val ScalatraVersion = "2.3.0"
+  val PlayVersion = "2.4.0-M1"
+  val Json4SVersion = "3.2.11"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -111,7 +112,7 @@ object phantom extends Build {
     phantomDsl,
     phantomExample,
     phantomScalatraTest,
-    phantomSpark,
+    // phantomSpark,
     phantomTesting,
     phantomThrift,
     phantomUdt,
@@ -167,6 +168,7 @@ object phantom extends Build {
     phantomTesting % "test, provided"
   )
 
+  /*
   lazy val phantomSpark = Project(
     id = "phantom-spark",
     base = file("phantom-spark"),
@@ -181,7 +183,7 @@ object phantom extends Build {
     phantomDsl,
     phantomZookeeper,
     phantomTesting % "test, provided"
-  )
+  )*/
 
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
@@ -193,11 +195,10 @@ object phantom extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.apache.thrift"            %  "libthrift"                         % thriftVersion,
-      "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
-      "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
-      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-      "org.scalatest"                %% "scalatest"                         % scalatestVersion          % "test, provided",
+      "org.apache.thrift"            %  "libthrift"                         % ThriftVersion,
+      "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
+      "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
+      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion          % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
@@ -213,7 +214,7 @@ object phantom extends Build {
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
-      "org.scalatest"                %% "scalatest"                         % scalatestVersion,
+      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion,
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
       "com.twitter"                  %% "finagle-serversets"                % FinagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % FinagleVersion,
@@ -233,7 +234,7 @@ object phantom extends Build {
     name := "phantom-testing",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
-      "org.scalatest"                    %% "scalatest"                % scalatestVersion,
+      "org.scalatest"                    %% "scalatest"                % ScalaTestVersion,
       "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
       "com.twitter"                      %% "finagle-serversets"       % FinagleVersion,
       "com.twitter"                      %% "finagle-zookeeper"        % FinagleVersion,
@@ -274,12 +275,12 @@ object phantom extends Build {
   ).settings(
     libraryDependencies ++= Seq(
       "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
-      "org.scalatra"              %% "scalatra"                         % scalatraVersion,
-      "org.scalatra"              %% "scalatra-scalate"                 % scalatraVersion,
-      "org.scalatra"              %% "scalatra-json"                    % scalatraVersion,
-      "org.scalatra"              %% "scalatra-specs2"                  % scalatraVersion        % "test",
-      "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
-      "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+      "org.json4s"                %% "json4s-jackson"                   % Json4SVersion,
+      "org.json4s"                %% "json4s-ext"                       % Json4SVersion,
       "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
       "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
       "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
