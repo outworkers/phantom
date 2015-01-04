@@ -18,7 +18,7 @@
 
 package com.websudos.phantom.udt
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class UDTSchemaGenerationTest extends TestSuite {
 
