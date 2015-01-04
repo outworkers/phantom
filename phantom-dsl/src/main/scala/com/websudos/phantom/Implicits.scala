@@ -20,11 +20,11 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import org.joda.time.DateTime
-
 import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.{ConsistencyLevel => CLevel}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
+import org.joda.time.DateTime
 
 object Implicits extends Operations {
 
@@ -96,6 +96,21 @@ object Implicits extends Operations {
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
+
+
+  object ConsistencyLevel {
+    val ALL = CLevel.ALL
+    val Any = CLevel.ANY
+    val ONE = CLevel.ONE
+    val TWO = CLevel.TWO
+    val THREE = CLevel.THREE
+    val QUORUM = CLevel.QUORUM
+    val LOCAL_QUORUM = CLevel.LOCAL_QUORUM
+    val EACH_QUORUM = CLevel.EACH_QUORUM
+    val LOCAL_SERIAL = CLevel.LOCAL_SERIAL
+    val LOCAL_ONE = CLevel.LOCAL_ONE
+    val SERIAL = CLevel.SERIAL
+  }
 
 
   implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {

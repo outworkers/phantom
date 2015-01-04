@@ -13,6 +13,8 @@ Changelog
     <li><a href="#version-1.1.0">1.1.0 - 20.08.2014</a></li>
     <li><a href="#version-1.2.0">1.2.0 - 27.08.2014</a></li>
     <li><a href="#version-1.3.0">1.3.0 - 05.09.2014</a></li>
+    <li><a href="#version-1.4.0">1.4.0 - 07.11.2014</a></li>
+    <li><a href="#version-1.5.0">1.5.0 - 05.01.2015</a></li>
 </ul>
 
 
@@ -104,6 +106,7 @@ Changelog
 - PHANTOM-109: Added a reference collector to all fields of an UDT.
 
 <a id="version-1.4.0">1.4.0</a>
+===============================
 
 - Fixed more broken links in the documentation and added table with Future API methods.
 - Implemented UDT columns and added serialisation tests.
@@ -113,3 +116,13 @@ Changelog
 - Allowing users to override how ports are parsed once retrieved from ZooKeeper.
 - Allowing users to override cluster builders with their own custom implementation.
 - PHANTOM-93: Finalising ScalaStyle build integration.
+
+<a id="version-1.5.0">1.5.0</a>
+===============================
+
+- Fixed several typos and broken links in the README.
+- Added documentation for resolver requirements at the top of the repository.
+- Added clarification for Scala 2.11 release.
+- Improved UDT implementation.
+- Heavy performance improvements for iterator processing (thanks @benjumanji for diligently profiling every bit).
+- Added full support for Scala 2.11.

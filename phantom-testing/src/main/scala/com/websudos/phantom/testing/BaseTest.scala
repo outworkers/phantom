@@ -87,7 +87,7 @@ private[testing] object CassandraStateManager {
 
 
   /**
-   * This checks if the default ports for embedded Cassandra and
+   * This checks if the default ports for embedded Cassandra and local Cassandra.
    * @return
    */
   def isCassandraStarted: Boolean = {
@@ -113,10 +113,17 @@ private[testing] object Lock
 
 trait CassandraSetup {
 
+  /**
+   * This method tries to check if a local Cassandra instance is found and if not start an embedded version.
+   * For the time being, the detection mechanism is not completely reliable as we have yet to reach the sweet spot of killing Cassandra and stale JVMs and we
+   * cannot also reliably detect a running Cassandra cluster using the above methods.
+   *
+   * This improved method (in 1.4.1) will try to perform both a port and process check before starting Cassandra in embedded mode.
+   */
   def setupCassandra(): Unit = {
     Lock.synchronized {
       blocking {
-        if (!CassandraStateManager.cassandraRunning()) {
+        if (!(CassandraStateManager.cassandraRunning() || CassandraStateManager.isCassandraStarted)) {
           try {
             CassandraStateManager.logger.info("Starting Cassandra in Embedded mode.")
             EmbeddedCassandraServerHelper.mkdirs()
