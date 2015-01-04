@@ -19,11 +19,10 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import scala.util.Try
-
+import com.datastax.driver.core.Row
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.Row
+import scala.util.Try
 
 trait CassandraWrites[T] {
 
@@ -34,6 +33,7 @@ trait CassandraWrites[T] {
 trait CassandraPrimitive[T] extends CassandraWrites[T] {
 
   def cls: Class[_]
+
   def toCType(v: T): AnyRef = v.asInstanceOf[AnyRef]
   def fromCType(c: AnyRef): T = c.asInstanceOf[T]
   def fromRow(row: Row, name: String): Option[T]

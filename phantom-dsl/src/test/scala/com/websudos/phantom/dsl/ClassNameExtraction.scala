@@ -21,7 +21,10 @@ import com.websudos.phantom.Implicits._
 
 trait Test {
   private[this] lazy val _name: String = {
-    val fullName = getClass.getName.split("\\.").toList.last
+    val packagePath = getClass.getName.split("\\.")
+    val fullName = packagePath(packagePath.length - 1)
+
+
     val index = fullName.indexOf("$$anonfun")
 
     if (index != -1) {
@@ -55,7 +58,9 @@ object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTa
 class TestNames {
 
   private[this] lazy val _name: String = {
-    val fullName = getClass.getName.split("\\.").toList.last
+    val packagePath = getClass.getName.split("\\.")
+    val fullName = packagePath(packagePath.length - 1)
+
     val index = fullName.indexOf("$$anonfun")
     val str = fullName.substring(index + 9, fullName.length)
     str.replaceAll("(\\$\\d+\\$)", "")

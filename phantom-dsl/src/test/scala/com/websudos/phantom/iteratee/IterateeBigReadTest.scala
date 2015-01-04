@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.scalatest.concurrent.ScalaFutures
 import com.websudos.phantom.tables.PrimitivesJoda
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class IterateeBigReadTest extends BigTest with ScalaFutures {
 
