@@ -16,6 +16,7 @@ object phantom extends Build {
   val ScalatraVersion = "2.3.0"
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
+  val ScalaMeterVersion = "0.6"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -144,7 +145,8 @@ object phantom extends Build {
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                  % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided",
-      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
+      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided",
+      "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion         % "test, provided"
     )
   ).dependsOn(
     phantomTesting % "test, provided"
