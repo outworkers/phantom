@@ -7,7 +7,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 object phantom extends Build {
 
   val UtilVersion = "0.5.0"
-  val datastaxDriverVersion = "2.1.1"
+  val DatastaxDriverVersion = "2.1.1"
   val scalatestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
   val TwitterUtilVersion = "6.23.0"
@@ -140,9 +140,9 @@ object phantom extends Build {
       "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
       "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                  % "test, provided",
-      //"com.newzly"                   %% "util-testing"                      % newzlyUtilVersion         % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided",
       "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided"
     )
   ).dependsOn(
@@ -214,7 +214,7 @@ object phantom extends Build {
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
       "org.scalatest"                %% "scalatest"                         % scalatestVersion,
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
       "com.twitter"                  %% "finagle-serversets"                % FinagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % FinagleVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
