@@ -15,12 +15,14 @@ Using phantom
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
 The latest development version is ```val phantomVersion = 1.4.0```. This version is likely only available on our Maven repository as an intermediary release.
+You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
+snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
 
 ### Scala 2.11 releases ###
 
-The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point in time, the only Scala 2.11 compatible modules are:
- 
-- ```phantom-dsl```.
+The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point in time, the only Scala 2.11 compatible module is ```phantom-dsl```. Scala 2
+.11 support is very new and incomplete, still in its infancy. This is because Twitter needs to upgrade Finagle and allow for 2.11 support of Twitter Util
+before we can do anything about it. Trace this Finagle Pull Request for details, right [here](https://github.com/twitter/finagle/issues/290).
 
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
@@ -147,7 +149,8 @@ Cassandra is highly scalable and it's by far the most powerful database technolo
 Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting. 
 
 If you're completely new to Cassandra, a much better place to start is the [Datastax Introduction to Cassandra](http://www.datastax
-.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html). An even better introduction is available on [our blog](http://blog.websudos.com/category/nosql/cassandra/), where we have a full series of introductory posts to Cassandra with phantom.
+.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html). An even better introduction is available on [our blog]
+(http://blog.websudos.com/category/nosql/cassandra/), where we have a full series of introductory posts to Cassandra with phantom.
 
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions! Please use GitHub for any issues or bug reports.
 
@@ -159,7 +162,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Sphonic](http://www.sphonic.com/)
-- [Newzly](https://www.newzly.com/)
+- [websudos](https://www.websudos.com/)
 - [Equens](http://www.equens.com/)
 - [VictorOps](http://www.victorops.com/)
 
@@ -517,7 +520,7 @@ Select queries are very straightforward and enforce most limitations at compile 
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
 We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
-The file you are looking for is [here](https://github.com/newzly/phantom/blob/develop/phantom-dsl/src/main/scala/com/newzly/phantom/SelectTable.scala).
+The file you are looking for is [here](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
 The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
 ```scala
@@ -832,7 +835,7 @@ sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel]
 <a href="#table-of-contents">back to top</a>
 
 When you want to use a column in a ```where``` clause, you need an index on it. Cassandra data modeling is out of the scope of this writing, 
-but com.websudos.phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
+but phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
@@ -1104,13 +1107,16 @@ run all the tests and do the cleanup afterwards. Read more on the testing utilit
 =====================================
 <a href="#table-of-contents">back to top</a>
 
-Phantom was developed at websudos as an in-house project. All Cassandra integration at websudos goes through phantom.
+Phantom was developed at websudos as an in-house project. All Cassandra integration at Websudos goes through phantom, and nowadays it's safe to say most
+Scala/Cassandra users in the world rely on phantom.
 
-* Flavian Alexandru flavian@newzly.com(maintainer)
-* Tomasz Perek tomasz.perek@newzly.com
+* Flavian Alexandru (@alexflav23) - maintainer
 * Viktor Taranenko (viktortnk)
 * Bartosz Jankiewicz (@bjankie1)
 * Eugene Zhulenev (@ezhulenev)
+* Benjamin Edwards (@benjumanji)
+* Stephen Samuel (@sksamuel)
+* Tomasz Perek (@tperek)
 
 <a id="copyright">Copyright</a>
 ===============================
@@ -1118,7 +1124,7 @@ Phantom was developed at websudos as an in-house project. All Cassandra integrat
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright 2013 - 2014 websudos.
+Copyright 2013 - 2015 websudos.
 
 
 Contributing to phantom
@@ -1151,5 +1157,6 @@ Some of the things that will make us seriously frown:
 - Writing tests should use the pre-existing tools, they bring in EmbeddedCassandra, Zookeeper and other niceties, allowing us to run multi-datacenter tests.
 - Use the common patterns you already see here, we've done a lot of work to make it easy.
 - Don't randomly import stuff. We are very big on alphabetized clean imports.
+- Tests must pass on both the Oracle and OpenJDK JVM implementations. The only sensitive bit is the Scala reflection mechanism used to detect columns.
 
 
