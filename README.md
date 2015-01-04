@@ -14,15 +14,11 @@ Using phantom
 ### Scala 2.10 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.4.0```. This version is likely only available on our Maven repository as an intermediary release.
+The latest development version is ```val phantomVersion = 1.5.0```. If the version's patch number is not "0", it's likely the release is internal only,
+meaning you can still get it but only from our Maven repository.
+
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
-
-### Scala 2.11 releases ###
-
-The latest Scala 2.11 release is ```val phantomVersion = 1.2.7```. At this point in time, the only Scala 2.11 compatible module is ```phantom-dsl```. Scala 2
-.11 support is very new and incomplete, still in its infancy. This is because Twitter needs to upgrade Finagle and allow for 2.11 support of Twitter Util
-before we can do anything about it. Trace this Finagle Pull Request for details, right [here](https://github.com/twitter/finagle/issues/290).
 
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
@@ -1108,7 +1104,7 @@ run all the tests and do the cleanup afterwards. Read more on the testing utilit
 <a href="#table-of-contents">back to top</a>
 
 Phantom was developed at websudos as an in-house project. All Cassandra integration at Websudos goes through phantom, and nowadays it's safe to say most
-Scala/Cassandra users in the world rely on phantom.
+Scala/Cassandra users in the world rely on phantom
 
 * Flavian Alexandru (@alexflav23) - maintainer
 * Viktor Taranenko (viktortnk)
@@ -1117,6 +1113,7 @@ Scala/Cassandra users in the world rely on phantom.
 * Benjamin Edwards (@benjumanji)
 * Stephen Samuel (@sksamuel)
 * Tomasz Perek (@tperek)
+* Benjamin Edwards (@benjumanji)
 
 <a id="copyright">Copyright</a>
 ===============================

@@ -112,7 +112,7 @@ object phantom extends Build {
   ).aggregate(
     phantomDsl,
     phantomExample,
-    phantomScalatraTest,
+    //phantomScalatraTest,
     // phantomSpark,
     phantomTesting,
     phantomThrift,
