@@ -16,59 +16,49 @@
 package com.websudos.phantom.dsl.query
 
 import java.util.UUID
-import org.joda.time.DateTime
-
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
-import com.datastax.driver.core.utils.UUIDs
 
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{
-  Articles,
-  Primitives,
-  Recipe,
-  Recipes,
-  TableWithCompoundKey,
-  TwoKeys
-}
-import com.newzly.util.testing.Sampler
+import com.websudos.phantom.tables.{Articles, Primitives, Recipes, TableWithCompoundKey}
+import com.websudos.util.testing._
+import org.scalatest.{FlatSpec, Matchers}
 
 class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "compile a full select query" in {
-    "Articles.select.where(_.id eqs UUIDs.timeBased())" should compile
+    "Articles.select.where(_.id eqs gen[UUID])" should compile
   }
 
   it should "correctly serialize a full select query" in {
-    val someId = UUIDs.timeBased()
+    val someId = gen[UUID]
     Articles.select.where(_.id eqs someId).queryString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
   }
 
   it should "compile a single column partial select query" in {
-    "Articles.select(_.id).where(_.id eqs UUIDs.timeBased())" should compile
+    "Articles.select(_.id).where(_.id eqs gen[UUID])" should compile
   }
 
   it should "correctly serialize a single column partial select query" in {
-    val someId = UUIDs.timeBased()
+    val someId = gen[UUID]
     Articles.select(_.id).where(_.id eqs someId).queryString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
   }
 
   it should "compile a query to query condition clause" in {
-    """Articles.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo "test").onlyIf(_.name eqs "update")""" should compile
+    """Articles.update.where(_.id eqs gen[UUID]).modify(_.name setTo "test").onlyIf(_.name eqs "update")""" should compile
   }
 
   it should "serialize a condition query to a query condition" in {
-    val someId = UUIDs.timeBased()
+    val someId = gen[UUID]
     val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").queryString
     query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF name='update';"
   }
 
   it should "correctly serialize a 2 column partial select query" in {
-    val someId = UUIDs.timeBased()
+    val someId = gen[UUID]
     Articles.select(_.id, _.name).where(_.id eqs someId).queryString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
   }
 
   it should "correctly serialize a 3 column partial select query" in {
-    val someId = Sampler.getARandomString
+    val someId = gen[String]
     Recipes.select(
       _.url,
       _.description,
@@ -110,7 +100,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
   }
 
   it should "serialize a count query with a where clause" in {
-    val key = Sampler.getARandomString
+    val key = gen[String]
     Recipes.count.where(_.url eqs key).queryString shouldEqual s"SELECT count(*) FROM Recipes WHERE url='$key';"
   }
 

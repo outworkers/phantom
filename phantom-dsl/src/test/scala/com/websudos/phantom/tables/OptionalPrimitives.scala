@@ -15,14 +15,9 @@
  */
 package com.websudos.phantom.tables
 
-import java.net.InetAddress
-import java.util.{Date, UUID}
-
-import com.datastax.driver.core.Row
-import com.newzly.util.testing.Sampler
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.helper.{ModelSampler, TestSampler}
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.util.testing._
 
 case class OptionalPrimitive(
   pkey: String,
@@ -39,27 +34,11 @@ case class OptionalPrimitive(
   bi: Option[BigInt]
 )
 
-object OptionalPrimitive extends ModelSampler[OptionalPrimitive] {
-  def sample: OptionalPrimitive = {
-    OptionalPrimitive(
-      Sampler.getARandomString,
-      Some(Sampler.getARandomString),
-      Some(Sampler.getARandomInteger().toLong),
-      Some(false),
-      Some(BigDecimal(Sampler.getARandomInteger())),
-      Some(Sampler.getARandomInteger().toDouble),
-      Some(Sampler.getARandomInteger().toFloat),
-      Some(InetAddress.getByName("127.0.0.1")),
-      Some(Sampler.getARandomInteger()),
-      Some(new Date()),
-      Some(UUID.randomUUID()),
-      Some(BigInt(Sampler.getARandomInteger()))
-    )
-  }
+object OptionalPrimitive {
 
   def none: OptionalPrimitive = {
     OptionalPrimitive(
-      Sampler.getARandomString,
+      gen[String],
       None, None, None, None, None, None, None, None, None, None, None
     )
   }
@@ -96,7 +75,7 @@ sealed class OptionalPrimitives extends CassandraTable[OptionalPrimitives, Optio
   object bi extends OptionalBigIntColumn(this)
 }
 
-object OptionalPrimitives extends OptionalPrimitives with TestSampler[OptionalPrimitives, OptionalPrimitive] with PhantomCassandraConnector {
+object OptionalPrimitives extends OptionalPrimitives with PhantomCassandraConnector {
 
   override val tableName = "OptionalPrimitives"
 }

@@ -96,4 +96,20 @@ Changelog
 <a id="version-1.3.0">1.3.0</a>
 ===============================
 
-- PHANTOM-
+- PHANTOM-123: Fixed some documentation links.
+- PHANTOM-127: Automatically collecting references to all UDT definitions.
+- PHANTOM-131: Throwing an error when ```PrimaryKey``` and ```ClusteringOrder``` definitions are used in the same schema.
+- PHANTOM-134: Allowing users of ```DefaultZooKeeperManager``` to specify their own timeout for ZooKeeper connections.
+- PHANTOM-136: Added UDT examples to the UDT example module.
+- PHANTOM-109: Added a reference collector to all fields of an UDT.
+
+<a id="version-1.4.0">1.4.0</a>
+
+- Fixed more broken links in the documentation and added table with Future API methods.
+- Implemented UDT columns and added serialisation tests.
+- Moved syscall to get available processors to a one time only init for performance improvements.
+- Fixed ```BatchStatement.apply``` from ignoring the argument list passed to the method.
+- Fixed ```DefaultClusterStore``` to allow overriding connection timeouts and the CQL query used to initialise keyspaces.
+- Allowing users to override how ports are parsed once retrieved from ZooKeeper.
+- Allowing users to override cluster builders with their own custom implementation.
+- PHANTOM-93: Finalising ScalaStyle build integration.

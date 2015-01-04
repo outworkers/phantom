@@ -29,13 +29,15 @@ import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise, Re
 
 private[phantom] object Manager {
 
+  lazy val cores = Runtime.getRuntime.availableProcessors()
+
   lazy val taskExecutor = Executors.newCachedThreadPool()
 
   implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
 
   lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
 
-  lazy val logger = LoggerFactory.getLogger("com.websudos.com.websudos.phantom")
+  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
 }
 
 private[phantom] trait CassandraResultSetOperations {

@@ -16,99 +16,69 @@
 package com.websudos.phantom.iteratee
 
 import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.collection.JavaConversions._
+
 import com.datastax.driver.core.{ ResultSet, Row }
-import play.api.libs.iteratee.{ Enumerator => PlayEnum }
+import com.websudos.phantom.Manager
+import play.api.libs.iteratee.{
+  Cont,
+  Done,
+  Error,
+  Enumerator => PlayEnum,
+  Input,
+  Iteratee => PlayIter,
+  Step
+}
+import play.api.libs.iteratee.Execution.{ defaultExecutionContext => dec }
 
 
 object Enumerator {
-  private[this] def enumerate[E](it: Iterator[E])(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[E] = {
-    PlayEnum.unfoldM[scala.collection.Iterator[E], E](it: scala.collection.Iterator[E])({ currentIt =>
-      if (currentIt.hasNext) {
-        Future[Option[(scala.collection.Iterator[E], E)]]({
-          val next = currentIt.next()
-          Some(currentIt -> next)
-        })(ctx)
-      }
-      else {
-        Future.successful[Option[(scala.collection.Iterator[E], E)]]({
-          None
-        })
-      }
-    })(Execution.defaultExecutionContext)
-  }
 
-  def enumerator(r: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] =
-    enumerate[Row](r.iterator())
-}
+  def enumerator(resultSet: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] = {
 
-/**
- * Contains the default ExecutionContext used by Iteratees.
- */
-private object Execution {
+    new PlayEnum[Row] {
 
-  def defaultExecutionContext: ExecutionContext = Implicits.defaultExecutionContext
+      val rs = resultSet
+      val it = rs.iterator
 
-  object Implicits {
-    implicit def defaultExecutionContext: ExecutionContext = Execution.trampoline
-    implicit def trampoline: ExecutionContext = Execution.trampoline
-  }
+      def apply[A](iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
 
-  /**
-   * Executes in the current thread. Uses a thread local trampoline to make sure the stack
-   * doesn't overflow. Since this ExecutionContext executes on the current thread, it should
-   * only be used to run small bits of fast-running code. We use it here to run the internal
-   * iteratee code.
-   *
-   * Blocking should be strictly avoided as it could hog the current thread.
-   * Also, since we're running on a single thread, blocking code risks deadlock.
-   */
-  val trampoline: ExecutionContext = new ExecutionContext {
-
-    private[this] val local = new ThreadLocal[JavaDeque[Runnable]]
-
-    def execute(runnable: Runnable): Unit = {
-      @volatile var queue = local.get()
-      if (queue == null) {
-        // Since there is no local queue, we need to install one and
-        // start our trampolining loop.
-        try {
-          queue = new JavaArrayDeque(Runtime.getRuntime.availableProcessors())
-          queue.addLast(runnable)
-          local.set(queue)
-          while (!queue.isEmpty) {
-            val runnable = queue.removeFirst()
-            runnable.run()
-          }
-        } finally {
-          // We've emptied the queue, so tidy up.
-          local.set(null)
+        def step(iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
+          iter.fold {
+            case Step.Cont(k) => fetch[A](step, k)
+            case Step.Done(a, e) => Future.successful(Done(a, e))
+            case Step.Error(msg, inp) => Future.successful(Error(msg, inp))
+          }(dec)
         }
-      } else {
-        // There's already a local queue that is being executed.
-        // Just stick our runnable on the end of that queue.
-        queue.addLast(runnable)
+
+        step(iter)
+      }
+
+      def fetch[A](loop: PlayIter[Row, A] => Future[PlayIter[Row, A]], k: Input[Row] => PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
+
+        val available = resultSet.getAvailableWithoutFetching
+
+        if (!rs.isExhausted) {
+          // prefetch if we are running low on results.
+          if (available < 100 && !resultSet.isFullyFetched)
+            rs.fetchMoreResults
+          // if we have less than one result available non-blocking
+          // we send the next invocation of the iterator to the thread
+          // pool as blocking
+          if (available < 1) {
+            Future(it.next)(ctx).flatMap(row => loop(k(Input.El(row))))(dec)
+          }
+          // otherwise we can just carry on.
+          else {
+            loop(k(Input.El(it.next)))
+          }
+        } else {
+          Future.successful(Cont(k))
+        }
       }
     }
-
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
-  }
-
-  /**
-   * Executes in the current thread. Calls Runnables directly so it is possible for the
-   * stack to overflow. To avoid overflow the `trampoline`
-   * can be used instead.
-   *
-   * Blocking should be strictly avoided as it could hog the current thread.
-   * Also, since we're running on a single thread, blocking code risks deadlock.
-   */
-  val overflowingExecutionContext: ExecutionContext = new ExecutionContext {
-
-    def execute(runnable: Runnable): Unit = {
-      runnable.run()
-    }
-
-    def reportFailure(t: Throwable): Unit = t.printStackTrace()
   }
 }
+

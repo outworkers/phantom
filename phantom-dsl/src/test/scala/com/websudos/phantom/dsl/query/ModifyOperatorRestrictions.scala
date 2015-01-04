@@ -15,46 +15,48 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
-import com.datastax.driver.core.utils.UUIDs
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.{ CounterTableTest, TimeSeriesTable, TwoKeys }
-import com.newzly.util.testing.Sampler
+import com.websudos.phantom.tables.TimeSeriesTable
+import com.websudos.util.testing._
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
+
+  val t = TimeSeriesTable
+  val b = BatchStatement
   
   it should "not allow using the setTo operator on a Counter column" in {
-    "CounterTableTest.update.where(_.id eqs UUIDs.timeBased()).modify(_.count_entries setTo 5L)" shouldNot compile
+    "CounterTableTest.update.where(_.id eqs gen[UUID]).modify(_.count_entries setTo 5L)" shouldNot compile
   }
 
   it should "not allow using the setTo operator on a PartitionKey" in {
-    "CounterTableTest.update.where(_.id eqs UUIDs.timeBased()).modify(_.id setTo UUIDs.timeBased())" shouldNot compile
+    "CounterTableTest.update.where(_.id eqs gen[UUID]).modify(_.id setTo gen[UUID])" shouldNot compile
   }
 
   it should "not allow using the setTo operator on a PrimaryKey" in {
-    "TwoKeys.update.where(_.pkey eqs UUIDs.timeBased().toString).modify(_.pkey setTo UUIDs.timeBased().toString)" shouldNot compile
+    "TwoKeys.update.where(_.pkey eqs gen[UUID].toString).modify(_.pkey setTo gen[String])" shouldNot compile
   }
 
   it should "allow using setTo operators for non index columns" in {
-    """TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo "test")""" should compile
+    """TimeSeriesTable.update.where(_.id eqs gen[UUID]).modify(_.name setTo "test")""" should compile
   }
 
   it should "not allow using the setTo operator on a Clustering column" in {
-    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.timestamp setTo new DateTime)" shouldNot compile
+    "TimeSeriesTable.update.where(_.id eqs gen[UUID]).modify(_.timestamp setTo new DateTime)" shouldNot compile
   }
 
   it should "not allow chaining 2 modify operators on a single update query" in {
-   val update = Sampler.getARandomString
-   "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).modify(_.name setTo Sampler.getARandomString)" shouldNot compile
+   val update = gen[String]
+   "TimeSeriesTable.update.where(_.id eqs gen[UUID]).modify(_.name setTo gen[String]).modify(_.name setTo gen[String])" shouldNot compile
   }
 
   it should """allow chaining one "modify" operator followed by one "and" operator on a single update query""" in {
-    val update = Sampler.getARandomString
-    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
+    val update = gen[String]
+    "TimeSeriesTable.update.where(_.id eqs gen[UUID]).modify(_.name setTo gen[String]).and(_.name setTo gen[String])" should compile
   }
 
   it should """allow chaining one "modify" operator followed by multiple "and" operators on a single update query""" in {
-    val update = Sampler.getARandomString
-    "TimeSeriesTable.update.where(_.id eqs UUIDs.timeBased()).modify(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString).and(_.name setTo Sampler.getARandomString)" should compile
+    val update = gen[String]
+    "TimeSeriesTable.update.where(_.id eqs gen[UUID]).modify(_.name setTo gen[String]).and(_.name setTo gen[String]).and(_.name setTo gen[String]).and(_.name setTo gen[String])" should compile
   }
 }
