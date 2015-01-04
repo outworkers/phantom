@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2014 newzly ltd.
+ *  * Copyright 2014 websudos ltd.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.net.InetSocketAddress
 
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 
 class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {

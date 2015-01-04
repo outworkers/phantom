@@ -20,7 +20,7 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class ZooKeeperInstanceTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   val instance = new ZookeeperInstance()

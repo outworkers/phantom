@@ -6,18 +6,21 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val UtilVersion = "0.3.11"
-  val datastaxDriverVersion = "2.1.1"
-  val scalatestVersion = "2.2.0-M1"
-  val finagleVersion = "6.17.0"
-  val scroogeVersion = "3.15.0"
-  val thriftVersion = "0.9.1"
-  val scalatraVersion = "2.2.2"
-  val PlayVersion = "2.3.0"
+  val UtilVersion = "0.5.0"
+  val DatastaxDriverVersion = "2.1.1"
+  val ScalaTestVersion = "2.2.1"
+  val FinagleVersion = "6.24.0"
+  val TwitterUtilVersion = "6.23.0"
+  val ScroogeVersion = "3.17.0"
+  val ThriftVersion = "0.9.1"
+  val ScalatraVersion = "2.3.0"
+  val PlayVersion = "2.4.0-M1"
+  val Json4SVersion = "3.2.11"
+  val ScalaMeterVersion = "0.6"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -52,7 +55,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val mpublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
@@ -68,8 +71,9 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.4.0",
-    scalaVersion := "2.10.4",
+    version := "1.4.1",
+    scalaVersion := "2.11.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -108,8 +112,8 @@ object phantom extends Build {
   ).aggregate(
     phantomDsl,
     phantomExample,
-    phantomScalatraTest,
-    phantomSpark,
+    //phantomScalatraTest,
+    // phantomSpark,
     phantomTesting,
     phantomThrift,
     phantomUdt,
@@ -133,16 +137,16 @@ object phantom extends Build {
       Tags.limit(Tags.ForkedTestGroup, 4)
     ),
     libraryDependencies ++= Seq(
-      "org.scala-lang"               %  "scala-reflect"                     % "2.10.4",
-      "com.twitter"                  %% "util-core"                         % finagleVersion,
-      "com.typesafe.play"            %% "play-iteratees"                    % PlayVersion,
+      "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
+      "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
+      "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-      "org.scalacheck"               %% "scalacheck"                        % "1.11.4"                  % "test, provided",
-      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "provided",
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+      "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                  % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided",
       "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided",
-      "com.storm-enroute"            %% "scalameter"                        % "0.6"                     % "test"
+      "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion         % "test, provided"
     )
   ).dependsOn(
     phantomTesting % "test, provided"
@@ -166,6 +170,7 @@ object phantom extends Build {
     phantomTesting % "test, provided"
   )
 
+  /*
   lazy val phantomSpark = Project(
     id = "phantom-spark",
     base = file("phantom-spark"),
@@ -180,7 +185,7 @@ object phantom extends Build {
     phantomDsl,
     phantomZookeeper,
     phantomTesting % "test, provided"
-  )
+  )*/
 
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
@@ -192,11 +197,10 @@ object phantom extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.apache.thrift"            %  "libthrift"                         % thriftVersion,
-      "com.twitter"                  %% "scrooge-core"                      % scroogeVersion,
-      "com.twitter"                  %% "scrooge-runtime"                   % scroogeVersion,
-      "com.twitter"                  %% "scrooge-serializer"                % scroogeVersion,
-      "org.scalatest"                %% "scalatest"                         % scalatestVersion          % "test, provided",
+      "org.apache.thrift"            %  "libthrift"                         % ThriftVersion,
+      "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
+      "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
+      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion          % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
@@ -212,10 +216,10 @@ object phantom extends Build {
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
-      "org.scalatest"                %% "scalatest"                         % scalatestVersion,
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % datastaxDriverVersion,
-      "com.twitter"                  %% "finagle-serversets"                % finagleVersion exclude("org.slf4j", "slf4j-jdk14"),
-      "com.twitter"                  %% "finagle-zookeeper"                 % finagleVersion,
+      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+      "com.twitter"                  %% "finagle-serversets"                % FinagleVersion exclude("org.slf4j", "slf4j-jdk14"),
+      "com.twitter"                  %% "finagle-zookeeper"                 % FinagleVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
       "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
@@ -231,11 +235,11 @@ object phantom extends Build {
   ).settings(
     name := "phantom-testing",
     libraryDependencies ++= Seq(
-      "com.twitter"                      %% "util-core"                % finagleVersion,
-      "org.scalatest"                    %% "scalatest"                % scalatestVersion,
+      "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
+      "org.scalatest"                    %% "scalatest"                % ScalaTestVersion,
       "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
-      "com.twitter"                      %% "finagle-serversets"       % finagleVersion,
-      "com.twitter"                      %% "finagle-zookeeper"        % finagleVersion,
+      "com.twitter"                      %% "finagle-serversets"       % FinagleVersion,
+      "com.twitter"                      %% "finagle-zookeeper"        % FinagleVersion,
       "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
@@ -273,12 +277,12 @@ object phantom extends Build {
   ).settings(
     libraryDependencies ++= Seq(
       "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
-      "org.scalatra"              %% "scalatra"                         % scalatraVersion,
-      "org.scalatra"              %% "scalatra-scalate"                 % scalatraVersion,
-      "org.scalatra"              %% "scalatra-json"                    % scalatraVersion,
-      "org.scalatra"              %% "scalatra-specs2"                  % scalatraVersion        % "test",
-      "org.json4s"                %% "json4s-jackson"                   % "3.2.6",
-      "org.json4s"                %% "json4s-ext"                       % "3.2.6",
+      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
+      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
+      "org.json4s"                %% "json4s-jackson"                   % Json4SVersion,
+      "org.json4s"                %% "json4s-ext"                       % Json4SVersion,
       "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
       "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
       "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",

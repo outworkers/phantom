@@ -1,9 +1,10 @@
 *.class
 *.log
+*.jar
+*.jar.old
 
 atlassian-ide-plugin.xml
 
-cassandra.jar
 
 # Eclipse specific
 .classpath
