@@ -4,15 +4,18 @@ language: scala
 
 scala:
  - "2.10.4"
+ - "2.11.4"
 
 services:
   - cassandra
 
 # Emails to notify
 notifications:
-  slack: newzly:nfmIGqhmrfJb6pIH6I50mnCO
+  slack:
+    - newzly:nfmIGqhmrfJb6pIH6I50mnCO
+    - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
-  - dev@newzly.com
+    - dev@websudos.co.uk
 
 # Branches to build.
 branches:

@@ -24,7 +24,7 @@ import com.twitter.util.Await
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{EnumRecord, EnumTable, Records}
-import com.websudos.util.testing.AsyncAssertionsHelper._
+import com.websudos.util.testing._
 
 class EnumColumnTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
