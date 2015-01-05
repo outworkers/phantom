@@ -11,7 +11,7 @@ but the more adopters our projects have, the more people from our company will a
 Using phantom
 =============
 
-### Scala 2.10 releases ###
+### Scala 2.10 and 2.11 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
 The latest development version is ```val phantomVersion = 1.5.0```. If the version's patch number is not "0", it's likely the release is internal only,
@@ -227,6 +227,23 @@ click [here](http://www.websudos.co.uk/work).
 <a id="integrating-phantom">Integrating phantom in your project</a>
 ===================================================================
 <a href="#table-of-contents">back to top</a>
+
+The resolves needed for Phantom are the Typesafe defaults, Sonatype, Twitter and our very own. The below list should make sure you have no dependency
+resolution errors.
+
+```scala
+resolvers ++= Seq(
+ "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+  "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
+  "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
+  "Sonatype releases"                at "https://oss.sonatype.org/content/repositories/releases",
+  "Sonatype snapshots"               at "https://oss.sonatype.org/content/repositories/snapshots",
+  "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
+  "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
+  "Twitter Repository"               at "http://maven.twttr.com",
+  "Websudos releases"                at "http://maven.websudos.co.uk/ext-release-local"
+)
+```
 
 For most things, all you need is ```phantom-dsl```. Read through for information on other modules.
 
