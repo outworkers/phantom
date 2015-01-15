@@ -31,6 +31,7 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
+import com.websudos.phantom.connectors.DefaultCassandraManager
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import com.websudos.util.testing._
