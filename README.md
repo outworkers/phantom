@@ -11,23 +11,11 @@ but the more adopters our projects have, the more people from our company will a
 Using phantom
 =============
 
-<<<<<<< Updated upstream
 ### Scala 2.10 and 2.11 releases ###
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
 The latest development version is ```val phantomVersion = 1.5.0```. If the version's patch number is not "0", it's likely the release is internal only,
 meaning you can still get it but only from our Maven repository.
-=======
-The latest major release is: ```val phantomVersion = 1.4.0```.
-Phantom is published to Maven Central and it's actively and avidly developed.
-
-### Scala 2.10 releases ###
-
-Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.4.0```. This version is likely only available on our Maven repository as an intermediary release.
-
-### Scala 2.11 releases ###
->>>>>>> Stashed changes
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
