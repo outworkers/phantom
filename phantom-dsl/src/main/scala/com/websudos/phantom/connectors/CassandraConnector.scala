@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2014 websudos ltd.
+ *  * Copyright 2015 websudos ltd.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -16,13 +16,18 @@
  *
  */
 
-package com.websudos.phantom
+package com.websudos.phantom.connectors
 
-import com.websudos.phantom.connectors.SimpleCassandraConnector
-import com.websudos.phantom.testing.CassandraFlatSpec
+import com.datastax.driver.core.Session
+import com.websudos.phantom.zookeeper.DefaultCassandraManager
 
-trait PhantomCassandraConnector extends SimpleCassandraConnector {
-  val keySpace = "phantom"
+private[connectors] case object CassandraInitLock
+
+trait CassandraConnector {
+
+  def keySpace: String
+
+  def manager: CassandraManager = DefaultCassandraManager
+
+  implicit def session: Session = manager.session
 }
-
-trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

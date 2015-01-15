@@ -71,14 +71,9 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-<<<<<<< Updated upstream
     version := "1.5.0",
     scalaVersion := "2.11.4",
     crossScalaVersions := Seq("2.10.4", "2.11.4"),
-=======
-    version := "1.4.0",
-    scalaVersion := "2.10.4",
->>>>>>> Stashed changes
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",

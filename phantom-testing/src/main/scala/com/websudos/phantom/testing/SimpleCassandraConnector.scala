@@ -18,10 +18,9 @@
 
 package com.websudos.phantom.testing
 
+import com.websudos.phantom.connectors.SimpleCassandraConnector
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
-
-import com.websudos.phantom.zookeeper.SimpleCassandraConnector
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector

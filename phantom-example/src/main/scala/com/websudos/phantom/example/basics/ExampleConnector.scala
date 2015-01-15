@@ -15,7 +15,8 @@
  */
 package com.websudos.phantom.example.basics
 
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, SimpleCassandraConnector}
+import com.websudos.phantom.connectors.SimpleCassandraConnector
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 /**
  * This is an example of how to connect to Cassandra in the easiest possible way.

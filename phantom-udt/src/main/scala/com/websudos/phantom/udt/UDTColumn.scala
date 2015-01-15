@@ -4,8 +4,8 @@ import com.datastax.driver.core.querybuilder.BuiltStatement
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
 import com.websudos.phantom.Implicits.Column
+import com.websudos.phantom.connectors.CassandraConnector
 import com.websudos.phantom.query.ExecutableStatement
-import com.websudos.phantom.zookeeper.CassandraConnector
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}

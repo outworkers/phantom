@@ -27,24 +27,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.column
+package com.websudos.phantom.connectors
 
-import scala.annotation.implicitNotFound
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
+import com.datastax.driver.core.{Cluster, Session}
 
-@implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
-class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record])
-    extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
+trait CassandraManager {
 
-  val keyPrimitive = CassandraPrimitive[K]
+  def livePort: Int
+  def embeddedPort: Int
 
-  override def keyCls: Class[_] = keyPrimitive.cls
+  def cluster: Cluster
+  def initIfNotInited(keySpace: String)
 
-  override def keyToCType(v: K): AnyRef = keyPrimitive.toCType(v)
-
-  override def keyFromCType(c: AnyRef): K = keyPrimitive.fromCType(c)
-
-  override val valuePrimitive = CassandraPrimitive[V]
-
-  override val cassandraType = s"map<${keyPrimitive.cassandraType}, ${valuePrimitive.cassandraType}>"
+  implicit def session: Session
 }
