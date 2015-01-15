@@ -112,6 +112,7 @@ object phantom extends Build {
   ).aggregate(
     phantomDsl,
     phantomExample,
+    phantomConnectors,
     // phantomScalatraTest,
     // phantomSpark,
     phantomTesting,
@@ -149,7 +150,19 @@ object phantom extends Build {
       "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion         % "test, provided"
     )
   ).dependsOn(
-    phantomTesting % "test, provided"
+    phantomTesting % "test, provided",
+    phantomConnectors
+  )
+
+  lazy val phantomConnectors = Project(
+    id = "phantom-connectors",
+    base = file("phantom-connectors"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-connectors",
+    libraryDependencies ++= Seq(
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion
+    )
   )
 
   lazy val phantomUdt = Project(
@@ -226,6 +239,8 @@ object phantom extends Build {
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
     )
+  ).dependsOn(
+    phantomConnectors
   )
 
   lazy val phantomTesting = Project(

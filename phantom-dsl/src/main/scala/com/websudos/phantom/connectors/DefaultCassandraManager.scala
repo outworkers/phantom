@@ -35,8 +35,6 @@ import scala.concurrent.blocking
 
 import com.datastax.driver.core.{Cluster, Session}
 
-object DefaultCassandraManager extends DefaultCassandraManager
-
 trait DefaultCassandraManager extends CassandraManager {
 
   val livePort = 9042
@@ -96,3 +94,5 @@ trait DefaultCassandraManager extends CassandraManager {
     }
   }
 }
+
+object DefaultCassandraManager extends DefaultCassandraManager
