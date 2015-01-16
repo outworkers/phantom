@@ -53,7 +53,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
 
   private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decoded
+    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
 
   private[this] def extractCount(r: Row): Long = {

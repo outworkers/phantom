@@ -19,7 +19,6 @@
 package com.websudos.phantom.connectors
 
 import com.datastax.driver.core.Session
-import com.websudos.phantom.zookeeper.DefaultCassandraManager
 
 private[connectors] case object CassandraInitLock
 

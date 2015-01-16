@@ -59,7 +59,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 
   type ValueType = T
 
-  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decoded
+  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
