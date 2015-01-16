@@ -105,6 +105,9 @@ object Implicits extends Operations {
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
   type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
 
+  type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleCassandraConnector
+  type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
+  type CassandraManager = com.websudos.phantom.connectors.CassandraManager
 
   type UUID = java.util.UUID
   type Row = com.datastax.driver.core.Row
