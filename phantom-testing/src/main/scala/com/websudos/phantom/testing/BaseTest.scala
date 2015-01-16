@@ -42,9 +42,11 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.scalatest._
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.NonFatal
 import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+
+import scala.util.Try
 
 
 private[testing] object CassandraStateManager {
@@ -75,6 +77,20 @@ private[testing] object CassandraStateManager {
 
   def isLocalCassandraRunning: Boolean = {
     !isPortAvailable(9042)
+  }
+
+  def checkRunningCassandra(host: String, port: Int): Boolean = {
+    Try {
+      val cluster = Cluster.builder()
+        .addContactPoint(host)
+        .withPort(port)
+        .withoutJMXReporting()
+        .withoutMetrics()
+        .build()
+
+      cluster.connect()
+      true
+    } getOrElse false
   }
 
   def cassandraRunning(): Boolean = {
@@ -134,7 +150,7 @@ trait CassandraSetup {
   def setupCassandra(): Unit = {
     Lock.synchronized {
       blocking {
-        if (!(CassandraStateManager.cassandraRunning() || CassandraStateManager.isCassandraStarted)) {
+        if (!(CassandraStateManager.checkRunningCassandra("localhost", 9042) || CassandraStateManager.checkRunningCassandra("localhost", 9142))) {
           try {
             CassandraStateManager.logger.info("Starting Cassandra in Embedded mode.")
             EmbeddedCassandraServerHelper.mkdirs()
