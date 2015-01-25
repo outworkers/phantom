@@ -125,7 +125,7 @@ trait ClusterStore {
   }
 
   @throws[EmptyPortListException]
-  protected[this] def createCluster()(implicit timeout: Duration): Cluster = {
+  protected[this] def createCluster()(implicit timeout: Duration): Unit = {
     val ports = Await.result(hostnamePortPairs, timeout)
 
     if (ports.isEmpty) {
@@ -136,7 +136,6 @@ trait ClusterStore {
         .withoutJMXReporting()
         .withoutMetrics()
         .build()
-      clusterStore
     }
   }
 
@@ -145,9 +144,8 @@ trait ClusterStore {
     if (isInited) {
       if (clusterStore.isClosed) {
         createCluster()
-      } else {
-        clusterStore
       }
+      clusterStore
     } else {
       throw new EmptyClusterStoreException
     }

@@ -45,7 +45,7 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   private[phantom] val isAscending = false
 
   private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decoded
+    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
   
   def name: String = _name

@@ -32,20 +32,16 @@ package com.websudos.phantom.testing
 import java.io.IOException
 import java.net.ServerSocket
 
-import org.apache.commons.io.IOUtils
+import com.datastax.driver.core.{Cluster, Session}
+import com.twitter.util.NonFatal
+import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper
+import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, blocking}
-
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper
-import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
-
-import com.datastax.driver.core.{Cluster, Session}
-import com.twitter.util.NonFatal
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
-
 import scala.util.Try
 
 
@@ -88,30 +84,13 @@ private[testing] object CassandraStateManager {
         .withoutMetrics()
         .build()
 
-      cluster.connect()
-      true
+      blocking {
+        cluster.connect()
+        true
+
+      }
     } getOrElse false
   }
-
-  def cassandraRunning(): Boolean = {
-    try {
-      val runtime = Runtime.getRuntime
-
-      val p1 = runtime.exec("ps -ef")
-      val input = p1.getInputStream
-
-      val p2 = runtime.exec("grep cassandra")
-      val output = p2.getOutputStream
-
-      IOUtils.copy(input, output)
-      output.close(); // signals grep to finish
-      val result = IOUtils.readLines(p2.getInputStream)
-      result.size() > 1
-    } catch  {
-      case NonFatal(e) => false
-    }
-  }
-
 
   /**
    * This checks if the default ports for embedded Cassandra and local Cassandra.
@@ -172,7 +151,6 @@ trait CassandraSetup {
 trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
   val keySpace = "phantom"
   ZooKeeperManager.start()
-
 }
 
 trait CassandraTest extends ScalaFutures

@@ -83,9 +83,6 @@ sealed class CQLSyntax {
 
 object CQLSyntax extends CQLSyntax
 
-sealed class QueryBuilder {
+sealed class CQLQueryBuilder {}
 
-}
-
-
-object CQLQueryBuilder extends QueryBuilder
+object CQLQueryBuilder extends CQLQueryBuilder
