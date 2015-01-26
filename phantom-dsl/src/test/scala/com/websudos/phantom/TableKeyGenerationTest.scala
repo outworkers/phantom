@@ -2,7 +2,7 @@ package com.websudos.phantom
 
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-import com.websudos.phantom.tables.{BrokenClusteringTable, TableWithCompositeKey, TableWithCompoundKey, TableWithNoKey, TableWithSingleKey}
+import com.websudos.phantom.tables.{BrokenClusteringTable, TableWithCompositeKey, TableWithCompoundKey, TableWithNoKey, TableWithSingleKey, TimeSeriesTableWithTTL, BrokenCounterTableTest, TimeSeriesTableWithTTL2}
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {
 
@@ -18,6 +18,15 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
     TableWithCompositeKey.defineTableKey() shouldEqual s"PRIMARY KEY ((id, second_part), second)"
   }
 
+  it should "correctly create a Table with TTL with Clustering" in {
+    TimeSeriesTableWithTTL.ttlClause shouldEqual s"AND default_time_to_live=5"
+  }
+
+  it should "correctly create a Table with TTL" in {
+    TimeSeriesTableWithTTL2.ttlClause shouldEqual s"WITH default_time_to_live=5"
+  }
+
+
   it should "throw an error if the schema has no PartitionKey" in {
     intercept[InvalidPrimaryKeyException] {
       TableWithNoKey.defineTableKey()
@@ -30,4 +39,9 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
     }
   }
 
+  it should "throw an error if the table uses TTLs with CounterColumns" in {
+    intercept[InvalidTableException] {
+      BrokenCounterTableTest.ttlClause
+    }
+  }
 }
