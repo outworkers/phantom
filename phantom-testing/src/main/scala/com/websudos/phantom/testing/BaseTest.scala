@@ -19,7 +19,7 @@
 package com.websudos.phantom.testing
 
 import java.io.IOException
-import java.net.ServerSocket
+import java.net.{ServerSocket, InetAddress}
 
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
@@ -41,8 +41,9 @@ private[testing] object CassandraStateManager {
   val logger = LoggerFactory.getLogger("com.websudos.phantom.testing")
 
   private[this] def isPortAvailable(port: Int): Boolean = {
+    val inetAddrs = InetAddress.getAllByName("localhost")
     try {
-      new ServerSocket(port)
+      inetAddrs.foreach(inetAddr => new ServerSocket(port, 1, inetAddr).close())
       logger.info(s"Port $port available")
       true
     } catch {
@@ -65,26 +66,6 @@ private[testing] object CassandraStateManager {
   def isLocalCassandraRunning: Boolean = {
     !isPortAvailable(9042)
   }
-
-  def cassandraRunning(): Boolean = {
-    try {
-      val runtime = Runtime.getRuntime
-
-      val p1 = runtime.exec("ps -ef")
-      val input = p1.getInputStream
-
-      val p2 = runtime.exec("grep cassandra")
-      val output = p2.getOutputStream
-
-      IOUtils.copy(input, output)
-      output.close(); // signals grep to finish
-      val result = IOUtils.readLines(p2.getInputStream)
-      result.size() > 1
-    } catch  {
-      case NonFatal(e) => false
-    }
-  }
-
 
   /**
    * This checks if the default ports for embedded Cassandra and local Cassandra.
@@ -123,7 +104,7 @@ trait CassandraSetup {
   def setupCassandra(): Unit = {
     Lock.synchronized {
       blocking {
-        if (!(CassandraStateManager.cassandraRunning() || CassandraStateManager.isCassandraStarted)) {
+        if (!CassandraStateManager.isCassandraStarted) {
           try {
             CassandraStateManager.logger.info("Starting Cassandra in Embedded mode.")
             EmbeddedCassandraServerHelper.mkdirs()
