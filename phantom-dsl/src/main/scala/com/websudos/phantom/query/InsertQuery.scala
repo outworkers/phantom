@@ -29,6 +29,9 @@
  */
 package com.websudos.phantom.query
 
+import com.twitter.util.Duration
+
+import scala.concurrent.duration.{ Duration => ScalaDuration }
 import scala.util.Try
 import org.joda.time.DateTime
 
@@ -62,6 +65,16 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
    */
   def ttl(expiry: Int): InsertQuery[T, R] = {
     qb.using(QueryBuilder.ttl(expiry))
+    this
+  }
+
+  def ttl(expiry: Duration): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.ttl(expiry.inSeconds))
+    this
+  }
+
+  def ttl(expiry: ScalaDuration): InsertQuery[T, R] = {
+    qb.using(QueryBuilder.ttl(expiry.toSeconds.toInt))
     this
   }
 
