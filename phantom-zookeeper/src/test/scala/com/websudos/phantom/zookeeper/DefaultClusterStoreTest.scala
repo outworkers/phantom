@@ -34,7 +34,8 @@ import java.net.InetSocketAddress
 import org.scalatest.{Matchers, FlatSpec}
 
 class DefaultClusterStoreTest extends FlatSpec with Matchers {
-  ignore should "correctly parse multiple pairs of hostname:port from Zookeeper" in {
+
+  it should "correctly parse multiple pairs of hostname:port from Zookeeper" in {
     val expected = Seq(
       new InetSocketAddress("localhost", 9042),
       new InetSocketAddress("localhost", 9900),

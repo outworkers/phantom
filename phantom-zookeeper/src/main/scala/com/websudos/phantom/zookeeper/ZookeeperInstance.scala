@@ -32,6 +32,7 @@ package com.websudos.phantom.zookeeper
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.websudos.phantom.connectors.DefaultCassandraManager
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.{NIOServerCnxn, ZKDatabase, ZooKeeperServer}
 

@@ -68,8 +68,6 @@ trait ZookeeperManager extends CassandraManager {
 
   val logger: Logger
 
-  protected[zookeeper] val envString = "TEST_ZOOKEEPER_CONNECTOR"
-
   protected[this] val defaultAddress = new InetSocketAddress("0.0.0.0", 2181)
 }
 
@@ -96,20 +94,20 @@ class DefaultZookeeperManager extends ZookeeperManager {
   def defaultZkAddress: InetSocketAddress = if (isLocalZooKeeperRunning) {
     defaultAddress
   } else {
-    if (System.getProperty(envString) != null) {
-      val inetPair: String = System.getProperty(envString)
+    if (System.getProperty(ZookeeperEnvironmentString) != null) {
+      val inetPair: String = System.getProperty(ZookeeperEnvironmentString)
       val split = inetPair.split(":")
 
       Try {
-        logger.info(s"Using ZooKeeper settings from the $envString environment variable")
+        logger.info(s"Using ZooKeeper settings from the $ZookeeperEnvironmentString environment variable")
         logger.info(s"Connecting to ZooKeeper address: ${split(0)}:${split(1)}")
         new InetSocketAddress(split(0), split(1).toInt)
       } getOrElse {
-        logger.warn(s"Failed to parse address from $envString environment variable with value: $inetPair")
+        logger.warn(s"Failed to parse address from $ZookeeperEnvironmentString environment variable with value: $inetPair")
         defaultAddress
       }
     } else {
-      logger.info(s"No custom settings for Zookeeper found in $envString. Using localhost:2181 as default.")
+      logger.info(s"No custom settings for Zookeeper found in $ZookeeperEnvironmentString. Using localhost:2181 as default.")
       defaultAddress
     }
   }

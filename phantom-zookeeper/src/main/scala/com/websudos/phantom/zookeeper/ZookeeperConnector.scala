@@ -32,7 +32,6 @@ package com.websudos.phantom.zookeeper
 import com.datastax.driver.core.Session
 import com.websudos.phantom.connectors.CassandraConnector
 
-
 private[zookeeper] case object CassandraInitLock
 
 /**

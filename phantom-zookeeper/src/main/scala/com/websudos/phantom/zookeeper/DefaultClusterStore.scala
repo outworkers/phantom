@@ -35,16 +35,13 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
 import com.twitter.util.{Await, Future, _}
+import com.websudos.phantom.connectors.{EmptyPortListException, EmptyClusterStoreException}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
 
 private[zookeeper] case object Lock
-
-class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
-
-class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
 
 /**
  * This is a simple implementation that will allow for singleton synchronisation of Cassandra clusters and sessions.

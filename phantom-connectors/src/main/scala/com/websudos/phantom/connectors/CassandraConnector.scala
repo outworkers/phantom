@@ -22,6 +22,10 @@ import com.datastax.driver.core.Session
 
 private[connectors] case object CassandraInitLock
 
+class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
+
+class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
+
 trait CassandraConnector {
 
   def keySpace: String
