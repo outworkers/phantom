@@ -47,13 +47,9 @@ class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val
    * @param session The Cassandra session in use.
    * @return
    */
-  def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+  def get()(implicit session: Session): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
-    query.enumerate() flatMap {
-      res => {
-        scalaFutureToTwitter(res run PlayIteratee.head)
-      }
-    }
+    query.fetchSpool().map(_.headOption)
   }
 
   def allowFiltering() : SelectQuery[T, R] = {
@@ -118,13 +114,9 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
    * @param ctx The Execution Context.
    * @return A Future wrapping an Optional result.
    */
-  override def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+  override def get()(implicit session: Session): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb, fromRow)
-    query.enumerate() flatMap {
-      res => {
-        scalaFutureToTwitter(res run PlayIteratee.head)
-      }
-    }
+    query.fetchSpool().map(_.headOption)
   }
 }
 
@@ -156,13 +148,9 @@ class SelectWhere[T <: CassandraTable[T, _], R](val table: T, val qb: Select.Whe
    * @param session The Cassandra session in use.
    * @return
    */
-  def get()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): TwitterFuture[Option[R]] = {
+  def get()(implicit session: Session): TwitterFuture[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), fromRow)
-    query.enumerate() flatMap {
-      res => {
-        scalaFutureToTwitter(res run PlayIteratee.head)
-      }
-    }
+    query.fetchSpool().map(_.headOption)
   }
 
   def and[RR](condition: T => QueryCondition): SelectWhere[T, R] = {
@@ -207,13 +195,9 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
    * @param ctx The Execution Context.
    * @return A Future wrapping an Optional result.
    */
-  override def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]] = {
+  override def get()(implicit session: Session): TwitterFuture[Option[R]] = {
     val query = new SelectCountWhere[T, R](table, qb, fromRow)
-    query.enumerate() flatMap {
-      res => {
-        scalaFutureToTwitter(res run PlayIteratee.head)
-      }
-    }
+    query.fetchSpool().map(_.headOption)
   }
 
   /**
