@@ -18,7 +18,8 @@ package com.websudos.phantom.query
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.websudos.phantom.{ CassandraResultSetOperations, CassandraTable }
-import com.websudos.phantom.iteratee.{ Enumerator, Iteratee }
+import com.websudos.phantom.iteratee.{ Enumerator, Iteratee, ResultSpool }
+import com.twitter.concurrent.Spool
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Enumerator => PlayEnumerator, Enumeratee }
 import com.datastax.driver.core.querybuilder.BuiltStatement
@@ -63,11 +64,16 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
     PlayEnumerator.flatten(eventualEnum)
   }
 
-  private[query] def enumerate()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[PlayEnumerator[R]] = {
-    execute() map {
-      resultSet => {
-        Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
-      }
+  /**
+   * Produces a [[com.twitter.concurrent.Spool]] of [R]ows
+   * A spool is both lazily constructed and consumed, suitable for large
+   * collections when using twitter futures.
+   * @param session The cassandra session in use.
+   * @return A Spool of R.
+   */
+  def fetchSpool()(implicit session: Session): TwitterFuture[Spool[R]] = {
+    execute() flatMap {
+      resultSet => ResultSpool.spool(resultSet).map(spool => spool.map(fromRow(_)))
     }
   }
 
@@ -84,7 +90,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * @param session The Datastax Cassandra session.
    * @return A Twitter future wrapping the result.
    */
-  def get()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Option[R]]
+  def get()(implicit session: Session): TwitterFuture[Option[R]]
 
   /**
    * Returns a parsed sequence of [R]ows
@@ -104,11 +110,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * @param ctx The Execution Context.
    * @return
    */
-  def collect()(implicit session: Session, ctx: ExecutionContext): TwitterFuture[Seq[R]] = {
-    enumerate flatMap {
-      res => {
-        scalaFutureToTwitter(res run Iteratee.collect())
-      }
-    }
+  def collect()(implicit session: Session): TwitterFuture[Seq[R]] = {
+    fetchSpool.flatMap(_.toSeq)
+
   }
 }
