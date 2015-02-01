@@ -29,9 +29,13 @@
  */
 package com.websudos.phantom.dsl.query
 
+import com.websudos.phantom.tables.Primitives
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeRestrictionsTest extends FlatSpec with Matchers {
+
+  val P = Primitives
+
   it should "allow using a correct type for a value method" in {
     "Primitives.insert.value(_.boolean, true)" should compile
   }
