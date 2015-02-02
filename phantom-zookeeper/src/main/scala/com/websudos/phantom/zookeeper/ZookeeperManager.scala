@@ -66,7 +66,7 @@ trait ZookeeperManager extends CassandraManager {
 
   def session: Session = store.session
 
-  val logger: Logger
+  def logger: Logger
 
   protected[this] val defaultAddress = new InetSocketAddress("0.0.0.0", 2181)
 }

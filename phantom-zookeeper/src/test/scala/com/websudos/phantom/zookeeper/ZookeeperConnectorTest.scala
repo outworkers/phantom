@@ -31,7 +31,7 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
-import com.websudos.phantom.connectors.DefaultCassandraManager
+import com.websudos.phantom.connectors.{CassandraProperties, DefaultCassandraManager}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import com.websudos.util.testing._
@@ -53,7 +53,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
-    System.setProperty(TestTable.manager.ZookeeperEnvironmentString, "")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "0.0.0.0"
 
@@ -62,7 +62,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "use the values from the environment variable if they are set" in {
-    System.setProperty(TestTable.manager.ZookeeperEnvironmentString, "localhost:4902")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:4902")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
 
@@ -71,7 +71,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
 
   it should "return the default if the environment property is in invalid format" in {
 
-    System.setProperty(TestTable.manager.ZookeeperEnvironmentString, "localhost:invalidint")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:invalidint")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "0.0.0.0"
 
@@ -88,7 +88,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "match the Zookeeper connector string to the spawned instance settings" in {
-    System.setProperty(TestTable.manager.ZookeeperEnvironmentString, instance.zookeeperConnectString)
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, instance.zookeeperConnectString)
     TestTable.manager.defaultZkAddress shouldEqual instance.address
   }
 

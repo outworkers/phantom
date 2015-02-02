@@ -39,7 +39,11 @@ trait CassandraManager {
   def cluster: Cluster
   def initIfNotInited(keySpace: String)
 
-  val ZookeeperEnvironmentString = "TEST_ZOOKEEPER_CONNECTOR"
+  def ZookeeperEnvironmentString: String = "TEST_ZOOKEEPER_CONNECTOR"
 
   implicit def session: Session
+}
+
+object CassandraProperties {
+  val ZookeeperEnvironmentString: String = "TEST_ZOOKEEPER_CONNECTOR"
 }
