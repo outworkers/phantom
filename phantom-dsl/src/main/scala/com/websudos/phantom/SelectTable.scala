@@ -236,7 +236,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
         c7.col.name,
         c8.col.name,
         c9.col.name,
-        c9.col.name
+        c10.col.name
       ).from(tableName), r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r), c10(r)))
   }
 
