@@ -161,6 +161,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [websudos](https://www.websudos.com/)
 - [Equens](http://www.equens.com/)
 - [VictorOps](http://www.victorops.com/)
+- [Socrata](http://www.socrata.com)
 
 Roadmap
 ========
@@ -294,6 +295,7 @@ phantom won't let you mixin a non-primitive via implicit magic.
 | DateColumn                    | java.util.Date            | timestamp         |
 | DateTimeColumn                | org.joda.time.DateTime    | timestamp         |
 | DoubleColumn                  | scala.Double              | double            |
+| EnumColumn                    | scala.Enumeration         | text              |
 | FloatColumn                   | scala.Float               | float             |
 | IntColumn                     | scala.Int                 | int               |
 | InetAddressColumn             | java.net.InetAddress      | inet              |
@@ -323,6 +325,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalDateColumn            | Option[java.util.Date]            | timestamp         |
 | OptionalDateTimeColumn        | Option[org.joda.time.DateTime]    | timestamp         |
 | OptionalDoubleColumn          | Option[scala.Double]              | double            |
+| OptionalEnumColumn            | Option[scala.Enumeration]         | text              |
 | OptionalFloatColumn           | Option[scala.Float]               | float             |
 | OptionalIntColumn             | Option[scala.Int]                 | int               |
 | OptionalInetAddressColumn     | Option[java.net.InetAddress]      | inet              |
@@ -567,6 +570,15 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 | ```modify```                      | The actual update query builder                                                       |
 | ```onlyIf```                     | Addition update condition. Used on non-primary columns                                |
+
+Example:
+
+```scala
+ExampleRecord.update.where(_.id eqs myUuid).
+                     modify(_.name setTo "Barack Obama").
+                     and(_.props put ("title" -> "POTUS")).
+                     future()
+```
 
 
 <a id="delete-queries">"Delete" queries</a>
@@ -1131,6 +1143,7 @@ Scala/Cassandra users in the world rely on phantom
 * Stephen Samuel (@sksamuel)
 * Tomasz Perek (@tperek)
 * Benjamin Edwards (@benjumanji)
+* Evan Chan (@evanfchan)
 
 <a id="copyright">Copyright</a>
 ===============================
