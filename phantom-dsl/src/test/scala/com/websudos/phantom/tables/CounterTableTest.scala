@@ -48,3 +48,20 @@ class SecondaryCounterTable extends CassandraTable[SecondaryCounterTable, Counte
 object SecondaryCounterTable extends SecondaryCounterTable with PhantomCassandraConnector {
   override val tableName = "secondary_column_tests"
 }
+
+class BrokenCounterTableTest extends CassandraTable[BrokenCounterTableTest, CounterRecord] {
+
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object count_entries extends CounterColumn(this)
+
+  def fromRow(row: Row): CounterRecord = {
+    CounterRecord(id(row), count_entries(row))
+  }
+
+  override def defaultTTL = Some(org.joda.time.Seconds.seconds(5))
+}
+
+object BrokenCounterTableTest extends BrokenCounterTableTest with PhantomCassandraConnector {
+  override val tableName = "counter_column_tests"
+}
+
