@@ -21,7 +21,8 @@ import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.Implicits._
 import com.websudos.phantom.testing.PhantomCassandraConnector
-import com.websudos.phantom.thrift.{OptionalThriftColumn, ThriftColumn, ThriftListColumn, ThriftMapColumn, ThriftSetColumn, ThriftTest}
+import com.websudos.phantom.thrift.columns.{ThriftMapColumn, ThriftListColumn, ThriftSetColumn, OptionalThriftColumn}
+import com.websudos.phantom.thrift.ThriftTest
 
 case class Output(
   id: UUID,

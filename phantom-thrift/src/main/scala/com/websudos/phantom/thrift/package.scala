@@ -30,6 +30,13 @@
 
 package com.websudos.phantom
 
-package object thrift {
+import com.twitter.scrooge.ThriftStruct
 
+package object thrift {
+  type ThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftColumn[T, R, Model]
+  type ThriftSetColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
+  type ThriftListColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftListColumn[T, R, Model]
+  type ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
+
+  type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 }

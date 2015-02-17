@@ -47,7 +47,7 @@ import scala.util.Try
 
 private[testing] object CassandraStateManager {
 
-  val logger = LoggerFactory.getLogger("com.websudos.phantom.testing")
+  val logger = LoggerFactory.getLogger("com.websudos.phantom.testkit")
 
   private[this] def isPortAvailable(port: Int): Boolean = {
     try {

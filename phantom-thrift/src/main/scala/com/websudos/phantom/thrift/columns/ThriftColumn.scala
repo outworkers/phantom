@@ -27,14 +27,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.thrift
+package com.websudos.phantom.thrift.columns
+
+import com.datastax.driver.core.Row
+import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct}
+import com.twitter.util.Try
+import com.websudos.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
+import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 import scala.annotation.implicitNotFound
-import com.datastax.driver.core.Row
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
-import com.websudos.phantom.column.{ AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn }
-import com.twitter.scrooge.{ CompactThriftSerializer, ThriftStruct}
-import com.twitter.util.Try
 
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {

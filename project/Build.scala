@@ -6,7 +6,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val UtilVersion = "0.5.0"
+  val UtilVersion = "0.5.2"
   val DatastaxDriverVersion = "2.1.4"
   val ScalaTestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
@@ -17,6 +17,7 @@ object phantom extends Build {
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
+  val CassandraUnitVersion = "2.0.2.4"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -71,7 +72,7 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.5.1",
+    version := "1.5.2",
     scalaVersion := "2.11.4",
     crossScalaVersions := Seq("2.10.4", "2.11.4"),
     resolvers ++= Seq(
@@ -115,7 +116,7 @@ object phantom extends Build {
     phantomConnectors,
     // phantomScalatraTest,
     // phantomSpark,
-    phantomTesting,
+    phantomTestKit,
     phantomThrift,
     phantomUdt,
     phantomZookeeper
@@ -150,7 +151,7 @@ object phantom extends Build {
       "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion         % "test, provided"
     )
   ).dependsOn(
-    phantomTesting % "test, provided",
+    phantomTestKit % "test, provided",
     phantomConnectors
   )
 
@@ -180,7 +181,7 @@ object phantom extends Build {
   ).dependsOn(
     phantomDsl,
     phantomZookeeper,
-    phantomTesting % "test, provided"
+    phantomTestKit % "test, provided"
   )
 
   /*
@@ -218,7 +219,7 @@ object phantom extends Build {
     )
   ).dependsOn(
     phantomDsl,
-    phantomTesting % "test, provided"
+    phantomTestKit % "test, provided"
   )
 
   lazy val phantomZookeeper = Project(
@@ -229,12 +230,9 @@ object phantom extends Build {
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
-      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion,
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-      "com.twitter"                  %% "finagle-serversets"                % FinagleVersion exclude("org.slf4j", "slf4j-jdk14"),
-      "com.twitter"                  %% "finagle-zookeeper"                 % FinagleVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
-      "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
+      "com.websudos"                 %% "util-zookeeper"                    % UtilVersion            % "test, provided",
+      "org.cassandraunit"            %  "cassandra-unit"                    % CassandraUnitVersion   % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
@@ -243,19 +241,17 @@ object phantom extends Build {
     phantomConnectors
   )
 
-  lazy val phantomTesting = Project(
-    id = "phantom-testing",
-    base = file("phantom-testing"),
+  lazy val phantomTestKit = Project(
+    id = "phantom-testkit",
+    base = file("phantom-testkit"),
     settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
-    name := "phantom-testing",
+    name := "phantom-testkit",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
-      "org.scalatest"                    %% "scalatest"                % ScalaTestVersion,
-      "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
-      "com.twitter"                      %% "finagle-serversets"       % FinagleVersion,
-      "com.twitter"                      %% "finagle-zookeeper"        % FinagleVersion,
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+      "com.websudos"                     %% "util-zookeeper"           % UtilVersion,
+      "com.websudos"                     %% "util-testing"             % UtilVersion,
+      "org.cassandraunit"                %  "cassandra-unit"           % CassandraUnitVersion  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
@@ -274,7 +270,7 @@ object phantom extends Build {
     phantomDsl,
     phantomThrift,
     phantomZookeeper,
-    phantomTesting
+    phantomTestKit
   )
 
   lazy val phantomScalatraTest = Project(
@@ -308,6 +304,6 @@ object phantom extends Build {
     phantomDsl,
     phantomThrift,
     phantomZookeeper,
-    phantomTesting
+    phantomTestKit
   )
 }

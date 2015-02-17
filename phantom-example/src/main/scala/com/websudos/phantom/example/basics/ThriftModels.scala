@@ -32,8 +32,8 @@ package com.websudos.phantom.example.basics
 import java.util.UUID
 import com.datastax.driver.core.Row
 import com.websudos.phantom.Implicits._
-import com.websudos.phantom.thrift.ThriftColumn
 import com.twitter.scrooge.CompactThriftSerializer
+import com.websudos.phantom.thrift.columns.ThriftColumn
 
 // Sample model here comes from the Thrift struct definition.
 // The IDL is available in phantom-example/src/main/thrift.
