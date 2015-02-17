@@ -17,13 +17,15 @@ Using phantom
 
 ### Scala 2.10 and 2.11 releases ###
 
+- Latest stable version: 1.5.0 (Maven Central)
+- Bleeding edge: 1.5.2 (Websudos Maven Repo)
+
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.5.0```. If the version's patch number is not "0", it's likely the release is internal only,
+The latest development version is ```val phantomVersion = 1.5.2```. If the version's patch number is not "0", it's likely the release is internal only,
 meaning you can still get it but only from our Maven repository.
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
-
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
 Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant. 
@@ -267,10 +269,10 @@ The full list of available modules is:
 libraryDependencies ++= Seq(
   "com.websudos"  %% "phantom-dsl"                   % phantomVersion,
   "com.websudos"  %% "phantom-example"               % phantomVersion,
+  "com.websudos"  %% "phantom-scalatra"              % phantomVersion,
   "com.websudos"  %% "phantom-spark"                 % phantomVersion,
   "com.websudos"  %% "phantom-thrift"                % phantomVersion,
-  "com.websudos"  %% "phantom-test"                  % phantomVersion,
-  "com.websudos"  %% "phantom-testing"               % phantomVersion,
+  "com.websudos"  %% "phantom-testkit"               % phantomVersion,
   "com.websudos"  %% "phantom-udt"                   % phantomVersion,
   "com.websudos"  %% "phantom-zookeeper"             % phantomVersion
 )
@@ -1172,12 +1174,12 @@ Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
-* Bartosz Jankiewicz (@bjankie1)
-* Eugene Zhulenev (@ezhulenev)
-* Benjamin Edwards (@benjumanji)
-* Stephen Samuel (@sksamuel)
-* Tomasz Perek (@tperek)
-* Evan Chan (@evanfchan)
+* Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1)
+* Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev)
+* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
+* Stephen Samuel ([@sksamuel](https://github.com/sksamuel)
+* Tomasz Perek ([@tperek](https://github.com/tperek)
+* Evan Chan ([@evanfchan](https://github.com/evanfchan)
 
 <a id="copyright">Copyright</a>
 ===============================
