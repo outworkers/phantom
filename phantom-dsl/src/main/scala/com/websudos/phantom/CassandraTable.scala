@@ -35,6 +35,7 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
 
 import org.slf4j.LoggerFactory
+import org.joda.time.Seconds
 
 import com.datastax.driver.core.{Session, Row}
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -45,6 +46,8 @@ import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
+
+case class InvalidTableException(msg: String) extends RuntimeException(msg)
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
@@ -92,6 +95,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
+
+  def defaultTTL: Option[Seconds] = None
 
   /**
    * This method will filter the columns from a Clustering Order definition.
@@ -184,7 +189,20 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
+  private[phantom] def ttlClause: String = {    
+    defaultTTL.map{ ttl => 
+      if (columns.exists(_.isCounterColumn)) {
+        val msg = "When setting a default ttl, the table cannot contain any counting columns"
+        logger.error(msg)
+        throw new InvalidTableException(msg)
+      }
+      val kw = if (clustered) "AND" else "WITH"
+      kw + " default_time_to_live=" + ttl.getSeconds
+    }.getOrElse("")
+  }
+
   @throws[InvalidPrimaryKeyException]
+  @throws[InvalidTableException]
   def schema(): String = {
     preconditions()
 
@@ -201,7 +219,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = query + clusteringKey
+    val finalQuery = query + clusteringKey + ttlClause
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
