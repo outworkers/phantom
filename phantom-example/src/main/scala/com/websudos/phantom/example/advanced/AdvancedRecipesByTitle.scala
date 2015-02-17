@@ -32,7 +32,7 @@ package com.websudos.phantom.example.advanced
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Row }
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.example.basics.ExampleConnector
 
 

@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Recipe, Recipes}
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.util.testing._

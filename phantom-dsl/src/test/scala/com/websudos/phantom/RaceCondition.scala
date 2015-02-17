@@ -37,7 +37,7 @@ import scala.collection.JavaConversions._
 import org.scalatest.FunSuite
 
 import com.datastax.driver.core.Row
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 class RaceCondition extends FunSuite {
 

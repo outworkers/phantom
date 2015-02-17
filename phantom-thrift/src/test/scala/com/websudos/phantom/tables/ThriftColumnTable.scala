@@ -19,7 +19,7 @@ import java.util.UUID
 
 import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.testing.PhantomCassandraConnector
 import com.websudos.phantom.thrift._
 

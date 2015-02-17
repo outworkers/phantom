@@ -30,7 +30,7 @@
 package com.websudos.phantom.dsl.query
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TimeSeriesTable, Primitives}
 import com.websudos.util.testing._
 

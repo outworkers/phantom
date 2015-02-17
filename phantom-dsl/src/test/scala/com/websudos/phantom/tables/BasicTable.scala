@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.PhantomCassandraConnector
 
 sealed class BasicTable extends CassandraTable[BasicTable, String] {

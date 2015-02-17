@@ -32,7 +32,7 @@ package com.websudos.phantom.iteratee
 import java.util.concurrent.atomic.AtomicInteger
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.util.testing._

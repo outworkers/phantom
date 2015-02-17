@@ -31,7 +31,7 @@ package com.websudos.phantom.dsl.query
 
 import java.util.UUID
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Articles, Primitives, Recipes, TableWithCompoundKey}
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}

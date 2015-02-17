@@ -31,7 +31,7 @@ package com.websudos.phantom.server
 
 import javax.servlet.ServletContext
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.testing.PhantomCassandraConnector
 import org.joda.time.{DateTime, LocalDate}
 import org.scalatra.LifeCycle

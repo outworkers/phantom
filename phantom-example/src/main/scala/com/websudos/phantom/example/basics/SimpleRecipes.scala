@@ -36,7 +36,7 @@ import org.joda.time.DateTime
 
 import com.datastax.driver.core.{ ResultSet, Row }
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.iteratee.Iteratee
 
 import com.twitter.conversions.time._

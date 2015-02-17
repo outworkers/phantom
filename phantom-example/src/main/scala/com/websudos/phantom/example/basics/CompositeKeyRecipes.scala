@@ -32,7 +32,7 @@ package com.websudos.phantom.example.basics
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.Row
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 /**
  * In this example we will create a  table storing recipes.

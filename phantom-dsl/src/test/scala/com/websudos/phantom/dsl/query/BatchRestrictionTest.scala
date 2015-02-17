@@ -32,7 +32,7 @@ package com.websudos.phantom.dsl.query
 import org.joda.time.DateTime
 import org.scalatest.{FlatSpec, Matchers}
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Recipes, Recipe}
 import com.websudos.util.testing._
 

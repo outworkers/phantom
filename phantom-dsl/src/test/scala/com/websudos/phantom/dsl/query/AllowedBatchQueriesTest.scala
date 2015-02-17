@@ -31,7 +31,7 @@ package com.websudos.phantom.dsl.query
 
 import com.websudos.phantom.tables.Primitives
 import org.scalatest.{FlatSpec, Matchers}
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 
 class AllowedBatchQueriesTest extends FlatSpec with Matchers {

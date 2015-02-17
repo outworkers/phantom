@@ -32,7 +32,7 @@ package com.websudos.phantom.dsl.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.twitter.conversions.time._
 import com.twitter.util.Await
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{EnumRecord, EnumTable, Records}
 import com.websudos.util.testing._

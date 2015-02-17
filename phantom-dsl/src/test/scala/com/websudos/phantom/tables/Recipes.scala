@@ -31,7 +31,7 @@ package com.websudos.phantom.tables
 
 import org.joda.time.DateTime
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.query.InsertQuery
 

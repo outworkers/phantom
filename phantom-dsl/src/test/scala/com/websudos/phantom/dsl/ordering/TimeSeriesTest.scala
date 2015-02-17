@@ -33,7 +33,7 @@ import scala.concurrent.duration._
 
 import org.scalatest.concurrent.PatienceConfiguration
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.util.testing._

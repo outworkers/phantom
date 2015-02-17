@@ -40,6 +40,7 @@ import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
 import org.joda.time.DateTime
 
+@deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
 object Implicits extends Operations {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]

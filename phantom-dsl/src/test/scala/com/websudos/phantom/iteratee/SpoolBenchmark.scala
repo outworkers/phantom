@@ -26,7 +26,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.twitter.util.{ Await => TwitterAwait }
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
 import com.websudos.phantom.testing.TestZookeeperConnector
 import com.websudos.util.testing._

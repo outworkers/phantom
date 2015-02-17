@@ -30,7 +30,7 @@
 package com.websudos.phantom.udt
 
 import com.twitter.util.Future
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.connectors.SimpleCassandraConnector
 
 case class TestRecord(id: UUID, name: String, address: TestFields.address.type)

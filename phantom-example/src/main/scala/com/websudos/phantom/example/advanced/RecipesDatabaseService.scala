@@ -33,7 +33,7 @@ import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.ResultSet
 import com.twitter.conversions.time._
 import com.twitter.util.{Await, Future}
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.example.basics.{ExampleConnector, Recipe}
 
 // In this section, we will show how you can create a real-world Cassandra service with com.websudos.phantom.

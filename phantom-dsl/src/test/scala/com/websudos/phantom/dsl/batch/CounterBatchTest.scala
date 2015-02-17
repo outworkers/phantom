@@ -31,7 +31,7 @@ package com.websudos.phantom.dsl.batch
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.util.testing._
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{CounterTableTest, SecondaryCounterTable}
 

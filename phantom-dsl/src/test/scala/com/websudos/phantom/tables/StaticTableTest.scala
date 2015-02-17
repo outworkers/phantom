@@ -31,7 +31,7 @@ package com.websudos.phantom.tables
 
 import java.util.UUID
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.PhantomCassandraConnector
 
 sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID, String)] {

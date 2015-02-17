@@ -15,7 +15,7 @@
  */
 package com.websudos.phantom.thrift
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.util.testing._

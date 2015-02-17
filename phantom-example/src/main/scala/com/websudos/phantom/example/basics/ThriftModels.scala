@@ -31,7 +31,7 @@ package com.websudos.phantom.example.basics
 
 import java.util.UUID
 import com.datastax.driver.core.Row
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.thrift.columns.ThriftColumn
 

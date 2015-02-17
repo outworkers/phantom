@@ -377,7 +377,7 @@ The error messages you get when your model is off with respect to Cassandra rule
 
 ```scala
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 
 case class Student(id: UUID, name: String)
@@ -517,7 +517,7 @@ import java.util.{ Date, UUID }
 import org.joda.time.DateTime
 import com.datastax.driver.core.Row
 import com.websudos.phantom.sample.ExampleModel
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 case class ExampleModel (
   id: Int,
@@ -835,7 +835,7 @@ Of course, you don't have to block unless you want to.
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
 
@@ -881,7 +881,7 @@ Restrictions are enforced at compile time.
 ```scala
 
 import org.joda.time.DateTime
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
@@ -911,7 +911,7 @@ A table can have only one ```PartitionKey``` but several ```PrimaryKey``` defini
 ```scala
 
 import org.joda.time.DateTime
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
 
@@ -943,7 +943,7 @@ The CQL 3 schema for secondary indexes can also be auto-generated with ```Exampl
 
 import java.util.UUID
 import org.joda.time.DateTime
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
 
@@ -978,7 +978,7 @@ Usage is trivial. If you want to use ```slice, take or drop``` with iterators, t
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.joda.time.DateTime
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
@@ -1024,7 +1024,7 @@ phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
 ```scala
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 BatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
@@ -1039,7 +1039,7 @@ BatchStatement()
 
 ```scala
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 CounterBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
@@ -1053,7 +1053,7 @@ CounterBatchStatement()
 
 ```scala
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 
 UnloggedBatchStatement()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
