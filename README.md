@@ -422,9 +422,12 @@ something like:
 
 ```
 
-Notice the same ```eqs```? This CQL query will only perform a given update if the name is equal to test, but if phantom that's called a
-```SecondaryQueryCondition```. Bottom line, when you try to use ```eqs``` on a non index the implicit conversion will take place but it will give you the
-only valid type of query condition it can give you, a secondary condition. 
+Notice the same ```eqs```? This CQL query will only perform a given update if the name is equal to test, but in phantom that's called a
+```SecondaryQueryCondition```. We explicitly distinguish between the two for obvious reasons, so when you type ```eqs``` the apparently wrong implicit
+conversion from ```Column[T]``` to ```SecondaryQueryCondition``` gets invoked.
+
+Bottom line, when you try to use ```eqs``` on a non index the implicit conversion will take place but it will give you the
+only valid type of query condition it can give you, a secondary condition.
 
 
 <a id="partitionkey">PartitionKey</a>
