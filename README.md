@@ -393,10 +393,9 @@ class Students extends CassandraTable[Students, Student] {
 
 object Students extends Students with Connector {
 
-
   /**
    * The below code will result in a compilation error phantom produces by design.
-   * This behaviour is not only correct but also intended by the implementation.
+   * This behaviour is not only correct with respect to CQL but also intended by the implementation.
    *
    * The reason why it won't compile is because the "name" column is not an index in the "Students" table, which means using "name" in a "where" clause is
    * invalid CQL. Phantom prevents you from running most invalid queries by simply giving you a compile time error instead.
@@ -405,9 +404,27 @@ object Students extends Students with Connector {
     select.where(_.name eqs name).one()
   }
 }
+```
 
+The compilation error message for the above looks something like this:
+
+```scala
+ found   : com.websudos.phantom.query.SecondaryQueryCondition
+    [error]  required: com.websudos.phantom.query.QueryCondition
+```
+
+Might seem overly misterious to start with, but the logic is dead simple. There are two sets of ```eqs``` methods, one for a primary query condition or a
+normal ```where``` clause and one for a CAS query. The Scala type system will "know" ```name``` is not indexed, and phantom now thinks you are tring to do
+something like:
+
+```scala
+  Students.update.where(_.id eqs someId).onlyIf(_.name eqs "test")
 
 ```
+
+Notice the same ```eqs```? This CQL query will only perform a given update if the name is equal to test, but if phantom that's called a
+```SecondaryQueryCondition```. Bottom line, when you try to use ```eqs``` on a non index the implicit conversion will take place but it will give you the
+only valid type of query condition it can give you, a secondary condition. 
 
 
 <a id="partitionkey">PartitionKey</a>
