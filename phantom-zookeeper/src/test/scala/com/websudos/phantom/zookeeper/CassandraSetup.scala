@@ -32,11 +32,10 @@ package com.websudos.phantom.zookeeper
 import java.io.IOException
 import java.net.Socket
 
-import scala.concurrent._
-
+import com.twitter.util.NonFatal
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 
-import com.twitter.util.NonFatal
+import scala.concurrent._
 
 
 /**
@@ -46,9 +45,6 @@ private[zookeeper] object CassandraStateManager {
 
   private[this] def isPortAvailable(port: Int): Boolean = {
     try {
-
-
-
       new Socket("localhost", port)
       true
     } catch  {

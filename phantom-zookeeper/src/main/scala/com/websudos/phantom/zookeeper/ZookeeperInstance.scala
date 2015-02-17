@@ -44,7 +44,7 @@ import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.zookeeper.ZookeeperServerSetCluster
 import com.twitter.util.{Await, Future, RandomSocket, Try}
 
-class ookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddress()) {
+class ZookeeperInstance(val address: InetSocketAddress = RandomSocket.nextAddress()) {
 
   private[this] val status = new AtomicBoolean(false)
 
