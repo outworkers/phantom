@@ -8,6 +8,10 @@ To stay up-to-date with our latest releases and news, follow us on Twitter: [@we
 If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, 
 but the more adopters our projects have, the more people from our company will actively work to make them better.
 
+
+![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Websudos Phantom")
+
+
 Using phantom
 =============
 
