@@ -175,6 +175,17 @@ This feature is well in progress and you can expect to see it live roughly at th
 
 Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
 
+- A new QueryBuilder
+
+At present times, phantom is relying on the underlying Datastax Java Driver to serialise queries to CQL and while the querybuilder implementation is
+excellent for Java standards, it doesn't add any Scala features, since it was a Java only product. With a Scala based builder we plan to add more advanced
+behaviour, such as immutable builders and phantom types.
+
+- Prepared statements
+
+By popular demand, a feature long overdue in phantom. The main reason is the underlying Java driver and the increased difficulty of guaranteeing type safety
+with prepared statements along with a nice DSL to get things done. Not to say it's impossible, this will be released after the new query builder emerges.
+
 - Zookeeper support(available as of 1.1.0).
 
 Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation and service discovery, 
@@ -188,11 +199,6 @@ all automatic and with our tools.
 We are also testing it in production in a massive enterprise to make sure it's reliable with a few dozen nodes in a cluster, 
 not just the local embedded flavour.
 
-- A new QueryBuilder
-
-At present times, phantom is relying on the underlying Datastax Java Driver to serialise queries to CQL and while the querybuilder implementation is 
-excellent for Java standards, it doesn't add any Scala features, since it was a Java only product. With a Scala based builder we plan to add more advanced 
-behaviour, such as immutable builders and phantom types.
 
 - Spark integration
 
@@ -208,16 +214,13 @@ Commercial support
 <a href="#table-of-contents">back to top</a>
 
 We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
-training or support for using phantom, [Websudos](http://www.websudos.co.uk) is here to help!
+training or support for using phantom, [Websudos](http://websudos.com) is here to help!
 
-We offer a comprehensive range of services, including but not limited to:
+We offer a comprehensive range of elite Scala developemnt services, including but not limited to:
 
+- Software development
 - Remote contractors for hire
-- Training
-- In house software development
-- Team building
-- Architecture planning
-- Startup product development
+- Advanced Scala and Cassandra training
 
 
 We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, 

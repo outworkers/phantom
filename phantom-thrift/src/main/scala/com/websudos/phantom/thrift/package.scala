@@ -32,7 +32,7 @@ package com.websudos.phantom
 
 import com.twitter.scrooge.ThriftStruct
 
-package object thrift {
+private[phantom] trait ThriftTypeDefinitions {
   type ThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftColumn[T, R, Model]
   type ThriftSetColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
   type ThriftListColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftListColumn[T, R, Model]
@@ -40,3 +40,10 @@ package object thrift {
 
   type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 }
+
+package object thrift extends ThriftTypeDefinitions {
+
+}
+
+
+
