@@ -29,9 +29,7 @@
  */
 package com.websudos.phantom.dsl
 
-import org.scalatest.{ FlatSpec, Matchers }
-import com.datastax.driver.core.Row
-import com.websudos.phantom.Implicits._
+import org.scalatest.{FlatSpec, Matchers}
 
 trait Test {
   private[this] lazy val _name: String = {

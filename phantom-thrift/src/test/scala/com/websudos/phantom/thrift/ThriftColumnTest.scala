@@ -58,8 +58,6 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sampleList = Set(sample, sample2)
 
-    ThriftColumnTable.select.where(_.name eqs "test")
-
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)

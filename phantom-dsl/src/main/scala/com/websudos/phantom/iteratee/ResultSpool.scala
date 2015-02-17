@@ -39,7 +39,7 @@ private[phantom] object ResultSpool {
       if (rs.isExhausted)
         TFuture.value(Spool.empty)
       else {
-        var a = rs.getAvailableWithoutFetching
+        val a = rs.getAvailableWithoutFetching
 
         // 100 is somewhat arbitrary. In practice it might not matter that much
         // but it should be tested.
@@ -47,9 +47,9 @@ private[phantom] object ResultSpool {
           rs.fetchMoreResults
 
         if (a > 0)
-          TFuture.value(loop(it.next, it, rs))
+          TFuture.value(loop(it.next(), it, rs))
         else
-          pool(it.next).map(x => loop(x, it, rs))
+          pool(it.next()).map(x => loop(x, it, rs))
       }
 
     head *:: tail

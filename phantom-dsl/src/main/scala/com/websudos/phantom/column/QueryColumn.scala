@@ -30,12 +30,18 @@
 package com.websudos.phantom.column
 
 import scala.annotation.implicitNotFound
+import scala.runtime._
+import scala.collection.{ mutable, immutable, generic }
+import mutable.WrappedArray
+import immutable.WrappedString
+import generic.CanBuildFrom
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
 import com.websudos.phantom.keys.{ClusteringOrder, Index, PartitionKey, PrimaryKey}
 import com.websudos.phantom.query.{QueryCondition, QueryOrdering, SecondaryQueryCondition}
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
+
 
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
   def asc: QueryOrdering = {
@@ -117,10 +123,8 @@ class ConditionalOperations[T](val col: AbstractColumn[T]) {
     SecondaryQueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
   }
 }
-import scala.collection.{ mutable, immutable, generic }
-import mutable.WrappedArray
-import immutable.WrappedString
-import generic.CanBuildFrom
+
+
 
 /** The `LowPriorityImplicits` class provides implicit values that
  *  are valid in all Scala compilation units without explicit qualification,
@@ -136,14 +140,14 @@ class LowPriorityImplicits {
    *  need to implement ScalaNumber in order to have a symmetric equals
    *  method, but that implies implementing java.lang.Number as well.
    */
-  implicit def byteWrapper(x: Byte)       = new runtime.RichByte(x)
-  implicit def shortWrapper(x: Short)     = new runtime.RichShort(x)
-  implicit def intWrapper(x: Int)         = new runtime.RichInt(x)
-  implicit def charWrapper(c: Char)       = new runtime.RichChar(c)
-  implicit def longWrapper(x: Long)       = new runtime.RichLong(x)
-  implicit def floatWrapper(x: Float)     = new runtime.RichFloat(x)
-  implicit def doubleWrapper(x: Double)   = new runtime.RichDouble(x)  
-  implicit def booleanWrapper(x: Boolean) = new runtime.RichBoolean(x)
+  implicit def byteWrapper(x: Byte): RichByte = new runtime.RichByte(x)
+  implicit def shortWrapper(x: Short): RichShort = new runtime.RichShort(x)
+  implicit def intWrapper(x: Int): RichInt = new runtime.RichInt(x)
+  implicit def charWrapper(c: Char): RichChar = new runtime.RichChar(c)
+  implicit def longWrapper(x: Long): RichLong = new runtime.RichLong(x)
+  implicit def floatWrapper(x: Float): RichFloat = new runtime.RichFloat(x)
+  implicit def doubleWrapper(x: Double): RichDouble = new runtime.RichDouble(x)
+  implicit def booleanWrapper(x: Boolean): RichBoolean = new runtime.RichBoolean(x)
   
   // These eight implicits exist solely to exclude Null from the domain of
   // the boxed types, so that e.g. "var x: Int = null" is a compile time
@@ -210,11 +214,11 @@ sealed trait CollectionOperators {
     extends ModifyColumn[List[RR]](col) {
 
     def prepend(value: RR): Assignment = QueryBuilder.prepend(col.name, col.valueToCType(value))
-    def prependAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.prependAll(col.name, col.valuesToCType(values))
+    def prependAll[L](values: L)(implicit ev1: L => Seq[RR]): Assignment = QueryBuilder.prependAll(col.name, col.valuesToCType(values))
     def append(value: RR): Assignment = QueryBuilder.append(col.name, col.valueToCType(value))
-    def appendAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.appendAll(col.name, col.valuesToCType(values))
+    def appendAll[L](values: L)(implicit ev1: L => Seq[RR]): Assignment = QueryBuilder.appendAll(col.name, col.valuesToCType(values))
     def discard(value: RR): Assignment = QueryBuilder.discard(col.name, col.valueToCType(value))
-    def discardAll[L <% Seq[RR]](values: L): Assignment = QueryBuilder.discardAll(col.name, col.valuesToCType(values))
+    def discardAll[L](values: L)(implicit ev1: L => Seq[RR]): Assignment = QueryBuilder.discardAll(col.name, col.valuesToCType(values))
     def setIdx(i: Int, value: RR): Assignment = QueryBuilder.setIdx(col.name, i, col.valueToCType(value))
   }
 
@@ -231,7 +235,7 @@ sealed trait CollectionOperators {
     extends ModifyColumn[Map[A, B]](col) {
 
     def put(value: (A, B)): Assignment = QueryBuilder.put(col.name, col.keyToCType(value._1), col.valueToCType(value._2))
-    def putAll[L <% Traversable[(A, B)]](values: L): Assignment = QueryBuilder.putAll(col.name, col.valuesToCType(values))
+    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): Assignment = QueryBuilder.putAll(col.name, col.valuesToCType(values))
   }
 }
 
@@ -298,7 +302,7 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
     def apply(r: Row): T = col.apply(r)
   }
 
-  implicit def columnToSelection[Owner <: CassandraTable[Owner, Record], Record, T](column: Column[Owner, Record, T]) = new SelectColumnRequired[Owner,
+  implicit def columnToSelection[Owner <: CassandraTable[Owner, Record], Record, T](column: Column[Owner, Record, T]): SelectColumnRequired[Owner, Record, T] = new SelectColumnRequired[Owner,
     Record, T](column)
 
   implicit class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T])

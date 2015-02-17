@@ -40,7 +40,6 @@ sealed abstract class BatchableTypes {
 sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends CQLQuery[X] {
   self: X =>
 
-
   type BatchableStatement = BatchableTypes#BatchableStatement
 
   protected[phantom] val qb = create()
