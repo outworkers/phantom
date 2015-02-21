@@ -52,10 +52,22 @@ object Records extends Enumeration {
   val TypeOne, TypeTwo, TypeThree = Value
 }
 
+object NamedRecords extends Enumeration {
+  type NamedRecords = Value
+  val One = Value("one")
+  val Two = Value("two")
+}
+
 case class EnumRecord(
   name: String,
   enum: Records.type#Value,
   optEnum: Option[Records.type#Value]
+)
+
+case class NamedEnumRecord(
+  name: String,
+  enum: NamedRecords.type#Value,
+  optEnum: Option[NamedRecords.type#Value]
 )
 
 sealed class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
@@ -73,6 +85,25 @@ sealed class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
 }
 
 object EnumTable extends EnumTable with PhantomCassandraConnector
+
+
+sealed class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumRecord] {
+  object id extends StringColumn(this) with PartitionKey[String]
+  object enum extends EnumColumn[NamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
+  object optEnum extends OptionalEnumColumn[NamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
+
+  def fromRow(row: Row): NamedEnumRecord = {
+    NamedEnumRecord(
+      id(row),
+      enum(row),
+      optEnum(row)
+    )
+  }
+}
+
+object NamedEnumTable extends NamedEnumTable with PhantomCassandraConnector
+
+
 
 sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
 

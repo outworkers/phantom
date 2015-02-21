@@ -34,13 +34,15 @@ import com.twitter.conversions.time._
 import com.twitter.util.Await
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.PhantomCassandraTestSuite
-import com.websudos.phantom.tables.{EnumRecord, EnumTable, Records}
+import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
 class EnumColumnTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     Await.result(EnumTable.create.execute(), 2.seconds)
+    Await.result(NamedEnumTable.create.execute(), 2.seconds)
+
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
@@ -80,4 +82,45 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
       }
     }
   }
+
+  it should "store a named record and parse an Enumeration value back from the stored value" in {
+    val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, None)
+
+
+    val chain = for {
+      insert <- NamedEnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      get <- NamedEnumTable.select.where(_.id eqs sample.name).get()
+    } yield get
+
+    chain.successful {
+      res => {
+        res.isDefined shouldEqual true
+        res.get.enum shouldEqual sample.enum
+        res.get.optEnum.isDefined shouldEqual false
+        res.get.optEnum shouldEqual None
+      }
+    }
+  }
+
+  it should "store a named record and parse an Enumeration value and an Optional value back from the stored value" in {
+    val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, Some(NamedRecords.Two))
+
+    val chain = for {
+      insert <- NamedEnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      get <- NamedEnumTable.select.where(_.id eqs sample.name).get()
+    } yield get
+
+    chain.successful {
+      res => {
+        res.isDefined shouldEqual true
+        res.get.enum shouldEqual sample.enum
+        res.get.optEnum.isDefined shouldEqual true
+        res.get.optEnum shouldEqual sample.optEnum
+      }
+    }
+  }
+
+
 }
+
+
