@@ -87,7 +87,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    */
   def fetchSpool()(implicit session: Session): TwitterFuture[Spool[R]] = {
     execute() flatMap {
-      resultSet => ResultSpool.spool(resultSet).map(spool => spool.map(fromRow(_)))
+      resultSet => ResultSpool.spool(resultSet).map(spool => spool.map(fromRow))
     }
   }
 
@@ -126,6 +126,5 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    */
   def collect()(implicit session: Session): TwitterFuture[Seq[R]] = {
     fetchSpool.flatMap(_.toSeq)
-
   }
 }

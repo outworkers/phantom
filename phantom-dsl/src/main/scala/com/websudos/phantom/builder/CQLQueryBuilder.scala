@@ -29,6 +29,10 @@
  */
 package com.websudos.phantom.builder
 
+import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.query.ExecutableQuery
+
 sealed trait LimitBound
 trait Limited extends LimitBound
 trait Unlimited extends LimitBound
@@ -37,6 +41,66 @@ sealed trait OrderBound
 trait Ordered extends OrderBound
 trait Unordered extends OrderBound
 
-class CQLQueryBuilder {
 
+trait CQLOperator {
+  def name: String
+}
+
+
+
+
+object QueryBuilder {
+
+  val syntax = CQLSyntax
+
+  def where(query: CQLQuery, op: CQLOperator, name: String, value: String): CQLQuery = {
+    query.pad.append(syntax.where)
+      .pad.append(name)
+      .pad.append(op.name)
+      .forcePad.append(value)
+  }
+
+  def where(query: CQLQuery, condition: CQLQuery): CQLQuery = {
+    query.pad.append(syntax.where).pad.append(condition)
+  }
+
+  def select(tableName: String): CQLQuery = {
+    CQLQuery(syntax.select)
+      .forcePad.append("*").forcePad
+      .append(syntax.from)
+      .forcePad.appendEscape(tableName)
+  }
+
+  def select(tableName: String, names: String*): CQLQuery = {
+    CQLQuery(syntax.select)
+      .pad.append(names)
+      .forcePad.append(syntax.from)
+      .forcePad.appendEscape(tableName)
+  }
+
+  def select(tableName: String, clause: CQLQuery) = {
+    CQLQuery(syntax.select)
+      .pad.append(clause)
+      .pad.append(syntax.from)
+      .pad.appendEscape(tableName)
+  }
+
+  def limit(qb: CQLQuery, value: String): CQLQuery = {
+    qb.pad.append(syntax.limit)
+      .forcePad.append(value)
+  }
+
+
+}
+
+class Query[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Limit <: LimitBound,
+  Order <: OrderBound
+](table: Table, qb: CQLQuery, row: Row => Record) extends ExecutableQuery[Table, Record] with CQLQuery {
+
+  final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): Query[Table, Record, Unlimited, Order] = {
+    new Query(table, QueryBuilder.limit(qb, limit.toString), row)
+  }
 }

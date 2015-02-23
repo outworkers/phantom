@@ -4,11 +4,10 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.{ ConsistencyLevel => CLevel }
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.websudos.phantom.column.{Operations, AbstractColumn}
-import com.websudos.phantom.query.{QueryCondition, SelectWhere, SelectQuery}
-import org.joda.time.DateTime
+import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.websudos.phantom.column.{AbstractColumn, Operations}
+import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
 
 package object dsl extends Operations {
 
@@ -79,6 +78,8 @@ package object dsl extends Operations {
   type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
   type CassandraManager = com.websudos.phantom.connectors.CassandraManager
 
+  type DateTime = org.joda.time.DateTime
+  type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet

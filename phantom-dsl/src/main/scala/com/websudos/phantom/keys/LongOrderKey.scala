@@ -37,6 +37,7 @@ import com.websudos.phantom.Implicits.LongColumn
  * @tparam Owner The owner of the table.
  * @tparam Record The type of the record.
  */
+@deprecated("Using the long order key is now deprecated. Prefer manually controlling an order id instead", "1.1.0")
 trait LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] {
   this: CassandraTable[Owner, Record] =>
 

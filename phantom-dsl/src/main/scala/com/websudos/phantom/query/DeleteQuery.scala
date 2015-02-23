@@ -35,7 +35,7 @@ import com.websudos.phantom.CassandraTable
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
   extends CQLQuery[DeleteQuery[T, R]] with BatchableQuery[DeleteQuery[T, R]] {
 
-  def where[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
+  def where(condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.where(condition(table).clause))
   }
 
@@ -48,7 +48,7 @@ class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
 class DeleteWhere[T <: CassandraTable[T, R], R](table: T, val qb: Delete.Where)
   extends CQLQuery[DeleteWhere[T, R]] with BatchableQuery[DeleteWhere[T, R]] {
 
-  def and[RR](condition: T => QueryCondition): DeleteWhere[T, R] = {
+  def and(condition: T => QueryCondition): DeleteWhere[T, R] = {
     new DeleteWhere[T, R](table, qb.and(condition(table).clause))
   }
 
