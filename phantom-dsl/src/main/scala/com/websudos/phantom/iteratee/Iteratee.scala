@@ -34,8 +34,8 @@ import scala.concurrent.ExecutionContext
 import play.api.libs.iteratee.{ Iteratee => PIteratee }
 
 /**
- * Helper object to some commune use cases for iteratee
- * This is a wrapper around play Iteratee class
+ * Helper object to some common use cases for iterators.
+ * This is a wrapper around play Iteratee class.
  */
 object Iteratee {
   def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, Queue[R]] =

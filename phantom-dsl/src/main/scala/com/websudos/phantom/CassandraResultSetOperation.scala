@@ -41,7 +41,7 @@ import com.google.common.util.concurrent.{
 }
 import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise, Return, Throw }
 
-private[phantom] object Manager {
+object Manager {
 
   lazy val cores = Runtime.getRuntime.availableProcessors()
 
@@ -52,6 +52,11 @@ private[phantom] object Manager {
   lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
+
+  def shutdown(): Unit = {
+    taskExecutor.shutdown()
+    executor.shutdown()
+  }
 }
 
 private[phantom] trait CassandraResultSetOperations {
