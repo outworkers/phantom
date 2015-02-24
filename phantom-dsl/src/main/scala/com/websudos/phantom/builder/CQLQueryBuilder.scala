@@ -29,9 +29,11 @@
  */
 package com.websudos.phantom.builder
 
+
+
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.query.ExecutableQuery
+import com.websudos.phantom.builder.query.{ CQLQuery, ExecutableStatement }
 
 sealed trait LimitBound
 trait Limited extends LimitBound
@@ -45,9 +47,6 @@ trait Unordered extends OrderBound
 trait CQLOperator {
   def name: String
 }
-
-
-
 
 object QueryBuilder {
 
@@ -98,7 +97,7 @@ class Query[
   Record,
   Limit <: LimitBound,
   Order <: OrderBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends ExecutableQuery[Table, Record] with CQLQuery {
+](table: Table, val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
 
   final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): Query[Table, Record, Unlimited, Order] = {
     new Query(table, QueryBuilder.limit(qb, limit.toString), row)

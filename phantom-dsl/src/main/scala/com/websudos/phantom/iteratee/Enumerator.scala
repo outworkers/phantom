@@ -29,26 +29,16 @@
  */
 package com.websudos.phantom.iteratee
 
-import java.util.{ ArrayDeque => JavaArrayDeque, Deque => JavaDeque }
+import java.util.{ArrayDeque => JavaArrayDeque, Deque => JavaDeque}
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.collection.JavaConversions._
+import com.datastax.driver.core.{ResultSet, Row}
+import play.api.libs.iteratee.Execution.{defaultExecutionContext => dec}
+import play.api.libs.iteratee.{Cont, Done, Enumerator => PlayEnum, Error, Input, Iteratee => PlayIter, Step}
 
-import com.datastax.driver.core.{ ResultSet, Row }
-import com.websudos.phantom.Manager
-import play.api.libs.iteratee.{
-  Cont,
-  Done,
-  Error,
-  Enumerator => PlayEnum,
-  Input,
-  Iteratee => PlayIter,
-  Step
-}
-import play.api.libs.iteratee.Execution.{ defaultExecutionContext => dec }
+import scala.concurrent.Future
 
 
-object Enumerator {
+private[phantom] object Enumerator {
 
   def enumerator(resultSet: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] = {
 

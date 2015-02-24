@@ -1,5 +1,6 @@
-package com.websudos.phantom.builder
+package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.builder.CQLSyntax
 
 case class CQLQuery(queryString: String) {
   def append(st: String): CQLQuery = CQLQuery(queryString + st)
