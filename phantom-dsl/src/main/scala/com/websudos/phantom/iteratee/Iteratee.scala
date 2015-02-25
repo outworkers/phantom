@@ -29,17 +29,17 @@
  */
 package com.websudos.phantom.iteratee
 
-import scala.collection.immutable.Queue
+import play.api.libs.iteratee.{Iteratee => PIteratee}
+
 import scala.concurrent.ExecutionContext
-import play.api.libs.iteratee.{ Iteratee => PIteratee }
 
 /**
  * Helper object to some common use cases for iterators.
  * This is a wrapper around play Iteratee class.
  */
 object Iteratee {
-  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, Queue[R]] =
-    PIteratee.fold(Queue.empty[R])((acc, e: R)=> acc :+ e)
+  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] =
+    PIteratee.fold(List.empty[R])((acc, e: R)=> e :: acc)
 
   def chunks[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] = {
     PIteratee.getChunks

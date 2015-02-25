@@ -1,7 +1,6 @@
 package com.websudos.phantom.builder.query
 
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
-import scala.collection.JavaConverters._
+import java.util.{List => JavaList}
 
 import com.datastax.driver.core.{ResultSet, Row, Session}
 import com.twitter.concurrent.Spool
@@ -10,10 +9,9 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, Iteratee, ResultSpool}
-
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
-
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
@@ -39,6 +37,10 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
 
   private[this] def singleResult(row: Row): Option[R] = {
     if (row!= null) Some(fromRow(row)) else None
+  }
+
+  private[this] def directMapper(results: JavaList[Row]): List[R] = {
+    List.tabulate(results.size())(index => fromRow(results.get(index)))
   }
 
   private[phantom] def singleFetch()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): ScalaFuture[Option[R]] = {
@@ -67,7 +69,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
   def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): PlayEnumerator[R] = {
     val eventualEnum = future() map {
       resultSet => {
-        Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
+          Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
       }
     }
     PlayEnumerator.flatten(eventualEnum)
@@ -108,8 +110,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * @param ctx The Execution Context.
    * @return
    */
-  def fetch()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): ScalaFuture[Seq[R]] = {
-    fetchEnumerator run Iteratee.collect()
+  def fetch()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+    future() map { resultSet => {directMapper(resultSet.all) } }
   }
 
   /**
@@ -118,7 +120,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * @param session The Cassandra session in use.
    * @return
    */
-  def collect()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[R]] = {
-    fetchSpool.flatMap(_.toSeq)
+  def collect()(implicit session: Session, keySpace: KeySpace): TwitterFuture[List[R]] = {
+    execute() map { resultSet => {directMapper(resultSet.all) } }
   }
 }
