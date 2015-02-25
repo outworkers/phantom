@@ -6,10 +6,11 @@ import java.util.Date
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.websudos.phantom.builder.query.CreateImplicits
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.query.QueryCondition
 
-package object dsl extends Operations {
+package object dsl extends Operations with CreateImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement

@@ -30,6 +30,9 @@
 package com.websudos.phantom.column
 
 import java.util.Date
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.query.CQLQuery
+
 import scala.annotation.implicitNotFound
 import org.joda.time.DateTime
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
@@ -43,8 +46,17 @@ class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Fl
 
   def toCType(v: RR): AnyRef = CassandraPrimitive[RR].toCType(v)
 
-  def optional(r: Row): Option[RR] =
-    implicitly[CassandraPrimitive[RR]].fromRow(r, name)
+  def optional(r: Row): Option[RR] = implicitly[CassandraPrimitive[RR]].fromRow(r, name)
+
+  override def qb: CQLQuery = {
+    val root = CQLQuery(name).forcePad.append(cassandraType)
+
+    if (isStaticColumn) {
+      root.forcePad.append(CQLSyntax.static)
+    } else {
+      root
+    }
+  }
 }
 
 /**

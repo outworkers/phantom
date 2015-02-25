@@ -32,8 +32,7 @@ package com.websudos.phantom
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{Row, Session}
 import com.twitter.util.{Await, Duration}
-import com.websudos.phantom.builder.Unspecified
-import com.websudos.phantom.builder.query.{CreateQuery => NewCreateQuery, CQLQuery, WithUnchainned}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateQuery => NewCreateQuery, RootCreateQuery}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 import org.joda.time.Seconds
@@ -107,8 +106,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
 
 
-  def newCreate: NewCreateQuery[T, R, Unspecified, WithUnchainned] = new NewCreateQuery(this.asInstanceOf[T], columnSchema)
-
+  def newCreate: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T], columnSchema)
 
 
 
@@ -166,7 +164,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     // This is done to avoid including the same columns twice.
     val partitions = partitionKeys.toList
     val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
-
 
     val operand = partitions.lengthCompare(1)
     val key = if (operand < 0) {

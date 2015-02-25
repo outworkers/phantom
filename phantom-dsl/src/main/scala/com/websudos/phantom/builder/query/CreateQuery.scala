@@ -66,12 +66,35 @@ trait WithClauses {
 
 object WithClauses extends WithClauses
 
+class RootCreateQuery[
+  Table <: CassandraTable[Table, _],
+  Record
+](val table: Table, val qb: CQLQuery) {
+
+  private[phantom] def default: CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+      .forcePad.append(table.tableName).forcePad
+      .append(CQLSyntax.Symbols.`(`)
+      .append(QueryBuilder.join(table.columns.map(_.qb): _*))
+      .append(CQLSyntax.Symbols.`,`)
+      .forcePad.append(table.defineTableKey())
+      .append(CQLSyntax.Symbols.`)`)
+  }
+
+  def ifNotExists: CQLQuery = {
+    CQLQuery(CQLSyntax.create)
+  }
+}
+
+
 class CreateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
 ](table: Table, val qb: CQLQuery) extends ExecutableStatement {
+
+  type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
 
   def `with`(clause: WithClause): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
@@ -80,5 +103,10 @@ class CreateQuery[
   def and(clause: WithClause): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
   }
+}
 
+private[phantom] trait CreateImplicits {
+  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
+    new CreateQuery(root.table, root.default)
+  }
 }

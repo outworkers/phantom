@@ -30,12 +30,14 @@
 package com.websudos.phantom.column
 
 import com.websudos.phantom.CassandraWrites
+import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   type Value = T
+
   private[phantom] val isPrimary = false
   private[phantom] val isSecondaryKey = false
   private[phantom] val isPartitionKey = false
@@ -49,5 +51,7 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   }
   
   def name: String = _name
+
+  def qb: CQLQuery
 }
 

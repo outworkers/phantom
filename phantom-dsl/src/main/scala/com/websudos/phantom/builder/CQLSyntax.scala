@@ -54,11 +54,17 @@ object CQLSyntax {
 
   val consistency = "consistency"
   val using = "using"
+  val static = "static"
 
   object Symbols {
     val `{` = "{"
     val `}` = "}"
     val `:` = ":"
+    val `(` = "("
+    val `)` = ")"
+    val `,` = ","
+    val `<` = "<"
+    val `>` = ">"
   }
 
   object CompactionOptions {

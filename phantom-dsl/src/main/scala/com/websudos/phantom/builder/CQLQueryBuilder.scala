@@ -90,6 +90,10 @@ object QueryBuilder extends CompactionQueryBuilder {
 
   val syntax = CQLSyntax
 
+  def join(qbs: CQLQuery*): CQLQuery = {
+    CQLQuery(qbs.map(_.queryString).mkString(", "))
+  }
+
   def escapeOptions(qb: CQLQuery): CQLQuery = {
     CQLQuery.empty.append(syntax.Symbols.`{`)
       .forcePad.append(qb)

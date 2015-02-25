@@ -37,4 +37,5 @@ abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val tab
   def optional(r: Row): Option[T]
 
   def apply(r: Row): T = optional(r).getOrElse(throw new Exception(s"can't extract required value for column '$name'"))
+
 }
