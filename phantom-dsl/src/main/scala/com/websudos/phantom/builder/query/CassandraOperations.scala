@@ -4,13 +4,14 @@ import com.datastax.driver.core.{ResultSet, Session}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise, Return, Throw}
 import com.websudos.phantom.Manager
+import com.websudos.phantom.connectors.KeySpace
 
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise}
 import scala.util.{Failure, Success}
 
 private[phantom] trait CassandraOperations {
 
-  protected[this] def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session): ScalaFuture[ResultSet] = {
+  protected[this] def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
     Manager.logger.debug("Executing Cassandra query:")
     Manager.logger.debug(query)
     val promise = ScalaPromise[ResultSet]()
@@ -31,7 +32,7 @@ private[phantom] trait CassandraOperations {
     promise.future
   }
 
-  protected[this] def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session): TwitterFuture[ResultSet] = {
+  protected[this] def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
     val promise = TwitterPromise[ResultSet]()
     val future = session.executeAsync(query)
 

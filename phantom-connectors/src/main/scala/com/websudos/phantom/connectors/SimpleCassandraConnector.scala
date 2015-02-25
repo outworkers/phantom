@@ -34,7 +34,7 @@ import com.datastax.driver.core.Session
 trait SimpleCassandraConnector extends CassandraConnector {
 
   override implicit lazy val session: Session = {
-    manager.initIfNotInited(keySpace)
+    manager.initIfNotInited(keySpace.name)
     manager.session
   }
 

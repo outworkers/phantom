@@ -53,4 +53,6 @@ object CQLSyntax {
   val exists = "EXISTS"
   val notExists = "NOT EXISTS"
 
+  val consistency = "consistency"
+  val using = "using"
 }

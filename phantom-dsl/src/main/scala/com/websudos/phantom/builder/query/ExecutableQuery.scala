@@ -4,6 +4,8 @@ import com.datastax.driver.core.{ResultSet, Row, Session}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, Iteratee, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
@@ -14,12 +16,12 @@ trait ExecutableStatement extends CassandraOperations {
 
   val qb: CQLQuery
 
-  def future()(implicit session: Session): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(qb.queryString)
+  def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
   }
 
-  def execute()(implicit session: Session): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(qb.queryString)
+  def execute()(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
+    twitterQueryStringExecuteToFuture(QueryBuilder.prependKeySpaceIfAbsent(keyspace.name, qb).queryString)
   }
 }
 
@@ -91,12 +93,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * Returns a parsed sequence of [R]ows
    * This is not suitable for big results set
    * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
    * @return
    */
   def collect()(implicit session: Session): TwitterFuture[Seq[R]] = {
     fetchSpool.flatMap(_.toSeq)
   }
 }
-
-trait ResultsQuery

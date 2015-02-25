@@ -28,7 +28,7 @@ class EmptyPortListException extends RuntimeException("Cannot build a cluster fr
 
 trait CassandraConnector {
 
-  def keySpace: String
+  implicit def keySpace: KeySpace
 
   def manager: CassandraManager = DefaultCassandraManager
 
