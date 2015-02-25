@@ -27,7 +27,7 @@ object CQLSyntax {
   val temporary = "TEMPORARY"
 
   val where = "WHERE"
-  val `with` = "with"
+  val `with` = "WITH"
   val update = "UPDATE"
   val delete = "DELETE"
   val orderBy = "ORDER BY"

@@ -1108,7 +1108,7 @@ This implementation is a very simple way to connect to a running Cassandra node.
 testing or connections, but sometimes you just want to get things working immediately.
 
 The implementation details are available [here](https://github
-.com/websudos/phantom/blob/develop/phantom-zookeeper/src/main/scala/com/websudos/phantom/zookeeper/SimpleCassandraConnector.scala), 
+.com/websudos/phantom/blob/develop/phantom-connectors/src/main/scala/com/websudos/phantom/connectors/SimpleCassandraConnector.scala),
 but without further ado, this connector will attempt to connector to a local Cassandra, either embedded or not.
 
 Inside Websudos, our port convention is ```9042``` for local Cassandra and ```9142``` for embedded. This is reflected in our ```cassandra.yaml``` 

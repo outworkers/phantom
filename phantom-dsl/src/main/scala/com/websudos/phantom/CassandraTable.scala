@@ -50,7 +50,7 @@ case class InvalidTableException(msg: String) extends RuntimeException(msg)
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]] with MutableSyncBuffer[AbstractColumn[_]]
+  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 
   private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
 
@@ -64,10 +64,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
-  lazy val logger = {
-    val klass = getClass.getName.stripSuffix("$")
-    LoggerFactory.getLogger(klass)
-  }
+  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   def tableName: String = _name
 
@@ -96,10 +93,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clustered: Boolean = clusteringColumns.nonEmpty
 
   def defaultTTL: Option[Seconds] = None
-
-
-
-
 
 
 

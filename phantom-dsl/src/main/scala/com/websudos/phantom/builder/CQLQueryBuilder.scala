@@ -112,6 +112,10 @@ object QueryBuilder extends CompactionQueryBuilder {
     qb.pad.append(syntax.`with`).append(clause)
   }
 
+  def withCompaction(qb: CQLQuery, strategy: CQLQuery) = {
+    `with`(qb, strategy)
+  }
+
   def and(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.pad.append(syntax.and).append(clause)
   }

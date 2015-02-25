@@ -33,9 +33,16 @@ import com.twitter.util.StorageUnit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 
+import scala.annotation.implicitNotFound
+
 sealed trait WithBound
 sealed trait WithChainned extends WithBound
 sealed trait WithUnchainned extends WithBound
+
+sealed trait CompactionBound
+sealed trait SpecifiedCompaction extends CompactionBound
+sealed trait UnspecifiedCompaction extends CompactionBound
+
 
 sealed class WithClause(val qb: CQLQuery) {}
 
@@ -50,7 +57,7 @@ sealed class EscapableWithClause(override val qb: CQLQuery, escaped : Boolean = 
   }
 }
 
-sealed class CompactionStrategy(qb: CQLQuery)
+sealed class CompactionStrategy(val qb: CQLQuery)
 
 trait WithClauses {
   object Storage {
@@ -126,15 +133,19 @@ class CreateQuery[
 
   type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
 
-  def `with`(clause: WithClause): CreateQuery[Table, Record, Status, WithChainned] = {
+  @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
+  def `with`(clause: WithClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
   }
 
-  def and(clause: WithClause): CreateQuery[Table, Record, Status, WithChainned] = {
+  @implicitNotFound("You have to use `with` before using `and` in a create query.")
+  def and(clause: WithClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
   }
 
-  def compaction(strategy: CompactionStrategy)
+  def compaction(strategy: CompactionStrategy): CreateQuery[Table, Record, Status, WithChainned] = {
+    new CreateQuery(table, QueryBuilder.withCompaction(qb, strategy.qb))
+  }
 
 }
 
