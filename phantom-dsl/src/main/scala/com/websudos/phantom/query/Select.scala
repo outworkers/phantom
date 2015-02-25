@@ -50,7 +50,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val
    * @param ctx The Execution Context.
    * @return
    */
-  def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
+  def one()(implicit session: Session, ctx: ExecutionContext): Future[Option[R]] = {
     val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
     query.fetchEnumerator run PlayIteratee.head
   }

@@ -55,7 +55,7 @@ trait DefaultZookeeperConnector extends ZookeeperConnector {
   override val manager = DefaultZookeeperManagers.defaultManager
 
   override implicit lazy val session: Session = {
-    manager.initIfNotInited(keySpace)
+    manager.initIfNotInited(keySpace.name)
     manager.session
   }
 }

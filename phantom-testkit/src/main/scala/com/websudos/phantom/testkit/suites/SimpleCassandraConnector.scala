@@ -27,11 +27,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.testing
+package com.websudos.phantom.testkit.suites
 
-import com.websudos.phantom.connectors.SimpleCassandraConnector
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
@@ -39,13 +39,13 @@ trait SimpleCassandraTest extends ScalaFutures
   with Assertions
   with AsyncAssertions
   with BeforeAndAfterAll
-  with CassandraSetup{
+  with CassandraSetup {
   self : BeforeAndAfterAll with Suite =>
 
   override def beforeAll() {
     super.beforeAll()
     setupCassandra()
-    manager.initIfNotInited(keySpace)
+    manager.initIfNotInited(keySpace.name)
   }
 }
 
@@ -54,7 +54,7 @@ trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
-  val keySpace = "phantom"
+  val keySpace = KeySpace("phantom")
 }
 
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

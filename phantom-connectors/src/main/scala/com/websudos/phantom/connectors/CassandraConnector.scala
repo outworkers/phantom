@@ -28,6 +28,9 @@ class EmptyPortListException extends RuntimeException("Cannot build a cluster fr
 
 trait CassandraConnector {
 
+  @deprecated("This implicit is provided to help you transition to 1.6.0. It's best to read the changelog to understand what changes ", "1.6.0")
+  implicit def stringToKeySpace(name: String): KeySpace = KeySpace(name)
+
   implicit def keySpace: KeySpace
 
   def manager: CassandraManager = DefaultCassandraManager

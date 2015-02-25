@@ -104,9 +104,9 @@ object QueryBuilder {
       .pad.appendEscape(tableName)
   }
 
-  def limit(qb: CQLQuery, value: String): CQLQuery = {
+  def limit(qb: CQLQuery, value: Int): CQLQuery = {
     qb.pad.append(syntax.limit)
-      .forcePad.append(value)
+      .forcePad.append(value.toString)
   }
 
 
@@ -120,8 +120,8 @@ class Query[
   Status <: ConsistencyBound
 ](table: Table, val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
 
-  final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): Query[Table, Record, Limited, Status, Order] = {
-    new Query(table, QueryBuilder.limit(qb, limit.toString), row)
+  final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): Query[Table, Record, Limited, Order, Status] = {
+    new Query(table, QueryBuilder.limit(qb, limit), row)
   }
 
   final def consistencyLevel(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): Query[Table, Record, Limit, Order, Specified] = {
@@ -147,14 +147,6 @@ class CreateQuery[
 ](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
 
 class TruncateQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-class SelectQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,

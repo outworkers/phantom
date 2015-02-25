@@ -92,21 +92,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
   }
 
   /**
-   * Returns the first row from the select ignoring everything else
-   * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
-   * @return
-   */
-  def one()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Option[R]]
-
-  /**
-   * Get the result of an operation as a Twitter Future.
-   * @param session The Datastax Cassandra session.
-   * @return A Twitter future wrapping the result.
-   */
-  def get()(implicit session: Session): TwitterFuture[Option[R]]
-
-  /**
    * Returns a parsed sequence of [R]ows
    * This is not suitable for big results set
    * @param session The Cassandra session in use.

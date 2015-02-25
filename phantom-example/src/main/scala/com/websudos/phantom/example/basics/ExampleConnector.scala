@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.example.basics
 
-import com.websudos.phantom.connectors.SimpleCassandraConnector
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 /**
@@ -42,7 +42,7 @@ import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
 trait ExampleConnector extends SimpleCassandraConnector {
-  val keySpace = "phnatom_example"
+  val keySpace = KeySpace("phnatom_example")
 }
 
 /**
@@ -54,7 +54,7 @@ trait ExampleConnector extends SimpleCassandraConnector {
  * .." sequence. All these settings are trivial to override in the below connector and you can adjust all the settings to fit your environment.
  */
 trait ZooKeeperConnector extends DefaultZookeeperConnector {
-  val keySpace = "phantom_zookeeper_example"
+  val keySpace = KeySpace("phantom_zookeeper_example")
 }
 
 

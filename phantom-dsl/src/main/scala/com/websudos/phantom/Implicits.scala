@@ -37,7 +37,7 @@ import java.util.Date
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
+import com.websudos.phantom.query.QueryCondition
 import org.joda.time.DateTime
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
@@ -104,7 +104,6 @@ object Implicits extends Operations {
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
-  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
 
   type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleCassandraConnector
   type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
@@ -128,27 +127,6 @@ object Implicits extends Operations {
     val LOCAL_SERIAL = CLevel.LOCAL_SERIAL
     val LOCAL_ONE = CLevel.LOCAL_ONE
     val SERIAL = CLevel.SERIAL
-  }
-
-
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.where(_.orderId gt l.toLong)
-    }
-
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.where(_.orderId gt l)
-    }
-  }
-
-  implicit class SkipSelectWhere[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.and(_.orderId gt l.toLong)
-    }
-
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.and(_.orderId gt l)
-    }
   }
 
   implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {

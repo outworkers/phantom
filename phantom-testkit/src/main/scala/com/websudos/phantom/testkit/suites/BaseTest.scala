@@ -27,13 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.testing
+package com.websudos.phantom.testkit.suites
 
 import java.io.IOException
 import java.net.ServerSocket
 
 import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.NonFatal
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.scalatest._
@@ -45,7 +46,7 @@ import scala.concurrent.{ExecutionContext, blocking}
 import scala.util.Try
 
 
-private[testing] object CassandraStateManager {
+private[testkit] object CassandraStateManager {
 
   val logger = LoggerFactory.getLogger("com.websudos.phantom.testkit")
 
@@ -102,7 +103,7 @@ private[testing] object CassandraStateManager {
 }
 
 
-private[testing] object ZooKeeperManager {
+private[testkit] object ZooKeeperManager {
   lazy val zkInstance = new ZookeeperInstance()
 
   private[this] var isStarted = false
@@ -115,7 +116,7 @@ private[testing] object ZooKeeperManager {
   }
 }
 
-private[testing] object Lock
+private[testkit] object Lock
 
 trait CassandraSetup {
 
@@ -149,7 +150,7 @@ trait CassandraSetup {
 }
 
 trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
-  val keySpace = "phantom"
+  val keySpace = KeySpace("phantom")
   ZooKeeperManager.start()
 }
 

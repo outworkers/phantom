@@ -52,7 +52,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     new SelectQuery[T, (A, B)](t, QueryBuilder.select(c1.col.name, c2.col.name).from(tableName), r => (c1(r), c2(r)))
   }
 
-  def select[A, B, C](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): SelectQuery[T, (A, B, C)] = {
+  def select[A, B, C](f1: T => SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): SelectQuery[T, (A, B, C)] = {
     val t = this.asInstanceOf[T]
     val c1 = f1(t)
     val c2 = f2(t)
