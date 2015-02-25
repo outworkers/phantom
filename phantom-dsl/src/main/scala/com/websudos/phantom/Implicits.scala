@@ -1,17 +1,31 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom
 
@@ -23,9 +37,10 @@ import java.util.Date
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
+import com.websudos.phantom.query.QueryCondition
 import org.joda.time.DateTime
 
+@deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
 object Implicits extends Operations {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
@@ -89,8 +104,10 @@ object Implicits extends Operations {
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
-  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
 
+  type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleCassandraConnector
+  type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
+  type CassandraManager = com.websudos.phantom.connectors.CassandraManager
 
   type UUID = java.util.UUID
   type Row = com.datastax.driver.core.Row
@@ -110,27 +127,6 @@ object Implicits extends Operations {
     val LOCAL_SERIAL = CLevel.LOCAL_SERIAL
     val LOCAL_ONE = CLevel.LOCAL_ONE
     val SERIAL = CLevel.SERIAL
-  }
-
-
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.where(_.orderId gt l.toLong)
-    }
-
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.where(_.orderId gt l)
-    }
-  }
-
-  implicit class SkipSelectWhere[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.and(_.orderId gt l.toLong)
-    }
-
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.and(_.orderId gt l)
-    }
   }
 
   implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {

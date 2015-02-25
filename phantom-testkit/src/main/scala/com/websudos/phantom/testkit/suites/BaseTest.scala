@@ -1,44 +1,54 @@
 /*
+ * Copyright 2013-2015 Websudos, Limited.
  *
- *  * Copyright 2014 websudos ltd.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package com.websudos.phantom.testing
+package com.websudos.phantom.testkit.suites
 
 import java.io.IOException
 import java.net.ServerSocket
 
-import org.apache.commons.io.IOUtils
+import com.datastax.driver.core.{Cluster, Session}
+import com.twitter.util.NonFatal
+import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper
+import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, blocking}
-
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper
-import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
-
-import com.datastax.driver.core.Session
-import com.twitter.util.NonFatal
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+import scala.util.Try
 
 
-private[testing] object CassandraStateManager {
+private[testkit] object CassandraStateManager {
 
-  val logger = LoggerFactory.getLogger("com.websudos.phantom.testing")
+  val logger = LoggerFactory.getLogger("com.websudos.phantom.testkit")
 
   private[this] def isPortAvailable(port: Int): Boolean = {
     try {
@@ -66,25 +76,22 @@ private[testing] object CassandraStateManager {
     !isPortAvailable(9042)
   }
 
-  def cassandraRunning(): Boolean = {
-    try {
-      val runtime = Runtime.getRuntime
+  def checkRunningCassandra(host: String, port: Int): Boolean = {
+    Try {
+      val cluster = Cluster.builder()
+        .addContactPoint(host)
+        .withPort(port)
+        .withoutJMXReporting()
+        .withoutMetrics()
+        .build()
 
-      val p1 = runtime.exec("ps -ef")
-      val input = p1.getInputStream
+      blocking {
+        cluster.connect()
+        true
 
-      val p2 = runtime.exec("grep cassandra")
-      val output = p2.getOutputStream
-
-      IOUtils.copy(input, output)
-      output.close(); // signals grep to finish
-      val result = IOUtils.readLines(p2.getInputStream)
-      result.size() > 1
-    } catch  {
-      case NonFatal(e) => false
-    }
+      }
+    } getOrElse false
   }
-
 
   /**
    * This checks if the default ports for embedded Cassandra and local Cassandra.
@@ -96,7 +103,7 @@ private[testing] object CassandraStateManager {
 }
 
 
-private[testing] object ZooKeeperManager {
+private[testkit] object ZooKeeperManager {
   lazy val zkInstance = new ZookeeperInstance()
 
   private[this] var isStarted = false
@@ -109,7 +116,7 @@ private[testing] object ZooKeeperManager {
   }
 }
 
-private[testing] object Lock
+private[testkit] object Lock
 
 trait CassandraSetup {
 
@@ -123,7 +130,7 @@ trait CassandraSetup {
   def setupCassandra(): Unit = {
     Lock.synchronized {
       blocking {
-        if (!(CassandraStateManager.cassandraRunning() || CassandraStateManager.isCassandraStarted)) {
+        if (!(CassandraStateManager.checkRunningCassandra("localhost", 9042) || CassandraStateManager.checkRunningCassandra("localhost", 9142))) {
           try {
             CassandraStateManager.logger.info("Starting Cassandra in Embedded mode.")
             EmbeddedCassandraServerHelper.mkdirs()
@@ -143,9 +150,8 @@ trait CassandraSetup {
 }
 
 trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
-  val keySpace = "phantom"
+  val keySpace = KeySpace("phantom")
   ZooKeeperManager.start()
-
 }
 
 trait CassandraTest extends ScalaFutures

@@ -1,11 +1,40 @@
+/*
+ * Copyright 2013-2015 Websudos, Limited.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.websudos.phantom.udt
 
 import com.datastax.driver.core.querybuilder.BuiltStatement
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
 import com.websudos.phantom.Implicits.Column
+import com.websudos.phantom.connectors.CassandraConnector
 import com.websudos.phantom.query.ExecutableStatement
-import com.websudos.phantom.zookeeper.CassandraConnector
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
@@ -30,7 +59,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 
   type ValueType = T
 
-  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decoded
+  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
@@ -104,7 +133,7 @@ sealed trait UDTDefinition[T] {
 
   def connector: CassandraConnector
 
-  def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
+  def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace.name).getUserType(name)
 
   val cassandraType = name.toLowerCase
 

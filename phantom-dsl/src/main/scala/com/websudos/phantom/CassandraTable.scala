@@ -1,37 +1,53 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.{Row, Session}
+import com.twitter.util.{Await, Duration}
+import com.websudos.phantom.builder.Unspecified
+import com.websudos.phantom.builder.query.{CreateQuery => NewCreateQuery, CQLQuery, WithUnchainned}
+import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
+import org.joda.time.Seconds
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
 
-import org.slf4j.LoggerFactory
-
-import com.datastax.driver.core.{Session, Row}
-import com.datastax.driver.core.querybuilder.QueryBuilder
-
-import com.twitter.util.{Duration, Await}
-
-import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
+
+case class InvalidTableException(msg: String) extends RuntimeException(msg)
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
@@ -40,7 +56,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
 
   private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decoded
+    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
 
   private[this] def extractCount(r: Row): Long = {
@@ -79,6 +95,22 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
+
+  def defaultTTL: Option[Seconds] = None
+
+
+
+
+
+
+
+
+
+
+  def newCreate: NewCreateQuery[T, R, Unspecified, WithUnchainned] = new NewCreateQuery(this.asInstanceOf[T], columnSchema)
+
+
+
 
   /**
    * This method will filter the columns from a Clustering Order definition.
@@ -171,7 +203,31 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
+  private[phantom] def ttlClause: String = {    
+    defaultTTL.map{ ttl => 
+      if (columns.exists(_.isCounterColumn)) {
+        val msg = "When setting a default ttl, the table cannot contain any counting columns"
+        logger.error(msg)
+        throw new InvalidTableException(msg)
+      }
+      val kw = if (clustered) "AND" else "WITH"
+      kw + " default_time_to_live=" + ttl.getSeconds
+    }.getOrElse("")
+  }
+
+  private[phantom] def columnSchema: CQLQuery = {
+    val queryColumns = columns.foldLeft("")((qb, c) => {
+      if (c.isStaticColumn) {
+        s"$qb, ${c.name} ${c.cassandraType} static"
+      } else {
+        s"$qb, ${c.name} ${c.cassandraType}"
+      }
+    })
+    CQLQuery(queryColumns)
+  }
+
   @throws[InvalidPrimaryKeyException]
+  @throws[InvalidTableException]
   def schema(): String = {
     preconditions()
 
@@ -188,7 +244,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
 
     val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = query + clusteringKey
+    val finalQuery = query + clusteringKey + ttlClause
     if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
