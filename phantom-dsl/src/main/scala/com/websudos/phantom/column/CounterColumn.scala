@@ -30,6 +30,7 @@
 package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
 
 private[phantom] trait CounterRestriction[T]
@@ -47,4 +48,5 @@ class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassa
     primitive.fromRow(r, name)
   }
 
+  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 }

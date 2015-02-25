@@ -27,7 +27,7 @@ object CQLSyntax {
   val temporary = "TEMPORARY"
 
   val where = "WHERE"
-  val `with` = "WHERE"
+  val `with` = "with"
   val update = "UPDATE"
   val delete = "DELETE"
   val orderBy = "ORDER BY"
@@ -55,6 +55,13 @@ object CQLSyntax {
   val consistency = "consistency"
   val using = "using"
   val static = "static"
+
+
+  object Collections {
+    val list = "list"
+    val map = "map"
+    val set = "set"
+  }
 
   object Symbols {
     val `{` = "{"

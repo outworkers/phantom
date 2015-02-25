@@ -31,6 +31,8 @@ package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
 import com.twitter.util.Try
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 sealed trait JsonDefinition[T] {
@@ -67,10 +69,22 @@ abstract class JsonListColumn[T <: CassandraTable[T, R], R, ValueType](table: Ca
   ValueType](table) with JsonDefinition[ValueType] {
 
   override val cassandraType = "list<text>"
+
+  override def qb: CQLQuery = {
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.list)
+      .append(CQLSyntax.Symbols.`<`).append(CassandraPrimitive[String].cassandraType)
+      .append(CQLSyntax.Symbols.`>`)
+  }
 }
 
 abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends AbstractSetColumn[T ,R,
   ValueType](table) with JsonDefinition[ValueType] {
 
   override val cassandraType = "set<text>"
+
+  override def qb: CQLQuery = {
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.set)
+      .append(CQLSyntax.Symbols.`<`).append(CassandraPrimitive[String].cassandraType)
+      .append(CQLSyntax.Symbols.`>`)
+  }
 }

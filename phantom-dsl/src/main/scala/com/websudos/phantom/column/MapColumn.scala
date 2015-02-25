@@ -29,6 +29,9 @@
  */
 package com.websudos.phantom.column
 
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.query.CQLQuery
+
 import scala.annotation.implicitNotFound
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
 
@@ -47,4 +50,11 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrim
   override val valuePrimitive = CassandraPrimitive[V]
 
   override val cassandraType = s"map<${keyPrimitive.cassandraType}, ${valuePrimitive.cassandraType}>"
+
+  override def qb: CQLQuery = {
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.map)
+      .append(CQLSyntax.Symbols.`<`)
+      .append(keyPrimitive.cassandraType).append(CQLSyntax.Symbols.`,`).forcePad.append(valuePrimitive.cassandraType)
+      .append(CQLSyntax.Symbols.`>`)
+  }
 }

@@ -52,6 +52,9 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   
   def name: String = _name
 
-  def qb: CQLQuery
+  def qb: CQLQuery = {
+    CQLQuery(name).forcePad.append(cassandraType)
+  }
+
 }
 

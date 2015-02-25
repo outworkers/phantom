@@ -29,6 +29,9 @@
  */
 package com.websudos.phantom.column
 
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.query.CQLQuery
+
 import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
@@ -41,5 +44,14 @@ class OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @s
 
   def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
 
-  def toCType(v: Option[T]): AnyRef = v map implicitly[CassandraPrimitive[T]].toCType getOrElse null
+  def toCType(v: Option[T]): AnyRef = (v map implicitly[CassandraPrimitive[T]].toCType).orNull
+
+  override def qb: CQLQuery = {
+    val root = CQLQuery(name).forcePad.append(cassandraType)
+    if (isStaticColumn) {
+      root.forcePad.append(CQLSyntax.static)
+    } else {
+      root
+    }
+  }
 }

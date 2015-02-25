@@ -71,8 +71,7 @@ trait CollectionThriftColumnDefinition[ValueType <: ThriftStruct] extends Thrift
 
 
 abstract class ThriftColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R])
-  extends Column[T, R, ValueType](table)
-  with ThriftColumnDefinition[ValueType] {
+  extends Column[T, R, ValueType](table) with ThriftColumnDefinition[ValueType] {
 
   def toCType(v: ValueType): AnyRef = {
     serializer.toString(v)

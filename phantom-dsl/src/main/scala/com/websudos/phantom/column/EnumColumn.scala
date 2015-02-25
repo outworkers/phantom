@@ -39,8 +39,7 @@ class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enu
 
   def cassandraType: String = CassandraPrimitive[String].cassandraType
 
-  def optional(r: Row): Option[EnumType#Value] =
-    Option(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
+  def optional(r: Row): Option[EnumType#Value] = Some(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
 }
 
 class OptionalEnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enumeration](table: CassandraTable[Owner, Record], enum: EnumType)
@@ -48,8 +47,7 @@ class OptionalEnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumTyp
 
   def cassandraType: String = CassandraPrimitive[String].cassandraType
 
-  def optional(r: Row): Option[EnumType#Value] =
-    Option(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
+  def optional(r: Row): Option[EnumType#Value] = Some(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
 
   override def toCType(v: Option[EnumType#Value]): AnyRef = v.map(_.toString).orNull
 }

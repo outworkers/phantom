@@ -29,6 +29,9 @@
  */
 package com.websudos.phantom.column
 
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.query.CQLQuery
+
 import scala.annotation.implicitNotFound
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
 
@@ -38,4 +41,10 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPr
   override val valuePrimitive = CassandraPrimitive[RR]
 
   override val cassandraType = s"list<${valuePrimitive.cassandraType}>"
+
+  override def qb: CQLQuery = {
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.list)
+      .append(CQLSyntax.Symbols.`<`).append(valuePrimitive.cassandraType)
+      .append(CQLSyntax.Symbols.`>`)
+  }
 }
