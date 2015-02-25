@@ -32,7 +32,7 @@ package com.websudos.phantom.dsl.specialized
 import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 class SecondaryIndexTest extends PhantomCassandraTestSuite {

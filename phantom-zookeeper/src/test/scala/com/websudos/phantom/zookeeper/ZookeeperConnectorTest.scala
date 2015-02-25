@@ -44,7 +44,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     super.beforeAll()
     setupCassandra()
     // instance.start()
-    DefaultZookeeperManagers.defaultManager.initIfNotInited(TestTable.keySpace)
+    DefaultZookeeperManagers.defaultManager.initIfNotInited(TestTable.keySpace.name)
   }
 
   override def afterAll(): Unit = {

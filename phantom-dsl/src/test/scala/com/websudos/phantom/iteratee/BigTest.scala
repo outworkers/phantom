@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.iteratee
 
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 
 
 trait BigTest extends PhantomCassandraTestSuite

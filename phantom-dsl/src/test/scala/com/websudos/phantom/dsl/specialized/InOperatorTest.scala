@@ -31,7 +31,7 @@ package com.websudos.phantom.dsl.specialized
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Recipe, Recipes}
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 class InOperatorTest extends PhantomCassandraTestSuite {

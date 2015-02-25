@@ -29,21 +29,21 @@
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.{Row, Session}
+import com.twitter.util.{Await, Duration}
+import com.websudos.phantom.builder.Unspecified
+import com.websudos.phantom.builder.query.{CreateQuery => NewCreateQuery, CQLQuery, WithUnchainned}
+import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
+import org.joda.time.Seconds
+import org.slf4j.LoggerFactory
+
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
 
-import org.slf4j.LoggerFactory
-import org.joda.time.Seconds
-
-import com.datastax.driver.core.{Session, Row}
-import com.datastax.driver.core.querybuilder.QueryBuilder
-
-import com.twitter.util.{Duration, Await}
-
-import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 
 case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 
@@ -97,6 +97,20 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clustered: Boolean = clusteringColumns.nonEmpty
 
   def defaultTTL: Option[Seconds] = None
+
+
+
+
+
+
+
+
+
+
+  def newCreate: NewCreateQuery[T, R, Unspecified, WithUnchainned] = new NewCreateQuery(this.asInstanceOf[T], columnSchema)
+
+
+
 
   /**
    * This method will filter the columns from a Clustering Order definition.
@@ -199,6 +213,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       val kw = if (clustered) "AND" else "WITH"
       kw + " default_time_to_live=" + ttl.getSeconds
     }.getOrElse("")
+  }
+
+  private[phantom] def columnSchema: CQLQuery = {
+    val queryColumns = columns.foldLeft("")((qb, c) => {
+      if (c.isStaticColumn) {
+        s"$qb, ${c.name} ${c.cassandraType} static"
+      } else {
+        s"$qb, ${c.name} ${c.cassandraType}"
+      }
+    })
+    CQLQuery(queryColumns)
   }
 
   @throws[InvalidPrimaryKeyException]

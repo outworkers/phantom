@@ -30,7 +30,7 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.testkit._
 
 case class Primitive(
   pkey: String,

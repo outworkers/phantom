@@ -29,19 +29,13 @@
  */
 package com.websudos.phantom.iteratee
 
-import java.util.concurrent.atomic.AtomicLong
-import scala.concurrent.{ Await, Future }
-import scala.concurrent
-// import scala.concurrent.duration.DurationInt
-
-import org.scalameter.api.{ Gen => MeterGen, gen => _, _ }
-import org.scalatest.Matchers
-import org.scalatest.concurrent.PatienceConfiguration
+import scala.concurrent.{Await, Future}
+import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.websudos.phantom.testing.TestZookeeperConnector
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 

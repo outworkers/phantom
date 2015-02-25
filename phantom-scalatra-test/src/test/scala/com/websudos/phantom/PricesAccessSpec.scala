@@ -41,7 +41,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import com.websudos.util.testing._
 import com.websudos.phantom.server.ScalatraBootstrap.{AAPL, AAPLOption, AppleOptionPrices, ApplePrices}
 import com.websudos.phantom.server._
-import com.websudos.phantom.testing.CassandraFlatSpec
+import com.websudos.phantom.testkit._
 import dispatch.{Http, as, url}
 
 class PricesAccessSpec extends CassandraFlatSpec {

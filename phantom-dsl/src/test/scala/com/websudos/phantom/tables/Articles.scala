@@ -29,11 +29,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-
-import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.testkit._
 
 case class Article(
   name: String,
@@ -41,10 +38,11 @@ case class Article(
   order_id: Long
 )
 
-sealed class Articles private() extends CassandraTable[Articles, Article] with LongOrderKey[Articles, Article] {
+sealed class Articles private() extends CassandraTable[Articles, Article] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
+  object orderId extends LongColumn(this)
 
   override def fromRow(row: Row): Article = {
     Article(name(row), id(row), orderId(row))

@@ -29,12 +29,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-
-import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraConnector
-
+import com.websudos.phantom.testkit._
 
 case class StubRecord(name: String, id: UUID)
 sealed class TableWithSingleKey extends CassandraTable[TableWithSingleKey, StubRecord] {

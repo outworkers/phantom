@@ -33,7 +33,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.twitter.conversions.time._
 import com.twitter.util.Await
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 

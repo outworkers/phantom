@@ -29,12 +29,10 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-
 import org.joda.time.DateTime
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 case class TimeSeriesRecord(

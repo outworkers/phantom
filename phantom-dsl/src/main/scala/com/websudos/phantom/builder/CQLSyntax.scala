@@ -19,8 +19,6 @@ object CQLSyntax {
   val values = "VALUES"
   val select = "SELECT"
   val distinct = "DISTINCT"
-  val ignore = "IGNORE"
-  val quick = "QUICK"
 
   val create = "CREATE"
 
@@ -29,6 +27,7 @@ object CQLSyntax {
   val temporary = "TEMPORARY"
 
   val where = "WHERE"
+  val `with` = "WHERE"
   val update = "UPDATE"
   val delete = "DELETE"
   val orderBy = "ORDER BY"
@@ -55,4 +54,41 @@ object CQLSyntax {
 
   val consistency = "consistency"
   val using = "using"
+
+  object Symbols {
+    val `{` = "{"
+    val `}` = "}"
+    val `:` = ":"
+  }
+
+  object CompactionOptions {
+    val `class` = "class"
+    val max_threshold = "max_threshold"
+    val min_threshold = "min_threshold"
+    val min_sstable_size = "min_sstable_size"
+    val sstable_size_in_mb = "sstable_size_in_mb"
+    val tombstone_compaction_interval = "tombstone_compaction_interval"
+    val tombstone_threshold = "tombstone_threshold"
+    val bucket_high = "bucket_high"
+    val bucket_low = "bucket_low"
+  }
+
+
+  object CompactionStrategies {
+    val SizeTieredCompactionStrategy = "SizeTieredCompactionStrategy"
+  }
+
+  object CompressorOptions {
+    val chunk_length_kb = "chunk_length_kb"
+    val sstable_compression = "sstable_compression"
+  }
+
+  object Compressors {
+    val DeflateCompressor = "DeflateCompressor"
+  }
+
+  object StorageMechanisms {
+    val CompactStorage = "COMPACT STORAGE"
+  }
+
 }

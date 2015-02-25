@@ -31,9 +31,8 @@ package com.websudos.phantom.tables
 
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testing.PhantomCassandraConnector
+import com.websudos.phantom.testkit._
 
 case class JodaRow(
   pkey: String,

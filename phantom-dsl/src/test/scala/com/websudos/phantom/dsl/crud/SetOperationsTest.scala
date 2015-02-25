@@ -31,7 +31,7 @@ package com.websudos.phantom.dsl.crud
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 class SetOperationsTest extends PhantomCassandraTestSuite {

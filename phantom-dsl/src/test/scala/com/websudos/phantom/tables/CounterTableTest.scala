@@ -29,10 +29,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-import com.datastax.driver.core.Row
-import com.websudos.phantom.PhantomCassandraConnector
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit._
 
 case class CounterRecord(id: UUID, count: Long)
 

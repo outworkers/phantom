@@ -52,7 +52,49 @@ trait CQLOperator {
   def name: String
 }
 
-object QueryBuilder {
+
+trait CompactionQueryBuilder {
+  def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.min_sstable_size)
+      .forcePad.append(size)
+  }
+
+  def sstable_size_in_mb(qb: CQLQuery, size: String): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.sstable_size_in_mb)
+      .forcePad.append(size)
+  }
+
+  def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.tombstone_compaction_interval)
+      .forcePad.append(size)
+  }
+
+  def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.tombstone_threshold)
+      .forcePad.append(size.toString)
+  }
+
+  def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.bucket_high)
+      .forcePad.append(size.toString)
+  }
+
+  def bucket_low(qb: CQLQuery, size: Double): CQLQuery = {
+    qb.pad.append(CQLSyntax.CompactionOptions.bucket_low)
+      .forcePad.append(size.toString)
+  }
+}
+
+
+object QueryBuilder extends CompactionQueryBuilder {
+
+  val syntax = CQLSyntax
+
+  def escapeOptions(qb: CQLQuery): CQLQuery = {
+    CQLQuery.empty.append(syntax.Symbols.`{`)
+      .forcePad.append(qb)
+      .pad.append(syntax.Symbols.`}`)
+  }
 
   def using(qb: CQLQuery): CQLQuery = {
     qb.pad.append(syntax.using)
@@ -62,6 +104,14 @@ object QueryBuilder {
     using(qb).pad.append(syntax.consistency).forcePad.append(level)
   }
 
+  def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(syntax.`with`).append(clause)
+  }
+
+  def and(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(syntax.and).append(clause)
+  }
+
   def prependKeySpaceIfAbsent(keySpace: String, qb: CQLQuery): CQLQuery = {
     if (qb.queryString.startsWith(keySpace)) {
       qb
@@ -69,8 +119,6 @@ object QueryBuilder {
       qb.prepend(s"$keySpace.")
     }
   }
-
-  val syntax = CQLSyntax
 
   def where(query: CQLQuery, op: CQLOperator, name: String, value: String): CQLQuery = {
     query.pad.append(syntax.where)
@@ -112,6 +160,7 @@ object QueryBuilder {
 
 }
 
+
 class Query[
   Table <: CassandraTable[Table, _],
   Record,
@@ -128,31 +177,6 @@ class Query[
     new Query(table, QueryBuilder.consistencyLevel(qb, level.toString), row)
   }
 }
-
-class AlterQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-
-class CreateQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-class TruncateQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],

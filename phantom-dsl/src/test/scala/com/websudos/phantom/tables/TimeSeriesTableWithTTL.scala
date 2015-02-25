@@ -15,14 +15,11 @@
  */
 package com.websudos.phantom.tables
 
-import java.util.UUID
-
 import org.joda.time.{DateTime, Seconds}
 
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
-
 
 sealed class TimeSeriesTableWithTTL extends CassandraTable[TimeSeriesTableWithTTL, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]

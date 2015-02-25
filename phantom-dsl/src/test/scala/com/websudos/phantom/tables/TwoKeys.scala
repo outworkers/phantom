@@ -31,7 +31,7 @@ package com.websudos.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.{CassandraTable, PhantomCassandraConnector}
+import com.websudos.phantom.testkit._
 
 class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {
 

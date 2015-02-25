@@ -29,11 +29,13 @@
  */
 package com.websudos.phantom.zookeeper
 
+import com.websudos.phantom.connectors.KeySpace
+
 object TestTable extends DefaultZookeeperConnector {
-  val keySpace = "phantom"
+  val keySpace = KeySpace("phantom")
 }
 
 object TestTable2 extends DefaultZookeeperConnector {
-  val keySpace = "phantom"
+  val keySpace = KeySpace("phantom")
 }
 

@@ -35,7 +35,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 class IterateeTakeTest extends PhantomCassandraTestSuite {

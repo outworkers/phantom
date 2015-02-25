@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.testing.CassandraFlatSpec
+import com.websudos.phantom.testkit._
 
 class TestSuite extends CassandraFlatSpec with Connector {
 

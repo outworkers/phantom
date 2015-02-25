@@ -31,12 +31,12 @@ package com.websudos.phantom.udt
 
 import com.twitter.util.Future
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.connectors.SimpleCassandraConnector
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 
 case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
 
 trait Connector extends SimpleCassandraConnector {
-  val keySpace = "phantom_udt"
+  val keySpace = KeySpace("phantom_udt")
 }
 
 object Connector extends Connector

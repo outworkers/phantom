@@ -31,7 +31,7 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
-import com.websudos.phantom.connectors.CassandraManager
+import com.websudos.phantom.connectors.{KeySpace, CassandraManager}
 import org.slf4j.{Logger, LoggerFactory}
 
 import com.datastax.driver.core.{Cluster, Session}
@@ -121,6 +121,8 @@ class DefaultZookeeperManager extends ZookeeperManager {
    * It will connector to ZooKeeper, fetch the Cassandra sequence of HOST:IP pairs, and create a cluster + session for the mix.
    */
   def initIfNotInited(keySpace: String) = store.initStore(keySpace, defaultZkAddress)
+
+  def initIfNotInited(keySpace: KeySpace) = store.initStore(keySpace.name, defaultZkAddress)
 }
 
 object DefaultZookeeperManagers {

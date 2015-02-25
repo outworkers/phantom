@@ -30,7 +30,7 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.PhantomCassandraConnector
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 case class OptionalPrimitive(
