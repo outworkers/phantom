@@ -6,8 +6,6 @@ import java.util.Date
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.domain.orders.OrderStatus
-import com.websudos.phantom.Implicits._
 import com.websudos.phantom.builder.query.CreateImplicits
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.query.QueryCondition
@@ -105,7 +103,7 @@ package object dsl extends Operations with CreateImplicits {
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
     new CassandraPrimitive[T#Value] {
 
-      override def cls: Class[_] = classOf[T]
+      override def cls: Class[_] = classOf[Enumeration]
 
       override def cassandraType: String = "text"
 
