@@ -84,6 +84,8 @@ package object dsl extends Operations with CreateImplicits {
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
+  type KeySpace = com.websudos.phantom.connectors.KeySpace
+  val KeySpace = com.websudos.phantom.connectors.KeySpace
 
 
   object ConsistencyLevel {
