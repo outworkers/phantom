@@ -54,6 +54,7 @@ object CQLSyntax {
 
   val consistency = "consistency"
   val compaction = "compaction"
+  val compression = "compression"
   val using = "using"
   val static = "static"
 

@@ -124,7 +124,7 @@ object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder 
 
 
   def compression(qb: CQLQuery) : CQLQuery = {
-    CQLQuery(CQLSyntax.compaction).forcePad
+    CQLQuery(CQLSyntax.compression).forcePad
       .append(CQLSyntax.Symbols.`=`)
       .forcePad.append(qb)
       .pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
@@ -150,7 +150,7 @@ object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder 
   }
 
   def and(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(syntax.and).append(clause)
+    qb.pad.append(syntax.and).forcePad.append(clause)
   }
 
   def prependKeySpaceIfAbsent(keySpace: String, qb: CQLQuery): CQLQuery = {
