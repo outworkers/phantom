@@ -10,10 +10,17 @@ case class CQLQuery(queryString: String) {
   def appendEscape(st: String): CQLQuery = append(escape(st))
   def appendEscape(st: CQLQuery): CQLQuery = appendEscape(st.queryString)
 
+  def appendSingleQuote(st: String): CQLQuery = append(singleQuote(st))
+  def appendSingleQuote(st: CQLQuery): CQLQuery = append(singleQuote(st.queryString))
+
+  def appendIfAbsent(st: String): CQLQuery = if (queryString.endsWith(st)) CQLQuery(queryString) else append(st)
+  def appendIfAbsent(st: CQLQuery): CQLQuery = appendIfAbsent(st.queryString)
+
   def prepend(st: String): CQLQuery = CQLQuery(st + queryString)
   def prepend(st: CQLQuery): CQLQuery = prepend(st.queryString)
 
   def escape(st: String): String = "`" + st + "`"
+  def singleQuote(st: String): String = "'" + st + "'"
 
   def spaced: Boolean = queryString.endsWith(" ")
   def pad: CQLQuery = if (spaced) this else CQLQuery(queryString + " ")

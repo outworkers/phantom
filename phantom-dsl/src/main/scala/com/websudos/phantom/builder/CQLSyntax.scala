@@ -53,6 +53,7 @@ object CQLSyntax {
   val notExists = "NOT EXISTS"
 
   val consistency = "consistency"
+  val compaction = "compaction"
   val using = "using"
   val static = "static"
 
@@ -72,6 +73,7 @@ object CQLSyntax {
     val `,` = ","
     val `<` = "<"
     val `>` = ">"
+    val `=` = "="
   }
 
   object CompactionOptions {
@@ -91,13 +93,16 @@ object CQLSyntax {
     val SizeTieredCompactionStrategy = "SizeTieredCompactionStrategy"
   }
 
-  object CompressorOptions {
+  object CompressionOptions {
     val chunk_length_kb = "chunk_length_kb"
     val sstable_compression = "sstable_compression"
+    val crc_check_chance = "crc_check_chance"
   }
 
-  object Compressors {
+  object CompressionStrategies {
     val DeflateCompressor = "DeflateCompressor"
+    val SnappyCompressor = "SnappyCompressor"
+    val LZ4Compressor = "LZ4Compressor"
   }
 
   object StorageMechanisms {

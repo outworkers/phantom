@@ -44,61 +44,87 @@ sealed trait SpecifiedCompaction extends CompactionBound
 sealed trait UnspecifiedCompaction extends CompactionBound
 
 
-sealed class WithClause(val qb: CQLQuery) {}
+sealed class CreateOptionClause(val qb: CQLQuery) {}
 
-sealed class EscapableWithClause(override val qb: CQLQuery, escaped : Boolean = false) extends WithClause(qb) {
+sealed class CompactionStrategy(override val qb: CQLQuery) extends CreateOptionClause(qb)
 
-  private[this] def escapeIfUnescaped(): EscapableWithClause = {
-    if (escaped) {
-      this
-    } else {
-      new EscapableWithClause(QueryBuilder.escapeOptions(qb), true)
+
+
+sealed trait CompactionStrategies {
+
+  private[this] def rootStrategy(strategy: String) = {
+    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+      .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.appendSingleQuote(strategy)
+  }
+
+  sealed class SizeTieredCompactionStrategy(override val qb: CQLQuery) extends CompactionStrategy(qb) {
+    def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(QueryBuilder.min_sstable_size(qb, unit.toHuman()))
     }
+
+    def sstable_size_in_mb(unit: StorageUnit): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(QueryBuilder.sstable_size_in_mb(qb, unit.toHuman()))
+    }
+
+    def bucket_high(size: Double): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(QueryBuilder.bucket_high(qb, size))
+    }
+
+    def bucket_low(size: Double): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(QueryBuilder.bucket_low(qb, size))
+    }
+  }
+
+  case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
+}
+
+
+
+sealed class CompressionStrategy(override val qb: CQLQuery) extends CreateOptionClause(qb) {
+
+  def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
+    new CompressionStrategy(QueryBuilder.chunk_length_kb(qb, unit.toHuman()))
+  }
+
+  def crc_check_chance(size: Double): CompressionStrategy = {
+    new CompressionStrategy(QueryBuilder.crc_check_chance(qb, size))
   }
 }
 
-sealed class CompactionStrategy(val qb: CQLQuery)
+sealed trait CompressionStrategies {
 
-trait WithClauses {
+  private[this] def rootStrategy(strategy: String) = {
+    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+      .appendSingleQuote(CQLSyntax.CompressionOptions.sstable_compression)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.appendSingleQuote(strategy)
+  }
+
+  case object SnappyCompressor extends CompressionStrategy(rootStrategy(CQLSyntax.CompressionStrategies.SnappyCompressor))
+  case object LZ4Compressor extends CompressionStrategy(rootStrategy(CQLSyntax.CompressionStrategies.LZ4Compressor))
+  case object DeflateCompressor extends CompressionStrategy(rootStrategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
+}
+
+
+trait WithClauses extends CompactionStrategies with CompressionStrategies {
   object Storage {
-    case object CompactStorage extends WithClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
+    case object CompactStorage extends CreateOptionClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
   }
 
-  object Compression {
-    sealed class BuilderClause(val qb: CQLQuery) {
-
+  object compression {
+    def eqs(clause: CompressionStrategy): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.compression(clause.qb))
     }
   }
 
-  object Compaction {
-
-    private[this] def rootStrategy(strategy: String) = {
-      CQLQuery.empty.append(CQLSyntax.CompactionOptions.`class`)
-        .forcePad.append(CQLSyntax.Symbols.`:`)
-        .append(strategy)
+  object compaction {
+    def eqs(clause: CompactionStrategy): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.compaction(clause.qb))
     }
-
-    sealed class SizeTieredCompactionStrategy(qb: CQLQuery) extends WithClause(qb) {
-      def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
-        new SizeTieredCompactionStrategy(QueryBuilder.min_sstable_size(qb, unit.toHuman()))
-      }
-
-      def sstable_size_in_mb(unit: StorageUnit): SizeTieredCompactionStrategy = {
-        new SizeTieredCompactionStrategy(QueryBuilder.sstable_size_in_mb(qb, unit.toHuman()))
-      }
-
-      def bucket_high(size: Double): SizeTieredCompactionStrategy = {
-        new SizeTieredCompactionStrategy(QueryBuilder.bucket_high(qb, size))
-      }
-
-      def bucket_low(size: Double): SizeTieredCompactionStrategy = {
-        new SizeTieredCompactionStrategy(QueryBuilder.bucket_low(qb, size))
-      }
-    }
-
-
-    case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
   }
+
 }
 
 object WithClauses extends WithClauses
@@ -134,22 +160,18 @@ class CreateQuery[
   type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
-  def `with`(clause: WithClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  def `with`(clause: CreateOptionClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")
-  def and(clause: WithClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  def and(clause: CreateOptionClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
-  }
-
-  def compaction(strategy: CompactionStrategy): CreateQuery[Table, Record, Status, WithChainned] = {
-    new CreateQuery(table, QueryBuilder.withCompaction(qb, strategy.qb))
   }
 
 }
 
-private[phantom] trait CreateImplicits {
+private[phantom] trait CreateImplicits extends WithClauses {
   implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
     new CreateQuery(root.table, root.default)
   }

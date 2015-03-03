@@ -53,40 +53,62 @@ trait CQLOperator {
 }
 
 
-trait CompactionQueryBuilder {
-  def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.min_sstable_size)
-      .forcePad.append(size)
+sealed trait CreateOptionsBuilder {
+  protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
+    qb.append(CQLSyntax.comma)
+      .forcePad.appendSingleQuote(option)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.appendSingleQuote(value)
   }
 
-  def sstable_size_in_mb(qb: CQLQuery, size: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.sstable_size_in_mb)
-      .forcePad.append(size)
-  }
-
-  def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.tombstone_compaction_interval)
-      .forcePad.append(size)
-  }
-
-  def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.tombstone_threshold)
-      .forcePad.append(size.toString)
-  }
-
-  def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.bucket_high)
-      .forcePad.append(size.toString)
-  }
-
-  def bucket_low(qb: CQLQuery, size: Double): CQLQuery = {
-    qb.pad.append(CQLSyntax.CompactionOptions.bucket_low)
-      .forcePad.append(size.toString)
+  protected[this] def simpleValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
+    qb.append(CQLSyntax.comma)
+      .forcePad.appendSingleQuote(option)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.append(value)
   }
 }
 
 
-object QueryBuilder extends CompactionQueryBuilder {
+sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
+
+  def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size)
+  }
+
+  def sstable_size_in_mb(qb: CQLQuery, size: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompactionOptions.sstable_size_in_mb, size)
+  }
+
+  def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
+  }
+
+  def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_threshold, size.toString)
+  }
+
+  def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_high, size.toString)
+  }
+
+  def bucket_low(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_low, size.toString)
+  }
+}
+
+sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
+
+  def chunk_length_kb(qb: CQLQuery, size: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompressionOptions.chunk_length_kb, size)
+  }
+
+  def crc_check_chance(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompressionOptions.crc_check_chance, size.toString)
+  }
+}
+
+object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
 
   val syntax = CQLSyntax
 
@@ -95,9 +117,24 @@ object QueryBuilder extends CompactionQueryBuilder {
   }
 
   def escapeOptions(qb: CQLQuery): CQLQuery = {
-    CQLQuery.empty.append(syntax.Symbols.`{`)
+    CQLQuery(syntax.Symbols.`{`)
       .forcePad.append(qb)
       .pad.append(syntax.Symbols.`}`)
+  }
+
+
+  def compression(qb: CQLQuery) : CQLQuery = {
+    CQLQuery(CQLSyntax.compaction).forcePad
+      .append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(qb)
+      .pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+  }
+
+  def compaction(qb: CQLQuery) : CQLQuery = {
+    CQLQuery(CQLSyntax.compaction).forcePad
+      .append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(qb)
+      .pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
   }
 
   def using(qb: CQLQuery): CQLQuery = {
@@ -109,11 +146,7 @@ object QueryBuilder extends CompactionQueryBuilder {
   }
 
   def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(syntax.`with`).append(clause)
-  }
-
-  def withCompaction(qb: CQLQuery, strategy: CQLQuery) = {
-    `with`(qb, strategy)
+    qb.pad.append(syntax.`with`).pad.append(clause)
   }
 
   def and(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
