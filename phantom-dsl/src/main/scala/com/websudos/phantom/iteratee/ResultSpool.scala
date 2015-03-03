@@ -30,11 +30,7 @@ import com.twitter.util.{ FuturePool, Future => TFuture }
 private[phantom] object ResultSpool {
   lazy val pool = FuturePool.unboundedPool
 
-  def loop(
-    head: Row,
-    it: Iterator[Row],
-    rs: ResultSet): Spool[Row] =
-  {
+  def loop(head: Row, it: Iterator[Row], rs: ResultSet): Spool[Row] = {
     lazy val tail =
       if (rs.isExhausted)
         TFuture.value(Spool.empty)

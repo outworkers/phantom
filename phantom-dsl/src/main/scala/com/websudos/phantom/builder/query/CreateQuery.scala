@@ -112,8 +112,8 @@ sealed trait CompressionStrategies {
 
 /**
  * A root implementation trait of a CQL table option.
- * These are implemented with respect to the CQL 3.0 reference available here: {{ http://www.datastax.com/documentation/cql/3.0/cql/cql_reference/tabProp
- * .html }}
+ * These are implemented with respect to the CQL 3.0 reference available here:
+ * {{ http://www.datastax.com/documentation/cql/3.0/cql/cql_reference/tabProp.html }}
  */
 sealed trait TableProperty
 
