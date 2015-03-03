@@ -29,11 +29,12 @@
  */
 package com.websudos.phantom.builder.query
 
+import scala.annotation.implicitNotFound
+
 import com.twitter.util.StorageUnit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 
-import scala.annotation.implicitNotFound
 
 sealed trait WithBound
 sealed trait WithChainned extends WithBound
