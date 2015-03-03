@@ -69,7 +69,6 @@ sealed trait CreateOptionsBuilder {
   }
 }
 
-
 sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
 
   def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
@@ -108,33 +107,53 @@ sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
   }
 }
 
+
+sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
+
+  private[this] def tableOption(option: String, value: String): CQLQuery = {
+    CQLQuery(option)
+      .forcePad.append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(value)
+  }
+
+  private[this] def tableOption(option: String, value: CQLQuery): CQLQuery = {
+    tableOption(option, value.queryString)
+  }
+
+  def read_repair_chance(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.read_repair_chance, st)
+  }
+
+  def dclocal_read_repair_chance(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.dclocal_read_repair_chance, st)
+  }
+
+  def replicate_on_write(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.replicate_on_write, st)
+  }
+
+  def compression(qb: CQLQuery) : CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.compression, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+  }
+
+  def compaction(qb: CQLQuery) : CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.compaction, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+  }
+
+  def comment(qb: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.replicate_on_write, CQLQuery.empty.appendSingleQuote(qb))
+  }
+}
+
+
 object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
 
   val syntax = CQLSyntax
 
+  case object Create extends CreateTableBuilder
+
   def join(qbs: CQLQuery*): CQLQuery = {
     CQLQuery(qbs.map(_.queryString).mkString(", "))
-  }
-
-  def escapeOptions(qb: CQLQuery): CQLQuery = {
-    CQLQuery(syntax.Symbols.`{`)
-      .forcePad.append(qb)
-      .pad.append(syntax.Symbols.`}`)
-  }
-
-
-  def compression(qb: CQLQuery) : CQLQuery = {
-    CQLQuery(CQLSyntax.compression).forcePad
-      .append(CQLSyntax.Symbols.`=`)
-      .forcePad.append(qb)
-      .pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
-  }
-
-  def compaction(qb: CQLQuery) : CQLQuery = {
-    CQLQuery(CQLSyntax.compaction).forcePad
-      .append(CQLSyntax.Symbols.`=`)
-      .forcePad.append(qb)
-      .pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
   }
 
   def using(qb: CQLQuery): CQLQuery = {

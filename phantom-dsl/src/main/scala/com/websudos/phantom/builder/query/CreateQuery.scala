@@ -108,27 +108,61 @@ sealed trait CompressionStrategies {
   case object DeflateCompressor extends CompressionStrategy(rootStrategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
 }
 
+/**
+ * A root implementation trait of a CQL table option.
+ * These are implemented with respect to the CQL 3.0 reference available here: {{ http://www.datastax.com/documentation/cql/3.0/cql/cql_reference/tabProp
+ * .html }}
+ */
+sealed trait TableProperty
 
-trait WithClauses extends CompactionStrategies with CompressionStrategies {
+/**
+ * A collection of available table property clauses with all the default objects available.
+ * This serves as a helper trait for [[com.websudos.phantom.dsl._]] and brings all the relevant options into scope.
+ */
+trait TablePropertyClauses extends CompactionStrategies with CompressionStrategies {
   object Storage {
     case object CompactStorage extends CreateOptionClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
   }
 
-  object compression {
+  object compression extends TableProperty {
     def eqs(clause: CompressionStrategy): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.compression(clause.qb))
+      new CreateOptionClause(QueryBuilder.Create.compression(clause.qb))
     }
   }
 
-  object compaction {
+  object compaction extends TableProperty {
     def eqs(clause: CompactionStrategy): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.compaction(clause.qb))
+      new CreateOptionClause(QueryBuilder.Create.compaction(clause.qb))
     }
   }
+
+  object comment extends TableProperty {
+    def eqs(clause: String): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.comment(clause))
+    }
+  }
+
+  object read_repair_chance extends TableProperty {
+    def eqs(clause: Double): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.read_repair_chance(clause.toString))
+    }
+  }
+
+  object dclocal_read_repair_chance extends TableProperty {
+    def eqs(clause: Double): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
+    }
+  }
+
+  object replicate_on_write extends TableProperty {
+    def eqs(clause: Boolean): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
+    }
+  }
+
+
 
 }
-
-object WithClauses extends WithClauses
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
@@ -172,7 +206,7 @@ class CreateQuery[
 
 }
 
-private[phantom] trait CreateImplicits extends WithClauses {
+private[phantom] trait CreateImplicits extends TablePropertyClauses {
   implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
     new CreateQuery(root.table, root.default)
   }

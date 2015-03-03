@@ -53,8 +53,7 @@ object CQLSyntax {
   val notExists = "NOT EXISTS"
 
   val consistency = "consistency"
-  val compaction = "compaction"
-  val compression = "compression"
+
   val using = "using"
   val static = "static"
 
@@ -75,6 +74,16 @@ object CQLSyntax {
     val `<` = "<"
     val `>` = ">"
     val `=` = "="
+  }
+
+  object CreateOptions {
+    val comment = "comment"
+    val compaction = "compaction"
+    val compression = "compression"
+    val read_repair_chance = "read_repair_chance"
+    val dclocal_read_repair_chance = "dclocal_read_repair_chance"
+    val caching = "caching"
+    val replicate_on_write = "replicate_on_write"
   }
 
   object CompactionOptions {

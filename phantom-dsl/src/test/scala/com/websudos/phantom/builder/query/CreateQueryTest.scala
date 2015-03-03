@@ -34,9 +34,6 @@ class CreateQueryTest extends FlatSpec with Matchers with WithClauses {
       .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
       .qb.queryString
 
-    Console.println(qb)
-
-    qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' " +
-      ": 'SizeTieredCompactionStrategy', 'sstable_size_in_mb' : '50.0 MiB' }"
+    qb shouldEqual """CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' : 'SizeTieredCompactionStrategy', 'sstable_size_in_mb' : '50.0 MiB' } AND compression = { 'sstable_compression' : 'LZ4Compressor', 'crc_check_chance' : 0.5 }"""
   }
 }
