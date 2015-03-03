@@ -5,7 +5,7 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.BasicTable
 import com.twitter.conversions.storage._
 
-class CreateQueryTest extends FlatSpec with Matchers with WithClauses {
+class CreateQueryTest extends FlatSpec with Matchers {
 
 
 

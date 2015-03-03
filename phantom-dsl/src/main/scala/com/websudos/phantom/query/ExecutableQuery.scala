@@ -29,6 +29,11 @@
  */
 package com.websudos.phantom.query
 
+import java.util.{List => JavaList}
+
+import com.websudos.phantom.builder.{Unlimited, LimitBound}
+import com.websudos.phantom.connectors.KeySpace
+
 import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
 import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
 import com.websudos.phantom.{ CassandraResultSetOperations, CassandraTable }
@@ -37,6 +42,8 @@ import com.twitter.concurrent.Spool
 import com.twitter.util.{ Future => TwitterFuture }
 import play.api.libs.iteratee.{ Enumerator => PlayEnumerator, Enumeratee }
 import com.datastax.driver.core.querybuilder.BuiltStatement
+
+
 
 trait ExecutableStatement extends CassandraResultSetOperations {
 
@@ -52,15 +59,30 @@ trait ExecutableStatement extends CassandraResultSetOperations {
 }
 
 /**
- *
+ * An ExecutableQuery implementation, meant to retrieve results from Cassandra.
+ * This provides the root implementation of a Select query.
  * @tparam T The class owning the table.
  * @tparam R The record type to store.
  */
 trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement {
 
-  self: CQLQuery[_] =>
-
   def fromRow(r: Row): R
+
+  private[this] def singleResult(row: Row): Option[R] = {
+    if (row != null) Some(fromRow(row)) else None
+  }
+
+  private[this] def directMapper(results: JavaList[Row]): List[R] = {
+    List.tabulate(results.size())(index => fromRow(results.get(index)))
+  }
+
+  private[phantom] def singleFetch()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Option[R]] = {
+    future() map { res => singleResult(res.one) }
+  }
+
+  private[phantom] def singleCollect()(implicit session: Session): TwitterFuture[Option[R]] = {
+    execute() map { res => singleResult(res.one) }
+  }
 
   /**
    * Produces an Enumerator for [R]ows
@@ -92,15 +114,19 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
   }
 
   /**
-   * Returns a parsed sequence of [R]ows
-   * This is not suitable for big results set
+   * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.
    * @param ctx The Execution Context.
    * @return
    */
-  def fetch()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Seq[R]] = {
-    fetchEnumerator run Iteratee.collect()
-  }
+  def one()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[Option[R]]
+
+  /**
+   * Get the result of an operation as a Twitter Future.
+   * @param session The Datastax Cassandra session.
+   * @return A Twitter future wrapping the result.
+   */
+  def get()(implicit session: Session): TwitterFuture[Option[R]]
 
   /**
    * Returns a parsed sequence of [R]ows
@@ -109,7 +135,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
    * @param ctx The Execution Context.
    * @return
    */
-  def collect()(implicit session: Session): TwitterFuture[Seq[R]] = {
-    fetchSpool.flatMap(_.toSeq)
+  def fetch()(implicit session: Session, ctx: ExecutionContext): ScalaFuture[List[R]] = {
+    future() map { resultSet => {directMapper(resultSet.all) } }
+  }
+
+  /**
+   * Returns a parsed sequence of [R]ows
+   * This is not suitable for big results set
+   * @param session The Cassandra session in use.
+   * @return
+   */
+  def collect()(implicit session: Session): TwitterFuture[List[R]] = {
+    execute() map { resultSet => { directMapper(resultSet.all) } }
   }
 }

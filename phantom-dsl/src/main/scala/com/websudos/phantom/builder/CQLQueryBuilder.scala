@@ -128,6 +128,18 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
     tableOption(CQLSyntax.CreateOptions.dclocal_read_repair_chance, st)
   }
 
+  def gc_grace_seconds(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.gc_grace_seconds, st)
+  }
+
+  def populate_io_cache_on_flush(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.populate_io_cache_on_flush, st)
+  }
+
+  def bloom_filter_fp_chance(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.bloom_filter_fp_chance, st)
+  }
+
   def replicate_on_write(st: String): CQLQuery = {
     tableOption(CQLSyntax.CreateOptions.replicate_on_write, st)
   }

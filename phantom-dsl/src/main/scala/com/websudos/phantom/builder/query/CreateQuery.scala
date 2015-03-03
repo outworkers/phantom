@@ -29,11 +29,15 @@
  */
 package com.websudos.phantom.builder.query
 
+import org.joda.time.Seconds
+
 import scala.annotation.implicitNotFound
 
 import com.twitter.util.StorageUnit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+
+import scala.concurrent.duration.FiniteDuration
 
 
 sealed trait WithBound
@@ -48,8 +52,6 @@ sealed trait UnspecifiedCompaction extends CompactionBound
 sealed class CreateOptionClause(val qb: CQLQuery) {}
 
 sealed class CompactionStrategy(override val qb: CQLQuery) extends CreateOptionClause(qb)
-
-
 
 sealed trait CompactionStrategies {
 
@@ -155,12 +157,34 @@ trait TablePropertyClauses extends CompactionStrategies with CompressionStrategi
   }
 
   object replicate_on_write extends TableProperty {
-    def eqs(clause: Boolean): CreateOptionClause = {
+    def apply(clause: Boolean): CreateOptionClause = {
       new CreateOptionClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
     }
+
+    def eqs = apply _
   }
 
+  object gc_grace_seconds extends TableProperty {
 
+    def eqs(clause: Seconds): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(clause.getSeconds.toString))
+    }
+
+    def eqs(duration: FiniteDuration): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.toSeconds.toString))
+    }
+
+    def eqs(duration: com.twitter.util.Duration): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.inSeconds.toString))
+    }
+
+  }
+
+  object bloom_filter_fp_chance extends TableProperty {
+    def eqs(clause: Double): CreateOptionClause = {
+      new CreateOptionClause(QueryBuilder.Create.bloom_filter_fp_chance(clause.toString))
+    }
+  }
 
 }
 

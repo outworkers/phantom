@@ -51,8 +51,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val
    * @return
    */
   def one()(implicit session: Session, ctx: ExecutionContext): Future[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
-    query.fetchEnumerator run PlayIteratee.head
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleFetch()
   }
 
   /**
@@ -62,8 +61,7 @@ class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val
    * @return
    */
   def get()(implicit session: Session): TwitterFuture[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb.limit(1), rowFunc)
-    query.fetchSpool().map(_.headOption)
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleCollect()
   }
 
   def allowFiltering() : SelectQuery[T, R] = {
@@ -113,8 +111,7 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
    * @return A Future wrapping an Optional result.
    */
   override def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb, fromRow)
-    query.fetchEnumerator run PlayIteratee.head
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleFetch()
   }
 
   /**
@@ -129,8 +126,7 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
    * @return A Future wrapping an Optional result.
    */
   override def get()(implicit session: Session): TwitterFuture[Option[R]] = {
-    val query = new SelectQuery[T, R](table, qb, fromRow)
-    query.fetchSpool().map(_.headOption)
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleCollect()
   }
 }
 
@@ -190,12 +186,7 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
    * @return A Future wrapping an Optional result.
    */
   override def one()(implicit session: Session, ctx: scala.concurrent.ExecutionContext): Future[Option[R]] = {
-    val query = new SelectCountWhere[T, R](table, qb, fromRow)
-    query.fetchEnumerator run PlayIteratee.head
-  }
-
-  override def limit(l: Int): SelectCountQuery[T, R] = {
-    new SelectCountQuery(table, qb.limit(l), fromRow)
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleFetch()
   }
 
   /**
@@ -206,12 +197,14 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
    *
    * In this case, the count is always less or equal to the limit.
    * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
    * @return A Future wrapping an Optional result.
    */
   override def get()(implicit session: Session): TwitterFuture[Option[R]] = {
-    val query = new SelectCountWhere[T, R](table, qb, fromRow)
-    query.fetchSpool().map(_.headOption)
+    new SelectQuery[T, R](table, qb.limit(1), rowFunc).singleCollect()
+  }
+
+  override def limit(l: Int): SelectCountQuery[T, R] = {
+    new SelectCountQuery(table, qb.limit(l), fromRow)
   }
 
   /**

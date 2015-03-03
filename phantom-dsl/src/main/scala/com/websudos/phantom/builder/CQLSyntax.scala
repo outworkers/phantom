@@ -84,6 +84,9 @@ object CQLSyntax {
     val dclocal_read_repair_chance = "dclocal_read_repair_chance"
     val caching = "caching"
     val replicate_on_write = "replicate_on_write"
+    val gc_grace_seconds = "gc_grace_seconds"
+    val populate_io_cache_on_flush = "populate_io_cache_on_flush"
+    val bloom_filter_fp_chance = "bloom_filter_fp_chance"
   }
 
   object CompactionOptions {

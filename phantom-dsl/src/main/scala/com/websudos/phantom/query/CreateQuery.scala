@@ -32,7 +32,7 @@ package com.websudos.phantom.query
 import scala.concurrent.{ Future => ScalaFuture }
 import com.datastax.driver.core.{ ResultSet, Session }
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.Implicits.context
+import com.websudos.phantom.dsl.context
 import com.twitter.util.{ Future => TwitterFuture }
 
 class CreateQuery[T <: CassandraTable[T, R], R](val table: T, query: String) extends CQLQuery[CreateQuery[T, R]] {
