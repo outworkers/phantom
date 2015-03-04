@@ -37,8 +37,6 @@ import com.twitter.util.StorageUnit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 
-
-
 sealed trait WithBound
 sealed trait WithChainned extends WithBound
 sealed trait WithUnchainned extends WithBound

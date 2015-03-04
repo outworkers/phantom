@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom.builder
 
-
-
 import com.datastax.driver.core.{ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.{ CQLQuery, ExecutableStatement }

@@ -506,9 +506,7 @@ You generally use these to store collections(small number of items), not big thi
 
 ```scala
 
-import java.util.{ Date, UUID }
-import org.joda.time.DateTime
-import com.datastax.driver.core.Row
+import java.util.Date
 import com.websudos.phantom.sample.ExampleModel
 import com.websudos.phantom.dsl._
 
@@ -528,7 +526,7 @@ sealed class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] {
   object props extends MapColumn[ExampleRecord, ExampleModel, String, String](this)
   object test extends OptionalIntColumn(this)
 
-  override def fromRow(row: Row): ExampleModel = {
+  def fromRow(row: Row): ExampleModel = {
     ExampleModel(id(row), name(row), props(row), timestamp(row), test(row));
   }
 }
@@ -656,6 +654,35 @@ ExampleRecord.update.where(_.id eqs myUuid).
 | ```and```                         | Chains several clauses, creating a ```WHERE ... AND``` query                          |
 
 
+<a id="query-api">Query API</a>
+===============================
+
+Phantom offers a dual query API based on Scala concurrency primitives, which makes it trivial to use phantom in most known frameworks, such as Play!, Spray,
+Akka, Scruffy, Lift, and many others. Integration is trivial and easily achievable, all you have to do is to use the Scala API methods and you get out of the
+ box integration.
+
+Phantom also offers another API based on Twitter proprietary concurrency primitives. This is due to the fact that internally we rely very heavily on the
+Twitter eco-system. It's why phantom also offers Finagle-Thrift support out of the box and integrates with Twitter Scrooge. It fits in perfectly with
+applications powered by Finagle RPC, Zipkin, Thrift, Ostrich, Aurora, Mesos, and the rest of the Twitter lot.
+
+
+| Method name                        | Description                                                                           | Scala result type |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ------------------|
+| ```future```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.| ```scala.concurrent.Future[ResultSet]``` |
+| ```execute```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.| ```com.twitter.util.Future[ResultSet]``` |
+| ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. Adds ```LIMIT 1``` to the CQL query. | ```scala.concurrent.Future[Option[Record]]``` |
+| ```get```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. Adds```LIMIT 1``` to the CQL query. |
+| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence```scala.concurrent.Future[Seq[T]]```of matches.|
+| ```collect```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence```com.twitter.util.Future[Seq[T]]```of matches.|
+| ```fetchSpool```                        | This is useful when you need the underlying Play based enumerator.                        | ```com.twitter
+.concurrent.Spool[T]]``` |
+| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        | ```play.api.libs
+.iteratee.Enumerator[T]``` |
+
+
+
+
+
 <a id="scala-futures">Scala Futures</a>
 =======================================
 <a href="#table-of-contents">back to top</a>
@@ -665,12 +692,6 @@ Phantom offers a dual asynchronous Future API for the completion of tasks, ```sc
 However, the concurrency primitives are all based on Google Guava executors and listening decorators. The future API is just for the convenience of users.
 The Scala Future methods are: 
 
-| Method name                        | Description                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------- |
-| ```future```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.|
-| ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. This will add a ```LIMIT 1``` to the CQL query. |
-| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence ```Seq[T]```of matches.|
-| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        |
 
 ```scala
 ExampleRecord.select.one() // When you only want to select one record
@@ -712,12 +733,6 @@ object ExampleRecord extends ExampleRecord {
 Phantom doesn't depend on Finagle for this, we are simply using ```"com.twitter" %% "util-core" % Version"``` to return a ```com.twitter.util.Future```. 
 However, the concurrency primitives are all based on Google Guava executors and listening decorators. The future API is just for the convenience of users.
 
-| Method name                        | Description                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------- |
-| ```execute```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.|
-| ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. This will add a ```LIMIT 1``` to the CQL query. |
-| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence ```Seq[T]```of matches.|
-| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        |
 
 ```scala
 ExampleRecord.select.get() // When you only want to select one record
@@ -873,7 +888,6 @@ Restrictions are enforced at compile time.
 
 ```scala
 
-import org.joda.time.DateTime
 import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
@@ -903,7 +917,6 @@ A table can have only one ```PartitionKey``` but several ```PrimaryKey``` defini
 
 ```scala
 
-import org.joda.time.DateTime
 import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
@@ -934,8 +947,6 @@ The CQL 3 schema for secondary indexes can also be auto-generated with ```Exampl
 
 ```scala
 
-import java.util.UUID
-import org.joda.time.DateTime
 import com.websudos.phantom.dsl._
 
 sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
@@ -970,7 +981,6 @@ Usage is trivial. If you want to use ```slice, take or drop``` with iterators, t
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import org.joda.time.DateTime
 import com.websudos.phantom.dsl._
 
 
