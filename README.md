@@ -45,8 +45,18 @@ to introduce behaviour such as preventing duplicate limits on queries using phan
 There are a few things which you will have to change in your code, but the work should take minutes, if anything:
 
 - ```import com.websudos.phantom.Implicits._``` has now been renamed to ```import com.websudos.phantom.dsl._```. The old import is still there but deprecated.
+
 - Play enumerators and Twitter ResultSpools have been removed from the default ```one```, ```get```, ```fetch``` and ```collect``` methods. You will have to
 explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators.
+
+- Phantom connectors now require an ```implicit com.websudos.phantom.connectors.KeySpace``` to be defined. Instead of using a plain string, you just have to
+use ```KeySpace.apply``` or simply: ```trait MyConnector extends Connector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
+replace the existing connector model and vastly improve the number of concurrent cluster connections required to perform operations on various keyspaces.
+Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without evening needing to switch as phantom will use the full CQL
+reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
+
+- A entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
+from within phantom and with the guarantee of autocompletion and type safety.
 
 
 
@@ -175,38 +185,22 @@ This feature is well in progress and you can expect to see it live roughly at th
 
 Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
 
-- A new QueryBuilder
 
-At present times, phantom is relying on the underlying Datastax Java Driver to serialise queries to CQL and while the querybuilder implementation is
-excellent for Java standards, it doesn't add any Scala features, since it was a Java only product. With a Scala based builder we plan to add more advanced
-behaviour, such as immutable builders and phantom types.
+- Spark integration
+
+Thanks to the recent partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with a Datastax backed integration. We won't be slow to
+follow up with a type safe Scala variant of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
+ storage through the simple high power DSL we've gotten you used to.
 
 - Prepared statements
 
 By popular demand, a feature long overdue in phantom. The main reason is the underlying Java driver and the increased difficulty of guaranteeing type safety
 with prepared statements along with a nice DSL to get things done. Not to say it's impossible, this will be released after the new query builder emerges.
 
+- A new QueryBuilder(available as of 1.6.0)
+
 - Zookeeper support(available as of 1.1.0).
 
-Since Cassandra cannot be loadbalanced effectively and Zookeeper is to date the de-facto standard for distributed synchronisation and service discovery, 
-we figured a pre-build integration based on ```finagle-zookeeper``` would be useful.
-
-We've even taken it one step further, writing some pretty cool tools for testing automations. With a simple trait you can run asynchronous tests against an embedded Cassandra instance and an 
-embedded Zookeeper instance. This process is completely transparent and you don't really need to do anything. No config or starting tools is necessary, 
-everything will start and stop automatically, configure itself automatically and run tests in parallel using async assertions, 
-all automatic and with our tools.
-
-We are also testing it in production in a massive enterprise to make sure it's reliable with a few dozen nodes in a cluster, 
-not just the local embedded flavour.
-
-
-- Spark integration
-
-Thanks to the recent partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with a Datastax backed integration. We won't be slow to 
-follow up with a type safe Scala variant of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
- storage through the simple high power DSL we've gotten you used to.
- 
-You can expect to see the spark integration live in a new ```phantom-spark``` module in the 1.3.0 or 1.4.0 version, planned sometime in September 2014.
 
 
 Commercial support
