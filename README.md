@@ -671,13 +671,12 @@ applications powered by Finagle RPC, Zipkin, Thrift, Ostrich, Aurora, Mesos, and
 | ```future```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.| ```scala.concurrent.Future[ResultSet]``` |
 | ```execute```                       | Executes a command and returns a ```ResultSet```. This is useful when you don't need to return a value.| ```com.twitter.util.Future[ResultSet]``` |
 | ```one```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. Adds ```LIMIT 1``` to the CQL query. | ```scala.concurrent.Future[Option[Record]]``` |
-| ```get```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value. Adds```LIMIT 1``` to the CQL query. |
-| ```fetch```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence```scala.concurrent.Future[Seq[T]]```of matches.|
-| ```collect```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you need a sequence```com.twitter.util.Future[Seq[T]]```of matches.|
-| ```fetchSpool```                        | This is useful when you need the underlying Play based enumerator.                        | ```com.twitter
-.concurrent.Spool[T]]``` |
-| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        | ```play.api.libs
-.iteratee.Enumerator[T]``` |
+| ```get```                          | Executes a command and returns an ```Option[T]```. Use this when you are selecting and you only need one value.
+Adds```LIMIT 1``` to the CQL query. | ```com.twitter.util.Future[Option[Record]]```.
+| ```fetch```                          | Returns a sequence of matches. Use when you expect more than 1 match. | ```scala.concurrent.Future[Seq[Record]]``` |.
+| ```collect```                          |  Returns a sequence of matches. Use when you expect more than 1 match. | ```com.twitter.util.Future[Seq[Record]``` |
+| ```fetchSpool```                        | This is useful when you need the underlying Play based enumerator.                        | ```com.twitter.concurrent.Spool[T]]``` |
+| ```fetchEnumerator```                        | This is useful when you need the underlying Play based enumerator.                        | ```play.api.libs.iteratee.Enumerator[T]``` |
 
 
 
