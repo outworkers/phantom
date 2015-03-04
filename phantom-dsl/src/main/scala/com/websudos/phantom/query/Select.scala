@@ -122,7 +122,6 @@ class SelectCountQuery[T <: CassandraTable[T, _], R](table: T, qb: Select, rowFu
    *
    * In this case, the count is always less or equal to the limit.
    * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
    * @return A Future wrapping an Optional result.
    */
   override def get()(implicit session: Session): TwitterFuture[Option[R]] = {

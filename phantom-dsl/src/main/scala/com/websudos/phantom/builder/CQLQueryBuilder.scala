@@ -29,9 +29,7 @@
  */
 package com.websudos.phantom.builder
 
-import com.datastax.driver.core.{ConsistencyLevel, Row}
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.{ CQLQuery, ExecutableStatement }
+import com.websudos.phantom.builder.query.CQLQuery
 
 sealed trait LimitBound
 trait Limited extends LimitBound
@@ -163,7 +161,7 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
 }
 
 
-object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
+private[builder] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
 
   val syntax = CQLSyntax
 
@@ -234,61 +232,4 @@ object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder 
       .forcePad.append(value.toString)
   }
 
-
 }
-
-
-class Query[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
-
-  final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): Query[Table, Record, Limited, Order, Status] = {
-    new Query(table, QueryBuilder.limit(qb, limit), row)
-  }
-
-  final def consistencyLevel(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): Query[Table, Record, Limit, Order, Specified] = {
-    new Query(table, QueryBuilder.consistencyLevel(qb, level.toString), row)
-  }
-}
-
-
-class WhereQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound,
-  Chain <: WhereBound
-](table: Table, override val qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-class InsertQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-class UpdateQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-class DeleteQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
-
-
-
-

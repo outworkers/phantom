@@ -35,3 +35,5 @@ object ConditionalClause {
    */
   class WhereCondition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
+
+case class OrderingClause(qb: CQLQuery)

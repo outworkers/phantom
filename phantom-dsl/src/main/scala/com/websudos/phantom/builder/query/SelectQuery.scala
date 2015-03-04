@@ -39,7 +39,6 @@ import com.twitter.util.{ Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 
-import com.websudos.phantom.builder.primitives.WhereClause
 import com.websudos.phantom.connectors.KeySpace
 
 class SelectQuery[
@@ -49,10 +48,30 @@ class SelectQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, qb: CQLQuery, rowFunc: Row => Record) extends WhereQuery[Table, Record, Limit, Order, Status, Chain](table, qb, rowFunc) with ExecutableQuery[Table,
+](table: Table, qb: CQLQuery, rowFunc: Row => Record) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, rowFunc) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
+
+  override protected[this] type QueryType[
+    T <: CassandraTable[T, _],
+    R,
+    L <: LimitBound,
+    O <: OrderBound,
+    S <: ConsistencyBound,
+    C <: WhereBound
+  ] = SelectQuery[T, R, L, O, S, C]
+
+  protected[this] def create[
+    T <: CassandraTable[T, _],
+    R,
+    L <: LimitBound,
+    O <: OrderBound,
+    S <: ConsistencyBound,
+    C <: WhereBound
+  ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C] = {
+    new SelectQuery[T, R, L, O, S, C](t, q, r)
+  }
 
   /**
    * Returns the first row from the select ignoring everything else
@@ -76,25 +95,5 @@ class SelectQuery[
     new SelectQuery[Table, Record, Limited, Order, Status, Chain](table, QueryBuilder.limit(qb, 1), rowFunc).singleCollect()
   }
 
-  /**
-   *
-   * @param conditionv A where clause condition.
-   * @param ev
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where(condition: Table => WhereClause.WhereCondition)(implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, WithChainned] = {
-    new SelectQuery(table, QueryBuilder.where(qb, condition(table).qb), fromRow)
-  }
 
-  /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-   * @param condition The Query condition to execute, based on index operators.
-   * @return A SelectCountWhere.
-   */
-  @implicitNotFound("You have to use an where clause before using an AND clause")
-  def and(condition: Table => WhereClause.WhereCondition): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new SelectQuery(table, QueryBuilder.and(qb, condition(table).qb), fromRow)
-  }
 }

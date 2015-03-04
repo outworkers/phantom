@@ -2,7 +2,7 @@ package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.{ConsistencyBound, OrderBound, LimitBound, Query}
+import com.websudos.phantom.builder.{ConsistencyBound, OrderBound, LimitBound}
 
 
 class AlterQuery[
@@ -11,4 +11,4 @@ class AlterQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
+](table: Table, val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {}
