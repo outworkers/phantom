@@ -1,4 +1,4 @@
-package com.websudos.phantom.builder.primitives
+package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.query.CQLQuery
 
@@ -37,3 +37,7 @@ object ConditionalClause {
 }
 
 case class OrderingClause(qb: CQLQuery)
+
+object UpdateClause {
+  class AssignmentCondition(override val qb: CQLQuery) extends QueryCondition(qb)
+}

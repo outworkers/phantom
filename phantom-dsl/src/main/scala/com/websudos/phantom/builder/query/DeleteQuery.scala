@@ -11,7 +11,7 @@ class DeleteQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, row) {
+](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, row) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],

@@ -9,6 +9,4 @@ class InsertQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery) extends ExecutableStatement {
-
-}
+](table: Table, val qb: CQLQuery) extends ExecutableStatement with Batchable {}

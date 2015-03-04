@@ -171,6 +171,30 @@ private[builder] object QueryBuilder extends CompactionQueryBuilder with Compres
     CQLQuery(qbs.map(_.queryString).mkString(", "))
   }
 
+
+  private[this] def counterSetter(column: String, op: String, value: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(column)
+      .forcePad.append(op)
+      .forcePad.append(value)
+  }
+
+  def increment(column: String, value: String): CQLQuery = {
+    counterSetter(column, CQLSyntax.Symbols.+, value)
+  }
+
+  def decrement(column: String, value: String): CQLQuery = {
+    counterSetter(column, CQLSyntax.Symbols.-, value)
+  }
+
+  def set(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(CQLSyntax.set).forcePad.append(clause)
+  }
+
+  def andSet(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(CQLSyntax.and).forcePad.append(clause)
+  }
+
   def using(qb: CQLQuery): CQLQuery = {
     qb.pad.append(syntax.using)
   }

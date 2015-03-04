@@ -3,7 +3,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.primitives.WhereClause
+import com.websudos.phantom.builder.ops.WhereClause
 
 import scala.annotation.implicitNotFound
 
@@ -67,3 +67,6 @@ abstract class Query[
     create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.and(qb, condition(table).qb), row)
   }
 }
+
+
+private[phantom] trait Batchable

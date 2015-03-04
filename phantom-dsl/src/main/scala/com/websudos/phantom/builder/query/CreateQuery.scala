@@ -109,11 +109,14 @@ sealed trait CompressionStrategies {
 
 sealed class CacheProperty(val qb: CQLQuery) {}
 
-object Cache {
-
+sealed trait CacheImplicits {
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
+
+}
+
+object Cache extends CacheImplicits {
 
   case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
   case object KeysOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly))
@@ -263,18 +266,18 @@ class CreateQuery[
   type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
-  def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")
-  def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
   }
 
 }
 
-private[phantom] trait CreateImplicits extends TablePropertyClauses {
+private[phantom] trait CreateImplicits extends TablePropertyClauses with CacheImplicits {
   implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
     new CreateQuery(root.table, root.default)
   }

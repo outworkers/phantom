@@ -53,11 +53,11 @@ class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
 class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
   extends CQLQuery[UpdateWhere[T, R]] with BatchableQuery[UpdateWhere[T, R]] {
 
-  def and[RR](condition: T => QueryCondition): UpdateWhere[T, R] = {
+  def and(condition: T => QueryCondition): UpdateWhere[T, R] = {
     new UpdateWhere[T, R](table, qb.and(condition(table).clause))
   }
 
-  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+  def onlyIf(condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
   }
 
@@ -74,7 +74,7 @@ class UpdateWhere[T <: CassandraTable[T, R], R](table: T, val qb: Update.Where)
 class AssignmentsQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Assignments)
   extends CQLQuery[AssignmentsQuery[T, R]] with BatchableQuery[AssignmentsQuery[T, R]] {
 
-  def onlyIf[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+  def onlyIf(condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.onlyIf(condition(table).clause))
   }
 
@@ -108,7 +108,7 @@ class AssignmentOptionQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upda
 class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
   extends CQLQuery[ConditionalUpdateQuery[T, R]] with BatchableQuery[ConditionalUpdateQuery[T, R]] {
 
-  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+  def and(condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
   }
 
@@ -121,7 +121,7 @@ class ConditionalUpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Upd
 class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update.Conditions)
   extends CQLQuery[ConditionalUpdateWhereQuery[T, R]] with BatchableQuery[ConditionalUpdateWhereQuery[T, R]] {
 
-  def and[RR](condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
+  def and(condition: T => SecondaryQueryCondition): ConditionalUpdateQuery[T, R] = {
     new ConditionalUpdateQuery[T, R](table, qb.and(condition(table).clause))
   }
 

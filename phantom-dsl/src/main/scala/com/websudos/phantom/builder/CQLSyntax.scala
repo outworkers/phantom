@@ -74,6 +74,8 @@ object CQLSyntax {
     val `<` = "<"
     val `>` = ">"
     val `=` = "="
+    val + = ""
+    val - = ""
   }
 
   object CreateOptions {
