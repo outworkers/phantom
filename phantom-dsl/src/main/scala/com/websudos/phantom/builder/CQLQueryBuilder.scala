@@ -155,6 +155,10 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
   def comment(qb: String): CQLQuery = {
     tableOption(CQLSyntax.CreateOptions.replicate_on_write, CQLQuery.empty.appendSingleQuote(qb))
   }
+
+  def caching(qb: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
+  }
 }
 
 

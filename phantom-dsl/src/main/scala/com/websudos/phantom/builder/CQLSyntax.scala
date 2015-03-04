@@ -87,6 +87,8 @@ object CQLSyntax {
     val gc_grace_seconds = "gc_grace_seconds"
     val populate_io_cache_on_flush = "populate_io_cache_on_flush"
     val bloom_filter_fp_chance = "bloom_filter_fp_chance"
+    val speculative_retry = "speculative_retry"
+    val percentile = "percentile"
   }
 
   object CompactionOptions {
@@ -101,9 +103,10 @@ object CQLSyntax {
     val bucket_low = "bucket_low"
   }
 
-
   object CompactionStrategies {
     val SizeTieredCompactionStrategy = "SizeTieredCompactionStrategy"
+    val DateTieredCompactionStrategy = "DateTieredCompactionStrategy"
+    val LeveledCompactionStrategy = "LeveledCompactionStrategy"
   }
 
   object CompressionOptions {
@@ -116,6 +119,12 @@ object CQLSyntax {
     val DeflateCompressor = "DeflateCompressor"
     val SnappyCompressor = "SnappyCompressor"
     val LZ4Compressor = "LZ4Compressor"
+  }
+
+  object CacheStrategies {
+    val None = "none"
+    val KeysOnly = "keys_only"
+
   }
 
   object StorageMechanisms {

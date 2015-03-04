@@ -18,7 +18,7 @@ Using phantom
 ### Scala 2.10 and 2.11 releases ###
 
 - Latest stable version: 1.5.0 (Maven Central)
-- Bleeding edge: 1.5.2 (Websudos Maven Repo)
+- Bleeding edge: 1.5.4 (Websudos Maven Repo)
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
 The latest development version is ```val phantomVersion = 1.5.2```. If the version's patch number is not "0", it's likely the release is internal only,
@@ -28,116 +28,109 @@ You will also be needing the default resolvers for Maven Central and the typesaf
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
 
 The Apache Cassandra version used for auto-embedding Cassandra during tests is: ```val cassandraVersion = "2.1.0-rc5"```. You will require JDK 7 to use 
-Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant. 
+Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant.
+
+
+### Breaking API changes in Phantom 1.6.0.
+
+The 1.6.0 release constitutes a major re-working of a wide number of internal phantom primitives, including but not limited to a brand new Scala flavoured
+QueryBuilder with full support for all CQL 3 features and even some of the more "esoteric" options available in CQL. We went above and beyond to try and
+offer a tool that's comprehensive and doesn't miss out on any feature of the protocol, no matter how small.
+
+Ditching the Java Driver was not a question of code quality in the driver, but rather an opportunity to exploit the more advanced Scala type system features
+to introduce behaviour such as preventing duplicate limits on queries using phantom types, to prevent even more invalid queries from compiling, and to switch
+ to a fully immutable QueryBuilder that's more in tone with idiomatic Scala, as opposed to the Java-esque mutable alternative already existing the java driver.
+
+
+There are a few things which you will have to change in your code, but the work should take minutes, if anything:
+
+- ```import com.websudos.phantom.Implicits._``` has now been renamed to ```import com.websudos.phantom.dsl._```. The old import is still there but deprecated.
+- Play enumerators and Twitter ResultSpools have been removed from the default ```one```, ```get```, ```fetch``` and ```collect``` methods. You will have to
+explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators.
+
+
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
 
-<ol>
-    <li><a href="#issues-and-questions">Issues and questions</a></li>
-    <li><a href="#adopters">Adopters</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#commercial-support">Commercial support</a></li>
-    <li><a href="#integrating-phantom-in-your-project">Using phantom in your project</a></li>
-    <li>
-        <p>phantom columns</p>
-        <ul>
-            <li><a href="#primitive-columns">Primitive columns</a></li>
-            <li><a href="#optional-primitive-columns">Optional primitive columns</a></li>
-            <li><a href="#collection-columns">Collection columns</a></li>
-            <li>
-                <p><a href="#indexing-columns">Indexing columns</a></p>
-                <ul>
-                    <li><a href="#partitionkey">PartitionKey</a></li>
-                    <li><a href="#primarykey">PrimaryKey</a></li>
-                    <li><a href="#secondaryindex">SecondaryIndex</a></li>
-                    <li><a href="#clusteringorder">ClusteringOrder</a></li>
-                </ul>
-            </li>
-            <li><a href="#thrift-columns">Thrift columns</a></li>
-        </ul>
-    </li>
-    <li><a href="#data-modeling-with-phantom">Data modeling with phantom</a></li>
-    <li>
-        <p><a href="#querying-with-phantom">Querying with phantom</a></p>
-        <ul>
-            <li><a href="#common-query-methods">Common query methods</a></li>
-            <li><a href="#select-queries">SELECT queries</a></li>
-            <li><a href="#partial-select-queries">Partial SELECT queries</a></li>
-            <li><a href="#where-and-operators">WHERE and AND clause operators</a></li>
-            <li><a href="#insert-queries">INSERT queries</a></li>
-            <li><a href="#update-queries">UPDATE queries</a></li>
-            <li><a href="#delete-queries">DELETE queries</a></li>
-            <li><a href="#truncate-queries">TRUNCATE queries</a></li>
-            <li><a href="#create-queries">CREATE queries</a></li>
-            <li><a href="#alter-queries">ALTER queries</a></li>
-        </ul>
-    </li>
-    <li>
-        <p>Basic query examples</p>
-        <ul>
-            <li><a href="#scala-futures">Using Scala Futures to query</a></li>
-            <li><a href="#scala-futures-examples">Examples with Scala Futures</a></li>
-            <li><a href="#twitter-futures">Using Twitter Futures to query</a></li>
-            <li><a href="#twitter-futures-examples">Examples with Twitter Futures</a></li>
-        </ul>
-    </li>
-    <li>
-        <p><a href="#collections-and-operators">Collection operators</a></p>
-        <ul>
-            <li><a href="#list-operators">List operators</a></li>
-            <li><a href="#set-operators">Set operators</a></li>
-            <li><a href="#map-operators">Map operators</a></li>
-        </ul>
-    </li>
-    <li><a href="#automated-schema-generation">Automated schema generation</a></li>
-    <li>
-        <p>Cassandra indexing</p>
-        <ul>
-            <li><a href="#partition-tokens">Using partition tokens</a></li>
-            <li><a href="#partition-token-operators">Partition token operators</a></li>
-            <li><a href="#compound-keys">Compound Keys</a></li>
-            <li><a href="#composite-keys">Composite Keys</a></li>
-            <li><a href="#time-series">Cassandra Time Series and ClusteringOrder</a></li>
-            <li><a href="#secondary-keys">Secondary Keys</a></li>
-        </ul>
-    </li>
-    <li><a href="#async-iterators">Asynchronous iterators</a></li>
-    <li>
-        <p>Batch statements</p>
-        <ul>
-            <li><a href="#logged-batch-statements">LOGGED Batch statements</a></li>
-            <li><a href="#counter-batch-statements">COUNTER Batch statements</li>
-            <li><a href="logged-batch-statements">UNLOGGED Batch statements</a></li>
-        </ul>
-    </li>
-    <li><a href="#thrift-integration">Thrift integration</a></li>
-    <li>
-      <p><a href="apache-zookeeper-integration">Apache ZooKeeper integration</a></p>
-      <ul>
-        <li><a href="#zookeeper-connectors">ZooKeeper connectors</a></li>
-        <li><a href="#the-simple-cassandra-connector">The simple Cassandra connector</a></li>
-        <li><a href="#the-default-zookeeper-connector-and-default-zookeeper-manager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</li>
-        <li><a href="#using-a-zookeeper-instance">Using a ZooKeeperInstance</a></li>
-      </ul>
-    </li>
-    <li>
-      <p><a href="#testing-utilities">Testing Utilities</a></p>
-      <ul>
-        <li><a href="#auto-embedded-cassandra">Auto-embeddeded Cassandra</a></li>
-        <li><a href="#using-the-default-suite">Using the default PhantomCassandraSuite to write tests</a></li>
-        <li><a href="#running-tests">Running the tests locally</a></li>
-      </ul>
-    </li>
-    <li><a href="#thrift-integration">Thrift integration</a></li>
-    <li>
-        <p><a href="#contributors">Contributing to phantom</a></p>
-        <ul>
-            <li><a href="#using-gitflow">Using GitFlow as a branching model</a></li>
-            <li><a href="#scala-style-guidelines">Scala style guidelines for contributions</a></li>
-        </ul>
-    <li><a href="#copyright">Copyright</a></li>
-</ol>
+
+
+- <a href="#issues-and-questions">Issues and questions</a>
+- <a href="#adopters">Adopters</a>
+- <a href="#roadmap">Roadmap</a>
+- <a href="#commercial-support">Commercial support</a>
+- <a href="#integrating-phantom-in-your-project">Using phantom in your project</a>
+
+- Phantom columns
+  - <a href="#primitive-columns">Primitive columns</a>
+  - <a href="#optional-primitive-columns">Optional primitive columns</a>
+  - <a href="#collection-columns">Collection columns</a>
+  - <a href="#collections-and-operators">Collection operators</a>
+    - <a href="#list-operators">List operators</a>
+    - <a href="#set-operators">Set operators</a>
+    - <a href="#map-operators">Map operators</a>
+    - <a href="#automated-schema-generation">Automated schema generation</a>
+
+  - <a href="#indexing-columns">Indexing columns</a>
+    - <a href="#partitionkey">PartitionKey</a>
+    - <a href="#primarykey">PrimaryKey</a>
+    - <a href="#secondaryindex">SecondaryIndex</a>
+    - <a href="#clusteringorder">ClusteringOrder</a>
+  - <a href="#thrift-columns">Thrift columns</a>
+
+- <a href="#data-modeling-with-phantom">Data modeling with phantom</a>
+
+- <a href="#querying-with-phantom">Querying with phantom</a>
+  - <a href="#common-query-methods">Common query methods</a>
+  - <a href="#select-queries">SELECT queries</a>
+  - <a href="#partial-select-queries">Partial SELECT queries</a>
+  - <a href="#where-and-operators">WHERE and AND clause operators</a>
+  - <a href="#create-queries">CREATE queries</a>
+  - <a href="#insert-queries">INSERT queries</a>
+  - <a href="#update-queries">UPDATE queries</a>
+  - <a href="#delete-queries">DELETE queries</a>
+  - <a href="#truncate-queries">TRUNCATE queries</a>
+  - <a href="#alter-queries">ALTER queries</a>
+
+- Basic query examples
+  - <a href="#query-api">Query API</a>
+  - <a href="#scala-futures">Using Scala Futures to query</a>
+  - <a href="#scala-futures-examples">Examples with Scala Futures</a>
+  - <a href="#twitter-futures">Using Twitter Futures to query</a>
+  - <a href="#twitter-futures-examples">Examples with Twitter Futures</a>
+
+- Cassandra indexing
+  - <a href="#partition-tokens">Using partition tokens</a>
+  - <a href="#partition-token-operators">Partition token operators</a>
+  - <a href="#compound-keys">Compound Keys</a>
+  - <a href="#composite-keys">Composite Keys</a>
+  - <a href="#time-series">Cassandra Time Series and ClusteringOrder</a>
+  - <a href="#secondary-keys">Secondary Keys</a>
+
+- <a href="#async-iterators">Asynchronous iterators</a>
+- Batch statements
+  - <a href="#logged-batch-statements">LOGGED Batch statements</a>
+  - <a href="#counter-batch-statements">COUNTER Batch statements</a>
+  - <a href="logged-batch-statements">UNLOGGED Batch statements</a>
+
+- <a href="#thrift-integration">Thrift integration</a>
+- <a href="apache-zookeeper-integration">Apache ZooKeeper integration</a>
+  - <a href="#zookeeper-connectors">ZooKeeper connectors</a>
+  - <a href="#the-simple-cassandra-connector">The simple Cassandra connector</a>
+  - <a href="#the-default-zookeeper-connector-and-default-zookeeper-manager">The DefaultZooKeeperConnector and DefaultZooKeeperManager</a>
+  - <a href="#using-a-zookeeper-instance">Using a ```com.websudos.util.zookeeper.ZooKeeperInstance```</a>
+
+- <a href="#testing-utilities">The phantom testkit</a>
+  - <a href="#auto-embedded-cassandra">Auto-embeddeded Cassandra</a>
+  - <a href="#using-the-default-suite">Using the default PhantomCassandraSuite to write tests</a>
+  - <a href="#running-tests">Running the tests locally</a>
+    - <a href="#scalatest-support">ScalaTest support</a>
+    - <a href="#specs2-support">Specs2 support</a>
+
+- <a href="#contributors">Contributing to phantom</a>
+- <a href="#using-gitflow">Using GitFlow as a branching model</a>
+- <a href="#scala-style-guidelines">Scala style guidelines for contributions</a>
+- <a href="#copyright">Copyright</a>
 
 
 <a id="issues-and-questions">Issues and questions</a>

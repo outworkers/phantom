@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.builder.query
 
-import org.joda.time.Seconds
-
 import scala.annotation.implicitNotFound
+import scala.concurrent.duration.FiniteDuration
+import org.joda.time.Seconds
 
 import com.twitter.util.StorageUnit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 
-import scala.concurrent.duration.FiniteDuration
 
 
 sealed trait WithBound
@@ -49,9 +48,9 @@ sealed trait SpecifiedCompaction extends CompactionBound
 sealed trait UnspecifiedCompaction extends CompactionBound
 
 
-sealed class CreateOptionClause(val qb: CQLQuery) {}
+sealed class TablePropertyClause(val qb: CQLQuery) {}
 
-sealed class CompactionStrategy(override val qb: CQLQuery) extends CreateOptionClause(qb)
+sealed abstract class CompactionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb)
 
 sealed trait CompactionStrategies {
 
@@ -81,11 +80,11 @@ sealed trait CompactionStrategies {
   }
 
   case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
+  case object LeveledCompactionStrategy extends CompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
+  case object DateTieredCompactionStrategy extends CompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.DateTieredCompactionStrategy))
 }
 
-
-
-sealed class CompressionStrategy(override val qb: CQLQuery) extends CreateOptionClause(qb) {
+sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
 
   def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
     new CompressionStrategy(QueryBuilder.chunk_length_kb(qb, unit.toHuman()))
@@ -110,6 +109,19 @@ sealed trait CompressionStrategies {
   case object DeflateCompressor extends CompressionStrategy(rootStrategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
 }
 
+sealed class CacheProperty(val qb: CQLQuery) {}
+
+object Cache {
+
+  implicit class RichNumber(val percent: Int) extends AnyVal {
+    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+  }
+
+  case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
+  case object KeysOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly))
+}
+
+
 /**
  * A root implementation trait of a CQL table option.
  * These are implemented with respect to the CQL 3.0 reference available here:
@@ -121,44 +133,73 @@ sealed trait TableProperty
  * A collection of available table property clauses with all the default objects available.
  * This serves as a helper trait for [[com.websudos.phantom.dsl._]] and brings all the relevant options into scope.
  */
-trait TablePropertyClauses extends CompactionStrategies with CompressionStrategies {
+sealed trait TablePropertyClauses extends CompactionStrategies with CompressionStrategies {
   object Storage {
-    case object CompactStorage extends CreateOptionClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
+    case object CompactStorage extends TablePropertyClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
   }
 
+  /**
+   * Helper object used to specify the compression strategy for a table.
+   * According to the Cassandra specification, the available strategies are:
+   *
+   * <ul>
+   *   <li>SnappyCompressor</li>
+   *   <li>LZ4Compressor</li>
+   *   <li>DeflateCompressor</li>
+   * </ul>
+   *
+   * A simple way to define a strategy is by using the {{eqs}} method.
+   *
+   * {{{
+   *  import com.websudos.phantom.dsl._
+   *
+   *  SomeTable.create.with(compression eqs SnappyCompressor)
+   *
+   * }}}
+   *
+   * Using a compression strategy also allows using the API methods of controlling compressor behaviour:
+   *
+   * {{{
+   *   import com.websudos.phantom.dsl._
+   *   import com.twitter.conversions.storage._
+   *
+   *   SomeTable.create.with(compression eqs SnappyCompressor.chunk_length_kb(50.kilobytes))
+   *
+   * }}}
+   */
   object compression extends TableProperty {
-    def eqs(clause: CompressionStrategy): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.compression(clause.qb))
+    def eqs(clause: CompressionStrategy): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.compression(clause.qb))
     }
   }
 
   object compaction extends TableProperty {
-    def eqs(clause: CompactionStrategy): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.compaction(clause.qb))
+    def eqs(clause: CompactionStrategy): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.compaction(clause.qb))
     }
   }
 
   object comment extends TableProperty {
-    def eqs(clause: String): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.comment(clause))
+    def eqs(clause: String): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.comment(clause))
     }
   }
 
   object read_repair_chance extends TableProperty {
-    def eqs(clause: Double): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.read_repair_chance(clause.toString))
+    def eqs(clause: Double): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.read_repair_chance(clause.toString))
     }
   }
 
   object dclocal_read_repair_chance extends TableProperty {
-    def eqs(clause: Double): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
+    def eqs(clause: Double): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
     }
   }
 
   object replicate_on_write extends TableProperty {
-    def apply(clause: Boolean): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
+    def apply(clause: Boolean): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
     }
 
     def eqs = apply _
@@ -166,23 +207,28 @@ trait TablePropertyClauses extends CompactionStrategies with CompressionStrategi
 
   object gc_grace_seconds extends TableProperty {
 
-    def eqs(clause: Seconds): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(clause.getSeconds.toString))
+    def eqs(clause: Seconds): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(clause.getSeconds.toString))
     }
 
-    def eqs(duration: FiniteDuration): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.toSeconds.toString))
+    def eqs(duration: FiniteDuration): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.toSeconds.toString))
     }
 
-    def eqs(duration: com.twitter.util.Duration): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.inSeconds.toString))
+    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.inSeconds.toString))
     }
-
   }
 
   object bloom_filter_fp_chance extends TableProperty {
-    def eqs(clause: Double): CreateOptionClause = {
-      new CreateOptionClause(QueryBuilder.Create.bloom_filter_fp_chance(clause.toString))
+    def eqs(clause: Double): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.bloom_filter_fp_chance(clause.toString))
+    }
+  }
+  
+  object cache extends TableProperty {
+    def eqs(strategy: CacheProperty): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.caching(strategy.qb.queryString))
     }
   }
 
@@ -219,12 +265,12 @@ class CreateQuery[
   type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
-  def `with`(clause: CreateOptionClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")
-  def and(clause: CreateOptionClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
+  def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
   }
 
