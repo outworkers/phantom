@@ -47,7 +47,10 @@ There are a few things which you will have to change in your code, but the work 
 - ```import com.websudos.phantom.Implicits._``` has now been renamed to ```import com.websudos.phantom.dsl._```. The old import is still there but deprecated.
 
 - Play enumerators and Twitter ResultSpools have been removed from the default ```one```, ```get```, ```fetch``` and ```collect``` methods. You will have to
-explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators.
+explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators. This will offer everyone a signifact
+performance improvement over query performance. Async iterators needed a lot of expensive "magic" to work properly, but you don't always need to fold over
+100k records. That behaviour was implemented both as means of showing off as well as doing all in one loads like the Spark - Cassandra connector performs. E.g
+ dumping C* data into HDFS or whatever backup system. A big 60 - 70% gain should be expected.
 
 - Phantom connectors now require an ```implicit com.websudos.phantom.connectors.KeySpace``` to be defined. Instead of using a plain string, you just have to
 use ```KeySpace.apply``` or simply: ```trait MyConnector extends Connector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
@@ -56,7 +59,7 @@ Insteaed of the 1 per keyspace model, we can now successfully re-use the same se
 reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
 
 - A entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
-from within phantom and with the guarantee of autocompletion and type safety.
+from within phantom and with the guarantee of auto-completion and type safety.
 
 
 
