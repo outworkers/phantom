@@ -30,6 +30,7 @@
 package com.websudos.phantom.builder.query
 
 
+import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
 
 import com.datastax.driver.core.{Row, Session}
@@ -37,6 +38,8 @@ import com.twitter.util.{ Future => TwitterFuture}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+
+import com.websudos.phantom.builder.primitives.WhereClause
 import com.websudos.phantom.connectors.KeySpace
 
 class SelectQuery[
@@ -44,8 +47,9 @@ class SelectQuery[
   Record,
   Limit <: LimitBound,
   Order <: OrderBound,
-  Status <: ConsistencyBound
-](table: Table, qb: CQLQuery, rowFunc: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, rowFunc) with ExecutableQuery[Table,
+  Status <: ConsistencyBound,
+  Chain <: WhereBound
+](table: Table, qb: CQLQuery, rowFunc: Row => Record) extends WhereQuery[Table, Record, Limit, Order, Status, Chain](table, qb, rowFunc) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
@@ -56,8 +60,9 @@ class SelectQuery[
    * @param ctx The Execution Context.
    * @return
    */
+  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def one()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[Record]] = {
-    new SelectQuery[Table, Record, Limited, Order, Status](table, QueryBuilder.limit(qb, 1), rowFunc).singleFetch()
+    new SelectQuery[Table, Record, Limited, Order, Status, Chain](table, QueryBuilder.limit(qb, 1), rowFunc).singleFetch()
   }
 
   /**
@@ -66,7 +71,30 @@ class SelectQuery[
    * @param session The Cassandra session in use.
    * @return
    */
+  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): TwitterFuture[Option[Record]] = {
-    new SelectQuery[Table, Record, Limited, Order, Status](table, QueryBuilder.limit(qb, 1), rowFunc).singleCollect()
+    new SelectQuery[Table, Record, Limited, Order, Status, Chain](table, QueryBuilder.limit(qb, 1), rowFunc).singleCollect()
+  }
+
+  /**
+   *
+   * @param conditionv A where clause condition.
+   * @param ev
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def where(condition: Table => WhereClause.WhereCondition)(implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, WithChainned] = {
+    new SelectQuery(table, QueryBuilder.where(qb, condition(table).qb), fromRow)
+  }
+
+  /**
+   * And clauses require overriding for count queries for the same purpose.
+   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
+   * @param condition The Query condition to execute, based on index operators.
+   * @return A SelectCountWhere.
+   */
+  @implicitNotFound("You have to use an where clause before using an AND clause")
+  def and(condition: Table => WhereClause.WhereCondition): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new SelectQuery(table, QueryBuilder.and(qb, condition(table).qb), fromRow)
   }
 }

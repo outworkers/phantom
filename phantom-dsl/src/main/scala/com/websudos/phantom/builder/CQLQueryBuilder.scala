@@ -45,6 +45,9 @@ sealed trait ConsistencyBound
 trait Specified extends ConsistencyBound
 trait Unspecified extends ConsistencyBound
 
+sealed trait WhereBound
+trait Chainned extends WhereBound
+trait Unchainned extends WhereBound
 
 trait CQLOperator {
   def name: String
@@ -251,6 +254,16 @@ class Query[
     new Query(table, QueryBuilder.consistencyLevel(qb, level.toString), row)
   }
 }
+
+
+class WhereQuery[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Limit <: LimitBound,
+  Order <: OrderBound,
+  Status <: ConsistencyBound,
+  Chain <: WhereBound
+](table: Table, override val qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status](table, qb, row)
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],

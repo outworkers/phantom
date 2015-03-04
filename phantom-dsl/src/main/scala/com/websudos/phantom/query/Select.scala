@@ -206,16 +206,5 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
   override def limit(l: Int): SelectCountQuery[T, R] = {
     new SelectCountQuery(table, qb.limit(l), fromRow)
   }
-
-  /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-   * @param condition The Query condition to execute, based on index operators.
-   * @tparam RR The type of the underlying abstract column.
-   * @return A SelectCountWhere.
-   */
-  override def and[RR](condition: T => QueryCondition): SelectCountWhere[T, R] = {
-    new SelectCountWhere[T, R](table, qb.and(condition(table).clause), fromRow)
-  }
 }
 
