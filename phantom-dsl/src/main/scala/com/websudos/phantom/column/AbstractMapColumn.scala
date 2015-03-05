@@ -40,6 +40,8 @@ abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record,
 
   def keyCls: Class[_]
 
+  def valueCls: Class[_]
+
   def keyToCType(v: K): AnyRef
 
   def keyFromCType(c: AnyRef): K

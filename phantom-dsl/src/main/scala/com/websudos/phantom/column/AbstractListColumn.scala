@@ -40,7 +40,7 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
 
   def valuesToCType(values: Iterable[RR]): JavaList[String] = values.map(valueToCType).toList.asJava
 
-  override def toCType(values: List[RR]): JavaList[String] = valuesToCType(values)
+  override def toCType(values: List[RR]): String = values.map(valueToCType).toList.mkString
 
   override def apply(r: Row): List[RR] = {
     optional(r).getOrElse(Nil)
