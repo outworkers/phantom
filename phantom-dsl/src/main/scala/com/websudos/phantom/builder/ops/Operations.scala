@@ -1,21 +1,6 @@
 package com.websudos.phantom.builder.ops
 
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.column._
-
-import scala.annotation.implicitNotFound
-import scala.runtime._
-import scala.collection.{ mutable, immutable, generic }
-import mutable.WrappedArray
-import immutable.WrappedString
-import generic.CanBuildFrom
-
-import com.datastax.driver.core.Row
-import com.websudos.phantom.keys.{ClusteringOrder, Index, PartitionKey, PrimaryKey}
-import com.websudos.phantom.query.{QueryCondition, QueryOrdering, SecondaryQueryCondition}
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
-
-
+/*
 sealed class OrderingColumn[T](col: AbstractColumn[T]) {
   def asc: QueryOrdering = {
     QueryOrdering(QueryBuilder.asc(col.name))
@@ -163,3 +148,4 @@ private[phantom] trait Operations extends ModifyImplicits
   with OrderingOperators
   with IndexRestrictions
   with ConditionalOperators
+*/

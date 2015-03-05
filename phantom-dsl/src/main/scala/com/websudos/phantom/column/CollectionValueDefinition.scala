@@ -31,7 +31,7 @@ package com.websudos.phantom.column
 
 trait CollectionValueDefinition[RR] {
 
-  def valueCls: Class[_]
-  def valueToCType(v: RR): AnyRef
+  def cls: Class[_]
+  def valueToCType(v: RR): String
   def valueFromCType(c: AnyRef): RR
 }

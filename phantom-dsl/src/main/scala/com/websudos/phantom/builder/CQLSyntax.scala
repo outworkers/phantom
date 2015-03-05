@@ -43,6 +43,7 @@ object CQLSyntax {
   val eqs = "="
   val comma = ","
   val `)` = ")"
+  val token = "token"
 
 
   val consistency = "consistency"
@@ -60,6 +61,10 @@ object CQLSyntax {
   object Symbols {
     val `{` = "{"
     val `}` = "}"
+    val `[` = "["
+    val `]` = "]"
+
+
     val `:` = ":"
     val `(` = "("
     val `)` = ")"

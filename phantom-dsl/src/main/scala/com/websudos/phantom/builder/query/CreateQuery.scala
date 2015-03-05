@@ -109,14 +109,7 @@ sealed trait CompressionStrategies {
 
 sealed class CacheProperty(val qb: CQLQuery) {}
 
-sealed trait CacheImplicits {
-  implicit class RichNumber(val percent: Int) extends AnyVal {
-    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
-  }
-
-}
-
-object Cache extends CacheImplicits {
+object Cache {
 
   case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
   case object KeysOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly))
@@ -277,7 +270,7 @@ class CreateQuery[
 
 }
 
-private[phantom] trait CreateImplicits extends TablePropertyClauses with CacheImplicits {
+private[phantom] trait CreateImplicits extends TablePropertyClauses {
   implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
     new CreateQuery(root.table, root.default)
   }

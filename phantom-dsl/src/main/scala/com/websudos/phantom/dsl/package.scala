@@ -5,14 +5,14 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
-import com.websudos.phantom.builder.ops.{WhereClause, UpdateClause}
 import com.websudos.phantom.builder.ops.UpdateClause.AssignmentCondition
+import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
+import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.CreateImplicits
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits}
+import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
+import com.websudos.phantom.keys.Key
 
 package object dsl extends Operations with CreateImplicits with DefaultPrimitives {
 
@@ -114,7 +114,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
    * @param col The column to cast to an IndexedColumn.
    * @tparam RR The type of the value the column holds.
    */
-  implicit class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) extends AnyVal {
+  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) {
 
     private[this] val p = implicitly[Primitive[RR]]
 
@@ -157,9 +157,9 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
     new CassandraPrimitive[T#Value] {
 
-      override def cls: Class[_] = classOf[Enumeration]
-
       override def cassandraType: String = "text"
+
+      def cls: Class[_] = classOf[Enumeration]
 
       override def fromRow(row: Row, name: String): Option[T#Value] = {
         if (row.isNull(name)) {
@@ -172,35 +172,61 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
     }
   }
 
-  /*
-  implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
 
-    def ltToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+  implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
+
+    def ltToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.lt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+        )
+      )
     }
 
-    def lteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def lteToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.lte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+        )
+      )
     }
 
-    def gtToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def gtToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.gt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+        )
+      )
     }
 
-    def gteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def gteToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.gte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+        )
+      )
     }
 
-    def eqsToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def eqsToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.eqs(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+        )
+      )
     }
   }
-*/
+
+
+
+  implicit class RichNumber(val percent: Int) extends AnyVal {
+    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+    def `%`: CQLQuery= CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+  }
 
   implicit lazy val context = Manager.scalaExecutor
 
@@ -219,10 +245,12 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
     final def decrement = -= _
   }
 
-  implicit class UpdateOperations[RR](val col: AbstractColumn[RR]) extends AnyVal {
+  implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
+
     final def setTo(value: RR): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.set(col.name, implicitly[CassandraPrimitive[RR]].toCType(value)))
+      new AssignmentCondition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
+
   }
 
 

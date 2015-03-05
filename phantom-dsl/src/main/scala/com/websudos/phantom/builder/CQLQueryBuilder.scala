@@ -56,24 +56,40 @@ private[builder] object Utils {
   def join(list: TraversableOnce[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
   }
+
+  def collection(list: TraversableOnce[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`[`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`]`)
+  }
 }
 
-
-sealed trait IndexModifiers {
-
-  private[this] def modifier(column: String, op: String, value: String): CQLQuery = {
+sealed trait BaseModifiers {
+  protected[this] def modifier(column: String, op: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad.append(op).forcePad.append(value)
   }
 
-  private[this] def modifier(column: String, op: String, value: CQLQuery): CQLQuery = {
+  protected[this] def modifier(column: String, op: String, value: CQLQuery): CQLQuery = {
     modifier(column, op, value.queryString)
   }
+
+  protected[this] def collectionModifier(left: String, op: String, right: CQLQuery): CQLQuery = {
+    CQLQuery(left).forcePad.append(op).forcePad.append(right)
+  }
+
+  protected[this] def collectionModifier(left: String, op: String, right: String): CQLQuery = {
+    CQLQuery(left).forcePad.append(op).forcePad.append(right)
+  }
+}
+
+
+sealed trait IndexModifiers extends BaseModifiers {
 
   def eqs(column: String, value: String): CQLQuery = {
     modifier(column, CQLSyntax.Operators.eqs, value)
   }
 
-  def ==(column: String, value: String) = eqs _
+  def ==(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.eqs, value)
+  }
 
   def lt(column: String, value: String): CQLQuery = {
     modifier(column, CQLSyntax.Operators.lt, value)
@@ -97,6 +113,27 @@ sealed trait IndexModifiers {
 
   def in(column: String, values: List[String]): CQLQuery = {
     modifier(column, CQLSyntax.Operators.in, Utils.join(values))
+  }
+
+  def fcall(name: String, params: String*): CQLQuery = {
+    CQLQuery(name).append(Utils.join(params))
+  }
+
+  def token(name: String): String = {
+    CQLQuery(CQLSyntax.token).wrap(name).queryString
+  }
+
+}
+
+
+sealed trait CollectionModifiers extends BaseModifiers {
+
+  def prepend(column: String, values: String*): CQLQuery = {
+    collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.+, column)
+  }
+
+  def append(column: String, values: String*): CQLQuery = {
+    collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.+, column)
   }
 
 }
@@ -211,7 +248,7 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
 }
 
 
-private[phantom] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder with IndexModifiers {
+private[phantom] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder with IndexModifiers with CollectionModifiers {
 
   val syntax = CQLSyntax
 
@@ -310,5 +347,4 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
     qb.pad.append(syntax.limit)
       .forcePad.append(value.toString)
   }
-
 }
