@@ -56,6 +56,14 @@ object phantom extends Build {
         </developers>
   )
 
+  def liftVersion(scalaVersion: String): String = {
+    scalaVersion match {
+      case "2.10.4" => "3.0-M1"
+      case _ => "3.0-M2"
+    }
+  }
+
+
   val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
@@ -140,15 +148,16 @@ object phantom extends Build {
     ),
     libraryDependencies ++= Seq(
       "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
+      "com.chuusai"                  %% "shapeless"                         % "2.1.0",
       "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
       "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
       "joda-time"                    %  "joda-time"                         % "2.3",
       "org.joda"                     %  "joda-convert"                      % "1.6",
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-      "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                  % "test, provided",
-      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided",
-      "net.liftweb"                  %% "lift-json"                         % "2.6-M4"                  % "test, provided",
-      "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion         % "test, provided"
+      "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
+      "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
+      "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
     )
   ).dependsOn(
     phantomTestKit % "test, provided",

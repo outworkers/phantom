@@ -4,8 +4,6 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.ops.UpdateClause
-import UpdateClause.AssignmentCondition
-import com.websudos.phantom.column.CounterColumn
 
 class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -42,34 +40,7 @@ class UpdateQuery[
     new UpdateQuery(table, QueryBuilder.set(qb, clause(table).qb), row)
   }
 
-}
-
-private[phantom] trait UpdateImplicits {
-  implicit class AssignmentsQuery[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound
-  ](val query: UpdateQuery[T, R, L, O, S, C]) extends AnyVal {
+  final def and(clause: Table => UpdateClause.AssignmentCondition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb), row)
   }
-
-  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
-    final def +=(value: Int = 1): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.increment(col.name, value.toString))
-    }
-
-    final def -=(value: Int = 1): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.decrement(col.name, value.toString))
-    }
-
-    final def increment = += _
-
-    final def decrement = -= _
-
-
-  }
-
-
 }

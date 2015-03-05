@@ -4,13 +4,17 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
+import com.websudos.phantom.builder.ops.{WhereClause, UpdateClause}
+import com.websudos.phantom.builder.ops.UpdateClause.AssignmentCondition
+import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.CreateImplicits
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.query.QueryCondition
 
-package object dsl extends Operations with CreateImplicits {
+package object dsl extends Operations with CreateImplicits with DefaultPrimitives {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -102,6 +106,54 @@ package object dsl extends Operations with CreateImplicits {
     val SERIAL = CLevel.SERIAL
   }
 
+  /**
+   * A class enforcing columns used in where clauses to be indexed.
+   * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
+   * This enforces a Cassandra limitation at compile time.
+   * It prevents a user from querying and using where operators on a column without any index.
+   * @param col The column to cast to an IndexedColumn.
+   * @tparam RR The type of the value the column holds.
+   */
+  implicit class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) extends AnyVal {
+
+    private[this] val p = implicitly[Primitive[RR]]
+
+    def eqs(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.eqs(col.name, p.asCql(value)))
+    }
+
+    def ==(value: RR) = eqs _
+
+    def lt(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.lt(col.name, p.asCql(value)))
+    }
+
+    def < = lt _
+
+    def lte(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
+    }
+
+    def <= = lte _
+
+    def gt(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.gt(col.name, p.asCql(value)))
+    }
+
+    def > = gt _
+
+    def gte(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.gte(col.name, p.asCql(value)))
+    }
+
+    def >= = gte _
+
+    def in(values: List[RR]): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.in(col.name, values.map(p.asCql)))
+    }
+  }
+
+
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
     new CassandraPrimitive[T#Value] {
 
@@ -120,6 +172,7 @@ package object dsl extends Operations with CreateImplicits {
     }
   }
 
+  /*
   implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
 
     def ltToken (value: T): QueryCondition = {
@@ -147,6 +200,32 @@ package object dsl extends Operations with CreateImplicits {
         QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
     }
   }
+*/
 
   implicit lazy val context = Manager.scalaExecutor
+
+
+  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
+    final def +=(value: Int = 1): UpdateClause.AssignmentCondition = {
+      new AssignmentCondition(QueryBuilder.increment(col.name, value.toString))
+    }
+
+    final def -=(value: Int = 1): UpdateClause.AssignmentCondition = {
+      new AssignmentCondition(QueryBuilder.decrement(col.name, value.toString))
+    }
+
+    final def increment = += _
+
+    final def decrement = -= _
+  }
+
+  implicit class UpdateOperations[RR](val col: AbstractColumn[RR]) extends AnyVal {
+    final def setTo(value: RR): UpdateClause.AssignmentCondition = {
+      new AssignmentCondition(QueryBuilder.set(col.name, implicitly[CassandraPrimitive[RR]].toCType(value)))
+    }
+  }
+
+
+
+
 }

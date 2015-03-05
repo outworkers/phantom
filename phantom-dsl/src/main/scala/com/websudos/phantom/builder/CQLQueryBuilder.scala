@@ -52,6 +52,56 @@ trait CQLOperator {
 }
 
 
+private[builder] object Utils {
+  def join(list: TraversableOnce[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
+  }
+}
+
+
+sealed trait IndexModifiers {
+
+  private[this] def modifier(column: String, op: String, value: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(op).forcePad.append(value)
+  }
+
+  private[this] def modifier(column: String, op: String, value: CQLQuery): CQLQuery = {
+    modifier(column, op, value.queryString)
+  }
+
+  def eqs(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.eqs, value)
+  }
+
+  def ==(column: String, value: String) = eqs _
+
+  def lt(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.lt, value)
+  }
+
+  def lte(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.lte, value)
+  }
+
+  def gt(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.gt, value)
+  }
+
+  def gte(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.gte, value)
+  }
+
+  def in(column: String, values: String*): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.in, Utils.join(values))
+  }
+
+  def in(column: String, values: List[String]): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.in, Utils.join(values))
+  }
+
+}
+
+
 sealed trait CreateOptionsBuilder {
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     qb.append(CQLSyntax.comma)
@@ -161,7 +211,7 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
 }
 
 
-private[builder] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
+private[phantom] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder with IndexModifiers {
 
   val syntax = CQLSyntax
 
@@ -170,7 +220,6 @@ private[builder] object QueryBuilder extends CompactionQueryBuilder with Compres
   def join(qbs: CQLQuery*): CQLQuery = {
     CQLQuery(qbs.map(_.queryString).mkString(", "))
   }
-
 
   private[this] def counterSetter(column: String, op: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`)
@@ -185,6 +234,12 @@ private[builder] object QueryBuilder extends CompactionQueryBuilder with Compres
 
   def decrement(column: String, value: String): CQLQuery = {
     counterSetter(column, CQLSyntax.Symbols.-, value)
+  }
+
+  def set(column: String, value: String): CQLQuery = {
+    CQLQuery(column)
+      .forcePad.append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(value)
   }
 
   def set(qb: CQLQuery, clause: CQLQuery): CQLQuery = {

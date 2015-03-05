@@ -43,14 +43,7 @@ object CQLSyntax {
   val eqs = "="
   val comma = ","
   val `)` = ")"
-  val asc = "ASC"
-  val desc = "DESC"
 
-  val between = "BETWEEN"
-  val not = "NOT"
-  val notBetween = "NOT BETWEEN"
-  val exists = "EXISTS"
-  val notExists = "NOT EXISTS"
 
   val consistency = "consistency"
 
@@ -76,6 +69,23 @@ object CQLSyntax {
     val `=` = "="
     val + = ""
     val - = ""
+  }
+
+  object Ordering {
+    val asc = "ASC"
+    val desc = "DESC"
+  }
+
+  object Operators {
+    val lt = "<"
+    val lte = "<="
+
+    val gt = ">"
+    val gte = ">="
+
+    val in = "in"
+    val eqs = "="
+
   }
 
   object CreateOptions {
