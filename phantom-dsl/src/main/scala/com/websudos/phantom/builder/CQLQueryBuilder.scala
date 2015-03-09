@@ -322,9 +322,10 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
     query.pad.append(syntax.where).pad.append(condition)
   }
 
+
   def select(tableName: String): CQLQuery = {
     CQLQuery(syntax.select)
-      .forcePad.append("*").forcePad
+      .pad.append("*").forcePad
       .append(syntax.from)
       .forcePad.appendEscape(tableName)
   }
