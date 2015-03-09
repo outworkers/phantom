@@ -1159,6 +1159,93 @@ There are 4 core implementations available:
 Using the built in testing utilities is very simple. In most cases, you use one of the first two base implementations, 
 either ```CassandraFlatSpec``` or ```CassandraFeatureSpec```, based on what kind of tests you like writing(flat or feature).
 
+
+To get started with phantom tests, the usual steps are as follows:
+
+- Create a global method to initialise all your tables using phantom's auto-generation capability.
+- Create a global method to cleanup and truncate your tables after tests finish executing.
+- Create a root specification file that you plan to use for all your tests.
+
+
+```scala
+
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
+import com.websudos.phantom.dsl._
+
+
+object DatabaseService {
+  def init(): Future[List[ResultSet]] = {
+    val create = Future.sequence(List(
+      Table1.create.future(),
+      Table2.create.future()
+    ))
+
+    Await.ready(create, 5.seconds)
+  }
+
+   def cleanup(): Future[List[ResultSet]] = {
+    val truncate = Future.sequence(List(
+      Table1.truncate.future(),
+      Table2.truncate.future()
+    ))
+    Await.ready(truncate, 5.seconds)
+  }
+}
+
+import com.websudos.phantom.testkit._
+
+trait CustomSpec extends CassandraFlatSpec {
+
+   override def beforeAll(): Unit = {
+     super.beforeAll()
+     DatabaseService.init()
+   }
+
+   override def afterAll(): Unit = {
+     super.afterAll()
+     DatabaseService.cleanup()
+   }
+}
+```
+
+Running your database tests with phantom is now trivial. A great idea is to use asynchronous testing patterns and future sequencers to get the best possible
+performance even out of your tests. Now all your other test suites that need a running database would look like this:
+
+```scala
+
+import com.websudos.phantom.dsl._
+import com.websudos.util.testing._
+
+class UserDatabaseServiceTest extends CustomSpec {
+  it should "register a user from a model" in {
+    val user = //.. create a user
+
+    // A for-yield will get de-sugared to a flatMap chain, but in effect you get a sequence that says:
+    // First write, then fetch by id. The beauty of it is the first future will only complete when the user has been written
+    // So you have an async sequence guarantee that the "getById" will be done only after the user is actually available.
+    val chain = for {
+      store <- UserDatabaseService.register(user)
+      get <- UserDatabaseService.getById(user.id)
+    } yield get
+
+    // The "successful" method comes from com.websudos.util.testing._ in our util project.
+    chain.successful {
+      result => {
+
+        // result is now Option[User]
+
+        result.isDefined shouldEqual true
+        result.get shouldEqual user
+      }
+    }
+  }
+}
+
+```
+
+
+
 If you are using ZooKeeper and you want to run tests through a full ZooKeeper powered cycle, where Cassandra settings are retrieved from a ZooKeeper that 
 can either be running locally or auto-spawned if none is found, pick one of the last two base suites.
  
