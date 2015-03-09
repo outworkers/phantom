@@ -21,7 +21,7 @@ Using phantom
 - Bleeding edge: 1.5.4 (Websudos Maven Repo)
 
 Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
-The latest development version is ```val phantomVersion = 1.5.2```. If the version's patch number is not "0", it's likely the release is internal only,
+The latest development version is ```val phantomVersion = 1.5.5```. If the version's patch number is not "0", it's likely the release is internal only,
 meaning you can still get it but only from our Maven repository.
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
@@ -210,10 +210,10 @@ Commercial support
 ===================
 <a href="#table-of-contents">back to top</a>
 
-We, the people behind phantom run a software development house specialised in Scala, NoSQL and distributed systems. If you are after enterprise grade 
+We, the people behind phantom run a software development house specialised in Scala and NoSQL. If you are after enterprise grade
 training or support for using phantom, [Websudos](http://websudos.com) is here to help!
 
-We offer a comprehensive range of elite Scala developemnt services, including but not limited to:
+We offer a comprehensive range of elite Scala development services, including but not limited to:
 
 - Software development
 - Remote contractors for hire
@@ -228,12 +228,12 @@ click [here](http://www.websudos.co.uk/work).
 ===================================================================
 <a href="#table-of-contents">back to top</a>
 
-The resolves needed for Phantom are the Typesafe defaults, Sonatype, Twitter and our very own. The below list should make sure you have no dependency
+The resolvers needed for Phantom are the Typesafe defaults, Sonatype, Twitter and our very own. The below list should make sure you have no dependency
 resolution errors.
 
 ```scala
 resolvers ++= Seq(
- "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+  "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
   "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
   "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
   "Sonatype releases"                at "https://oss.sonatype.org/content/repositories/releases",
@@ -245,11 +245,12 @@ resolvers ++= Seq(
 )
 ```
 
-For most things, all you need is ```phantom-dsl```. Read through for information on other modules.
+For most things, all you need is ```phantom-dsl``` and ```phantom-testkit```. Read through for information on other modules.
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.websudos"  %% "phantom-dsl"                   % phantomVersion
+  "com.websudos"  %% "phantom-dsl"                   % phantomVersion,
+  "com.websudos"  %% "phantom-testkit"               % phantomVersion
 )
 ```
 

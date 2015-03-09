@@ -244,7 +244,13 @@ class RootCreateQuery[
   }
 
   def ifNotExists: CQLQuery = {
-    CQLQuery(CQLSyntax.create)
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(table.tableName).forcePad
+      .append(CQLSyntax.Symbols.`(`)
+      .append(QueryBuilder.join(table.columns.map(_.qb): _*))
+      .append(CQLSyntax.Symbols.`,`)
+      .forcePad.append(table.defineTableKey())
+      .append(CQLSyntax.Symbols.`)`)
   }
 }
 
@@ -267,7 +273,6 @@ class CreateQuery[
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
   }
-
 }
 
 private[phantom] trait CreateImplicits extends TablePropertyClauses {
