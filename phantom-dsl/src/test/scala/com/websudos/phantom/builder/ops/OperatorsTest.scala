@@ -1,5 +1,7 @@
 package com.websudos.phantom.builder.ops
 
-class OperatorsTest {
+import org.scalatest.{Matchers, FlatSpec}
+
+class OperatorsTest extends FlatSpec with Matchers {
 
 }

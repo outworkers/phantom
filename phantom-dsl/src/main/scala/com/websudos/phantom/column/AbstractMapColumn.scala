@@ -46,7 +46,7 @@ abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record,
 
   def keyFromCType(c: AnyRef): K
 
-  def valuesToCType(values: Traversable[(K, V)]): JavaMap[AnyRef, AnyRef] =
+  def valuesToCType(values: Traversable[(K, V)]): JavaMap[AnyRef, String] =
     values.map({ case (k, v) => keyToCType(k) -> valueToCType(v) }).toMap.asJava
 
   override def toCType(values: Map[K, V]): AnyRef = valuesToCType(values)

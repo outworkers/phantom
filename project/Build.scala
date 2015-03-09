@@ -16,7 +16,7 @@ object PhantomBuild extends Build {
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
   val CassandraUnitVersion = "2.0.2.4"
-  val SparkCassandraVersion = "1.0.0-rc6"
+  val SparkCassandraVersion = "1.2.0-alpha3"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -79,9 +79,9 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.5.4",
-    scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    version := "1.5.5",
+    scalaVersion := "2.11.5",
+    crossScalaVersions := Seq("2.10.4", "2.11.5"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",

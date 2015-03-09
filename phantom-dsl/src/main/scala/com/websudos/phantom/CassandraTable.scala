@@ -34,6 +34,7 @@ import com.datastax.driver.core.{Row, Session}
 import com.twitter.util.{Await, Duration}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateQuery => NewCreateQuery, RootCreateQuery}
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.exceptions.{InvalidPrimaryKeyException, InvalidTableException}
 import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
 import org.joda.time.Seconds
 import org.slf4j.LoggerFactory
@@ -44,9 +45,7 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
 
 
-case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
 
-case class InvalidTableException(msg: String) extends RuntimeException(msg)
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
