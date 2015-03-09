@@ -1,12 +1,10 @@
 import com.twitter.scrooge.ScroogeSBT
-import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 import sbt.Keys._
 import sbt._
-import scoverage.ScoverageSbtPlugin.instrumentSettings
 
-object phantom extends Build {
+object PhantomBuild extends Build {
 
-  val UtilVersion = "0.5.2"
+  val UtilVersion = "0.6.4"
   val DatastaxDriverVersion = "2.1.4"
   val ScalaTestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
@@ -18,6 +16,7 @@ object phantom extends Build {
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
   val CassandraUnitVersion = "2.0.2.4"
+  val SparkCassandraVersion = "1.0.0-rc6"
 
   val publishUrl = "http://maven.websudos.co.uk"
 
@@ -109,13 +108,13 @@ object phantom extends Build {
      ),
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xmx2G")
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ instrumentSettings ++ publishSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings
 
 
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings ++ coverallsSettings
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
     name := "phantom"
   ).aggregate(
@@ -123,7 +122,7 @@ object phantom extends Build {
     phantomExample,
     phantomConnectors,
     // phantomScalatraTest,
-    // phantomSpark,
+    phantomSpark,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -193,7 +192,6 @@ object phantom extends Build {
     phantomTestKit % "test, provided"
   )
 
-  /*
   lazy val phantomSpark = Project(
     id = "phantom-spark",
     base = file("phantom-spark"),
@@ -202,13 +200,13 @@ object phantom extends Build {
   ).settings(
     name := "phantom-spark",
     libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % "1.0.0-rc6" exclude("com.datastax.cassandra", "cassandra-driver-core")
+      "com.datastax.spark"           %% "spark-cassandra-connector"         % SparkCassandraVersion
     )
   ).dependsOn(
     phantomDsl,
     phantomZookeeper,
-    phantomTesting % "test, provided"
-  )*/
+    phantomTestKit % "test, provided"
+  )
 
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
@@ -296,7 +294,6 @@ object phantom extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.scalacheck"            %% "scalacheck"                       % "1.11.4",
       "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
       "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
       "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,

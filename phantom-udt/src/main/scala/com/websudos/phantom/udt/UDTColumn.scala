@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.udt
 
+import java.util.Date
+
 import com.datastax.driver.core.querybuilder.BuiltStatement
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
@@ -37,7 +39,7 @@ import com.websudos.phantom.connectors.CassandraConnector
 import com.websudos.phantom.query.ExecutableStatement
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
+import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
@@ -56,8 +58,6 @@ private[phantom] object Lock
  * @tparam T The Scala type corresponding the underlying Cassandra type of the UDT field.
 */
 sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Short) T : CassandraPrimitive](owner: UDTColumn[_, _, _]) {
-
-  type ValueType = T
 
   lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
 
@@ -92,6 +92,7 @@ object PrimitiveBoxedManifests {
   val FloatManifest = manifest[Float]
   val BigDecimalManifest = manifest[BigDecimal]
   val BigIntManifest = manifest[BigInt]
+  val DateManifest = manifest[Date]
 }
 
 
@@ -178,7 +179,7 @@ sealed trait UDTDefinition[T] {
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
    * Every new buffer spawned will be a perfect clone of this instance, and the fields will always be pre-initialised on extraction.
    */
-  private[udt] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]] with MutableSyncBuffer[AbstractField[_]]
+  private[udt] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]]
 }
 
 

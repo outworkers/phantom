@@ -94,14 +94,12 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def defaultTTL: Option[Seconds] = None
 
-
-
-
-
-
+  /**
+   * The new create mechanism introduced in Phantom 1.6.0.
+   * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
+   * @return A root create block, with full support for all CQL Create query options.
+   */
   def newCreate: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T], columnSchema)
-
-
 
   /**
    * This method will filter the columns from a Clustering Order definition.
