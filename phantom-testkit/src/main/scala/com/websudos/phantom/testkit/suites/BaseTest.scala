@@ -32,19 +32,19 @@ package com.websudos.phantom.testkit.suites
 import java.io.IOException
 import java.net.ServerSocket
 
-import com.datastax.driver.core.{Cluster, Session}
-import com.twitter.util.NonFatal
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, blocking}
+import scala.util.Try
+
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.scalatest._
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, blocking}
-import scala.util.Try
-
+import com.datastax.driver.core.{Cluster, Session}
+import com.twitter.util.NonFatal
+import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
 
 private[testkit] object CassandraStateManager {
 
@@ -88,7 +88,6 @@ private[testkit] object CassandraStateManager {
       blocking {
         cluster.connect()
         true
-
       }
     } getOrElse false
   }

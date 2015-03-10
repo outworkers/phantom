@@ -202,15 +202,15 @@ sealed trait TablePropertyClauses extends CompactionStrategies with CompressionS
   object gc_grace_seconds extends TableProperty {
 
     def eqs(clause: Seconds): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(clause.getSeconds.toString))
+      new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(clause.getSeconds.toString))
     }
 
     def eqs(duration: FiniteDuration): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.toSeconds.toString))
+      new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(duration.toSeconds.toString))
     }
 
     def eqs(duration: com.twitter.util.Duration): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.populate_io_cache_on_flush(duration.inSeconds.toString))
+      new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(duration.inSeconds.toString))
     }
   }
 

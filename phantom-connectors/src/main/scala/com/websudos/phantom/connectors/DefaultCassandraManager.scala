@@ -31,9 +31,12 @@ package com.websudos.phantom.connectors
 
 import java.io.IOException
 import java.net.Socket
-import scala.concurrent.blocking
 
+import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
 import com.datastax.driver.core.{Cluster, Session}
+
+import scala.concurrent.blocking
+import scala.util.control.NonFatal
 
 trait DefaultCassandraManager extends CassandraManager {
 
@@ -44,9 +47,21 @@ trait DefaultCassandraManager extends CassandraManager {
   private[this] var inited = false
   @volatile private[this] var _session: Session = null
 
+  private[this] def attemptReconnect(exception: Exception): Boolean = {
+    exception match {
+      case NoHostAvailableException => false
+      case DriverInternalError => false
+    }
+  }
+
 
   def clusterRef: Cluster = {
     if (cluster.isClosed) {
+      try {
+        createCluster()
+      } catch {
+        case NonFatal(e) =>
+      }
       createCluster()
     } else {
       cluster
