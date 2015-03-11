@@ -20,7 +20,6 @@ class CreateQueryTest extends FreeSpec with Matchers {
           ": 'SizeTieredCompactionStrategy' }"
       }
 
-
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
         val qb = BasicTable.newCreate.`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes)).qb.queryString
