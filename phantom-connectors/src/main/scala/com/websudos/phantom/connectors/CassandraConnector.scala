@@ -37,10 +37,11 @@ class EmptyClusterStoreException extends RuntimeException("Attempting to retriev
 
 class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
 
+/**
+ * The root implementation of a Cassandra connection.
+ * By default, the in phantom-connectors framework the only 2 primitives needed for connection are the KeySpace and the manager.
+ */
 trait CassandraConnector {
-
-  @deprecated("This implicit is provided to help you transition to 1.6.0. It's best to read the changelog to understand what changes ", "1.6.0")
-  implicit def stringToKeySpace(name: String): KeySpace = KeySpace(name)
 
   implicit def keySpace: KeySpace
 

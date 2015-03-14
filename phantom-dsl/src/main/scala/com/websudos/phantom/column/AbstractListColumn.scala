@@ -36,11 +36,12 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 
 abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
-    extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
+  extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
 
-  def valuesToCType(values: Iterable[RR]): JavaList[String] = values.map(valueToCType).toList.asJava
+  def valuesToCType(values: Iterable[RR]): JavaList[AnyRef] =
+    values.map(valueToCType).toList.asJava
 
-  override def toCType(values: List[RR]): String = values.map(valueToCType).toList.mkString
+  override def toCType(values: List[RR]): AnyRef = valuesToCType(values)
 
   override def apply(r: Row): List[RR] = {
     optional(r).getOrElse(Nil)
@@ -48,7 +49,7 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
 
   override def optional(r: Row): Option[List[RR]] = {
     Try {
-      r.getList(name, cls).asScala.map(e => valueFromCType(e.asInstanceOf[AnyRef])).toList
+      r.getList(name, valueCls).asScala.map(e => valueFromCType(e.asInstanceOf[AnyRef])).toList
     }.toOption
   }
 }

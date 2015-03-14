@@ -179,7 +179,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       new WhereClause.WhereCondition(
         QueryBuilder.lt(
           QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
@@ -188,7 +188,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       new WhereClause.WhereCondition(
         QueryBuilder.lte(
           QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
@@ -197,7 +197,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       new WhereClause.WhereCondition(
         QueryBuilder.gt(
           QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
@@ -206,7 +206,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       new WhereClause.WhereCondition(
         QueryBuilder.gte(
           QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
@@ -215,7 +215,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       new WhereClause.WhereCondition(
         QueryBuilder.eqs(
           QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.toCType(value)).queryString
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }

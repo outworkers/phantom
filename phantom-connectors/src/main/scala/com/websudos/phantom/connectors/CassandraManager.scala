@@ -42,8 +42,22 @@ trait CassandraManager {
   def ZookeeperEnvironmentString: String = "TEST_ZOOKEEPER_CONNECTOR"
 
   implicit def session: Session
+
+  /**
+   * Creates the CQL query to be executed when phantom connectors guarantee the existence of the keySpace before connection.
+   * By default, this will use lightweight transactions in Cassandra(IF NOT EXISTS queries) to guarantee data is not overwritten.
+   *
+   * @param keySpace The string name of the KeySpace the manager needs to use.
+   * @return The CQL Query that will be executed to create the KeySpace.
+   */
+  protected[this] def createKeySpace(keySpace: String): String = {
+    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
+  }
+
+  protected[this] def createKeySpace(keySpace: KeySpace): String = createKeySpace(keySpace.name)
+
 }
 
-object CassandraProperties {
+private[phantom] object CassandraProperties {
   val ZookeeperEnvironmentString: String = "TEST_ZOOKEEPER_CONNECTOR"
 }

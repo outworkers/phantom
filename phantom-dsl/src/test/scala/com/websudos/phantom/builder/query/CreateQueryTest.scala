@@ -26,7 +26,6 @@ class CreateQueryTest extends FreeSpec with Matchers {
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
         val qb = BasicTable.newCreate.`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes)).qb.queryString
-        Console.println(qb)
 
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' " +
           ": 'SizeTieredCompactionStrategy', 'sstable_size_in_mb' : '50.0 MiB' }"
@@ -68,6 +67,11 @@ class CreateQueryTest extends FreeSpec with Matchers {
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
         val qb = BasicTable.newCreate.`with`(gc_grace_seconds eqs Seconds.seconds(86400)).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
+      }
+
+      "allow specifying a bloom_filter_fp_chance using a Double param value" in {
+        val qb = BasicTable.newCreate.`with`(bloom_filter_fp_chance eqs 5D).qb.queryString
+        qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH bloom_filter_fp_chance = 5"
       }
     }
   }

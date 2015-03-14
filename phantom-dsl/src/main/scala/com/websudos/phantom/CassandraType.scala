@@ -40,7 +40,8 @@ import scala.util.Try
 
 trait CassandraWrites[T] {
 
-  def toCType(v: T): String
+  def toCType(v: T): AnyRef
+  def asCql(v: T): String = toCType(v).toString
   def cassandraType: String
 }
 

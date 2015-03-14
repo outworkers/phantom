@@ -154,6 +154,7 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
 
         info("The second counter select should return the record")
         res._2.isDefined shouldEqual true
+
         info("and the counter value should match the sum of the increments")
         res._2.get shouldEqual 2500L
       }

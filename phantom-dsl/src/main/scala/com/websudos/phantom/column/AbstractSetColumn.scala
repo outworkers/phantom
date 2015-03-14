@@ -36,10 +36,9 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 
 abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
-    extends Column[Owner, Record, Set[RR]](table) with CollectionValueDefinition[RR] {
+  extends Column[Owner, Record, Set[RR]](table) with CollectionValueDefinition[RR] {
 
-  def valuesToCType(values: Iterable[RR]): JavaSet[AnyRef] =
-    values.map(valueToCType).toSet.asJava
+  def valuesToCType(values: Iterable[RR]): JavaSet[AnyRef] = values.map(valueToCType).toSet.asJava
 
   override def toCType(values: Set[RR]): AnyRef = valuesToCType(values)
 

@@ -47,22 +47,28 @@ trait DefaultCassandraManager extends CassandraManager {
   private[this] var inited = false
   @volatile private[this] var _session: Session = null
 
-  private[this] def attemptReconnect(exception: Exception): Boolean = {
+  private[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
     exception match {
-      case NoHostAvailableException => false
-      case DriverInternalError => false
+      case e: NoHostAvailableException => false
+      case f: DriverInternalError => false
+      case _ => true
     }
   }
-
 
   def clusterRef: Cluster = {
     if (cluster.isClosed) {
       try {
-        createCluster()
+        cluster.connect()
+        cluster
       } catch {
-        case NonFatal(e) =>
+        case NonFatal(e) => {
+          if (shouldAttemptReconnect(e)) {
+            createCluster()
+          } else {
+            throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
+          }
+        }
       }
-      createCluster()
     } else {
       cluster
     }
@@ -82,7 +88,7 @@ trait DefaultCassandraManager extends CassandraManager {
    * It deals with the underlying Datastax Cluster builder with a set of defaults that can be easily overridden.
    *
    * The purpose of this method, beyond DRY, is to allow users to override the building of a cluster with whatever they need.
-   * @return A reference to a Datastax cluster.
+   * @return A reference to a Cassandra/DSE cluster.
    */
   protected[this] def createCluster(): Cluster = {
     Cluster.builder()
@@ -97,12 +103,12 @@ trait DefaultCassandraManager extends CassandraManager {
 
   def session = _session
 
+
   def initIfNotInited(keySpace: String): Unit = CassandraInitLock.synchronized {
     if (!inited) {
       _session = blocking {
         val s = clusterRef.connect()
-        s.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
-        s.execute(s"USE $keySpace;")
+        s.execute(createKeySpace(keySpace))
         s
       }
       inited = true

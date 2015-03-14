@@ -30,16 +30,19 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
+import scala.collection.JavaConverters._
+import scala.concurrent._
+import org.slf4j.LoggerFactory
 
 import com.datastax.driver.core.{Cluster, Session}
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
+import com.websudos.phantom.connectors.{EmptyClusterStoreException, EmptyPortListException}
+
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
 import com.twitter.util.{Await, Future, _}
-import com.websudos.phantom.connectors.{EmptyPortListException, EmptyClusterStoreException}
-import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters._
-import scala.concurrent._
+
 
 private[zookeeper] case object Lock
 
@@ -70,7 +73,7 @@ trait ClusterStore {
   protected[this] var clusterStore: Cluster = null
   protected[this] var zkClientStore: ZkClient = null
   protected[this] var _session: Session = null
-  private[this] val sessions = new scala.collection.mutable.LinkedHashMap[String, Session]() with scala.collection.mutable.SynchronizedMap[String, Session]
+  private[this] val sessions = new ConcurrentLinkedHashMap.Builder[String, Session]().maximumWeightedCapacity(100).build()
 
 
   private[this] var inited = false
