@@ -1220,7 +1220,7 @@ performance even out of your tests. Now all your other test suites that need a r
 ```scala
 
 import com.websudos.phantom.dsl._
-import com.websudos.util.teskit._
+import com.websudos.util.testing._
 
 class UserDatabaseServiceTest extends CustomSpec {
   it should "register a user from a model" in {
