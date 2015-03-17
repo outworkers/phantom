@@ -4,7 +4,7 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.6.4"
+  val UtilVersion = "0.6.9"
   val DatastaxDriverVersion = "2.1.4"
   val ScalaTestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
@@ -79,7 +79,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.5.5",
+    version := "1.5.6",
     scalaVersion := "2.11.5",
     crossScalaVersions := Seq("2.10.4", "2.11.5"),
     resolvers ++= Seq(
