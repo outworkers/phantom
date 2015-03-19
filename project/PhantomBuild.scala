@@ -15,7 +15,7 @@ object PhantomBuild extends Build {
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.0.2.4"
+  val CassandraUnitVersion = "2.0.2.5"
   val SparkCassandraVersion = "1.2.0-alpha3"
 
   val publishUrl = "http://maven.websudos.co.uk"
@@ -79,7 +79,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.5.5",
+    version := "1.5.6",
     scalaVersion := "2.11.5",
     crossScalaVersions := Seq("2.10.4", "2.11.5"),
     resolvers ++= Seq(

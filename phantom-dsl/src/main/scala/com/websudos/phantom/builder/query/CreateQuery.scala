@@ -109,7 +109,7 @@ sealed trait CompressionStrategies {
 
 sealed class CacheProperty(val qb: CQLQuery) {}
 
-object Cache {
+object CacheStrategies {
 
   case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
   case object KeysOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly))
@@ -220,7 +220,7 @@ sealed trait TablePropertyClauses extends CompactionStrategies with CompressionS
     }
   }
   
-  object cache extends TableProperty {
+  object caching extends TableProperty {
     def eqs(strategy: CacheProperty): TablePropertyClause = {
       new TablePropertyClause(QueryBuilder.Create.caching(strategy.qb.queryString))
     }
@@ -276,6 +276,9 @@ class CreateQuery[
 }
 
 private[phantom] trait CreateImplicits extends TablePropertyClauses {
+
+  val Cache = CacheStrategies
+
   implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
     new CreateQuery(root.table, root.default)
   }

@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory
 import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.NonFatal
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, ZookeeperInstance}
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 private[testkit] object CassandraStateManager {
 

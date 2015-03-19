@@ -74,6 +74,13 @@ class CreateQueryTest extends FreeSpec with Matchers {
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH bloom_filter_fp_chance = 5"
       }
     }
+
+    "should allow specifying cache strategies " - {
+      "specify Cache.None as a cache strategy" in {
+        val qb = BasicTable.newCreate.`with`(caching eqs Cache.None).qb.queryString
+        qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = "
+      }
+    }
   }
 
 
