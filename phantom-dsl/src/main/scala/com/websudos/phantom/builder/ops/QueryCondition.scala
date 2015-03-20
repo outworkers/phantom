@@ -9,7 +9,7 @@ import com.websudos.phantom.builder.query.CQLQuery
 sealed abstract class QueryCondition(val qb: CQLQuery)
 
 object WhereClause {
-  class WhereCondition(override val qb: CQLQuery) extends QueryCondition(qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
 /**

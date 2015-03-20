@@ -5,11 +5,9 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.phantom.builder.ops.UpdateClause.Condition
-import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
 import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{SelectImplicits, CQLQuery, CreateImplicits}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.keys.Key
@@ -114,42 +112,42 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
    * @param col The column to cast to an IndexedColumn.
    * @tparam RR The type of the value the column holds.
    */
-  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) {
+  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) extends AnyVal {
 
     private[this] val p = implicitly[Primitive[RR]]
 
-    def eqs(value: RR): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.eqs(col.name, p.asCql(value)))
+    def eqs(value: RR): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.eqs(col.name, p.asCql(value)))
     }
 
     def ==(value: RR) = eqs _
 
-    def lt(value: RR): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.lt(col.name, p.asCql(value)))
+    def lt(value: RR): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.lt(col.name, p.asCql(value)))
     }
 
     def < = lt _
 
-    def lte(value: RR): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
+    def lte(value: RR): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
     def <= = lte _
 
-    def gt(value: RR): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.gt(col.name, p.asCql(value)))
+    def gt(value: RR): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.gt(col.name, p.asCql(value)))
     }
 
     def > = gt _
 
-    def gte(value: RR): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.gte(col.name, p.asCql(value)))
+    def gte(value: RR): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.gte(col.name, p.asCql(value)))
     }
 
     def >= = gte _
 
-    def in(values: List[RR]): WhereClause.WhereCondition = {
-      new WhereCondition(QueryBuilder.in(col.name, values.map(p.asCql)))
+    def in(values: List[RR]): WhereClause.Condition = {
+      new WhereClause.Condition(QueryBuilder.in(col.name, values.map(p.asCql)))
     }
   }
 
@@ -175,8 +173,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
 
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
-    def ltToken (value: T): WhereClause.WhereCondition = {
-      new WhereClause.WhereCondition(
+    def ltToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
         QueryBuilder.lt(
           QueryBuilder.token(p.name),
           QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
@@ -184,8 +182,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       )
     }
 
-    def lteToken (value: T): WhereClause.WhereCondition = {
-      new WhereClause.WhereCondition(
+    def lteToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
         QueryBuilder.lte(
           QueryBuilder.token(p.name),
           QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
@@ -193,8 +191,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       )
     }
 
-    def gtToken (value: T): WhereClause.WhereCondition = {
-      new WhereClause.WhereCondition(
+    def gtToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
         QueryBuilder.gt(
           QueryBuilder.token(p.name),
           QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
@@ -202,8 +200,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       )
     }
 
-    def gteToken (value: T): WhereClause.WhereCondition = {
-      new WhereClause.WhereCondition(
+    def gteToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
         QueryBuilder.gte(
           QueryBuilder.token(p.name),
           QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
@@ -211,8 +209,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
       )
     }
 
-    def eqsToken (value: T): WhereClause.WhereCondition = {
-      new WhereClause.WhereCondition(
+    def eqsToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
         QueryBuilder.eqs(
           QueryBuilder.token(p.name),
           QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
@@ -233,11 +231,11 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=(value: Int = 1): UpdateClause.Condition = {
-      new Condition(QueryBuilder.increment(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.increment(col.name, value.toString))
     }
 
     final def -=(value: Int = 1): UpdateClause.Condition = {
-      new Condition(QueryBuilder.decrement(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.decrement(col.name, value.toString))
     }
 
     final def increment = += _
@@ -248,7 +246,7 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
   implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
 
     final def setTo(value: RR): UpdateClause.Condition = {
-      new Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+      new UpdateClause.Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
   }

@@ -50,7 +50,7 @@ abstract class Query[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where(condition: Table => WhereClause.WhereCondition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+  def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
     create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.where(qb, condition(table).qb), row)
   }
 
@@ -61,7 +61,7 @@ abstract class Query[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  def and(condition: Table => WhereClause.WhereCondition): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+  def and(condition: Table => WhereClause.Condition): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
     create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.and(qb, condition(table).qb), row)
   }
 }
