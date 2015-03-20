@@ -8,13 +8,13 @@ class AlterQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: CassandraTable[Table, Record], val qb: CQLQuery) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery) extends ExecutableStatement {
 
 }
 
 object AlterQuery {
 
-  type Default[T <: CassandraTable[T, R], R] = AlterQuery[T, R, Unspecified]
+  type Default[T <: CassandraTable[T, _], R] = AlterQuery[T, R, Unspecified]
 
   /**
    * The root builder of an ALTER query.
@@ -24,7 +24,7 @@ object AlterQuery {
    * @tparam R The record held in the table.
    * @return A raw ALTER query, without any further options set on it.
    */
-  def apply[T <: CassandraTable[T, _], R](table: CassandraTable[T, R]): AlterQuery[T, R, Unspecified] = {
+  def apply[T <: CassandraTable[T, _], R](table: T): AlterQuery[T, R, Unspecified] = {
     new AlterQuery[T, R, Unspecified](table, QueryBuilder.alter(table.tableName))
   }
 }

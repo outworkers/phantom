@@ -345,6 +345,14 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
       .forcePad.appendEscape(tableName)
   }
 
+  def count(tableName: String, names: String*): CQLQuery = {
+    CQLQuery(syntax.select)
+      .forcePad.append(syntax.count)
+      .pad.wrap(names)
+      .forcePad.append(syntax.from)
+      .forcePad.appendEscape(tableName)
+  }
+
   def distinct(tableName: String, names: String*): CQLQuery = {
     CQLQuery(syntax.select)
       .forcePad.append(syntax.distinct)

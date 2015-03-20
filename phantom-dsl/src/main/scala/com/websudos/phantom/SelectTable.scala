@@ -29,26 +29,25 @@
  */
 package com.websudos.phantom
 
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.{RootSelectBlock, RootSelectBlock}
+import com.websudos.phantom.builder.query.RootSelectBlock
 import com.websudos.phantom.column.SelectColumn
 
-trait SelectTable[T <: CassandraTable[T, _], R] {
+trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
 
-  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](this.asInstanceOf[T], QueryBuilder.select(tableName), fromRow)
+  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](this.asInstanceOf[T], Nil, fromRow)
 
   def select[A](f1: T => SelectColumn[A]): RootSelectBlock[T, A] = {
     val t = this.asInstanceOf[T]
     val c = f1(t)
-    RootSelectBlock(t, c.apply, List(c.col.name))
+    RootSelectBlock(t,List(c.col.name), c.apply)
   }
 
   def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): RootSelectBlock[T, (A, B)] = {
     val t = this.asInstanceOf[T]
     val c1 = f1(t)
     val c2 = f2(t)
-    RootSelectBlock[T, (A, B)](t, r => (c1(r), c2(r)), List(c1.col.name, c2.col.name))
+    RootSelectBlock[T, (A, B)](t, List(c1.col.name, c2.col.name), r => (c1(r), c2(r)))
   }
 
   def select[A, B, C](f1: T => SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): RootSelectBlock[T, (A, B, C)] = {
@@ -100,8 +99,7 @@ trait SelectTable[T <: CassandraTable[T, _], R] {
     val c5 = f5(t)
     val c6 = f6(t)
     RootSelectBlock[T, (A, B, C, D, E, F)](t,
-      QueryBuilder.select(
-        tableName,
+      List(
         c1.col.name,
         c2.col.name,
         c3.col.name,
@@ -129,8 +127,7 @@ trait SelectTable[T <: CassandraTable[T, _], R] {
     val c6 = f6(t)
     val c7 = f7(t)
     RootSelectBlock[T, (A, B, C, D, E, F, G)](t,
-      QueryBuilder.select(
-        tableName,
+      List(
         c1.col.name,
         c2.col.name,
         c3.col.name,
@@ -164,8 +161,7 @@ trait SelectTable[T <: CassandraTable[T, _], R] {
     val c7 = f7(t)
     val c8 = f8(t)
     RootSelectBlock[T, (A, B, C, D, E, F, G, H)](t,
-      QueryBuilder.select(
-        tableName,
+      List(
         c1.col.name,
         c2.col.name,
         c3.col.name,
@@ -202,8 +198,7 @@ trait SelectTable[T <: CassandraTable[T, _], R] {
     val c8 = f8(t)
     val c9 = f9(t)
     RootSelectBlock[T, (A, B, C, D, E, F, G, H, I)](t,
-      QueryBuilder.select(
-        tableName,
+      List(
         c1.col.name,
         c2.col.name,
         c3.col.name,
@@ -243,8 +238,7 @@ trait SelectTable[T <: CassandraTable[T, _], R] {
     val c9 = f9(t)
     val c10 = f10(t)
     RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)](t,
-      QueryBuilder.select(
-        tableName,
+      List(
         c1.col.name,
         c2.col.name,
         c3.col.name,
@@ -285,9 +279,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11](
   val c9 = f9(t)
   val c10 = f10(t)
   val c11 = f11(t)
- RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)](t, QueryBuilder.select(
-   tableName,
-   c1.col.name,
+ RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)](t, List(
+    c1.col.name,
     c2.col.name,
     c3.col.name,
     c4.col.name,
@@ -330,8 +323,7 @@ f12: T => SelectColumn[A12]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A
   val c11 = f11(t)
   val c12 = f12(t)
 
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -379,8 +371,7 @@ f13: T => SelectColumn[A13]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A
   val c12 = f12(t)
   val c13 = f13(t)
 
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -431,8 +422,7 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14](
   val c12 = f12(t)
   val c13 = f13(t)
   val c14 = f14(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -486,7 +476,7 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15](
   val c13 = f13(t)
   val c14 = f14(t)
   val c15 = f15(t)
- RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)](t, QueryBuilder.select(tableName,
+ RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -542,8 +532,7 @@ f16: T => SelectColumn[A16]): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8
   val c14 = f14(t)
   val c15 = f15(t)
   val c16 = f16(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -602,8 +591,7 @@ f17: T => SelectColumn[A17]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A
   val c15 = f15(t)
   val c16 = f16(t)
   val c17 = f17(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -666,8 +654,7 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   val c16 = f16(t)
   val c17 = f17(t)
   val c18 = f18(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -732,8 +719,7 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   val c17 = f17(t)
   val c18 = f18(t)
   val c19 = f19(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -802,8 +788,7 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   val c18 = f18(t)
   val c19 = f19(t)
   val c20 = f20(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,
@@ -874,8 +859,7 @@ f21: T => SelectColumn[A21]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A
   val c19 = f19(t)
   val c20 = f20(t)
   val c21 = f21(t)
-RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)](t, QueryBuilder.select(
-  tableName,
+RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)](t, List(
   c1.col.name,
   c2.col.name,
   c3.col.name,

@@ -30,14 +30,15 @@
 package com.websudos.phantom.batch
 
 import com.datastax.driver.core.querybuilder.{ Batch, QueryBuilder }
+import com.websudos.phantom.builder.query.{CQLQuery, Batchable, ExecutableStatement}
 import com.websudos.phantom.query.{ BatchableQuery, CQLQuery, ExecutableStatement }
 
 
 sealed abstract class BatchableTypes {
-  type BatchableStatement = BatchableQuery[_] with ExecutableStatement
+  type BatchableStatement = Batchable with ExecutableStatement
 }
 
-sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) extends CQLQuery[X] {
+sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[BatchableTypes#BatchableStatement] = Iterator.empty) {
   self: X =>
 
   type BatchableStatement = BatchableTypes#BatchableStatement
@@ -51,7 +52,7 @@ sealed abstract class RootBatch[X](protected[this] val qbList: Iterator[Batchabl
   protected[this] def create(): Batch
 
   final def add(statements: BatchableStatement*): X = {
-    for (st <- statements) qb.add(st.qb)
+    for (st <- statements) qb.add(null)
     this
   }
 

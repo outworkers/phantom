@@ -41,6 +41,8 @@ import com.websudos.phantom.builder._
 
 import com.websudos.phantom.connectors.KeySpace
 
+import scala.util.Try
+
 class SelectQuery[
   Table <: CassandraTable[Table, _],
   Record,
@@ -102,12 +104,15 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
   private[phantom] def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.select(table.tableName, columns: _*), rowFunc)
 
   def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.distinct(table.tableName, columns: _*), rowFunc)
+
+  private[this] def extractCount(r: Row): Long = {
+    Try { r.getLong("count") }.toOption.getOrElse(0L)
+  }
+
+  def count: SelectQuery.Default[T, Long] = new SelectQuery(table, QueryBuilder.count(table.tableName, columns: _*), extractCount)
 }
 
 object RootSelectBlock {
-  def apply[T <: CassandraTable[T, _], R](table: T, row: Row => R, columns: List[String] = Nil): RootSelectBlock[T, R] = {
-    new RootSelectBlock(table, row, columns)
-  }
 
   def apply[T <: CassandraTable[T, _], R](table: T, columns: List[String], row: Row => R): RootSelectBlock[T, R] = {
     new RootSelectBlock(table, row, columns)

@@ -29,69 +29,17 @@
  */
 package com.websudos.phantom.column
 
-import scala.annotation.implicitNotFound
-import scala.runtime._
-import scala.collection.{ mutable, immutable, generic }
-import mutable.WrappedArray
-import immutable.WrappedString
-import generic.CanBuildFrom
-
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.{Assignment, QueryBuilder}
+import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.keys.{ClusteringOrder, Index, PartitionKey, PrimaryKey}
-import com.websudos.phantom.query.{QueryCondition, QueryOrdering, SecondaryQueryCondition}
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
-
-sealed class OrderingColumn[T](col: AbstractColumn[T]) {
-  def asc: QueryOrdering = {
-    QueryOrdering(QueryBuilder.asc(col.name))
-  }
-
-  def desc: QueryOrdering = {
-    QueryOrdering(QueryBuilder.desc(col.name))
-  }
-}
-
-/**
- * A class enforcing columns used in where clauses to be indexed.
- * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
- * This enforces a Cassandra limitation at compile time.
- * It prevents a user from querying and using where operators on a column without any index.
- * @param col The column to cast to an IndexedColumn.
- * @tparam T The type of the value the column holds.
- */
-sealed abstract class AbstractQueryColumn[T: CassandraPrimitive](col: AbstractColumn[T]) extends OrderingColumn[T](col) {
-
-  /**
-   * The equals operator. Will return a match if the value equals the database value.
-   * @param value The value to search for in the database.
-   * @return A QueryCondition, wrapping a QueryBuilder clause.
-   */
-  def eqs(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
-  }
-
-  def lt(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.lt(col.name, col.toCType(value)))
-  }
-
-  def lte(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.lte(col.name, col.toCType(value)))
-  }
-
-  def gt(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.gt(col.name, col.toCType(value)))
-  }
-
-  def gte(value: T): QueryCondition = {
-    QueryCondition(QueryBuilder.gte(col.name, col.toCType(value)))
-  }
-
-  def in(values: List[T]): QueryCondition = {
-    QueryCondition(QueryBuilder.in(col.name, values.map(col.toCType): _*))
-  }
-}
+import scala.annotation.implicitNotFound
+import scala.collection.generic.CanBuildFrom
+import scala.collection.immutable
+import scala.collection.immutable.WrappedString
+import scala.collection.mutable.WrappedArray
+import scala.runtime._
 
 
 private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
@@ -109,21 +57,6 @@ class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR]
 
   def toCType(v: RR): AnyRef = col.toCType(v)
 }
-
-class QueryColumn[RR : CassandraPrimitive](col: AbstractColumn[RR]) extends AbstractQueryColumn[RR](col)
-
-class ConditionalOperations[T](val col: AbstractColumn[T]) {
-
-  /**
-   * The equals operator. Will return a match if the value equals the database value.
-   * @param value The value to search for in the database.
-   * @return A QueryCondition, wrapping a QueryBuilder clause.
-   */
-  def eqs(value: T): SecondaryQueryCondition = {
-    SecondaryQueryCondition(QueryBuilder.eq(col.name, col.toCType(value)))
-  }
-}
-
 
 
 /** The `LowPriorityImplicits` class provides implicit values that
@@ -199,10 +132,6 @@ class LowPriorityImplicits {
       def apply() = immutable.IndexedSeq.newBuilder[T]
     }
 }
-sealed trait ConditionalOperators extends LowPriorityImplicits {
-  final implicit def columnToConditionalUpdateColumn[T](col: AbstractColumn[T]): ConditionalOperations[T] = new ConditionalOperations(col)
-}
-
 sealed trait CollectionOperators {
 
   implicit class CounterModifyColumn[Owner <: CassandraTable[Owner, Record], Record](col: CounterColumn[Owner, Record]) {
@@ -239,17 +168,6 @@ sealed trait CollectionOperators {
   }
 }
 
-sealed trait OrderingOperators {
-  implicit def clusteringKeyToOrderingOperator[T : CassandraPrimitive](col: AbstractColumn[T] with ClusteringOrder[T]): OrderingColumn[T] = {
-    new OrderingColumn[T](col)
-  }
-}
-
-sealed trait IndexRestrictions {
-  implicit def partitionColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with PartitionKey[T]): QueryColumn[T] = new QueryColumn(col)
-  implicit def primaryColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with PrimaryKey[T]): QueryColumn[T] = new QueryColumn(col)
-  implicit def secondaryColumnToIndexedColumn[T : CassandraPrimitive](col: AbstractColumn[T] with Index[T]): QueryColumn[T] = new QueryColumn(col)
-}
 
 sealed class ModifiableColumn[T]
 sealed trait ModifyImplicits extends LowPriorityImplicits {
@@ -311,8 +229,4 @@ sealed trait ModifyImplicits extends LowPriorityImplicits {
   }
 }
 
-private[phantom] trait Operations extends ModifyImplicits
-  with CollectionOperators
-  with OrderingOperators
-  with IndexRestrictions
-  with ConditionalOperators {}
+private[phantom] trait Operations extends ModifyImplicits with CollectionOperators

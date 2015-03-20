@@ -34,14 +34,18 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.websudos.phantom.builder.ops.UpdateClause.Condition
+import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
+import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
+import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
+import com.websudos.phantom.builder.primitives.{Primitive, DefaultPrimitives}
+import com.websudos.phantom.builder.query.{CQLQuery, SelectImplicits, CreateImplicits}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.query.QueryCondition
-import org.joda.time.DateTime
+import com.websudos.phantom.keys.Key
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
-object Implicits extends Operations {
+object Implicits extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -109,10 +113,14 @@ object Implicits extends Operations {
   type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
   type CassandraManager = com.websudos.phantom.connectors.CassandraManager
 
+  type DateTime = org.joda.time.DateTime
+  type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
+  type KeySpace = com.websudos.phantom.connectors.KeySpace
+  val KeySpace = com.websudos.phantom.connectors.KeySpace
 
 
   object ConsistencyLevel {
@@ -129,34 +137,154 @@ object Implicits extends Operations {
     val SERIAL = CLevel.SERIAL
   }
 
-  implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
+  /**
+   * A class enforcing columns used in where clauses to be indexed.
+   * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
+   * This enforces a Cassandra limitation at compile time.
+   * It prevents a user from querying and using where operators on a column without any index.
+   * @param col The column to cast to an IndexedColumn.
+   * @tparam RR The type of the value the column holds.
+   */
+  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) {
 
-    def ltToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    private[this] val p = implicitly[Primitive[RR]]
+
+    def eqs(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.eqs(col.name, p.asCql(value)))
     }
 
-    def lteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def ==(value: RR) = eqs _
+
+    def lt(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.lt(col.name, p.asCql(value)))
     }
 
-    def gtToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def < = lt _
+
+    def lte(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
-    def gteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def <= = lte _
+
+    def gt(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.gt(col.name, p.asCql(value)))
     }
 
-    def eqsToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def > = gt _
+
+    def gte(value: RR): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.gte(col.name, p.asCql(value)))
+    }
+
+    def >= = gte _
+
+    def in(values: List[RR]): WhereClause.WhereCondition = {
+      new WhereCondition(QueryBuilder.in(col.name, values.map(p.asCql)))
     }
   }
 
+
+  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
+    new CassandraPrimitive[T#Value] {
+
+      override def cassandraType: String = "text"
+
+      def cls: Class[_] = classOf[Enumeration]
+
+      override def fromRow(row: Row, name: String): Option[T#Value] = {
+        if (row.isNull(name)) {
+          None
+        } else {
+          enum.values.find(row.getString(name) == _.toString)
+        }
+      }
+
+    }
+  }
+
+
+  implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
+
+    def ltToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.lt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
+    }
+
+    def lteToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.lte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
+    }
+
+    def gtToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.gt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
+    }
+
+    def gteToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.gte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
+    }
+
+    def eqsToken (value: T): WhereClause.WhereCondition = {
+      new WhereClause.WhereCondition(
+        QueryBuilder.eqs(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
+    }
+  }
+
+
+
+  implicit class RichNumber(val percent: Int) extends AnyVal {
+    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+    def `%`: CQLQuery= CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+  }
+
   implicit lazy val context = Manager.scalaExecutor
+
+
+  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
+    final def +=(value: Int = 1): UpdateClause.Condition = {
+      new Condition(QueryBuilder.increment(col.name, value.toString))
+    }
+
+    final def -=(value: Int = 1): UpdateClause.Condition = {
+      new Condition(QueryBuilder.decrement(col.name, value.toString))
+    }
+
+    final def increment = += _
+
+    final def decrement = -= _
+  }
+
+  implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
+
+    final def setTo(value: RR): UpdateClause.Condition = {
+      new Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+    }
+
+  }
+
+
+
 
 }

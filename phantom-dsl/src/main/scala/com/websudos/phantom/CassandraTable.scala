@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-import scala.util.Try
 
 
 
@@ -51,10 +50,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
 
-  private[this] def extractCount(r: Row): Long = {
-    Try { r.getLong("count") }.toOption.getOrElse(0L)
-  }
-
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
@@ -63,7 +58,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def fromRow(r: Row): R
 
-  def alter: AlterQuery.Default[T, R] = AlterQuery(this)
+  def alter: AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
 
   def update: UpdateQuery.Default[T, R] = UpdateQuery(this.asInstanceOf[T])
 
@@ -72,7 +67,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def delete: DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
   def truncate: TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
-
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 

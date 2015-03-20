@@ -44,6 +44,7 @@ object CQLSyntax {
   val table = "TABLE"
   val eqs = "="
   val comma = ","
+  val count = "count"
   val `)` = ")"
   val token = "token"
 
