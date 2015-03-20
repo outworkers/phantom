@@ -12,6 +12,7 @@ object CQLSyntax {
   val Alter = "alter"
   val Drop = "drop"
   val Describe = "describe"
+  val truncate = "truncate"
 
   val `(` = "("
 

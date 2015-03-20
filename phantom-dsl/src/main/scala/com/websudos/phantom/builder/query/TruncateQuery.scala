@@ -30,8 +30,21 @@
 package com.websudos.phantom.builder.query
 
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.{QueryBuilder, Unspecified, ConsistencyBound}
 
 class TruncateQuery[
   Table <: CassandraTable[Table, _],
-  Record
+  Record,
+  Status <: ConsistencyBound
 ](table: Table, val qb: CQLQuery) extends ExecutableStatement
+
+
+object TruncateQuery {
+
+  type Default[T <: CassandraTable[T, _], R] = TruncateQuery[T, R, Unspecified]
+
+  def apply[T <: CassandraTable[T, _], R](table: T): TruncateQuery.Default[T, R] = {
+    new TruncateQuery(table, QueryBuilder.truncate(table.tableName))
+  }
+
+}

@@ -30,11 +30,9 @@
 package com.websudos.phantom
 
 import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
-import org.joda.time.Seconds
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
@@ -67,15 +65,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def alter: AlterQuery.Default[T, R] = AlterQuery(this)
 
-  def update: UpdateQuery.Default[T, R] = UpdateQuery(this, fromRow)
+  def update: UpdateQuery.Default[T, R] = UpdateQuery(this.asInstanceOf[T])
 
   def insert: InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
 
-  def delete: DeleteQuery[T, R] = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
+  def delete: DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  def truncate: TruncateQuery[T, R] = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
+  def truncate: TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
 
-  def count: SelectQuery[T, Long] = new SelectQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
@@ -86,8 +83,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
-
-  def defaultTTL: Option[Seconds] = None
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.

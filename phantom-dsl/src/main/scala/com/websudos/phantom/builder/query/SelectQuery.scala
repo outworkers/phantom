@@ -98,10 +98,20 @@ class SelectQuery[
   }
 }
 
-class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, rowFunc: Row => R, columns: String*) {
-  def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.select(table.tableName, columns: _*), rowFunc)
+private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, rowFunc: Row => R, columns: List[String]) {
+  private[phantom] def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.select(table.tableName, columns: _*), rowFunc)
 
-  def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.distinct())
+  def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.distinct(table.tableName, columns: _*), rowFunc)
+}
+
+object RootSelectBlock {
+  def apply[T <: CassandraTable[T, _], R](table: T, row: Row => R, columns: List[String] = Nil): RootSelectBlock[T, R] = {
+    new RootSelectBlock(table, row, columns)
+  }
+
+  def apply[T <: CassandraTable[T, _], R](table: T, columns: List[String], row: Row => R): RootSelectBlock[T, R] = {
+    new RootSelectBlock(table, row, columns)
+  }
 }
 
 object SelectQuery {
@@ -110,5 +120,11 @@ object SelectQuery {
 
   def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
     new SelectQuery(table, qb, row)
+  }
+}
+
+private[phantom] trait SelectImplicits {
+  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R](root: RootSelectBlock[T, R]): SelectQuery.Default[T, R] = {
+    root.all
   }
 }

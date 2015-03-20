@@ -9,12 +9,12 @@ import com.websudos.phantom.builder.ops.UpdateClause.Condition
 import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
 import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits}
+import com.websudos.phantom.builder.query.{SelectImplicits, CQLQuery, CreateImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 import com.websudos.phantom.keys.Key
 
-package object dsl extends Operations with CreateImplicits with DefaultPrimitives {
+package object dsl extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement

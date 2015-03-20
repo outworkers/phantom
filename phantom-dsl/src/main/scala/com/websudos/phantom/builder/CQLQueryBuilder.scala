@@ -277,6 +277,10 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
     counterSetter(column, CQLSyntax.Symbols.-, value)
   }
 
+  def truncate(table: String): CQLQuery = {
+    CQLQuery(syntax.truncate).forcePad.append(table)
+  }
+
   def set(column: String, value: String): CQLQuery = {
     CQLQuery(column)
       .forcePad.append(CQLSyntax.Symbols.`=`)
@@ -343,13 +347,10 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
 
   def distinct(tableName: String, names: String*): CQLQuery = {
     CQLQuery(syntax.select)
+      .forcePad.append(syntax.distinct)
       .pad.append(names)
       .forcePad.append(syntax.from)
       .forcePad.appendEscape(tableName)
-  }
-
-  def distinct(qb: CQLQuery): CQLQuery = {
-    qb.pad.append(DI)
   }
 
   def select(tableName: String, clause: CQLQuery) = {
@@ -377,6 +378,11 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
   def insert(table: String): CQLQuery = {
     CQLQuery(syntax.insert)
       .forcePad.append(syntax.insert)
+      .forcePad.append(table)
+  }
+
+  def delete(table: String): CQLQuery = {
+    CQLQuery(syntax.delete)
       .forcePad.append(table)
   }
 }

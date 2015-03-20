@@ -24,7 +24,7 @@ object AlterQuery {
    * @tparam R The record held in the table.
    * @return A raw ALTER query, without any further options set on it.
    */
-  def apply[T <: CassandraTable[T, R], R](table: CassandraTable[T, R]): AlterQuery[T, R, Unspecified] = {
+  def apply[T <: CassandraTable[T, _], R](table: CassandraTable[T, R]): AlterQuery[T, R, Unspecified] = {
     new AlterQuery[T, R, Unspecified](table, QueryBuilder.alter(table.tableName))
   }
 }

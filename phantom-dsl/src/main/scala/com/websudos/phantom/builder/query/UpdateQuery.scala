@@ -12,7 +12,7 @@ class UpdateQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, qb: CQLQuery, row: Row => Record) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, row) with Batchable {
+](table: Table, qb: CQLQuery) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -32,16 +32,16 @@ class UpdateQuery[
     S <: ConsistencyBound,
     C <: WhereBound
   ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C] = {
-    new UpdateQuery[T, R, L, O, S, C](t, q, r)
+    new UpdateQuery[T, R, L, O, S, C](t, q)
   }
 
 
   final def modify(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.set(qb, clause(table).qb), row)
+    new UpdateQuery(table, QueryBuilder.set(qb, clause(table).qb))
   }
 
   final def and(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb), row)
+    new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb))
   }
 }
 
@@ -49,7 +49,7 @@ object UpdateQuery {
 
   type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
 
-  def apply[T <: CassandraTable[T, _], R](table: CassandraTable[T, R], row: Row => R): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](table, QueryBuilder.update(table.tableName), row)
+  def apply[T <: CassandraTable[T, _], R](table: T): UpdateQuery.Default[T, R] = {
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](table, QueryBuilder.update(table.tableName))
   }
 }
