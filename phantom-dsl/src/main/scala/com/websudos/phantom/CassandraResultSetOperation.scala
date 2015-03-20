@@ -30,16 +30,12 @@
 package com.websudos.phantom
 
 import java.util.concurrent.Executors
-import scala.concurrent.{ ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise }
-import scala.util.{ Failure, Success }
+
+import com.google.common.util.concurrent.MoreExecutors
+import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise}
 import org.slf4j.LoggerFactory
-import com.datastax.driver.core.{ ResultSet, Session, Statement }
-import com.google.common.util.concurrent.{
-  Futures,
-  FutureCallback,
-  MoreExecutors
-}
-import com.twitter.util.{ Future => TwitterFuture, Promise => TwitterPromise, Return, Throw }
+
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise}
 
 object Manager {
 
@@ -59,6 +55,7 @@ object Manager {
   }
 }
 
+/*
 private[phantom] trait CassandraResultSetOperations {
 
   protected[this] def scalaStatementToFuture(s: Statement)(implicit session: Session): ScalaFuture[ResultSet] = {
@@ -152,3 +149,4 @@ private[phantom] trait CassandraResultSetOperations {
     promise
   }
 }
+*/

@@ -29,10 +29,7 @@
  */
 package com.websudos.phantom.query
 
-import java.nio.ByteBuffer
-import com.datastax.driver.core.ConsistencyLevel
-import com.datastax.driver.core.policies.RetryPolicy
-
+/*
 private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
 
   self: Q =>
@@ -88,3 +85,4 @@ private[phantom] trait CQLQuery[Q] extends ExecutableStatement {
     qb.getRoutingKey
   }
 }
+*/

@@ -44,3 +44,12 @@ class UpdateQuery[
     new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb), row)
   }
 }
+
+object UpdateQuery {
+
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+
+  def apply[T <: CassandraTable[T, _], R](table: CassandraTable[T, R], row: Row => R): UpdateQuery.Default[T, R] = {
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](table, QueryBuilder.update(table.tableName), row)
+  }
+}

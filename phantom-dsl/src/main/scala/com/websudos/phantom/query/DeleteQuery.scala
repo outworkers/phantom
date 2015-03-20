@@ -29,9 +29,7 @@
  */
 package com.websudos.phantom.query
 
-import com.datastax.driver.core.querybuilder.{QueryBuilder, Delete}
-import com.websudos.phantom.CassandraTable
-
+/*
 class DeleteQuery[T <: CassandraTable[T, R], R](table: T, val qb: Delete)
   extends CQLQuery[DeleteQuery[T, R]] with BatchableQuery[DeleteQuery[T, R]] {
 
@@ -56,4 +54,4 @@ class DeleteWhere[T <: CassandraTable[T, R], R](table: T, val qb: Delete.Where)
     qb.using(QueryBuilder.timestamp(l))
     this
   }
-}
+} */

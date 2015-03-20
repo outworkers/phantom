@@ -341,6 +341,17 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
       .forcePad.appendEscape(tableName)
   }
 
+  def distinct(tableName: String, names: String*): CQLQuery = {
+    CQLQuery(syntax.select)
+      .pad.append(names)
+      .forcePad.append(syntax.from)
+      .forcePad.appendEscape(tableName)
+  }
+
+  def distinct(qb: CQLQuery): CQLQuery = {
+    qb.pad.append(DI)
+  }
+
   def select(tableName: String, clause: CQLQuery) = {
     CQLQuery(syntax.select)
       .pad.append(clause)
@@ -348,8 +359,24 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
       .pad.appendEscape(tableName)
   }
 
+  def update(tableName: String) = {
+    CQLQuery(syntax.update)
+      .forcePad.append(tableName)
+  }
+
+  def alter(tableName: String) = {
+    CQLQuery(syntax.alter)
+      .forcePad.append(tableName)
+  }
+
   def limit(qb: CQLQuery, value: Int): CQLQuery = {
     qb.pad.append(syntax.limit)
       .forcePad.append(value.toString)
+  }
+
+  def insert(table: String): CQLQuery = {
+    CQLQuery(syntax.insert)
+      .forcePad.append(syntax.insert)
+      .forcePad.append(table)
   }
 }

@@ -15,9 +15,7 @@
  */
 package com.websudos.phantom.query
 
-import com.datastax.driver.core.querybuilder.{ Assignment, QueryBuilder, Update, Using }
-import com.websudos.phantom.CassandraTable
-
+/*
 class UpdateQuery[T <: CassandraTable[T, R], R](table: T, val qb: Update)
   extends CQLQuery[UpdateQuery[T, R]] with BatchableQuery[UpdateQuery[T, R]] {
 
@@ -129,5 +127,5 @@ class ConditionalUpdateWhereQuery[T <: CassandraTable[T, R], R](table: T, val qb
     qb.using(QueryBuilder.timestamp(l))
     this
   }
-}
+}             */
 

@@ -29,17 +29,10 @@
  */
 package com.websudos.phantom.query
 
-import scala.concurrent.{ ExecutionContext, Future }
+import com.twitter.util.{Future => TwitterFuture}
+import play.api.libs.iteratee.{Iteratee => PlayIteratee}
 
-import com.datastax.driver.core.{ Row, Session }
-import com.datastax.driver.core.querybuilder.Select
-
-import com.websudos.phantom.CassandraTable
-import com.twitter.util.{ Future => TwitterFuture }
-
-import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
-
-
+/*
 class SelectQuery[T <: CassandraTable[T, _], R](table: T, protected[phantom] val qb: Select, rowFunc: Row => R) extends CQLQuery[SelectQuery[T, R]] with ExecutableQuery[T, R] {
 
   override def fromRow(r: Row): R = rowFunc(r)
@@ -205,5 +198,5 @@ class SelectCountWhere[T <: CassandraTable[T, _], R](table: T, qb: Select.Where,
   override def limit(l: Int): SelectCountQuery[T, R] = {
     new SelectCountQuery(table, qb.limit(l), fromRow)
   }
-}
+}*/
 

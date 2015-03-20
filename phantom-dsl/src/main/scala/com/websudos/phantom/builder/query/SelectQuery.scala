@@ -96,6 +96,19 @@ class SelectQuery[
   def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): TwitterFuture[Option[Record]] = {
     new SelectQuery[Table, Record, Limited, Order, Status, Chain](table, QueryBuilder.limit(qb, 1), rowFunc).singleCollect()
   }
+}
 
+class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, rowFunc: Row => R, columns: String*) {
+  def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.select(table.tableName, columns: _*), rowFunc)
 
+  def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.distinct())
+}
+
+object SelectQuery {
+
+  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+
+  def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
+    new SelectQuery(table, qb, row)
+  }
 }

@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.query
 
+/*
 import com.datastax.driver.core.querybuilder.{ Assignment, Clause, Ordering }
 
 /**
@@ -55,3 +56,4 @@ case class QueryAssignment(assignment: Assignment)
 case class QueryOrdering(ordering: Ordering)
 
 
+   */

@@ -29,17 +29,15 @@
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.Row
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.{Row, Session}
-import com.twitter.util.{Await, Duration}
-import com.websudos.phantom.builder.query.{CQLQuery, CreateQuery => NewCreateQuery, RootCreateQuery}
+import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.exceptions.{InvalidPrimaryKeyException, InvalidTableException}
-import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
+import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
 import org.joda.time.Seconds
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
+import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.Try
@@ -50,8 +48,6 @@ import scala.util.Try
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
   private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
-
-  private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
 
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
@@ -69,17 +65,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def fromRow(r: Row): R
 
-  def update: UpdateQuery[T, R] = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
+  def alter: AlterQuery.Default[T, R] = AlterQuery(this)
 
-  def insert: InsertQuery[T, R] = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
+  def update: UpdateQuery.Default[T, R] = UpdateQuery(this, fromRow)
+
+  def insert: InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
 
   def delete: DeleteQuery[T, R] = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
 
-  def create: CreateQuery[T, R] = new CreateQuery[T, R](this.asInstanceOf[T], "")
-
   def truncate: TruncateQuery[T, R] = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
 
-  def count: SelectCountQuery[T, Long] = new SelectCountQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
+  def count: SelectQuery[T, Long] = new SelectQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
@@ -98,7 +94,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
    * @return A root create block, with full support for all CQL Create query options.
    */
-  def newCreate: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T], columnSchema)
+  def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
 
   /**
    * This method will filter the columns from a Clustering Order definition.
@@ -188,51 +184,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       logger.error("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
       throw new InvalidPrimaryKeyException("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
     }
-  }
-
-  private[phantom] def ttlClause: String = {    
-    defaultTTL.map{ ttl => 
-      if (columns.exists(_.isCounterColumn)) {
-        val msg = "When setting a default ttl, the table cannot contain any counting columns"
-        logger.error(msg)
-        throw new InvalidTableException(msg)
-      }
-      val kw = if (clustered) "AND" else "WITH"
-      kw + " default_time_to_live=" + ttl.getSeconds
-    }.getOrElse("")
-  }
-
-  private[phantom] def columnSchema: CQLQuery = {
-    val queryColumns = columns.foldLeft("")((qb, c) => {
-      if (c.isStaticColumn) {
-        s"$qb, ${c.name} ${c.cassandraType} static"
-      } else {
-        s"$qb, ${c.name} ${c.cassandraType}"
-      }
-    })
-    CQLQuery(queryColumns)
-  }
-
-  @throws[InvalidPrimaryKeyException]
-  @throws[InvalidTableException]
-  def schema(): String = {
-    preconditions()
-
-    val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
-    val queryColumns = columns.foldLeft("")((qb, c) => {
-      if (c.isStaticColumn) {
-        s"$qb, ${c.name} ${c.cassandraType} static"
-      } else {
-        s"$qb, ${c.name} ${c.cassandraType}"
-      }
-    })
-    val tableKey = defineTableKey()
-    logger.info(s"Adding Primary keys indexes: $tableKey")
-    val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
-
-    val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = query + clusteringKey + ttlClause
-    if (finalQuery.last != ';') finalQuery + ";" else finalQuery
   }
 
   def createIndexes(): Seq[String] = {

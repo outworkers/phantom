@@ -29,16 +29,9 @@
  */
 package com.websudos.phantom.query
 
-import com.twitter.util.Duration
+import scala.concurrent.duration.{Duration => ScalaDuration}
 
-import scala.concurrent.duration.{ Duration => ScalaDuration }
-import scala.util.Try
-import org.joda.time.DateTime
-
-import com.datastax.driver.core.querybuilder.{ Insert, QueryBuilder }
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.column.AbstractColumn
-
+/*
 class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extends CQLQuery[InsertQuery[T, R]] with BatchableQuery[InsertQuery[T, R]] {
 
   final def value[RR](c: T => AbstractColumn[RR], value: RR): InsertQuery[T, R] = {
@@ -88,3 +81,4 @@ class InsertQuery[T <: CassandraTable[T, R], R](table: T, val qb: Insert) extend
     this
   }
 }
+     */

@@ -31,20 +31,13 @@ package com.websudos.phantom.query
 
 import java.util.{List => JavaList}
 
-import com.websudos.phantom.builder.{Unlimited, LimitBound}
-import com.websudos.phantom.connectors.KeySpace
+import com.twitter.util.{Future => TwitterFuture}
+import play.api.libs.iteratee.{Enumerator => PlayEnumerator}
 
-import scala.concurrent.{ ExecutionContext, Future => ScalaFuture }
-import com.datastax.driver.core.{ Row, ResultSet, Session, Statement }
-import com.websudos.phantom.{ CassandraResultSetOperations, CassandraTable }
-import com.websudos.phantom.iteratee.{ Enumerator, Iteratee, ResultSpool }
-import com.twitter.concurrent.Spool
-import com.twitter.util.{ Future => TwitterFuture }
-import play.api.libs.iteratee.{ Enumerator => PlayEnumerator, Enumeratee }
-import com.datastax.driver.core.querybuilder.BuiltStatement
+import scala.concurrent.{Future => ScalaFuture}
 
 
-
+ /*
 trait ExecutableStatement extends CassandraResultSetOperations {
 
   protected[phantom] val qb: BuiltStatement
@@ -148,4 +141,4 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R] extends ExecutableStatement 
   def collect()(implicit session: Session): TwitterFuture[List[R]] = {
     execute() map { resultSet => { directMapper(resultSet.all) } }
   }
-}
+}           */

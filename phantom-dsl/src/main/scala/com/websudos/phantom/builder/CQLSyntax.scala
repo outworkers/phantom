@@ -29,6 +29,7 @@ object CQLSyntax {
   val where = "WHERE"
   val `with` = "WITH"
   val update = "UPDATE"
+  val alter = "UPDATE"
   val delete = "DELETE"
   val orderBy = "ORDER BY"
   val groupBy = "GROUP BY"

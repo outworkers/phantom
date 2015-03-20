@@ -245,7 +245,7 @@ sealed trait TablePropertyClauses extends CompactionStrategies with CompressionS
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
   Record
-](val table: Table, val qb: CQLQuery) {
+](val table: Table) {
 
   private[phantom] def default: CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)

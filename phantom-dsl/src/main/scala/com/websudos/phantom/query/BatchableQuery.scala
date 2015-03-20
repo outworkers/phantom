@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.query
 
+/*
 trait BatchableQuery[Q] {
 
   self: CQLQuery[Q] =>
@@ -36,3 +37,4 @@ trait BatchableQuery[Q] {
   def timestamp(l: Long): Q
 
 }
+*/

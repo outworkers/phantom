@@ -35,8 +35,6 @@ abstract class Query[
     C <: WhereBound
   ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C]
 
-
-
   final def consistencyLevel(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
     create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), row)
   }
