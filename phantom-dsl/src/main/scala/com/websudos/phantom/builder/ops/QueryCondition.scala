@@ -33,11 +33,11 @@ object ConditionalClause {
    *
    * @param qb The underlying builder.
    */
-  class WhereCondition(override val qb: CQLQuery) extends QueryCondition(qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
 case class OrderingClause(qb: CQLQuery)
 
 object UpdateClause {
-  class AssignmentCondition(override val qb: CQLQuery) extends QueryCondition(qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }

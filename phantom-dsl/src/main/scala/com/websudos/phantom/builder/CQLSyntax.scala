@@ -106,6 +106,7 @@ object CQLSyntax {
     val bloom_filter_fp_chance = "bloom_filter_fp_chance"
     val speculative_retry = "speculative_retry"
     val percentile = "percentile"
+    val default_time_to_live = "default_time_to_live"
   }
 
   object CompactionOptions {

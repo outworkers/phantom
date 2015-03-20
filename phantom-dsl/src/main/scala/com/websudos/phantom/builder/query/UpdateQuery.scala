@@ -36,11 +36,11 @@ class UpdateQuery[
   }
 
 
-  final def modify(clause: Table => UpdateClause.AssignmentCondition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def modify(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
     new UpdateQuery(table, QueryBuilder.set(qb, clause(table).qb), row)
   }
 
-  final def and(clause: Table => UpdateClause.AssignmentCondition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def and(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
     new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb), row)
   }
 }

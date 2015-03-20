@@ -73,6 +73,8 @@ class SelectQuery[
     new SelectQuery[T, R, L, O, S, C](t, q, r)
   }
 
+  //final def orderBy(clause: Table => Order)
+
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.

@@ -45,6 +45,7 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.util.NonFatal
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.websudos.util.zookeeper.ZooKeeperInstance
 
 private[testkit] object CassandraStateManager {
 
@@ -103,7 +104,7 @@ private[testkit] object CassandraStateManager {
 
 
 private[testkit] object ZooKeeperManager {
-  lazy val zkInstance = new ZookeeperInstance()
+  lazy val zkInstance = new ZooKeeperInstance("/cassandra")
 
   private[this] var isStarted = false
 

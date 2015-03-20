@@ -226,6 +226,20 @@ sealed trait TablePropertyClauses extends CompactionStrategies with CompressionS
     }
   }
 
+  object default_time_to_live extends TableProperty {
+    def eqs(time: Seconds): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(time.getSeconds.toString))
+    }
+
+    def eqs(duration: FiniteDuration): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(duration.toSeconds.toString))
+    }
+
+    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(duration.inSeconds.toString))
+    }
+  }
+
 }
 
 class RootCreateQuery[

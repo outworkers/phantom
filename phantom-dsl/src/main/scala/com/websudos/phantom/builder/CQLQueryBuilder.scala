@@ -214,6 +214,10 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
     tableOption(CQLSyntax.CreateOptions.dclocal_read_repair_chance, st)
   }
 
+  def default_time_to_live(st: String): CQLQuery = {
+    tableOption(CQLSyntax.CreateOptions.default_time_to_live, st)
+  }
+
   def gc_grace_seconds(st: String): CQLQuery = {
     tableOption(CQLSyntax.CreateOptions.gc_grace_seconds, st)
   }

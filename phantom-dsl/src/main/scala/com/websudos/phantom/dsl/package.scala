@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.phantom.builder.ops.UpdateClause.AssignmentCondition
+import com.websudos.phantom.builder.ops.UpdateClause.Condition
 import com.websudos.phantom.builder.ops.WhereClause.WhereCondition
 import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
@@ -232,12 +232,12 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
 
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
-    final def +=(value: Int = 1): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.increment(col.name, value.toString))
+    final def +=(value: Int = 1): UpdateClause.Condition = {
+      new Condition(QueryBuilder.increment(col.name, value.toString))
     }
 
-    final def -=(value: Int = 1): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.decrement(col.name, value.toString))
+    final def -=(value: Int = 1): UpdateClause.Condition = {
+      new Condition(QueryBuilder.decrement(col.name, value.toString))
     }
 
     final def increment = += _
@@ -247,8 +247,8 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
 
   implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
 
-    final def setTo(value: RR): UpdateClause.AssignmentCondition = {
-      new AssignmentCondition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+    final def setTo(value: RR): UpdateClause.Condition = {
+      new Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
   }
