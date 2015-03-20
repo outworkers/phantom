@@ -32,10 +32,12 @@ package com.websudos.phantom.zookeeper
 import java.io.IOException
 import java.net.Socket
 
-import com.twitter.util.NonFatal
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
-
 import scala.concurrent._
+
+import com.websudos.util.zookeeper.ZooKeeperInstance
+import com.twitter.util.NonFatal
+
 
 
 /**
@@ -73,7 +75,7 @@ private[zookeeper] object CassandraStateManager {
 
 
 private[zookeeper] object ZookeeperManager {
-  lazy val zkInstance = new ZookeeperInstance()
+  lazy val zkInstance = new ZookeeperInstance("/cassandra")
 
   private[this] var isStarted = false
 
