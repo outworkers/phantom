@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom
 
+import com.websudos.phantom.connectors.KeySpace
+
 import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
 import com.datastax.driver.core.{Session, ResultSet}
 import com.twitter.util.Future
@@ -70,11 +72,11 @@ package object udt {
     Record, Col]
 
   implicit class CassandraUDT[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
-    def udtExecute()(implicit session: Session): Future[ResultSet] = {
+    def udtExecute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
       UDTCollector.execute()
     }
 
-    def udtFuture()(implicit session: Session, ec: ExecutionContext): ScalaFuture[ResultSet] = {
+    def udtFuture()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[ResultSet] = {
       UDTCollector.future()
     }
   }

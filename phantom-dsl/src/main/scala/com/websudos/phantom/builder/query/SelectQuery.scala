@@ -75,6 +75,10 @@ class SelectQuery[
     new SelectQuery[T, R, L, O, S, C](t, q, r)
   }
 
+  def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new SelectQuery(table, QueryBuilder.allowFiltering(qb), rowFunc)
+  }
+
   //final def orderBy(clause: Table => Order)
 
   /**

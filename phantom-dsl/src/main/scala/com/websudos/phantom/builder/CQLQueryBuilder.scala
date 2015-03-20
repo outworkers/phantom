@@ -378,6 +378,10 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
       .forcePad.append(tableName)
   }
 
+  def allowFiltering(qb: CQLQuery): CQLQuery = {
+    qb.pad.append(syntax.allowFiltering)
+  }
+
   def limit(qb: CQLQuery, value: Int): CQLQuery = {
     qb.pad.append(syntax.limit)
       .forcePad.append(value.toString)

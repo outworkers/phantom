@@ -29,9 +29,8 @@
  */
 package com.websudos.phantom.batch
 
-import com.datastax.driver.core.querybuilder.{ Batch, QueryBuilder }
-import com.websudos.phantom.builder.query.{CQLQuery, Batchable, ExecutableStatement}
-import com.websudos.phantom.query.{ BatchableQuery, CQLQuery, ExecutableStatement }
+import com.datastax.driver.core.querybuilder.{Batch, QueryBuilder}
+import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement}
 
 
 sealed abstract class BatchableTypes {

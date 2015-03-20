@@ -42,7 +42,7 @@ import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
 trait ExampleConnector extends SimpleCassandraConnector {
-  val keySpace = KeySpace("phnatom_example")
+  implicit val keySpace = KeySpace("phantom_example")
 }
 
 /**
