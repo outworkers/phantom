@@ -11,7 +11,7 @@ import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImpl
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
 
-package object dsl extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
+package object dsl extends CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement

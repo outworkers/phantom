@@ -29,8 +29,8 @@
  */
 package com.websudos.phantom
 
+import com.websudos.phantom.builder.ops.SelectColumn
 import com.websudos.phantom.builder.query.RootSelectBlock
-import com.websudos.phantom.column.SelectColumn
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>

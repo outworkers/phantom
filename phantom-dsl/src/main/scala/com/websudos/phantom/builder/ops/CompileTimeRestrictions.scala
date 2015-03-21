@@ -1,5 +1,6 @@
 package com.websudos.phantom.builder.ops
 
+import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.primitives.Primitive
@@ -8,6 +9,52 @@ import com.websudos.phantom.keys.Key
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
+
+
+private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
+
+  def toCType(v: RR): AnyRef
+
+  def asCql(v: RR): String
+
+  def setTo(value: RR): UpdateClause.Condition = new UpdateClause.Condition(QueryBuilder.set(name, asCql(value)))
+}
+
+
+class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col.name) {
+
+  def toCType(v: RR): AnyRef = col.toCType(v)
+
+  def asCql(v: RR): String = col.asCql(v)
+}
+
+sealed abstract class SelectColumn[T](val col: AbstractColumn[_]) {
+  def apply(r: Row): T
+}
+
+
+
+sealed trait ColumnModifiers {
+  implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
+    extends AbstractModifyColumn[Option[RR]](col.name) {
+
+    def toCType(v: Option[RR]): AnyRef = col.toCType(v)
+
+    def asCql(v: Option[RR]): String = col.asCql(v)
+  }
+
+  class SelectColumnRequired[Owner <: CassandraTable[Owner, Record], Record, T](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
+    def apply(r: Row): T = col.apply(r)
+  }
+
+  implicit def columnToSelection[Owner <: CassandraTable[Owner, Record], Record, T](column: Column[Owner, Record, T]): SelectColumnRequired[Owner, Record, T] = new SelectColumnRequired[Owner,
+    Record, T](column)
+
+  implicit class SelectColumnOptional[Owner <: CassandraTable[Owner, Record], Record, T](col: OptionalColumn[Owner, Record, T])
+    extends SelectColumn[Option[T]](col) {
+    def apply(r: Row): Option[T] = col.apply(r)
+  }
+}
 
 
 sealed trait CollectionOperators {
@@ -101,7 +148,7 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
   }
 }
 
-trait CompileTimeRestrictions {
+trait CompileTimeRestrictions extends CollectionOperators with ColumnModifiers {
 
   @implicitNotFound(msg = "Only indexed columns can be updated to indexed clauses")
   implicit def columnToIndexColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< Key[RR, _]): IndexQueryClauses[RR] = {

@@ -39,10 +39,10 @@ import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, 
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
-import com.websudos.phantom.column.{AbstractColumn, Operations}
+import com.websudos.phantom.column.AbstractColumn
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
-object Implicits extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
+object Implicits extends CompileTimeRestrictions with CreateImplicits with DefaultPrimitives with SelectImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -152,7 +152,6 @@ object Implicits extends Operations with CreateImplicits with DefaultPrimitives 
 
     }
   }
-
 
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
