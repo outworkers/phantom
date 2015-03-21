@@ -31,22 +31,6 @@ package com.websudos.phantom.builder
 
 import com.websudos.phantom.builder.query.CQLQuery
 
-sealed trait LimitBound
-trait Limited extends LimitBound
-trait Unlimited extends LimitBound
-
-sealed trait OrderBound
-trait Ordered extends OrderBound
-trait Unordered extends OrderBound
-
-sealed trait ConsistencyBound
-trait Specified extends ConsistencyBound
-trait Unspecified extends ConsistencyBound
-
-sealed trait WhereBound
-trait Chainned extends WhereBound
-trait Unchainned extends WhereBound
-
 trait CQLOperator {
   def name: String
 }
@@ -59,6 +43,10 @@ private[builder] object Utils {
 
   def collection(list: TraversableOnce[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`[`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def set(list: Set[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`{`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`}`)
   }
 }
 
@@ -136,6 +124,24 @@ sealed trait CollectionModifiers extends BaseModifiers {
     collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.+, column)
   }
 
+  def discard(column: String, values: String*): CQLQuery = {
+    collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.-, column)
+  }
+
+  def add(column: String, values: Set[String]): CQLQuery = {
+    collectionModifier(Utils.set(values).queryString, CQLSyntax.Symbols.+, column)
+  }
+
+  def remove(column: String, values: Set[String]): CQLQuery = {
+    collectionModifier(Utils.set(values).queryString, CQLSyntax.Symbols.-, column)
+  }
+
+  def setIdX(column: String, index: String, value: String): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
+      .append(index).append(CQLSyntax.Symbols.`]`)
+      .forcePad.append(CQLSyntax.eqs)
+      .forcePad.append(value)
+  }
 }
 
 

@@ -30,14 +30,12 @@
 package com.websudos.phantom.column
 
 trait CollectionValueDefinition[RR] {
-  self: AbstractColumn[RR] =>
 
   def valueCls: Class[_]
   def valueToCType(v: RR): AnyRef
+  def asCqlValue(v: RR): String
   def valueFromCType(c: AnyRef): RR
 
-  def collectionAsCql(values: TraversableOnce[RR]): String = {
-    values.map(asCql).mkString(", ")
-  }
+
 
  }

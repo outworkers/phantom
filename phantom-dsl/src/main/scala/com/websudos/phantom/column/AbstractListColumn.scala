@@ -52,4 +52,9 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
       r.getList(name, valueCls).asScala.map(e => valueFromCType(e.asInstanceOf[AnyRef])).toList
     }.toOption
   }
+
+  def collectionAsCql(values: TraversableOnce[RR]): String = {
+    asCql(values.toList).mkString(", ")
+  }
+
 }

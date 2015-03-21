@@ -9,7 +9,7 @@ import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, 
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
-import com.websudos.phantom.column.{AbstractColumn, Operations}
+import com.websudos.phantom.column.AbstractColumn
 
 package object dsl extends CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
 
