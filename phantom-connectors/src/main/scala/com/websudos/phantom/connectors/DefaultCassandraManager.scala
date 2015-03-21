@@ -45,7 +45,7 @@ trait DefaultCassandraManager extends CassandraManager {
   def cassandraHost: String = "localhost"
 
   private[this] var inited = false
-  @volatile private[this] var _session: Session = null
+  private[this] var _session: Session = null
 
   private[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
     exception match {
@@ -58,7 +58,9 @@ trait DefaultCassandraManager extends CassandraManager {
   def clusterRef: Cluster = {
     if (cluster.isClosed) {
       try {
-        cluster.connect()
+        blocking {
+          cluster.connect()
+        }
         cluster
       } catch {
         case NonFatal(e) => {
@@ -101,7 +103,7 @@ trait DefaultCassandraManager extends CassandraManager {
 
   lazy val cluster = createCluster()
 
-  def session = _session
+  def session = CassandraInitLock.synchronized { _session }
 
 
   def initIfNotInited(keySpace: String): Unit = CassandraInitLock.synchronized {
