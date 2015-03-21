@@ -1,14 +1,44 @@
+/*
+ * Copyright 2013-2015 Websudos, Limited.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.websudos.phantom.udt
 
-import com.datastax.driver.core.querybuilder.BuiltStatement
+import java.util.Date
+
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
-import com.websudos.phantom.Implicits.Column
-import com.websudos.phantom.query.ExecutableStatement
-import com.websudos.phantom.zookeeper.CassandraConnector
+import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
+import com.websudos.phantom.connectors.CassandraConnector
+import com.websudos.phantom.dsl.{Column, KeySpace}
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
+import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
@@ -28,9 +58,7 @@ private[phantom] object Lock
 */
 sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Short) T : CassandraPrimitive](owner: UDTColumn[_, _, _]) {
 
-  type ValueType = T
-
-  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decoded
+  lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
@@ -63,6 +91,7 @@ object PrimitiveBoxedManifests {
   val FloatManifest = manifest[Float]
   val BigDecimalManifest = manifest[BigDecimal]
   val BigIntManifest = manifest[BigInt]
+  val DateManifest = manifest[Date]
 }
 
 
@@ -87,11 +116,11 @@ private[udt] object UDTCollector {
    * @param session The Cassandra database connection session.
    * @return
    */
-  def future()(implicit session: Session, ec: ExecutionContext): ScalaFuture[ResultSet] = {
+  def future()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     ScalaFuture.sequence(_udts.toSeq.map(_.create().future())).map(_.head)
   }
 
-  def execute()(implicit session: Session): Future[ResultSet] = {
+  def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     Future.collect(_udts.map(_.create().execute())).map(_.head)
   }
 }
@@ -104,7 +133,7 @@ sealed trait UDTDefinition[T] {
 
   def connector: CassandraConnector
 
-  def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace).getUserType(name)
+  def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace.name).getUserType(name)
 
   val cassandraType = name.toLowerCase
 
@@ -149,7 +178,7 @@ sealed trait UDTDefinition[T] {
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
    * Every new buffer spawned will be a perfect clone of this instance, and the fields will always be pre-initialised on extraction.
    */
-  private[udt] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]] with MutableSyncBuffer[AbstractField[_]]
+  private[udt] lazy val _fields: MutableArrayBuffer[AbstractField[_]] = new MutableArrayBuffer[AbstractField[_]]
 }
 
 
@@ -191,13 +220,13 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: BuiltStatement, udt: UDTDefinition[_]) extends ExecutableStatement {
+sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_]) extends ExecutableStatement {
 
-  override def execute()(implicit session: Session): Future[ResultSet] = {
+  override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     twitterQueryStringExecuteToFuture(udt.schema())
   }
 
-  override def future()(implicit session: Session): ScalaFuture[ResultSet] = {
+  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(udt.schema())
   }
 }

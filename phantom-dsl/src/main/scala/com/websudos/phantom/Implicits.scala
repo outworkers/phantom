@@ -1,17 +1,31 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom
 
@@ -20,13 +34,15 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.query.{QueryCondition, SelectQuery, SelectWhere}
-import org.joda.time.DateTime
+import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
+import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
+import com.websudos.phantom.column.AbstractColumn
 
-object Implicits extends Operations {
+@deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
+object Implicits extends CompileTimeRestrictions with CreateImplicits with DefaultPrimitives with SelectImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -89,13 +105,19 @@ object Implicits extends Operations {
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
-  type LongOrderKey[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.keys.LongOrderKey[Owner, Record]
 
+  type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleCassandraConnector
+  type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
+  type CassandraManager = com.websudos.phantom.connectors.CassandraManager
 
+  type DateTime = org.joda.time.DateTime
+  type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
+  type KeySpace = com.websudos.phantom.connectors.KeySpace
+  val KeySpace = com.websudos.phantom.connectors.KeySpace
 
 
   object ConsistencyLevel {
@@ -113,54 +135,105 @@ object Implicits extends Operations {
   }
 
 
-  implicit class SkipSelect[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectQuery[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.where(_.orderId gt l.toLong)
-    }
+  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
+    new CassandraPrimitive[T#Value] {
 
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.where(_.orderId gt l)
-    }
-  }
+      override def cassandraType: String = "text"
 
-  implicit class SkipSelectWhere[T <: CassandraTable[T, R] with LongOrderKey[T, R], R](val select: SelectWhere[T, R]) extends AnyVal {
-    final def skip(l: Int): SelectWhere[T, R] = {
-      select.and(_.orderId gt l.toLong)
-    }
+      def cls: Class[_] = classOf[Enumeration]
 
-    final def skip(l: Long): SelectWhere[T, R] = {
-      select.and(_.orderId gt l)
+      override def fromRow(row: Row, name: String): Option[T#Value] = {
+        if (row.isNull(name)) {
+          None
+        } else {
+          enum.values.find(row.getString(name) == _.toString)
+        }
+      }
+
     }
   }
 
-  implicit class PartitionTokenHelper[T](val p: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
+  implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
-    def ltToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def ltToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.lt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
     }
 
-    def lteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.lte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def lteToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.lte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
     }
 
-    def gtToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gt(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def gtToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.gt(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
     }
 
-    def gteToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.gte(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def gteToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.gte(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
     }
 
-    def eqsToken (value: T): QueryCondition = {
-      QueryCondition(QueryBuilder.eq(QueryBuilder.token(p.asInstanceOf[Column[_,_,T]].name),
-        QueryBuilder.fcall("token", p.asInstanceOf[Column[_, _, T]].toCType(value))))
+    def eqsToken (value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.eqs(
+          QueryBuilder.token(p.name),
+          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        )
+      )
     }
+  }
+
+
+
+  implicit class RichNumber(val percent: Int) extends AnyVal {
+    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+    def `%`: CQLQuery= CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
 
   implicit lazy val context = Manager.scalaExecutor
+
+
+  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
+    final def +=(value: Int = 1): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.increment(col.name, value.toString))
+    }
+
+    final def -=(value: Int = 1): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.decrement(col.name, value.toString))
+    }
+
+    final def increment = += _
+
+    final def decrement = -= _
+  }
+
+  implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
+
+    final def setTo(value: RR): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+    }
+
+  }
+
+
+
 
 }

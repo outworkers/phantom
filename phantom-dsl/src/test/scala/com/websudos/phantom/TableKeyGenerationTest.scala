@@ -1,8 +1,37 @@
+/*
+ * Copyright 2013-2015 Websudos, Limited.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.websudos.phantom
 
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-import com.websudos.phantom.tables.{BrokenClusteringTable, TableWithCompositeKey, TableWithCompoundKey, TableWithNoKey, TableWithSingleKey}
+import com.websudos.phantom.tables.{BrokenClusteringTable, TableWithCompositeKey, TableWithCompoundKey, TableWithNoKey, TableWithSingleKey, TimeSeriesTableWithTTL, BrokenCounterTableTest, TimeSeriesTableWithTTL2}
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {
 
@@ -18,6 +47,15 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
     TableWithCompositeKey.defineTableKey() shouldEqual s"PRIMARY KEY ((id, second_part), second)"
   }
 
+  it should "correctly create a Table with TTL with Clustering" in {
+    TimeSeriesTableWithTTL.ttlClause shouldEqual s"AND default_time_to_live=5"
+  }
+
+  it should "correctly create a Table with TTL" in {
+    TimeSeriesTableWithTTL2.ttlClause shouldEqual s"WITH default_time_to_live=5"
+  }
+
+
   it should "throw an error if the schema has no PartitionKey" in {
     intercept[InvalidPrimaryKeyException] {
       TableWithNoKey.defineTableKey()
@@ -30,4 +68,9 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
     }
   }
 
+  it should "throw an error if the table uses TTLs with CounterColumns" in {
+    intercept[InvalidTableException] {
+      BrokenCounterTableTest.ttlClause
+    }
+  }
 }

@@ -1,17 +1,31 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom
 
@@ -27,14 +41,16 @@ import scala.util.Try
 trait CassandraWrites[T] {
 
   def toCType(v: T): AnyRef
+  def asCql(v: T): String = toCType(v).toString
   def cassandraType: String
 }
 
 trait CassandraPrimitive[T] extends CassandraWrites[T] {
 
+  def toCType(v: T): String = v.toString
+
   def cls: Class[_]
 
-  def toCType(v: T): AnyRef = v.asInstanceOf[AnyRef]
   def fromCType(c: AnyRef): T = c.asInstanceOf[T]
   def fromRow(row: Row, name: String): Option[T]
 }
@@ -46,38 +62,49 @@ object CassandraPrimitive {
   implicit object IntIsCassandraPrimitive extends CassandraPrimitive[Int] {
 
     val cassandraType = "int"
-    def cls: Class[_] = classOf[java.lang.Integer]
+
     def fromRow(row: Row, name: String): Option[Int] =
       if (row.isNull(name)) None else Try(row.getInt(name)).toOption
+
+    override def cls: Class[_] = classOf[Int]
   }
 
   implicit object FloatIsCassandraPrimitive extends CassandraPrimitive[Float] {
 
     val cassandraType = "float"
-    def cls: Class[_] = classOf[java.lang.Float]
+
     def fromRow(row: Row, name: String): Option[Float] =
       if (row.isNull(name)) None else Try(row.getFloat(name)).toOption
+
+    override def cls: Class[_] = classOf[Float]
   }
 
   implicit object LongIsCassandraPrimitive extends CassandraPrimitive[Long] {
 
     val cassandraType = "bigint"
-    def cls: Class[_] = classOf[java.lang.Long]
+
     def fromRow(row: Row, name: String): Option[Long] =
       if (row.isNull(name)) None else Try(row.getLong(name)).toOption
+
+    override def cls: Class[_] = classOf[Long]
   }
 
   implicit object StringIsCassandraPrimitive extends CassandraPrimitive[String] {
 
     val cassandraType = "text"
+
     def cls: Class[_] = classOf[java.lang.String]
+
     def fromRow(row: Row, name: String): Option[String] =
       if (row.isNull(name)) None else Try(row.getString(name)).toOption
+
+
   }
 
   implicit object DoubleIsCassandraPrimitive extends CassandraPrimitive[Double] {
 
     val cassandraType = "double"
+
     def cls: Class[_] = classOf[java.lang.Double]
     def fromRow(row: Row, name: String): Option[Double] =
       if (row.isNull(name)) None else Try(row.getDouble(name)).toOption
@@ -86,15 +113,20 @@ object CassandraPrimitive {
   implicit object DateIsCassandraPrimitive extends CassandraPrimitive[Date] {
 
     val cassandraType = "timestamp"
-    def cls: Class[_] = classOf[Date]
+
+    def cls: Class[_] = classOf[java.util.Date]
+
     def fromRow(row: Row, name: String): Option[Date] =
       if (row.isNull(name)) None else Try(row.getDate(name)).toOption
   }
 
   implicit object DateTimeisCassandraPrimitive extends CassandraPrimitive[DateTime] {
     val cassandraType = "timestamp"
-    def cls: Class[_] = classOf[org.joda.time.DateTime]
-    override def toCType(v: org.joda.time.DateTime): AnyRef = v.toDate.asInstanceOf[AnyRef]
+
+    def cls: Class[_] = classOf[java.util.Date]
+
+    override def toCType(v: org.joda.time.DateTime): String = v.toDate.toString
+
     def fromRow(row: Row, name: String): Option[DateTime] =
       if (row.isNull(name)) None else Try(new DateTime(row.getDate(name))).toOption
   }
@@ -103,7 +135,9 @@ object CassandraPrimitive {
   implicit object BooleanIsCassandraPrimitive extends CassandraPrimitive[Boolean] {
 
     val cassandraType = "boolean"
+
     def cls: Class[_] = classOf[Boolean]
+
     def fromRow(row: Row, name: String): Option[Boolean] =
       if (row.isNull(name)) None else  Try(row.getBool(name)).toOption
   }
@@ -111,7 +145,9 @@ object CassandraPrimitive {
   implicit object UUIDIsCassandraPrimitive extends CassandraPrimitive[UUID] {
 
     val cassandraType = "uuid"
+
     def cls: Class[_] = classOf[UUID]
+
     def fromRow(row: Row, name: String): Option[UUID] =
       if (row.isNull(name)) None else Try(row.getUUID(name)).toOption
   }
@@ -119,7 +155,9 @@ object CassandraPrimitive {
   implicit object BigDecimalCassandraPrimitive extends CassandraPrimitive[BigDecimal] {
 
     val cassandraType = "decimal"
+
     def cls: Class[_] = classOf[BigDecimal]
+
     def fromRow(row: Row, name: String): Option[BigDecimal] =
       if (row.isNull(name)) None else Try(BigDecimal(row.getDecimal(name))).toOption
   }
@@ -127,7 +165,9 @@ object CassandraPrimitive {
   implicit object InetAddressCassandraPrimitive extends CassandraPrimitive[InetAddress] {
 
     val cassandraType = "inet"
+
     def cls: Class[_] = classOf[InetAddress]
+
     def fromRow(row: Row, name: String): Option[InetAddress] =
       if (row.isNull(name)) None else Try(row.getInet(name)).toOption
   }
@@ -135,13 +175,16 @@ object CassandraPrimitive {
   implicit object BigIntCassandraPrimitive extends CassandraPrimitive[BigInt] {
 
     val cassandraType = "varint"
+
     def cls: Class[_] = classOf[BigInt]
+
     def fromRow(row: Row, name: String): Option[BigInt] =
       if (row.isNull(name)) None else Try(BigInt(row.getVarint(name))).toOption
   }
 
   implicit object BlobIsCassandraPrimitive extends CassandraPrimitive[ByteBuffer] {
     val cassandraType = "blob"
+
     def cls: Class[_] = classOf[ByteBuffer]
 
     def fromRow(row: Row, name: String): Option[ByteBuffer] =

@@ -1,21 +1,36 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom.example.basics
 
-import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, SimpleCassandraConnector}
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
+import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
 
 /**
  * This is an example of how to connect to Cassandra in the easiest possible way.
@@ -27,7 +42,7 @@ import com.websudos.phantom.zookeeper.{DefaultZookeeperConnector, SimpleCassandr
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
 trait ExampleConnector extends SimpleCassandraConnector {
-  val keySpace = "phnatom_example"
+  implicit val keySpace = KeySpace("phantom_example")
 }
 
 /**
@@ -39,7 +54,7 @@ trait ExampleConnector extends SimpleCassandraConnector {
  * .." sequence. All these settings are trivial to override in the below connector and you can adjust all the settings to fit your environment.
  */
 trait ZooKeeperConnector extends DefaultZookeeperConnector {
-  val keySpace = "phantom_zookeeper_example"
+  val keySpace = KeySpace("phantom_zookeeper_example")
 }
 
 
