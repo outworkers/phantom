@@ -260,7 +260,8 @@ object PhantomBuild extends Build {
       "com.websudos"                     %% "util-testing"             % UtilVersion,
       "org.cassandraunit"                %  "cassandra-unit"           % CassandraUnitVersion  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "slf4j-jdk14")
+        ExclusionRule("org.slf4j", "slf4j-jdk14"),
+        ExclusionRule("com.google.guava", "guava")
       )
     )
   ).dependsOn(

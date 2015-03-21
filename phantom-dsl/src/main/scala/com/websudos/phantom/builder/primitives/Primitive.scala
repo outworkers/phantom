@@ -1,5 +1,7 @@
 package com.websudos.phantom.builder.primitives
 
+import java.util.UUID
+
 import com.websudos.phantom.builder.query.CQLQuery
 
 abstract class Primitive[RR] {
@@ -26,6 +28,10 @@ trait DefaultPrimitives {
 
   implicit object FloatPrimitive extends Primitive[Float] {
     def asCql(value: Float): String = value.toString
+  }
+
+  implicit object UUIDPrimitive extends Primitive[UUID] {
+    def asCql(value: UUID): String = value.toString
   }
 
 }

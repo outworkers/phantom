@@ -5,14 +5,13 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
+import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.keys.Key
 
-package object dsl extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits {
+package object dsl extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -103,54 +102,6 @@ package object dsl extends Operations with CreateImplicits with DefaultPrimitive
     val LOCAL_ONE = CLevel.LOCAL_ONE
     val SERIAL = CLevel.SERIAL
   }
-
-  /**
-   * A class enforcing columns used in where clauses to be indexed.
-   * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
-   * This enforces a Cassandra limitation at compile time.
-   * It prevents a user from querying and using where operators on a column without any index.
-   * @param col The column to cast to an IndexedColumn.
-   * @tparam RR The type of the value the column holds.
-   */
-  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) extends AnyVal {
-
-    private[this] val p = implicitly[Primitive[RR]]
-
-    def eqs(value: RR): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.eqs(col.name, p.asCql(value)))
-    }
-
-    def ==(value: RR) = eqs _
-
-    def lt(value: RR): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.lt(col.name, p.asCql(value)))
-    }
-
-    def < = lt _
-
-    def lte(value: RR): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
-    }
-
-    def <= = lte _
-
-    def gt(value: RR): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.gt(col.name, p.asCql(value)))
-    }
-
-    def > = gt _
-
-    def gte(value: RR): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.gte(col.name, p.asCql(value)))
-    }
-
-    def >= = gte _
-
-    def in(values: List[RR]): WhereClause.Condition = {
-      new WhereClause.Condition(QueryBuilder.in(col.name, values.map(p.asCql)))
-    }
-  }
-
 
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
     new CassandraPrimitive[T#Value] {

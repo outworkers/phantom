@@ -35,17 +35,14 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
-import com.websudos.phantom.builder.ops.UpdateClause.Condition
+import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
-import com.websudos.phantom.builder.ops.{UpdateClause, WhereClause}
-import com.websudos.phantom.builder.ops.WhereClause.Condition
-import com.websudos.phantom.builder.primitives.{Primitive, DefaultPrimitives}
-import com.websudos.phantom.builder.query.{CQLQuery, SelectImplicits, CreateImplicits}
 import com.websudos.phantom.column.{AbstractColumn, Operations}
-import com.websudos.phantom.keys.Key
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
-object Implicits extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits {
+object Implicits extends Operations with CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
   type BatchStatement = com.websudos.phantom.batch.BatchStatement
@@ -137,53 +134,6 @@ object Implicits extends Operations with CreateImplicits with DefaultPrimitives 
     val SERIAL = CLevel.SERIAL
   }
 
-  /**
-   * A class enforcing columns used in where clauses to be indexed.
-   * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
-   * This enforces a Cassandra limitation at compile time.
-   * It prevents a user from querying and using where operators on a column without any index.
-   * @param col The column to cast to an IndexedColumn.
-   * @tparam RR The type of the value the column holds.
-   */
-  implicit class IndexQueryClauses[T <: AbstractColumn[RR] with Key[RR, _], RR : Primitive](val col: T) {
-
-    private[this] val p = implicitly[Primitive[RR]]
-
-    def eqs(value: RR): WhereClause.Condition = {
-      new Condition(QueryBuilder.eqs(col.name, p.asCql(value)))
-    }
-
-    def ==(value: RR) = eqs _
-
-    def lt(value: RR): WhereClause.Condition = {
-      new Condition(QueryBuilder.lt(col.name, p.asCql(value)))
-    }
-
-    def < = lt _
-
-    def lte(value: RR): WhereClause.Condition = {
-      new Condition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
-    }
-
-    def <= = lte _
-
-    def gt(value: RR): WhereClause.Condition = {
-      new Condition(QueryBuilder.gt(col.name, p.asCql(value)))
-    }
-
-    def > = gt _
-
-    def gte(value: RR): WhereClause.Condition = {
-      new Condition(QueryBuilder.gte(col.name, p.asCql(value)))
-    }
-
-    def >= = gte _
-
-    def in(values: List[RR]): WhereClause.Condition = {
-      new Condition(QueryBuilder.in(col.name, values.map(p.asCql)))
-    }
-  }
-
 
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
     new CassandraPrimitive[T#Value] {
@@ -264,11 +214,11 @@ object Implicits extends Operations with CreateImplicits with DefaultPrimitives 
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=(value: Int = 1): UpdateClause.Condition = {
-      new Condition(QueryBuilder.increment(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.increment(col.name, value.toString))
     }
 
     final def -=(value: Int = 1): UpdateClause.Condition = {
-      new Condition(QueryBuilder.decrement(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.decrement(col.name, value.toString))
     }
 
     final def increment = += _
@@ -279,7 +229,7 @@ object Implicits extends Operations with CreateImplicits with DefaultPrimitives 
   implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
 
     final def setTo(value: RR): UpdateClause.Condition = {
-      new Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+      new UpdateClause.Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
   }

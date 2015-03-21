@@ -31,12 +31,11 @@ package com.websudos.phantom.udt
 
 import java.util.Date
 
-import com.datastax.driver.core.querybuilder.BuiltStatement
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
-import com.websudos.phantom.builder.query.ExecutableStatement
-import com.websudos.phantom.dsl.{KeySpace, Column}
+import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
 import com.websudos.phantom.connectors.CassandraConnector
+import com.websudos.phantom.dsl.{Column, KeySpace}
 import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
@@ -221,7 +220,7 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: BuiltStatement, udt: UDTDefinition[_]) extends ExecutableStatement {
+sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_]) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     twitterQueryStringExecuteToFuture(udt.schema())

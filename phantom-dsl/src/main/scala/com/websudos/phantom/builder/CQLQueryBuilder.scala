@@ -287,6 +287,10 @@ private[phantom] object QueryBuilder extends CompactionQueryBuilder with Compres
       .forcePad.append(value)
   }
 
+  def setTo(column: String, value: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(syntax.eqs).forcePad.append(value)
+  }
+
   def set(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.set).forcePad.append(clause)
   }
