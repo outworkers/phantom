@@ -44,7 +44,7 @@ class UpdateQuery[
     new UpdateQuery(table, QueryBuilder.Update.set(qb, clause(table).qb))
   }
 
-  final def and(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def andSet(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
     new UpdateQuery(table, QueryBuilder.Update.andSet(qb, clause(table).qb))
   }
 }

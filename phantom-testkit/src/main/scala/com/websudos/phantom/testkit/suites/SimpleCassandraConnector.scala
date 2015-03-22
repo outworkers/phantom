@@ -54,7 +54,7 @@ trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
-  val keySpace = KeySpace("phantom")
+  implicit val keySpace = KeySpace("phantom")
 }
 
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

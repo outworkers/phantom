@@ -22,8 +22,6 @@ private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
 
 private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
 
-  def toCType(v: RR): AnyRef
-
   def asCql(v: RR): String
 
   def setTo(value: RR): UpdateClause.Condition = new UpdateClause.Condition(QueryBuilder.Update.set(name, asCql(value)))
@@ -31,8 +29,6 @@ private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
 
 
 class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col.name) {
-
-  def toCType(v: RR): AnyRef = col.toCType(v)
 
   def asCql(v: RR): String = col.asCql(v)
 }
@@ -44,8 +40,6 @@ sealed abstract class SelectColumn[T](val col: AbstractColumn[_]) {
 sealed trait ColumnModifiers {
   implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
     extends AbstractModifyColumn[Option[RR]](col.name) {
-
-    def toCType(v: Option[RR]): AnyRef = col.toCType(v)
 
     def asCql(v: Option[RR]): String = col.asCql(v)
   }
@@ -70,31 +64,31 @@ sealed trait CollectionOperators {
     extends ModifyColumn[List[RR]](col) {
 
     def prepend(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.valueAsCql(value)))
     }
 
-    def prependAll[L](values: L)(implicit ev1: L => Seq[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.collectionAsCql(values)))
+    def prependAll(values: List[RR]): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(values)))
     }
 
     def append(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.valueAsCql(value)))
     }
 
-    def appendAll[L](values: L)(implicit ev1: L => Seq[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.collectionAsCql(values)))
+    def appendAll(values: List[RR]): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(values)))
     }
 
     def discard(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(List(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.valueAsCql(value)))
     }
 
-    def discardAll[L](values: L)(implicit ev1: L => List[RR]): UpdateClause.Condition = {
+    def discardAll(values: List[RR]): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
     }
 
     def setIdx(i: Int, value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.valueAsCql(value)))
     }
   }
 
@@ -102,19 +96,19 @@ sealed trait CollectionOperators {
     extends ModifyColumn[Set[RR]](col) {
 
     def add(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.asCqlValue(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))
     }
 
     def addAll(values: Set[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.asCqlValue)))
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
     }
 
     def remove(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.asCqlValue(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
     }
 
     def removeAll(values: Set[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.asCqlValue)))
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))
     }
   }
 
@@ -122,17 +116,17 @@ sealed trait CollectionOperators {
     extends ModifyColumn[Map[A, B]](col) {
 
     def set(key: A, value: B): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.mapSet(col.name, col.keyToCType(key).toString, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.mapSet(col.name, col.keyAsCql(key).toString, col.valueAsCql(value)))
     }
 
     def put(value: (A, B)): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.put(col.name, Tuple2(col.keyToCType(value._1).toString, col.asCqlValue(value._2))))
+      new UpdateClause.Condition(QueryBuilder.Collections.put(col.name, Tuple2(col.keyAsCql(value._1).toString, col.valueAsCql(value._2))))
     }
 
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = {
       new UpdateClause.Condition(
         QueryBuilder.Collections.put(col.name, values.map(item => {
-          Tuple2(col.keyToCType(item._1).toString, col.valueToCType(item._2).toString)
+          Tuple2(col.keyAsCql(item._1).toString, col.valueAsCql(item._2).toString)
         }).toSeq : _*))
     }
   }
@@ -186,12 +180,12 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
 trait CompileTimeRestrictions extends CollectionOperators with ColumnModifiers {
 
   @implicitNotFound("As per CQL spec, ordering can only be specified for the 2nd part of a compound primary key.")
-  implicit def columnToOrderingColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< PrimaryKey[RR]): OrderingColumn[RR] = {
+  final implicit def columnToOrderingColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< PrimaryKey[RR]): OrderingColumn[RR] = {
     new OrderingColumn[RR](col)
   }
 
   @implicitNotFound(msg = "Only indexed columns can be updated to indexed clauses")
-  implicit def columnToIndexColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< Key[RR, _]): IndexQueryClauses[RR] = {
+  final implicit def columnToIndexColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< Key[RR, _]): IndexQueryClauses[RR] = {
     new IndexQueryClauses[RR](col)
   }
 

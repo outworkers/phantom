@@ -10,43 +10,43 @@ class QueryBuilderTest extends FlatSpec with Matchers {
 
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.eqs(column, value).queryString shouldEqual s"$column = $value"
+    QueryBuilder.Where.eqs(column, value).queryString shouldEqual s"$column = $value"
   }
 
   it should "serialise a Where.== clause" in {
 
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.==(column, value).queryString shouldEqual s"$column = $value"
+    QueryBuilder.Where.==(column, value).queryString shouldEqual s"$column = $value"
   }
 
 
   it should "serialise a Where.lt clause" in {
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.lt(column, value).queryString shouldEqual s"$column < $value"
+    QueryBuilder.Where.lt(column, value).queryString shouldEqual s"$column < $value"
   }
 
   it should "serialise a Where.lte clause" in {
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.lte(column, value).queryString shouldEqual s"$column <= $value"
+    QueryBuilder.Where.lte(column, value).queryString shouldEqual s"$column <= $value"
   }
 
   it should "serialise a Where.gt clause" in {
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.gt(column, value).queryString shouldEqual s"$column > $value"
+    QueryBuilder.Where.gt(column, value).queryString shouldEqual s"$column > $value"
   }
 
   it should "serialise a Where.gte clause" in {
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.gte(column, value).queryString shouldEqual s"$column >= $value"
+    QueryBuilder.Where.gte(column, value).queryString shouldEqual s"$column >= $value"
   }
 
   it should "serialise a Where.in clause" in {
     val column = gen[String]
-    QueryBuilder.in(column, "test", "test2").queryString shouldEqual s"$column IN (test, test2)"
+    QueryBuilder.Where.in(column, "test", "test2").queryString shouldEqual s"$column IN (test, test2)"
   }
 }

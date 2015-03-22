@@ -36,7 +36,7 @@ import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
 
 trait Connector extends SimpleCassandraConnector {
-  val keySpace = KeySpace("phantom_udt")
+  implicit val keySpace = KeySpace("phantom_udt")
 }
 
 object Connector extends Connector

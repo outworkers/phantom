@@ -17,7 +17,7 @@ class CreateQueryTest extends FreeSpec with Matchers {
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
 
-        val qb = BasicTable.newCreate.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
 
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' " +
           ": 'SizeTieredCompactionStrategy' }"
@@ -25,7 +25,7 @@ class CreateQueryTest extends FreeSpec with Matchers {
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
-        val qb = BasicTable.newCreate.`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes)).qb.queryString
+        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes)).qb.queryString
 
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' " +
           ": 'SizeTieredCompactionStrategy', 'sstable_size_in_mb' : '50.0 MiB' }"
@@ -33,7 +33,7 @@ class CreateQueryTest extends FreeSpec with Matchers {
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
 
-        val qb = BasicTable.newCreate
+        val qb = BasicTable.create
           .`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
           .qb.queryString
@@ -42,7 +42,7 @@ class CreateQueryTest extends FreeSpec with Matchers {
       }
 
       "add a comment option to a create query" in {
-        val qb = BasicTable.newCreate
+        val qb = BasicTable.create
           .`with`(comment eqs "testing")
           .qb.queryString
 
@@ -50,34 +50,34 @@ class CreateQueryTest extends FreeSpec with Matchers {
       }
 
       "allow specifying custom gc_grace_seconds" in {
-        val qb = BasicTable.newCreate.`with`(gc_grace_seconds eqs 5.seconds).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs 5.seconds).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 5"
       }
 
       "allow specifying larger custom units as gc_grace_seconds" in {
-        val qb = BasicTable.newCreate.`with`(gc_grace_seconds eqs 1.day).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs 1.day).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying larger custom units as gc_grace_seconds using the Twitter conversions API" in {
-        val qb = BasicTable.newCreate.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(86400)).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(86400)).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
-        val qb = BasicTable.newCreate.`with`(gc_grace_seconds eqs Seconds.seconds(86400)).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs Seconds.seconds(86400)).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying a bloom_filter_fp_chance using a Double param value" in {
-        val qb = BasicTable.newCreate.`with`(bloom_filter_fp_chance eqs 5D).qb.queryString
+        val qb = BasicTable.create.`with`(bloom_filter_fp_chance eqs 5D).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH bloom_filter_fp_chance = 5"
       }
     }
 
     "should allow specifying cache strategies " - {
       "specify Cache.None as a cache strategy" in {
-        val qb = BasicTable.newCreate.`with`(caching eqs Cache.None).qb.queryString
+        val qb = BasicTable.create.`with`(caching eqs Cache.None).qb.queryString
         qb shouldEqual "CREATE TABLE BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = "
       }
     }

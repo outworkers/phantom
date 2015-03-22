@@ -75,7 +75,7 @@ private[zookeeper] object CassandraStateManager {
 
 
 private[zookeeper] object ZookeeperManager {
-  lazy val zkInstance = new ZookeeperInstance("/cassandra")
+  lazy val zkInstance = new ZooKeeperInstance("/cassandra")
 
   private[this] var isStarted = false
 

@@ -36,8 +36,7 @@ trait PrimitiveCollectionValue[R] extends CollectionValueDefinition[R] {
 
   def valuePrimitive: Primitive[R]
 
-  override def valueToCType(v: R): String = valuePrimitive.asCql(v)
+  def valueAsCql(v: R): String = valuePrimitive.asCql(v)
 
-  override def valueFromCType(c: AnyRef): R = valuePrimitive.fromCType(c)
-
+  def fromString(c: String): R = valuePrimitive.fromString(c)
 }

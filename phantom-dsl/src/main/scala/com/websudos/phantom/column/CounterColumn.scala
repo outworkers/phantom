@@ -30,23 +30,25 @@
 package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
 
 private[phantom] trait CounterRestriction[T]
 
 class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
   extends Column[Owner, Record, Long](table) with CounterRestriction[Long] {
 
-  val cassandraType = "counter"
-  val primitive = CassandraPrimitive[Long]
+  private[this] val primitive = Primitive[Long]
+
+  val cassandraType = CQLSyntax.Types.Counter
+
   override val isCounterColumn = true
 
-  def toCType(values: Long): AnyRef = primitive.toCType(values)
-
-  def optional(r: Row): Option[Long] = {
-    primitive.fromRow(r, name)
-  }
+  def optional(r: Row): Option[Long] = primitive.fromRow(name, r)
 
   override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+
+  override def asCql(v: Long): String = primitive.asCql(v)
 }

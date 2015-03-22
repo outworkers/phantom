@@ -103,21 +103,20 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
     val SERIAL = CLevel.SERIAL
   }
 
-  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
-    new CassandraPrimitive[T#Value] {
+  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
+    new Primitive[T#Value] {
 
       override def cassandraType: String = "text"
 
-      def cls: Class[_] = classOf[Enumeration]
-
-      override def fromRow(row: Row, name: String): Option[T#Value] = {
-        if (row.isNull(name)) {
-          None
-        } else {
-          enum.values.find(row.getString(name) == _.toString)
+      override def fromRow(name: String, row: Row): Option[T#Value] = {
+        nullCheck(name, row) {
+          r => enum.withName(r.getString(name))
         }
       }
 
+      override def asCql(value: T#Value): String = value.toString
+
+      override def fromString(value: String): T#Value = enum.withName(value)
     }
   }
 
@@ -176,7 +175,6 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
 
   implicit lazy val context = Manager.scalaExecutor
 
-
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=(value: Int = 1): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
@@ -191,7 +189,7 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
     final def decrement = -= _
   }
 
-  implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
+  implicit class UpdateOperations[RR : Primitive](val col: AbstractColumn[RR]) {
 
     final def setTo(value: RR): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.set(col.name, implicitly[Primitive[RR]].asCql(value)))

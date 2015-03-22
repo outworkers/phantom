@@ -33,10 +33,11 @@ import java.util.Date
 
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.{Future, Try}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
 import com.websudos.phantom.connectors.CassandraConnector
 import com.websudos.phantom.dsl.{Column, KeySpace}
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
+import com.websudos.phantom.CassandraTable
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -56,7 +57,7 @@ private[phantom] object Lock
  * @param owner The UDT column that owns the field.
  * @tparam T The Scala type corresponding the underlying Cassandra type of the UDT field.
 */
-sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Short) T : CassandraPrimitive](owner: UDTColumn[_, _, _]) {
+sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boolean, Short) T : Primitive](owner: UDTColumn[_, _, _]) {
 
   lazy val name: String = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
 
@@ -70,7 +71,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 
   private[udt] def set(data: UDTValue): Unit = valueBox.value_=(apply(data))
 
-  def cassandraType: String = CassandraPrimitive[T].cassandraType
+  def cassandraType: String = Primitive[T].cassandraType
 
   def apply(row: UDTValue): Option[T]
 }
@@ -80,7 +81,7 @@ private[udt] abstract class Field[
   Owner <: CassandraTable[Owner, Record],
   Record,
   FieldOwner <: UDTColumn[Owner, Record, _],
-  T : CassandraPrimitive
+  T : Primitive
 ](column: FieldOwner) extends AbstractField[T](column) {}
 
 object PrimitiveBoxedManifests {
@@ -211,7 +212,7 @@ abstract class UDTColumn[
     }.toOption
   }
 
-  def toCType(v: T): AnyRef = {
+  def toCType(v: T): String = {
     val data = typeDef.newValue()
     fields.foreach(field => {
       field.setSerialise(data)

@@ -31,8 +31,8 @@ package com.websudos.phantom.column
 
 trait CollectionValueDefinition[RR] {
 
-  def valueToCType(v: RR): String
+  def valueAsCql(v: RR): String
 
-  def valueFromCType(c: AnyRef): RR
+  def fromString(c: String): RR
 
- }
+}

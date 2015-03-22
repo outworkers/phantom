@@ -29,12 +29,32 @@
  */
 package com.websudos.phantom.column
 
-import com.websudos.phantom.builder.CQLSyntax
+import scala.annotation.implicitNotFound
+import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 
-import scala.annotation.implicitNotFound
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
+
+abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
+  extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
+
+  override def asCql(v: List[RR]): String = CQLQuery(v.map(valueAsCql)).queryString
+
+  override def apply(r: Row): List[RR] = {
+    optional(r).getOrElse(Nil)
+  }
+
+  override def optional(r: Row): Option[List[RR]] = {
+    if (r.isNull(name)) {
+      None
+    } else {
+      Some(r.getString(name).split(",\\s+").map(fromString).toList)
+    }
+  }
+}
+
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Primitive](table: CassandraTable[Owner, Record])
@@ -42,13 +62,11 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Primitive](
 
   override val valuePrimitive = Primitive[RR]
 
-  override val cassandraType = s"list<${valuePrimitive.cassandraType}>"
+  override val cassandraType = qb.queryString
 
-  override def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.list)
-      .append(CQLSyntax.Symbols.`<`).append(valuePrimitive.cassandraType)
-      .append(CQLSyntax.Symbols.`>`)
-  }
+  override def qb: CQLQuery = QueryBuilder.Collections.listType(valuePrimitive.cassandraType)
 
-  def asCql(v: RR): String = Primitive[RR].asCql(v)
+  override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
+
+  override def fromString(value: String): RR = valuePrimitive.fromString(value)
 }

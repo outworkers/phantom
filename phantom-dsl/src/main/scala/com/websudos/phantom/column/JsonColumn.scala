@@ -31,9 +31,10 @@ package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
 import com.twitter.util.Try
-import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
 
 sealed trait JsonDefinition[T] {
 
@@ -41,13 +42,11 @@ sealed trait JsonDefinition[T] {
 
   def toJson(obj: T): String
 
-  def valueToCType(obj: T): AnyRef = toJson(obj)
+  def valueAsCql(obj: T): String = toJson(obj)
 
-  def valueFromCType(c: AnyRef): T = fromJson(c.asInstanceOf[String])
+  def fromString(c: String): T = fromJson(c)
 
-  val valueCls: Class[_] = classOf[java.lang.String]
-
-  val primitive = implicitly[CassandraPrimitive[String]]
+  val primitive = implicitly[Primitive[String]]
 }
 
 abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends Column[T, R,
@@ -68,23 +67,15 @@ abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: Cassan
 abstract class JsonListColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends AbstractListColumn[T, R,
   ValueType](table) with JsonDefinition[ValueType] {
 
-  override val cassandraType = "list<text>"
+  override val cassandraType = qb.queryString
 
-  override def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.list)
-      .append(CQLSyntax.Symbols.`<`).append(CassandraPrimitive[String].cassandraType)
-      .append(CQLSyntax.Symbols.`>`)
-  }
+  override def qb: CQLQuery = QueryBuilder.Collections.listType(Primitive[String].cassandraType)
 }
 
 abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends AbstractSetColumn[T ,R,
   ValueType](table) with JsonDefinition[ValueType] {
 
-  override val cassandraType = "set<text>"
+  override val cassandraType = qb.queryString
 
-  override def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.set)
-      .append(CQLSyntax.Symbols.`<`).append(CassandraPrimitive[String].cassandraType)
-      .append(CQLSyntax.Symbols.`>`)
-  }
+  override def qb: CQLQuery = QueryBuilder.Collections.setType(Primitive[String].cassandraType)
 }

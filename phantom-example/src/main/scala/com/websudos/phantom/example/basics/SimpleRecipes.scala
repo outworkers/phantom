@@ -176,8 +176,9 @@ object Recipes extends Recipes with ExampleConnector {
   // Updating records is also really easy.
   // Updating multiple fields at the same time is also easy.
   def updateRecipeAuthorAndName(id: UUID, name: String, author: String): ScalaFuture[ResultSet] = {
-    update.where(_.id eqs id).modify(_.name setTo name)
-      .and(_.author setTo author)
+    update.where(_.id eqs id)
+      .modify(_.name setTo name)
+      .andSet(_.author setTo author)
       .future()
   }
 

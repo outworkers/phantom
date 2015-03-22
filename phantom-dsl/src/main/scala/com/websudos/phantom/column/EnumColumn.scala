@@ -30,24 +30,26 @@
 package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.CQLSyntax
 
 class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enumeration](table: CassandraTable[Owner, Record], enum: EnumType)
   extends Column[Owner, Record, EnumType#Value](table) {
 
-  def toCType(v: EnumType#Value): AnyRef = v.toString
-
-  def cassandraType: String = CassandraPrimitive[String].cassandraType
+  def cassandraType: String = CQLSyntax.Types.Text
 
   def optional(r: Row): Option[EnumType#Value] = Some(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
+
+  override def asCql(v: EnumType#Value): String = v.toString
 }
 
 class OptionalEnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enumeration](table: CassandraTable[Owner, Record], enum: EnumType)
   extends OptionalColumn[Owner, Record, EnumType#Value](table) {
 
-  def cassandraType: String = CassandraPrimitive[String].cassandraType
+  def cassandraType: String = CQLSyntax.Types.Text
 
   def optional(r: Row): Option[EnumType#Value] = Some(r.getString(name)).flatMap(s => enum.values.find(_.toString == s))
 
-  override def toCType(v: Option[EnumType#Value]): AnyRef = v.map(_.toString).orNull
+  override def asCql(v: Option[EnumType#Value]) = v.map(_.toString).orNull
+
 }

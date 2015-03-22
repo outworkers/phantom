@@ -38,13 +38,18 @@ import com.websudos.phantom.builder.query.CQLQuery
 import scala.annotation.implicitNotFound
 import scala.util.Try
 
-
-sealed abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V](table: CassandraTable[Owner, Record])
+private[phantom] abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V](table: CassandraTable[Owner, Record])
   extends Column[Owner, Record, Map[K, V]](table) with CollectionValueDefinition[V] {
 
-  def keyToCType(v: K): String
+  def keyAsCql(v: K): String
 
-  def keyFromCType(c: String): K
+  def keyFromCql(c: String): K
+
+  override def fromString(c: String): V
+
+  def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
+    case (a, b) => (keyAsCql(a), valueAsCql(b))
+  }).queryString
 
   override def apply(r: Row): Map[K, V] = {
     optional(r).getOrElse(Map.empty[K, V])
@@ -55,10 +60,23 @@ sealed abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], 
       value.replaceAll("{", "").replaceAll("}", "").split(",\\s*").map {
         item => {
           val keyVal = item.split(",\\s*")
-          Tuple2(keyVal(0), keyVal(2))
+          Tuple2(keyVal(0), keyVal(1))
         }
       }.toMap
     } toOption
+  }
+
+
+  override def optional(r: Row): Option[Map[K, V]] = {
+    if (r.isNull(name)) {
+      Some(Map.empty[K, V])
+    } else {
+      parseMap(r.getString(name)) map {
+        existing => existing map {
+          case (a, b) => (keyFromCql(a), fromString(b))
+        }
+      }
+    }
   }
 }
 
@@ -68,29 +86,17 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
 
   val keyPrimitive = Primitive[K]
 
-  override def keyToCType(v: K): String = keyPrimitive.asCql(v)
+  override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
 
   override val valuePrimitive = Primitive[V]
 
-  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, valuePrimitive.cassandraType)
+  override val cassandraType = qb.queryString
 
   override def qb: CQLQuery = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, valuePrimitive.cassandraType)
 
-  override def keyFromCType(c: String): K = keyPrimitive.fromString(c)
+  override def keyFromCql(c: String): K = keyPrimitive.fromString(c)
 
-  override def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
-    case (a, b) => (Primitive[K].asCql(a), Primitive[V].asCql(b))
-  }).queryString
+  override def valueAsCql(v: V): String = valuePrimitive.asCql(v)
 
-  override def optional(r: Row): Option[Map[K, V]] = {
-    if (r.isNull(name)) {
-      Some(Map.empty[K, V])
-    } else {
-      parseMap(r.getString(name)) map {
-        existing => existing map {
-          case (a, b) => (keyPrimitive.fromString(a), valuePrimitive.fromString(b))
-        }
-      }
-    }
-  }
+  override def fromString(c: String): V = valuePrimitive.fromString(c)
 }

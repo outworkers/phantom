@@ -30,14 +30,14 @@
 package com.websudos.phantom.column
 
 import java.util.Date
+import scala.annotation.implicitNotFound
+import org.joda.time.DateTime
+
+import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.CQLSyntax
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
-
-import scala.annotation.implicitNotFound
-import org.joda.time.DateTime
-import com.websudos.phantom.{ Primitive, CassandraTable }
-import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
 class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Float, Long) RR: Primitive](t: CassandraTable[T, R])
@@ -45,9 +45,9 @@ class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Fl
 
   def cassandraType: String = Primitive[RR].cassandraType
 
-  def asCql(v: RR): AnyRef = Primitive[RR].asCql(v)
+  def asCql(v: RR): String = Primitive[RR].asCql(v)
 
-  def optional(r: Row): Option[RR] = implicitly[Primitive[RR]].fromRow(r, name)
+  def optional(r: Row): Option[RR] = implicitly[Primitive[RR]].fromRow(name, r)
 
   override def qb: CQLQuery = {
     val root = CQLQuery(name).forcePad.append(cassandraType)

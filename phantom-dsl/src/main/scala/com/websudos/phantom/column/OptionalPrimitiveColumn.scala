@@ -29,22 +29,21 @@
  */
 package com.websudos.phantom.column
 
-import com.websudos.phantom.builder.CQLSyntax
-import com.websudos.phantom.builder.query.CQLQuery
-
 import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.primitives.Primitive
+import com.websudos.phantom.builder.query.CQLQuery
+
 
 @implicitNotFound(msg = "Type ${T} must be a Cassandra primitive")
 class OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long, Boolean,
-  Short) T : CassandraPrimitive](t: CassandraTable[Owner, Record]) extends OptionalColumn[Owner, Record, T](t) {
+  Short) T : Primitive](t: CassandraTable[Owner, Record]) extends OptionalColumn[Owner, Record, T](t) {
 
-  def cassandraType: String = CassandraPrimitive[T].cassandraType
+  def cassandraType: String = Primitive[T].cassandraType
 
-  def optional(r: Row): Option[T] = implicitly[CassandraPrimitive[T]].fromRow(r, name)
-
-  def toCType(v: Option[T]): AnyRef = (v map implicitly[CassandraPrimitive[T]].toCType).orNull
+  def optional(r: Row): Option[T] = implicitly[Primitive[T]].fromRow(name, r)
 
   override def qb: CQLQuery = {
     val root = CQLQuery(name).forcePad.append(cassandraType)
@@ -54,4 +53,6 @@ class OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @s
       root
     }
   }
+
+  override def asCql(v: Option[T]): String = v.map(Primitive[T].asCql).getOrElse(null.asInstanceOf[String])
 }

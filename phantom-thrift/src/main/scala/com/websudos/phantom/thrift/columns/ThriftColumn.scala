@@ -29,14 +29,14 @@
  */
 package com.websudos.phantom.thrift.columns
 
+import scala.annotation.implicitNotFound
+
 import com.datastax.driver.core.Row
 import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct}
 import com.twitter.util.Try
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
-import com.websudos.phantom.{CassandraPrimitive, CassandraTable}
-
-import scala.annotation.implicitNotFound
-
+import com.websudos.phantom.CassandraTable
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
 
@@ -53,27 +53,25 @@ trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
    * @param v The Thrift struct to convert.
    * @return A string containing the compact Thrift serialization.
    */
-  def itemToCType(v: ValueType): AnyRef = {
+  def itemToCType(v: ValueType): String = {
     serializer.toString(v)
   }
 
-  val primitive = implicitly[CassandraPrimitive[String]]
+  val primitive = implicitly[Primitive[String]]
 }
 
 trait CollectionThriftColumnDefinition[ValueType <: ThriftStruct] extends ThriftColumnDefinition[ValueType] with CollectionValueDefinition[ValueType] {
 
-  override val valueCls: Class[_] = classOf[java.lang.String]
+  def asCql(v: ValueType): String = itemToCType(v)
 
-  override def valueToCType(v: ValueType): AnyRef = itemToCType(v)
-
-  override def valueFromCType(c: AnyRef): ValueType = serializer.fromString(c.asInstanceOf[String])
+  def fromString(c: String): ValueType = serializer.fromString(c)
 }
 
 
 abstract class ThriftColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R])
   extends Column[T, R, ValueType](table) with ThriftColumnDefinition[ValueType] {
 
-  def toCType(v: ValueType): AnyRef = {
+  def asCql(v: ValueType): String = {
     serializer.toString(v)
   }
 
@@ -118,16 +116,14 @@ abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: Thrif
 }
 
 @implicitNotFound(msg = "Type ${KeyType} must be a Cassandra primitive")
-abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : CassandraPrimitive, ValueType <: ThriftStruct](table: CassandraTable[T, R])
+abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : Primitive, ValueType <: ThriftStruct](table: CassandraTable[T, R])
   extends AbstractMapColumn[T, R, KeyType, ValueType](table) with CollectionThriftColumnDefinition[ValueType] {
 
-  override val cassandraType = s"map<${CassandraPrimitive[KeyType].cassandraType}, text>"
+  override val cassandraType = s"map<${Primitive[KeyType].cassandraType}, text>"
 
-  val keyPrimitive = CassandraPrimitive[KeyType]
+  val keyPrimitive = Primitive[KeyType]
 
-  override def keyCls: Class[_] = keyPrimitive.cls
+  override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
-  override def keyToCType(v: KeyType): AnyRef = keyPrimitive.toCType(v)
-
-  override def keyFromCType(c: AnyRef): KeyType = keyPrimitive.fromCType(c)
+  override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
 }

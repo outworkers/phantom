@@ -134,22 +134,20 @@ object Implicits extends CompileTimeRestrictions with CreateImplicits with Defau
     val SERIAL = CLevel.SERIAL
   }
 
-
-  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): CassandraPrimitive[T#Value] = {
-    new CassandraPrimitive[T#Value] {
+  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
+    new Primitive[T#Value] {
 
       override def cassandraType: String = "text"
 
-      def cls: Class[_] = classOf[Enumeration]
-
-      override def fromRow(row: Row, name: String): Option[T#Value] = {
-        if (row.isNull(name)) {
-          None
-        } else {
-          enum.values.find(row.getString(name) == _.toString)
+      override def fromRow(name: String, row: Row): Option[T#Value] = {
+        nullCheck(name, row) {
+          r => enum.withName(r.getString(name))
         }
       }
 
+      override def asCql(value: T#Value): String = value.toString
+
+      override def fromString(value: String): T#Value = enum.withName(value)
     }
   }
 

@@ -64,6 +64,18 @@ abstract class Query[
   def and(condition: Table => WhereClause.Condition): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
     create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.Where.and(qb, condition(table).qb), row)
   }
+
+  def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain] = {
+    create[Table, Record, Limit, Order, Status, Chain](table, QueryBuilder.ttl(qb, seconds.toString), row)
+  }
+
+  def ttl(duration: scala.concurrent.duration.FiniteDuration): QueryType[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.toSeconds)
+  }
+
+  def ttl(duration: com.twitter.util.Duration): QueryType[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.inSeconds)
+  }
 }
 
 

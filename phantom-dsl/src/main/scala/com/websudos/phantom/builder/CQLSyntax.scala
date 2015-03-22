@@ -135,6 +135,7 @@ object CQLSyntax {
     val speculative_retry = "speculative_retry"
     val percentile = "percentile"
     val default_time_to_live = "default_time_to_live"
+    val ttl = "TTL"
   }
 
   object CompactionOptions {

@@ -24,6 +24,10 @@ private[builder] trait BaseModifiers {
 
 private[builder] trait CollectionModifiers extends BaseModifiers {
 
+  def dimond(collection: String, value: String): CQLQuery = {
+    CQLQuery(collection).append(CQLSyntax.Symbols.`<`).append(value).append(CQLSyntax.Symbols.`>`)
+  }
+
   def prepend(column: String, values: String*): CQLQuery = {
     collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.+, column)
   }
@@ -69,12 +73,16 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
   }
 
   def mapType(keyType: String, valueType: String): CQLQuery = {
-    CQLQuery(CQLSyntax.Collections.map)
-      .append(CQLSyntax.Symbols.`<`)
-      .append(keyType).append(CQLSyntax.Symbols.`,`)
-      .append(valueType).append(CQLSyntax.Symbols.`>`)
+    dimond(CQLSyntax.Collections.map, CQLQuery(List(keyType, valueType)).queryString)
   }
 
+  def listType(valueType: String): CQLQuery = {
+    dimond(CQLSyntax.Collections.list, valueType)
+  }
+
+  def setType(valueType: String): CQLQuery = {
+    dimond(CQLSyntax.Collections.set, valueType)
+  }
 }
 
 

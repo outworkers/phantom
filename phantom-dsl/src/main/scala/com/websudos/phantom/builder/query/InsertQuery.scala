@@ -42,6 +42,18 @@ class InsertQuery[
     terminate.execute()
   }
 
+  def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
+    new InsertQuery(table, QueryBuilder.ttl(qb, seconds.toString))
+  }
+
+  def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status] = {
+    ttl(seconds.toSeconds)
+  }
+
+  def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status] = {
+    ttl(duration.inSeconds)
+  }
+
 }
 
 object InsertQuery {

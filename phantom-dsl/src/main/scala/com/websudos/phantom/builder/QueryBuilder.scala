@@ -53,6 +53,10 @@ private[phantom] object QueryBuilder {
     qb.pad.append(CQLSyntax.using)
   }
 
+  def ttl(qb: CQLQuery, seconds: String): CQLQuery = {
+    using(qb).forcePad.append(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
+  }
+
   def consistencyLevel(qb: CQLQuery, level: String): CQLQuery = {
     using(qb).pad.append(CQLSyntax.consistency).forcePad.append(level)
   }
