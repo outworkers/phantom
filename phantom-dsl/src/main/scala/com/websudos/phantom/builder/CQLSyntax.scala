@@ -94,7 +94,6 @@ object CQLSyntax {
 
     val in = "in"
     val eqs = "="
-
   }
 
   object CreateOptions {

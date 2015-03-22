@@ -4,18 +4,31 @@ import com.websudos.phantom.builder.query.CQLQuery
 
 /**
  * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
- *
  */
 sealed abstract class QueryCondition(val qb: CQLQuery)
 
 object WhereClause {
+
+  /**
+   * A path dependant type condition used explicitly for WHERE clauses.
+   * This is used to build and distinguish serialised queries that are used in primary index clauses.
+   *
+   * The columns that form the condition of the where clause are always part of the primary key.
+   *
+   * {{{
+   *   SELECT WHERE id = 'test' LIMIT 1;
+   *   UPDATE WHERE name = 'your_name' SET city = 'London';
+   * }}}
+   *
+   * @param qb The underlying query builder of the condition.
+   */
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
 /**
- * Object enclosing a path dependant definition for CAS conditions.
+ * Object enclosing a path dependant definition for compare-and-set operations.
  */
-object ConditionalClause {
+object CompareAndSet {
 
   /**
    * Using path dependent types to restrict builders from mixing up CAS queries with regular where queries.
@@ -36,7 +49,9 @@ object ConditionalClause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
-case class OrderingClause(qb: CQLQuery)
+object OrderingClause {
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+}
 
 object UpdateClause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)

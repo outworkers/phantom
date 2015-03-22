@@ -5,10 +5,19 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column._
-import com.websudos.phantom.keys.Key
+import com.websudos.phantom.keys.{PrimaryKey, Key}
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
+
+private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
+
+  def asc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.ascending(col.name))
+  def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.ascending(col.name))
+  def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.descending(col.name))
+  def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.descending(col.name))
+
+}
 
 
 private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
@@ -177,6 +186,12 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
 }
 
 trait CompileTimeRestrictions extends CollectionOperators with ColumnModifiers {
+
+
+  @implicitNotFound("As per CQL spec, ordering can only be specified for the 2nd part of a compound primary key.")
+  implicit def columnToOrderingColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< PrimaryKey[RR]): OrderingColumn[RR] = {
+    new OrderingColumn[RR](col)
+  }
 
   @implicitNotFound(msg = "Only indexed columns can be updated to indexed clauses")
   implicit def columnToIndexColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< Key[RR, _]): IndexQueryClauses[RR] = {

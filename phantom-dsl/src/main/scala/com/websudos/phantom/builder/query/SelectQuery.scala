@@ -30,6 +30,8 @@
 package com.websudos.phantom.builder.query
 
 
+import com.websudos.phantom.builder.ops.OrderingClause
+
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
 
@@ -79,7 +81,9 @@ class SelectQuery[
     new SelectQuery(table, QueryBuilder.allowFiltering(qb), rowFunc)
   }
 
-  //final def orderBy(clause: Table => Order)
+  final def orderBy(clause: Table => OrderingClause.Condition): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+    new SelectQuery(table, QueryBuilder.Ordering.orderBy(qb, clause(table).qb), rowFunc)
+  }
 
   /**
    * Returns the first row from the select ignoring everything else

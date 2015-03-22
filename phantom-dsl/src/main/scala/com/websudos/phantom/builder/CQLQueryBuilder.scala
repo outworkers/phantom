@@ -275,11 +275,33 @@ sealed trait CreateTableBuilder extends CompactionQueryBuilder with CompressionQ
 }
 
 
+class OrderingModifier {
+
+  def ascending(column: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Ordering.asc)
+  }
+
+  def descending(column: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Ordering.desc)
+  }
+
+  def orderBy(qb: CQLQuery, clause: CQLQuery) = {
+    qb.forcePad.append(clause)
+  }
+
+}
+
+
 private[phantom] object QueryBuilder extends CompactionQueryBuilder with CompressionQueryBuilder with IndexModifiers with CollectionModifiers {
+
+
 
   val syntax = CQLSyntax
 
   case object Create extends CreateTableBuilder
+
+  case object Ordering extends OrderingModifier
+
 
   def join(qbs: CQLQuery*): CQLQuery = {
     CQLQuery(qbs.map(_.queryString).mkString(", "))
