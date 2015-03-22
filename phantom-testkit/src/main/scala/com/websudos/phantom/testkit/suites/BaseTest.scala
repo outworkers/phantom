@@ -30,7 +30,7 @@
 package com.websudos.phantom.testkit.suites
 
 import java.io.IOException
-import java.net.ServerSocket
+import java.net.{InetAddress, ServerSocket}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, blocking}
@@ -52,8 +52,9 @@ private[testkit] object CassandraStateManager {
   val logger = LoggerFactory.getLogger("com.websudos.phantom.testkit")
 
   private[this] def isPortAvailable(port: Int): Boolean = {
+    val localAddresses = InetAddress.getAllByName("localhost")
     try {
-      new ServerSocket(port)
+      localAddresses.foreach(address => new ServerSocket(port, 1, address).close())
       logger.info(s"Port $port available")
       true
     } catch {
