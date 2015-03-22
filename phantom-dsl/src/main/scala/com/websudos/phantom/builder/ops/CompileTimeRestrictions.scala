@@ -122,9 +122,11 @@ sealed trait CollectionOperators {
       new UpdateClause.Condition(QueryBuilder.put(col.name, Tuple2(col.keyToCType(value._1).toString, col.asCqlValue(value._2))))
     }
 
-
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.put(col.name, col.valuesToCType(values)))
+      new UpdateClause.Condition(
+        QueryBuilder.put(col.name, values.map(item => {
+          Tuple2(col.keyToCType(item._1).toString, col.valueToCType(item._2).toString)
+        }).toSeq : _*))
     }
   }
 }
