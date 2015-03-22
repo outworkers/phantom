@@ -22,10 +22,6 @@ private[builder] class SelectQueryBuilder {
 
   case object Ordering extends OrderingModifier
 
-  def where(qb: CQLQuery, condition: CQLQuery): CQLQuery = {
-    Utils.concat(qb, CQLSyntax.where, condition)
-  }
-
   def select(tableName: String): CQLQuery = {
     CQLQuery(CQLSyntax.select)
       .pad.append("*").forcePad

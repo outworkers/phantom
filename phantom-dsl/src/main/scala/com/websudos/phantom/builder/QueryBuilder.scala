@@ -43,6 +43,8 @@ private[phantom] object QueryBuilder {
   
   case object Select extends SelectQueryBuilder
 
+  case object Utils extends Utils
+
   def truncate(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
   }
@@ -87,5 +89,15 @@ private[phantom] object QueryBuilder {
   def delete(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.delete)
       .forcePad.append(table)
+  }
+
+  def insert(qb: CQLQuery, clauses: CQLQuery): CQLQuery = Utils.concat(qb, clauses)
+
+  def insertPairs(columns: List[String], values: List[String]): CQLQuery = {
+    CQLQuery(columns).forcePad.append(CQLSyntax.values).wrap(values)
+  }
+
+  def insertPairs(pairs: List[(String, String)]): CQLQuery = {
+    insertPairs(pairs.map(_._1), pairs.map(_._2))
   }
 }

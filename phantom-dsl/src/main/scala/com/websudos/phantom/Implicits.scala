@@ -201,15 +201,12 @@ object Implicits extends CompileTimeRestrictions with CreateImplicits with Defau
     }
   }
 
-
-
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
     def `%`: CQLQuery= CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
 
   implicit lazy val context = Manager.scalaExecutor
-
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=(value: Int = 1): UpdateClause.Condition = {
@@ -232,8 +229,6 @@ object Implicits extends CompileTimeRestrictions with CreateImplicits with Defau
     }
 
   }
-
-
 
 
 }

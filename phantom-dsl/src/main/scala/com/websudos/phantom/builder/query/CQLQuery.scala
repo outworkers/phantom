@@ -37,4 +37,6 @@ object CQLQuery {
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str + "'"
+
+  def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
 }

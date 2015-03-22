@@ -51,7 +51,7 @@ abstract class Query[
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
-    create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.where(qb, condition(table).qb), row)
+    create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.Where.where(qb, condition(table).qb), row)
   }
 
   /**
@@ -62,7 +62,7 @@ abstract class Query[
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
   def and(condition: Table => WhereClause.Condition): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
-    create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.and(qb, condition(table).qb), row)
+    create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.Where.and(qb, condition(table).qb), row)
   }
 }
 

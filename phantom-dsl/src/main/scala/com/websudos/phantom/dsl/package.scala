@@ -121,56 +121,53 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
     }
   }
 
-
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
     def ltToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
-        QueryBuilder.lt(
-          QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        QueryBuilder.Where.lt(
+          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
 
     def lteToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
-        QueryBuilder.lte(
-          QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        QueryBuilder.Where.lte(
+          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
 
     def gtToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
-        QueryBuilder.gt(
-          QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        QueryBuilder.Where.gt(
+          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
 
     def gteToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
-        QueryBuilder.gte(
-          QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        QueryBuilder.Where.gte(
+          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
 
     def eqsToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
-        QueryBuilder.eqs(
-          QueryBuilder.token(p.name),
-          QueryBuilder.fcall(CQLSyntax.token, p.asCql(value)).queryString
+        QueryBuilder.Where.eqs(
+          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
     }
   }
-
-
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
@@ -182,11 +179,11 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=(value: Int = 1): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.increment(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
 
     final def -=(value: Int = 1): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.decrement(col.name, value.toString))
+      new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
     }
 
     final def increment = += _
@@ -197,7 +194,7 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
   implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
 
     final def setTo(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.set(col.name, implicitly[Primitive[RR]].asCql(value)))
+      new UpdateClause.Condition(QueryBuilder.Update.set(col.name, implicitly[Primitive[RR]].asCql(value)))
     }
 
   }

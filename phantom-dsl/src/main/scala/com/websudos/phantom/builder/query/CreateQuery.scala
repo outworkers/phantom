@@ -61,19 +61,19 @@ sealed trait CompactionStrategies {
 
   sealed class SizeTieredCompactionStrategy(override val qb: CQLQuery) extends CompactionStrategy(qb) {
     def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.min_sstable_size(qb, unit.toHuman()))
+      new SizeTieredCompactionStrategy(QueryBuilder.Create.min_sstable_size(qb, unit.toHuman()))
     }
 
     def sstable_size_in_mb(unit: StorageUnit): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.sstable_size_in_mb(qb, unit.toHuman()))
+      new SizeTieredCompactionStrategy(QueryBuilder.Create.sstable_size_in_mb(qb, unit.toHuman()))
     }
 
     def bucket_high(size: Double): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.bucket_high(qb, size))
+      new SizeTieredCompactionStrategy(QueryBuilder.Create.bucket_high(qb, size))
     }
 
     def bucket_low(size: Double): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.bucket_low(qb, size))
+      new SizeTieredCompactionStrategy(QueryBuilder.Create.bucket_low(qb, size))
     }
   }
 
@@ -85,11 +85,11 @@ sealed trait CompactionStrategies {
 sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
 
   def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.chunk_length_kb(qb, unit.toHuman()))
+    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit.toHuman()))
   }
 
   def crc_check_chance(size: Double): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.crc_check_chance(qb, size))
+    new CompressionStrategy(QueryBuilder.Create.crc_check_chance(qb, size))
   }
 }
 
@@ -251,7 +251,7 @@ class RootCreateQuery[
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
       .forcePad.append(table.tableName).forcePad
       .append(CQLSyntax.Symbols.`(`)
-      .append(QueryBuilder.join(table.columns.map(_.qb): _*))
+      .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
       .append(CQLSyntax.Symbols.`,`)
       .forcePad.append(table.defineTableKey())
       .append(CQLSyntax.Symbols.`)`)
@@ -261,7 +261,7 @@ class RootCreateQuery[
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.ifNotExists)
       .forcePad.append(table.tableName).forcePad
       .append(CQLSyntax.Symbols.`(`)
-      .append(QueryBuilder.join(table.columns.map(_.qb): _*))
+      .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
       .append(CQLSyntax.Symbols.`,`)
       .forcePad.append(table.defineTableKey())
       .append(CQLSyntax.Symbols.`)`)
@@ -280,12 +280,12 @@ class CreateQuery[
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
-    new CreateQuery(table, QueryBuilder.`with`(qb, clause.qb))
+    new CreateQuery(table, QueryBuilder.Create.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
-    new CreateQuery(table, QueryBuilder.and(qb, clause.qb))
+    new CreateQuery(table, QueryBuilder.Where.and(qb, clause.qb))
   }
 }
 

@@ -2,7 +2,7 @@ package com.websudos.phantom.builder
 
 import com.websudos.phantom.builder.query.CQLQuery
 
-private[builder] object Utils {
+private[builder] trait Utils {
 
   def concat(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.forcePad.append(clause)
@@ -38,3 +38,5 @@ private[builder] object Utils {
       .append(CQLSyntax.Symbols.`}`)
   }
 }
+
+private[builder] object Utils extends Utils

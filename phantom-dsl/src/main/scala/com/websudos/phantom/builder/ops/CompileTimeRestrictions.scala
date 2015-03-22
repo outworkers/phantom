@@ -12,10 +12,10 @@ import scala.annotation.implicitNotFound
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
 
-  def asc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.ascending(col.name))
-  def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.ascending(col.name))
-  def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.descending(col.name))
-  def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Ordering.descending(col.name))
+  def asc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+  def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
 
 }
 
@@ -26,7 +26,7 @@ private[phantom] abstract class AbstractModifyColumn[RR](name: String) {
 
   def asCql(v: RR): String
 
-  def setTo(value: RR): UpdateClause.Condition = new UpdateClause.Condition(QueryBuilder.set(name, asCql(value)))
+  def setTo(value: RR): UpdateClause.Condition = new UpdateClause.Condition(QueryBuilder.Update.set(name, asCql(value)))
 }
 
 
@@ -151,40 +151,39 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
   private[this] val p = implicitly[Primitive[RR]]
 
   def eqs(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.eqs(col.name, p.asCql(value)))
+    new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, p.asCql(value)))
   }
 
   def lt(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.lt(col.name, p.asCql(value)))
+    new WhereClause.Condition(QueryBuilder.Where.lt(col.name, p.asCql(value)))
   }
 
   def < = lt _
 
   def lte(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
+    new WhereClause.Condition(QueryBuilder.Where.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
   }
 
   def <= = lte _
 
   def gt(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.gt(col.name, p.asCql(value)))
+    new WhereClause.Condition(QueryBuilder.Where.gt(col.name, p.asCql(value)))
   }
 
   def > = gt _
 
   def gte(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.gte(col.name, p.asCql(value)))
+    new WhereClause.Condition(QueryBuilder.Where.gte(col.name, p.asCql(value)))
   }
 
   def >= = gte _
 
   def in(values: List[RR]): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.in(col.name, values.map(p.asCql)))
+    new WhereClause.Condition(QueryBuilder.Where.in(col.name, values.map(p.asCql)))
   }
 }
 
 trait CompileTimeRestrictions extends CollectionOperators with ColumnModifiers {
-
 
   @implicitNotFound("As per CQL spec, ordering can only be specified for the 2nd part of a compound primary key.")
   implicit def columnToOrderingColumn[RR](col: AbstractColumn[RR])(implicit ev: Primitive[RR], ev2: col.type <:< PrimaryKey[RR]): OrderingColumn[RR] = {
