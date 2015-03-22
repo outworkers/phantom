@@ -114,8 +114,18 @@ sealed trait CollectionOperators {
   implicit class MapLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, A, B](col: AbstractMapColumn[Owner, Record, A, B])
     extends ModifyColumn[Map[A, B]](col) {
 
-    def put(value: (A, B)): UpdateClause.Condition = QueryBuilder.put(col.name, col.keyToCType(value._1), col.valueToCType(value._2))
-    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = QueryBuilder.putAll(col.name, col.valuesToCType(values))
+    def set(key: A, value: B): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.mapSet(col.name, col.keyToCType(key).toString, col.asCqlValue(value)))
+    }
+
+    def put(value: (A, B)): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.put(col.name, Tuple2(col.keyToCType(value._1).toString, col.asCqlValue(value._2))))
+    }
+
+
+    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = {
+      new UpdateClause.Condition(QueryBuilder.put(col.name, col.valuesToCType(values)))
+    }
   }
 }
 

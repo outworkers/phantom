@@ -48,6 +48,12 @@ private[builder] object Utils {
   def set(list: Set[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`}`)
   }
+
+  def map(list: TraversableOnce[(String, String)]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`{`)
+      .append(list.map(item => {s"${item._1} : ${item._2}"}).mkString(", "))
+      .append(CQLSyntax.Symbols.`}`)
+  }
 }
 
 sealed trait BaseModifiers {
@@ -136,11 +142,22 @@ sealed trait CollectionModifiers extends BaseModifiers {
     collectionModifier(Utils.set(values).queryString, CQLSyntax.Symbols.-, column)
   }
 
+  def mapSet(column: String, key: String, value: String): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
+      .append(key).append(CQLSyntax.Symbols.`]`)
+      .forcePad.append(CQLSyntax.eqs)
+      .forcePad.append(value)
+  }
+
   def setIdX(column: String, index: String, value: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(index).append(CQLSyntax.Symbols.`]`)
       .forcePad.append(CQLSyntax.eqs)
       .forcePad.append(value)
+  }
+
+  def put(column: String, pairs: (String, String)*): CQLQuery = {
+    collectionModifier(column, CQLSyntax.Symbols.+, Utils.map(pairs))
   }
 }
 
