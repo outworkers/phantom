@@ -30,15 +30,17 @@
 package com.websudos.phantom.column
 
 import com.websudos.phantom.builder.CQLSyntax
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.annotation.implicitNotFound
 import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPrimitive](table: CassandraTable[Owner, Record])
+class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: Primitive](table: CassandraTable[Owner, Record])
     extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
-  override val valuePrimitive = CassandraPrimitive[RR]
+
+  override val valuePrimitive = Primitive[RR]
 
   override val cassandraType = s"list<${valuePrimitive.cassandraType}>"
 
@@ -47,4 +49,6 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR: CassandraPr
       .append(CQLSyntax.Symbols.`<`).append(valuePrimitive.cassandraType)
       .append(CQLSyntax.Symbols.`>`)
   }
+
+  def asCql(v: RR): String = Primitive[RR].asCql(v)
 }

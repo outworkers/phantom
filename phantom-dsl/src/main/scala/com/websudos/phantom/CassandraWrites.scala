@@ -29,22 +29,8 @@
  */
 package com.websudos.phantom
 
-import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.util.{Date, UUID}
 
-import com.datastax.driver.core.Row
-import org.joda.time.DateTime
-
-import scala.util.Try
-
-trait CassandraWrites[T] {
-
-  def toCType(v: T): AnyRef
-  def asCql(v: T): String = toCType(v).toString
-  def cassandraType: String
-}
-
+/*
 trait CassandraPrimitive[T] extends CassandraWrites[T] {
 
   def toCType(v: T): String = v.toString
@@ -191,3 +177,4 @@ object CassandraPrimitive {
       if (row.isNull(name)) None else Try(row.getBytes(name)).toOption
   }
 }
+*/

@@ -29,32 +29,68 @@
  */
 package com.websudos.phantom.column
 
-import com.websudos.phantom.builder.CQLSyntax
+import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.annotation.implicitNotFound
-import com.websudos.phantom.{ CassandraPrimitive, CassandraTable }
+import scala.util.Try
+
+
+sealed abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V](table: CassandraTable[Owner, Record])
+  extends Column[Owner, Record, Map[K, V]](table) with CollectionValueDefinition[V] {
+
+  def keyToCType(v: K): String
+
+  def keyFromCType(c: String): K
+
+  override def apply(r: Row): Map[K, V] = {
+    optional(r).getOrElse(Map.empty[K, V])
+  }
+
+  protected[this] def parseMap(value: String): Option[Map[String, String]] = {
+    Try {
+      value.replaceAll("{", "").replaceAll("}", "").split(",\\s*").map {
+        item => {
+          val keyVal = item.split(",\\s*")
+          Tuple2(keyVal(0), keyVal(2))
+        }
+      }.toMap
+    } toOption
+  }
+}
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
-class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K: CassandraPrimitive, V: CassandraPrimitive](table: CassandraTable[Owner, Record])
+class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V : Primitive](table: CassandraTable[Owner, Record])
     extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
 
-  val keyPrimitive = CassandraPrimitive[K]
+  val keyPrimitive = Primitive[K]
 
-  override def keyCls: Class[_] = keyPrimitive.cls
+  override def keyToCType(v: K): String = keyPrimitive.asCql(v)
 
-  override def keyToCType(v: K): AnyRef = keyPrimitive.toCType(v)
+  override val valuePrimitive = Primitive[V]
 
-  override def keyFromCType(c: AnyRef): K = keyPrimitive.fromCType(c)
+  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, valuePrimitive.cassandraType)
 
-  override val valuePrimitive = CassandraPrimitive[V]
+  override def qb: CQLQuery = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, valuePrimitive.cassandraType)
 
-  override val cassandraType = s"map<${keyPrimitive.cassandraType}, ${valuePrimitive.cassandraType}>"
+  override def keyFromCType(c: String): K = keyPrimitive.fromString(c)
 
-  override def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.map)
-      .append(CQLSyntax.Symbols.`<`)
-      .append(keyPrimitive.cassandraType).append(CQLSyntax.Symbols.`,`).forcePad.append(valuePrimitive.cassandraType)
-      .append(CQLSyntax.Symbols.`>`)
+  override def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
+    case (a, b) => (Primitive[K].asCql(a), Primitive[V].asCql(b))
+  }).queryString
+
+  override def optional(r: Row): Option[Map[K, V]] = {
+    if (r.isNull(name)) {
+      Some(Map.empty[K, V])
+    } else {
+      parseMap(r.getString(name)) map {
+        existing => existing map {
+          case (a, b) => (keyPrimitive.fromString(a), valuePrimitive.fromString(b))
+        }
+      }
+    }
   }
 }

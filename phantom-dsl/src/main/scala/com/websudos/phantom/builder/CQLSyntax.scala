@@ -96,6 +96,31 @@ object CQLSyntax {
     val eqs = "="
   }
 
+  object Types {
+    val Ascii = "ascii"
+    val BigInt = "bigint"
+    val Blob = "blob"
+    val Boolean = "boolean"
+    val Counter = "counter"
+    val Decimal = "decimal"
+    val Double = "double"
+    val Long = "long"
+    val Float = "float"
+    val Inet = "inet"
+    val Int = "int"
+    val List = "list"
+    val Map = "map"
+    val Set = "set"
+    val Timestamp = "timestamp"
+    val Tuple = "tuple"
+    val Text = "text"
+    val Varchar = "varchar"
+    val Varint = "varint"
+    val UUID = "uuid"
+    val TimeUUID = "timeuuid"
+
+  }
+
   object CreateOptions {
     val comment = "comment"
     val compaction = "compaction"

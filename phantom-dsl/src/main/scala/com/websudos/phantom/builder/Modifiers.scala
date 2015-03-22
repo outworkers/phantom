@@ -61,6 +61,20 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
   def put(column: String, pairs: (String, String)*): CQLQuery = {
     collectionModifier(column, CQLSyntax.Symbols.+, Utils.map(pairs))
   }
+
+  def serialize(col: Map[String, String] ): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+      .append(CQLQuery(col.map(item => s"${item._1} : ${item._2}")))
+      .forcePad.append(CQLSyntax.Symbols.`}`)
+  }
+
+  def mapType(keyType: String, valueType: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Collections.map)
+      .append(CQLSyntax.Symbols.`<`)
+      .append(keyType).append(CQLSyntax.Symbols.`,`)
+      .append(valueType).append(CQLSyntax.Symbols.`>`)
+  }
+
 }
 
 

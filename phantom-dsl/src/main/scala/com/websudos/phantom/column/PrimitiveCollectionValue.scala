@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.column
 
-import com.websudos.phantom.CassandraPrimitive
+import com.websudos.phantom.builder.primitives.Primitive
+
 
 trait PrimitiveCollectionValue[R] extends CollectionValueDefinition[R] {
 
-  def valuePrimitive: CassandraPrimitive[R]
+  def valuePrimitive: Primitive[R]
 
-  override def valueCls: Class[_] = valuePrimitive.cls
-
-  override def valueToCType(v: R): AnyRef = valuePrimitive.toCType(v)
+  override def valueToCType(v: R): String = valuePrimitive.asCql(v)
 
   override def valueFromCType(c: AnyRef): R = valuePrimitive.fromCType(c)
 
