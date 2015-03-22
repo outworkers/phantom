@@ -41,8 +41,6 @@ sealed abstract class SelectColumn[T](val col: AbstractColumn[_]) {
   def apply(r: Row): T
 }
 
-
-
 sealed trait ColumnModifiers {
   implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
     extends AbstractModifyColumn[Option[RR]](col.name) {
@@ -72,31 +70,31 @@ sealed trait CollectionOperators {
     extends ModifyColumn[List[RR]](col) {
 
     def prepend(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.prepend(col.name, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCqlValue(value)))
     }
 
     def prependAll[L](values: L)(implicit ev1: L => Seq[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.prepend(col.name, col.collectionAsCql(values)))
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.collectionAsCql(values)))
     }
 
     def append(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.append(col.name, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCqlValue(value)))
     }
 
     def appendAll[L](values: L)(implicit ev1: L => Seq[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.append(col.name, col.collectionAsCql(values)))
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.collectionAsCql(values)))
     }
 
     def discard(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.discard(col.name, col.asCql(List(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(List(value))))
     }
 
     def discardAll[L](values: L)(implicit ev1: L => List[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.discard(col.name, col.asCql(values)))
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
     }
 
     def setIdx(i: Int, value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.setIdX(col.name, i.toString, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.asCqlValue(value)))
     }
   }
 
@@ -104,19 +102,19 @@ sealed trait CollectionOperators {
     extends ModifyColumn[Set[RR]](col) {
 
     def add(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.add(col.name, Set(col.asCqlValue(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.asCqlValue(value))))
     }
 
     def addAll(values: Set[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.add(col.name, values.map(col.asCqlValue)))
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.asCqlValue)))
     }
 
     def remove(value: RR): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.remove(col.name, Set(col.asCqlValue(value))))
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.asCqlValue(value))))
     }
 
     def removeAll(values: Set[RR]): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.remove(col.name, values.map(col.asCqlValue)))
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.asCqlValue)))
     }
   }
 
@@ -124,16 +122,16 @@ sealed trait CollectionOperators {
     extends ModifyColumn[Map[A, B]](col) {
 
     def set(key: A, value: B): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.mapSet(col.name, col.keyToCType(key).toString, col.asCqlValue(value)))
+      new UpdateClause.Condition(QueryBuilder.Collections.mapSet(col.name, col.keyToCType(key).toString, col.asCqlValue(value)))
     }
 
     def put(value: (A, B)): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.put(col.name, Tuple2(col.keyToCType(value._1).toString, col.asCqlValue(value._2))))
+      new UpdateClause.Condition(QueryBuilder.Collections.put(col.name, Tuple2(col.keyToCType(value._1).toString, col.asCqlValue(value._2))))
     }
 
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = {
       new UpdateClause.Condition(
-        QueryBuilder.put(col.name, values.map(item => {
+        QueryBuilder.Collections.put(col.name, values.map(item => {
           Tuple2(col.keyToCType(item._1).toString, col.valueToCType(item._2).toString)
         }).toSeq : _*))
     }

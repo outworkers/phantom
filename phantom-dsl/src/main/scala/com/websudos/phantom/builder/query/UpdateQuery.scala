@@ -3,7 +3,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.ops.UpdateClause
+import com.websudos.phantom.builder.ops.{CompareAndSet, UpdateClause}
 
 class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -36,12 +36,16 @@ class UpdateQuery[
   }
 
 
+  final def onlyIf(clause: Table => CompareAndSet.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new UpdateQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
+  }
+
   final def modify(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.set(qb, clause(table).qb))
+    new UpdateQuery(table, QueryBuilder.Update.set(qb, clause(table).qb))
   }
 
   final def and(clause: Table => UpdateClause.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.andSet(qb, clause(table).qb))
+    new UpdateQuery(table, QueryBuilder.Update.andSet(qb, clause(table).qb))
   }
 }
 

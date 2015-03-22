@@ -30,20 +30,20 @@
 package com.websudos.phantom.builder.query
 
 
-import com.websudos.phantom.builder.ops.OrderingClause
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
+import scala.util.Try
 
 import com.datastax.driver.core.{Row, Session}
 import com.twitter.util.{ Future => TwitterFuture}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.ops.OrderingClause
 
 import com.websudos.phantom.connectors.KeySpace
 
-import scala.util.Try
 
 class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -78,11 +78,12 @@ class SelectQuery[
   }
 
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new SelectQuery(table, QueryBuilder.allowFiltering(qb), rowFunc)
+    new SelectQuery(table, QueryBuilder.Select.allowFiltering(qb), rowFunc)
   }
 
-  final def orderBy(clause: Table => OrderingClause.Condition): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
-    new SelectQuery(table, QueryBuilder.Ordering.orderBy(qb, clause(table).qb), rowFunc)
+  @implicitNotFound("You have already defined an ordering clause on this query.")
+  final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+    new SelectQuery(table, QueryBuilder.Select.Ordering.orderBy(qb, clause(table).qb), rowFunc)
   }
 
   /**
@@ -109,15 +110,15 @@ class SelectQuery[
 }
 
 private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, rowFunc: Row => R, columns: List[String]) {
-  private[phantom] def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.select(table.tableName, columns: _*), rowFunc)
+  private[phantom] def all: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.Select.select(table.tableName, columns: _*), rowFunc)
 
-  def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.distinct(table.tableName, columns: _*), rowFunc)
+  def distinct: SelectQuery.Default[T, R] = new SelectQuery(table, QueryBuilder.Select.distinct(table.tableName, columns: _*), rowFunc)
 
   private[this] def extractCount(r: Row): Long = {
     Try { r.getLong("count") }.toOption.getOrElse(0L)
   }
 
-  def count: SelectQuery.Default[T, Long] = new SelectQuery(table, QueryBuilder.count(table.tableName, columns: _*), extractCount)
+  def count: SelectQuery.Default[T, Long] = new SelectQuery(table, QueryBuilder.Select.count(table.tableName, columns: _*), extractCount)
 }
 
 object RootSelectBlock {
