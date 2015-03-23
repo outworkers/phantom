@@ -1,6 +1,8 @@
 package com.websudos.phantom.builder.ops
 
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.column.AbstractColumn
 
 /**
  * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
@@ -55,4 +57,12 @@ object OrderingClause {
 
 object UpdateClause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+}
+
+private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
+
+  def asc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+  def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
 }

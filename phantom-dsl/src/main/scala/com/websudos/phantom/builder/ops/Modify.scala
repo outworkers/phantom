@@ -108,6 +108,8 @@ sealed trait CollectionOperators {
   }
 }
 
+sealed class ModifiableColumn[T]
+
 private[ops] trait ModifyMechanism {
 
   implicit final def columnsAreModifiable[T <: AbstractColumn[_]]: ModifiableColumn[T] = new ModifiableColumn[T]
