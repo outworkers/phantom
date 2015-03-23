@@ -45,12 +45,12 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
 
   it should "create a batch query to perform several updates in a single table" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
 
     val chain = for {
       batched <- ft.future()
@@ -60,19 +60,19 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         res.isDefined shouldEqual true
-        res.get shouldEqual 2500L
+        res.get shouldEqual 2500
       }
     }
   }
 
   it should "create a batch query to perform several updates in a single table with Twitter Futures" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
       .execute()
 
     val chain = for {
@@ -83,24 +83,24 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         res.isDefined shouldEqual true
-        res.get shouldEqual 2500L
+        res.get shouldEqual 2500
       }
     }
   }
 
   it should "create a batch query to update counters in several tables" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .future()
 
     val chain = for {
@@ -113,30 +113,30 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
       res => {
         info("The first counter select should return the record")
         res._1.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._1.get shouldEqual 2500L
+        info("and the counter value should match the sum of the +=s")
+        res._1.get shouldEqual 2500
 
         info("The second counter select should return the record")
         res._2.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._2.get shouldEqual 2500L
+        info("and the counter value should match the sum of the +=s")
+        res._2.get shouldEqual 2500
       }
     }
   }
 
   it should "create a batch query to update counters in several tables with Twitter Futures" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .execute()
 
     val chain = for {
@@ -149,32 +149,32 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
       res => {
         info("The first counter select should return the record")
         res._1.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._1.get shouldEqual 2500L
+        info("and the counter value should match the sum of the +=s")
+        res._1.get shouldEqual 2500
 
         info("The second counter select should return the record")
         res._2.isDefined shouldEqual true
 
-        info("and the counter value should match the sum of the increments")
-        res._2.get shouldEqual 2500L
+        info("and the counter value should match the sum of the +=s")
+        res._2.get shouldEqual 2500
       }
     }
   }
 
-  it should "create a batch query to counters in several tables while alternating between increment and decrement" in {
+  it should "create a batch query to counters in several tables while alternating between += and -=" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
 
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .future()
 
     val chain = for {
@@ -187,31 +187,31 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
       res => {
         info("The first counter select should return the record")
         res._1.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._1.get shouldEqual 500L
+        info("and the counter value should match the sum of the +=s")
+        res._1.get shouldEqual 500
 
         info("The second counter select should return the record")
         res._2.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._2.get shouldEqual 500L
+        info("and the counter value should match the sum of the +=s")
+        res._2.get shouldEqual 500
       }
     }
   }
 
-  it should "create a batch query to counters in several tables while alternating between increment and decrement with Twitter futures" in {
+  it should "create a batch query to counters in several tables while alternating between += and -= with Twitter futures" in {
     val id = UUIDs.timeBased()
-    val ft = CounterBatchStatement()
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+    val ft = Batch.counter
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(CounterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
 
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries decrement 500L))
-      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries increment 500L))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(SecondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .future()
 
     val chain = for {
@@ -224,13 +224,13 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
       res => {
         info("The first counter select should return the record")
         res._1.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._1.get shouldEqual 500L
+        info("and the counter value should match the sum of the +=s")
+        res._1.get shouldEqual 500
 
         info("The second counter select should return the record")
         res._2.isDefined shouldEqual true
-        info("and the counter value should match the sum of the increments")
-        res._2.get shouldEqual 500L
+        info("and the counter value should match the sum of the +=s")
+        res._2.get shouldEqual 500
       }
     }
   }

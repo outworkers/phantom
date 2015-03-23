@@ -61,7 +61,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row.pkey)
 
-    val batch = BatchStatement().add(statement3, statement4)
+    val batch = Batch.logged.add(statement3, statement4)
 
   }
 
@@ -79,7 +79,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
-    val batch = BatchStatement().add(statement3, statement4)
+    val batch = Batch.logged.add(statement3, statement4)
     batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
@@ -97,7 +97,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
-    val batch = BatchStatement().add(statement3).add(statement4)
+    val batch = Batch.logged.add(statement3).add(statement4)
     batch.queryString shouldEqual s"BEGIN BATCH UPDATE PrimitivesJoda SET intColumn=${row2.int},timestamp=${row2.bi.getMillis} WHERE pkey='${row2.pkey}';DELETE FROM PrimitivesJoda WHERE pkey='${row3.pkey}';APPLY BATCH;"
   }
 
@@ -121,12 +121,12 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row3.int)
       .value(_.timestamp, row3.bi)
 
-    val batch = BatchStatement().add(statement1).add(statement2).add(statement3)
+    val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
 
     val chain = for {
       ex <- PrimitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- PrimitivesJoda.count.one()
+      count <- PrimitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -157,12 +157,12 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row3.int)
       .value(_.timestamp, row3.bi)
 
-    val batch = BatchStatement().add(statement1).add(statement2).add(statement3)
+    val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
 
     val chain = for {
       ex <- PrimitivesJoda.truncate.execute()
       batchDone <- batch.execute()
-      count <- PrimitivesJoda.count.get()
+      count <- PrimitivesJoda.select.count.get()
     } yield count
 
     chain.successful {
@@ -181,12 +181,12 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement().add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
+    val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
       ex <- PrimitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- PrimitivesJoda.count.one()
+      count <- PrimitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -205,12 +205,12 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement().add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
+    val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
       ex <- PrimitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- PrimitivesJoda.count.one()
+      count <- PrimitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -244,7 +244,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
-    val batch = BatchStatement().add(statement3).add(statement4)
+    val batch = Batch.logged.add(statement3).add(statement4)
 
     val w = for {
       s1 <- statement1.future()
@@ -287,7 +287,7 @@ class BatchTest extends PhantomCassandraTestSuite {
     val statement4 = PrimitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
-    val batch = BatchStatement().add(statement3).add(statement4)
+    val batch = Batch.logged.add(statement3).add(statement4)
 
     val w = for {
       s1 <- statement1.execute()
@@ -315,7 +315,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement()
+    val batch = Batch.logged
       .add(statement1)
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.int))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)))
@@ -343,7 +343,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement()
+    val batch = Batch.logged
       .add(statement1)
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.int))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)))
@@ -375,7 +375,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement()
+    val batch = Batch.logged
       .add(statement1.timestamp(last.getMillis))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last1.getMillis))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
@@ -405,7 +405,7 @@ class BatchTest extends PhantomCassandraTestSuite {
       .value(_.intColumn, row.int)
       .value(_.timestamp, row.bi)
 
-    val batch = BatchStatement()
+    val batch = Batch.logged
       .add(statement1.timestamp(last))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last1.getMillis))
       .add(PrimitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)

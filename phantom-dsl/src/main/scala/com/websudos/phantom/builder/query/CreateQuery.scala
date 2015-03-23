@@ -257,6 +257,11 @@ class RootCreateQuery[
       .append(CQLSyntax.Symbols.`)`)
   }
 
+  private[phantom] def toQuery: CreateQuery.Default[Table, Record] = {
+    new CreateQuery[Table, Record, Unspecified, WithUnchainned](table, default)
+  }
+
+
   def ifNotExists: CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.ifNotExists)
       .forcePad.append(table.tableName).forcePad
@@ -276,8 +281,6 @@ class CreateQuery[
   Chain <: WithBound
 ](table: Table, val qb: CQLQuery) extends ExecutableStatement {
 
-  type Default = CreateQuery[Table, Record, Unspecified, WithUnchainned]
-
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.Create.`with`(qb, clause.qb))
@@ -289,11 +292,15 @@ class CreateQuery[
   }
 }
 
+object CreateQuery {
+  type Default[T <: CassandraTable[T, _], R] = CreateQuery[T, R, Unspecified, WithUnchainned]
+}
+
 private[phantom] trait CreateImplicits extends TablePropertyClauses {
 
   val Cache = CacheStrategies
 
-  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery[T, R, Unspecified, WithUnchainned]#Default = {
+  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery.Default[T, R] = {
     new CreateQuery(root.table, root.default)
   }
 }

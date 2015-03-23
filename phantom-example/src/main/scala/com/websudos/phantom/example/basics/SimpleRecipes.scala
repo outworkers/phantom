@@ -178,7 +178,7 @@ object Recipes extends Recipes with ExampleConnector {
   def updateRecipeAuthorAndName(id: UUID, name: String, author: String): ScalaFuture[ResultSet] = {
     update.where(_.id eqs id)
       .modify(_.name setTo name)
-      .andSet(_.author setTo author)
+      .and(_.author setTo author)
       .future()
   }
 

@@ -12,6 +12,10 @@ import scala.util.{Failure, Success}
 private[phantom] trait CassandraOperations {
 
   protected[this] def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringToPromise(query).future
+  }
+
+  protected[this] def scalaQueryStringToPromise(query: String)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
     Manager.logger.debug("Executing Cassandra query:")
     Manager.logger.debug(query)
     val promise = ScalaPromise[ResultSet]()
@@ -29,8 +33,9 @@ private[phantom] trait CassandraOperations {
       }
     }
     Futures.addCallback(future, callback, Manager.executor)
-    promise.future
+    promise
   }
+
 
   protected[this] def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
     val promise = TwitterPromise[ResultSet]()

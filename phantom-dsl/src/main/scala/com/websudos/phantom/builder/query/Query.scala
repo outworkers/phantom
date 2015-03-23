@@ -79,4 +79,6 @@ abstract class Query[
 }
 
 
-private[phantom] trait Batchable
+private[phantom] trait Batchable {
+  self: ExecutableStatement =>
+}

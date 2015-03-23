@@ -37,38 +37,38 @@ import com.websudos.util.testing._
 class AllowedBatchQueriesTest extends FlatSpec with Matchers {
 
   val s = gen[String]
-  val b = BatchStatement
+  val b = Batch.logged
   val p = Primitives
   
   it should "allow using Insert queries in a Batch statement" in {
-    "BatchStatement().add(Primitives.insert)" should compile
+    "Batch.logged.add(Primitives.insert)" should compile
   }
 
   it should " allow using an Insert.Value statement in a BatchStatement" in {
-    "BatchStatement().add(Primitives.insert.value(_.long, 4L))" should compile
+    "Batch.logged.add(Primitives.insert.value(_.long, 4L))" should compile
   }
 
   it should "allow using an Update.Assignments statement in a BatchStatement" in {
-    "BatchStatement().add(Primitives.update.modify(_.long setTo 5L))" should compile
+    "Batch.logged.add(Primitives.update.modify(_.long setTo 5L))" should compile
   }
 
   it should "allow using Update.Where queries in a BatchStatement" in {
-    "BatchStatement().add(Primitives.update.where(_.pkey eqs gen[String]))" should compile
+    "Batch.logged.add(Primitives.update.where(_.pkey eqs gen[String]))" should compile
   }
 
   it should "allow using Conditional Update.Where queries in a BatchStatement" in {
-    "BatchStatement().add(Primitives.update.where(_.pkey eqs gen[String]).onlyIf(_.long eqs 5L))" should compile
+    "Batch.logged.add(Primitives.update.where(_.pkey eqs gen[String]).onlyIf(_.long eqs 5L))" should compile
   }
 
   it should " allow using Conditional Assignments queries in a BatchStatement" in {
-    "BatchStatement().add(Primitives.update.where(_.pkey eqs gen[String]).modify(_.long setTo 10L).onlyIf(_.long eqs 5L))" should compile
+    "Batch.logged.add(Primitives.update.where(_.pkey eqs gen[String]).modify(_.long setTo 10L).onlyIf(_.long eqs 5L))" should compile
   }
 
   it should " allow using Delete queries in a BatchStatement" in {
-    "BatchStatement().add(Primitives.delete)" should compile
+    "Batch.logged.add(Primitives.delete)" should compile
   }
 
   it should "Delete.Where queries in a BatchStatement" in {
-    "BatchStatement().add(Primitives.delete)" should compile
+    "Batch.logged.add(Primitives.delete)" should compile
   }
 }

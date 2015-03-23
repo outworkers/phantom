@@ -31,6 +31,16 @@ package com.websudos.phantom.builder
 
 import com.websudos.phantom.builder.query.CQLQuery
 
+sealed class BatchBuilder {
+  def batch(batchType: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Batch.begin).forcePad.append(batchType).forcePad.append(CQLSyntax.Batch.batch)
+  }
+
+  def applyBatch(qb: CQLQuery): CQLQuery = {
+    qb.forcePad.append(CQLSyntax.Batch.apply).forcePad.append(CQLSyntax.Batch.batch)
+  }
+}
+
 private[phantom] object QueryBuilder {
 
   case object Create extends CreateTableBuilder
@@ -43,7 +53,10 @@ private[phantom] object QueryBuilder {
   
   case object Select extends SelectQueryBuilder
 
+  case object Batch extends BatchBuilder
+
   case object Utils extends Utils
+
 
   def truncate(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
@@ -55,6 +68,10 @@ private[phantom] object QueryBuilder {
 
   def ttl(qb: CQLQuery, seconds: String): CQLQuery = {
     using(qb).forcePad.append(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
+  }
+
+  def timestamp(qb: CQLQuery, seconds: String): CQLQuery = {
+    using(qb).forcePad.append(CQLSyntax.timestamp).forcePad.append(seconds)
   }
 
   def consistencyLevel(qb: CQLQuery, level: String): CQLQuery = {

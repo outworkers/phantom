@@ -38,7 +38,7 @@ sealed abstract class SelectColumn[T](val col: AbstractColumn[_]) {
 }
 
 sealed trait ColumnModifiers {
-  implicit class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
+  class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
     extends AbstractModifyColumn[Option[RR]](col.name) {
 
     def asCql(v: Option[RR]): String = col.asCql(v)

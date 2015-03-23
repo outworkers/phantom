@@ -38,7 +38,7 @@ class CASConditionalQueriesTest extends FlatSpec with Matchers {
 
   val p = Primitives
   val t = TimeSeriesTable
-  val b = BatchStatement
+  val b = Batch
 
   it should "allow using a non-index column in a conditional update clause" in {
 

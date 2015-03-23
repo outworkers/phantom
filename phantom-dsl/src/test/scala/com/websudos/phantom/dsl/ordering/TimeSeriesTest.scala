@@ -57,7 +57,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)
@@ -89,7 +89,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)
@@ -121,7 +121,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)
@@ -152,7 +152,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)
@@ -182,7 +182,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) =>
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)
@@ -211,7 +211,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
-    val batch = recordList.foldLeft(BatchStatement()) {
+    val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) =>
         b.add(TimeSeriesTable.insert
           .value(_.id, record.id)

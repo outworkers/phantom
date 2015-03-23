@@ -38,7 +38,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers {
 
   val s = gen[String]
   val p = Primitives
-  val b = BatchStatement
+  val b = Batch.logged
   
   it should "allow using the eqs operator on index columns" in {
     "Primitives.select.where(_.pkey eqs gen[String])" should compile

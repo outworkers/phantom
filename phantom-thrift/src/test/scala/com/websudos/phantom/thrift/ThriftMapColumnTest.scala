@@ -30,7 +30,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   it should "put an item to a thrift map column" in {

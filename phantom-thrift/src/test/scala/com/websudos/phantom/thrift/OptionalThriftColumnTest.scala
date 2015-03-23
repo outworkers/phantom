@@ -28,7 +28,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema()
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)

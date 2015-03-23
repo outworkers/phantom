@@ -29,11 +29,12 @@
  */
 package com.websudos.phantom.dsl.crud
 
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.batch.BatchStatement
+import com.websudos.phantom.dsl.Batch
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
@@ -52,7 +53,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       truncate <- PrimitivesJoda.truncate.future()
-      count <- PrimitivesJoda.count.fetch()
+      count <- PrimitivesJoda.select.count.fetch()
     } yield count
 
     chain successful {
@@ -68,7 +69,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     val rows = genList[JodaRow](limit)
 
-    val batch = rows.foldLeft(BatchStatement())((b, row) => {
+    val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
@@ -79,7 +80,7 @@ class CountTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- PrimitivesJoda.truncate.future()
       batch <- batch.future()
-      count <- PrimitivesJoda.count.one()
+      count <- PrimitivesJoda.select.count.one()
     } yield count
 
     chain successful {
@@ -95,7 +96,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     val rows = genList[JodaRow](limit)
 
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
+    val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
@@ -106,7 +107,7 @@ class CountTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- PrimitivesJoda.truncate.execute()
       batch <- batch.execute()
-      count <- PrimitivesJoda.count.get()
+      count <- PrimitivesJoda.select.count.get()
     } yield count
 
     chain successful {

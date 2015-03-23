@@ -29,7 +29,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   it should "allow storing thrift columns" in {

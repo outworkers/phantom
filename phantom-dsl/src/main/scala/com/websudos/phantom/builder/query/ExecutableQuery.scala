@@ -12,6 +12,7 @@ import com.websudos.phantom.iteratee.{Enumerator, Iteratee, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ Promise => ScalaPromise }
 
 trait ExecutableStatement extends CassandraOperations {
 
@@ -19,6 +20,10 @@ trait ExecutableStatement extends CassandraOperations {
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
+  }
+
+  def promise()(implicit session: Session, keySpace: KeySpace): ScalaPromise[ResultSet] = {
+    scalaQueryStringToPromise(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
@@ -44,7 +49,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     List.tabulate(results.size())(index => fromRow(results.get(index)))
   }
 
-  private[phantom] def singleFetch()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): ScalaFuture[Option[R]] = {
+  private[phantom] def singleFetch()(implicit session: Session, context: ExecutionContext, keySpace: KeySpace): ScalaFuture[Option[R]] = {
     future() map { res => singleResult(res.one) }
   }
 
@@ -84,10 +89,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
    * @return
    */
-  def one()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[R]]
+  def one()(implicit session: Session,  ec: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[R]]
 
   /**
    * Get the result of an operation as a Twitter Future.
@@ -103,7 +107,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    * @param ctx The Execution Context.
    * @return
    */
-  def fetch()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+  def fetch()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
     future() map { resultSet => {directMapper(resultSet.all) } }
   }
 

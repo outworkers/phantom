@@ -48,7 +48,7 @@ object CQLSyntax {
   val count = "count"
   val `)` = ")"
   val token = "token"
-
+  val timestamp = "timestamp"
 
   val consistency = "consistency"
 
@@ -118,7 +118,15 @@ object CQLSyntax {
     val Varint = "varint"
     val UUID = "uuid"
     val TimeUUID = "timeuuid"
+  }
 
+  object Batch {
+    val apply = "APPLY"
+    val begin = "BEGIN"
+    val batch = "batch"
+    val Unlogged = "UNLOGGED"
+    val Logged = "LOGGED"
+    val Counter = "COUNTER"
   }
 
   object CreateOptions {

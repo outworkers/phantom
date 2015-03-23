@@ -1030,7 +1030,7 @@ phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
 import com.websudos.phantom.dsl._
 
-BatchStatement()
+Batch()
     .add(ExampleRecord.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
     .add(ExampleRecord.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
     .future()

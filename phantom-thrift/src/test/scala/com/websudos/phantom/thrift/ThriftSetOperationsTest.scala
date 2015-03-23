@@ -30,7 +30,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   it should "add an item to a thrift set column" in {

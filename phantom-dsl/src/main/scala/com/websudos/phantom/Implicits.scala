@@ -29,12 +29,12 @@
  */
 package com.websudos.phantom
 
-
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
@@ -43,15 +43,7 @@ import com.websudos.phantom.column.AbstractColumn
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
 object Implicits extends CompileTimeRestrictions with CreateImplicits with DefaultPrimitives with SelectImplicits {
-
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
-  type BatchStatement = com.websudos.phantom.batch.BatchStatement
-  type CounterBatchStatement = com.websudos.phantom.batch.CounterBatchStatement
-  type UnloggedBatchStatement = com.websudos.phantom.batch.UnloggedBatchStatement
-
-  val BatchStatement = com.websudos.phantom.batch.BatchStatement
-  val CounterBatchStatement = com.websudos.phantom.batch.CounterBatchStatement
-  val UnloggedBatchStatement = com.websudos.phantom.batch.UnloggedBatchStatement
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.websudos.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -119,6 +111,8 @@ object Implicits extends CompileTimeRestrictions with CreateImplicits with Defau
   type KeySpace = com.websudos.phantom.connectors.KeySpace
   val KeySpace = com.websudos.phantom.connectors.KeySpace
 
+
+  case object Batch extends Batcher
 
   object ConsistencyLevel {
     val ALL = CLevel.ALL
@@ -220,7 +214,7 @@ object Implicits extends CompileTimeRestrictions with CreateImplicits with Defau
     final def decrement = -= _
   }
 
-  implicit class UpdateOperations[T <: AbstractColumn[RR], RR : Primitive](val col: T) {
+  implicit class UpdateOperations[RR : Primitive](val col: AbstractColumn[RR]) {
 
     final def setTo(value: RR): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.set(col.name, implicitly[Primitive[RR]].asCql(value)))

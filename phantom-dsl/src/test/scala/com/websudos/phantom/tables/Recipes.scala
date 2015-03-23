@@ -29,11 +29,11 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import org.joda.time.DateTime
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
-import com.websudos.phantom.query.InsertQuery
 
 case class Recipe(
   url: String,

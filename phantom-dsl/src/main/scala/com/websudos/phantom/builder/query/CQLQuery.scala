@@ -31,6 +31,7 @@ case class CQLQuery(queryString: String) {
   def wrap(query: CQLQuery): CQLQuery = wrap(query.queryString)
   def wrap[T](list: T)(implicit ev1: T => TraversableOnce[String]): CQLQuery = wrap(list.mkString(", "))
   def wrapEscape(list: List[String]): CQLQuery = wrap(list.map(escape).mkString(", "))
+
 }
 
 object CQLQuery {

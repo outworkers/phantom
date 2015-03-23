@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
@@ -14,13 +15,6 @@ import com.websudos.phantom.column.AbstractColumn
 package object dsl extends CreateImplicits with DefaultPrimitives with SelectImplicits with CompileTimeRestrictions {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
-  type BatchStatement = com.websudos.phantom.batch.BatchStatement
-  type CounterBatchStatement = com.websudos.phantom.batch.CounterBatchStatement
-  type UnloggedBatchStatement = com.websudos.phantom.batch.UnloggedBatchStatement
-
-  val BatchStatement = com.websudos.phantom.batch.BatchStatement
-  val CounterBatchStatement = com.websudos.phantom.batch.CounterBatchStatement
-  val UnloggedBatchStatement = com.websudos.phantom.batch.UnloggedBatchStatement
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.websudos.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -88,6 +82,8 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
   type KeySpace = com.websudos.phantom.connectors.KeySpace
   val KeySpace = com.websudos.phantom.connectors.KeySpace
 
+
+  case object Batch extends Batcher
 
   object ConsistencyLevel {
     val ALL = CLevel.ALL
@@ -176,17 +172,13 @@ package object dsl extends CreateImplicits with DefaultPrimitives with SelectImp
   implicit lazy val context = Manager.scalaExecutor
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
-    final def +=(value: Int = 1): UpdateClause.Condition = {
+    final def +=[T : Numeric](value: T): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
 
-    final def -=(value: Int = 1): UpdateClause.Condition = {
+    final def -=[T : Numeric](value: T): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
     }
-
-    final def increment = += _
-
-    final def decrement = -= _
   }
 
   implicit class UpdateOperations[RR : Primitive](val col: AbstractColumn[RR]) {

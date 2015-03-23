@@ -73,7 +73,7 @@ class InsertCasTest extends PhantomCassandraTestSuite {
       insert5 <- insert.future()
       one <- Primitives.select.where(_.pkey eqs row.pkey).one
       multi <- Primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- Primitives.count.one()
+      count <- Primitives.select.count.one()
     } yield (one, count, multi)
 
     chain successful {

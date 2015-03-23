@@ -29,20 +29,24 @@
  */
 package com.websudos.phantom
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{Session, Row}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
-
-
-
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
+
+  private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
+    Await.ready(this.create.toQuery.future(), 3.seconds)
+  }
 
   private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 

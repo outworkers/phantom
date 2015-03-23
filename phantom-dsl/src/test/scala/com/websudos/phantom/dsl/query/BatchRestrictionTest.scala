@@ -39,7 +39,7 @@ import com.websudos.util.testing._
 class BatchRestrictionTest extends FlatSpec with Matchers {
 
   val s = Recipes
-  val b = BatchStatement
+  val b = Batch.logged
   val d = new DateTime
 
   it should "not allow using Select queries in a batch" in {
