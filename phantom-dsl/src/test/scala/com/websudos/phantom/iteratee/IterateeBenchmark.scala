@@ -29,19 +29,19 @@
  */
 package com.websudos.phantom.iteratee
 
-import scala.concurrent.{Await, Future}
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testkit.suites.TestZookeeperConnector
+import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit._
-import com.websudos.util.testing._
+import scala.concurrent.{Await, Future}
 
-class IterateeBenchmark extends PerformanceTest.Quickbenchmark
-  with PhantomCassandraTestSuite {
+class IterateeBenchmark extends PerformanceTest.Quickbenchmark with TestZookeeperConnector {
 
   PrimitivesJoda.insertSchema()
+
   val fs = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])

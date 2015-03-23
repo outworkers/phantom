@@ -41,6 +41,8 @@ sealed trait CassandraWrites[T] {
 
 private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
+  type Value = T
+
   private[phantom] val isPrimary = false
   private[phantom] val isSecondaryKey = false
   private[phantom] val isPartitionKey = false

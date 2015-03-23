@@ -53,16 +53,16 @@ trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
    * @param v The Thrift struct to convert.
    * @return A string containing the compact Thrift serialization.
    */
-  def itemToCType(v: ValueType): String = {
+  def asCql(v: ValueType): String = {
     serializer.toString(v)
   }
+
+  def valueAsCql(v: ValueType): String = asCql(v)
 
   val primitive = implicitly[Primitive[String]]
 }
 
 trait CollectionThriftColumnDefinition[ValueType <: ThriftStruct] extends ThriftColumnDefinition[ValueType] with CollectionValueDefinition[ValueType] {
-
-  def asCql(v: ValueType): String = itemToCType(v)
 
   def fromString(c: String): ValueType = serializer.fromString(c)
 }
@@ -70,10 +70,6 @@ trait CollectionThriftColumnDefinition[ValueType <: ThriftStruct] extends Thrift
 
 abstract class ThriftColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStruct](table: CassandraTable[T, R])
   extends Column[T, R, ValueType](table) with ThriftColumnDefinition[ValueType] {
-
-  def asCql(v: ValueType): String = {
-    serializer.toString(v)
-  }
 
   val cassandraType = "text"
 
@@ -90,7 +86,7 @@ abstract class OptionalThriftColumn[T <: CassandraTable[T, R], R, ValueType <: T
 
   val cassandraType = "text"
 
-  def toCType(v: Option[ValueType]): AnyRef = {
+  def asCql(v: Option[ValueType]): String = {
     v.map(serializer.toString).orNull
   }
 

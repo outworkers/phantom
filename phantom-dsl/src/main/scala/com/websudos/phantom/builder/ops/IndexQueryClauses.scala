@@ -55,5 +55,6 @@ private[phantom] trait IndexRestrictions {
   implicit def partitionColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PartitionKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
   implicit def primaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PrimaryKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
   implicit def secondaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with Index[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
-  implicit def orderingColumn[T](col: AbstractColumn[T])
+
+  implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey[RR]): OrderingColumn[RR] = new OrderingColumn[RR](col)
 }

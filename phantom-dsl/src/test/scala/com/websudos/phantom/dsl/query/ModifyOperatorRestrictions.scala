@@ -29,16 +29,11 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.TimeSeriesTable
 import com.websudos.util.testing._
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
 
-  val t = TimeSeriesTable
-  val b = BatchStatement
-  
   it should "not allow using the setTo operator on a Counter column" in {
     "CounterTableTest.update.where(_.id eqs gen[UUID]).modify(_.count_entries setTo 5L)" shouldNot compile
   }

@@ -150,7 +150,7 @@ package object tables {
   }
 
   implicit object SimpleMapOfStringsClassSampler extends Sample[SimpleMapOfStringsClass] {
-    def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(genMap[Int]())
+    def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(genMap[Int, String]())
   }
 
   implicit object RecipeSampler extends Sample[Recipe] {
@@ -171,9 +171,9 @@ package object tables {
       gen[String],
       genList[String](),
       genList[String]().toSet,
-      genMap[String](),
+      genMap[String, String](),
       genList[Int]().toSet,
-      genMap[Int]().map(_.swap)
+      genMap[Int, String]().map(_.swap)
     )
   }
 
@@ -192,7 +192,7 @@ package object tables {
         genOpt[Int],
         gen[SimpleMapOfStringsClass],
         genOpt[SimpleMapOfStringsClass],
-        genMap[SimpleMapOfStringsClass]()
+        genMap[SimpleMapOfStringsClass, String]()
       )
     }
   }

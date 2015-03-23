@@ -102,7 +102,9 @@ class ConditionalQueries extends PhantomCassandraTestSuite {
     val chain = for {
       insert <- insert
       select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.description setTo updated).onlyIf(_.description eqs recipe.description).execute()
+      update <- Recipes.update.where(_.url eqs recipe.url)
+        .modify(table => table.description setTo updated)
+        .onlyIf(table => columnToCasCompareColumn(table.description) eqs recipe.description).execute()
       select2 <- Recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 

@@ -76,7 +76,7 @@ object Recipes extends Recipes with PhantomCassandraConnector {
 
   override def tableName = "Recipes"
 
-  def store(recipe: Recipe, id: UUID): InsertQuery[Recipes, Recipe] = {
+  def store(recipe: Recipe, id: UUID): InsertQuery.Default[Recipes, Recipe] = {
     insert.value(_.uid, id)
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)
