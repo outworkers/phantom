@@ -45,13 +45,13 @@ class IterateeBigTest extends BigTest with Matchers {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
 
-  it should "get result fine" in {
+  ignore should "get result fine" in {
     PrimitivesJoda.insertSchema()
     val fs = for {
       step <- 1 to 100
       rows = Iterator.fill(10000)(gen[JodaRow])
 
-      batch = rows.foldLeft(new BatchStatement())((b, row) => {
+      batch = rows.foldLeft(Batch.unlogged)((b, row) => {
         val statement = PrimitivesJoda.insert
           .value(_.pkey, row.pkey)
           .value(_.intColumn, row.int)
@@ -65,14 +65,14 @@ class IterateeBigTest extends BigTest with Matchers {
 
 
     val combinedFuture = Future.sequence(fs) map {
-      r => PrimitivesJoda.count.one()
+      r => PrimitivesJoda.select.count.one()
     }
 
     val counter: AtomicLong = new AtomicLong(0)
     val result = combinedFuture flatMap {
        rs => {
          info(s"done, inserted: $rs rows - start parsing")
-         PrimitivesJoda.select.setFetchSize(10000).fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
+         PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
        }
     }
 

@@ -192,7 +192,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val chain = for {
       truncate <- TimeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.desc).fetch()
+      chunks <- TimeSeriesTable.select.limit(5).where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.descending).fetch()
     } yield chunks
 
     chain.successful {

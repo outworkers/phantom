@@ -30,11 +30,11 @@
 package com.websudos.phantom.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import org.scalatest.concurrent.ScalaFutures
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.PrimitivesJoda
 import com.websudos.util.testing._
+import org.scalatest.concurrent.ScalaFutures
 
 class IterateeBigReadTest extends BigTest with ScalaFutures {
 

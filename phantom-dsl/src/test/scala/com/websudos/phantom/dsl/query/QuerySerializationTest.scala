@@ -44,7 +44,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "correctly serialize a full select query" in {
     val someId = gen[UUID]
-    Articles.select.where(_.id eqs someId).queryString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
+    Articles.select.where(_.id eqs someId).qb.queryString shouldBe s"SELECT * FROM articles WHERE id=$someId;"
   }
 
   it should "compile a single column partial select query" in {
@@ -53,7 +53,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "correctly serialize a single column partial select query" in {
     val someId = gen[UUID]
-    Articles.select(_.id).where(_.id eqs someId).queryString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
+    Articles.select(_.id).where(_.id eqs someId).qb.queryString shouldBe s"SELECT id FROM ${Articles.tableName} WHERE id=$someId;"
   }
 
   it should "compile a query to query condition clause" in {
@@ -62,13 +62,13 @@ class QuerySerializationTest extends FlatSpec with Matchers {
 
   it should "serialize a condition query to a query condition" in {
     val someId = gen[UUID]
-    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").queryString
+    val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name eqs "update").qb.queryString
     query shouldEqual s"UPDATE articles SET name='test' WHERE id=$someId IF name='update';"
   }
 
   it should "correctly serialize a 2 column partial select query" in {
     val someId = gen[UUID]
-    Articles.select(_.id, _.name).where(_.id eqs someId).queryString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
+    Articles.select(_.id, _.name).where(_.id eqs someId).qb.queryString shouldBe s"SELECT id,name FROM articles WHERE id=$someId;"
   }
 
   it should "correctly serialize a 3 column partial select query" in {
@@ -81,7 +81,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
   }
 
   it should "corectly serialise a simple conditional update query" in {
-    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).queryString
+    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).qb.queryString
     qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false;"
   }
 
@@ -94,7 +94,7 @@ class QuerySerializationTest extends FlatSpec with Matchers {
     val qb = Recipes.update.where(_.url eqs "test")
       .modify(_.description setTo Some("blabla"))
       .onlyIf(_.ingredients eqs List("1", "2", "3"))
-      .queryString
+      .qb.queryString
 
     qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'];"
   }
@@ -104,36 +104,36 @@ class QuerySerializationTest extends FlatSpec with Matchers {
       .modify(_.description setTo Some("blabla"))
       .onlyIf(_.ingredients eqs List("1", "2", "3"))
       .and(_.description eqs Some("test"))
-      .queryString
+      .qb.queryString
 
     qb shouldEqual "UPDATE Recipes SET description='blabla' WHERE url='test' IF ingredients=['1','2','3'] AND description='test';"
   }
 
   it should "serialize a simple count query" in {
-    Recipes.count.queryString shouldEqual "SELECT count(*) FROM Recipes;"
+    Recipes.select.count.qb.queryString shouldEqual "SELECT count(*) FROM Recipes;"
   }
 
   it should "serialize a count query with a where clause" in {
     val key = gen[String]
-    Recipes.count.where(_.url eqs key).queryString shouldEqual s"SELECT count(*) FROM Recipes WHERE url='$key';"
+    Recipes.select.count.where(_.url eqs key).qb.queryString shouldEqual s"SELECT count(*) FROM Recipes WHERE url='$key';"
   }
 
   it should "serialize a count query with a where-and clause" in {
     val id = UUID.randomUUID()
     val key = id.toString
-    TableWithCompoundKey.count.where(_.id eqs id).and(_.second eqs id).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key;"
+    TableWithCompoundKey.select.count.where(_.id eqs id).and(_.second eqs id).qb.queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key;"
   }
 
   it should "allow setting a limit on a count query" in {
     val id = UUID.randomUUID()
     val key = id.toString
-    TableWithCompoundKey.count.where(_.id eqs id).and(_.second eqs id).limit(10).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10;"
+    TableWithCompoundKey.select.count.where(_.id eqs id).and(_.second eqs id).limit(10).qb.queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10;"
   }
 
   it should "allow filtering on a count query" in {
     val id = UUID.randomUUID()
     val key = id.toString
-    TableWithCompoundKey.count.allowFiltering().where(_.id eqs id).and(_.second eqs id).limit(10).queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10 ALLOW FILTERING;"
+    TableWithCompoundKey.select.count.allowFiltering().where(_.id eqs id).and(_.second eqs id).limit(10).qb.queryString shouldEqual s"SELECT count(*) FROM TableWithCompoundKey WHERE id=$key AND second=$key LIMIT 10 ALLOW FILTERING;"
   }
 
 }

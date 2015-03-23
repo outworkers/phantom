@@ -29,13 +29,12 @@
  */
 package com.websudos.phantom.dsl.crud
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class TruncateTest extends PhantomCassandraTestSuite {
 

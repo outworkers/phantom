@@ -6,13 +6,13 @@ import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
-import com.websudos.phantom.builder.ops.{ImplicitMechanism, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.ops.{LowPriorityImplicits, ImplicitMechanism, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.AbstractColumn
 
-package object dsl extends CreateImplicits with DefaultPrimitives with SelectImplicits with ImplicitMechanism {
+package object dsl extends LowPriorityImplicits with CreateImplicits with DefaultPrimitives with SelectImplicits with ImplicitMechanism {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
 

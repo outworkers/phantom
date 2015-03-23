@@ -6,8 +6,6 @@ import com.websudos.phantom.column._
 
 import scala.annotation.implicitNotFound
 
-
-
 sealed class CasConditionalOperators[RR : Primitive](col: AbstractColumn[RR]) {
 
   @implicitNotFound("Only types with associate primitives can be used.")
@@ -17,10 +15,16 @@ sealed class CasConditionalOperators[RR : Primitive](col: AbstractColumn[RR]) {
 }
 
 sealed trait CasConditionsImplicits extends LowPriorityImplicits {
-  @implicitNotFound(msg = "Compare-and-set queries can only be applied to non indexed primitive columns.")
-  implicit final def columnToCasCompareColumn[RR : Primitive](col: AbstractColumn[RR]): CasConditionalOperators[RR] = {
-    new CasConditionalOperators[RR](col)
+  /*
+    @implicitNotFound(msg = "Compare-and-set queries can only be applied to non indexed primitive columns.")
+    implicit final def columnToCasCompareColumn[RR : Primitive](col: AbstractColumn[RR]): CasConditionalOperators[RR] = {
+      new CasConditionalOperators[RR](col)
   }
+  */
+
 }
 
-private[phantom] trait ImplicitMechanism extends ModifyMechanism with CasConditionsImplicits {}
+private[phantom] trait ImplicitMechanism extends LowPriorityImplicits
+  with ModifyMechanism
+  with IndexRestrictions
+  with CasConditionsImplicits

@@ -3,6 +3,8 @@ package com.websudos.phantom.builder.ops
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.dsl.PrimaryKey
+import com.websudos.phantom.keys.{Index, PartitionKey}
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -47,4 +49,11 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
   def in(values: List[RR]): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.in(col.name, values.map(p.asCql)))
   }
+}
+
+private[phantom] trait IndexRestrictions {
+  implicit def partitionColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PartitionKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
+  implicit def primaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PrimaryKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
+  implicit def secondaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with Index[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
+  implicit def orderingColumn[T](col: AbstractColumn[T])
 }
