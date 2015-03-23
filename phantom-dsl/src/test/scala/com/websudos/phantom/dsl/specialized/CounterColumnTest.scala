@@ -182,7 +182,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val chain = for {
       incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -=()).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
@@ -203,7 +203,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val chain = for {
       incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -=()).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).execute()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).get()
     } yield (select, select2)
 

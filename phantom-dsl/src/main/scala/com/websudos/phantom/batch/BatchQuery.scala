@@ -51,12 +51,13 @@ sealed class BatchQuery(val qb: CQLQuery, added: Boolean = false) extends Execut
     new BatchQuery(chain)
   }
 
-
   def timestamp(stamp: Long) = {
-    new BatchQuery(QueryBuilder.timestamp(qb, stamp.toString), true)
+    new BatchQuery(QueryBuilder.timestamp(qb, stamp.toString))
   }
 
-  def terminate: BatchQuery = new BatchQuery(QueryBuilder.Batch.applyBatch(qb))
+  def terminate: BatchQuery = {
+    new BatchQuery(QueryBuilder.Batch.applyBatch(qb), true)
+  }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     if (added) super.future() else terminate.future()

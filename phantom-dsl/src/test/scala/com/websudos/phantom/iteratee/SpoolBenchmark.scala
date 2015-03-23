@@ -34,7 +34,7 @@ class SpoolBenchmark extends PerformanceTest.Quickbenchmark
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])
 
-    batch = rows.foldLeft(new BatchStatement())((b, row) => {
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)

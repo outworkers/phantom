@@ -38,16 +38,15 @@ import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-
 class IterateeBenchmark extends PerformanceTest.Quickbenchmark
-  with TestZookeeperConnector {
+  with PhantomCassandraTestSuite {
 
   PrimitivesJoda.insertSchema()
   val fs = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])
 
-    batch = rows.foldLeft(new BatchStatement())((b, row) => {
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
@@ -55,7 +54,7 @@ class IterateeBenchmark extends PerformanceTest.Quickbenchmark
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ => println(s"step $step has succeed") )
+    f = w map (_ => println(s"step $step was completed successfully") )
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 

@@ -49,7 +49,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
 
   ignore should "get result fine" in {
     val rows = for (i <- 1 to 1000) yield gen[JodaRow]
-    val batch = rows.foldLeft(BatchStatement())((b, row) => {
+    val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
@@ -57,7 +57,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
       b.add(statement)
     })
 
-    val w = batch.future() map (_ => PrimitivesJoda.select.setFetchSize(100).fetchEnumerator)
+    val w = batch.future() map (_ => PrimitivesJoda.select.fetchEnumerator)
     w successful {
       en => {
         val result = en run Iteratee.collect()
@@ -74,7 +74,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
   it should "get mapResult fine" in {
 
     val rows = for (i <- 1 to 2000) yield gen[Primitive]
-    val batch = rows.foldLeft(new BatchStatement())((b, row) => {
+    val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)
         .value(_.long, row.long)

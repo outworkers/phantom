@@ -35,11 +35,6 @@ class UpdateQuery[
     new UpdateQuery[T, R, L, O, S, C](t, q)
   }
 
-
-  final def onlyIf(clause: Table => CompareAndSet.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
-  }
-
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
     new AssignmentsQuery(table, QueryBuilder.Update.set(qb, clause(table).qb))
   }
@@ -58,6 +53,10 @@ class AssignmentsQuery[
   final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
     new AssignmentsQuery(table, QueryBuilder.Update.andSet(qb, clause(table).qb))
   }
+
+  final def onlyIf(clause: Table => CompareAndSet.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new UpdateQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
+  }
 }
 
 object UpdateQuery {
@@ -67,4 +66,5 @@ object UpdateQuery {
   def apply[T <: CassandraTable[T, _], R](table: T): UpdateQuery.Default[T, R] = {
     new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](table, QueryBuilder.update(table.tableName))
   }
+
 }

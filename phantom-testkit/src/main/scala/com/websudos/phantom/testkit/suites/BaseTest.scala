@@ -151,7 +151,7 @@ trait CassandraSetup {
 }
 
 trait TestZookeeperConnector extends DefaultZookeeperConnector with CassandraSetup {
-  val keySpace = KeySpace("phantom")
+  implicit val keySpace = KeySpace("phantom")
   ZooKeeperManager.start()
 }
 

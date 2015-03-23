@@ -57,6 +57,10 @@ private[phantom] object QueryBuilder {
 
   case object Utils extends Utils
 
+  def ifNotExists(qb: CQLQuery): CQLQuery = {
+    qb.forcePad.append(CQLSyntax.ifNotExists)
+  }
+
 
   def truncate(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)

@@ -54,6 +54,10 @@ class InsertQuery[
     ttl(duration.inSeconds)
   }
 
+  def ifNotExists(): InsertQuery[Table, Record, Status] = {
+    new InsertQuery(table, QueryBuilder.ifNotExists(qb))
+  }
+
 }
 
 object InsertQuery {

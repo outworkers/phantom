@@ -35,14 +35,14 @@ import java.util.Date
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
-import com.websudos.phantom.builder.ops.{CompileTimeRestrictions, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.ops.{ImplicitMechanism, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.column.AbstractColumn
 
 @deprecated("Use import com.websudos.phantom.dsl._ instead of importing Implicits", "1.6.0")
-object Implicits extends CompileTimeRestrictions with CreateImplicits with DefaultPrimitives with SelectImplicits {
+object Implicits extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits {
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.Column[Owner, Record, T]
