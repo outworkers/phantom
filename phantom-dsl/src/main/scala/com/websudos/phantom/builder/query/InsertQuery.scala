@@ -6,6 +6,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import org.joda.time.DateTime
 
 import scala.concurrent.{ Future => ScalaFuture }
 
@@ -16,13 +17,13 @@ class InsertQuery[
 ](table: Table, val qb: CQLQuery, clauses: List[(String, String)] = Nil, added: Boolean = false) extends ExecutableStatement with Batchable {
 
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, qb, (col(table).name, col(table).asCql(value)) :: clauses)
+    new InsertQuery(table, qb, (col(table).name, col(table).asCql(value)) :: clauses, added)
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
     val insertValue = if (value != null) col(table).asCql(value) else null.asInstanceOf[String]
 
-    new InsertQuery(table, qb, (col(table).name, insertValue) :: clauses)
+    new InsertQuery(table, qb, (col(table).name, insertValue) :: clauses, added)
   }
 
 
@@ -43,7 +44,7 @@ class InsertQuery[
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, QueryBuilder.ttl(qb, seconds.toString))
+    new InsertQuery(table, QueryBuilder.ttl(qb, seconds.toString), clauses, added)
   }
 
   def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status] = {
@@ -54,8 +55,16 @@ class InsertQuery[
     ttl(duration.inSeconds)
   }
 
+  final def timestamp(value: Long): InsertQuery[Table, Record, Status] = {
+    new InsertQuery(table, QueryBuilder.using(QueryBuilder.timestamp(qb, value.toString)), clauses, added)
+  }
+
+  final def timestamp(value: DateTime): InsertQuery[Table, Record, Status] = {
+    timestamp(value.getMillis)
+  }
+
   def ifNotExists(): InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, QueryBuilder.ifNotExists(qb))
+    new InsertQuery(table, QueryBuilder.ifNotExists(qb), clauses, added)
   }
 
 }

@@ -70,7 +70,6 @@ class BrokenCounterTableTest extends CassandraTable[BrokenCounterTableTest, Coun
     CounterRecord(id(row), count_entries(row))
   }
 
-  override def defaultTTL = Some(org.joda.time.Seconds.seconds(5))
 }
 
 object BrokenCounterTableTest extends BrokenCounterTableTest with PhantomCassandraConnector {

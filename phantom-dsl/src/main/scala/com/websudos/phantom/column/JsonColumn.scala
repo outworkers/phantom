@@ -32,7 +32,7 @@ package com.websudos.phantom.column
 import com.datastax.driver.core.Row
 import com.twitter.util.Try
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.{CQLSyntax, QueryBuilder}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 
@@ -52,9 +52,9 @@ sealed trait JsonDefinition[T] {
 abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends Column[T, R,
   ValueType](table) with JsonDefinition[ValueType] {
 
-  def toCType(value: ValueType): AnyRef = toJson(value)
+  def asCql(value: ValueType): String = toJson(value)
 
-  val cassandraType = "text"
+  val cassandraType = CQLSyntax.Types.Text
 
   def optional(row: Row): Option[ValueType] = {
     Try {

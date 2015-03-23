@@ -54,6 +54,10 @@ sealed class AssignmentsQuery[
     new AssignmentsQuery(table, QueryBuilder.Update.andSet(qb, clause(table).qb))
   }
 
+  final def timestamp(value: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(table, QueryBuilder.using(QueryBuilder.timestamp(qb, value.toString)))
+  }
+
   def onlyIf(clause: Table => CompareAndSet.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
     new ConditionalQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
   }
@@ -71,6 +75,7 @@ sealed class ConditionalQuery[
   final def and(clause: Table => CompareAndSet.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
     new ConditionalQuery(table, QueryBuilder.Where.and(qb, clause(table).qb))
   }
+
 }
 
 object UpdateQuery {

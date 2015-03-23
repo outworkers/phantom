@@ -15,18 +15,15 @@
  */
 package com.websudos.phantom.tables
 
-import org.joda.time.{DateTime, Seconds}
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.joda.time.DateTime
 
 sealed class TimeSeriesTableWithTTL extends CassandraTable[TimeSeriesTableWithTTL, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
-
-  override def defaultTTL = Some(Seconds.seconds(5))
 
   def fromRow(row: Row): TimeSeriesRecord = {
     TimeSeriesRecord(
@@ -45,8 +42,6 @@ sealed class TimeSeriesTableWithTTL2 extends CassandraTable[TimeSeriesTableWithT
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this)
-
-  override def defaultTTL = Some(Seconds.seconds(5))
 
   def fromRow(row: Row): TimeSeriesRecord = {
     TimeSeriesRecord(
