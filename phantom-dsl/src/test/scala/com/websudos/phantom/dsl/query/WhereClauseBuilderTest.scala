@@ -29,17 +29,15 @@
  */
 package com.websudos.phantom.dsl.query
 
-import org.scalatest.{FlatSpec, Matchers}
-import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.Primitives
 import com.websudos.util.testing._
+import org.scalatest.{FlatSpec, Matchers}
 
 class WhereClauseBuilderTest extends FlatSpec with Matchers {
 
 
   val s = gen[String]
   val p = Primitives
-  val b = BatchStatement
 
   it should "allow using a Select.Where clause" in {
     "Primitives.select.where(_.pkey eqs gen[String])" should compile

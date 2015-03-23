@@ -14,7 +14,7 @@ import com.websudos.phantom.keys.{Index, PartitionKey}
  * @param col The column to cast to an IndexedColumn.
  * @tparam RR The type of the value the column holds.
  */
-sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
+sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
 
   private[this] val p = implicitly[Primitive[RR]]
 
@@ -52,9 +52,9 @@ sealed class IndexQueryClauses[RR : Primitive](val col: AbstractColumn[RR]) {
 }
 
 private[phantom] trait IndexRestrictions {
-  implicit def partitionColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PartitionKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
-  implicit def primaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PrimaryKey[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
-  implicit def secondaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with Index[T]): IndexQueryClauses[T] = new IndexQueryClauses(col)
+  implicit def partitionColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PartitionKey[T]): QueryColumn[T] = new QueryColumn(col)
+  implicit def primaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with PrimaryKey[T]): QueryColumn[T] = new QueryColumn(col)
+  implicit def secondaryColumnToIndexedColumn[T : Primitive](col: AbstractColumn[T] with Index[T]): QueryColumn[T] = new QueryColumn(col)
 
   implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey[RR]): OrderingColumn[RR] = new OrderingColumn[RR](col)
 }

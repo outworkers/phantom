@@ -18,7 +18,7 @@ sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyCol
 sealed class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
   extends AbstractModifyColumn[Option[RR]](col)
 
-sealed abstract class SelectColumn[T](val col: AbstractColumn[_]) {
+abstract class SelectColumn[T](val col: AbstractColumn[_]) {
   def apply(r: Row): T
 }
 
@@ -34,7 +34,7 @@ sealed trait ColumnModifiers {
   }
 }
 
-sealed trait CollectionOperators {
+trait CollectionOperators {
 
   implicit class ListLikeModifyColumn[Owner <: CassandraTable[Owner, Record], Record, RR](col: AbstractListColumn[Owner, Record, RR])
     extends ModifyColumn[List[RR]](col) {

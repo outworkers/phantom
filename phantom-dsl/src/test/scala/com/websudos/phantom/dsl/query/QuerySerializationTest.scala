@@ -80,16 +80,6 @@ class QuerySerializationTest extends FlatSpec with Matchers {
     ).where(_.url eqs someId).qb.toString shouldBe s"SELECT url,description,ingredients FROM Recipes WHERE url='$someId';"
   }
 
-  it should "corectly serialise a simple conditional update query" in {
-    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).qb.queryString
-    qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false;"
-  }
-
-  it should "corectly serialise a multi-part conditional update query" in {
-    val qb = Primitives.update.where(_.pkey eqs "test").onlyIf(_.boolean eqs false).and(_.long eqs 5L).qb.toString
-    qb shouldEqual s"UPDATE Primitives WHERE pkey='test' IF boolean=false AND long=5;"
-  }
-
   it should "corectly serialise a conditional update query with a single List column based clause" in {
     val qb = Recipes.update.where(_.url eqs "test")
       .modify(_.description setTo Some("blabla"))

@@ -212,7 +212,7 @@ abstract class UDTColumn[
     }.toOption
   }
 
-  def toCType(v: T): String = {
+  def asCql(v: T): String = {
     val data = typeDef.newValue()
     fields.foreach(field => {
       field.setSerialise(data)

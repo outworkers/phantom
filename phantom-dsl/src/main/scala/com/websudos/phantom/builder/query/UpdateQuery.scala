@@ -38,10 +38,10 @@ class UpdateQuery[
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
     new AssignmentsQuery(table, QueryBuilder.Update.set(qb, clause(table).qb))
   }
+
 }
 
-
-class AssignmentsQuery[
+sealed class AssignmentsQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -54,8 +54,22 @@ class AssignmentsQuery[
     new AssignmentsQuery(table, QueryBuilder.Update.andSet(qb, clause(table).qb))
   }
 
-  final def onlyIf(clause: Table => CompareAndSet.Condition): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
-    new UpdateQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
+  def onlyIf(clause: Table => CompareAndSet.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(table, QueryBuilder.Update.onlyIf(qb, clause(table).qb))
+  }
+}
+
+sealed class ConditionalQuery[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Limit <: LimitBound,
+  Order <: OrderBound,
+  Status <: ConsistencyBound,
+  Chain <: WhereBound
+](table: Table, val qb: CQLQuery) extends ExecutableStatement with Batchable {
+
+  final def and(clause: Table => CompareAndSet.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(table, QueryBuilder.Where.and(qb, clause(table).qb))
   }
 }
 
