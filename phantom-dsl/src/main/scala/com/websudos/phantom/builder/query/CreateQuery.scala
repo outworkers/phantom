@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.connectors.KeySpace
+
 import scala.annotation.implicitNotFound
 import scala.concurrent.duration.FiniteDuration
 import org.joda.time.Seconds
@@ -227,16 +229,21 @@ sealed trait TablePropertyClauses extends CompactionStrategies with CompressionS
   }
 
   object default_time_to_live extends TableProperty {
-    def eqs(time: Seconds): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(time.getSeconds.toString))
+
+    def eqs(time: Long): TablePropertyClause = {
+      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(time.toString))
+    }
+
+    def eqs(duration: Seconds): TablePropertyClause = {
+      eqs(duration.getSeconds.toLong)
     }
 
     def eqs(duration: FiniteDuration): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(duration.toSeconds.toString))
+      eqs(duration.toSeconds)
     }
 
     def eqs(duration: com.twitter.util.Duration): TablePropertyClause = {
-      new TablePropertyClause(QueryBuilder.Create.default_time_to_live(duration.inSeconds.toString))
+      eqs(duration.inLongSeconds)
     }
   }
 
@@ -247,9 +254,9 @@ class RootCreateQuery[
   Record
 ](val table: Table) {
 
-  private[phantom] def default: CQLQuery = {
+  private[phantom] def default()(implicit keySpace: KeySpace): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
-      .forcePad.append(table.tableName).forcePad
+      .forcePad.append(QueryBuilder.keyspace(keySpace.name, table.tableName)).forcePad
       .append(CQLSyntax.Symbols.`(`)
       .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
       .append(CQLSyntax.Symbols.`,`)
@@ -257,15 +264,15 @@ class RootCreateQuery[
       .append(CQLSyntax.Symbols.`)`)
   }
 
-  private[phantom] def toQuery: CreateQuery.Default[Table, Record] = {
+  private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
     new CreateQuery[Table, Record, Unspecified, WithUnchainned](table, default)
   }
 
 
-  def ifNotExists: CQLQuery = {
+  def ifNotExists()(implicit keySpace: KeySpace): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.ifNotExists)
-      .forcePad.append(table.tableName).forcePad
-      .append(CQLSyntax.Symbols.`(`)
+      .forcePad.append(QueryBuilder.keyspace(keySpace.name, table.tableName)).forcePad
+      .forcePad.append(CQLSyntax.Symbols.`(`)
       .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
       .append(CQLSyntax.Symbols.`,`)
       .forcePad.append(table.defineTableKey())
@@ -290,6 +297,7 @@ class CreateQuery[
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): CreateQuery[Table, Record, Status, WithChainned] = {
     new CreateQuery(table, QueryBuilder.Where.and(qb, clause.qb))
   }
+
 }
 
 object CreateQuery {
@@ -300,7 +308,8 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
 
   val Cache = CacheStrategies
 
-  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R]): CreateQuery.Default[T, R] = {
+  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T,
+    R] = {
     new CreateQuery(root.table, root.default)
   }
 }

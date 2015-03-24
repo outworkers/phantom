@@ -66,11 +66,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   def update: UpdateQuery.Default[T, R] = UpdateQuery(this.asInstanceOf[T])
 
-  def insert: InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
+  def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
 
   def delete: DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  def truncate: TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
+  def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 

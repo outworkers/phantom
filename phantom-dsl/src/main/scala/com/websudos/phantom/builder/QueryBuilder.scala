@@ -37,7 +37,7 @@ sealed class BatchBuilder {
   }
 
   def applyBatch(qb: CQLQuery): CQLQuery = {
-    qb.forcePad.append(CQLSyntax.Batch.apply).forcePad.append(CQLSyntax.Batch.batch)
+    qb.forcePad.append(CQLSyntax.Batch.apply).forcePad.append(CQLSyntax.Batch.batch).append(CQLSyntax.Symbols.`;`)
   }
 }
 
@@ -82,11 +82,19 @@ private[phantom] object QueryBuilder {
     using(qb).pad.append(CQLSyntax.consistency).forcePad.append(level)
   }
 
-  def prependKeySpaceIfAbsent(keySpace: String, qb: CQLQuery): CQLQuery = {
+  def keyspace(keySpace: String, qb: CQLQuery): CQLQuery = {
     if (qb.queryString.startsWith(keySpace)) {
       qb
     }  else {
       qb.prepend(s"$keySpace.")
+    }
+  }
+
+  def keyspace(keySpace: String, qb: String): CQLQuery = {
+    if (qb.startsWith(keySpace)) {
+      CQLQuery(qb)
+    }  else {
+      CQLQuery(qb).prepend(s"$keySpace.")
     }
   }
 
@@ -107,8 +115,13 @@ private[phantom] object QueryBuilder {
 
   def insert(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.insert)
-      .forcePad.append(CQLSyntax.insert)
+      .forcePad.append(CQLSyntax.into)
       .forcePad.append(table)
+  }
+
+
+  def insert(table: CQLQuery): CQLQuery = {
+    insert(table.queryString)
   }
 
   def delete(table: String): CQLQuery = {
@@ -119,7 +132,7 @@ private[phantom] object QueryBuilder {
   def insert(qb: CQLQuery, clauses: CQLQuery): CQLQuery = Utils.concat(qb, clauses)
 
   def insertPairs(columns: List[String], values: List[String]): CQLQuery = {
-    CQLQuery(columns).forcePad.append(CQLSyntax.values).wrap(values)
+    CQLQuery.empty.wrap(columns).forcePad.append(CQLSyntax.values).wrap(values)
   }
 
   def insertPairs(pairs: List[(String, String)]): CQLQuery = {

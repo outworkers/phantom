@@ -16,18 +16,17 @@ import scala.concurrent.{ Promise => ScalaPromise }
 
 trait ExecutableStatement extends CassandraOperations {
 
-  val qb: CQLQuery
+  def qb: CQLQuery
+
+  def queryString: String = qb.queryString
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
-  }
-
-  def promise()(implicit session: Session, keySpace: KeySpace): ScalaPromise[ResultSet] = {
-    scalaQueryStringToPromise(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
+    Console.println(qb.queryString)
+    scalaQueryStringExecuteToFuture(qb.queryString)
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(QueryBuilder.prependKeySpaceIfAbsent(keySpace.name, qb).queryString)
+    twitterQueryStringExecuteToFuture(qb.queryString)
   }
 }
 

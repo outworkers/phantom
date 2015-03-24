@@ -104,7 +104,7 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   }
 
   def comment(qb: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.replicate_on_write, CQLQuery.empty.appendSingleQuote(qb))
+    tableOption(CQLSyntax.CreateOptions.comment, CQLQuery.empty.appendSingleQuote(qb))
   }
 
   def caching(qb: String): CQLQuery = {

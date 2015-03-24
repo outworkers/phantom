@@ -40,12 +40,10 @@ import scala.concurrent.{ Future => ScalaFuture }
 
 sealed class BatchQuery(val qb: CQLQuery, added: Boolean = false) extends ExecutableStatement {
 
-  def queryString: String = qb.queryString
-
   def add(queries: Batchable with ExecutableStatement*): BatchQuery = {
 
     val chain = queries.foldLeft(qb) {
-      (builder, query) => qb.forcePad.append(query.qb)
+      (builder, query) => qb.forcePad.append(query.queryString).append(CQLSyntax.Symbols.`;`)
     }
 
     new BatchQuery(chain)

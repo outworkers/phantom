@@ -26,25 +26,32 @@ class InsertQuery[
     new InsertQuery(table, qb, (col(table).name, insertValue) :: clauses, added)
   }
 
-
-  private[this] def terminate: InsertQuery[Table, Record, Status] = {
+  private def terminate: InsertQuery[Table, Record, Status] = {
     if (added) {
       this
     } else {
-      new InsertQuery[Table, Record, Status](table, QueryBuilder.insert(qb, QueryBuilder.insertPairs(clauses)), Nil, true)
+      new InsertQuery[Table, Record, Status](table, QueryBuilder.insert(qb, QueryBuilder.insertPairs(clauses)), Nil, true).terminate
+    }
+  }
+
+  override def queryString: String = {
+    if (added) {
+      qb.queryString
+    } else {
+      terminate.qb.queryString
     }
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    terminate.future()
+    scalaQueryStringExecuteToFuture(queryString)
   }
 
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    terminate.execute()
+    twitterQueryStringExecuteToFuture(queryString)
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, QueryBuilder.ttl(qb, seconds.toString), clauses, added)
+    new InsertQuery(table, QueryBuilder.ttl(terminate.qb, seconds.toString), clauses, true)
   }
 
   def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status] = {
@@ -56,7 +63,7 @@ class InsertQuery[
   }
 
   final def timestamp(value: Long): InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, QueryBuilder.using(QueryBuilder.timestamp(qb, value.toString)), clauses, added)
+    new InsertQuery(table, QueryBuilder.using(QueryBuilder.timestamp(terminate.qb, value.toString)), clauses, true)
   }
 
   final def timestamp(value: DateTime): InsertQuery[Table, Record, Status] = {
@@ -64,7 +71,7 @@ class InsertQuery[
   }
 
   def ifNotExists(): InsertQuery[Table, Record, Status] = {
-    new InsertQuery(table, QueryBuilder.ifNotExists(qb), clauses, added)
+    new InsertQuery(table, QueryBuilder.ifNotExists(terminate.qb), clauses, true)
   }
 
 }
@@ -73,9 +80,7 @@ object InsertQuery {
 
   type Default[T <: CassandraTable[T, R], R] = InsertQuery[T, R, Unspecified]
 
-  def apply[T <: CassandraTable[T, R], R](table: T): InsertQuery.Default[T, R] = {
-    new InsertQuery[T, R, Unspecified](table, QueryBuilder.insert(table.tableName))
+  def apply[T <: CassandraTable[T, R], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
+    new InsertQuery[T, R, Unspecified](table, QueryBuilder.insert(QueryBuilder.keyspace(keySpace.name, table.tableName)))
   }
 }
-
-

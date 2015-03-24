@@ -28,7 +28,7 @@ abstract class Primitive[RR] {
 trait DefaultPrimitives {
 
   implicit object StringPrimitive extends Primitive[String] {
-    def asCql(value: String): String = CQLQuery.empty.appendSingleQuote(value).queryString
+    def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
     override def cassandraType: String = CQLSyntax.Types.Text
 

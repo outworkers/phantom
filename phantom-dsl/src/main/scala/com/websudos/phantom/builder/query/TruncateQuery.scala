@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.query
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{QueryBuilder, Unspecified, ConsistencyBound}
+import com.websudos.phantom.connectors.KeySpace
 
 class TruncateQuery[
   Table <: CassandraTable[Table, _],
@@ -43,8 +44,8 @@ object TruncateQuery {
 
   type Default[T <: CassandraTable[T, _], R] = TruncateQuery[T, R, Unspecified]
 
-  def apply[T <: CassandraTable[T, _], R](table: T): TruncateQuery.Default[T, R] = {
-    new TruncateQuery(table, QueryBuilder.truncate(table.tableName))
+  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = {
+    new TruncateQuery(table, QueryBuilder.truncate(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 
 }

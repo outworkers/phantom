@@ -68,8 +68,9 @@ object CQLSyntax {
     val `[` = "["
     val `]` = "]"
 
-
+    val `.` = "."
     val `:` = ":"
+    val `;` = ";"
     val `(` = "("
     val `)` = ")"
     val `,` = ","
@@ -123,7 +124,7 @@ object CQLSyntax {
   object Batch {
     val apply = "APPLY"
     val begin = "BEGIN"
-    val batch = "batch"
+    val batch = "BATCH"
     val Unlogged = "UNLOGGED"
     val Logged = "LOGGED"
     val Counter = "COUNTER"
