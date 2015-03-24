@@ -1,47 +1,60 @@
 /*
+ * Copyright 2013-2015 Websudos, Limited.
  *
- *  * Copyright 2014 websudos ltd.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
+import com.websudos.phantom.connectors.{CassandraProperties, DefaultCassandraManager}
+import com.websudos.util.zookeeper.ZooKeeperInstance
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import com.websudos.util.testing._
 
 
 class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {
-  val instance = new ZookeeperInstance()
+  val instance = new ZooKeeperInstance("/cassandra")
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     setupCassandra()
-    instance.start()
-    DefaultZookeeperManagers.defaultManager.initIfNotInited(TestTable.keySpace)
+    // instance.start()
+    DefaultZookeeperManagers.defaultManager.initIfNotInited(TestTable.keySpace.name)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    instance.stop()
+    // instance.stop()
   }
 
   it should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
-    System.setProperty(TestTable.manager.envString, "")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "0.0.0.0"
 
@@ -50,7 +63,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "use the values from the environment variable if they are set" in {
-    System.setProperty(TestTable.manager.envString, "localhost:4902")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:4902")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
 
@@ -59,7 +72,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
 
   it should "return the default if the environment property is in invalid format" in {
 
-    System.setProperty(TestTable.manager.envString, "localhost:invalidint")
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:invalidint")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "0.0.0.0"
 
@@ -67,7 +80,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "correctly retrieve the Cassandra series of ports from the Zookeeper cluster" in {
-    instance.richClient.getData(TestTable.zkPath, watch = false) successful {
+    instance.client.getData(TestTable.zkPath, watch = false) successful {
       res => {
         info("Ports correctly retrieved from Cassandra.")
         new String(res.data) shouldEqual s"localhost:${DefaultCassandraManager.cassandraPort}"
@@ -76,7 +89,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
   }
 
   it should "match the Zookeeper connector string to the spawned instance settings" in {
-    System.setProperty(TestTable.manager.envString, instance.zookeeperConnectString)
+    System.setProperty(CassandraProperties.ZookeeperEnvironmentString, instance.zookeeperConnectString)
     TestTable.manager.defaultZkAddress shouldEqual instance.address
   }
 
