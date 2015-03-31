@@ -240,7 +240,7 @@ object phantom extends Build {
       "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
       "com.twitter"                      %% "finagle-serversets"       % FinagleVersion,
       "com.twitter"                      %% "finagle-zookeeper"        % FinagleVersion,
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.5"  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
