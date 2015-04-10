@@ -1,17 +1,31 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom.dsl.crud
 
@@ -19,8 +33,8 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
 import com.websudos.util.testing._
 
@@ -38,59 +52,32 @@ class InsertTest extends PhantomCassandraTestSuite {
 
   "Insert" should "work fine for primitives columns" in {
     val row = gen[Primitive]
-    val rcp =  Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-        .future() flatMap {
-          _ => {
-            for {
-              one <- Primitives.select.where(_.pkey eqs row.pkey).one
-              multi <- Primitives.select.fetch
-            } yield (one.get === row, multi contains row)
-          }
-       }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      one <- Primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- Primitives.select.fetch
+    } yield (one.get === row, multi contains row)
+
+    chain successful {
       res => {
         assert (res._1)
         assert (res._2)
       }
     }
+
   }
 
   "Insert" should "work fine for primitives columns with twitter futures" in {
     val row = gen[Primitive]
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
-      .execute() flatMap {
-      _ => {
-        for {
-          one <- Primitives.select.where(_.pkey eqs row.pkey).get
-          multi <- Primitives.select.collect()
-        } yield (one.get === row, multi contains row)
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      one <- Primitives.select.where(_.pkey eqs row.pkey).get
+      multi <- Primitives.select.collect()
+    } yield (one.get === row, multi contains row)
+
+    chain successful {
       res => {
         assert (res._1)
         assert (res._2)

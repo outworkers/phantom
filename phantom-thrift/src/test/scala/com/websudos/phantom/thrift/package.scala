@@ -20,14 +20,14 @@ package com.websudos.phantom
 
 import com.websudos.util.testing._
 
-package object thrift {
+package object thrift extends ThriftTypeDefinitions {
 
 
   implicit object ThriftTestSample extends Sample[ThriftTest] {
     def sample: ThriftTest = ThriftTest(
       gen[Int],
       gen[String],
-      false
+      test = false
     )
   }
 

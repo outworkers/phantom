@@ -1,25 +1,39 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom.dsl.specialized
 
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
@@ -33,13 +47,13 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
   }
 
 
-  it should "increment counter values by 1" in {
+  it should "+= counter values by 1" in {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment()).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
@@ -54,13 +68,13 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "increment counter values by 1 with Twitter Futures" in {
+  it should "+= counter values by 1 with Twitter Futures" in {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment()).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
@@ -80,9 +94,9 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 500).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment()).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select2 <- CounterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
     } yield (select, select2)
 
@@ -101,9 +115,9 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 500).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment()).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
       select2 <- CounterTableTest.select(_.count_entries).where(_.id eqs sample.id).get
     } yield (select, select2)
 
@@ -118,14 +132,14 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "increment counter values by a given value" in {
+  it should "+= counter values by a given value" in {
     val sample = gen[CounterRecord]
-    val diff = 200L
+    val diff = 200
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment diff).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).future()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
@@ -133,21 +147,21 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       result => {
         result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0L
+        result._1.get.count shouldEqual 0
         result._2.isEmpty shouldEqual false
         result._2.get.count shouldEqual diff
       }
     }
   }
 
-  it should "increment counter values by a given value with Twitter Futures" in {
+  it should "+= counter values by a given value with Twitter Futures" in {
     val sample = gen[CounterRecord]
-    val diff = 200L
+    val diff = 200
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 0L).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment diff).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).execute()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
@@ -155,20 +169,20 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       result => {
         result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0L
+        result._1.get.count shouldEqual 0
         result._2.isEmpty shouldEqual false
         result._2.get.count shouldEqual diff
       }
     }
   }
 
-  it should "decrement counter values by 1" in {
+  it should "-= counter values by 1" in {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 1L).future()
+      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries decrement()).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
@@ -176,20 +190,20 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       result => {
         result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1L
+        result._1.get.count shouldEqual 1
         result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0L
+        result._2.get.count shouldEqual 0
       }
     }
   }
 
-  it should "decrement counter values by 1 with Twitter Futures" in {
+  it should "-= counter values by 1 with Twitter Futures" in {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment 1L).execute()
+      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries decrement()).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).execute()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).get()
     } yield (select, select2)
 
@@ -197,22 +211,22 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     chain.successful {
       result => {
         result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1L
+        result._1.get.count shouldEqual 1
         result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0L
+        result._2.get.count shouldEqual 0
       }
     }
   }
 
-  it should "decrement counter values by a given value" in {
+  it should "-= counter values by a given value" in {
     val sample = gen[CounterRecord]
-    val diff = 200L
-    val initial = 500L
+    val diff = 200
+    val initial = 500
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment initial).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
       select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries decrement diff).future()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
@@ -226,15 +240,15 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "decrement counter values by a given value with Twitter Futures" in {
+  it should "-= counter values by a given value with Twitter Futures" in {
     val sample = gen[CounterRecord]
-    val diff = 200L
-    val initial = 500L
+    val diff = 200
+    val initial = 500
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries increment initial).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).execute()
       select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries decrement diff).execute()
+      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).execute()
       select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
