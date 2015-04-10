@@ -1,25 +1,37 @@
 /*
+ * Copyright 2013-2015 Websudos, Limited.
  *
- *  * Copyright 2014 websudos ltd.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
+import com.websudos.phantom.connectors.{CassandraProperties, KeySpace, CassandraManager}
 import org.slf4j.{Logger, LoggerFactory}
 
 import com.datastax.driver.core.{Cluster, Session}
@@ -54,9 +66,7 @@ trait ZookeeperManager extends CassandraManager {
 
   def session: Session = store.session
 
-  val logger: Logger
-
-  protected[zookeeper] val envString = "TEST_ZOOKEEPER_CONNECTOR"
+  def logger: Logger
 
   protected[this] val defaultAddress = new InetSocketAddress("0.0.0.0", 2181)
 }
@@ -65,9 +75,11 @@ trait ZookeeperManager extends CassandraManager {
 class DefaultZookeeperManager extends ZookeeperManager {
 
   val livePort = 9042
-  val embeddedPort = 9042
+  override val embeddedPort = 9042
 
   implicit val timeout: Duration = 2.seconds
+
+  val ZookeeperEnvironmentString = CassandraProperties.ZookeeperEnvironmentString
 
   /**
    * This is the default way a ZooKeeper connector will obtain the HOST:IP port of the ZooKeeper coordinator(master) node.
@@ -84,21 +96,23 @@ class DefaultZookeeperManager extends ZookeeperManager {
   def defaultZkAddress: InetSocketAddress = if (isLocalZooKeeperRunning) {
     defaultAddress
   } else {
-    if (System.getProperty(envString) != null) {
-      val inetPair: String = System.getProperty(envString)
-      val split = inetPair.split(":")
 
-      Try {
-        logger.info(s"Using ZooKeeper settings from the $envString environment variable")
-        logger.info(s"Connecting to ZooKeeper address: ${split(0)}:${split(1)}")
-        new InetSocketAddress(split(0), split(1).toInt)
-      } getOrElse {
-        logger.warn(s"Failed to parse address from $envString environment variable with value: $inetPair")
-        defaultAddress
-      }
-    } else {
-      logger.info(s"No custom settings for Zookeeper found in $envString. Using localhost:2181 as default.")
+    Option(System.getProperty(ZookeeperEnvironmentString)).fold {
+      logger.info(s"No custom settings for Zookeeper found in $ZookeeperEnvironmentString. Using localhost:2181 as default.")
       defaultAddress
+    } {
+      existing => {
+        val split = existing.split(":")
+
+        Try {
+          logger.info(s"Using ZooKeeper settings from the $ZookeeperEnvironmentString environment variable")
+          logger.info(s"Connecting to ZooKeeper address: ${split(0)}:${split(1)}")
+          new InetSocketAddress(split(0), split(1).toInt)
+        } getOrElse {
+          logger.warn(s"Failed to parse address from $ZookeeperEnvironmentString environment variable with value: $existing")
+          defaultAddress
+        }
+      }
     }
   }
 
@@ -111,6 +125,8 @@ class DefaultZookeeperManager extends ZookeeperManager {
    * It will connector to ZooKeeper, fetch the Cassandra sequence of HOST:IP pairs, and create a cluster + session for the mix.
    */
   def initIfNotInited(keySpace: String) = store.initStore(keySpace, defaultZkAddress)
+
+  def initIfNotInited(keySpace: KeySpace) = store.initStore(keySpace.name, defaultZkAddress)
 }
 
 object DefaultZookeeperManagers {

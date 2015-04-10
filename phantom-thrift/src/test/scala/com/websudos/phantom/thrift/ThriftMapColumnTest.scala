@@ -15,12 +15,14 @@
  */
 package com.websudos.phantom.thrift
 
-import com.websudos.phantom.Implicits._
-import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
-import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.testkit._
+import com.websudos.util.testing._
+
 
 class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
@@ -28,7 +30,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   it should "put an item to a thrift map column" in {
@@ -38,8 +40,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Sampler.string -> sample2
+    val map = Map(gen[String] -> sample)
+    val toAdd = gen[String] -> sample2
     val expected = map + toAdd
 
 
@@ -77,8 +79,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Sampler.string -> sample2
+    val map = Map(gen[String] -> sample)
+    val toAdd = gen[String] -> sample2
     val expected = map + toAdd
 
 
@@ -116,8 +118,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
+    val map = Map(gen[String] -> sample)
+    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
     val expected = map ++ toAdd
 
 
@@ -155,8 +157,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
+    val map = Map(gen[String] -> sample)
+    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
     val expected = map ++ toAdd
 
 

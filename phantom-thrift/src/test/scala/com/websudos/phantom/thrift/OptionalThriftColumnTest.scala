@@ -20,15 +20,15 @@ import org.scalatest.time.SpanSugar._
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.util.testing._
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testing._
+import com.websudos.phantom.testkit._
 
 class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema()
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)

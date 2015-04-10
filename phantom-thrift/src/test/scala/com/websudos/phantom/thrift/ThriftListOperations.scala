@@ -15,9 +15,9 @@
  */
 package com.websudos.phantom.thrift
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
@@ -28,7 +28,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema()
+    ThriftColumnTable.create.future().block(2.seconds)
   }
 
   it should "prepend an item to a thrift list column" in {
