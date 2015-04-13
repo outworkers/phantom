@@ -38,8 +38,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Sampler.string -> sample2
+    val map = Map(gen[String] -> sample)
+    val toAdd = gen[String] -> sample2
     val expected = map + toAdd
 
 
@@ -77,8 +77,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Sampler.string -> sample2
+    val map = Map(gen[String] -> sample)
+    val toAdd = gen[String] -> sample2
     val expected = map + toAdd
 
 
@@ -116,8 +116,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
+    val map = Map(gen[String] -> sample)
+    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
     val expected = map ++ toAdd
 
 
@@ -155,8 +155,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
 
-    val map = Map(Sampler.string -> sample)
-    val toAdd = Map(Sampler.string -> sample2, Sampler.string -> sample3)
+    val map = Map(gen[String] -> sample)
+    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
     val expected = map ++ toAdd
 
 
