@@ -16,13 +16,14 @@
 package com.websudos.phantom.dsl.crud
 
 import com.websudos.phantom.Implicits._
+import com.websudos.phantom.PhantomCassandraTestSuite
 import com.websudos.phantom.tables.{Recipe, Recipes}
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 class MapOperationsTest extends PhantomCassandraTestSuite {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
@@ -33,7 +34,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String]()
+    val props = genList[String]().map(item => (item.toString, item)).toMap
     val item = gen[String, String]
 
     val insert = Recipes.insert
@@ -65,7 +66,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
     val id = gen[UUID]
 
-    val props = genMap[String]()
+    val props = genList[String]().map(item => (item.toString, item)).toMap
     val item = gen[String, String]
 
     val insert = Recipes.insert
@@ -96,8 +97,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String]()
-    val mapItems = genMap[String]()
+    val props = genList[String]().map(item => (item.toString, item)).toMap
+    val mapItems = genList[String]().map(item => (item.toString, item)).toMap
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -127,8 +128,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a multiple item map put operation with Twitter futures" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String]()
-    val mapItems = genMap[String]()
+    val props = genList[String]().map(item => (item.toString, item)).toMap
+    val mapItems = genList[String]().map(item => (item.toString, item)).toMap
 
     val insert = Recipes.insert
       .value(_.uid, id)
