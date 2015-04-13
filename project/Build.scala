@@ -6,7 +6,7 @@ import scoverage.ScoverageSbtPlugin.instrumentSettings
 
 object phantom extends Build {
 
-  val UtilVersion = "0.5.0"
+  val UtilVersion = "0.7.0"
   val DatastaxDriverVersion = "2.1.1"
   val ScalaTestVersion = "2.2.1"
   val FinagleVersion = "6.24.0"
@@ -20,7 +20,7 @@ object phantom extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -55,7 +55,7 @@ object phantom extends Build {
         </developers>
   )
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mvnpublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
@@ -71,9 +71,9 @@ object phantom extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.5.0",
+    version := "1.6.0",
     scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.5"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -221,7 +221,7 @@ object phantom extends Build {
       "com.twitter"                  %% "finagle-serversets"                % FinagleVersion exclude("org.slf4j", "slf4j-jdk14"),
       "com.twitter"                  %% "finagle-zookeeper"                 % FinagleVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
-      "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.4"              % "test, provided"  excludeAll(
+      "org.cassandraunit"            %  "cassandra-unit"                    % "2.0.2.5"              % "test, provided"  excludeAll(
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
@@ -240,7 +240,7 @@ object phantom extends Build {
       "org.scalacheck"                   %% "scalacheck"               % "1.11.3"              % "test",
       "com.twitter"                      %% "finagle-serversets"       % FinagleVersion,
       "com.twitter"                      %% "finagle-zookeeper"        % FinagleVersion,
-      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.4"  excludeAll (
+      "org.cassandraunit"                %  "cassandra-unit"           % "2.0.2.5"  excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
