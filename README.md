@@ -933,8 +933,7 @@ object ExampleRecord3 extends ExampleRecord3 {
 =============================================
 <a href="#table-of-contents">back to top</a>
 
-phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala]( https://github
-.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
+phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
 
 We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
