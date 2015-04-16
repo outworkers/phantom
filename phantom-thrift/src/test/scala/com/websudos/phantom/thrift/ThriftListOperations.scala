@@ -15,9 +15,9 @@
  */
 package com.websudos.phantom.thrift
 
-import com.websudos.phantom.Implicits._
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testing.PhantomCassandraTestSuite
+import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
@@ -28,7 +28,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.insertSchema()
+    ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
   }
 
   it should "prepend an item to a thrift list column" in {
@@ -111,7 +111,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prependAll toAppend).future()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend toAppend).future()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
@@ -120,7 +120,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual List(sample3, sample2, sample)
+        items.get shouldEqual List(sample2, sample3, sample)
       }
     }
   }
@@ -146,14 +146,14 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prependAll toAppend).execute()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend toAppend).execute()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual List(sample3, sample2, sample)
+        items.get shouldEqual List(sample2, sample3, sample)
       }
     }
   }
@@ -238,7 +238,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList appendAll toAppend).future()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).future()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
@@ -273,7 +273,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList appendAll toAppend).execute()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).execute()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
@@ -364,7 +364,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discardAll List(sample2, sample3)).future()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).future()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
@@ -397,7 +397,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discardAll List(sample2, sample3)).execute()
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).execute()
       select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
