@@ -697,7 +697,7 @@ All operators will be available in an update query, specifically:
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
-Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/ListOperatorsTest.scala).
+Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/dsl/crud/ListOperatorsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
