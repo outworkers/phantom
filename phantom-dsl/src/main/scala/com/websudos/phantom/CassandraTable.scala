@@ -1,74 +1,94 @@
 /*
- * Copyright 2013 websudos ltd.
+ * Copyright 2013-2015 Websudos, Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom
 
-
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer, SynchronizedBuffer => MutableSyncBuffer}
-import scala.reflect.runtime.universe.Symbol
-import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-import scala.util.Try
-
+import com.datastax.driver.core.{Row, Session}
+import com.websudos.phantom.builder.query._
+import com.websudos.phantom.builder.query.prepared.PreparedBuilder
+import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
 import org.slf4j.LoggerFactory
 
-import com.datastax.driver.core.{Session, Row}
-import com.datastax.driver.core.querybuilder.QueryBuilder
-
-import com.twitter.util.{Duration, Await}
-
-import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.query.{CreateQuery, DeleteQuery, InsertQuery, SelectCountQuery, TruncateQuery, UpdateQuery}
-
-case class InvalidPrimaryKeyException(msg: String = "You need to define at least one PartitionKey for the schema") extends RuntimeException(msg)
+import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
+import scala.concurrent.duration._
+import scala.concurrent.{Future, Await, ExecutionContext}
+import scala.reflect.runtime.universe.Symbol
+import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]] with MutableSyncBuffer[AbstractColumn[_]]
-
-  private[phantom] def insertSchema()(implicit session: Session) = Await.ready(create.execute(), Duration.fromSeconds(2))
-
-  private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decoded
+  private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
+    Await.ready(create.ifNotExists().future(), 3.seconds)
   }
 
-  private[this] def extractCount(r: Row): Long = {
-    Try { r.getLong("count") }.toOption.getOrElse(0L)
+  private[phantom] def self: T = this.asInstanceOf[T]
+
+  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
+
+  private[this] lazy val _name: String = {
+    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
-  lazy val logger = {
-    val klass = getClass.getName.stripSuffix("$")
-    LoggerFactory.getLogger(klass)
-  }
+  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   def tableName: String = _name
 
   def fromRow(r: Row): R
 
-  def update: UpdateQuery[T, R] = new UpdateQuery[T, R](this.asInstanceOf[T], QueryBuilder.update(tableName))
+  /**
+   * The new create mechanism introduced in Phantom 1.6.0.
+   * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
+   * @return A root create block, with full support for all CQL Create query options.
+   */
+  final def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
 
-  def insert: InsertQuery[T, R] = new InsertQuery[T, R](this.asInstanceOf[T], QueryBuilder.insertInto(tableName))
+  final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
 
-  def delete: DeleteQuery[T, R] = new DeleteQuery[T, R](this.asInstanceOf[T], QueryBuilder.delete.from(tableName))
+  final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(this.asInstanceOf[T])
 
-  def create: CreateQuery[T, R] = new CreateQuery[T, R](this.asInstanceOf[T], "")
+  final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
 
-  def truncate: TruncateQuery[T, R] = new TruncateQuery[T, R](this.asInstanceOf[T], QueryBuilder.truncate(tableName))
+  final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  def count: SelectCountQuery[T, Long] = new SelectCountQuery[T, Long](this.asInstanceOf[T], QueryBuilder.select().countAll().from(tableName), extractCount)
+  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+
+  final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
+
+  final def automigrate()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): ExecutableStatementList = {
+    SchemaAutoDiffer.automigrate(this.asInstanceOf[T])
+  }
+
+  def prepare()(implicit keySpace: KeySpace): PreparedBuilder[T, R] = new PreparedBuilder[T, R](this.asInstanceOf[T])
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
@@ -79,6 +99,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
+
+
 
   /**
    * This method will filter the columns from a Clustering Order definition.
@@ -135,7 +157,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val partitions = partitionKeys.toList
     val partitionString = s"(${partitions.map(_.name).mkString(", ")})"
 
-
     val operand = partitions.lengthCompare(1)
     val key = if (operand < 0) {
       throw InvalidPrimaryKeyException()
@@ -171,27 +192,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
-  @throws[InvalidPrimaryKeyException]
-  def schema(): String = {
-    preconditions()
-
-    val queryInit = s"CREATE TABLE IF NOT EXISTS $tableName ("
-    val queryColumns = columns.foldLeft("")((qb, c) => {
-      if (c.isStaticColumn) {
-        s"$qb, ${c.name} ${c.cassandraType} static"
-      } else {
-        s"$qb, ${c.name} ${c.cassandraType}"
-      }
-    })
-    val tableKey = defineTableKey()
-    logger.info(s"Adding Primary keys indexes: $tableKey")
-    val queryPrimaryKey  = if (tableKey.length > 0) s", $tableKey" else ""
-
-    val query = queryInit + queryColumns.drop(1) + queryPrimaryKey + ")"
-    val finalQuery = query + clusteringKey
-    if (finalQuery.last != ';') finalQuery + ";" else finalQuery
-  }
-
   def createIndexes(): Seq[String] = {
     secondaryKeys.map(k => {
       val query = s"CREATE INDEX IF NOT EXISTS ${tableName}_${k.name} ON $tableName (${k.name});"
@@ -202,6 +202,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   Lock.synchronized {
+
+    Manager.addTable(this)
+
     val instanceMirror = cm.reflect(this)
     val selfType = instanceMirror.symbol.toType
 
