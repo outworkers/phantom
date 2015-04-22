@@ -1184,4 +1184,14 @@ Some of the things that will make us seriously frown:
 - Don't randomly import stuff. We are very big on alphabetized clean imports.
 - Tests must pass on both the Oracle and OpenJDK JVM implementations. The only sensitive bit is the Scala reflection mechanism used to detect columns.
 
+YourKit Java Profiler
+==================
+
+![yourkit](https://s3-eu-west-1.amazonaws.com/websudos/oss/yklogo.png "YourKit Java Profiler")
+
+We are very grateful to have the open source license support of YourKit, the most advanced Java profiler.
+
+YourKit is the very core of our performance bottleneck testing, and without it phantom would still be a painfully slow tool.
+
+[YourKit Java profiler](https://www.yourkit.com/java/profiler/index.jsp)
 
