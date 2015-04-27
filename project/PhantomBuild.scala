@@ -177,7 +177,7 @@ object PhantomBuild extends Build {
     fork := true,
     testOptions in Test += Tests.Argument("-oF"),
     logBuffered in Test := false,
-    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1 || s.indexOf("SpoolBenchmark") == -1)),
+    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("SpoolBenchmark") == -1)),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)

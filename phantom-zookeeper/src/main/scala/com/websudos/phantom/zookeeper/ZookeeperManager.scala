@@ -31,15 +31,14 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
-import com.websudos.phantom.connectors.{CassandraProperties, KeySpace, CassandraManager}
-import org.slf4j.{Logger, LoggerFactory}
-
 import com.datastax.driver.core.{Cluster, Session}
 import com.twitter.conversions.time._
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
-import com.twitter.util.{Duration, Await, Try}
+import com.twitter.util.{Await, Duration, Try}
+import com.websudos.phantom.connectors.{CassandraManager, CassandraProperties, KeySpace}
+import org.slf4j.{Logger, LoggerFactory}
 
-trait ZookeeperManager extends CassandraManager {
+abstract class ZookeeperManager extends CassandraManager(Set.empty[InetSocketAddress]) {
 
   /**
    * Interestingly enough binding to a port with a simple java.net.Socket or java.net.ServerSocket to check if a local ZooKeeper exists is not enough in this
@@ -77,7 +76,7 @@ class DefaultZookeeperManager extends ZookeeperManager {
   val livePort: Int = 9042
   override val embeddedPort: Int = 9042
 
-  implicit val timeout: Duration = 2.seconds
+  implicit val timeout: Duration = 3.seconds
 
   val ZookeeperEnvironmentString: String = CassandraProperties.ZookeeperEnvironmentString
 

@@ -39,7 +39,7 @@ import org.scalatest.concurrent.ScalaFutures
 
 class IterateeBigReadTest extends BigTest with ScalaFutures {
 
-  it should "read the records found in the table" in {
+  ignore should "read the records found in the table" in {
     val counter: AtomicLong = new AtomicLong(0)
     val result = PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach {
       r => counter.incrementAndGet()

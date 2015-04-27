@@ -34,12 +34,15 @@ import java.net.{InetAddress, InetSocketAddress, Socket}
 
 import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
 import com.datastax.driver.core.{PoolingOptions, Cluster, Session}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
 
 class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts)
   extends CassandraManager(CassandraProperties.DefaultHosts) {
+
+  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   val livePort = 9042
 
@@ -48,9 +51,18 @@ class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraPropertie
 
   private[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
     exception match {
-      case e: NoHostAvailableException => false
-      case f: DriverInternalError => false
-      case _ => true
+      case e: NoHostAvailableException => {
+        logger.error("Cannot re-connect to cluster", exception)
+        false
+      }
+      case f: DriverInternalError => {
+        logger.error("Cannot re-connect to cluster", exception)
+        false
+      }
+      case _ => {
+        logger.warn(s"Attempting reconnection after encountering error ${exception.getMessage}")
+        true
+      }
     }
   }
 
@@ -59,8 +71,8 @@ class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraPropertie
       try {
         blocking {
           cluster.connect()
+          cluster
         }
-        cluster
       } catch {
         case NonFatal(e) => {
           if (shouldAttemptReconnect(e)) {
@@ -145,4 +157,4 @@ private[phantom] trait CassandraManagerBuilder {
   }
 }
 
-object DefaultCassandraManager extends DefaultCassandraManager
+object DefaultCassandraManager extends DefaultCassandraManager(CassandraProperties.DefaultHosts)
