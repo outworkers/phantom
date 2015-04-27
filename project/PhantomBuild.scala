@@ -67,8 +67,8 @@ object PhantomBuild extends Build {
       <url>https://github.com/websudos/phantom</url>
         <licenses>
           <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <name>Websudos License</name>
+            <url>http://websudos.com/license</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
@@ -116,7 +116,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.7.5",
+    version := "1.7.6",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(
@@ -177,7 +177,7 @@ object PhantomBuild extends Build {
     fork := true,
     testOptions in Test += Tests.Argument("-oF"),
     logBuffered in Test := false,
-    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
+    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1 || s.indexOf("SpoolBenchmark") == -1)),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, 4)
