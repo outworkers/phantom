@@ -31,9 +31,55 @@ package com.websudos.phantom.connectors
 
 import java.net._
 
+import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
 import com.datastax.driver.core.{Cluster, Session}
+import org.slf4j.LoggerFactory
 
-abstract class CassandraManager(val hosts: Set[InetSocketAddress]) {
+
+private[phantom] trait ConnectionUtils {
+
+  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
+
+  /**
+   * Determines whether a connection error thrown is fatal.
+   * This filters for certain Datastax Java Driver errors, such as a TimeoutError or a ChannelClosedException.
+   * It re-creates the cluster in events when it is possible.
+   * @param exception The exception that was thrown in the connection pipeline.
+   * @return A Boolean marking whether or not a re-connection should be attempted.
+   */
+  protected[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
+    exception match {
+      case e: NoHostAvailableException => {
+        logger.error("Cannot re-connect to cluster", exception)
+        false
+      }
+      case f: DriverInternalError => {
+        logger.error("Cannot re-connect to cluster", exception)
+        false
+      }
+      case _ => {
+        logger.warn(s"Attempting reconnection after encountering error ${exception.getMessage}")
+        true
+      }
+    }
+  }
+
+  /**
+   * Creates the CQL query to be executed when phantom connectors guarantee the existence of the keySpace before connection.
+   * By default, this will use lightweight transactions in Cassandra(IF NOT EXISTS queries) to guarantee data is not overwritten.
+   *
+   * @param keySpace The string name of the KeySpace the manager needs to use.
+   * @return The CQL Query that will be executed to create the KeySpace.
+   */
+  protected[this] def createKeySpace(keySpace: String): String = {
+    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
+  }
+
+  protected[this] def createKeySpace(keySpace: KeySpace): String = createKeySpace(keySpace.name)
+
+}
+
+abstract class CassandraManager(val hosts: Set[InetSocketAddress]) extends ConnectionUtils {
 
   protected[this] def getCurrentIp: InetAddress = {
     try {
@@ -65,24 +111,22 @@ abstract class CassandraManager(val hosts: Set[InetSocketAddress]) {
   def livePort: Int
   def embeddedPort: Int = 9142
 
-  def cluster: Cluster
+  /**
+   * Volatile reference synchronized by an initialisation lock that allows for recreation of the cluster.
+   * @return A Cassandra Cluster object.
+   */
+  @volatile protected[this] def cluster: Cluster
+
+  /**
+   * Public accessor for the cluster method.
+   * @return A reference to the cluster being used.
+   */
+  def clusterRef: Cluster
+
+
   def initIfNotInited(keySpace: String)
 
   implicit def session: Session
-
-  /**
-   * Creates the CQL query to be executed when phantom connectors guarantee the existence of the keySpace before connection.
-   * By default, this will use lightweight transactions in Cassandra(IF NOT EXISTS queries) to guarantee data is not overwritten.
-   *
-   * @param keySpace The string name of the KeySpace the manager needs to use.
-   * @return The CQL Query that will be executed to create the KeySpace.
-   */
-  protected[this] def createKeySpace(keySpace: String): String = {
-    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
-  }
-
-  protected[this] def createKeySpace(keySpace: KeySpace): String = createKeySpace(keySpace.name)
-
 }
 
 private[phantom] object CassandraProperties {

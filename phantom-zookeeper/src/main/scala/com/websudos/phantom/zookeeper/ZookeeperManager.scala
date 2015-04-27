@@ -36,7 +36,6 @@ import com.twitter.conversions.time._
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.util.{Await, Duration, Try}
 import com.websudos.phantom.connectors.{CassandraManager, CassandraProperties, KeySpace}
-import org.slf4j.{Logger, LoggerFactory}
 
 abstract class ZookeeperManager extends CassandraManager(Set.empty[InetSocketAddress]) {
 
@@ -63,13 +62,12 @@ abstract class ZookeeperManager extends CassandraManager(Set.empty[InetSocketAdd
 
   def cluster: Cluster = store.cluster
 
-  def session: Session = store.session
+  def clusterRef: Cluster = store.cluster
 
-  def logger: Logger
+  def session: Session = store.session
 
   protected[this] val defaultAddress: InetSocketAddress = new InetSocketAddress("0.0.0.0", 2181)
 }
-
 
 class DefaultZookeeperManager extends ZookeeperManager {
 
@@ -114,8 +112,6 @@ class DefaultZookeeperManager extends ZookeeperManager {
       }
     }
   }
-
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
 
   val store = DefaultClusterStore
 

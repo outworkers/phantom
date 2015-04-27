@@ -135,7 +135,7 @@ sealed trait UDTDefinition[T] {
 
   def connector: CassandraConnector
 
-  def typeDef: UserType = connector.manager.cluster.getMetadata.getKeyspace(connector.keySpace.name).getUserType(name)
+  def typeDef: UserType = connector.manager.clusterRef.getMetadata.getKeyspace(connector.keySpace.name).getUserType(name)
 
   val cassandraType = name.toLowerCase
 

@@ -32,9 +32,7 @@ package com.websudos.phantom.connectors
 import java.io.IOException
 import java.net.{InetAddress, InetSocketAddress, Socket}
 
-import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
-import com.datastax.driver.core.{PoolingOptions, Cluster, Session}
-import org.slf4j.LoggerFactory
+import com.datastax.driver.core.{Cluster, PoolingOptions, Session}
 
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
@@ -42,48 +40,33 @@ import scala.util.control.NonFatal
 class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts)
   extends CassandraManager(CassandraProperties.DefaultHosts) {
 
-  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
-
   val livePort = 9042
 
   private[this] var inited = false
   private[this] var _session: Session = null
 
-  private[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
-    exception match {
-      case e: NoHostAvailableException => {
-        logger.error("Cannot re-connect to cluster", exception)
-        false
-      }
-      case f: DriverInternalError => {
-        logger.error("Cannot re-connect to cluster", exception)
-        false
-      }
-      case _ => {
-        logger.warn(s"Attempting reconnection after encountering error ${exception.getMessage}")
-        true
-      }
-    }
-  }
-
-  def clusterRef: Cluster = {
+  def clusterRef: Cluster = CassandraInitLock.synchronized {
     if (cluster.isClosed) {
       try {
         blocking {
           cluster.connect()
+          logger.info("Cluster connection successful")
           cluster
         }
       } catch {
         case NonFatal(e) => {
           if (shouldAttemptReconnect(e)) {
+            logger.info(s"Renewing cluster connection after encountering error message: ${e.getMessage}")
             cluster = createCluster()
             cluster
           } else {
+            logger.error("Unable to reconnect to the cluster", e)
             throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
           }
         }
       }
     } else {
+      logger.info("Cluster is healthy and connection was made directly")
       cluster
     }
   }
@@ -120,7 +103,7 @@ class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraPropertie
       .build()
   }
 
-  @volatile var cluster = createCluster()
+  @volatile protected[this] var cluster: Cluster = createCluster()
 
   def session: Session = _session
 
