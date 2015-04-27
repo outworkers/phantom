@@ -93,7 +93,15 @@ object PhantomBuild extends Build {
   }
 
   val publishSettings : Seq[Def.Setting[_]] = Seq(
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+    credentials ++= Seq(
+      Credentials(
+        "Artifactory Realm",
+        "maven.websudos.co.uk",
+        "admin",
+        "AP2LQVeshFTtYd8dMWG8ExcyPUU"
+      ),
+      Credentials(Path.userHome / ".ivy2" / ".credentials")
+    ),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
           Some("snapshots" at publishUrl + "/ext-snapshot-local")
@@ -108,7 +116,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.7.4",
+    version := "1.7.5",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(
