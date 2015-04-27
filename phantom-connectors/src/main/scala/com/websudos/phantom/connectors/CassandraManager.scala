@@ -33,7 +33,7 @@ import java.net._
 
 import com.datastax.driver.core.{Cluster, Session}
 
-abstract class CassandraManager(val hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts) {
+abstract class CassandraManager(val hosts: Set[InetSocketAddress]) {
 
   protected[this] def getCurrentIp: InetAddress = {
     try {

@@ -38,7 +38,8 @@ import com.datastax.driver.core.{PoolingOptions, Cluster, Session}
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
 
-abstract class DefaultCassandraManager extends CassandraManager {
+class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts)
+  extends CassandraManager(CassandraProperties.DefaultHosts) {
 
   val livePort = 9042
 
@@ -63,7 +64,8 @@ abstract class DefaultCassandraManager extends CassandraManager {
       } catch {
         case NonFatal(e) => {
           if (shouldAttemptReconnect(e)) {
-            createCluster()
+            cluster = createCluster()
+            cluster
           } else {
             throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
           }
@@ -102,10 +104,11 @@ abstract class DefaultCassandraManager extends CassandraManager {
       .addContactPoints(inets: _*)
       .withoutJMXReporting()
       .withoutMetrics()
+      .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
       .build()
   }
 
-  lazy val cluster = createCluster()
+  @volatile var cluster = createCluster()
 
   def session: Session = _session
 
@@ -121,20 +124,6 @@ abstract class DefaultCassandraManager extends CassandraManager {
   }
 }
 
-abstract class SilentCassandraManager extends DefaultCassandraManager {
-
-  override def createCluster(): Cluster = {
-    val inets = hosts.toSeq.map(_.getAddress)
-    Cluster.builder()
-      .addContactPoints(inets: _*)
-      .withoutJMXReporting()
-      .withoutMetrics()
-      .withPoolingOptions(new PoolingOptions()
-        .setHeartbeatIntervalSeconds(0))
-      .build()
-  }
-}
-
 private[phantom] trait CassandraManagerBuilder {
 
   def apply(): DefaultCassandraManager = {
@@ -144,24 +133,16 @@ private[phantom] trait CassandraManagerBuilder {
   }
 
   def apply(addr: InetSocketAddress): DefaultCassandraManager = {
-    new DefaultCassandraManager {
-      override val hosts = Set(addr)
-    }
+    new DefaultCassandraManager(Set(addr))
   }
 
   def apply(host: String, port: Int): DefaultCassandraManager = {
-    new DefaultCassandraManager {
-      override val hosts = Set(new InetSocketAddress(host, port))
-    }
+    new DefaultCassandraManager(Set(new InetSocketAddress(host, port)))
   }
 
   def apply(seq: Set[InetSocketAddress]): DefaultCassandraManager = {
-    new DefaultCassandraManager {
-      override val hosts = seq
-    }
+    new DefaultCassandraManager(seq)
   }
 }
 
 object DefaultCassandraManager extends DefaultCassandraManager
-
-object SilentCassandraManager extends SilentCassandraManager
