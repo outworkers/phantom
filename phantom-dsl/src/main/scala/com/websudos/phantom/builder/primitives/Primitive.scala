@@ -55,6 +55,8 @@ sealed trait ValueTypeDef {
 
 abstract class Primitive[RR] {
 
+  type PrimitiveType
+
   protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
     if (row == null || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null"))
@@ -71,12 +73,18 @@ abstract class Primitive[RR] {
 
   def fromString(value: String): RR
 
-  def clz: Class[_]
+  def clz: Class[PrimitiveType]
+
+  def fromPrimitive(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
+
 }
 
 trait DefaultPrimitives {
 
   implicit object StringPrimitive extends Primitive[String] {
+
+    override type PrimitiveType = java.lang.String
+
     def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
     override def cassandraType: String = CQLSyntax.Types.Text
@@ -89,10 +97,13 @@ trait DefaultPrimitives {
       }
     }
 
-    override def clz: Class[_] = classOf[String]
+    override def clz: Class[String] = classOf[String]
   }
 
   implicit object IntPrimitive extends Primitive[Int] {
+
+    override type PrimitiveType = java.lang.Integer
+
     def asCql(value: Int): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.Int
@@ -103,10 +114,13 @@ trait DefaultPrimitives {
       r => r.getInt(column)
     }
 
-    override def clz: Class[_] = classOf[java.lang.Integer]
+    override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
   }
 
   implicit object DoublePrimitive extends Primitive[Double] {
+
+    override type PrimitiveType = java.lang.Double
+
     def asCql(value: Double): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.Double
@@ -117,10 +131,13 @@ trait DefaultPrimitives {
       r => r.getDouble(column)
     }
 
-    override def clz: Class[_] = classOf[java.lang.Double]
+    override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
   }
 
   implicit object LongPrimitive extends Primitive[Long] {
+
+    override type PrimitiveType = java.lang.Long
+
     def asCql(value: Long): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.BigInt
@@ -131,10 +148,13 @@ trait DefaultPrimitives {
       r => r.getLong(column)
     }
 
-    override def clz: Class[_] = classOf[Long]
+    override def clz: Class[java.lang.Long] = classOf[java.lang.Long]
   }
 
   implicit object FloatPrimitive extends Primitive[Float] {
+
+    override type PrimitiveType = java.lang.Float
+
     def asCql(value: Float): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.Float
@@ -145,10 +165,13 @@ trait DefaultPrimitives {
       r => r.getFloat(column)
     }
 
-    override def clz: Class[_] = classOf[java.lang.Float]
+    override def clz: Class[java.lang.Float] = classOf[java.lang.Float]
   }
 
   implicit object UUIDPrimitive extends Primitive[UUID] {
+
+    override type PrimitiveType = java.util.UUID
+
     def asCql(value: UUID): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.UUID
@@ -163,6 +186,8 @@ trait DefaultPrimitives {
   }
 
   implicit object DateIsPrimitive extends Primitive[Date] {
+
+    override type PrimitiveType = java.util.Date
 
     val cassandraType = CQLSyntax.Types.Timestamp
 
@@ -183,6 +208,9 @@ trait DefaultPrimitives {
   }
 
   implicit object DateTimeIsPrimitive extends Primitive[DateTime] {
+
+    override type PrimitiveType = java.util.Date
+
     val cassandraType = CQLSyntax.Types.Timestamp
 
     override def asCql(value: DateTime): String = {
@@ -196,10 +224,14 @@ trait DefaultPrimitives {
     override def fromString(value: String): DateTime = new DateTime(value)
 
     override def clz: Class[Date] = classOf[Date]
+
+    override def fromPrimitive(obj: PrimitiveType): DateTime = new DateTime(obj)
   }
 
 
   implicit object BooleanIsPrimitive extends Primitive[Boolean] {
+
+    override type PrimitiveType = java.lang.Boolean
 
     val cassandraType = CQLSyntax.Types.Boolean
 
@@ -218,10 +250,12 @@ trait DefaultPrimitives {
       case _ => throw new Exception(s"Couldn't parse a boolean value from $value")
     }
 
-    override def clz: Class[_] = classOf[java.lang.Boolean]
+    override def clz: Class[java.lang.Boolean] = classOf[java.lang.Boolean]
   }
 
   implicit object BigDecimalPrimitive extends Primitive[BigDecimal] {
+
+    override type PrimitiveType = java.math.BigDecimal
 
     val cassandraType = CQLSyntax.Types.Decimal
 
@@ -233,10 +267,12 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): BigDecimal = BigDecimal(value)
 
-    override def clz: Class[_] = classOf[java.math.BigDecimal]
+    override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
   }
 
   implicit object InetAddressPrimitive extends Primitive[InetAddress] {
+
+    override type PrimitiveType = java.net.InetAddress
 
     val cassandraType = CQLSyntax.Types.Inet
 
@@ -248,10 +284,12 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): InetAddress = InetAddress.getByName(value)
 
-    override def clz: Class[_] = classOf[InetAddress]
+    override def clz: Class[InetAddress] = classOf[InetAddress]
   }
 
   implicit object BigIntPrimitive extends Primitive[BigInt] {
+
+    override type PrimitiveType = java.math.BigInteger
 
     val cassandraType = CQLSyntax.Types.Varint
 
@@ -263,10 +301,12 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): BigInt = BigInt(value)
 
-    override def clz: Class[_] = classOf[java.math.BigInteger]
+    override def clz: Class[java.math.BigInteger] = classOf[java.math.BigInteger]
   }
 
   implicit object BlobIsPrimitive extends Primitive[ByteBuffer] {
+
+    override type PrimitiveType = java.nio.ByteBuffer
 
     val cassandraType = CQLSyntax.Types.Blob
 
@@ -278,7 +318,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): ByteBuffer = ByteBuffer.wrap(value.getBytes(Charsets.Utf8))
 
-    override def clz: Class[_] = classOf[java.nio.ByteBuffer]
+    override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
 
 }

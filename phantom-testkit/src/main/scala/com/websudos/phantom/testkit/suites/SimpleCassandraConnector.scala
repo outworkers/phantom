@@ -52,7 +52,6 @@ trait SimpleCassandraTest extends ScalaFutures
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
-
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
   implicit val keySpace = KeySpace("phantom")
 }

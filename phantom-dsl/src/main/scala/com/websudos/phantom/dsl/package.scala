@@ -135,6 +135,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
     new Primitive[T#Value] {
 
+      override type PrimitiveType = java.lang.String
+
       override def cassandraType: String = Primitive[String].cassandraType
 
       override def fromRow(name: String, row: Row): Try[T#Value] = {
@@ -147,7 +149,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
       override def fromString(value: String): T#Value = enum.withName(value)
 
-      override def clz: Class[_] = Primitive[String].clz
+      override def clz: Class[String] = classOf[java.lang.String]
     }
   }
 

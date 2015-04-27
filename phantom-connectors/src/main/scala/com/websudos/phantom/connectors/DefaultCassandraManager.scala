@@ -33,7 +33,7 @@ import java.io.IOException
 import java.net.{InetAddress, InetSocketAddress, Socket}
 
 import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.{PoolingOptions, Cluster, Session}
 
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
@@ -121,6 +121,20 @@ abstract class DefaultCassandraManager extends CassandraManager {
   }
 }
 
+abstract class SilentCassandraManager extends DefaultCassandraManager {
+
+  override def createCluster(): Cluster = {
+    val inets = hosts.toSeq.map(_.getAddress)
+    Cluster.builder()
+      .addContactPoints(inets: _*)
+      .withoutJMXReporting()
+      .withoutMetrics()
+      .withPoolingOptions(new PoolingOptions()
+        .setHeartbeatIntervalSeconds(0))
+      .build()
+  }
+}
+
 private[phantom] trait CassandraManagerBuilder {
 
   def apply(): DefaultCassandraManager = {
@@ -149,3 +163,5 @@ private[phantom] trait CassandraManagerBuilder {
 }
 
 object DefaultCassandraManager extends DefaultCassandraManager
+
+object SilentCassandraManager extends SilentCassandraManager

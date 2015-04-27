@@ -51,6 +51,8 @@ package object thrift extends ThriftTypeDefinitions {
 
   implicit def thriftPrimitive[T <: ThriftStruct](obj: T)(implicit serializer: ThriftStructSerializer[T]): Primitive[T] = new Primitive[T] {
 
+    override type PrimitiveType = java.lang.String
+
     override def fromRow(column: String, row: Row): Try[T] = nullCheck(column, row) {
       existing => serializer.fromString(row.getString(column))
     }
@@ -61,7 +63,7 @@ package object thrift extends ThriftTypeDefinitions {
 
     override def asCql(value: T): String = serializer.toString(value)
 
-    override def clz: Class[_] = Primitive[String].clz
+    override def clz: Class[java.lang.String] = classOf[java.lang.String]
   }
 
 }
