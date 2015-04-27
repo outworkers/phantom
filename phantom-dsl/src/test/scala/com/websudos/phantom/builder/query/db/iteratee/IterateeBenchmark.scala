@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
+import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
 import com.websudos.phantom.testkit.suites.PhantomCassandraConnector

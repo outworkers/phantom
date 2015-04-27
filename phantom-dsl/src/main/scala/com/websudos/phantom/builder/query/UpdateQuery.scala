@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.query
 
 import scala.annotation.implicitNotFound
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause, CompareAndSetClause}
@@ -161,6 +161,17 @@ sealed class AssignmentsQuery[
     val query = QueryBuilder.Update.onlyIf(clause(table).qb)
     new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query)
   }
+
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    new AssignmentsQuery(
+      table,
+      init,
+      usingPart append QueryBuilder.consistencyLevel(level.toString),
+      wherePart,
+      setPart,
+      casPart
+    )
+  }
 }
 
 sealed class ConditionalQuery[
@@ -185,7 +196,25 @@ sealed class ConditionalQuery[
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
     val query = QueryBuilder.Update.and(clause(table).qb)
 
-    new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query)
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append query
+    )
+  }
+
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart append QueryBuilder.consistencyLevel(level.toString),
+      wherePart,
+      setPart,
+      casPart
+    )
   }
 
 }
@@ -197,7 +226,7 @@ object UpdateQuery {
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
     new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](
       table,
-      QueryBuilder.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
+      QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 
 }

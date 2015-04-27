@@ -30,6 +30,7 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicInteger
+import com.websudos.phantom.iteratee.Iteratee
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.dsl._

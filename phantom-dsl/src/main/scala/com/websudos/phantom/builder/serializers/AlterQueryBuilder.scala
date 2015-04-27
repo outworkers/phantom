@@ -110,4 +110,12 @@ private[phantom] trait AlterQueryBuilder {
     qb.pad.append(CQLSyntax.Alter.Drop)
       .forcePad.append(column)
   }
+
+
+  def alter(tableName: String) = {
+    CQLQuery(CQLSyntax.alter)
+      .forcePad.append(CQLSyntax.table)
+      .forcePad.append(tableName)
+  }
+
 }

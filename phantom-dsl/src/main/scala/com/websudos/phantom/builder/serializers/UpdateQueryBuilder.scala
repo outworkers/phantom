@@ -92,6 +92,11 @@ private[builder] class UpdateQueryBuilder {
     clauses(CQLSyntax.using, queries)
   }
 
+  def update(tableName: String) = {
+    CQLQuery(CQLSyntax.update)
+      .forcePad.append(tableName)
+  }
+
 
 }
 

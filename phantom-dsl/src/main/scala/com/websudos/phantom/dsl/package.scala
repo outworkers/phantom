@@ -41,6 +41,7 @@ import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.connectors.CassandraManagerBuilder
 
 import scala.util.Try
 
@@ -134,7 +135,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
     new Primitive[T#Value] {
 
-      override def cassandraType: String = "text"
+      override def cassandraType: String = Primitive[String].cassandraType
 
       override def fromRow(name: String, row: Row): Try[T#Value] = {
         nullCheck(name, row) {
@@ -142,11 +143,11 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
         }
       }
 
-      override def asCql(value: T#Value): String = value.toString
+      override def asCql(value: T#Value): String = Primitive[String].asCql(value.toString)
 
       override def fromString(value: String): T#Value = enum.withName(value)
 
-      override def clz: Class[_] = classOf[String]
+      override def clz: Class[_] = Primitive[String].clz
     }
   }
 
@@ -201,6 +202,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
+
+  object CassandraManager extends CassandraManagerBuilder
 
   implicit lazy val context = Manager.scalaExecutor
 

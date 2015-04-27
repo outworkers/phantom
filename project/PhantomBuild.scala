@@ -92,7 +92,6 @@ object PhantomBuild extends Build {
     }
   }
 
-
   val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishTo <<= version { (v: String) => {
@@ -109,7 +108,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.7.0",
+    version := "1.7.4",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(
@@ -132,6 +131,8 @@ object PhantomBuild extends Build {
       "-language:existentials",
       "-Yinline-warnings",
       "-Xlint",
+      "-Xlog-implicits",
+      "-Ywarn-dead-code",
       "-deprecation",
       "-feature",
       "-unchecked"

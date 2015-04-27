@@ -29,11 +29,14 @@
  */
 package com.websudos.phantom.column
 
+import java.util.Date
+
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.syntax.CQLSyntax
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
@@ -64,15 +67,12 @@ private[phantom] abstract class AbstractMapColumn[Owner <: CassandraTable[Owner,
     }
   }
 
-  override def optional(r: Row): Try[Map[K, V]] = {
-    if (r.isNull(name)) {
-      Success(Map.empty[K, V])
-    } else {
-      Try(r.getMap(name, classOf[String], classOf[String]).asScala.toMap map {
-          case (a, b) => (keyFromCql(a), fromString(b))
-      })
-    }
+
+  protected[this] def primitive[T : Primitive]: Class[_] = cassandraType match {
+    case CQLSyntax.Types.Timestamp => Primitive[Date].clz
+    case _ => Primitive[T].clz
   }
+
 }
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
@@ -99,7 +99,11 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
     if (r.isNull(name)) {
       Success(Map.empty[K, V])
     } else {
-      Try(r.getMap(name, Primitive[K].clz.asInstanceOf[Class[K]], Primitive[V].clz.asInstanceOf[Class[V]]).asScala.toMap)
+      Try(
+        r.getMap(name, primitive[K].asInstanceOf[Class[K]],
+          primitive[V].asInstanceOf[Class[V]]
+        ).asScala.toMap
+      )
     }
   }
 }

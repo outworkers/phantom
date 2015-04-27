@@ -35,12 +35,12 @@ import com.datastax.driver.core.{ResultSet, Row, Session}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.iteratee.{ResultSpool, Enumerator}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.builder.query.db.iteratee.{Enumerator, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise}
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 

@@ -88,7 +88,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
           .append(QueryBuilder.Update.set(QueryBuilder.Update.setTo("a", "b")))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
-        (part1 merge new SetPart()).build(QueryBuilder.update("k.t")).queryString shouldEqual "UPDATE k.t SET a = b, c = d"
+        (part1 merge new SetPart()).build(QueryBuilder.Update.update("k.t")).queryString shouldEqual "UPDATE k.t SET a = b, c = d"
       }
 
       "should merge a SET part with an WHERE part in an Update clause and no init value" in {
@@ -111,7 +111,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
         val wherePart = new WherePart().append(QueryBuilder.Update.where(QueryBuilder.Where.eqs("z1", "z2")))
 
         (part1 merge wherePart)
-          .build(QueryBuilder.update("k.t"))
+          .build(QueryBuilder.Update.update("k.t"))
           .queryString shouldEqual "UPDATE k.t SET a = b, c = d WHERE z1 = z2"
       }
     }

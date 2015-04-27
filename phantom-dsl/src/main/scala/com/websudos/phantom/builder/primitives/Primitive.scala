@@ -49,6 +49,10 @@ private[phantom] object DateSerializer {
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
+sealed trait ValueTypeDef {
+  type ValueType <: AnyRef
+}
+
 abstract class Primitive[RR] {
 
   protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
@@ -68,7 +72,6 @@ abstract class Primitive[RR] {
   def fromString(value: String): RR
 
   def clz: Class[_]
-
 }
 
 trait DefaultPrimitives {
@@ -192,7 +195,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): DateTime = new DateTime(value)
 
-    override def clz: Class[DateTime] = classOf[DateTime]
+    override def clz: Class[Date] = classOf[Date]
   }
 
 

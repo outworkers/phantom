@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 
+import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.PrimitivesJoda
 import com.websudos.util.testing._

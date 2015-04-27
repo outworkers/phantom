@@ -26,5 +26,10 @@ jdk:
   - oraclejdk7
   - openjdk7
 
-script: "sbt scalastyle test"
+script:
+  - sbt clean coverage test &&
+    sbt coverageAggregate
+
+after_success:
+  - sbt coverallsscript: "sbt scalastyle test"
 

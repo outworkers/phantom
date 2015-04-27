@@ -121,13 +121,31 @@ abstract class DefaultCassandraManager extends CassandraManager {
   }
 }
 
-trait CassandraManagerBuilder {
-  def apply(seq: InetAddress): CassandraManager = {
-    new DefaultCassandraManager {
+private[phantom] trait CassandraManagerBuilder {
 
+  def apply(): DefaultCassandraManager = {
+    new DefaultCassandraManager {
+      override val hosts = Set(localhost(9042))
+    }
+  }
+
+  def apply(addr: InetSocketAddress): DefaultCassandraManager = {
+    new DefaultCassandraManager {
+      override val hosts = Set(addr)
+    }
+  }
+
+  def apply(host: String, port: Int): DefaultCassandraManager = {
+    new DefaultCassandraManager {
+      override val hosts = Set(new InetSocketAddress(host, port))
+    }
+  }
+
+  def apply(seq: Set[InetSocketAddress]): DefaultCassandraManager = {
+    new DefaultCassandraManager {
+      override val hosts = seq
     }
   }
 }
-
 
 object DefaultCassandraManager extends DefaultCassandraManager

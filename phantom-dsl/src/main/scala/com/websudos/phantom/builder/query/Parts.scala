@@ -127,12 +127,30 @@ sealed class SetPart(val list: List[CQLQuery] = Nil) extends QueryPart[SetPart](
   override def instance(l: List[CQLQuery]): SetPart = new SetPart(l)
 }
 
-
 sealed class CompareAndSetPart(val list: List[CQLQuery] = Nil) extends QueryPart[CompareAndSetPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): CompareAndSetPart = new CompareAndSetPart(l)
 }
+
+sealed class ColumnsPart(val list: List[CQLQuery] = Nil) extends QueryPart[ColumnsPart](list) {
+  override def qb: CQLQuery = QueryBuilder.Insert.columns(list)
+
+  override def instance(l: List[CQLQuery]): ColumnsPart = new ColumnsPart(l)
+}
+
+sealed class ValuePart(val list: List[CQLQuery] = Nil) extends QueryPart[ValuePart](list) {
+  override def qb: CQLQuery = QueryBuilder.Insert.values(list)
+
+  override def instance(l: List[CQLQuery]): ValuePart = new ValuePart(l)
+}
+
+sealed class LightweightPart(val list: List[CQLQuery] = Nil) extends QueryPart[LightweightPart](list) {
+  override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
+
+  override def instance(l: List[CQLQuery]): LightweightPart = new LightweightPart(l)
+}
+
 
 private[phantom] object Defaults {
   val EmptyUsingPart = new UsingPart()
@@ -142,5 +160,8 @@ private[phantom] object Defaults {
   val EmptyLimitPart = new LimitedPart()
   val EmptyOrderPart = new OrderPart()
   val EmptyFilteringPart = new FilteringPart()
+  val EmptyValuePart = new ValuePart()
+  val EmptyColumnsPart = new ColumnsPart()
+  val EmptyLightweightPart = new LightweightPart()
 }
 

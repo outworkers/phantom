@@ -30,6 +30,8 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
+import com.websudos.phantom.iteratee.Iteratee
+
 import scala.concurrent.{ Await, Future }
 
 import org.scalatest.Matchers

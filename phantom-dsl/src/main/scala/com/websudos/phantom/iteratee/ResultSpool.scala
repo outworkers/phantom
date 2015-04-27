@@ -27,13 +27,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.iteratee
+
+import com.datastax.driver.core.{ResultSet, Row}
+import com.twitter.concurrent.Spool
+import com.twitter.util.{Future => TFuture, FuturePool}
 
 import scala.collection.JavaConversions._
-
-import com.datastax.driver.core.{ ResultSet, Row }
-import com.twitter.concurrent.Spool
-import com.twitter.util.{ FuturePool, Future => TFuture }
 
 /**
  * Wrapper for creating Spools of Rows

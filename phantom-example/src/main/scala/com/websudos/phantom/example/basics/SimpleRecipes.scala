@@ -30,6 +30,8 @@
 package com.websudos.phantom.example.basics
 
 import java.util.UUID
+import com.websudos.phantom.iteratee.Iteratee
+
 import scala.concurrent.{ Future => ScalaFuture }
 
 import org.joda.time.DateTime
@@ -37,7 +39,6 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ ResultSet, Row }
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.builder.query.db.iteratee.Iteratee
 
 import com.twitter.conversions.time._
 
