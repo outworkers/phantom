@@ -131,8 +131,6 @@ object PhantomBuild extends Build {
       "-language:existentials",
       "-Yinline-warnings",
       "-Xlint",
-      "-Xlog-implicits",
-      "-Ywarn-dead-code",
       "-deprecation",
       "-feature",
       "-unchecked"
