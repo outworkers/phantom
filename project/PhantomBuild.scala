@@ -116,7 +116,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Seq(
     organization := "com.websudos",
-    version := "1.7.8",
+    version := "1.7.9",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(

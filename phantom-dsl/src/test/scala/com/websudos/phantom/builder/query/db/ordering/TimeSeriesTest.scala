@@ -76,7 +76,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual ts
+        mapped.toList shouldEqual ts.reverse
     }
   }
 
@@ -108,7 +108,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual ts
+        mapped.toList shouldEqual ts.reverse
     }
   }
 

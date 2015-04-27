@@ -235,7 +235,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldEqual appendable ::: recipe.ingredients
+        items.get shouldEqual appendable.reverse ::: recipe.ingredients
       }
     }
   }
@@ -254,7 +254,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldEqual appendable ::: recipe.ingredients
+        items.get shouldEqual appendable.reverse ::: recipe.ingredients
       }
     }
   }
