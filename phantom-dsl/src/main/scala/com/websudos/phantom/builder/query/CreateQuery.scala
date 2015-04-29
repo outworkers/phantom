@@ -334,7 +334,11 @@ class CreateQuery[
 
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
-    ScalaFuture.sequence(indexes ++ Seq(scalaQueryStringExecuteToFuture(qb.terminate().queryString))) map { _.head }
+
+    scalaQueryStringExecuteToFuture(qb.terminate().queryString) flatMap {
+      res => ScalaFuture.sequence(indexes) map { _.head }
+    }
+
   }
 
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
@@ -343,7 +347,9 @@ class CreateQuery[
       key => twitterQueryStringExecuteToFuture(QueryBuilder.Create.index(table.tableName, keySpace.name, key.name).queryString)
     }
 
-    TwitterFuture.collect(indexes ++ Seq(twitterQueryStringExecuteToFuture(qb.terminate().queryString))) map { _.head }
+    twitterQueryStringExecuteToFuture(qb.terminate().queryString) flatMap {
+      res => TwitterFuture.collect(indexes) map { _.head }
+    }
   }
 
 }
