@@ -38,7 +38,7 @@ import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class IterateeTest extends PhantomCassandraTestSuite {
+class IterateePerformanceTest extends PhantomCassandraTestSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
@@ -48,7 +48,7 @@ class IterateeTest extends PhantomCassandraTestSuite {
     PrimitivesJoda.insertSchema()
   }
 
-  ignore should "get result fine" in {
+  it should "get retrieve the correct number of results from the database and collect them using an iterator" in {
     val rows = for (i <- 1 to 1000) yield gen[JodaRow]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = PrimitivesJoda.insert

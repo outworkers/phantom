@@ -29,15 +29,49 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import com.datastax.driver.core.Cluster
+import scala.concurrent.{Await, Future}
+import org.scalameter.api.{Gen => MeterGen, gen => _, _}
+import org.scalatest.time.SpanSugar._
 
-object BigTestHelper {
+import com.twitter.util.{Await => TwitterAwait}
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testkit._
+import com.websudos.util.testing._
 
-  val cluster = Cluster.builder()
-    .addContactPoint("localhost")
-    .withPort(9042)
-    .withoutJMXReporting()
-    .withoutMetrics()
-    .build()
 
+class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
+
+  PrimitivesJoda.insertSchema()
+
+  val fs = for {
+    step <- 1 to 3
+    rows = Iterator.fill(10000)(gen[JodaRow])
+
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+      val statement = PrimitivesJoda.insert
+        .value(_.pkey, row.pkey)
+        .value(_.intColumn, row.int)
+        .value(_.timestamp, row.bi)
+      b.add(statement)
+    })
+    w = batch.future()
+    f = w map (_ => println(s"step $step has succeed") )
+    r = Await.result(f, 200 seconds)
+  } yield f map (_ => r)
+
+  Await.ready(Future.sequence(fs), 20 seconds)
+
+  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
+
+  performance of "ResultSpool" in {
+    measure method "fetchSpool" in {
+      using(sizes) in {
+        size => TwitterAwait.ready {
+          PrimitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
+        }
+      }
+    }
+  }
 }
+

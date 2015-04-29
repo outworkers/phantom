@@ -29,44 +29,26 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
+import java.util.concurrent.atomic.AtomicLong
+
 import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
+import com.websudos.phantom.tables.PrimitivesJoda
 import com.websudos.util.testing._
-import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import org.scalatest.time.SpanSugar._
+import org.scalatest.concurrent.ScalaFutures
 
-import scala.concurrent.{Await, Future}
+class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
 
-class IterateeBenchmark extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
+  it should "read the correct number of records found in the table" in {
+    val counter: AtomicLong = new AtomicLong(0)
+    val result = PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+      r => counter.incrementAndGet()
+    }
 
-  PrimitivesJoda.insertSchema()
-
-  val fs = for {
-    step <- 1 to 3
-    rows = Iterator.fill(10000)(gen[JodaRow])
-
-    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = PrimitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.int)
-        .value(_.timestamp, row.bi)
-      b.add(statement)
-    })
-    w = batch.future()
-    f = w map (_ => println(s"step $step was completed successfully") )
-    r = Await.result(f, 200 seconds)
-  } yield f map (_ => r)
-
-  Await.ready(Future.sequence(fs), 20 seconds)
-
-  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
-
-  performance of "Enumerator" in {
-    measure method "enumerator" in {
-      using(sizes) in {
-        size => Await.ready(PrimitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
+    result.successful {
+      query => {
+        info(s"done, reading: ${counter.get}")
+        counter.get() shouldEqual 2000000
       }
     }
   }

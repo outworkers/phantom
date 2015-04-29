@@ -115,7 +115,7 @@ object PhantomBuild extends Build {
   )
 
   val PerformanceTest = config("perf").extend(Test)
-  def performanceFilter(name: String): Boolean = name endsWith "ITest"
+  def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
@@ -149,6 +149,8 @@ object PhantomBuild extends Build {
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xmx2G"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
+    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
+    testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings
 

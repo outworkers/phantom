@@ -138,4 +138,5 @@ abstract class CassandraManager(val hosts: Set[InetSocketAddress]) extends Conne
 private[phantom] object CassandraProperties {
   val ZookeeperEnvironmentString: String = "TEST_ZOOKEEPER_CONNECTOR"
   val DefaultHosts = Set(new InetSocketAddress("localhost", 9042))
+  val Localhost = Set(new InetSocketAddress("localhost", 9042))
 }

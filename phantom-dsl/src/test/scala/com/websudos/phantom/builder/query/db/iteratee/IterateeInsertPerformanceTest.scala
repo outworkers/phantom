@@ -43,7 +43,7 @@ import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
 import com.websudos.util.testing._
 
 
-class IterateeBigTest extends BigTest with Matchers {
+class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
 

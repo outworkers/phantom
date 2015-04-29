@@ -29,18 +29,17 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import scala.concurrent.{Await, Future}
+import com.websudos.phantom.iteratee.Iteratee
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
+import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
-import com.twitter.util.{Await => TwitterAwait}
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit._
-import com.websudos.util.testing._
+import scala.concurrent.{Await, Future}
 
-
-class SpoolBenchmark extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
+class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
 
   PrimitivesJoda.insertSchema()
 
@@ -56,7 +55,7 @@ class SpoolBenchmark extends PerformanceTest.Quickbenchmark with PhantomCassandr
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ => println(s"step $step has succeed") )
+    f = w map (_ => println(s"step $step was completed successfully") )
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 
@@ -64,14 +63,11 @@ class SpoolBenchmark extends PerformanceTest.Quickbenchmark with PhantomCassandr
 
   val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
 
-  performance of "ResultSpool" in {
-    measure method "fetchSpool" in {
+  performance of "Enumerator" in {
+    measure method "enumerator" in {
       using(sizes) in {
-        size => TwitterAwait.ready {
-          PrimitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
-        }
+        size => Await.ready(PrimitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
       }
     }
   }
 }
-
