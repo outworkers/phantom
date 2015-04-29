@@ -76,7 +76,8 @@ trait CassandraConnector {
   }
 
   object Version extends VersionBuilder {
-    val `2.1.0` = apply(2, 1, 0)
+    val `2.0.8` = apply(2, 0, 8)
     val `2.0.13` = apply(2, 0, 13)
+    val `2.1.0` = apply(2, 1, 0)
   }
 }

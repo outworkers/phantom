@@ -1391,7 +1391,7 @@ run all the tests and do the cleanup afterwards. Read more on the testing utilit
 
 If a local Cassandra installation is found running on ```localhost:9042```, phantom will attempt to use that instead. Some of the version based logic
 is found directly inside phantom, although advanced compatibility and protocol version detection has been a task we left to our dear partners at Datastax
-as we've felt re-implement that concern in Scala would bring no signifact value add.
+as we've felt re-implementing that concern in Scala would bring no significant value add.
 
 Phantom uses multiple SBT configurations to distinguish between two kinds of tests, normal and performance tests. Performance tests are not run
 during Travis CI runs and we usually run them manually when serious changes are made to the underlying Twitter Spool and Play Iterator based iterators, events that are very rare indeed.
