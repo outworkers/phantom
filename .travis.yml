@@ -26,6 +26,9 @@ jdk:
   - oraclejdk7
   - openjdk7
 
+before-script:
+  //- rm phantom-dsl/src/main/resources/
+
 script:
   - sbt clean coverage test &&
     sbt coverageAggregate

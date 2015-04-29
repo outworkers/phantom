@@ -33,7 +33,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
@@ -223,4 +223,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     final def decrement[T : Numeric](value: T): UpdateClause.Condition = -=(value)
   }
 
+
+  implicit class VersionAugmenter(val version: VersionNumber) extends AnyVal {
+    def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
+    def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
+    def > (other: VersionNumber): Boolean = version.compareTo(other) == 1
+  }
 }

@@ -29,10 +29,9 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import com.datastax.driver.core.VersionNumber
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
-import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
@@ -55,18 +54,6 @@ trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
   implicit val keySpace = KeySpace("phantom")
-
-  /**
-   * Checks if a set of versions is a set of a single element describing a version pre 2.1.0
-   * If the Cassandra version in use is not greater than 2.10 certain operations like list appends
-   * behave differently and we need to account for this during tests.
-   *
-   * @param versions The set of versions the cluster load balancer is currently connected to.
-   * @return True if the Cassandra release needs special treatment, false otherwise.
-   */
-  def hasPreTwoTenRealease(versions: Set[VersionNumber] = cassandraVersions): Boolean = {
-    versions.size == 1 && versions.exists(v => {v.getMinor == 0 && v.getMajor == 2 })
-  }
 }
 
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

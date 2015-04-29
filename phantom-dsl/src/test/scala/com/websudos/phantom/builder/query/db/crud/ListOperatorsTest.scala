@@ -225,7 +225,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     val appendable = List("test", "test2")
 
-    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
@@ -246,7 +246,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     val appendable = List("test", "test2")
 
-    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- Recipes.store(recipe).execute()

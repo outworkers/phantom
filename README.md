@@ -26,8 +26,8 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 ### Latest versions
 
-- Latest stable version: 1.7.0 (Maven Central)
-- Bleeding edge: 1.7.2 (Websudos Maven Repo)
+- Latest stable version: 1.8.0 (Maven Central)
+- Bleeding edge: 1.8.0 (Websudos Maven Repo)
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
@@ -36,15 +36,15 @@ The Apache Cassandra version used for auto-embedding Cassandra during tests is: 
 Cassandra, otherwise you will get an error when phantom tries to start the embedded database. The recommended JDK is the Oracle variant.
 
 
-### Version 2.0.0 Highlights ###
+### Version highlights and upcoming features ###
 
 <ul>
-    <li><a href="#new-querybuilder">A new QueryBuilder, written from the ground up, in idiomatic Scala</a></li>
-    <li><a href="#alter-queries">Added support for type-safe ALTER queries</a></li>
-    <li><a href="#advanced-cql-support">Support for advanced CQL options</a></li> 
-    <li><a href="#prepared-statements">Type safe prepared statements</a></li>
-    <li><a href="#automigration">Automated Schema migrations</li>
-    <li><a href="#udts">Type safe user defined types</li>
+    <li><a href="#new-querybuilder">1.8.0: A new QueryBuilder, written from the ground up, in idiomatic Scala</a></li>
+    <li><a href="#alter-queries">1.8.0: Added support for type-safe ALTER queries</a></li>
+    <li><a href="#advanced-cql-support">1.8.0:Support for advanced CQL options</a></li> 
+    <li><a href="#prepared-statements">1.8.0: Type safe prepared statements</a></li>
+    <li><a href="#automigration">1.9.0: Automated Schema migrations</li>
+    <li><a href="#udts">2.0.0: Type safe user defined types</li>
     <li>
       <a href="#breaking-changes">Breaking changes in DSL and connectors
       <ul>
@@ -52,17 +52,20 @@ Cassandra, otherwise you will get an error when phantom tries to start the embed
         <li><a href="#propagating-parse-errors">Propagating parse errors</a></li>
       </ul>
     </a>
-    <li><a href="#autocreation">Automated table creations</li>
-    <li><a href="#autotruncation">Automated table truncation.</li>
-    <li><a href="#performance">Big performance improvements</li>
+    <li><a href="#autocreation">1.9.0: Automated table creations</li>
+    <li><a href="#autotruncation">1.9.0: Automated table truncation.</li>
+    <li><a href="#performance">1.9.0: Big performance improvements</li>
 </ul>
 
 
-### Breaking API changes in Phantom 2.0.0.
+### Breaking API changes in Phantom 1.8.0 and beyond.
 
-The 1.6.0 release constitutes a major re-working of a wide number of internal phantom primitives, including but not limited to a brand new Scala flavoured
+The 1.8.0 release constitutes a major re-working of a wide number of internal phantom primitives, including but not limited to a brand new Scala flavoured
 QueryBuilder with full support for all CQL 3 features and even some of the more "esoteric" options available in CQL. We went above and beyond to try and
 offer a tool that's comprehensive and doesn't miss out on any feature of the protocol, no matter how small.
+
+If you are wondering what happened to 1.7.0, it was never publicly released as testing the new querybuilder entailed serious internal efforts and for such a drastic change
+we wanted to do as much as possible to eliminate books. Surely there will be some still found, but hopefully very few and with your help they will be very short lived.
 
 Ditching the Java Driver was not a question of code quality in the driver, but rather an opportunity to exploit the more advanced Scala type system features
 to introduce behaviour such as preventing duplicate limits on queries using phantom types, to prevent even more invalid queries from compiling, and to switch
@@ -144,7 +147,6 @@ This was never possible before in phantom, and now from 1.7.0 onwards we feature
 
 <a id="table-of-contents">Table of contents</a>
 ===============================================
-
 
 <ul>
   <li><a href="#issues-and-questions">Issues and questions</a></li>
@@ -737,10 +739,11 @@ The 22 field limitation will change in Scala 2.11 and phantom will be updated on
 Example:
 
 ```scala
-ExampleRecord.update.where(_.id eqs myUuid).
-                     modify(_.name setTo "Barack Obama").
-                     and(_.props put ("title" -> "POTUS")).
-                     future()
+ExampleRecord.update
+  .where(_.id eqs myUuid)
+  .modify(_.name setTo "Barack Obama")
+  .and(_.props put ("title" -> "POTUS"))
+  .future()
 ```
 
 
@@ -1385,6 +1388,16 @@ covered by the latest phantom release and used for embedding is written at the v
 phantom uses the ```phantom-testkit``` module to run tests without a local Cassandra server running.
 There are no pre-requisites for running the tests. Phantom will automatically load an Embedded Cassandra with the right version, 
 run all the tests and do the cleanup afterwards. Read more on the testing utilities to see how you can achieve the same thing in your own database tests.
+
+If a local Cassandra installation is found running on ```localhost:9042```, phantom will attempt to use that instead. Some of the version based logic
+is found directly inside phantom, although advanced compatibility and protocol version detection has been a task we left to our dear partners at Datastax
+as we've felt re-implement that concern in Scala would bring no signifact value add.
+
+Phantom uses multiple SBT configurations to distinguish between two kinds of tests, normal and performance tests. Performance tests are not run
+during Travis CI runs and we usually run them manually when serious changes are made to the underlying Twitter Spool and Play Iterator based iterators, events that are very rare indeed.
+
+- Use ```sbt test``` to run the normal test suite which should finish pretty quickly, within 2 minutes. 
+- Use ```sbt perf:test``` if you have a lot of time on your hands and you are debugging performance issues with the framework. This will take 40 -50 minutes.
 
 
 <a id="contributors">Contributors</a>

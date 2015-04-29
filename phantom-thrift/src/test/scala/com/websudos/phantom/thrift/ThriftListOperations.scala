@@ -109,7 +109,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val appendable = genList[ThriftTest]()
 
-    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- ThriftColumnTable.store(sample).future()
@@ -132,7 +132,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val appendable = genList[ThriftTest]()
 
-    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- ThriftColumnTable.store(sample).execute()
