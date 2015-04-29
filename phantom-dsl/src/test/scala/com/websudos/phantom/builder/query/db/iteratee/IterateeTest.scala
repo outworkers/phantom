@@ -72,9 +72,9 @@ class IterateeTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "get mapResult fine" in {
+  it should "get correctly retrieve the right number of records using asynchronous iterators" in {
 
-    val rows = for (i <- 1 to 2000) yield gen[Primitive]
+    val rows = for (i <- 1 to 100) yield gen[Primitive]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = Primitives.insert
         .value(_.pkey, row.pkey)

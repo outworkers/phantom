@@ -115,6 +115,7 @@ object PhantomBuild extends Build {
   )
 
   val PerformanceTest = config("perf").extend(Test)
+  def performanceFilter(name: String): Boolean = name endsWith "ITest"
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
