@@ -33,6 +33,7 @@ import java.util.UUID
 
 import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 import com.websudos.phantom.thrift._
@@ -41,7 +42,7 @@ case class Output(
   id: UUID,
   name: String,
   struct: ThriftTest,
-  list: Set[ThriftTest],
+  thriftSet: Set[ThriftTest],
   thriftList: List[ThriftTest],
   thriftMap: Map[String, ThriftTest],
   optThrift: Option[ThriftTest]
@@ -96,4 +97,13 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
 
 object ThriftColumnTable extends ThriftColumnTable with PhantomCassandraConnector {
   override val tableName = "thrift_column_table"
+
+  def store(sample: Output): InsertQuery.Default[ThriftColumnTable, Output] = {
+    ThriftColumnTable.insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample.struct)
+      .value(_.thriftSet, sample.thriftSet)
+      .value(_.thriftList, sample.thriftList)
+  }
 }

@@ -57,6 +57,9 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
       })
 
+    val ts = recordList.map(_.timestamp.getSecondOfDay)
+    val expected = if (hasPreTwoTenRealease()) ts.reverse else ts
+
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
         b.add(TimeSeriesTable.insert
@@ -72,22 +75,27 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
       chunks <- TimeSeriesTable.select.limit(5).fetch()
     } yield chunks
 
+
     chain.successful {
       res =>
         val ts = recordList.map(_.timestamp.getSecondOfDay)
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual ts.reverse
+        mapped.toList shouldEqual expected
     }
   }
 
   it should "allow using naturally fetch the records in descending order for a descending clustering order with Twitter Futures" in {
     var i = 0
 
+
     val recordList = genList[TimeSeriesRecord](6).map(
       item => {
         i += 1
         item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
       })
+
+    val ts = recordList.map(_.timestamp.getSecondOfDay)
+    val expected = if (hasPreTwoTenRealease()) ts.reverse else ts
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
@@ -106,9 +114,8 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res =>
-        val ts = recordList.map(_.timestamp.getSecondOfDay)
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual ts.reverse
+        mapped.toList shouldEqual expected
     }
   }
 

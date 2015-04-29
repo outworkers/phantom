@@ -223,9 +223,10 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "prepend several items to a list" in {
     val recipe = gen[Recipe]
 
-
-
     val appendable = List("test", "test2")
+
+    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
+
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).future()
@@ -235,7 +236,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldEqual appendable.reverse ::: recipe.ingredients
+        items.get shouldEqual prependedValues ::: recipe.ingredients
       }
     }
   }
@@ -244,6 +245,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val appendable = List("test", "test2")
+
+    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- Recipes.store(recipe).execute()
@@ -254,7 +257,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldEqual appendable.reverse ::: recipe.ingredients
+        items.get shouldEqual prependedValues ::: recipe.ingredients
       }
     }
   }

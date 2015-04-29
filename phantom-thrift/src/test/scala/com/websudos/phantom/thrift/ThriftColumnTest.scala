@@ -85,7 +85,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
       result => {
         result.isEmpty shouldEqual false
         result.get.struct shouldEqual sample
-        result.get.list shouldEqual sampleList
+        result.get.thriftSet shouldEqual sampleList
       }
     }
   }

@@ -29,10 +29,28 @@
  */
 package com.websudos.phantom
 
+import java.util.UUID
+
+import com.websudos.phantom.tables.Output
 import com.websudos.util.testing._
 
 package object thrift extends ThriftTypeDefinitions {
 
+  implicit object OutputSample extends Sample[Output] {
+    def sample: Output = {
+      Output(
+        id = gen[UUID],
+        name = gen[String],
+        struct = gen[ThriftTest],
+        thriftSet = genList[ThriftTest]().toSet[ThriftTest],
+        thriftList = genList[ThriftTest](),
+        thriftMap = genList[ThriftTest]().map {
+          item => (item.toString, item)
+        }.toMap,
+        optThrift = genOpt[ThriftTest]
+      )
+    }
+  }
 
   implicit object ThriftTestSample extends Sample[ThriftTest] {
     def sample: ThriftTest = ThriftTest(

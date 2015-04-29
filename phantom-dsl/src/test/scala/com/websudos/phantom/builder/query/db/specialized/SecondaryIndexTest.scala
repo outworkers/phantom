@@ -81,7 +81,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
         .execute()
 
       select <- SecondaryIndexTable.select.where(_.id eqs sample.primary).get
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering.get()
+      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().get()
     } yield (select, select2)
 
     chain.successful {
@@ -138,7 +138,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "throw an error when updating a record by it's secondary key" in {
+  it should "throw an error when updating a record by its secondary key" in {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
@@ -155,7 +155,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     chain.failing[InvalidQueryException]
   }
 
-  it should "throw an error when updating a record by it's secondary key with Twitter Futures" in {
+  it should "throw an error when updating a record by its secondary key with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {

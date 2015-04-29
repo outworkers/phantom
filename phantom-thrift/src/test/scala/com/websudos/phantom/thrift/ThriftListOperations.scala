@@ -30,7 +30,7 @@
 package com.websudos.phantom.thrift
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.tables.{Output, ThriftColumnTable}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -105,28 +105,16 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
   }
 
   it should "prepend several items to a thrift list column" in {
-    val id = gen[UUID]
+    val sample = gen[Output]
 
-    val sample = gen[ThriftTest]
+    val appendable = genList[ThriftTest]()
 
-    val sample2 = gen[ThriftTest]
-
-    val sample3 = gen[ThriftTest]
-
-    val toAppend = List(sample2, sample3)
-
-    val insert = ThriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .future()
+    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend toAppend).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      insertDone <- ThriftColumnTable.store(sample).future()
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).future()
+      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield {
       select
     }
@@ -134,40 +122,30 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual List(sample2, sample3, sample)
+        items.get shouldEqual prependedValues ::: sample.thriftList
       }
     }
   }
 
   it should "prepend several items to a thrift list column with Twitter Futures" in {
-    val id = gen[UUID]
+    val sample = gen[Output]
 
-    val sample = gen[ThriftTest]
+    val appendable = genList[ThriftTest]()
 
-    val sample2 = gen[ThriftTest]
-
-    val sample3 = gen[ThriftTest]
-
-    val toAppend = List(sample2, sample3)
-
-    val insert = ThriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .execute()
+    val prependedValues = if (hasPreTwoTenRealease()) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend toAppend).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
-    } yield select
+      insertDone <- ThriftColumnTable.store(sample).execute()
+      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).execute()
+      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+    } yield {
+        select
+      }
 
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual List(sample2, sample3, sample)
+        items.get shouldEqual prependedValues ::: sample.thriftList
       }
     }
   }
