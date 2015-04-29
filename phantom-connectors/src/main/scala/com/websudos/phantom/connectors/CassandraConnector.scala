@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{VersionNumber, Session}
 
 private[connectors] case object CassandraInitLock
 
@@ -48,5 +48,9 @@ trait CassandraConnector {
   def manager: CassandraManager = DefaultCassandraManager
 
   implicit def session: Session = manager.session
+
+  def cassandraVersions: Set[VersionNumber] = {
+    manager.cassandraVersions
+  }
 }
 

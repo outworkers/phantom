@@ -30,10 +30,11 @@
 package com.websudos.phantom.connectors
 
 import java.net._
+import scala.collection.JavaConverters._
+import org.slf4j.LoggerFactory
 
 import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
-import com.datastax.driver.core.{Cluster, Session}
-import org.slf4j.LoggerFactory
+import com.datastax.driver.core.{VersionNumber, Cluster, Session}
 
 
 private[phantom] trait ConnectionUtils {
@@ -123,6 +124,11 @@ abstract class CassandraManager(val hosts: Set[InetSocketAddress]) extends Conne
    */
   def clusterRef: Cluster
 
+  def cassandraVersions: Set[VersionNumber] = {
+    clusterRef.getMetadata.getAllHosts
+      .asScala.map(_.getCassandraVersion)
+      .toSet[VersionNumber]
+  }
 
   def initIfNotInited(keySpace: String)
 

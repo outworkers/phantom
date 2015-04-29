@@ -47,7 +47,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
   it should "store items in a list in the same order" in {
     val recipe = gen[Recipe]
-    val list = genList[String]()
 
     val operation = for {
       truncate <- Recipes.truncate.future
@@ -100,7 +99,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "store the same list size in Cassandra as it does in Scala with Twitter Futures" in {
     val recipe = gen[Recipe]
     val limit = 5
-    val list = genList[String](limit)
 
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
@@ -225,6 +223,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "prepend several items to a list" in {
     val recipe = gen[Recipe]
 
+
+
     val appendable = List("test", "test2")
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
@@ -299,7 +299,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "remove multiple items from a list" in {
     val list = genList[String]()
     val recipe = gen[Recipe].copy(ingredients = list)
-    val id = gen[UUID]
 
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
@@ -318,7 +317,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "remove multiple items from a list with Twitter futures" in {
     val list = genList[String]()
     val recipe = gen[Recipe].copy(ingredients = list)
-    val id = gen[UUID]
 
     val operation = for {
       insertDone <- Recipes.store(recipe).execute()
@@ -337,7 +335,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   it should "set a 0 index inside a List" in {
     val list = genList[String]()
     val recipe = gen[Recipe].copy(ingredients = list)
-    val id = gen[UUID]
 
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
@@ -348,7 +345,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get(0) shouldEqual "updated"
+        items.get.head shouldEqual "updated"
       }
     }
   }
@@ -369,7 +366,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get(0) shouldEqual "updated"
+        items.get.head shouldEqual "updated"
       }
     }
   }
@@ -392,9 +389,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
   }
 
   it should "set the third index inside a List with Twitter Futures" in {
-    val list = genList[String](100)
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = gen[String]
 
 

@@ -38,7 +38,7 @@ import scala.concurrent.blocking
 import scala.util.control.NonFatal
 
 class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts)
-  extends CassandraManager(CassandraProperties.DefaultHosts) {
+  extends CassandraManager(hosts) {
 
   val livePort = 9042
 
@@ -117,6 +117,7 @@ class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraPropertie
       inited = true
     }
   }
+
 }
 
 private[phantom] trait CassandraManagerBuilder {
