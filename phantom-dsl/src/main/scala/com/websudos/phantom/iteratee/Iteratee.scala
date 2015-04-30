@@ -27,46 +27,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.iteratee
 
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
-import com.websudos.util.testing._
-import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import org.scalatest.time.SpanSugar._
+import play.api.libs.iteratee.{Iteratee => PIteratee}
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext
 
-class IterateeBenchmark extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
+/**
+ * Helper object to some common use cases for iterators.
+ * This is a wrapper around play Iteratee class.
+ */
+object Iteratee {
+  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] =
+    PIteratee.fold(List.empty[R])((acc, e: R)=> e :: acc)
 
-  PrimitivesJoda.insertSchema()
+  def chunks[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] = {
+    PIteratee.getChunks
+  }
 
-  val fs = for {
-    step <- 1 to 3
-    rows = Iterator.fill(10000)(gen[JodaRow])
+  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PIteratee[E, Unit] = PIteratee.foreach(f: E => Unit)
 
-    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = PrimitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.int)
-        .value(_.timestamp, row.bi)
-      b.add(statement)
-    })
-    w = batch.future()
-    f = w map (_ => println(s"step $step was completed successfully") )
-    r = Await.result(f, 200 seconds)
-  } yield f map (_ => r)
+  def drop[R](num: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
+    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.drop(num))
+  }
 
-  Await.ready(Future.sequence(fs), 20 seconds)
+  def slice[R](start: Int, limit: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
+    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.slice(start, start + limit))
+  }
 
-  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
-
-  performance of "Enumerator" in {
-    measure method "enumerator" in {
-      using(sizes) in {
-        size => Await.ready(PrimitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
-      }
-    }
+  def take[R](limit: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
+    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.take(limit))
   }
 }

@@ -29,13 +29,20 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{VersionNumber, Session}
 
 private[connectors] case object CassandraInitLock
 
 class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
 
 class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
+
+
+sealed trait VersionBuilder {
+  def apply(major: Int, minor: Int, patch: Int): VersionNumber = {
+    VersionNumber.parse(s"$major.$minor.$patch")
+  }
+}
 
 /**
  * The root implementation of a Cassandra connection.
@@ -45,8 +52,32 @@ trait CassandraConnector {
 
   implicit def keySpace: KeySpace
 
-  def manager: CassandraManager = DefaultCassandraManager
+  val manager: CassandraManager = DefaultCassandraManager
 
   implicit def session: Session = manager.session
-}
 
+  def cassandraVersions: Set[VersionNumber] = {
+    manager.cassandraVersions
+  }
+
+  def cassandraVersion: VersionNumber = {
+    val single = manager.cassandraVersions.head
+
+    if (manager.cassandraVersions.size == 1) {
+      single
+    } else {
+      if (manager.cassandraVersions.forall(_.compareTo(single) == 0)) {
+        single
+      } else {
+        throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
+      }
+    }
+
+  }
+
+  object Version extends VersionBuilder {
+    val `2.0.8` = apply(2, 0, 8)
+    val `2.0.13` = apply(2, 0, 13)
+    val `2.1.0` = apply(2, 1, 0)
+  }
+}

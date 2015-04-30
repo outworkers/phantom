@@ -50,7 +50,7 @@ object PhantomBuild extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -67,8 +67,8 @@ object PhantomBuild extends Build {
       <url>https://github.com/websudos/phantom</url>
         <licenses>
           <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <name>Websudos License</name>
+            <url>http://websudos.com/license</url>
             <distribution>repo</distribution>
           </license>
         </licenses>
@@ -92,9 +92,10 @@ object PhantomBuild extends Build {
     }
   }
 
-
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+    credentials ++= Seq(
+      Credentials(Path.userHome / ".ivy2" / ".credentials")
+    ),
     publishTo <<= version { (v: String) => {
         if (v.trim.endsWith("SNAPSHOT"))
           Some("snapshots" at publishUrl + "/ext-snapshot-local")
@@ -107,9 +108,12 @@ object PhantomBuild extends Build {
     pomIncludeRepository := { _ => true }
   )
 
-  val sharedSettings: Seq[Def.Setting[_]] = Seq(
+  val PerformanceTest = config("perf").extend(Test)
+  def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
+
+  val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.7.0",
+    version := "1.8.0",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(
@@ -137,14 +141,21 @@ object PhantomBuild extends Build {
       "-unchecked"
      ),
     fork in Test := true,
-    javaOptions in Test ++= Seq("-Xmx2G")
+    javaOptions in Test ++= Seq("-Xmx2G"),
+    testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
+    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
+    testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
+    fork in PerformanceTest := true
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings
-
 
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
+    settings = sharedSettings
+  ).configs(
+    PerformanceTest
+  ).settings(
+    inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
     name := "phantom"
   ).aggregate(
@@ -165,49 +176,52 @@ object PhantomBuild extends Build {
     settings = Defaults.coreDefaultSettings ++
       sharedSettings ++
       publishSettings
-  ).settings(
-    name := "phantom-dsl",
-    fork := true,
-    testOptions in Test += Tests.Argument("-oF"),
-    logBuffered in Test := false,
-    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
-    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, 4)
-    ),
-    libraryDependencies ++= Seq(
-      "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
-      "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
-      "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
-      "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
-      "joda-time"                    %  "joda-time"                         % "2.3",
-      "org.joda"                     %  "joda-convert"                      % "1.6",
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-      "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
-      "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
-      "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
-      "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
+    ).configs(
+      PerformanceTest
+    ).settings(
+      inConfig(PerformanceTest)(Defaults.testTasks): _*
+    ).settings(
+      name := "phantom-dsl",
+      fork := true,
+      testOptions in Test += Tests.Argument("-oF"),
+      logBuffered in Test := false,
+      concurrentRestrictions in Test := Seq(
+        Tags.limit(Tags.ForkedTestGroup, 4)
+      ),
+      libraryDependencies ++= Seq(
+        "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
+        "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
+        "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
+        "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
+        "joda-time"                    %  "joda-time"                         % "2.3",
+        "org.joda"                     %  "joda-convert"                      % "1.6",
+        "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+        "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
+        "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
+        "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
+        "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
+      )
+    ).dependsOn(
+      phantomTestKit % "test, provided",
+      phantomConnectors
     )
-  ).dependsOn(
-    phantomTestKit % "test, provided",
-    phantomConnectors
-  )
 
   lazy val phantomConnectors = Project(
     id = "phantom-connectors",
     base = file("phantom-connectors"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
-  ).settings(
+    settings = sharedSettings
+  ).configs(PerformanceTest).settings(
     name := "phantom-connectors",
     libraryDependencies ++= Seq(
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
     )
   )
 
   lazy val phantomUdt = Project(
     id = "phantom-udt",
     base = file("phantom-udt"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
+    settings = sharedSettings
   ).settings(
     name := "phantom-udt",
     scalacOptions ++= Seq(
@@ -262,7 +276,7 @@ object PhantomBuild extends Build {
   lazy val phantomZookeeper = Project(
     id = "phantom-zookeeper",
     base = file("phantom-zookeeper"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
+    settings = sharedSettings
   ).settings(
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
@@ -281,7 +295,7 @@ object PhantomBuild extends Build {
   lazy val phantomTestKit = Project(
     id = "phantom-testkit",
     base = file("phantom-testkit"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
+    settings = sharedSettings
   ).settings(
     name := "phantom-testkit",
     libraryDependencies ++= Seq(
@@ -301,7 +315,7 @@ object PhantomBuild extends Build {
   lazy val phantomExample = Project(
     id = "phantom-example",
     base = file("phantom-example"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings ++ ScroogeSBT.newSettings
+    settings = sharedSettings ++ ScroogeSBT.newSettings
   ).settings(
     name := "phantom-example"
   ).dependsOn(
@@ -314,7 +328,7 @@ object PhantomBuild extends Build {
   lazy val phantomScalatraTest = Project(
     id = "phantom-scalatra-test",
     base = file("phantom-scalatra-test"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
+    settings = sharedSettings
   ).settings(
     name := "phantom-test",
     fork := true,

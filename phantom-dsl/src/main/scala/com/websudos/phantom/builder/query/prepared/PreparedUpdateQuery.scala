@@ -54,7 +54,7 @@ object PreparedUpdateQuery {
   type Default[T <: CassandraTable[T, _], R] = PreparedUpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): PreparedUpdateQuery.Default[T, R] = {
-    new PreparedUpdateQuery(table, QueryBuilder.insert(QueryBuilder.keyspace(keySpace.name, table.tableName)))
+    new PreparedUpdateQuery(table, QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName)))
   }
 
 }

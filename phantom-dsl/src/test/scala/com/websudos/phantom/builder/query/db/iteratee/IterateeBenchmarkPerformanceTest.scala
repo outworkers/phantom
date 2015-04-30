@@ -29,57 +29,44 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import java.util.concurrent.atomic.AtomicLong
-import scala.concurrent.{ Await, Future }
-
-import org.scalatest.Matchers
-import org.scalatest.concurrent.PatienceConfiguration
+import com.websudos.phantom.iteratee.Iteratee
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
+import com.websudos.util.testing._
+import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
-import com.websudos.util.testing._
+import scala.concurrent.{Await, Future}
 
+class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
 
-class IterateeBigTest extends BigTest with Matchers {
+  PrimitivesJoda.insertSchema()
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
+  val fs = for {
+    step <- 1 to 3
+    rows = Iterator.fill(10000)(gen[JodaRow])
 
-  ignore should "get result fine" in {
-    PrimitivesJoda.insertSchema()
-    val fs = for {
-      step <- 1 to 100
-      rows = Iterator.fill(10000)(gen[JodaRow])
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+      val statement = PrimitivesJoda.insert
+        .value(_.pkey, row.pkey)
+        .value(_.intColumn, row.int)
+        .value(_.timestamp, row.bi)
+      b.add(statement)
+    })
+    w = batch.future()
+    f = w map (_ => println(s"step $step was completed successfully") )
+    r = Await.result(f, 200 seconds)
+  } yield f map (_ => r)
 
-      batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-        val statement = PrimitivesJoda.insert
-          .value(_.pkey, row.pkey)
-          .value(_.intColumn, row.int)
-          .value(_.timestamp, row.bi)
-        b.add(statement)
-      })
-      w = batch.future()
-      f = w map (_ => println(s"step $step has succeed") )
-      r = Await.result(f, 200 seconds)
-    } yield f map (_ => r)
+  Await.ready(Future.sequence(fs), 20 seconds)
 
+  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
 
-    val combinedFuture = Future.sequence(fs) map {
-      r => PrimitivesJoda.select.count.one()
-    }
-
-    val counter: AtomicLong = new AtomicLong(0)
-    val result = combinedFuture flatMap {
-       rs => {
-         info(s"done, inserted: $rs rows - start parsing")
-         PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
-       }
-    }
-
-    (result flatMap (_ => combinedFuture)) successful {
-      r => {
-        info(s"done, reading: ${counter.get}")
-        counter.get() shouldEqual r
+  performance of "Enumerator" in {
+    measure method "enumerator" in {
+      using(sizes) in {
+        size => Await.ready(PrimitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
       }
     }
   }

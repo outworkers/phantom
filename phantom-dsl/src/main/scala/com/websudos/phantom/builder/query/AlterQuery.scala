@@ -144,6 +144,6 @@ object AlterQuery {
    * @return A raw ALTER query, without any further options set on it.
    */
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = {
-    new AlterQuery[T, R, Unspecified, WithUnchainned](table, QueryBuilder.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
+    new AlterQuery[T, R, Unspecified, WithUnchainned](table, QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 }

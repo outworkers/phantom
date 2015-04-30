@@ -100,7 +100,7 @@ object AdvancedRecipes extends AdvancedRecipes with ExampleConnector {
 
   // Like in the real world, you have now planned your queries ahead.
   // You know what you can do and what you can't based on the schema limitations.
-  def getRecipeById(id: UUID): ScalaFuture[Option[Recipe]] = {
+  def getById(id: UUID): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).one()
   }
 }

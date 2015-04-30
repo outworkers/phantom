@@ -32,44 +32,41 @@ package com.websudos.phantom.connectors
 import java.io.IOException
 import java.net.{InetAddress, InetSocketAddress, Socket}
 
-import com.datastax.driver.core.exceptions.{DriverInternalError, NoHostAvailableException}
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.{Cluster, PoolingOptions, Session}
 
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
 
-abstract class DefaultCassandraManager extends CassandraManager {
+class DefaultCassandraManager(hosts: Set[InetSocketAddress] = CassandraProperties.DefaultHosts)
+  extends CassandraManager(hosts) {
 
   val livePort = 9042
 
   private[this] var inited = false
   private[this] var _session: Session = null
 
-  private[this] def shouldAttemptReconnect(exception: Throwable): Boolean = {
-    exception match {
-      case e: NoHostAvailableException => false
-      case f: DriverInternalError => false
-      case _ => true
-    }
-  }
-
-  def clusterRef: Cluster = {
+  def clusterRef: Cluster = CassandraInitLock.synchronized {
     if (cluster.isClosed) {
       try {
         blocking {
           cluster.connect()
+          logger.info("Cluster connection successful")
+          cluster
         }
-        cluster
       } catch {
         case NonFatal(e) => {
           if (shouldAttemptReconnect(e)) {
-            createCluster()
+            logger.info(s"Renewing cluster connection after encountering error message: ${e.getMessage}")
+            cluster = createCluster()
+            cluster
           } else {
+            logger.error("Unable to reconnect to the cluster", e)
             throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
           }
         }
       }
     } else {
+      logger.info("Cluster is healthy and connection was made directly")
       cluster
     }
   }
@@ -102,10 +99,11 @@ abstract class DefaultCassandraManager extends CassandraManager {
       .addContactPoints(inets: _*)
       .withoutJMXReporting()
       .withoutMetrics()
+      .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
       .build()
   }
 
-  lazy val cluster = createCluster()
+  @volatile protected[this] var cluster: Cluster = createCluster()
 
   def session: Session = _session
 
@@ -119,15 +117,28 @@ abstract class DefaultCassandraManager extends CassandraManager {
       inited = true
     }
   }
+
 }
 
-trait CassandraManagerBuilder {
-  def apply(seq: InetAddress): CassandraManager = {
-    new DefaultCassandraManager {
+private[phantom] trait CassandraManagerBuilder {
 
+  def apply(): DefaultCassandraManager = {
+    new DefaultCassandraManager {
+      override val hosts = Set(localhost(9042))
     }
+  }
+
+  def apply(addr: InetSocketAddress): DefaultCassandraManager = {
+    new DefaultCassandraManager(Set(addr))
+  }
+
+  def apply(host: String, port: Int): DefaultCassandraManager = {
+    new DefaultCassandraManager(Set(new InetSocketAddress(host, port)))
+  }
+
+  def apply(seq: Set[InetSocketAddress]): DefaultCassandraManager = {
+    new DefaultCassandraManager(seq)
   }
 }
 
-
-object DefaultCassandraManager extends DefaultCassandraManager
+object DefaultCassandraManager extends DefaultCassandraManager(CassandraProperties.DefaultHosts)

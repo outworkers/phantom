@@ -51,6 +51,8 @@ private[phantom] object QueryBuilder {
 
   case object Alter extends AlterQueryBuilder
 
+  case object Insert extends InsertQueryBuilder
+
   def ifNotExists(qb: CQLQuery): CQLQuery = {
     qb.forcePad.append(CQLSyntax.ifNotExists)
   }
@@ -67,12 +69,24 @@ private[phantom] object QueryBuilder {
     using(qb).forcePad.append(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
   }
 
+  def ttl(seconds: String): CQLQuery = {
+    CQLQuery(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
+  }
+
   def timestamp(qb: CQLQuery, seconds: String): CQLQuery = {
-    using(qb).forcePad.append(CQLSyntax.timestamp).forcePad.append(seconds)
+    qb.pad.append(CQLSyntax.timestamp).forcePad.append(seconds)
+  }
+
+  def timestamp(seconds: String): CQLQuery = {
+    CQLQuery(CQLSyntax.timestamp).forcePad.append(seconds)
   }
 
   def consistencyLevel(qb: CQLQuery, level: String): CQLQuery = {
     using(qb).pad.append(CQLSyntax.consistency).forcePad.append(level)
+  }
+
+  def consistencyLevel(level: String): CQLQuery = {
+    CQLQuery(CQLSyntax.consistency).forcePad.append(level)
   }
 
   def keyspace(keySpace: String, qb: CQLQuery): CQLQuery = {
@@ -91,17 +105,6 @@ private[phantom] object QueryBuilder {
     }
   }
 
-  def update(tableName: String) = {
-    CQLQuery(CQLSyntax.update)
-      .forcePad.append(tableName)
-  }
-
-  def alter(tableName: String) = {
-    CQLQuery(CQLSyntax.alter)
-      .forcePad.append(CQLSyntax.table)
-      .forcePad.append(tableName)
-  }
-
   def limit(value: Int): CQLQuery = {
     CQLQuery(CQLSyntax.limit)
       .forcePad.append(value.toString)
@@ -110,16 +113,6 @@ private[phantom] object QueryBuilder {
   def limit(qb: CQLQuery, value: Int): CQLQuery = {
     qb.pad.append(CQLSyntax.limit)
       .forcePad.append(value.toString)
-  }
-
-  def insert(table: String): CQLQuery = {
-    CQLQuery(CQLSyntax.insert)
-      .forcePad.append(CQLSyntax.into)
-      .forcePad.append(table)
-  }
-
-  def insert(table: CQLQuery): CQLQuery = {
-    insert(table.queryString)
   }
 
   def delete(table: String): CQLQuery = {
@@ -135,13 +128,4 @@ private[phantom] object QueryBuilder {
       .forcePad.append(table)
   }
 
-  def insert(qb: CQLQuery, clauses: CQLQuery): CQLQuery = Utils.concat(qb, clauses)
-
-  def insertPairs(columns: List[String], values: List[String]): CQLQuery = {
-    CQLQuery.empty.wrapn(columns).forcePad.append(CQLSyntax.values).wrap(values)
-  }
-
-  def insertPairs(pairs: List[(String, String)]): CQLQuery = {
-    insertPairs(pairs.map(_._1), pairs.map(_._2))
-  }
 }

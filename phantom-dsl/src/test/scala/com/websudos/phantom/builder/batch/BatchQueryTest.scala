@@ -9,6 +9,11 @@ import com.websudos.util.testing._
 
 class BatchQueryTest extends PhantomCassandraTestSuite {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    PrimitivesJoda.insertSchema()
+  }
+
   it should "correctly execute a chain of INSERT queries" in {
     val row = gen[JodaRow]
     val row2 = gen[JodaRow]

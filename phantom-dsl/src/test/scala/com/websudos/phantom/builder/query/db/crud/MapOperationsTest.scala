@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Recipe, Recipes}
+import com.websudos.phantom.tables.{Events, SampleEvent, Recipe, Recipes}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -43,6 +43,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     Recipes.insertSchema()
+    Events.insertSchema()
   }
 
   it should "support a single item map put operation" in {
@@ -168,5 +169,22 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
         items.get shouldEqual props ++ mapItems
       }
     }
+  }
+
+  it should "support maps of nested primitives" in {
+    val event = gen[SampleEvent]
+
+    val chain = for {
+      store <- Events.store(event).future()
+      get <- Events.getById(event.id).one()
+    } yield get
+
+    chain.successful {
+      res => {
+        res.isDefined shouldEqual true
+        res.get shouldEqual event
+      }
+    }
+
   }
 }

@@ -29,9 +29,9 @@
  */
 package com.websudos.phantom.testkit.suites
 
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
-import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
@@ -51,7 +51,6 @@ trait SimpleCassandraTest extends ScalaFutures
 
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
-
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
   implicit val keySpace = KeySpace("phantom")

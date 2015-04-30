@@ -30,24 +30,58 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
+import com.websudos.phantom.iteratee.Iteratee
+
+import scala.concurrent.{ Await, Future }
+
+import org.scalatest.Matchers
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.PrimitivesJoda
+import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
 import com.websudos.util.testing._
-import org.scalatest.concurrent.ScalaFutures
 
-class IterateeBigReadTest extends BigTest with ScalaFutures {
 
-  it should "read the records found in the table" in {
-    val counter: AtomicLong = new AtomicLong(0)
-    val result = PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach {
-      r => counter.incrementAndGet()
+class IterateeInsertPerformanceTest extends BigTest with Matchers {
+
+  implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
+
+  ignore should "get result fine" in {
+    PrimitivesJoda.insertSchema()
+    val fs = for {
+      step <- 1 to 100
+      rows = Iterator.fill(10000)(gen[JodaRow])
+
+      batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+        val statement = PrimitivesJoda.insert
+          .value(_.pkey, row.pkey)
+          .value(_.intColumn, row.int)
+          .value(_.timestamp, row.bi)
+        b.add(statement)
+      })
+      w = batch.future()
+      f = w map (_ => println(s"step $step has succeed") )
+      r = Await.result(f, 200 seconds)
+    } yield f map (_ => r)
+
+
+    val combinedFuture = Future.sequence(fs) map {
+      r => PrimitivesJoda.select.count.one()
     }
 
-    result.successful {
-      query => {
+    val counter: AtomicLong = new AtomicLong(0)
+    val result = combinedFuture flatMap {
+       rs => {
+         info(s"done, inserted: $rs rows - start parsing")
+         PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
+       }
+    }
+
+    (result flatMap (_ => combinedFuture)) successful {
+      r => {
         info(s"done, reading: ${counter.get}")
-        counter.get() shouldEqual 2000000
+        counter.get() shouldEqual r
       }
     }
   }

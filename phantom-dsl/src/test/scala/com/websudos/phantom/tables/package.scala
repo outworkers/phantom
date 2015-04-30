@@ -167,6 +167,21 @@ package object tables {
     }
   }
 
+  implicit object SampleEventSampler extends Sample[SampleEvent] {
+    def sample: SampleEvent = {
+      SampleEvent(
+        gen[UUID],
+        Map(
+          gen[Long] -> gen[DateTime],
+          gen[Long] -> gen[DateTime],
+          gen[Long] -> gen[DateTime],
+          gen[Long] -> gen[DateTime],
+          gen[Long] -> gen[DateTime]
+        )
+      )
+    }
+  }
+
   implicit object TestRowSampler extends Sample[TestRow] {
     def sample: TestRow = TestRow(
       gen[String],

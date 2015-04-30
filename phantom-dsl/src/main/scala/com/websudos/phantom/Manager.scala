@@ -40,11 +40,10 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.ExecutionContext
 
-
 sealed class AutoCreate extends CreateImplicits {
 
   protected[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
-  protected[this] lazy val tableList = _tables.toList
+  private[phantom] lazy val tableList = _tables.toList
 
   def autoinit()(implicit keySpace: KeySpace): ExecutableStatementList = {
     new ExecutableStatementList(creations())
