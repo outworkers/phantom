@@ -39,11 +39,13 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.duration._
-import scala.concurrent.{Future, Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
+
+  private[phantom] def addTable() = Manager.addTable(this)
 
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.ready(create.ifNotExists().future(), 3.seconds)
@@ -192,18 +194,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
-  def createIndexes(): Seq[String] = {
-    secondaryKeys.map(k => {
-      val query = s"CREATE INDEX IF NOT EXISTS ${tableName}_${k.name} ON $tableName (${k.name});"
-      logger.info("Auto-generating CQL queries for secondary indexes")
-      logger.info(query)
-      query
-    })
-  }
-
   Lock.synchronized {
-
-    Manager.addTable(this)
 
     val instanceMirror = cm.reflect(this)
     val selfType = instanceMirror.symbol.toType

@@ -29,27 +29,34 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
+import scala.concurrent.{Await, blocking}
+import scala.concurrent.duration._
 import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
+import scala.util.Try
+
 class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    SecondaryIndexTable.insertSchema()
+
+    blocking {
+      Try {
+        session.execute(s"DROP TABLE ${keySpace.name}.${SecondaryIndexTable.tableName}")
+      }
+    }
+
+    Await.ready(SecondaryIndexTable.create.ifNotExists().future(), 4.seconds)
   }
 
   it should "allow fetching a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .future()
+      insert <- SecondaryIndexTable.store(sample).future()
       select <- SecondaryIndexTable.select.where(_.id eqs sample.primary).one
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
     } yield (select, select2)
@@ -74,14 +81,9 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     val sample = gen[SecondaryIndexRecord]
 
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .execute()
-
+      insert <- SecondaryIndexTable.store(sample).execute()
       select <- SecondaryIndexTable.select.where(_.id eqs sample.primary).get
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering.get()
+      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().get()
     } yield (select, select2)
 
     chain.successful {
@@ -103,11 +105,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "not throw an error if filtering is not enabled when querying by secondary keys" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .future()
+      insert <- SecondaryIndexTable.store(sample).future()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield select2
 
@@ -122,11 +120,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "not throw an error if filtering is not enabled when querying by secondary keys with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .execute()
+      insert <- SecondaryIndexTable.store(sample).execute()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
     } yield select2
 
@@ -138,15 +132,11 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "throw an error when updating a record by it's secondary key" in {
+  it should "throw an error when updating a record by its secondary key" in {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .future()
+      insert <- SecondaryIndexTable.store(sample).future()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
       update <- SecondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).future()
       select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
@@ -155,15 +145,11 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     chain.failing[InvalidQueryException]
   }
 
-  it should "throw an error when updating a record by it's secondary key with Twitter Futures" in {
+  it should "throw an error when updating a record by its secondary key with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .execute()
+      insert <- SecondaryIndexTable.store(sample).execute()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
       update <- SecondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).execute()
       select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
@@ -176,11 +162,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "throw an error when deleting a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .future()
+      insert <- SecondaryIndexTable.store(sample).future()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
       delete <- SecondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
       select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
@@ -192,11 +174,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "throw an error when deleting a record by its secondary index with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.insert
-        .value(_.id, sample.primary)
-        .value(_.secondary, sample.secondary)
-        .value(_.name, sample.name)
-        .execute()
+      insert <- SecondaryIndexTable.store(sample).execute()
       select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
       delete <- SecondaryIndexTable.delete.where(_.secondary eqs sample.secondary).execute()
       select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()

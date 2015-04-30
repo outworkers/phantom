@@ -29,16 +29,18 @@
  */
 package com.websudos.phantom.builder.query
 
+import java.util.concurrent.TimeUnit
+
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
+import scala.concurrent.{Await => ScalaAwait, Future => ScalaFuture, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
 import org.joda.time.Seconds
 
-import com.twitter.util.{Future => TwitterFuture, StorageUnit}
+import com.twitter.util.{Await => TwitterAwait, Future => TwitterFuture, Duration, StorageUnit}
 import com.websudos.phantom.{Manager, CassandraTable}
 import com.websudos.phantom.builder._
 
@@ -328,22 +330,44 @@ class CreateQuery[
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
 
-    val indexes = table.secondaryKeys map {
-      key => scalaQueryStringExecuteToFuture(QueryBuilder.Create.index(table.tableName, keySpace.name, key.name).queryString)
-    }
-
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
-    ScalaFuture.sequence(indexes ++ Seq(scalaQueryStringExecuteToFuture(qb.terminate().queryString))) map { _.head }
+    if (table.secondaryKeys.isEmpty) {
+      scalaQueryStringExecuteToFuture(qb.terminate().queryString)
+    } else {
+
+      super.future() flatMap {
+        res => {
+
+          val indexes = table.secondaryKeys map {
+            key => scalaQueryStringExecuteToFuture(QueryBuilder.Create.index(table.tableName, keySpace.name, key.name).queryString)
+          }
+
+          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          ScalaFuture.sequence(indexes) map { _ => res }
+        }
+      }
+    }
   }
 
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
 
-    val indexes = table.secondaryKeys map {
-      key => twitterQueryStringExecuteToFuture(QueryBuilder.Create.index(table.tableName, keySpace.name, key.name).queryString)
-    }
+    if (table.secondaryKeys.isEmpty) {
+      twitterQueryStringExecuteToFuture(qb.terminate().queryString)
+    } else {
 
-    TwitterFuture.collect(indexes ++ Seq(twitterQueryStringExecuteToFuture(qb.terminate().queryString))) map { _.head }
+      super.execute() flatMap {
+        res => {
+
+          val indexes = table.secondaryKeys map {
+            key => twitterQueryStringExecuteToFuture(QueryBuilder.Create.index(table.tableName, keySpace.name, key.name).queryString)
+          }
+
+          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          TwitterFuture.collect(indexes) map {_ => res}
+        }
+      }
+    }
   }
 
 }

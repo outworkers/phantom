@@ -30,18 +30,18 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
-import scala.collection.JavaConverters._
-import scala.concurrent._
-import org.slf4j.LoggerFactory
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.{Cluster, PoolingOptions, Session}
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
-import com.websudos.phantom.connectors.{EmptyClusterStoreException, EmptyPortListException}
-
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
 import com.twitter.util.{Await, Future, _}
+import com.twitter.conversions.time._
+import com.websudos.phantom.connectors.{ConnectionUtils, EmptyClusterStoreException, EmptyPortListException}
 
+import scala.collection.JavaConverters._
+import scala.concurrent._
+import scala.util.control.NonFatal
 
 
 private[zookeeper] case object Lock
@@ -68,7 +68,9 @@ private[zookeeper] case object Lock
  * cause the initialisation process to start. Any thread thereafter will simply read the initialised ready-to-use version. Any attempt to read values directly
  * before they are initialised will throw an EmptyClusterStoreException.
  */
-trait ClusterStore {
+trait ClusterStore extends ConnectionUtils {
+
+  implicit def duration: Duration
 
   protected[this] var clusterStore: Cluster = null
   protected[this] var zkClientStore: ZkClient = null
@@ -77,8 +79,6 @@ trait ClusterStore {
 
 
   private[this] var inited = false
-
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
 
   def parsePorts(data: String): Seq[InetSocketAddress]
 
@@ -111,7 +111,7 @@ trait ClusterStore {
 
       val res = Await.result(zkClientStore.connect(), timeout)
 
-      createCluster()
+      clusterStore = createCluster()
 
       _session = blocking {
         val s = clusterStore.connect()
@@ -125,22 +125,22 @@ trait ClusterStore {
   }
 
   @throws[EmptyPortListException]
-  protected[this] def createCluster()(implicit timeout: Duration): Unit = {
-    val ports = Await.result(hostnamePortPairs, timeout)
-
+  protected[this] def createCluster(): Cluster = {
+    val ports = Await.result(hostnamePortPairs, duration)
     if (ports.isEmpty) {
       throw new EmptyPortListException
     } else {
-      clusterStore = Cluster.builder()
+      Cluster.builder()
         .addContactPointsWithPorts(ports.asJava)
         .withoutJMXReporting()
         .withoutMetrics()
+        .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
         .build()
     }
   }
 
   @throws[EmptyClusterStoreException]
-  def cluster()(implicit duration: Duration): Cluster = {
+  def cluster(): Cluster = {
     if (isInited) {
       if (clusterStore.isClosed) {
         createCluster()
@@ -150,6 +150,34 @@ trait ClusterStore {
       throw new EmptyClusterStoreException
     }
   }
+
+  @throws[EmptyClusterStoreException]
+  def clusterRef(): Cluster = CassandraInitLock.synchronized {
+    if (clusterStore.isClosed) {
+      try {
+        blocking {
+          clusterStore.connect()
+          logger.info("Cluster connection successful")
+          clusterStore
+        }
+      } catch {
+        case NonFatal(e) => {
+          if (shouldAttemptReconnect(e)) {
+            logger.info(s"Renewing cluster connection after encountering error message: ${e.getMessage}")
+            clusterStore = createCluster()
+            clusterStore
+          } else {
+            logger.error("Unable to reconnect to the cluster", e)
+            throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
+          }
+        }
+      }
+    } else {
+      logger.info("Cluster is healthy and connection was made directly")
+      clusterStore
+    }
+  }
+
 
   @throws[EmptyClusterStoreException]
   def session: Session = {
@@ -178,6 +206,7 @@ class DefaultClusterStore extends ClusterStore {
     }.toSeq
   }
 
+  override implicit def duration: Duration = 3.seconds
 }
 
 object DefaultClusterStore extends DefaultClusterStore

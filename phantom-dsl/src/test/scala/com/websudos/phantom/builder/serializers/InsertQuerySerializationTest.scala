@@ -29,8 +29,54 @@
  */
 package com.websudos.phantom.builder.serializers
 
-import org.scalatest.{FlatSpec, Matchers}
+import com.websudos.phantom.builder.query.QueryBuilderTest
+import com.websudos.phantom.tables.Recipes
 
-class InsertQuerySerializationTest extends FlatSpec with Matchers {
+class InsertQuerySerializationTest extends QueryBuilderTest {
+
+  "An INSERT query" - {
+    "should correctly chain the addition of columns and values to the builder" - {
+
+      "should serialize the addition of a single value" in {
+        val query = Recipes.insert.value(_.url, "test").queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test')"
+      }
+
+      "should serialize the addition of multiple values" in {
+        val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test'])"
+      }
+    }
+
+    "should serialize lightweight transaction clauses irrespective of position in the DSL chain" - {
+
+      "should append a lightweight clause to a single value query" in {
+        val query = Recipes.insert.value(_.url, "test").ifNotExists().queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS"
+      }
+
+      "should append a lightweight clause to a double value query" in {
+        val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).ifNotExists().queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS"
+      }
+
+      "should append a lightweight clause to a single value query if used before the value set" in {
+        val query = Recipes.insert.ifNotExists().value(_.url, "test").queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS"
+      }
+
+      "should append a lightweight clause to a double value query if used before the value set" in {
+        val query = Recipes.insert.ifNotExists().value(_.url, "test").value(_.ingredients, List("test")).queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS"
+      }
+
+    }
+  }
 
 }

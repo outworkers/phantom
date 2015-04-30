@@ -36,6 +36,31 @@ import com.websudos.phantom.builder.clauses.WhereClause
 
 import scala.annotation.implicitNotFound
 
+abstract class RootQuery[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Status <: ConsistencyBound
+](table: Table, val qb: CQLQuery) extends ExecutableStatement {
+
+  protected[this] type QueryType[
+    T <: CassandraTable[T, _],
+    R,
+    S <: ConsistencyBound
+  ] <: RootQuery[T, R, S]
+
+  protected[this] def create[
+    T <: CassandraTable[T, _],
+    R,
+    S <: ConsistencyBound
+  ](t: T, q: CQLQuery): QueryType[T, R, S]
+
+
+  @implicitNotFound("You have already specified a ConsistencyLevel for this query")
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Specified] = {
+    create(table, QueryBuilder.consistencyLevel(qb, level.toString))
+  }
+}
+
 
 abstract class Query[
   Table <: CassandraTable[Table, _],
@@ -44,7 +69,7 @@ abstract class Query[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
+](table: Table, override val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -65,7 +90,7 @@ abstract class Query[
   ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  final def consistencyLevel(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
+  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
     create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), row)
   }
 

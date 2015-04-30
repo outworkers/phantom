@@ -145,4 +145,18 @@ abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : Primitive
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
   override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
+
+  override def optional(r: Row): Try[Map[KeyType, ValueType]] = {
+    if (r.isNull(name)) {
+      Success(Map.empty[KeyType, ValueType])
+    } else {
+      Try(
+        r.getMap(name, keyPrimitive.clz.asInstanceOf[Class[KeyType]],
+          Primitive[String].clz.asInstanceOf[Class[String]]
+        ).asScala.toMap map {
+          case (k, v) => (k, serializer.fromString(v))
+        }
+      )
+    }
+  }
 }

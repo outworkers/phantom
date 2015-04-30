@@ -30,10 +30,9 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
-import org.joda.time.DateTime
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
+import org.joda.time.DateTime
 
 case class Recipe(
   url: String,
@@ -89,5 +88,32 @@ object Recipes extends Recipes with PhantomCassandraConnector {
       .value(_.props, recipe.props)
       .value(_.uid, recipe.uid)
       .value(_.servings, recipe.servings)
+  }
+}
+
+
+case class SampleEvent(id: UUID, map: Map[Long, DateTime])
+
+sealed class Events extends CassandraTable[Events, SampleEvent] with PhantomCassandraConnector {
+  
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+
+  object map extends MapColumn[Events, SampleEvent, Long, DateTime](this)
+
+  def fromRow(row: Row): SampleEvent = SampleEvent(
+    id(row),
+    map(row)
+  )
+}
+
+object Events extends Events {
+
+  def store(event: SampleEvent): InsertQuery.Default[Events, SampleEvent] = {
+    insert.value(_.id, event.id)
+      .value(_.map, event.map)
+  }
+
+  def getById(id: UUID) = {
+    select.where(_.id eqs id)
   }
 }
