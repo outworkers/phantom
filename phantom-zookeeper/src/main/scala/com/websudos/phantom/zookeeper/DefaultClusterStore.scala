@@ -1,39 +1,50 @@
 /*
+ * Copyright 2013-2015 Websudos, Limited.
  *
- *  * Copyright 2014 websudos ltd.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.{Cluster, PoolingOptions, Session}
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
 import com.twitter.util.{Await, Future, _}
-import org.slf4j.LoggerFactory
+import com.twitter.conversions.time._
+import com.websudos.phantom.connectors.{ConnectionUtils, EmptyClusterStoreException, EmptyPortListException}
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
+import scala.util.control.NonFatal
+
 
 private[zookeeper] case object Lock
-
-class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
-
-class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
 
 /**
  * This is a simple implementation that will allow for singleton synchronisation of Cassandra clusters and sessions.
@@ -57,17 +68,17 @@ class EmptyPortListException extends RuntimeException("Cannot build a cluster fr
  * cause the initialisation process to start. Any thread thereafter will simply read the initialised ready-to-use version. Any attempt to read values directly
  * before they are initialised will throw an EmptyClusterStoreException.
  */
-trait ClusterStore {
+trait ClusterStore extends ConnectionUtils {
+
+  implicit def duration: Duration
 
   protected[this] var clusterStore: Cluster = null
   protected[this] var zkClientStore: ZkClient = null
   protected[this] var _session: Session = null
-  private[this] val sessions = new scala.collection.mutable.LinkedHashMap[String, Session]() with scala.collection.mutable.SynchronizedMap[String, Session]
+  private[this] val sessions = new ConcurrentLinkedHashMap.Builder[String, Session]().maximumWeightedCapacity(100).build()
 
 
   private[this] var inited = false
-
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom.zookeeper")
 
   def parsePorts(data: String): Seq[InetSocketAddress]
 
@@ -83,7 +94,7 @@ trait ClusterStore {
     inited
   }
 
-  def setInited(value: Boolean) = Lock.synchronized {
+  def setInited(value: Boolean): Unit = Lock.synchronized {
     inited = value
   }
 
@@ -100,7 +111,7 @@ trait ClusterStore {
 
       val res = Await.result(zkClientStore.connect(), timeout)
 
-      createCluster()
+      clusterStore = createCluster()
 
       _session = blocking {
         val s = clusterStore.connect()
@@ -114,33 +125,59 @@ trait ClusterStore {
   }
 
   @throws[EmptyPortListException]
-  protected[this] def createCluster()(implicit timeout: Duration): Cluster = {
-    val ports = Await.result(hostnamePortPairs, timeout)
-
+  protected[this] def createCluster(): Cluster = {
+    val ports = Await.result(hostnamePortPairs, duration)
     if (ports.isEmpty) {
       throw new EmptyPortListException
     } else {
-      clusterStore = Cluster.builder()
+      Cluster.builder()
         .addContactPointsWithPorts(ports.asJava)
         .withoutJMXReporting()
         .withoutMetrics()
+        .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
         .build()
-      clusterStore
     }
   }
 
   @throws[EmptyClusterStoreException]
-  def cluster()(implicit duration: Duration): Cluster = {
+  def cluster(): Cluster = {
     if (isInited) {
       if (clusterStore.isClosed) {
         createCluster()
-      } else {
-        clusterStore
       }
+      clusterStore
     } else {
       throw new EmptyClusterStoreException
     }
   }
+
+  @throws[EmptyClusterStoreException]
+  def clusterRef(): Cluster = CassandraInitLock.synchronized {
+    if (clusterStore.isClosed) {
+      try {
+        blocking {
+          clusterStore.connect()
+          logger.info("Cluster connection successful")
+          clusterStore
+        }
+      } catch {
+        case NonFatal(e) => {
+          if (shouldAttemptReconnect(e)) {
+            logger.info(s"Renewing cluster connection after encountering error message: ${e.getMessage}")
+            clusterStore = createCluster()
+            clusterStore
+          } else {
+            logger.error("Unable to reconnect to the cluster", e)
+            throw new Exception("Unable to recreate cluster connection. Cluster is unavailable", e)
+          }
+        }
+      }
+    } else {
+      logger.info("Cluster is healthy and connection was made directly")
+      clusterStore
+    }
+  }
+
 
   @throws[EmptyClusterStoreException]
   def session: Session = {
@@ -169,6 +206,7 @@ class DefaultClusterStore extends ClusterStore {
     }.toSeq
   }
 
+  override implicit def duration: Duration = 3.seconds
 }
 
 object DefaultClusterStore extends DefaultClusterStore

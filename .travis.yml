@@ -4,7 +4,7 @@ language: scala
 
 scala:
  - "2.10.4"
- - "2.11.4"
+ - "2.11.5"
 
 services:
   - cassandra
@@ -12,7 +12,6 @@ services:
 # Emails to notify
 notifications:
   slack:
-    - newzly:nfmIGqhmrfJb6pIH6I50mnCO
     - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
     - dev@websudos.co.uk
@@ -27,5 +26,13 @@ jdk:
   - oraclejdk7
   - openjdk7
 
-script: "sbt test"
+before-script:
+  //- rm phantom-dsl/src/main/resources/
+
+script:
+  - sbt clean coverage test &&
+    sbt coverageAggregate
+
+after_success:
+  - sbt coveralls
 
