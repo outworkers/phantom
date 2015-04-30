@@ -50,6 +50,7 @@ sealed trait CassandraWrites[T] {
    * @return A string that can be directly appended to a CQL query.
    */
   def asCql(v: T): String
+
   def cassandraType: String
 }
 
