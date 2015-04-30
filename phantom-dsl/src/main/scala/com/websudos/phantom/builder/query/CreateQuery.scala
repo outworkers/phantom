@@ -334,9 +334,8 @@ class CreateQuery[
 
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
-
     scalaQueryStringExecuteToFuture(qb.terminate().queryString) flatMap {
-      res => ScalaFuture.sequence(indexes) map { _.head }
+      res => ScalaFuture.sequence(indexes) map { _ => res }
     }
 
   }
@@ -348,7 +347,7 @@ class CreateQuery[
     }
 
     twitterQueryStringExecuteToFuture(qb.terminate().queryString) flatMap {
-      res => TwitterFuture.collect(indexes) map { _.head }
+      res => TwitterFuture.collect(indexes) map { _ => res }
     }
   }
 

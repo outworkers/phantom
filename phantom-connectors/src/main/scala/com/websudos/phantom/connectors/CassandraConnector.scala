@@ -52,7 +52,7 @@ trait CassandraConnector {
 
   implicit def keySpace: KeySpace
 
-  def manager: CassandraManager = DefaultCassandraManager
+  val manager: CassandraManager = DefaultCassandraManager
 
   implicit def session: Session = manager.session
 

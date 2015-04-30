@@ -219,7 +219,8 @@ object PhantomBuild extends Build {
   ).configs(PerformanceTest).settings(
     name := "phantom-connectors",
     libraryDependencies ++= Seq(
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
     )
   )
 

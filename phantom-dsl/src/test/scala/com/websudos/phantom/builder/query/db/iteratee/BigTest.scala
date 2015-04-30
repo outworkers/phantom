@@ -49,5 +49,5 @@ object BigTestManager extends DefaultCassandraManager(CassandraProperties.Localh
 }
 
 trait BigTest extends PhantomCassandraTestSuite {
-  override def manager = BigTestManager
+  override val manager = BigTestManager
 }
