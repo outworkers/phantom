@@ -27,11 +27,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.dsl
+package com.websudos.phantom.base
 
-import org.scalatest.{ FlatSpec, Matchers, ParallelTestExecution }
+import com.websudos.phantom.tables.{Articles, Primitives}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import com.websudos.phantom.tables.{ Articles, Primitives }
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecution with GeneratorDrivenPropertyChecks {
 

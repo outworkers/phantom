@@ -27,16 +27,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.thrift
-
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
+package com.websudos.phantom.thrift.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class ThriftColumnTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
