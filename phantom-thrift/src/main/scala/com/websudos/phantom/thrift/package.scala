@@ -30,14 +30,9 @@
 
 package com.websudos.phantom
 
-import com.datastax.driver.core.Row
-import com.twitter.scrooge.ThriftStructSerializer
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.thrift.columns.RootThriftPrimitive
 
-import scala.util.Try
-
-private[phantom] trait ThriftTypeDefinitions {
+package object thrift {
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
   type ThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftColumn[T, R, Model]
   type ThriftSetColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
@@ -45,26 +40,8 @@ private[phantom] trait ThriftTypeDefinitions {
   type ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
 
   type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
-}
 
-package object thrift extends ThriftTypeDefinitions {
-
-  implicit def thriftPrimitive[T <: ThriftStruct](obj: T)(implicit serializer: ThriftStructSerializer[T]): Primitive[T] = new Primitive[T] {
-
-    override type PrimitiveType = java.lang.String
-
-    override def fromRow(column: String, row: Row): Try[T] = nullCheck(column, row) {
-      existing => serializer.fromString(row.getString(column))
-    }
-
-    override def cassandraType: String = CQLSyntax.Types.Text
-
-    override def fromString(value: String): T = serializer.fromString(value)
-
-    override def asCql(value: T): String = serializer.toString(value)
-
-    override def clz: Class[java.lang.String] = classOf[java.lang.String]
-  }
+  type ThriftPrimitive[T <: ThriftStruct] = RootThriftPrimitive[T]
 
 }
 

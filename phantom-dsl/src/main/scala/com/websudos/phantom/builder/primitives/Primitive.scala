@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.Row
-import com.twitter.io.Charsets
+import com.datastax.driver.core.utils.Bytes
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
@@ -314,9 +314,9 @@ trait DefaultPrimitives {
       r => r.getBytes(column)
     }
 
-    override def asCql(value: ByteBuffer): String = new String(value.array())
+    override def asCql(value: ByteBuffer): String = Bytes.toHexString(value.array())
 
-    override def fromString(value: String): ByteBuffer = ByteBuffer.wrap(value.getBytes(Charsets.Utf8))
+    override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
