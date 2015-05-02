@@ -50,7 +50,7 @@ object PhantomBuild extends Build {
 
   val publishUrl = "http://maven.websudos.co.uk"
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
+  val mavnePublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -92,7 +92,7 @@ object PhantomBuild extends Build {
     }
   }
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  val publishSettings : Seq[Def.Setting[_]] = Seq(
     credentials ++= Seq(
       Credentials(Path.userHome / ".ivy2" / ".credentials")
     ),
@@ -113,7 +113,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.0",
+    version := "1.8.1",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.4", "2.11.6"),
     resolvers ++= Seq(

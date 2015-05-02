@@ -107,3 +107,67 @@ object ThriftColumnTable extends ThriftColumnTable with PhantomCassandraConnecto
       .value(_.thriftList, sample.thriftList)
   }
 }
+
+
+sealed class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, Output] {
+
+  object id extends UUIDColumn(this)
+  object name extends StringColumn(this)
+
+  object ref extends ThriftColumn[ThriftIndexedTable, Output, ThriftTest](this) with PartitionKey[ThriftTest] {
+    val serializer = new CompactThriftSerializer[ThriftTest] {
+      val codec = ThriftTest
+    }
+  }
+
+  object thriftSet extends ThriftSetColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+    val serializer = new CompactThriftSerializer[ThriftTest] {
+      val codec = ThriftTest
+    }
+  }
+
+  object thriftList extends ThriftListColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+    val serializer = new CompactThriftSerializer[ThriftTest] {
+      val codec = ThriftTest
+    }
+  }
+
+  object thriftMap extends ThriftMapColumn[ThriftIndexedTable, Output, String, ThriftTest](this) {
+    val serializer = new CompactThriftSerializer[ThriftTest] {
+      val codec = ThriftTest
+    }
+  }
+
+  object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+    val serializer = new CompactThriftSerializer[ThriftTest] {
+      val codec = ThriftTest
+    }
+  }
+
+  def fromRow(row: Row): Output = {
+    Output(
+      id(row),
+      name(row),
+      ref(row),
+      thriftSet(row),
+      thriftList(row),
+      thriftMap(row),
+      optionalThrift(row)
+    )
+  }
+}
+
+object ThriftIndexedTable extends ThriftIndexedTable with PhantomCassandraConnector {
+  override val tableName = "thrift_indexed_table"
+
+  def store(sample: Output): InsertQuery.Default[ThriftIndexedTable, Output] = {
+    insert
+      .value(_.id, sample.id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample.struct)
+      .value(_.thriftSet, sample.thriftSet)
+      .value(_.thriftList, sample.thriftList)
+      .value(_.optionalThrift, sample.optThrift)
+      .value(_.thriftMap, sample.thriftMap)
+  }
+}

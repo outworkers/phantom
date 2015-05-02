@@ -39,7 +39,7 @@ import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
 import com.datastax.driver.core.Row
-import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct}
+import com.twitter.scrooge.{ThriftStructSerializer, CompactThriftSerializer, ThriftStruct}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
 import com.websudos.phantom.CassandraTable
@@ -159,4 +159,23 @@ abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : Primitive
       )
     }
   }
+}
+
+abstract class RootThriftPrimitive[T <: ThriftStruct] extends Primitive[T] {
+
+  def serializer: ThriftStructSerializer[T]
+
+  override type PrimitiveType = java.lang.String
+
+  override def fromRow(column: String, row: Row): Try[T] = nullCheck(column, row) {
+    existing => serializer.fromString(row.getString(column))
+  }
+
+  override def cassandraType: String = CQLSyntax.Types.Text
+
+  override def fromString(value: String): T = serializer.fromString(value)
+
+  override def asCql(value: T): String = Primitive[String].asCql(serializer.toString(value))
+
+  override def clz: Class[java.lang.String] = classOf[java.lang.String]
 }

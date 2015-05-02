@@ -27,15 +27,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.dsl
+package com.websudos.phantom.base
 
 import org.scalatest.{FlatSpec, Matchers}
+import com.websudos.phantom.dsl._
 
 trait Test {
   private[this] lazy val _name: String = {
     val packagePath = getClass.getName.split("\\.")
     val fullName = packagePath(packagePath.length - 1)
-
 
     val index = fullName.indexOf("$$anonfun")
 
@@ -53,7 +53,7 @@ trait Test {
 
 case class CustomRecord(name: String, mp: Map[String, String])
 
-class TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
+trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   object record extends StringColumn(this) with PartitionKey[String]
   object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
@@ -66,30 +66,13 @@ object TestTableNames extends TestTableNames
 
 object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTableNames)
 
-
-class TestNames {
-
-  private[this] lazy val _name: String = {
-    val packagePath = getClass.getName.split("\\.")
-    val fullName = packagePath(packagePath.length - 1)
-
-    val index = fullName.indexOf("$$anonfun")
-    val str = fullName.substring(index + 9, fullName.length)
-    str.replaceAll("(\\$\\d+\\$)", "")
-  }
-  def name: String = _name
-}
+trait TestNames extends TestTableNames
 
 class Parent extends TestNames
 class Parent2 extends Parent
 
 class ClassNameExtraction extends FlatSpec with Matchers {
 
-  it should "get rid of extra naming inside the object" in {
-    val test = "$$anonfun23primitives3key$"
-    val res = test.replaceAll("\\$+", "").replaceAll("(anonfun\\d+.+\\d+)", "")
-    res shouldEqual "key"
-  }
 
   it should "correctly name objects inside record classes " in {
     TestTableNames.record.name shouldEqual "record"
@@ -105,20 +88,5 @@ class ClassNameExtraction extends FlatSpec with Matchers {
 
   it should "correctly extract the object name " in {
     Test.name shouldEqual "Test"
-  }
-
-  it should "correctly extract the table name" in {
-    object TestNames extends TestNames
-    TestNames.name shouldEqual "TestNames"
-  }
-
-  it should "correctly extract the parent name" in {
-    object Parent extends Parent
-    Parent.name shouldEqual "Parent"
-  }
-
-  it should "correctly extract the column names" in {
-    object Parent2 extends Parent2
-    Parent2.name shouldEqual "Parent2"
   }
 }
