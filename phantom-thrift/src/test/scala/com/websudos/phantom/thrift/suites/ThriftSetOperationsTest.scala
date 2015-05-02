@@ -27,18 +27,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.thrift
-
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
+package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftColumnTable
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
-
-class ThriftMapColumnTest extends PhantomCassandraTestSuite {
+class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -47,33 +45,25 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
   }
 
-  it should "put an item to a thrift map column" in {
+  it should "add an item to a thrift set column" in {
+
     val id = gen[UUID]
 
     val sample = gen[ThriftTest]
 
     val sample2 = gen[ThriftTest]
 
-    val map = Map(gen[String] -> sample)
-    val toAdd = gen[String] -> sample2
-    val expected = map + toAdd
-
-
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-
       .future()
-
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
+      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select
     }
@@ -81,76 +71,29 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldBe expected
+        items.get shouldBe Set(sample, sample2)
       }
     }
   }
 
-  it should "put an item to a thrift map column with Twitter Futures" in {
+  it should "add several items a thrift set column" in {
+
     val id = gen[UUID]
-
     val sample = gen[ThriftTest]
-
     val sample2 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = gen[String] -> sample2
-    val expected = map + toAdd
-
-
-    val insert = ThriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-      .execute()
-
-
-    val operation = for {
-      insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.isDefined shouldBe true
-        items.get shouldBe expected
-      }
-    }
-  }
-
-
-  it should "put several items to a thrift map column" in {
-    val id = gen[UUID]
-
-    val sample = gen[ThriftTest]
-
-    val sample2 = gen[ThriftTest]
-
     val sample3 = gen[ThriftTest]
 
-    val map = Map(gen[String] -> sample)
-    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
-    val expected = map ++ toAdd
-
-
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-
       .future()
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
+      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select
     }
@@ -158,43 +101,65 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldBe expected
+        items.get shouldBe Set(sample, sample2, sample3)
       }
     }
   }
 
-  it should "put several items to a thrift map column with Twitter Futures" in {
+  it should "remove one item from a thrift set column" in {
+
     val id = gen[UUID]
-
     val sample = gen[ThriftTest]
-
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
-    val expected = map ++ toAdd
-
 
     val insert = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-      .execute()
+      .value(_.thriftSet, Set(sample, sample2, sample3))
+      .future()
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
+      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
     operation.successful {
       items => {
         items.isDefined shouldBe true
-        items.get shouldBe expected
+        items.get shouldBe Set(sample, sample2)
+      }
+    }
+  }
+
+
+  it should "remove several items from thrift set column" in {
+    val id = gen[UUID]
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
+    val sample3 = gen[ThriftTest]
+
+    val insert = ThriftColumnTable.insert
+      .value(_.id, id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, Set(sample, sample2, sample3))
+      .future()
+
+    val operation = for {
+      insertDone <- insert
+      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet removeAll Set(sample2, sample3)).future()
+      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
+    } yield {
+      select
+    }
+
+    operation.successful {
+      items => {
+        items.isDefined shouldBe true
+        items.get shouldBe Set(sample)
       }
     }
   }

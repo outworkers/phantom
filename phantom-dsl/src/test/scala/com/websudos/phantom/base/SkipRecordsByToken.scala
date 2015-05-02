@@ -27,9 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.dsl
+package com.websudos.phantom.base
 
 import com.websudos.phantom.tables.{Article, Articles}
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
