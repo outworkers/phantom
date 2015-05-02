@@ -27,14 +27,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.websudos.phantom.thrift
 
 import java.util.UUID
 
 import com.websudos.phantom.tables.Output
 import com.websudos.util.testing._
 
-package object thrift extends ThriftTypeDefinitions {
+package object suites {
+
+  type ThriftTest = com.websudos.phantom.thrift.ThriftTest
 
   implicit object OutputSample extends Sample[Output] {
     def sample: Output = {
