@@ -41,8 +41,8 @@ Cassandra, otherwise you will get an error when phantom tries to start the embed
 <ul>
     <li><a href="#new-querybuilder">1.8.0: A new QueryBuilder, written from the ground up, in idiomatic Scala</a></li>
     <li><a href="#alter-queries">1.8.0: Added support for type-safe ALTER queries</a></li>
-    <li><a href="#advanced-cql-support">1.8.0:Support for advanced CQL options</a></li> 
-    <li><a href="#prepared-statements">1.8.0: Type safe prepared statements</a></li>
+    <li><a href="#advanced-cql-support">1.8.0: Support for advanced CQL options</a></li> 
+    <li><a href="#prepared-statements">1.9.0: Type safe prepared statements</a></li>
     <li><a href="#automigration">1.9.0: Automated Schema migrations</li>
     <li><a href="#udts">2.0.0: Type safe user defined types</li>
     <li>
@@ -960,9 +960,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.websudos.phantom.dsl._
 
-sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] with LongOrderKey[ExampleRecod2, ExampleRecord] {
+sealed class ExampleRecord2 extends CassandraTable[ExampleRecord2, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object order_id extends LongColumn(this) with ClusteringOrder[Long] with Descending
   object timestamp extends DateTimeColumn(this)
   object name extends StringColumn(this)
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
@@ -1034,9 +1035,10 @@ A table can have only one ```PartitionKey``` but several ```PrimaryKey``` defini
 
 import com.websudos.phantom.dsl._
 
-sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecod3, ExampleRecord] {
+sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object order_id extends LongColumn(this) with ClusteringOrder[Long] with Descending
   object timestamp extends DateTimeColumn(this) with PrimaryKey[DateTime]
   object name extends StringColumn(this) with PrimaryKey[String]
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
@@ -1064,9 +1066,10 @@ The CQL 3 schema for secondary indexes can also be auto-generated with ```Exampl
 
 import com.websudos.phantom.dsl._
 
-sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] with LongOrderKey[ExampleRecod4, ExampleRecord] {
+sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object order_id extends LongColumn(this) with ClusteringOrder[Long] with Descending
   object timestamp extends DateTimeColumn(this) with Index[DateTime]
   object name extends StringColumn(this) with Index[String]
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
@@ -1099,9 +1102,10 @@ import scala.concurrent.duration._
 import com.websudos.phantom.dsl._
 
 
-sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] with LongOrderKey[ExampleRecord3, ExampleRecord] {
+sealed class ExampleRecord3 extends CassandraTable[ExampleRecord3, ExampleModel] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object order_id extends LongColumn(this) with ClusteringOrder[Long] with Descending
   object timestamp extends DateTimeColumn(this) with PrimaryKey[DateTime]
   object name extends StringColumn(this) with PrimaryKey[String]
   object props extends MapColumn[ExampleRecord2, ExampleRecord, String, String](this)
