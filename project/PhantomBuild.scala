@@ -87,7 +87,7 @@ object PhantomBuild extends Build {
 
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
-      case "2.10.4" => "3.0-M1"
+      case "2.10.5" => "3.0-M1"
       case _ => "3.0-M2"
     }
   }
@@ -115,7 +115,7 @@ object PhantomBuild extends Build {
     organization := "com.websudos",
     version := "1.8.1",
     scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.4", "2.11.6"),
+    crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",

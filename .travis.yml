@@ -3,7 +3,7 @@
 language: scala
 
 scala:
- - "2.10.4"
+ - "2.10.5"
  - "2.11.5"
 
 services:
@@ -26,8 +26,11 @@ jdk:
   - oraclejdk7
   - openjdk7
 
-before-script:
-  //- rm phantom-dsl/src/main/resources/
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+
+before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
 script:
   - sbt clean coverage test &&
