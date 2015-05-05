@@ -33,12 +33,12 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.6.12"
+  val UtilVersion = "0.7.2"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.1"
   val ShapelessVersion = "2.2.0-RC4"
-  val FinagleVersion = "6.24.0"
-  val TwitterUtilVersion = "6.23.0"
+  val FinagleVersion = "6.25.0"
+  val TwitterUtilVersion = "6.24.0"
   val ScroogeVersion = "3.17.0"
   val ThriftVersion = "0.9.1"
   val ScalatraVersion = "2.3.0"
