@@ -49,7 +49,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String, String]()
+    val props = genMap[String, String](5)
     val item = gen[String, String]
 
     val insert = Recipes.insert
@@ -81,7 +81,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
     val id = gen[UUID]
 
-    val props = genMap[String, String]()
+    val props = genMap[String, String](5)
     val item = gen[String, String]
 
     val insert = Recipes.insert
@@ -112,8 +112,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String, String]()
-    val mapItems = genMap[String, String]()
+    val props = genMap[String, String](5)
+    val mapItems = genMap[String, String](5)
 
     val insert = Recipes.insert
       .value(_.uid, id)
@@ -143,8 +143,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
   it should "support a multiple item map put operation with Twitter futures" in {
     val recipe = gen[Recipe]
     val id = gen[UUID]
-    val props = genMap[String, String]()
-    val mapItems = genMap[String, String]()
+    val props = genMap[String, String](5)
+    val mapItems = genMap[String, String](5)
 
     val insert = Recipes.insert
       .value(_.uid, id)

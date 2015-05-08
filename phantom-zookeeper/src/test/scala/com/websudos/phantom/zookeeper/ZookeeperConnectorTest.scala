@@ -30,14 +30,19 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
+import scala.concurrent.duration._
 
 import com.websudos.phantom.connectors.{CassandraProperties, DefaultCassandraManager}
 import com.websudos.util.testing._
 import com.websudos.util.zookeeper.ZooKeeperInstance
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 
 class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {
+
+  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
+
   val instance = new ZooKeeperInstance("/cassandra")
 
   override def beforeAll(): Unit = {
