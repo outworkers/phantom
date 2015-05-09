@@ -31,7 +31,7 @@ package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class DefaultClusterStoreTest extends FlatSpec with Matchers {
 
