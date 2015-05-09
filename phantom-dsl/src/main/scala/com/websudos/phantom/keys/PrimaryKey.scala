@@ -53,6 +53,6 @@ trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] wi
 /**
  * A trait mixable into Column definitions to allow storing them as keys.
  */
-trait Index[ValueType] extends Key[ValueType, Index[ValueType]] with Unmodifiable with Indexed with Undroppable {
+trait Index[ValueType] extends Key[ValueType, Index[ValueType]] with Indexed with Undroppable {
   self: AbstractColumn[ValueType] => override val isSecondaryKey = true
 }

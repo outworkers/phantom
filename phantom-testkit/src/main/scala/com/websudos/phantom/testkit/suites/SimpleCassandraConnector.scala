@@ -29,9 +29,12 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
+import scala.concurrent.duration._
+
+import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
+
+import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
@@ -41,6 +44,12 @@ trait SimpleCassandraTest extends ScalaFutures
   with BeforeAndAfterAll
   with CassandraSetup {
   self : BeforeAndAfterAll with Suite =>
+
+  /**
+   * The default timeout value for phantom tests, passed implicitly to the testing framework.
+   * @return The default timeout value.
+   */
+  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
 
   override def beforeAll() {
     super.beforeAll()
