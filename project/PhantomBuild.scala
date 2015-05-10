@@ -27,15 +27,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+import com.twitter.sbt.GitProject
+import com.twitter.sbt.VersionManagement
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
 import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.7.5"
+  val UtilVersion = "0.8.0"
   val DatastaxDriverVersion = "2.1.5"
-  val ScalaTestVersion = "2.2.1"
+  val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
   val FinagleVersion = "6.25.0"
   val TwitterUtilVersion = "6.24.0"
@@ -45,12 +48,10 @@ object PhantomBuild extends Build {
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.0.2.5"
+  val CassandraUnitVersion = "2.0.2.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
 
-  val publishUrl = "http://maven.websudos.co.uk"
-
-  val mavnePublishSettings : Seq[Def.Setting[_]] = Seq(
+  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     publishTo <<= version.apply {
@@ -92,26 +93,10 @@ object PhantomBuild extends Build {
     }
   }
 
-  val publishSettings : Seq[Def.Setting[_]] = Seq(
-    credentials ++= Seq(
-      Credentials(Path.userHome / ".ivy2" / ".credentials")
-    ),
-    publishTo <<= version { (v: String) => {
-        if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at publishUrl + "/ext-snapshot-local")
-        else
-          Some("releases"  at publishUrl + "/ext-release-local")
-      }
-    },
-    publishMavenStyle := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true }
-  )
-
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
-  val bintrayPublishing: Seq[Def.Setting[_]] = Seq(
+  val publishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := false,
     bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
     bintray.BintrayKeys.bintrayRepository := "oss-releases",
@@ -123,7 +108,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.3",
+    version := "1.8.4",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -136,7 +121,8 @@ object PhantomBuild extends Build {
       "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
       "Twitter Repository"               at "http://maven.twttr.com",
       "Websudos releases"                at "http://maven.websudos.co.uk/ext-release-local",
-      "Websudos snapshots"               at "http://maven.websudos.co.uk/ext-snapshot-local"
+      "Websudos snapshots"               at "http://maven.websudos.co.uk/ext-snapshot-local",
+      Resolver.bintrayRepo("websudos", "oss-releases")
     ),
     scalacOptions ++= Seq(
       "-language:postfixOps",
@@ -150,13 +136,17 @@ object PhantomBuild extends Build {
       "-feature",
       "-unchecked"
      ),
+    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xmx2G"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++
+      GitProject.gitSettings ++
+      VersionManagement.newSettings
+
 
   lazy val phantom = Project(
     id = "phantom",
