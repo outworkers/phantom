@@ -22,3 +22,5 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.6.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.4")
 
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+
+addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
