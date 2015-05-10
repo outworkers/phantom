@@ -102,6 +102,33 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     }
   }
 
+  it should "allow updating the value of a secondary index" in {
+    val sample = gen[SecondaryIndexRecord]
+    val updated = gen[UUID]
+
+    val chain = for {
+      insert <- SecondaryIndexTable.store(sample).future()
+      selected <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
+      select <- SecondaryIndexTable.update.where(_.id eqs sample.primary).modify(_.secondary setTo updated).future()
+      updated <- SecondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
+    } yield (selected, updated)
+
+    chain.successful {
+      res => {
+        val primary = res._1
+        val secondary = res._2
+
+        info("Querying by primary key should return the record")
+        primary.isDefined shouldBe true
+        primary.get shouldEqual sample
+
+        info("Querying by the secondary index key should also return the record")
+        secondary.isDefined shouldEqual true
+        secondary.get shouldEqual sample.copy(secondary = updated)
+      }
+    }
+  }
+
   it should "not throw an error if filtering is not enabled when querying by secondary keys" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {

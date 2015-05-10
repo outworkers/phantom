@@ -33,12 +33,12 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.6.12"
+  val UtilVersion = "0.7.5"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.1"
   val ShapelessVersion = "2.2.0-RC4"
-  val FinagleVersion = "6.24.0"
-  val TwitterUtilVersion = "6.23.0"
+  val FinagleVersion = "6.25.0"
+  val TwitterUtilVersion = "6.24.0"
   val ScroogeVersion = "3.17.0"
   val ThriftVersion = "0.9.1"
   val ScalatraVersion = "2.3.0"
@@ -87,7 +87,7 @@ object PhantomBuild extends Build {
 
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
-      case "2.10.4" => "3.0-M1"
+      case "2.10.5" => "3.0-M1"
       case _ => "3.0-M2"
     }
   }
@@ -111,11 +111,21 @@ object PhantomBuild extends Build {
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
+  val bintrayPublishing: Seq[Def.Setting[_]] = Seq(
+    publishMavenStyle := false,
+    bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
+    bintray.BintrayKeys.bintrayRepository := "oss-releases",
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => true},
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+  )
+
+
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.1",
+    version := "1.8.3",
     scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.4", "2.11.6"),
+    crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
