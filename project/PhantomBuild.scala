@@ -97,7 +97,7 @@ object PhantomBuild extends Build {
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
   val publishSettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := false,
+    publishMavenStyle := true,
     bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
     bintray.BintrayKeys.bintrayRepository := "oss-releases",
     publishArtifact in Test := false,
@@ -108,7 +108,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.4",
+    version := "1.8.6",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -143,7 +143,7 @@ object PhantomBuild extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
       GitProject.gitSettings ++
       VersionManagement.newSettings
 
