@@ -19,15 +19,15 @@ Using phantom
 
 We publish phantom in 2 formats, stable releases and bleeding edge.
 
-- The stable release is always available on Maven Central and will have a version with a patch number "0". E.g "x.x.0".
+- The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
-- Intermediary releases are available through our managed Maven repository,```"Websudos releases" at "http://maven.websudos.co.uk/ext-release-local"```.
+- Intermediary releases are available through our managed Bintray repository available at https://bintray.com/websudos/oss-releases/. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 
 ### Latest versions
 
-- Latest stable version: 1.8.0 (Maven Central)
-- Bleeding edge: 1.8.0 (Websudos Maven Repo)
+- Latest stable version: 1.8.4 (Maven Central)
+- Bleeding edge: 1.8.6 (Websudos OSS releases on Bintray)
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
