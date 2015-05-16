@@ -120,8 +120,6 @@ object PhantomBuild extends Build {
       "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
       "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
       "Twitter Repository"               at "http://maven.twttr.com",
-      "Websudos releases"                at "http://maven.websudos.co.uk/ext-release-local",
-      "Websudos snapshots"               at "http://maven.websudos.co.uk/ext-snapshot-local",
       Resolver.bintrayRepo("websudos", "oss-releases")
     ),
     scalacOptions ++= Seq(
