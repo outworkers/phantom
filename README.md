@@ -130,7 +130,7 @@ performance improvement over query performance. Async iterators needed a lot of 
  dumping C* data into HDFS or whatever backup system. A big 60 - 70% gain should be expected.
 
 Phantom connectors now require an ```implicit com.websudos.phantom.connectors.KeySpace``` to be defined. Instead of using a plain string, you just have to
-use ```KeySpace.apply``` or simply: ```trait MyConnector extends CassandraConnector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
+use ```KeySpace.apply``` or simply: ```trait MyConnector extends SimpleCassandraConnector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
 replace the existing connector model and vastly improve the number of concurrent cluster connections required to perform operations on various keyspaces.
 Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without evening needing to switch as phantom will use the full CQL
 reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
@@ -496,7 +496,7 @@ class Students extends CassandraTable[Students, Student] {
   }
 }
 
-object Students extends Students with CassandraConnector {
+object Students extends Students with SimpleCassandraConnector {
 
   /**
    * The below code will result in a compilation error phantom produces by design.
