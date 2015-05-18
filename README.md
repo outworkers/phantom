@@ -132,7 +132,7 @@ performance improvement over query performance. Async iterators needed a lot of 
 Phantom connectors now require an ```implicit com.websudos.phantom.connectors.KeySpace``` to be defined. Instead of using a plain string, you just have to
 use ```KeySpace.apply``` or simply: ```trait MyConnector extends Connector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
 replace the existing connector model and vastly improve the number of concurrent cluster connections required to perform operations on various keyspaces.
-Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without evening needing to switch as phantom will use the full CQL
+Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without even needing to switch as phantom will use the full CQL
 reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
 
 A entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
@@ -403,7 +403,7 @@ phantom won't let you mixin a non-primitive via implicit magic.
 
 | phantom columns               | Java/Scala type           | Cassandra type    |
 | ---------------               |-------------------        | ----------------- |
-| BlobColumn                    | java.nio.ByteBuffer       | blog              |
+| BlobColumn                    | java.nio.ByteBuffer       | blob              |
 | BigDecimalColumn              | scala.math.BigDecimal     | decimal           |
 | BigIntColumn                  | scala.math.BigInt         | varint            |
 | BooleanColumn                 | scala.Boolean             | boolean           |
