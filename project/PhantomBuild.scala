@@ -36,7 +36,7 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.8.4"
+  val UtilVersion = "0.8.8"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
