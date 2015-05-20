@@ -32,10 +32,7 @@ cache:
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
-script:
-  - sbt clean coverage test &&
-    sbt coverageAggregate
+sript: sbt ++$TRAVIS_SCALA_VERSION clean coverage test scalastyle && sbt ++$TRAVIS_SCALA_VERSION coverageAggregate
 
-after_success:
-  - sbt coveralls
+after_success: sbt ++$TRAVIS_SCALA_VERSION coveralls
 

@@ -31,9 +31,8 @@ package com.websudos.phantom
 
 import java.util.concurrent.Executors
 
-import com.datastax.driver.core.Session
 import com.google.common.util.concurrent.MoreExecutors
-import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, ExecutableStatementList, SchemaAutoDiffer}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, ExecutableStatementList}
 import com.websudos.phantom.connectors.KeySpace
 import org.slf4j.LoggerFactory
 
@@ -85,18 +84,6 @@ object Manager extends AutoCreate {
   lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
-
-  def automigrate()(implicit session: Session, keySpace: KeySpace): ExecutableStatementList = {
-    new ExecutableStatementList(
-      tableList.map(SchemaAutoDiffer.queryList).foldLeft(Set.empty[CQLQuery])((acc, item) => {
-        acc union item
-      }
-    ))
-  }
-
-  def autoinit()(implicit session: Session, keySpace: KeySpace): ExecutableStatementList = {
-    autocreate() ++ automigrate()
-  }
 
   def shutdown(): Unit = {
     logger.info("Shutting down executors")

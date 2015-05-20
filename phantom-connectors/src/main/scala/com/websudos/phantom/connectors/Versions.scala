@@ -27,15 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.zookeeper
+package com.websudos.phantom.connectors
 
-import com.websudos.phantom.connectors.KeySpace
+import com.datastax.driver.core.VersionNumber
 
-object TestTable extends DefaultZookeeperConnector {
-  val keySpace = KeySpace("phantom")
+sealed trait VersionBuilder {
+  def apply(major: Int, minor: Int, patch: Int): VersionNumber = {
+    VersionNumber.parse(s"$major.$minor.$patch")
+  }
 }
 
-object TestTable2 extends DefaultZookeeperConnector {
-  val keySpace = KeySpace("phantom")
+object DefaultVersions extends VersionBuilder {
+  val `2.0.8` = apply(2, 0, 8)
+  val `2.0.9` = apply(2, 0, 9)
+  val `2.0.10` = apply(2, 0, 10)
+  val `2.0.11` = apply(2, 0, 11)
+  val `2.0.12` = apply(2, 0, 12)
+  val `2.0.13` = apply(2, 0, 13)
+  val `2.1.0` = apply(2, 1, 0)
+  val `2.1.1` = apply(2, 1, 1)
+  val `2.1.2` = apply(2, 1, 2)
+  val `2.1.3` = apply(2, 1, 3)
+  val `2.1.4` = apply(2, 1, 4)
+  val `2.1.5` = apply(2, 1, 5)
 }
-

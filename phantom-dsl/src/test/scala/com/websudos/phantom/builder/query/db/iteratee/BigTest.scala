@@ -29,25 +29,16 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import com.datastax.driver.core.{SocketOptions, PoolingOptions, Cluster}
-import com.websudos.phantom.connectors.{CassandraProperties, DefaultCassandraManager}
+import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
+import com.websudos.phantom.connectors.ContactPoint
 import com.websudos.phantom.testkit._
 
-object BigTestManager extends DefaultCassandraManager(CassandraProperties.Localhost) {
-
-  override protected[this] def createCluster(): Cluster = {
-    val inets = hosts.toSeq.map(_.getAddress)
-
-    Cluster.builder()
-      .addContactPoints(inets: _*)
-      .withoutJMXReporting()
-      .withoutMetrics()
-      .withSocketOptions(new SocketOptions().setReadTimeoutMillis(1000).setConnectTimeoutMillis(1000))
-      .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-      .build()
-  }
-}
-
 trait BigTest extends PhantomCassandraTestSuite {
-  override val manager = BigTestManager
+
+  override implicit lazy val session: Session = {
+    ContactPoint.local.withClusterBuilder(
+      _.withSocketOptions(new SocketOptions().setReadTimeoutMillis(1000).setConnectTimeoutMillis(1000))
+      .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
+    ).keySpace(keySpace.name).session
+  }
 }

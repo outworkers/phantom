@@ -38,8 +38,8 @@ import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
@@ -82,13 +82,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
-
-  final def automigrate()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): ExecutableStatementList = {
-    SchemaAutoDiffer.automigrate(this.asInstanceOf[T])
-  }
 
   def prepare()(implicit keySpace: KeySpace): PreparedBuilder[T, R] = new PreparedBuilder[T, R](this.asInstanceOf[T])
 
@@ -101,8 +99,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
-
-
 
   /**
    * This method will filter the columns from a Clustering Order definition.

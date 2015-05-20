@@ -27,35 +27,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.zookeeper
+package com.websudos.phantom.testkit.suites
 
 import com.datastax.driver.core.Session
-import com.websudos.phantom.connectors.CassandraConnector
+import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
-private[zookeeper] case object CassandraInitLock
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
-/**
- * The base implementation of a ZooKeeper connector.
- * By default it needs a ZooKeeper manager to handle spawning a ZooKeeper client and fetching ports from Cassandra.
- * Next it will simply forward the Cassandra session as an implicit while the ZooKeeper Manager does the rest of the magic.
- *
- * The keySpace must also be specified, as the Cassandra connection can only execute queries on a defined keySpace.
- */
-trait ZookeeperConnector extends CassandraConnector {
+trait CassandraTest extends ScalaFutures
+  with Matchers with Assertions
+  with AsyncAssertions
+  with BeforeAndAfterAll {
 
-  def zkPath: String = "/cassandra"
-}
+  self : BeforeAndAfterAll with Suite =>
 
-/**
- * This is a default implementation of ZooKeeper connector.
- * It will use and initialise the default manager, the session will be forwarded for queries to execute with the proper implicit session.
- */
-trait DefaultZookeeperConnector extends ZookeeperConnector {
-
-  override val manager = DefaultZookeeperManagers.defaultManager
-
-  override implicit lazy val session: Session = {
-    manager.initIfNotInited(keySpace.name)
-    manager.session
-  }
+  implicit def session: Session
+  implicit lazy val context: ExecutionContext = global
 }

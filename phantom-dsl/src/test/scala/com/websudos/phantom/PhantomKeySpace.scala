@@ -1,6 +1,6 @@
 package com.websudos.phantom
 
-import com.websudos.phantom.connectors.{KeySpace, CassandraConnector}
+import com.websudos.phantom.connectors.KeySpace
 
 trait PhantomKeySpace {
 
