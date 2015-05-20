@@ -82,7 +82,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
 
@@ -101,8 +103,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
-
-
 
   /**
    * This method will filter the columns from a Clustering Order definition.
