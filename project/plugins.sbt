@@ -5,15 +5,13 @@ resolvers ++= Seq(
     "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
 
 addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.15.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.4")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.0.0.BETA1")
-
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.3")
 

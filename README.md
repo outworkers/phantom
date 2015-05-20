@@ -27,7 +27,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 ### Latest versions
 
 - Latest stable version: 1.8.4 (Maven Central)
-- Bleeding edge: 1.8.6 (Websudos OSS releases on Bintray)
+- Bleeding edge: 1.8.9 (Websudos OSS releases on Bintray)
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
