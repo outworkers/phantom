@@ -54,7 +54,10 @@ trait CassandraConnector {
 
   val manager: CassandraManager = DefaultCassandraManager
 
-  implicit def session: Session = manager.session
+  implicit def session: Session = {
+    manager.initIfNotInited(keySpace.name)
+    manager.session
+  }
 
   def cassandraVersions: Set[VersionNumber] = {
     manager.cassandraVersions

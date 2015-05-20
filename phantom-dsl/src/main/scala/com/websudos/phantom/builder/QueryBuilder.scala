@@ -37,6 +37,8 @@ private[phantom] object QueryBuilder {
 
   case object Create extends CreateTableBuilder
 
+  case object Delete extends DeleteQueryBuilder
+
   case object Update extends UpdateQueryBuilder
 
   case object Collections extends CollectionModifiers
@@ -115,17 +117,6 @@ private[phantom] object QueryBuilder {
       .forcePad.append(value.toString)
   }
 
-  def delete(table: String): CQLQuery = {
-    CQLQuery(CQLSyntax.delete)
-      .forcePad.append(CQLSyntax.from)
-      .forcePad.append(table)
-  }
 
-  def deleteColumn(table: String, column: String): CQLQuery = {
-    CQLQuery(CQLSyntax.delete)
-      .forcePad.append(column)
-      .forcePad.append(CQLSyntax.from)
-      .forcePad.append(table)
-  }
 
 }
