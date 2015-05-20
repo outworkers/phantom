@@ -83,25 +83,50 @@ class InsertTest extends PhantomCassandraTestSuite {
     }
   }
 
+  it should "insert strings with single quotes inside them and automatically escape them" in {
+    val row = gen[TestRow].copy(key = "test'")
+
+    val chain = for {
+      store <- TestTable.store(row).future()
+      one <- TestTable.select.where(_.key eqs row.key).one
+      multi <- TestTable.select.fetch
+    } yield (one.get === row, multi.contains(row))
+
+    chain successful {
+      res => {
+        assert (res._1)
+        assert (res._2)
+      }
+    }
+  }
+
+  it should "insert strings with single quotes inside them and automatically escape them with Twitter Futures" in {
+    val row = gen[TestRow].copy(key = "test'")
+
+    val chain = for {
+      store <- TestTable.store(row).execute()
+      one <- TestTable.select.where(_.key eqs row.key).get
+      multi <- TestTable.select.collect()
+    } yield (one.get === row, multi.contains(row))
+
+    chain successful {
+      res => {
+        assert (res._1)
+        assert (res._2)
+      }
+    }
+  }
+
   it should "work fine with List, Set, Map" in {
     val row = gen[TestRow]
 
-    val rcp = TestTable.insert
-      .value(_.key, row.key)
-      .value(_.list, row.list)
-      .value(_.setText, row.setText)
-      .value(_.mapTextToText, row.mapTextToText)
-      .value(_.setInt, row.setInt)
-      .value(_.mapIntToText, row.mapIntToText)
-      .future() flatMap {
-      _ => {
-        for {
-          one <- TestTable.select.where(_.key eqs row.key).one
-          multi <- TestTable.select.fetch
-        }  yield (one.get === row, multi.contains(row))
-      }
-    }
-    rcp successful {
+    val chain = for {
+      store <- TestTable.store(row).future()
+      one <- TestTable.select.where(_.key eqs row.key).one
+      multi <- TestTable.select.fetch
+    } yield (one.get === row, multi.contains(row))
+
+    chain successful {
       res => {
         assert (res._1)
         assert (res._2)
@@ -112,27 +137,16 @@ class InsertTest extends PhantomCassandraTestSuite {
   it should "work fine with List, Set, Map and Twitter futures" in {
     val row = gen[TestRow]
 
-    val rcp = TestTable.insert
-      .value(_.key, row.key)
-      .value(_.list, row.list)
-      .value(_.setText, row.setText)
-      .value(_.mapTextToText, row.mapTextToText)
-      .value(_.setInt, row.setInt)
-      .value(_.mapIntToText, row.mapIntToText)
-      .execute() flatMap {
-      _ => {
-        for {
-          one <- TestTable.select.where(_.key eqs row.key).get
-          multi <- TestTable.select.collect()
-        }  yield (one, multi)
-      }
-    }
-    rcp successful {
-      res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row
+    val chain = for {
+      store <- TestTable.store(row).execute()
+      one <- TestTable.select.where(_.key eqs row.key).get
+      multi <- TestTable.select.collect()
+    } yield (one.get === row, multi.contains(row))
 
-        res._2.contains(row) shouldEqual true
+    chain successful {
+      res => {
+        assert (res._1)
+        assert (res._2)
       }
     }
   }

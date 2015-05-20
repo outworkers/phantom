@@ -36,14 +36,13 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.8.0"
+  val UtilVersion = "0.8.8"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
   val FinagleVersion = "6.25.0"
   val TwitterUtilVersion = "6.24.0"
   val ScroogeVersion = "3.17.0"
-  val ThriftVersion = "0.9.1"
   val ScalatraVersion = "2.3.0"
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
@@ -97,9 +96,10 @@ object PhantomBuild extends Build {
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
   val publishSettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := false,
+    publishMavenStyle := true,
     bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
     bintray.BintrayKeys.bintrayRepository := "oss-releases",
+    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
@@ -108,7 +108,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.4",
+    version := "1.8.9",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -120,8 +120,6 @@ object PhantomBuild extends Build {
       "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
       "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
       "Twitter Repository"               at "http://maven.twttr.com",
-      "Websudos releases"                at "http://maven.websudos.co.uk/ext-release-local",
-      "Websudos snapshots"               at "http://maven.websudos.co.uk/ext-snapshot-local",
       Resolver.bintrayRepo("websudos", "oss-releases")
     ),
     scalacOptions ++= Seq(
@@ -136,14 +134,13 @@ object PhantomBuild extends Build {
       "-feature",
       "-unchecked"
      ),
-    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xmx2G"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
       GitProject.gitSettings ++
       VersionManagement.newSettings
 
@@ -262,8 +259,6 @@ object PhantomBuild extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.apache.thrift"            %  "libthrift"                         % ThriftVersion,
-      "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
       "org.scalatest"                %% "scalatest"                         % ScalaTestVersion          % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"

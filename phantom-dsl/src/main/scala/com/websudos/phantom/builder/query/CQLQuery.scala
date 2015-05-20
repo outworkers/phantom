@@ -57,7 +57,7 @@ case class CQLQuery(queryString: String) {
   def prependIfAbsent(st: CQLQuery): CQLQuery = prependIfAbsent(st.queryString)
 
   def escape(st: String): String = "`" + st + "`"
-  def singleQuote(st: String): String = "'" + st + "'"
+  def singleQuote(st: String): String = "'" + st.replaceAll("'", "''") + "'"
 
   def spaced: Boolean = queryString.endsWith(" ")
   def pad: CQLQuery = if (spaced) this else CQLQuery(queryString + " ")
@@ -79,7 +79,7 @@ case class CQLQuery(queryString: String) {
 object CQLQuery {
   def empty: CQLQuery = CQLQuery("")
 
-  def escape(str: String): String = "'" + str + "'"
+  def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
 
   def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
 }
