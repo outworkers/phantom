@@ -460,7 +460,7 @@ The ```type``` in the below example is always a default C* type.
 JSON columns require you to define a ```toJson``` and ```fromJson``` method, telling phantom how to go from a ```String``` to the type you need. 
 It makes no assumptions as to what library you are using, although we have tested with ```lift-json``` and ```play-json```.
 
-Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/dsl/specialized/JsonColumnTest.scala)
+Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/specialized/JsonColumnTest.scala)
 
 | phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
@@ -1257,13 +1257,12 @@ testing utilities, giving you a very simple, easily extensible, yet highly sensi
 with 0 integration work on your behalf, yet allowing you to go crazy and custom as you please if the scenario warrants it. 
 
 With that design philosophy in mind, we've created two kinds of tests, 1 running with a ```SimpleCassandraConnector```, 
-with the implementation found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit
-/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings,
+with the implementation found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit/suites/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings,
 run all the tests and cleanup after tests are done.
 
 The other, more complex implementation, targets users who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
 multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above. The ```BaseTest``` implementation, 
-which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit/BaseTest.scala), and it follows the pattern described above.
+which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit/suites/BaseTest.scala), and it follows the pattern described above.
 
 
 There are 4 core implementations available:
