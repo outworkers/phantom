@@ -133,7 +133,7 @@ Phantom connectors now require an ```implicit com.websudos.phantom.connectors.Ke
 use ```KeySpace.apply``` or simply: ```trait MyConnector extends Connector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
 replace the existing connector model and vastly improve the number of concurrent cluster connections required to perform operations on various keyspaces.
 Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without evening needing to switch as phantom will use the full CQL
-reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
+reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECT FROM table```.
 
 A entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
 from within phantom and with the guarantee of auto-completion and type safety.
