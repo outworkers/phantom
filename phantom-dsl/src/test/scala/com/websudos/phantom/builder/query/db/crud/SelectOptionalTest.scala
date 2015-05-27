@@ -67,6 +67,7 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
       .value(_.int, row.int)
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
+      .value(_.timeuuid, row.timeuuid)
       .value(_.bi, row.bi).future() flatMap {
       _ => {
         for {

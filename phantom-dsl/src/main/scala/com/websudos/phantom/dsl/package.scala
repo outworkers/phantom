@@ -92,6 +92,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Long]
   type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
+  type OptionalTimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalTimeUUIDColumn[Owner, Record]
 
   type ClusteringOrder[ValueType] = com.websudos.phantom.keys.ClusteringOrder[ValueType]
   type Ascending = com.websudos.phantom.keys.Ascending
