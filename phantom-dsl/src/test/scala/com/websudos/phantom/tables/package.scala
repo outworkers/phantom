@@ -33,6 +33,7 @@ import java.net.InetAddress
 import java.util.{Date, UUID}
 
 import org.joda.time.DateTime
+import com.datastax.driver.core.utils.UUIDs
 import com.websudos.util.testing._
 
 package object tables {
@@ -134,6 +135,7 @@ package object tables {
         genOpt[Int],
         genOpt[Date],
         genOpt[UUID],
+        Some(UUIDs.timeBased()),
         genOpt[BigInt]
       )
     }

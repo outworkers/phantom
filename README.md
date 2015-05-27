@@ -449,7 +449,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalLongColumn            | Option[Long]                      | long              |
 | OptionalStringColumn          | Option[java.lang.String]          | text              |
 | OptionalUUIDColumn            | Option[java.util.UUID]            | uuid              |
-| OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
+| OptionalTimeUUIDColumn        | Option[java.util.UUID]            | timeuuid          |
 
 
 <a id="collection-columns">Collection columns</a>

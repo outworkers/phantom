@@ -45,6 +45,7 @@ case class OptionalPrimitive(
   int: Option[Int],
   date: Option[java.util.Date],
   uuid: Option[java.util.UUID],
+  timeuuid: Option[java.util.UUID],
   bi: Option[BigInt]
 )
 
@@ -53,7 +54,7 @@ object OptionalPrimitive {
   def none: OptionalPrimitive = {
     OptionalPrimitive(
       gen[String],
-      None, None, None, None, None, None, None, None, None, None, None
+      None, None, None, None, None, None, None, None, None, None, None, None
     )
   }
 }
@@ -61,7 +62,7 @@ object OptionalPrimitive {
 sealed class OptionalPrimitives extends CassandraTable[OptionalPrimitives, OptionalPrimitive] {
   override def fromRow(r: Row): OptionalPrimitive = {
     OptionalPrimitive(pkey(r), string(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
-      int(r), date(r), uuid(r), bi(r))
+      int(r), date(r), uuid(r), timeuuid(r), bi(r))
   }
 
   object pkey extends StringColumn(this) with PartitionKey[String]
@@ -85,6 +86,8 @@ sealed class OptionalPrimitives extends CassandraTable[OptionalPrimitives, Optio
   object date extends OptionalDateColumn(this)
 
   object uuid extends OptionalUUIDColumn(this)
+
+  object timeuuid extends OptionalTimeUUIDColumn(this)
 
   object bi extends OptionalBigIntColumn(this)
 }
