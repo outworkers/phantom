@@ -29,21 +29,45 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import scala.concurrent.duration._
-
-import org.scalatest.concurrent.{PatienceConfiguration, AsyncAssertions, ScalaFutures}
+import com.datastax.driver.core.{VersionNumber, Session}
+import com.websudos.phantom.connectors.{ContactPoint, ContactPoints, KeySpace, KeySpaceDef}
+import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
 
-import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
+import scala.concurrent.duration._
+
+private object Defaults {
+  def getDefaultConnector(host: String, keySpace: String): KeySpaceDef = {
+    ContactPoints(Seq(host), 9042).keySpace(keySpace)
+  }
+}
+
+trait SimpleCassandraConnector {
+
+  private[this] lazy val connector = Defaults.getDefaultConnector(host, keySpace.name)
+
+  def host: String = "localhost"
+
+  implicit def keySpace: KeySpace
+
+  implicit lazy val session: Session = connector.session
+
+  def cassandraVersion: VersionNumber =  connector.cassandraVersion
+
+  def cassandraVersions: Set[VersionNumber] =  connector.cassandraVersions
+}
 
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
   with Matchers
   with Assertions
   with AsyncAssertions
-  with BeforeAndAfterAll
-  with CassandraSetup {
+  with BeforeAndAfterAll {
   self : BeforeAndAfterAll with Suite =>
+
+  override val host = "localhost"
+
+  override implicit lazy val session: Session = ContactPoint.local.keySpace(keySpace.name).session
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
@@ -51,11 +75,7 @@ trait SimpleCassandraTest extends ScalaFutures
    */
   implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
 
-  override def beforeAll() {
-    super.beforeAll()
-    setupCassandra()
-    manager.initIfNotInited(keySpace.name)
-  }
+
 }
 
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest

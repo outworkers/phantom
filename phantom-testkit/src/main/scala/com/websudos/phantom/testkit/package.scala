@@ -6,5 +6,4 @@ package object testkit {
   type CassandraFlatSpec = com.websudos.phantom.testkit.suites.CassandraFlatSpec
   type CassandraFeatureSpec = com.websudos.phantom.testkit.suites.CassandraFeatureSpec
   type SimpleCassandraTest = com.websudos.phantom.testkit.suites.SimpleCassandraTest
-  type TestZookeeperConnector = com.websudos.phantom.testkit.suites.TestZookeeperConnector
 }

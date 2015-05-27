@@ -17,7 +17,6 @@ class ExampleFlatSuite extends CassandraFlatSpec with KeySpaceDefinition {
   override def beforeAll(): Unit = {
     super.beforeAll()
     Await.ready(Manager.autocreate().future(), 5.seconds)
-    Await.ready(Manager.automigrate().future(), 5.seconds)
   }
 
   override def afterAll(): Unit = {

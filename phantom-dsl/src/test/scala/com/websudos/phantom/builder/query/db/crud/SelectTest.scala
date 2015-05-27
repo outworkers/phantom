@@ -49,28 +49,14 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting the whole row" should "work fine" in {
     val row = gen[Primitive]
-    val rcp =  Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi).future() flatMap {
-        _ => {
-          for {
-            a <- Primitives.select.fetch
-            b <- Primitives.select.where(_.pkey eqs row.pkey).one
-          } yield (a, b)
 
-        }
-      }
+    val chain = for {
+      store <- Primitives.store(row).future()
+      a <- Primitives.select.fetch
+      b <- Primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, b)
 
-    rcp successful {
+    chain successful {
       r => {
         r._1 contains row shouldEqual true
 
@@ -82,31 +68,19 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting the whole row" should "work fine with Twitter futures" in {
     val row = gen[Primitive]
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        for {
-          a <- Primitives.select.collect()
-          b <- Primitives.select.where(_.pkey eqs row.pkey).get
-        } yield (a contains row, b.get === row)
 
-      }
-    }
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      a <- Primitives.select.collect()
+      b <- Primitives.select.where(_.pkey eqs row.pkey).get
+    } yield (a, b)
 
-    rcp successful {
+    chain successful {
       r => {
-        assert(r._1)
-        assert(r._2)
+        r._1 contains row shouldEqual true
+
+        r._2.isDefined shouldEqual true
+        r._2.get shouldEqual row
       }
     }
   }
@@ -114,24 +88,12 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-         Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
-      }
-    }
+    val chain = for {
+      store <- Primitives.store(row).future
+      get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-    rcp successful {
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -142,24 +104,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 2 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -168,26 +119,16 @@ class SelectTest extends PhantomCassandraTestSuite {
   }
 
   "Selecting 3 columns" should "work fine" in {
+
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -198,24 +139,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 3 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -226,24 +156,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 4 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -254,24 +173,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 4 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -283,24 +191,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 5 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -311,24 +208,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 5 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -339,24 +225,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 6 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -367,24 +242,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 6 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -395,24 +259,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 7 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -423,24 +276,13 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 7 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).execute() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).get()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -451,24 +293,14 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 8 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).future()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+        .where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
         r.get shouldBe expected
@@ -479,27 +311,17 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 8 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-    val rcp =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int).where(_.pkey eqs row.pkey).one()
-      }
-    }
 
-    rcp successful {
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+        .where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain successful {
       r => {
         r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.get shouldEqual expected
       }
     }
   }

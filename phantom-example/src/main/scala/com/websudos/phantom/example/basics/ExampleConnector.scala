@@ -29,8 +29,9 @@
  */
 package com.websudos.phantom.example.basics
 
-import com.websudos.phantom.connectors.{KeySpace, SimpleCassandraConnector}
-import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
+import com.datastax.driver.core.Session
+import com.websudos.phantom.connectors.{KeySpace, SimpleConnector}
+import com.websudos.phantom.zookeeper.ZkContactPointLookup
 
 /**
  * This is an example of how to connect to Cassandra in the easiest possible way.
@@ -41,7 +42,7 @@ import com.websudos.phantom.zookeeper.DefaultZookeeperConnector
  *
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
-trait ExampleConnector extends SimpleCassandraConnector {
+trait ExampleConnector extends SimpleConnector {
   implicit val keySpace = KeySpace("phantom_example")
 }
 
@@ -53,8 +54,16 @@ trait ExampleConnector extends SimpleCassandraConnector {
  * By default, it will try to connect to localhost:2181, fetch the "/cassandra" path and parse ports found in a "host:port, host1:port1,
  * .." sequence. All these settings are trivial to override in the below connector and you can adjust all the settings to fit your environment.
  */
-trait ZooKeeperConnector extends DefaultZookeeperConnector {
-  val keySpace = KeySpace("phantom_zookeeper_example")
+object ZkDefaults {
+  def getConnector(keySpace: KeySpace) = {
+    ZkContactPointLookup.local.keySpace(keySpace.name)
+  }
 }
+
+trait DefaultZookeeperConnector extends SimpleConnector {
+  override implicit lazy val session: Session = ZkDefaults.getConnector(keySpace).session
+}
+
+
 
 

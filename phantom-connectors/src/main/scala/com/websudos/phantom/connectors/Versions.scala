@@ -29,14 +29,7 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.{VersionNumber, Session}
-
-private[connectors] case object CassandraInitLock
-
-class EmptyClusterStoreException extends RuntimeException("Attempting to retrieve Cassandra cluster reference before initialisation")
-
-class EmptyPortListException extends RuntimeException("Cannot build a cluster from an empty list of addresses")
-
+import com.datastax.driver.core.VersionNumber
 
 sealed trait VersionBuilder {
   def apply(major: Int, minor: Int, patch: Int): VersionNumber = {
@@ -44,43 +37,17 @@ sealed trait VersionBuilder {
   }
 }
 
-/**
- * The root implementation of a Cassandra connection.
- * By default, the in phantom-connectors framework the only 2 primitives needed for connection are the KeySpace and the manager.
- */
-trait CassandraConnector {
-
-  implicit def keySpace: KeySpace
-
-  val manager: CassandraManager = DefaultCassandraManager
-
-  implicit def session: Session = {
-    manager.initIfNotInited(keySpace.name)
-    manager.session
-  }
-
-  def cassandraVersions: Set[VersionNumber] = {
-    manager.cassandraVersions
-  }
-
-  def cassandraVersion: VersionNumber = {
-    val single = manager.cassandraVersions.head
-
-    if (manager.cassandraVersions.size == 1) {
-      single
-    } else {
-      if (manager.cassandraVersions.forall(_.compareTo(single) == 0)) {
-        single
-      } else {
-        throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
-      }
-    }
-
-  }
-
-  object Version extends VersionBuilder {
-    val `2.0.8` = apply(2, 0, 8)
-    val `2.0.13` = apply(2, 0, 13)
-    val `2.1.0` = apply(2, 1, 0)
-  }
+object DefaultVersions extends VersionBuilder {
+  val `2.0.8` = apply(2, 0, 8)
+  val `2.0.9` = apply(2, 0, 9)
+  val `2.0.10` = apply(2, 0, 10)
+  val `2.0.11` = apply(2, 0, 11)
+  val `2.0.12` = apply(2, 0, 12)
+  val `2.0.13` = apply(2, 0, 13)
+  val `2.1.0` = apply(2, 1, 0)
+  val `2.1.1` = apply(2, 1, 1)
+  val `2.1.2` = apply(2, 1, 2)
+  val `2.1.3` = apply(2, 1, 3)
+  val `2.1.4` = apply(2, 1, 4)
+  val `2.1.5` = apply(2, 1, 5)
 }

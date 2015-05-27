@@ -72,11 +72,11 @@ package object udt {
     Record, Col]
 
   implicit class CassandraUDT[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
-    def udtExecute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def udtExecute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
       UDTCollector.execute()
     }
 
-    def udtFuture()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    def udtFuture()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Seq[ResultSet]] = {
       UDTCollector.future()
     }
   }

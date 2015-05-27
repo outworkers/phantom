@@ -27,15 +27,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.zookeeper
+package com.websudos.phantom.testkit.suites
 
-import com.websudos.phantom.connectors.KeySpace
+import com.datastax.driver.core.Session
+import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
-object TestTable extends DefaultZookeeperConnector {
-  val keySpace = KeySpace("phantom")
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+
+trait CassandraTest extends ScalaFutures
+  with Matchers with Assertions
+  with AsyncAssertions
+  with BeforeAndAfterAll {
+
+  self : BeforeAndAfterAll with Suite =>
+
+  implicit def session: Session
+  implicit lazy val context: ExecutionContext = global
 }
-
-object TestTable2 extends DefaultZookeeperConnector {
-  val keySpace = KeySpace("phantom")
-}
-

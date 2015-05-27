@@ -126,3 +126,44 @@ Changelog
 - Improved UDT implementation.
 - Heavy performance improvements for iterator processing (thanks @benjumanji for diligently profiling every bit).
 - Added full support for Scala 2.11.
+
+<a id="version-1.8.0">1.8.0</a>
+===============================
+
+
+
+<a id="version-1.8.12">1.8.12</a>
+===============================
+
+- Fixed encoding support for strings containing a single quote `'`.
+- Bumped util library dependency to `0.8.8` to include small bug fixes and more robust testing in the util library.
+- A custom patience timeout for `successful` calls on Futures has been created to replace the now obsolete implicit from `com.websudos.util.testing._`.
+- Bumped Twitter Finagle deps to `6.25.0` and Twitter Util to `6.24.0`.
+- Removed hard coded list lengths from `TimeSeriesTest` in favour of named variables. This compensates for the fix in the util library, where before `0.8.4` a call to `genList[T](n)` would generate `n - 1`elements instead of `n`. This has been fixed and phantom updated to compensate for all changes.
+- Bumped `cassandra-unit` version to `2.0.2.6` as the newer version is available on our public Bintray repository.
+- Removed Websudos Artifactory resolvers and replaced with Bintray configuration.
+- Added a Bintray version badge to automatically show the latest available Bintray version on the GitHub README.
+- Separated performance related tests written with ScalaMeter into a new configuration called `perf`. Tests can now be semantically distinguished by their purpose and `sbt:test` will not run performance tests by default. Instead, benchmarks are run using `perf:test` exclusively, which fixes `scoverage` integration during the Travis CI phase.
+- Fixed a few deadlinks in the `README.md`.
+- Removed `Unmodifiable` trait market from the implementation of `Index`, which now allows users to update the value of secondary keys.
+- Separated `DELETE` query serialization concerns into a specialized builder called `QueryBuilder.Delete`.
+- Added tests for `DELETE` query serialisation and for the new `QueryBuilder.Delete`.
+- Removed fixed Thrift dependency that was enforcing `org.apache.thrift % libthrift % 0.9.1` from the `phantom-thrift` module. Consumers of Thrift modules can now set their own Scrooge and Thrift version without `phantom-thrift` interfering with them and causing serialization problems.
+- Added a `RootThriftPrimitive` to allow easily creating an implicit primitive for custom types. This is used when Thrift columns are part of the primary key.
+- Moved the duplicate `package.scala` from the test part of `com.websudos.phantom.thrift` to avoid strange overloading of imports between the main module and test module. Also fixes compilation warning message about conflicting members.
+- Fixed support for nested Primitive types. A `Column[Owner, Record, T` can now de-serialize to a type that is completely different from `T`. This fixes edge scenarios like the `DateTimePrimitive` of type `Primitive[org.joda.time.DateTime]` which has no proprietary extractor and is instead just a thin layer around the existing `java.util.Date` extractor. Phantom can now feed in the correct extraction type and deserialize columns like `MapColumn[Owner, Record, DateTime, String]`.
+- Bumped ScalaTest dependency to version `2.2.4`.
+- Fixed serialization of Blob columns by using Datastax Java Driver helper object `Bytes`.
+- Added support for SBT version management via Twitter's `sbt-package-dist` published via the custom Websudos fork: `"com.websudos" %% "sbt-package-dist" % "1.2.0"`.
+- Bumped Scala version to `2.10.5` and `2.11.6`.
+- Added dependency resolution retry during Travis CI phase. Travis will now retry to fetch dependencies 3 times before giving up, which fixes most timeout errors during dependency resolution and lets builds consistently pass.
+- Moved publishing infrastructure to Bintray and added a dependency on `"me.lessis" %% "bintray-sbt" % "0.3.0"` to publish artefacts to Bintray.
+- Bumped SBT version to `0.13.8` and bumped `net.virtualvoid.dependencygraph` version to `0.7.5` in `plugins.sbt`.
+
+
+<a id="version-1.8.13">1.8.13</a>
+===============================
+
+- Removed `TestZookeeperConnector` from the default `phantom-testkit`.
+- Removed `BaseTest` and `FeatureBaseTest` from `phantom-testkit`.
+- Removed dependency on `phantom-zookeeper` from the default implementation of `phantom-connectors`. This was a very bad accident and Zk dependencies were being pulled in even if the end user wasn't relying on ZooKeeper for service discovery.

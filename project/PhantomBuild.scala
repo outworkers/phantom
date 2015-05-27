@@ -36,7 +36,7 @@ import sbt._
 
 object PhantomBuild extends Build {
 
-  val UtilVersion = "0.8.8"
+  val UtilVersion = "0.9.6"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
@@ -47,8 +47,9 @@ object PhantomBuild extends Build {
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.0.2.6"
+  val CassandraUnitVersion = "2.1.3.2"
   val SparkCassandraVersion = "1.2.0-alpha3"
+  val ThriftVersion = "0.5.0"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -61,17 +62,11 @@ object PhantomBuild extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
       <url>https://github.com/websudos/phantom</url>
-        <licenses>
-          <license>
-            <name>Websudos License</name>
-            <url>http://websudos.com/license</url>
-            <distribution>repo</distribution>
-          </license>
-        </licenses>
         <scm>
           <url>git@github.com:websudos/phantom.git</url>
           <connection>scm:git:git@github.com:websudos/phantom.git</connection>
@@ -108,7 +103,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.8.9",
+    version := "1.9.1",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -245,7 +240,6 @@ object PhantomBuild extends Build {
     )
   ).dependsOn(
     phantomDsl,
-    phantomZookeeper,
     phantomTestKit % "test, provided"
   )
 
@@ -259,8 +253,9 @@ object PhantomBuild extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
+      "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
+      "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
-      "org.scalatest"                %% "scalatest"                         % ScalaTestVersion          % "test, provided",
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
@@ -277,11 +272,7 @@ object PhantomBuild extends Build {
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
-      "com.websudos"                 %% "util-zookeeper"                    % UtilVersion            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14"),
-      "org.cassandraunit"            %  "cassandra-unit"                    % CassandraUnitVersion   % "test, provided"  excludeAll(
-        ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "slf4j-jdk14")
-      )
+      "com.websudos"                 %% "util-zookeeper"                    % UtilVersion            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14")
     )
   ).dependsOn(
     phantomConnectors
@@ -295,16 +286,10 @@ object PhantomBuild extends Build {
     name := "phantom-testkit",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
-      "com.websudos"                     %% "util-zookeeper"           % UtilVersion excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14"),
-      "com.websudos"                     %% "util-testing"             % UtilVersion,
-      "org.cassandraunit"                %  "cassandra-unit"           % CassandraUnitVersion  excludeAll (
-        ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "slf4j-jdk14"),
-        ExclusionRule("com.google.guava", "guava")
-      )
+      "com.websudos"                     %% "util-testing"             % UtilVersion
     )
   ).dependsOn(
-    phantomZookeeper
+    phantomConnectors
   )
 
   lazy val phantomExample = Project(
@@ -351,5 +336,24 @@ object PhantomBuild extends Build {
     phantomThrift,
     phantomZookeeper,
     phantomTestKit
+  )
+
+  lazy val phantomSbtPlugin = Project(
+    id = "phantom-sbt",
+    base = file("phantom-sbt"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-sbt",
+    scalaVersion := "2.10.5",
+    sbtPlugin := true,
+    resolvers ++= Seq(
+      Resolver.bintrayRepo("websudos", "oss-releases")
+    ),
+    libraryDependencies ++= Seq(
+      "org.cassandraunit" % "cassandra-unit"  % CassandraUnitVersion  excludeAll (
+        ExclusionRule("org.slf4j", "slf4j-log4j12"),
+        ExclusionRule("org.slf4j", "slf4j-jdk14")
+      )
+    )
   )
 }

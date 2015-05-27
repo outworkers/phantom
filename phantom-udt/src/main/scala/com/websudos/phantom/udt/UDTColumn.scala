@@ -30,21 +30,19 @@
 package com.websudos.phantom.udt
 
 import java.util.Date
-import scala.util.Try
 
 import com.datastax.driver.core.{ResultSet, Row, Session, UDTValue, UserType}
 import com.twitter.util.Future
+import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
-import com.websudos.phantom.connectors.CassandraConnector
 import com.websudos.phantom.dsl.{Column, KeySpace}
-import com.websudos.phantom.CassandraTable
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-import scala.util.DynamicVariable
+import scala.util.{DynamicVariable, Try}
 
 
 /**
@@ -118,12 +116,12 @@ private[udt] object UDTCollector {
    * @param session The Cassandra database connection session.
    * @return
    */
-  def future()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    ScalaFuture.sequence(_udts.toSeq.map(_.create().future())).map(_.head)
+  def future()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Seq[ResultSet]] = {
+    ScalaFuture.sequence(_udts.toSeq.map(_.create().future()))
   }
 
-  def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
-    Future.collect(_udts.map(_.create().execute())).map(_.head)
+  def execute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
+    Future.collect(_udts.map(_.create().execute()))
   }
 }
 
@@ -133,9 +131,9 @@ sealed trait UDTDefinition[T] {
 
   def fields: List[AbstractField[_]] = _fields.toList
 
-  def connector: CassandraConnector
-
-  def typeDef: UserType = connector.manager.clusterRef.getMetadata.getKeyspace(connector.keySpace.name).getUserType(name)
+  def typeDef()(implicit session: Session, keySpace: KeySpace): UserType = {
+    session.getCluster.getMetadata.getKeyspace(keySpace.name).getUserType(name)
+  }
 
   val cassandraType = name.toLowerCase
 
@@ -187,11 +185,11 @@ sealed trait UDTDefinition[T] {
 abstract class UDTColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  T <: UDTColumn[Owner, Record, T]
-](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, T](table) with UDTDefinition[T] {
+  T
+](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, UDTColumn[Owner, Record, T]](table) with UDTDefinition[T] {
 
-   override def apply(row: Row): T = {
-    val instance: T = clone().asInstanceOf[T]
+   override def apply(row: Row): UDTColumn[Owner, Record, T] = {
+    val instance: UDTColumn[Owner, Record, T] = clone().asInstanceOf[UDTColumn[Owner, Record, T]]
     val data = row.getUDTValue(name)
 
     instance.fields.foreach(field => {
@@ -200,9 +198,9 @@ abstract class UDTColumn[
     instance
   }
 
-  override def optional(r: Row): Try[T] = {
+  override def optional(r: Row): Try[UDTColumn[Owner, Record, T]] = {
     Try {
-      val instance: T = clone().asInstanceOf[T]
+      val instance = clone().asInstanceOf[UDTColumn[Owner, Record, T]]
       val data = r.getUDTValue(name)
 
       instance.fields.foreach(field => {
@@ -213,7 +211,7 @@ abstract class UDTColumn[
     }
   }
 
-  def asCql(v: T): String = {
+  def asCql(v: T)(implicit session: Session, keySpace: KeySpace): String = {
     val data = typeDef.newValue()
     fields.foreach(field => {
       field.setSerialise(data)

@@ -32,6 +32,7 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
+import scala.util.Try
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
@@ -41,9 +42,7 @@ import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.CassandraManagerBuilder
 
-import scala.util.Try
 
 package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
 
@@ -102,9 +101,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
-  type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleCassandraConnector
-  type CassandraConnector = com.websudos.phantom.connectors.CassandraConnector
-  type CassandraManager = com.websudos.phantom.connectors.CassandraManager
+  type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleConnector
 
   type DateTime = org.joda.time.DateTime
   type DateTimeZone = org.joda.time.DateTimeZone
@@ -115,6 +112,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type KeySpace = com.websudos.phantom.connectors.KeySpace
   val KeySpace = com.websudos.phantom.connectors.KeySpace
 
+  val Version = com.websudos.phantom.connectors.DefaultVersions
 
   case object Batch extends Batcher
 
@@ -204,8 +202,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
-
-  object CassandraManager extends CassandraManagerBuilder
 
   implicit lazy val context = Manager.scalaExecutor
 

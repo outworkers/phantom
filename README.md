@@ -21,13 +21,15 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 - The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
-- Intermediary releases are available through our managed Bintray repository available at https://bintray.com/websudos/oss-releases/. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/websudos/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 
 ### Latest versions
 
-- Latest stable version: 1.8.4 (Maven Central)
-- Bleeding edge: 1.8.9 (Websudos OSS releases on Bintray)
+Check the badges at the top of this README for the latest version. The badges are automatically updated in realtime, where as this README isn't.
+
+- Latest stable version: 1.8.9 (Maven Central)
+- Bleeding edge: 1.8.12 (Websudos OSS releases on Bintray)
 
 You will also be needing the default resolvers for Maven Central and the typesafe releases. Phantom will never rely on any snapshots or be published as a
 snapshot version, the bleeding edge is always subject to internal scrutiny before any releases into the wild.
@@ -380,16 +382,16 @@ libraryDependencies ++= Seq(
   "com.websudos"  %% "phantom-thrift"                % phantomVersion,
   "com.websudos"  %% "phantom-testkit"               % phantomVersion,
   "com.websudos"  %% "phantom-udt"                   % phantomVersion,
-  "com.websudos"  %% "phantom-zookeeper"             % phantomVersion
+  "com.websudos"  %% "phantom-zookeeper"             % phantomVersion,
+  "com.websudos"  %% "phantom-sbt"                   % phantomVersion
 )
 ```
 If you include ```phantom-zookeeper```, make sure to add the following resolvers:
 
 ```scala
 resolvers += "twitter-repo" at "http://maven.twttr.com"
-
-resolvers += "websudos-repo" at "http://maven.websudos.co.uk/ext-release-local"
 ```
+
 
 <a id="primitive-columns">Primitive columns</a>
 ====================================================
@@ -1384,6 +1386,10 @@ however do be careful. We often tend to use the latest version as we do our best
 You may use a brand new phantom feature, see the tests passing with flying colours locally and then get bad errors in production. The version of Cassandra 
 covered by the latest phantom release and used for embedding is written at the very top of this readme.
 
+
+
+
+
 <a id="running-the-tests-locally">Running the tests locally</a>
 ==================================================
 <a href="#table-of-contents">back to top</a>
@@ -1412,9 +1418,10 @@ Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
+* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
+* Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1)
 * Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev)
-* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel)
 * Tomasz Perek ([@tperek](https://github.com/tperek)
 * Evan Chan ([@evanfchan](https://github.com/evanfchan)
