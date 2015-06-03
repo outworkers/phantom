@@ -85,10 +85,10 @@ So you can have the series of ```import com.websudos.phantom.dsl._, import com.w
 <a id="propagating-parse-errors">Propagating parse errors</a>
 =============================================================
 
-Until now, our implementation of Cassandra primitives has been based on the Datastax Java Driver and on an ```Option``` based DSL. This made it heard to deal with parse errors at runtime, specifically those situations when
-the DSL was unable to parse the required type from the Cassandra result or in a simple case where ```null`` was returned for a non-optional column.
+Until now, our implementation of Cassandra primitives has been based on the Datastax Java Driver and on an ```Option``` based DSL. This made it hard to deal with parse errors at runtime, specifically those situations when
+the DSL was unable to parse the required type from the Cassandra result or in a simple case where ```null``` was returned for a non-optional column.
 
-The core of the ```Column[Table, Record, ValueType].apply(value: ValueType]``` method which was used to parse rows in a type safe manner was written like this:
+The core of the ```Column[Table, Record, ValueType].apply(value: ValueType)``` method which was used to parse rows in a type safe manner was written like this:
 
 ```scala
 
@@ -101,7 +101,7 @@ def apply(row: Row):  = optional(row).getOrElse(throw new Exception("Couldn't pa
 This approach left the original exception which caused the parser to parse a ```null``` and subsequently a ```None``` was ignored.
 
 With the new type-safe primitive interface that no longer relies on the Datastax Java driver we were also able to move the ```Option``` based parsing mechanism to a ```Try``` mechanism which will now
- log all parse errors un-altered, in the exact same way the are thrown at compile time, using the ```logger``` for the given table.
+ log all parse errors un-altered, in the exact same way they are thrown at compile time, using the ```logger``` for the given table.
  
 Internally, we are now using something like this: 
  
@@ -126,7 +126,7 @@ The exception is now logged and propagated with no interference. We intercept it
 ==================================================================
 
 Play enumerators and Twitter ResultSpools have been removed from the default ```one```, ```get```, ```fetch``` and ```collect``` methods. You will have to
-explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators. This will offer everyone a signifact
+explicitly call ```fetchEnumerator``` and ```fetchSpool``` if you want result throttling through async lazy iterators. This will offer everyone a significant
 performance improvement over query performance. Async iterators needed a lot of expensive "magic" to work properly, but you don't always need to fold over
 100k records. That behaviour was implemented both as means of showing off as well as doing all in one loads like the Spark - Cassandra connector performs. E.g
  dumping C* data into HDFS or whatever backup system. A big 60 - 70% gain should be expected.
@@ -134,10 +134,10 @@ performance improvement over query performance. Async iterators needed a lot of 
 Phantom connectors now require an ```implicit com.websudos.phantom.connectors.KeySpace``` to be defined. Instead of using a plain string, you just have to
 use ```KeySpace.apply``` or simply: ```trait MyConnector extends Connector { implicit val keySpace = KeySpace("your_def") } ```. This change allows us to
 replace the existing connector model and vastly improve the number of concurrent cluster connections required to perform operations on various keyspaces.
-Insteaed of the 1 per keyspace model, we can now successfully re-use the same session without evening needing to switch as phantom will use the full CQL
-reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECY FROM table```.
+Instead of the 1 per keyspace model, we can now successfully re-use the same session without even needing to switch as phantom will use the full CQL
+reference syntax, e.g ```SELECT FROM keyspace.table``` instead of ```SELECT FROM table```.
 
-A entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
+An entirely new set of options have been enabled in the type safe DSLs. You can now alter tables, specify advanced compressor behaviour and so forth, all
 from within phantom and with the guarantee of auto-completion and type safety.
 
 
@@ -266,7 +266,7 @@ This was never possible before in phantom, and now from 1.7.0 onwards we feature
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra.
+We love Cassandra to bits and use it in every bit our stack. Phantom makes it super trivial for Scala users to embrace Cassandra.
 
 Cassandra is highly scalable and it's by far the most powerful database technology available, open source or otherwise.
 
@@ -280,7 +280,7 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
+This is a list of companies that have embraced phantom as part of their technology stack and are using it in production environments.
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [Pellucid Analytics](http://www.pellucid.com/)
@@ -298,22 +298,22 @@ adopters, please get in touch. We are very happy and eager to listen.
 
 - User defined types
 
-We are working closely around the latest features in the Datastax Java driver and Apache Cassandra 2.1 to offer a fully type safe DSL for user defined types.
-This feature is well in progress and you can expect to see it live roughly at the same time as the release of the Datastax 2.1 driver, planned for July 2014.
+    We are working closely around the latest features in the Datastax Java driver and Apache Cassandra 2.1 to offer a fully type safe DSL for user defined types.
+    This feature is well in progress and you can expect to see it live roughly at the same time as the release of the Datastax 2.1 driver, planned for July 2014.
 
-Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
+    Some of the cool features include automatic schema generation, fully type safe referencing of fields and inner members of UDTs and fully type safe querying.
 
 
 - Spark integration
 
-Thanks to the recent partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with a Datastax backed integration. We won't be slow to
-follow up with a type safe Scala variant of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
- storage through the simple high power DSL we've gotten you used to.
+    Thanks to the recent partnership between Databricks and Datastax, Spark is getting a Cassandra facelift with a Datastax backed integration. We won't be slow to
+    follow up with a type safe Scala variant of that integration, so you can enjoy the benefits of high power computation with Cassandra as a backup
+    storage through the simple high power DSL we've gotten you used to.
 
 - Prepared statements
 
-By popular demand, a feature long overdue in phantom. The main reason is the underlying Java driver and the increased difficulty of guaranteeing type safety
-with prepared statements along with a nice DSL to get things done. Not to say it's impossible, this will be released after the new query builder emerges.
+    By popular demand, a feature long overdue in phantom. The main reason is the underlying Java driver and the increased difficulty of guaranteeing type safety
+    with prepared statements along with a nice DSL to get things done. Not to say it's impossible, this will be released after the new query builder emerges.
 
 - A new QueryBuilder(available as of 1.6.0)
 
@@ -401,11 +401,11 @@ This is the list of available columns and how they map to C* data types.
 This also includes the newly introduced ```static``` columns in C* 2.0.6.
 
 The type of a static column can be any of the allowed primitive Cassandra types.
-phantom won't let you mixin a non-primitive via implicit magic.
+Phantom won't let you mixin a non-primitive via implicit magic.
 
 | phantom columns               | Java/Scala type           | Cassandra type    |
 | ---------------               |-------------------        | ----------------- |
-| BlobColumn                    | java.nio.ByteBuffer       | blog              |
+| BlobColumn                    | java.nio.ByteBuffer       | blob              |
 | BigDecimalColumn              | scala.math.BigDecimal     | decimal           |
 | BigIntColumn                  | scala.math.BigInt         | varint            |
 | BooleanColumn                 | scala.Boolean             | boolean           |
@@ -435,7 +435,7 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 
 | phantom columns               | Java/Scala type                   | Cassandra columns |
 | ---------------               | -------------------------         | ----------------- |
-| OptionalBlobColumn            | Option[java.nio.ByteBuffer]       | blog              |
+| OptionalBlobColumn            | Option[java.nio.ByteBuffer]       | blob              |
 | OptionalBigDecimalColumn      | Option[scala.math.BigDecimal]     | decimal           |
 | OptionalBigIntColumn          | Option[scala.math.BigInt]         | varint            |
 | OptionalBooleanColumn         | Option[scala.Boolean]             | boolean           |
@@ -462,7 +462,7 @@ The ```type``` in the below example is always a default C* type.
 JSON columns require you to define a ```toJson``` and ```fromJson``` method, telling phantom how to go from a ```String``` to the type you need. 
 It makes no assumptions as to what library you are using, although we have tested with ```lift-json``` and ```play-json```.
 
-Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/dsl/specialized/JsonColumnTest.scala)
+Examples on how to use JSON columns can be found in [JsonColumnTest.scala](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/specialized/JsonColumnTest.scala)
 
 | phantom columns                     | Cassandra columns       |
 | ---------------                     | -----------------       |
@@ -477,7 +477,7 @@ Examples on how to use JSON columns can be found in [JsonColumnTest.scala](https
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
-phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
+Phantom uses a specific set of traits to enforce more advanced Cassandra limitations and schema rules at compile time.
 Instead of waiting for Cassandra to tell you you've done bad things, phantom won't let you compile them, saving you a lot of time.
 
 The error messages you get when your model is off with respect to Cassandra rules is not particularly helpful and we are working on a better builder to allow
@@ -545,15 +545,15 @@ Using more than one ```PartitionKey[T]``` in your schema definition will output 
 ==============================================
 <a href="#table-of-contents">back to top</a>
 
-As it's name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
-The first ```PrimaryKey``` is used to partition data. phantom will force you to always define a ```PartitionKey``` so you don't forget
+As its name says, using this will mark a column as ```PrimaryKey```. Using multiple values will result in a Compound Value.
+The first ```PrimaryKey``` is used to partition data. Phantom will force you to always define a ```PartitionKey``` so you don't forget
 about how your data is partitioned. We also use this DSL restriction because we hope to do more clever things with it in the future.
 
 A compound key in C* looks like this:
 ```PRIMARY_KEY(primary_key, primary_key_1, primary_key_2)```.
 
 Before you add too many of these, remember they all have to go into a ```where``` clause.
-You can only query with a full primary key, even if it's compound. phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
+You can only query with a full primary key, even if it's compound. Phantom can't yet give you a compile time error for this, but Cassandra will give you a runtime one.
 
 <a id="secondary-index">SecondaryIndex</a>
 ==============================================
@@ -587,9 +587,8 @@ They are available via the ```phantom-thrift``` module and you need to import th
  import com.websudos.phantom.thrift._
  ```
 
-In the below scenario, the Cassandra type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge
-.ThriftStruct```.
-phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
+In the below scenario, the Cassandra type is always text and the type you need to pass to the column is a Thrift struct, specifically ```com.twitter.scrooge.ThriftStruct```.
+Phantom will use a ```CompactThriftSerializer```, store the record as a binary string and then reparse it on fetch.
 
 Thrift serialization and de-serialization is extremely fast, so you don't need to worry about speed or performance overhead.
 You generally use these to store collections(small number of items), not big things.
@@ -649,8 +648,7 @@ Phantom works with both Scala Futures and Twitter Futures as first class citizen
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-The full list can be found in [CQLQuery.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/query/CQLQuery
-.scala).
+The full list can be found in [CQLQuery.scala](phantom-dsl/src/main/scala/com/websudos/phantom/builder/query/CQLQuery.scala)
 
 | Method name                       | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
@@ -702,7 +700,7 @@ Select queries are very straightforward and enforce most limitations at compile 
 
 All partial select queries will return Tuples and are therefore limited to 22 fields.
 We haven't yet bothered to add more than 10 fields in the select, but you can always do a Pull Request.
-The file you are looking for is [here](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
+The file you are looking for is [here](phantom-dsl/src/main/scala/com/websudos/phantom/SelectTable.scala).
 The 22 field limitation will change in Scala 2.11 and phantom will be updated once cross version compilation is enabled.
 
 ```scala
@@ -895,7 +893,7 @@ All operators will be available in an update query, specifically:
 ==========================================
 <a href="#table-of-contents">back to top</a>
 
-Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/dsl/crud/ListOperatorsTest.scala).
+Examples in [ListOperatorsTest.scala](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/crud/ListOperatorsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
@@ -905,19 +903,19 @@ Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/d
 | ```appendAll```               | Adds multiple items to the tail of the list   |
 | ```discard```                 | Removes the given item from the list.         |
 | ```discardAll```              | Removes all given items from the list.        |
-| ```setIdIx```                 | Updates a specific index in the list          |
+| ```setIdx```                 | Updates a specific index in the list          |
 
 <a id="set-operators">Set operators</a>
 =======================================
 <a href="#table-of-contents">back to top</a>
 
 Sets have a better performance than lists, as the Cassandra documentation suggests.
-Examples in [SetOperationsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/SetOperationsTest.scala).
+Examples in [SetOperationsTest.scala](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/crud/SetOperationsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
-| ```add```                     | Adds an item to the tail of the set           |
-| ```addAll```                  | Adds multiple items to the tail of the set    |
+| ```add```                     | Adds an item to the set                       |
+| ```addAll```                  | Adds multiple items to the set                |
 | ```remove ```                 | Removes the given item from the set.          |
 | ```removeAll```               | Removes all given items from the set.         |
 
@@ -927,11 +925,11 @@ Examples in [SetOperationsTest.scala](https://github.com/websudos/phantom/blob/d
 <a href="#table-of-contents">back to top</a>
 
 Both the key and value types of a Map must be Cassandra primitives.
-Examples in [MapOperationsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/crud/MapOperationsTest.scala):
+Examples in [MapOperationsTest.scala](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/crud/MapOperationsTest.scala).
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
-| ```put```                     | Adds an (key -> value) pair to the map        |
+| ```put```                     | Adds a (key -> value) pair to the map         |
 | ```putAll```                  | Adds multiple (key -> value) pairs to the map |
 
 
@@ -985,22 +983,22 @@ val orderedResult = Await.result(Articles.select.where(_.id gtToken one.get.id )
 ===============================================================
 <a href="#table-of-contents">back to top</a>
 
-| Operator name      | Description                                                              |
+| Operator name      | Description                                                                                              |
 | ------------------ | ------------------------------------------------------------                                             |
 | eqsToken           | The "equals" operator. Will match if the objects are equal                                               |
-| gtToken            | The "greater than" operator. Will match a the record is greater than the argument                        |
-| gteToken           | The "greater than or equals" operator. Will match a the record is greater than the argument              |
-| ltToken            | The "lower than" operator. Will match a the record that is less than the argument and exists             |
-| lteToken           | The "lower than or equals" operator. Will match a the record that is less than the argument              |
+| gtToken            | The "greater than" operator. Will match a record that is greater than the argument                       |
+| gteToken           | The "greater than or equals" operator. Will match a record that is greater than or equal to the argument |
+| ltToken            | The "lower than" operator. Will match a record that is less than the argument and exists                 |
+| lteToken           | The "lower than or equals" operator. Will match a record that is less than or equal to the argument      |
 
-For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala]( https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/SkipRecordsByToken.scala)
+For more details on how to use Cassandra partition tokens, see [SkipRecordsByToken.scala](phantom-dsl/src/test/scala/com/websudos/phantom/base/SkipRecordsByToken.scala)
 
 
 <a id="time-series">Cassandra Time Series</a>
 =============================================
 <a href="#table-of-contents">back to top</a>
 
-phantom supports Cassandra Time Series. To use them, simply mixin ```com.websudos.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
+Phantom supports Cassandra Time Series. To use them, simply mixin ```com.websudos.phantom.keys.ClusteringOrder``` and either ```Ascending``` or ```Descending```.
 
 Restrictions are enforced at compile time.
 
@@ -1061,7 +1059,7 @@ but phantom offers ```com.websudos.phantom.keys.Index``` to enable querying.
 
 The CQL 3 schema for secondary indexes can also be auto-generated with ```ExampleRecord4.create()```.
 
-```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](https://github.com/websudos/phantom/blob/develop/phantom-test/src/test/scala/com/websudos/phantom/dsl/specialized/SecondaryIndexTest.scala).
+```SELECT``` is the only query you can perform with an ```Index``` column. This is a Cassandra limitation. The relevant tests are found [here](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/specialized/SecondaryIndexTest.scala).
 
 
 ```scala
@@ -1088,14 +1086,14 @@ sealed class ExampleRecord4 extends CassandraTable[ExampleRecord4, ExampleModel]
 <a href="#table-of-contents">back to top</a>
 
 Phantom comes packed with CQL rows asynchronous lazy iterators to help you deal with billions of records.
-phantom iterators are based on Play iterators with very lightweight integration.
+Phantom iterators are based on Play iterators with very lightweight integration.
 
 The functionality is identical with respect to asynchronous, lazy behaviour and available methods.
 For more on this, see this [Play tutorial](
-http://mandubian.com/2012/08/27/understanding-play2-iteratees-for-normal-humans/)
+http://mandubian.com/2012/08/27/understanding-play2-iteratees-for-normal-humans/).
 
 
-Usage is trivial. If you want to use ```slice, take or drop``` with iterators, the partitioner needs to be ordered.
+Usage is trivial. If you want to use ```slice```, ```take``` or ```drop``` with iterators, the partitioner needs to be ordered.
 
 ```scala
 
@@ -1130,15 +1128,15 @@ object ExampleRecord3 extends ExampleRecord3 {
 =============================================
 <a href="#table-of-contents">back to top</a>
 
-phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/iteratee/IterateeBigTest.scala)
+Phantom also brings in support for batch statements. To use them, see [iteratee/BigTest.scala](phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/iteratee/BigTest.scala).
 
 We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
-Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
+Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1,000,000 statements per batch.
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
 
-phantom also supports COUNTER batch updates and UNLOGGED batch updates.
+Phantom also supports COUNTER batch updates and UNLOGGED batch updates.
 
 
 <a id="logged-batch-statements">LOGGED batch statements</a>
@@ -1189,7 +1187,7 @@ Batch.unlogged
 =================================================
 <a href="#table-of-contents">back to top</a>
 
-We use Apache Thrift extensively for our backend services. phantom is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. 
+We use Apache Thrift extensively for our backend services. Phantom is very easy to integrate with Thrift models and uses ```Twitter Scrooge``` to compile them. 
 Thrift integration is optional and available via ```"com.websudos" %% "phantom-thrift"  % phantomVersion```.
 
 ```thrift
@@ -1222,7 +1220,7 @@ Using a set of conventions phantom can automate the entire process of using ZooK
 - Creating a Cluster configuration based on the sequence of Cassandra ports available in ZooKeeper.
 - Creating an implicit session for queries to execute.
 
-The entire process described above is entirely automated with a series of sensible defaults available. More details on default implementations are available below. Bottom line, if you want to go custom, you may override at will, if you just want to get something working as fast as possible, then ```phantom-zookeeper``` can do everything for you.
+The entire process described above is entirely automated with a series of sensible defaults available. More details on default implementations are available below. Bottom line, if you want to go custom, you may override at will. If you just want to get something working as fast as possible, then ```phantom-zookeeper``` can do everything for you.
 
 <a id="the-simple-cassandra-connector">The simple Cassandra Connector</a>
 ==========================================================================================================
@@ -1230,8 +1228,7 @@ The entire process described above is entirely automated with a series of sensib
 This implementation is a very simple way to connect to a running Cassandra node. This is not using ZooKeeper and it's not really indented for multi-node 
 testing or connections, but sometimes you just want to get things working immediately.
 
-The implementation details are available [here](https://github
-.com/websudos/phantom/blob/develop/phantom-connectors/src/main/scala/com/websudos/phantom/connectors/SimpleCassandraConnector.scala),
+The implementation details are available [here](phantom-testkit/src/main/scala/com/websudos/phantom/testkit/suites/SimpleCassandraConnector.scala),
 but without further ado, this connector will attempt to connector to a local Cassandra, either embedded or not.
 
 Inside Websudos, our port convention is ```9042``` for local Cassandra and ```9142``` for embedded. This is reflected in our ```cassandra.yaml``` 
@@ -1254,18 +1251,16 @@ Using that ```Cluster``` phantom will spawn an ```implicit session: com.datastax
 ==================================================
 <a href="#table-of-contents">back to top</a>
 
-Naturally, no job is considered truly done with the full power testing automation provided out-of-the box. This is exactly what we tried to achieve with the 
-testing utilities, giving you a very simple, easily extensible, yet highly sensible defaults. We wanted something that works for most things most of the time
+Naturally, no job is considered truly done without the full power testing automation provided out-of-the box. This is exactly what we tried to achieve with the 
+testing utilities, giving you very simple, easily extensible, yet highly sensible defaults. We wanted something that works for most things most of the time
 with 0 integration work on your behalf, yet allowing you to go crazy and custom as you please if the scenario warrants it. 
 
 With that design philosophy in mind, we've created two kinds of tests, 1 running with a ```SimpleCassandraConnector```, 
-with the implementation found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit
-/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings,
+with the implementation found [here](phantom-testkit/src/main/scala/com/websudos/phantom/testkit/suites/SimpleCassandraConnector.scala), where the testing utilities will auto-spawn an Embedded Cassandra database with the right version and the right settings,
 run all the tests and cleanup after tests are done.
 
 The other, more complex implementation, targets users who want to use phantom/Cassandra in a distributed environment. This is an easy way to automate 
-multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above. The ```BaseTest``` implementation, 
-which uses a ```DefaultZooKeeperConnector```, is found [here](https://github.com/websudos/phantom/blob/develop/phantom-testkit/src/main/scala/com/websudos/phantom/testkit/BaseTest.scala), and it follows the pattern described above.
+multi-DC or multi-cluster tests via service discovery with Apache ZooKeeper. More details are available right above.
 
 
 There are 4 core implementations available:
