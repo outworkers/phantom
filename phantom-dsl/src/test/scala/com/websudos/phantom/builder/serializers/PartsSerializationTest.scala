@@ -14,7 +14,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
       "initialize the inner query list to the empty list" in {
         val part = new WherePart()
 
-        part.queryList.isEmpty shouldEqual true
+        part.list.isEmpty shouldEqual true
         part.list.isEmpty shouldEqual true
       }
 

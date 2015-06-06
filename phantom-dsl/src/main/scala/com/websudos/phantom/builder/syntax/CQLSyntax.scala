@@ -138,6 +138,9 @@ object CQLSyntax {
 
     val in = "IN"
     val eqs = "="
+
+    val contains = "CONTAINS"
+    val containsKey = "CONTAINS KEY"
   }
 
   object Selection {
@@ -194,6 +197,7 @@ object CQLSyntax {
     val percentile = "percentile"
     val default_time_to_live = "default_time_to_live"
     val ttl = "TTL"
+    val clustering_order = "CLUSTERING ORDER BY"
   }
 
   object CompactionOptions {

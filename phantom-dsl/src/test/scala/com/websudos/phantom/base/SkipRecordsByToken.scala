@@ -94,7 +94,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store))
+      store <- Future.sequence(articles.map(Articles.store(_).future()))
 
       next <- Articles.select.where(_.id eqsToken articles.head.id).fetch
     } yield next
@@ -113,7 +113,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store))
+      store <- Future.sequence(articles.map(Articles.store(_).future()))
 
       next <- Articles.select.where(_.id gteToken articles.head.id).fetch
     } yield next
@@ -132,7 +132,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store))
+      store <- Future.sequence(articles.map(Articles.store(_).future()))
 
       next <- Articles.select.where(_.id ltToken articles.last.id).fetch
     } yield next
@@ -151,7 +151,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store))
+      store <- Future.sequence(articles.map(Articles.store(_).future()))
       next <- Articles.select.where(_.id lteToken articles.last.id).fetch
     } yield next
 
