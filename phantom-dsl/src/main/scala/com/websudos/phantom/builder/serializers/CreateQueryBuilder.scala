@@ -144,8 +144,8 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
     tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
   }
 
-  def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.`with`).pad.append(clause)
+  def `with`(clause: CQLQuery): CQLQuery = {
+    CQLQuery(CQLSyntax.`with`).pad.append(clause)
   }
 
   def index(table: String, keySpace: String, column: String): CQLQuery = {
@@ -154,6 +154,15 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
       .wrap(column)
+  }
+
+  def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
+
+    val list = orderings.foldRight(List.empty[String])((item, l) => {
+      (item._1 + " " + item._2) :: l
+    })
+
+    CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }
 
 }

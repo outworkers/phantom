@@ -1,6 +1,7 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -47,5 +48,17 @@ class WhereClauseOperatorsSerializationTest extends FlatSpec with Matchers {
   it should "serialise a Where.in clause" in {
     val column = gen[String]
     QueryBuilder.Where.in(column, "test", "test2").queryString shouldEqual s"$column IN (test, test2)"
+  }
+
+  it should "serialise a Where.contains clause" in {
+    val column = gen[String]
+    val value = gen[String]
+    QueryBuilder.Where.contains(column, value).queryString shouldEqual s"$column ${CQLSyntax.Operators.contains} $value"
+  }
+
+  it should "serialise a Where.containsKey clause" in {
+    val column = gen[String]
+    val value = gen[String]
+    QueryBuilder.Where.containsKey(column, value).queryString shouldEqual s"$column ${CQLSyntax.Operators.containsKey} $value"
   }
 }

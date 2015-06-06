@@ -43,13 +43,6 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
-    blocking {
-      Try {
-        session.execute(s"DROP TABLE ${keySpace.name}.${SecondaryIndexTable.tableName}")
-      }
-    }
-
     Await.ready(SecondaryIndexTable.create.ifNotExists().future(), 4.seconds)
   }
 

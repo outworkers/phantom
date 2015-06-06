@@ -4,7 +4,9 @@ import java.util.concurrent.TimeUnit
 
 import com.twitter.conversions.storage._
 import com.twitter.util.{Duration => TwitterDuration}
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.KeySpaceSuite
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.BasicTable
 import org.joda.time.Seconds
@@ -34,11 +36,10 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
-
         val qb = BasicTable.create
           .`with`(compaction eqs SizeTieredCompactionStrategy.sstable_size_in_mb(50.megabytes))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-          .qb.queryString
+        .qb.queryString
 
         qb shouldEqual """CREATE TABLE phantom.BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class' : 'SizeTieredCompactionStrategy', 'sstable_size_in_mb' : '50.0 MiB' } AND compression = { 'sstable_compression' : 'LZ4Compressor', 'crc_check_chance' : 0.5 }"""
       }
@@ -126,6 +127,18 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
         qb shouldEqual "CREATE TABLE phantom.BasicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
       }
     }
+
+    "should allow specifying a clustering order" - {
+      "specify a single column clustering order with ascending ordering" in {
+        val column = ("test", CQLSyntax.Ordering.asc) :: Nil
+
+        val qb = QueryBuilder.Create.clusteringOrder(column).queryString
+
+        qb shouldEqual "CLUSTERING ORDER BY (test ASC)"
+
+      }
+    }
+
   }
 
 

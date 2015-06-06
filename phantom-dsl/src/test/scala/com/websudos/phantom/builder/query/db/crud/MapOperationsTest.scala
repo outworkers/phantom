@@ -48,21 +48,10 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
-    val props = genMap[String, String](5)
     val item = gen[String, String]
 
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, props)
-      .future()
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- Recipes.store(recipe).future()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
@@ -72,29 +61,17 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual props + item
+        items.get shouldEqual recipe.props + item
       }
     }
   }
 
   it should "support a single item map put operation with Twitter futures" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
-
-    val props = genMap[String, String](5)
     val item = gen[String, String]
 
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, props)
-      .execute()
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- Recipes.store(recipe).execute()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).execute()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
     } yield {
@@ -104,28 +81,17 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual props + item
+        items.get shouldEqual recipe.props + item
       }
     }
   }
 
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
-    val props = genMap[String, String](5)
     val mapItems = genMap[String, String](5)
 
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, props)
-      .future()
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- Recipes.store(recipe).future()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
@@ -135,28 +101,17 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual props ++ mapItems
+        items.get shouldEqual recipe.props ++ mapItems
       }
     }
   }
 
   it should "support a multiple item map put operation with Twitter futures" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
-    val props = genMap[String, String](5)
     val mapItems = genMap[String, String](5)
 
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, props)
-      .execute()
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- Recipes.store(recipe).execute()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).execute()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
     } yield {
@@ -166,7 +121,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get shouldEqual props ++ mapItems
+        items.get shouldEqual recipe.props ++ mapItems
       }
     }
   }

@@ -29,11 +29,9 @@
  */
 package com.websudos.phantom.example.basics
 
-import java.util.UUID
-import com.datastax.driver.core.Row
-import com.websudos.phantom.dsl._
 import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.thrift.columns.ThriftColumn
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.thrift._
 
 // Sample model here comes from the Thrift struct definition.
 // The IDL is available in phantom-example/src/main/thrift.
@@ -62,6 +60,4 @@ sealed class ThriftTable extends CassandraTable[ThriftTable,  SampleRecord] {
   }
 }
 
-object ThriftTable extends ThriftTable with ExampleConnector {
-
-}
+object ThriftTable extends ThriftTable with ExampleConnector

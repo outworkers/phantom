@@ -24,6 +24,7 @@ branches:
 
 jdk:
   - oraclejdk7
+  - oraclejdk8
   - openjdk7
 
 cache:
@@ -32,7 +33,7 @@ cache:
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
-sript: sbt ++$TRAVIS_SCALA_VERSION clean coverage test scalastyle && sbt ++$TRAVIS_SCALA_VERSION coverageAggregate
+script: sbt ++$TRAVIS_SCALA_VERSION clean coverage test && sbt ++$TRAVIS_SCALA_VERSION coverageAggregate && sbt ++$TRAVIS_SCALA_VERSION scalastyle
 
 after_success: sbt ++$TRAVIS_SCALA_VERSION coveralls
 
