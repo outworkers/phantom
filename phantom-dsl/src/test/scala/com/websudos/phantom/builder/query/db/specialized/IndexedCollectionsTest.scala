@@ -1,6 +1,6 @@
 package com.websudos.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.exceptions.InvalidQueryException
+import com.datastax.driver.core.exceptions.{SyntaxError, InvalidQueryException}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -34,7 +34,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
 
   }
@@ -56,7 +56,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
   }
 
@@ -77,7 +77,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
   }
 
@@ -98,7 +98,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
   }
 
@@ -119,7 +119,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
   }
 
@@ -140,7 +140,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      chain.failing[InvalidQueryException]
+      chain.failing[SyntaxError]
     }
   }
 
