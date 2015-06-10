@@ -29,8 +29,8 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import com.datastax.driver.core.{VersionNumber, Session}
-import com.websudos.phantom.connectors.{ContactPoint, ContactPoints, KeySpace, KeySpaceDef}
+import com.datastax.driver.core.{Session, VersionNumber}
+import com.websudos.phantom.connectors.{ContactPoints, KeySpace, KeySpaceDef}
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
 
@@ -66,8 +66,6 @@ trait SimpleCassandraTest extends ScalaFutures
   self : BeforeAndAfterAll with Suite =>
 
   override val host = "localhost"
-
-  override implicit lazy val session: Session = ContactPoint.local.keySpace(keySpace.name).session
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.

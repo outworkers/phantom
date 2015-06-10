@@ -45,17 +45,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow]
     val someItem = "test5"
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .future()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).future()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText add someItem).future()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
@@ -72,17 +63,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow]
     val someItem = "test5"
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .execute()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).execute()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText add someItem).execute()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db
@@ -99,17 +81,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow]
     val someItems = Set("test5", "test6")
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .future()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).future()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).future()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
@@ -126,17 +99,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow]
     val someItems = Set("test5", "test6")
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .execute()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).execute()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).execute()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db
@@ -154,17 +118,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow].copy(setText = someItems)
     val removal = "test6"
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .future()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).future()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText remove removal).future()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
@@ -182,17 +137,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow].copy(setText = someItems)
     val removal = "test6"
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .execute()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).execute()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText remove removal).execute()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db
@@ -210,17 +156,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow].copy(setText = someItems)
     val removal = Set("test5", "test6")
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .future()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).future()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).future()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
@@ -238,17 +175,8 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[TestRow].copy(setText = someItems)
     val removal = Set("test5", "test6")
 
-    val insert = TestTable.insert
-      .value(_.key, item.key)
-      .value(_.list, item.list)
-      .value(_.setText, item.setText)
-      .value(_.setInt, item.setInt)
-      .value(_.mapTextToText, item.mapTextToText)
-      .value(_.mapIntToText, item.mapIntToText)
-      .execute()
-
     val chain = for {
-      insertDone <- insert
+      insertDone <- TestTable.store(item).execute()
       update <- TestTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).execute()
       db <- TestTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db

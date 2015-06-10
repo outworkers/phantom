@@ -215,6 +215,16 @@ package object tables {
     }
   }
 
+  implicit object StaticCollectionRecordSampler extends Sample[StaticCollectionRecord] {
+    def sample: StaticCollectionRecord = {
+      StaticCollectionRecord(
+        gen[UUID],
+        gen[UUID],
+        genList[String]()
+      )
+    }
+  }
+
   implicit object SimpleStringClassSampler extends Sample[SimpleStringClass] {
     def sample: SimpleStringClass = SimpleStringClass(gen[String])
   }

@@ -104,12 +104,12 @@ class AlterQuery[
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Create.`with`(qb, clause.qb))
+    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def option(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Create.`with`(qb, clause.qb))
+    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb))
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")

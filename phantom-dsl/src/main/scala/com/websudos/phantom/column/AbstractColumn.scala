@@ -65,6 +65,7 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   private[phantom] val isStaticColumn = false
   private[phantom] val isClusteringKey = false
   private[phantom] val isAscending = false
+  private[phantom] val isMapKeyIndex = false
 
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString

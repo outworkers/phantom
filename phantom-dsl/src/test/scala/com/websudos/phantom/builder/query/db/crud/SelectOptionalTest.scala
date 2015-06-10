@@ -54,35 +54,29 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
     checkRow(OptionalPrimitive.none)
   }
 
-  private def checkRow(row: OptionalPrimitive) {
-    val rcp =  OptionalPrimitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.string, row.string)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.timeuuid, row.timeuuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        for {
-          a <- OptionalPrimitives.select.fetch
-          b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
-        } yield (a, b)
-      }
-    }
+  private[this] def checkRow(row: OptionalPrimitive) {
+    val rcp = for {
+      store <- OptionalPrimitives.store(row).future()
+      b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
+    } yield b
+
 
     rcp successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r.isDefined shouldEqual true
+        r.get.bDecimal shouldEqual row.bDecimal
+        r.get.bi shouldEqual row.bi
+        r.get.boolean shouldEqual row.boolean
+        r.get.date shouldEqual row.date
+        r.get.double shouldEqual row.double
+        r.get.float shouldEqual row.float
+        r.get.inet shouldEqual row.inet
+        r.get.int shouldEqual row.int
+        r.get.long shouldEqual row.long
+        r.get.pkey shouldEqual row.pkey
+        r.get.string shouldEqual row.string
+        r.get.timeuuid shouldEqual row.timeuuid
+        r.get.uuid shouldEqual row.uuid
       }
     }
   }

@@ -67,6 +67,7 @@ case class CQLQuery(queryString: String) {
   def trim: CQLQuery = CQLQuery(queryString.trim)
 
   def wrapn(str: String): CQLQuery = append(CQLSyntax.`(`).append(str).append(CQLSyntax.`)`)
+  def wrapn(query: CQLQuery): CQLQuery = wrapn(query.queryString)
   def wrap(str: String): CQLQuery = pad.append(CQLSyntax.`(`).append(str).append(CQLSyntax.`)`)
   def wrap(query: CQLQuery): CQLQuery = wrap(query.queryString)
 

@@ -54,5 +54,13 @@ trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] wi
  * A trait mixable into Column definitions to allow storing them as keys.
  */
 trait Index[ValueType] extends Key[ValueType, Index[ValueType]] with Indexed with Undroppable {
-  self: AbstractColumn[ValueType] => override val isSecondaryKey = true
+  self: AbstractColumn[ValueType] =>
+
+  override val isSecondaryKey = true
+}
+
+trait Keys {
+  self : Index[_] with AbstractColumn[_] =>
+
+  override private[phantom] val isMapKeyIndex = true
 }

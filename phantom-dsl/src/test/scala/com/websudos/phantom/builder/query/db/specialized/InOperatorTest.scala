@@ -44,17 +44,9 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   it should "find a record with a in operator if the record exists" in {
     val id = gen[UUID]
     val recipe = gen[Recipe]
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, recipe.props)
-      .future()
 
     val chain = for {
-      done <- insert
+      done <- Recipes.store(recipe).future()
       select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).one()
     } yield select
 
@@ -69,17 +61,9 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   it should "find a record with a in operator if the record exists with Twitter Futures" in {
     val id = gen[UUID]
     val recipe = gen[Recipe]
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, recipe.props)
-      .execute()
 
     val chain = for {
-      done <- insert
+      done <- Recipes.store(recipe).execute()
       select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).get()
     } yield select
 
@@ -94,18 +78,10 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   it should "not find a record with a in operator if the record doesn't exists" in {
     val id = gen[UUID]
     val recipe = gen[Recipe]
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, recipe.props)
-      .execute()
 
     val chain = for {
-      done <- insert
-      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).get()
+      done <- Recipes.store(recipe).future()
+      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).one()
     } yield select
 
     chain.successful {
@@ -118,17 +94,9 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   it should "not find a record with a in operator if the record doesn't exists with Twitter Futures" in {
     val id = gen[UUID]
     val recipe = gen[Recipe]
-    val insert = Recipes.insert
-      .value(_.uid, id)
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
-      .value(_.props, recipe.props)
-      .execute()
 
     val chain = for {
-      done <- insert
+      done <- Recipes.store(recipe).execute()
       select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).get()
     } yield select
 
