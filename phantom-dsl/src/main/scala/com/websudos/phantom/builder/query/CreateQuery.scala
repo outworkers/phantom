@@ -83,9 +83,9 @@ class RootCreateQuery[
    */
   def ifNotExists()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
     if (table.clusteringColumns.nonEmpty) {
-      new CreateQuery(table, default, Defaults.EmptyWithPart).withClustering()
+      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart).withClustering()
     } else {
-      new CreateQuery(table, default, Defaults.EmptyWithPart)
+      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart)
     }
   }
 }

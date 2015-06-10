@@ -54,20 +54,29 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
     checkRow(OptionalPrimitive.none)
   }
 
-  private def checkRow(row: OptionalPrimitive) {
+  private[this] def checkRow(row: OptionalPrimitive) {
     val rcp = for {
       store <- OptionalPrimitives.store(row).future()
-      a <- OptionalPrimitives.select.fetch
       b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, b)
+    } yield b
 
 
     rcp successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r.isDefined shouldEqual true
+        r.get.bDecimal shouldEqual row.bDecimal
+        r.get.bi shouldEqual row.bi
+        r.get.boolean shouldEqual row.boolean
+        r.get.date shouldEqual row.date
+        r.get.double shouldEqual row.double
+        r.get.float shouldEqual row.float
+        r.get.inet shouldEqual row.inet
+        r.get.int shouldEqual row.int
+        r.get.long shouldEqual row.long
+        r.get.pkey shouldEqual row.pkey
+        r.get.string shouldEqual row.string
+        r.get.timeuuid shouldEqual row.timeuuid
+        r.get.uuid shouldEqual row.uuid
       }
     }
   }

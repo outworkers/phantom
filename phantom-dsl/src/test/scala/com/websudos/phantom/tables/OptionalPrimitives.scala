@@ -110,6 +110,7 @@ object OptionalPrimitives extends OptionalPrimitives with PhantomCassandraConnec
       .value(_.date, row.date)
       .value(_.uuid, row.uuid)
       .value(_.bi, row.bi)
+      .value(_.string, row.string)
       .value(_.timeuuid, row.timeuuid)
   }
 }
