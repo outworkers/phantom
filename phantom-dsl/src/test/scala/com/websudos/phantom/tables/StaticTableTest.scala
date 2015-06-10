@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 
@@ -43,3 +44,30 @@ sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID
 }
 
 object StaticTableTest extends StaticTableTest with PhantomCassandraConnector
+
+
+case class StaticCollectionRecord(
+  id: UUID,
+  clustering: UUID,
+  list: List[String]
+)
+
+sealed class StaticCollectionTableTest extends CassandraTable[StaticCollectionTableTest, StaticCollectionRecord] {
+
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+
+  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
+  object staticList extends ListColumn[StaticCollectionTableTest, StaticCollectionRecord, String](this) with StaticColumn[List[String]]
+
+  def fromRow(row: Row): StaticCollectionRecord = {
+    StaticCollectionRecord(id(row), clusteringId(row), staticList(row))
+  }
+}
+
+object StaticCollectionTableTest extends StaticCollectionTableTest with PhantomCassandraConnector {
+  def store(record: StaticCollectionRecord): InsertQuery.Default[StaticCollectionTableTest, StaticCollectionRecord] = {
+    insert.value(_.id, record.id)
+      .value(_.clusteringId, record.clustering)
+      .value(_.staticList, record.list)
+  }
+}

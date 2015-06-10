@@ -48,22 +48,10 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
 
   "Partially selecting 2 fields" should "correctly select the fields" in {
     val row = gen[Primitive]
-    val insert =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
 
     val chain = for {
       truncate <- Primitives.truncate.future()
-      insertDone <- insert.future()
+      insertDone <- Primitives.store(row).future()
       listSelect <- Primitives.select(_.pkey).fetch
       oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
     } yield (listSelect, oneSelect)
@@ -78,22 +66,11 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
 
   "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
-    val insert =  Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
+
 
     val chain = for {
       truncate <- Primitives.truncate.execute()
-      insertDone <- insert.execute()
+      insertDone <- Primitives.store(row).execute()
       listSelect <- Primitives.select(_.pkey).collect
       oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
     } yield (listSelect, oneSelect)

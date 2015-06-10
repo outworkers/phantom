@@ -118,5 +118,4 @@ private[phantom] object QueryBuilder {
   }
 
 
-
 }

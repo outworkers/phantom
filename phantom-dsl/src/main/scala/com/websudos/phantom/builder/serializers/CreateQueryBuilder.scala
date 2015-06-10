@@ -144,8 +144,8 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
     tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
   }
 
-  def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.`with`).pad.append(clause)
+  def `with`(clause: CQLQuery): CQLQuery = {
+    CQLQuery(CQLSyntax.`with`).pad.append(clause)
   }
 
   def index(table: String, keySpace: String, column: String): CQLQuery = {
@@ -153,7 +153,34 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
       .forcePad.append(CQLSyntax.ifNotExists)
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
-      .wrap(column)
+      .wrapn(column)
+  }
+
+  /**
+   * Creates an index on the keys of a Map column.
+   * By default, mixing an index in a column will result in an index created on the values of the map.
+   * To allow secondary indexing on Keys, Cassandra appends a KEYS($column) wrapper to the CQL query.
+   *
+   * @param table The name of the table to create the index on.
+   * @param keySpace The keyspace to whom the table belongs to.
+   * @param column The name of the column to create the secondary index on.
+   * @return A CQLQuery containing the valid CQL of creating a secondary index for the keys of a Map column.
+   */
+  def mapIndex(table: String, keySpace: String, column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
+      .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(CQLSyntax.On)
+      .forcePad.append(QueryBuilder.keyspace(keySpace, table))
+      .wrapn(CQLQuery(CQLSyntax.Keys).wrapn(column))
+  }
+
+  def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
+
+    val list = orderings.foldRight(List.empty[String])((item, l) => {
+      (item._1 + " " + item._2) :: l
+    })
+
+    CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }
 
 }

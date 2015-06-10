@@ -83,4 +83,24 @@ private[builder] class IndexModifiers extends BaseModifiers {
     Utils.concat(qb, CQLSyntax.and, clause)
   }
 
+  /**
+   * Creates a CONTAINS where clause applicable to SET columns.
+   * @param column The name of the column in which to look for the value.
+   * @param value The CQL serialized value of the element to look for in the CQL SET.
+   * @return A CQL Query wrapping the contains clause.
+   */
+  def contains(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.contains, value)
+  }
+
+  /**
+   * Creates a CONTAINS KEY where clause applicable to Map columns.
+   * @param column The name of the column in which to look for the value.
+   * @param value The CQL serialized value of the element to look for in the CQL SET.
+   * @return A CQL Query wrapping the contains clause.
+   */
+  def containsKey(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.containsKey, value)
+  }
+
 }

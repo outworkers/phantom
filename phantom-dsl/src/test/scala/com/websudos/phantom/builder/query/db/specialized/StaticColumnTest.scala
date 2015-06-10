@@ -34,7 +34,7 @@ import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
-import com.websudos.phantom.tables.StaticTableTest
+import com.websudos.phantom.tables.{StaticCollectionRecord, StaticCollectionTableTest, StaticTableTest}
 import com.websudos.util.testing._
 
 class StaticColumnTest extends PhantomCassandraTestSuite {
@@ -44,6 +44,7 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     StaticTableTest.insertSchema()
+    StaticCollectionTableTest.insertSchema()
   }
 
   it should "use a static value for a static column" in {
@@ -89,6 +90,27 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
         res.isDefined shouldEqual true
         // The first record should hold the updated value.
         res.get._3 shouldEqual static2
+      }
+    }
+  }
+
+  it should "append a value to a static list and share the update among records" in {
+    val id = gen[UUID]
+
+    val sample = gen[StaticCollectionRecord].copy(id = id)
+    val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
+
+    val chain = for {
+      store1 <- StaticCollectionTableTest.store(sample).future()
+      store2 <- StaticCollectionTableTest.store(sample2).future()
+      update <- StaticCollectionTableTest.update.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).modify(_.staticList append "test").future()
+      get <- StaticCollectionTableTest.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
+    } yield get
+
+    chain.successful {
+      res => {
+        res.isDefined shouldEqual true
+        res.get.list shouldEqual sample.list ::: List("test")
       }
     }
   }

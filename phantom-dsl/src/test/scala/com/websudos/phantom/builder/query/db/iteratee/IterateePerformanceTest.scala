@@ -76,19 +76,7 @@ class IterateePerformanceTest extends PhantomCassandraTestSuite {
 
     val rows = for (i <- 1 to 100) yield gen[Primitive]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-      b.add(statement)
+      b.add(Primitives.store(row))
     })
 
     val w = Primitives.truncate.future().flatMap {

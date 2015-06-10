@@ -45,16 +45,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   it should "allow storing a JSON record" in {
     val sample = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .future()
-
     val chain = for {
-      done <- insert
+      done <- JsonTable.store(sample).future()
       select <- JsonTable.select.where(_.id eqs sample.id).one
     } yield select
 
@@ -69,16 +61,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
   it should "allow storing a JSON record with Twitter Futures" in {
     val sample = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .execute()
-
     val chain = for {
-      done <- insert
+      done <- JsonTable.store(sample).execute()
       select <- JsonTable.select.where(_.id eqs sample.id).get
     } yield select
 
@@ -124,16 +108,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .execute()
-
     val chain = for {
-      done <- insert
+      done <- JsonTable.store(sample).execute()
       select <- JsonTable.select.where(_.id eqs sample.id).get
       update <- JsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
       select2 <- JsonTable.select.where(_.id eqs sample.id).get
@@ -154,16 +130,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .future()
-
     val chain = for {
-      done <- insert
+      done <- JsonTable.store(sample).future()
       select <- JsonTable.select.where(_.id eqs sample.id).one
       update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
       select2 <- JsonTable.select.where(_.id eqs sample.id).one()
@@ -184,16 +152,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .execute()
-
     val chain = for {
-      done <- insert
+      done <- JsonTable.store(sample).execute()
       select <- JsonTable.select.where(_.id eqs sample.id).get
       update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
       select2 <- JsonTable.select.where(_.id eqs sample.id).get

@@ -55,27 +55,12 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
   }
 
   private def checkRow(row: OptionalPrimitive) {
-    val rcp =  OptionalPrimitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.string, row.string)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.timeuuid, row.timeuuid)
-      .value(_.bi, row.bi).future() flatMap {
-      _ => {
-        for {
-          a <- OptionalPrimitives.select.fetch
-          b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
-        } yield (a, b)
-      }
-    }
+    val rcp = for {
+      store <- OptionalPrimitives.store(row).future()
+      a <- OptionalPrimitives.select.fetch
+      b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, b)
+
 
     rcp successful {
       r => {

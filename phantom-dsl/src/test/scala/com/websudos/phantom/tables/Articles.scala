@@ -29,10 +29,9 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
-
-import scala.concurrent.Future
 
 case class Article(
   name: String,
@@ -54,10 +53,9 @@ sealed class Articles private() extends CassandraTable[Articles, Article] {
 object Articles extends Articles with PhantomCassandraConnector {
   override def tableName = "articles"
 
-  def store(article: Article): Future[ResultSet] = {
+  def store(article: Article): InsertQuery.Default[Articles, Article] = {
     insert.value(_.id, article.id)
       .value(_.name, article.name)
       .value(_.orderId, article.order_id)
-      .future()
   }
 }

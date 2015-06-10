@@ -100,6 +100,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type PartitionKey[ValueType] = com.websudos.phantom.keys.PartitionKey[ValueType]
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
+  type Keys = com.websudos.phantom.keys.Keys
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
   type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleConnector
