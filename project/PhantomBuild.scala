@@ -158,7 +158,6 @@ object PhantomBuild extends Build {
     // phantomScalatraTest,
     phantomSpark,
     phantomTestKit,
-    phantomSbtPlugin,
     phantomThrift,
     phantomUdt,
     phantomZookeeper

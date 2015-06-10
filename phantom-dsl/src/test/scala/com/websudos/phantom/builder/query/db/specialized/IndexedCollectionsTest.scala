@@ -1,5 +1,7 @@
 package com.websudos.phantom.builder.query.db.specialized
 
+import com.datastax.driver.core.exceptions.InvalidQueryException
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -23,12 +25,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.setText contains record.setText.head).fetch()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
 
   }
@@ -41,12 +47,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.setText contains record.setText.head).collect()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -58,12 +68,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).fetch()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -75,12 +89,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).collect()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -92,12 +110,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).fetch()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -109,12 +131,16 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       get <- IndexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).collect()
     } yield get
 
-    chain.successful {
-      res => {
-        res.nonEmpty shouldEqual true
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
 
-        res contains record shouldEqual true
+          res contains record shouldEqual true
+        }
       }
+    } else {
+      chain.failing[InvalidQueryException]
     }
   }
 

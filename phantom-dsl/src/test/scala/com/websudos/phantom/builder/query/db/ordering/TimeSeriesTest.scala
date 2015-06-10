@@ -60,7 +60,6 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
-    val expected = if (cassandraVersion < Version.`2.0.8`) ts.reverse else ts
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
@@ -81,7 +80,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     chain.successful {
       res =>
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual expected
+        mapped.toList shouldEqual ts.reverse
     }
   }
 
@@ -97,7 +96,6 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
-    val expected = if (cassandraVersion < Version.`2.0.8`) ts.reverse else ts
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
@@ -117,7 +115,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     chain.successful {
       res =>
         val mapped = res.map(_.timestamp.getSecondOfDay)
-        mapped.toList shouldEqual expected
+        mapped.toList shouldEqual ts.reverse
     }
   }
 
