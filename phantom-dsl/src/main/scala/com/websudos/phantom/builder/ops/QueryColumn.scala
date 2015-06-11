@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.ops
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.WhereClause
 import com.websudos.phantom.builder.primitives.Primitive
+import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
 
 /**
@@ -48,6 +49,10 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
 
   def eqs(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, p.asCql(value)))
+  }
+
+  def eqs(value: PrepareMark): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.symbol))
   }
 
   def lt(value: RR): WhereClause.Condition = {

@@ -58,6 +58,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     }
   }
 
+
+  session
+
+
   it should "allow storing a JSON record with Twitter Futures" in {
     val sample = gen[JsonClass]
 
