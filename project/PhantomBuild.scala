@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.twitter.sbt.GitProject
-import com.twitter.sbt.VersionManagement
+import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
 import sbt._
@@ -104,7 +103,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.9.5",
+    version := "1.9.7-SNAPSHOT",
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -137,8 +136,7 @@ object PhantomBuild extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
-      GitProject.gitSettings ++
-      VersionManagement.newSettings
+    StandardProject.newSettings
 
 
   lazy val phantom = Project(
@@ -156,7 +154,6 @@ object PhantomBuild extends Build {
     phantomExample,
     phantomConnectors,
     // phantomScalatraTest,
-    phantomSpark,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -226,21 +223,6 @@ object PhantomBuild extends Build {
   ).dependsOn(
     phantomDsl,
     phantomZookeeper,
-    phantomTestKit % "test, provided"
-  )
-
-  lazy val phantomSpark = Project(
-    id = "phantom-spark",
-    base = file("phantom-spark"),
-    settings = Defaults.coreDefaultSettings ++
-      sharedSettings ++ publishSettings
-  ).settings(
-    name := "phantom-spark",
-    libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % SparkCassandraVersion
-    )
-  ).dependsOn(
-    phantomDsl,
     phantomTestKit % "test, provided"
   )
 

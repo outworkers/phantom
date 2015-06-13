@@ -43,3 +43,13 @@ sealed class PreparedBuilder[T <: CassandraTable[T, _], R](table: T)(implicit ke
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery(table)
 }
+
+
+private[phantom] trait PrepareMark {
+
+  def symbol: String = "?"
+
+  def qb: CQLQuery = CQLQuery("?")
+}
+
+object ? extends PrepareMark
