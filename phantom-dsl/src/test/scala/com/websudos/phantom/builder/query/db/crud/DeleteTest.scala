@@ -85,4 +85,87 @@ class DeleteTest extends PhantomCassandraTestSuite {
       }
     }
   }
+
+  "A delete query" should "delete a row by its single primary key if a single condition is met" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).future()
+      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
+      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (inserted, deleted)
+
+    chain successful {
+      r => {
+        r._1.isDefined shouldEqual true
+        r._1.get shouldEqual row
+
+        r._2.isEmpty shouldEqual true
+      }
+    }
+  }
+
+  "A delete query" should "delete a row by its single primary key if a single condition is met with Twitter futures" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      inserted <- Primitives.select.where(_.pkey eqs row.pkey).get()
+      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).execute()
+      deleted <- Primitives.select.where(_.pkey eqs row.pkey).get
+    } yield (inserted, deleted)
+
+    chain successful {
+      r => {
+        r._1.isDefined shouldEqual true
+        r._1.get shouldEqual row
+
+        r._2.isEmpty shouldEqual true
+      }
+    }
+  }
+
+  "A delete query" should "not delete a row by its single primary key if a single condition is not met" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).future()
+      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
+      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (inserted, deleted)
+
+    chain successful {
+      r => {
+        r._1.isDefined shouldEqual true
+        r._1.get shouldEqual row
+
+        info("The row should not have been deleted as the condition was not met")
+        r._1.isDefined shouldEqual true
+      }
+    }
+  }
+
+  "A delete query" should "not delete a row by its single primary key if a single condition is not met with Twitter Futures" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      inserted <- Primitives.select.where(_.pkey eqs row.pkey).get()
+      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).execute()
+      deleted <- Primitives.select.where(_.pkey eqs row.pkey).get
+    } yield (inserted, deleted)
+
+    chain successful {
+      r => {
+        r._1.isDefined shouldEqual true
+        r._1.get shouldEqual row
+
+        info("The row should not have been deleted as the condition was not met")
+        r._1.isDefined shouldEqual true
+      }
+    }
+  }
+
 }

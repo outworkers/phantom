@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.builder.query.prepared.PreparedUpdateQuery
+
 import scala.annotation.implicitNotFound
 
 import com.datastax.driver.core.{ConsistencyLevel, Row}
@@ -54,6 +56,10 @@ class UpdateQuery[
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
+  }
+
+  def prepare: PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new PreparedUpdateQuery(table, init, usingPart, wherePart, setPart, casPart)
   }
 
   override protected[this] type QueryType[

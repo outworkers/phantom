@@ -32,7 +32,10 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.clauses.{CompareAndSetClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
+
+import scala.annotation.implicitNotFound
 
 class DeleteQuery[
   Table <: CassandraTable[Table, _],
@@ -41,7 +44,11 @@ class DeleteQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, qb: CQLQuery) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb, null) with Batchable {
+](table: Table,
+  init: CQLQuery,
+  wherePart : WherePart = Defaults.EmptyWherePart,
+  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart
+                    ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -62,6 +69,46 @@ class DeleteQuery[
   ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C] = {
     new DeleteQuery[T, R, L, O, S, C](t, q)
   }
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+    val query = QueryBuilder.Update.where(condition(table).qb)
+    new DeleteQuery(table, init, wherePart append query, casPart)
+  }
+
+  /**
+   * And clauses require overriding for count queries for the same purpose.
+   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
+   * @param condition The Query condition to execute, based on index operators.
+   * @return A SelectCountWhere.
+   */
+  @implicitNotFound("You have to use an where clause before using an AND clause")
+  override def and(condition: Table => WhereClause.Condition): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+    val query = QueryBuilder.Update.and(condition(table).qb)
+    new DeleteQuery(table, init, wherePart append query, casPart)
+  }
+
+  /**
+   * Generates a conditional query clause based on CQL lightweight transactions.
+   * Compare and set transactions only get executed if a particular condition is true.
+   *
+   * @param clause The Compare-And-Set clause to append to the builder.
+   * @return A conditional query, now bound by a compare-and-set part.
+   */
+  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain] = {
+    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
+    new ConditionalDeleteQuery(table, init, wherePart, casPart append query)
+  }
+
+  override val qb: CQLQuery = {
+    (wherePart merge casPart) build init
+  }
 }
 
 object DeleteQuery {
@@ -75,7 +122,32 @@ object DeleteQuery {
   def apply[T <: CassandraTable[T, _], R](table: T, col: String)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.deleteColumn(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString, col))
   }
+}
 
+sealed class ConditionalDeleteQuery[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Limit <: LimitBound,
+  Order <: OrderBound,
+  Status <: ConsistencyBound,
+  Chain <: WhereBound
+](table: Table,
+  val init: CQLQuery,
+  wherePart : WherePart = Defaults.EmptyWherePart,
+  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart
+   ) extends ExecutableStatement with Batchable {
 
+  override val qb: CQLQuery = {
+    (wherePart merge casPart) build init
+  }
+
+  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalDeleteQuery(
+      table,
+      init,
+      wherePart,
+      casPart append QueryBuilder.Update.and(clause(table).qb)
+    )
+  }
 }
 
