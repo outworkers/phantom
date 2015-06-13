@@ -156,7 +156,6 @@ object PhantomBuild extends Build {
     phantomExample,
     phantomConnectors,
     // phantomScalatraTest,
-    phantomSpark,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -226,21 +225,6 @@ object PhantomBuild extends Build {
   ).dependsOn(
     phantomDsl,
     phantomZookeeper,
-    phantomTestKit % "test, provided"
-  )
-
-  lazy val phantomSpark = Project(
-    id = "phantom-spark",
-    base = file("phantom-spark"),
-    settings = Defaults.coreDefaultSettings ++
-      sharedSettings ++ publishSettings
-  ).settings(
-    name := "phantom-spark",
-    libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"         % SparkCassandraVersion
-    )
-  ).dependsOn(
-    phantomDsl,
     phantomTestKit % "test, provided"
   )
 
