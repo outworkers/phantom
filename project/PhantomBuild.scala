@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.twitter.sbt.GitProject
-import com.twitter.sbt.VersionManagement
+import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
 import sbt._
@@ -137,8 +136,7 @@ object PhantomBuild extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
-      GitProject.gitSettings ++
-      VersionManagement.newSettings
+    StandardProject.newSettings
 
 
   lazy val phantom = Project(
