@@ -122,12 +122,12 @@ class PreparedUpdateQuery[
 }
 
 sealed class AssignmentsQuery[
-Table <: CassandraTable[Table, _],
-Record,
-Limit <: LimitBound,
-Order <: OrderBound,
-Status <: ConsistencyBound,
-Chain <: WhereBound
+  Table <: CassandraTable[Table, _],
+  Record,
+  Limit <: LimitBound,
+  Order <: OrderBound,
+  Status <: ConsistencyBound,
+  Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
   usingPart: UsingPart = Defaults.EmptyUsingPart,

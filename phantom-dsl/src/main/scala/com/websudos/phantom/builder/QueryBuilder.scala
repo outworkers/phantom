@@ -92,7 +92,7 @@ private[phantom] object QueryBuilder {
   }
 
   def keyspace(keySpace: String, qb: CQLQuery): CQLQuery = {
-    if (qb.queryString.startsWith(keySpace)) {
+    if (qb.queryString.startsWith(keySpace + ".")) {
       qb
     }  else {
       qb.prepend(s"$keySpace.")
@@ -100,7 +100,7 @@ private[phantom] object QueryBuilder {
   }
 
   def keyspace(keySpace: String, qb: String): CQLQuery = {
-    if (qb.startsWith(keySpace)) {
+    if (qb.startsWith(keySpace + ".")) {
       CQLQuery(qb)
     }  else {
       CQLQuery(qb).prepend(s"$keySpace.")
