@@ -24,3 +24,5 @@ class ExampleFlatSuite extends CassandraFlatSpec with KeySpaceDefinition {
     Await.ready(Manager.autotruncate().future(), 8.seconds)
   }
 }
+
+
