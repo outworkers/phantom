@@ -78,4 +78,4 @@ object RemoteConnector extends KeyspaceDefinition {
   val connector = ContactPoints(Seq("docker.local")).keySpace("phantom_example")
 }
 
-trait DockerConnector extends RemoteConnector.connector.Connector with KeyspaceDefinition
+trait DockerConnector extends RemoteConnector.connector.Connector
