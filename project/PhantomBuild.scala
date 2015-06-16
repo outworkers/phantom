@@ -135,7 +135,7 @@ object PhantomBuild extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++
     StandardProject.newSettings
 
 

@@ -91,19 +91,19 @@ private[phantom] object QueryBuilder {
     CQLQuery(CQLSyntax.consistency).forcePad.append(level)
   }
 
-  def keyspace(keySpace: String, qb: CQLQuery): CQLQuery = {
-    if (qb.queryString.startsWith(keySpace + ".")) {
-      qb
+  def keyspace(keySpace: String, tableQuery: CQLQuery): CQLQuery = {
+    if (tableQuery.queryString.startsWith(keySpace + ".")) {
+      tableQuery
     }  else {
-      qb.prepend(s"$keySpace.")
+      tableQuery.prepend(s"$keySpace.")
     }
   }
 
-  def keyspace(keySpace: String, qb: String): CQLQuery = {
-    if (qb.startsWith(keySpace + ".")) {
-      CQLQuery(qb)
+  def keyspace(keySpace: String, table: String): CQLQuery = {
+    if (table.startsWith(keySpace + ".")) {
+      CQLQuery(table)
     }  else {
-      CQLQuery(qb).prepend(s"$keySpace.")
+      CQLQuery(table).prepend(s"$keySpace.")
     }
   }
 

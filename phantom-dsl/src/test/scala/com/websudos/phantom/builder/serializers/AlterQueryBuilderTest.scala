@@ -45,6 +45,12 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
         qb shouldEqual "ALTER TABLE phantom.BasicTable DROP placeholder"
       }
 
+      "should serialise a DROP query with no arguments to DROP a table" in {
+        val qb = BasicTable.alter().drop().queryString
+
+        qb shouldEqual "DROP TABLE phantom.BasicTable"
+      }
+
       "should serialise a DROP query based on string value" in {
         val qb = BasicTable.alter.drop("test").queryString
         qb shouldEqual "ALTER TABLE phantom.BasicTable DROP test"
