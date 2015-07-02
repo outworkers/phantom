@@ -97,7 +97,7 @@ class PreparedUpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new PreparedUpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart)
   }

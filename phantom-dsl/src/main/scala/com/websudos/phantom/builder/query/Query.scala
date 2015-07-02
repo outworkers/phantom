@@ -95,7 +95,7 @@ abstract class Query[
   }
 
   @implicitNotFound("A limit was already specified for this query.")
-  final def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain] = {
+  def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain] = {
     create[Table, Record, Limited, Order, Status, Chain](table, QueryBuilder.limit(qb, limit), row)
   }
 
@@ -117,9 +117,10 @@ abstract class Query[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  def and(condition: Table => WhereClause.Condition): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+  def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
     create[Table, Record, Limit, Order, Status, Chainned](table, QueryBuilder.Where.and(qb, condition(table).qb), row)
   }
+
 
   def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain] = {
     create[Table, Record, Limit, Order, Status, Chain](table, QueryBuilder.ttl(qb, seconds.toString), row)
