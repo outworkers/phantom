@@ -314,7 +314,7 @@ trait DefaultPrimitives {
       r => r.getBytes(column)
     }
 
-    override def asCql(value: ByteBuffer): String = Bytes.toHexString(value.array())
+    override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
 
     override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 

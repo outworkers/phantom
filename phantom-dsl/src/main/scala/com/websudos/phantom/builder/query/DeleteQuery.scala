@@ -89,7 +89,7 @@ class DeleteQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new DeleteQuery(table, init, wherePart append query, casPart)
   }

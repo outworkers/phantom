@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query
 
 
-import com.websudos.phantom.builder.clauses.OrderingClause
+import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
@@ -67,7 +67,7 @@ class SelectQuery[
   def fromRow(row: Row): Record = rowFunc(row)
 
   override val qb: CQLQuery = {
-    wherePart merge orderPart merge limitedPart merge filteringPart build init
+    (wherePart merge orderPart merge limitedPart merge filteringPart) build init
   }
 
   override protected[this] type QueryType[
@@ -92,16 +92,72 @@ class SelectQuery[
 
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
     new SelectQuery(
-      table,
-      rowFunc,
-      init,
-      wherePart,
-      orderPart,
-      limitedPart,
-      filteringPart append QueryBuilder.Select.allowFiltering(),
-      count
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
+      count = count
     )
   }
+
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count
+    )
+  }
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count
+    )
+  }
+
+  @implicitNotFound("A limit was already specified for this query.")
+  override def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = limitedPart append QueryBuilder.limit(limit),
+      filteringPart = filteringPart,
+      count = count
+    )
+  }
+
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
   final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
@@ -120,14 +176,14 @@ class SelectQuery[
     val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
-      table,
-      rowFunc,
-      init,
-      wherePart,
-      orderPart,
-      enforceLimit,
-      filteringPart,
-      count
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = enforceLimit,
+      filteringPart = filteringPart,
+      count = count
     ).singleFetch()
 
   }
@@ -143,14 +199,14 @@ class SelectQuery[
     val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
-      table,
-      rowFunc,
-      init,
-      wherePart,
-      orderPart,
-      enforceLimit,
-      filteringPart,
-      count
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = enforceLimit,
+      filteringPart = filteringPart,
+      count = count
     ).singleCollect()
   }
 }

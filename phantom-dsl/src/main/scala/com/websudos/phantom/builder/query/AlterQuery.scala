@@ -83,6 +83,9 @@ class AlterQuery[
     drop(columnSelect(table).column.name)
   }
 
+  final def drop()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
+    new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name))
+  }
 
   /**
    * Creates an ALTER drop query to drop the column from the schema definition.
