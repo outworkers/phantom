@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Sphonic Ltd. All Rights Reserved.
+ * Copyright 2014-2015 Websudos Ltd, Sphonic Ltd. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.websudos.phantom.sbt
 
-import java.io.File
-
 import sbt._
 import sbt.Keys._
 import scala.concurrent.blocking
@@ -30,34 +28,9 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper
  * First the plugin must be included in your `plugins.sbt`:
  *
  * {{{
- * addSbtPlugin("com.sphonic" %% "phantom-sbt" % "0.2.1")
+ * addSbtPlugin("com.sphonic" %% "phantom-sbt" % "0.3.0")
  * }}}
- *
- * Then you can apply its default settings in `build.sbt` like this:
- *
- * {{{
- * PhantomPlugin.defaults
- * }}}
- *
- * In a multi-project Scala build, you also need to add the import:
- *
- * {{{
- * import com.sphonic.phantom.sbt.PhantomSbtPlugin._
- *
- * [...]
- *
- * lazy val fooProject = Project(
- *   id = "foo",
- *   base = file("foo"),
- *   settings = someSharedSettings ++ PhantomPlugin.defaults
- * ).settings(
- *   libraryDependencies ++= Seq(
- *     [...]
- *   )
- * )
- * }}}
- *
- * Once the default settings have been added, the plugin does the following
+ The plugin does the following
  * things:
  *
  * - Automatically starts Cassandra in embedded mode whenever the test task is run
@@ -72,46 +45,34 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper
  * you can do that with a setting:
  *
  * {{{
- * PhantomKeys.cassandraConfig := baseDirectory.value / "config" / "cassandra.yaml"
+ * phantomCassandraConfig := baseDirectory.value / "config" / "cassandra.yaml"
  * }}}
  */
 object PhantomSbtPlugin extends AutoPlugin {
 
+  override def requires = sbt.plugins.JvmPlugin
 
   /**
    * Keys for all settings of this plugin.
    */
-  object PhantomKeys {
+  object autoImport {
 
-    val startEmbeddedCassandra = TaskKey[Unit]("Starts embedded Cassandra")
+    val phantomStartEmbeddedCassandra = TaskKey[Unit]("Starts embedded Cassandra")
 
-    val cassandraConfig = SettingKey[Option[File]]("YAML file for Cassandra configuration")
-
+    val phantomCassandraConfig = SettingKey[Option[File]]("YAML file for Cassandra configuration")
   }
 
-
-  /**
-   * Provides the default settings to be added to a build.
-   */
-  object PhantomPlugin {
-    import PhantomKeys._
-
-    /**
-     * The default settings to be added to a build.
-     */
-    val defaults: Seq[Setting[_]] = Seq(
-
-      cassandraConfig := None,
-
-      startEmbeddedCassandra := EmbeddedCassandra.start(cassandraConfig.value, streams.value.log),
-
-      test in Test <<= (test in Test).dependsOn(startEmbeddedCassandra),
-
-      fork := true
-    )
-  }
+  import autoImport._
 
 
+  override def projectSettings = Seq(
+    phantomCassandraConfig := None,
+    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(phantomCassandraConfig.value, streams.value.log),
+    test in Test <<= (test in Test).dependsOn(phantomStartEmbeddedCassandra),
+    testQuick in Test <<= (testQuick in Test).dependsOn(phantomStartEmbeddedCassandra),
+    testOnly in Test <<= (testOnly in Test).dependsOn(phantomStartEmbeddedCassandra),
+    fork := true
+  )
 }
 
 /**
@@ -157,6 +118,4 @@ object EmbeddedCassandra {
       }
     }
   }
-
-
 }

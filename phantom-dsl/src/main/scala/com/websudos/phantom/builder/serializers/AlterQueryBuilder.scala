@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
@@ -129,6 +130,13 @@ private[phantom] trait AlterQueryBuilder {
   def drop(qb: CQLQuery, column: String): CQLQuery = {
     qb.pad.append(CQLSyntax.Alter.Drop)
       .forcePad.append(column)
+  }
+
+
+  def dropTable(table: String, keyspace: String) = {
+    CQLQuery(CQLSyntax.Alter.Drop)
+      .forcePad.append(CQLSyntax.table)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, table))
   }
 
 
