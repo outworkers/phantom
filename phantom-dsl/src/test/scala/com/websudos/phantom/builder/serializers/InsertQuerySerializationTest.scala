@@ -50,6 +50,27 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       }
     }
 
+    "should serialize lightweight transaction clauses in conjunction with USING clauses" - {
+      "should preserve order if a lightweight clause is specified first" in {
+        val qb = Recipes.insert
+          .value(_.url, "test")
+          .ifNotExists()
+          .ttl(60).queryString
+
+        qb shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 60"
+      }
+
+      "should preserve order if a using clause is specified first" in {
+        val qb = Recipes.insert
+          .value(_.url, "test")
+          .ttl(60)
+          .ifNotExists()
+          .queryString
+
+        qb shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 60"
+      }
+    }
+
     "should serialize lightweight transaction clauses irrespective of position in the DSL chain" - {
 
       "should append a lightweight clause to a single value query" in {

@@ -62,20 +62,20 @@ class InsertQuery[
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
-    val insertValue = if (value != null) col(table).asCql(value) else null.asInstanceOf[String]
+    val insertValue = if (value != null) CQLQuery(col(table).asCql(value)) else CQLQuery.empty
 
     new InsertQuery(
       table,
       init,
       columnsPart append CQLQuery(col(table).name),
-      valuePart append CQLQuery(insertValue),
+      valuePart append insertValue,
       usingPart,
       lightweightPart
     )
   }
 
   override def qb: CQLQuery = {
-    (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
+    (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
@@ -97,6 +97,14 @@ class InsertQuery[
     ttl(duration.inSeconds)
   }
 
+  /**
+   * Shorthand method for specifying a using clause on the insert query.
+   * This will define a custom timestamp on the insert and the long value
+   * will be used to represent the  milliseconds since EPOCH that make up the timestamp.
+   *
+   * @param value The date encoded as a Unix timestamp in milliseconds.
+   * @return A new insert query with the relevant using clause appended to the query part.
+   */
   final def timestamp(value: Long): InsertQuery[Table, Record, Status] = {
     new InsertQuery(
       table,
@@ -140,7 +148,7 @@ object InsertQuery {
   type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
-    new InsertQuery[T, R, Unspecified](
+    new InsertQuery(
       table,
       QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName))
     )
