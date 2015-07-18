@@ -44,7 +44,7 @@ case class Recipe(
   uid: UUID
 )
 
-sealed class Recipes extends CassandraTable[Recipes, Recipe] {
+class Recipes extends CassandraTable[Recipes, Recipe] {
 
   object url extends StringColumn(this) with PartitionKey[String]
 
