@@ -33,12 +33,12 @@ import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
 import sbt._
 
-object PhantomBuild extends Build {
+object Build extends Build {
 
-  val UtilVersion = "0.9.6"
+  val UtilVersion = "0.9.8"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.0-RC4"
+  val ShapelessVersion = "2.2.4"
   val FinagleVersion = "6.25.0"
   val TwitterUtilVersion = "6.24.0"
   val ScroogeVersion = "3.17.0"
@@ -48,7 +48,7 @@ object PhantomBuild extends Build {
   val ScalaMeterVersion = "0.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
-  val PhantomSbtVersion = "1.9.3"
+  val DieselEngineVersion = "0.2.2"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -103,8 +103,8 @@ object PhantomBuild extends Build {
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
     version := "1.10.1",
-    scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.5", "2.11.6"),
+    scalaVersion := "2.11.7",
+    crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -178,6 +178,7 @@ object PhantomBuild extends Build {
       ),
       libraryDependencies ++= Seq(
         "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
+        "com.websudos"                 %% "diesel-engine"                     % DieselEngineVersion,
         "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
         "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
         "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
