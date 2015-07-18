@@ -30,51 +30,10 @@
 package com.websudos.phantom.builder.query
 
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.diesel.engine.query.AbstractQuery
 
-case class CQLQuery(queryString: String) {
-
-  def nonEmpty: Boolean = queryString.nonEmpty
-
-  def append(st: String): CQLQuery = CQLQuery(queryString + st)
-  def append(st: CQLQuery): CQLQuery = append(st.queryString)
-  def append[T](list: T, sep: String = ", ")(implicit ev1: T => TraversableOnce[String]): CQLQuery = CQLQuery(queryString + list.mkString(sep))
-
-  def appendEscape(st: String): CQLQuery = append(escape(st))
-  def appendEscape(st: CQLQuery): CQLQuery = appendEscape(st.queryString)
-
-  def terminate(): CQLQuery = appendIfAbsent(";")
-
-  def appendSingleQuote(st: String): CQLQuery = append(singleQuote(st))
-  def appendSingleQuote(st: CQLQuery): CQLQuery = append(singleQuote(st.queryString))
-
-  def appendIfAbsent(st: String): CQLQuery = if (queryString.endsWith(st)) CQLQuery(queryString) else append(st)
-  def appendIfAbsent(st: CQLQuery): CQLQuery = appendIfAbsent(st.queryString)
-
-  def prepend(st: String): CQLQuery = CQLQuery(st + queryString)
-  def prepend(st: CQLQuery): CQLQuery = prepend(st.queryString)
-
-  def prependIfAbsent(st: String): CQLQuery = if (queryString.startsWith(st)) CQLQuery(queryString) else prepend(st)
-  def prependIfAbsent(st: CQLQuery): CQLQuery = prependIfAbsent(st.queryString)
-
-  def escape(st: String): String = "`" + st + "`"
-  def singleQuote(st: String): String = "'" + st.replaceAll("'", "''") + "'"
-
-  def spaced: Boolean = queryString.endsWith(" ")
-  def pad: CQLQuery = if (spaced) this else CQLQuery(queryString + " ")
-  def bpad = prependIfAbsent(" ")
-
-  def forcePad: CQLQuery = CQLQuery(queryString + " ")
-  def trim: CQLQuery = CQLQuery(queryString.trim)
-
-  def wrapn(str: String): CQLQuery = append(CQLSyntax.`(`).append(str).append(CQLSyntax.`)`)
-  def wrapn(query: CQLQuery): CQLQuery = wrapn(query.queryString)
-  def wrap(str: String): CQLQuery = pad.append(CQLSyntax.`(`).append(str).append(CQLSyntax.`)`)
-  def wrap(query: CQLQuery): CQLQuery = wrap(query.queryString)
-
-  def wrapn[T](list: T)(implicit ev1: T => TraversableOnce[String]): CQLQuery = wrapn(list.mkString(", "))
-  def wrap[T](list: T)(implicit ev1: T => TraversableOnce[String]): CQLQuery = wrap(list.mkString(", "))
-  def wrapEscape(list: List[String]): CQLQuery = wrap(list.map(escape).mkString(", "))
-
+case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) {
+  def create(str: String): CQLQuery = CQLQuery(str)
 }
 
 object CQLQuery {

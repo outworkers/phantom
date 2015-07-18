@@ -29,67 +29,22 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.websudos.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
 import com.websudos.phantom.builder.QueryBuilder
 
-sealed abstract class QueryPart[T <: QueryPart[T]](val list: List[CQLQuery] = Nil) {
 
-  def instance(l: List[CQLQuery]): T
+sealed class CQLMergeList(override val list: List[CQLQuery]) extends MergedQueryList[CQLQuery](list) {
 
-  def nonEmpty: Boolean = list.nonEmpty
+  override def apply(list: List[CQLQuery]): MergedQueryList[CQLQuery] = new CQLMergeList(list)
 
-  def qb: CQLQuery
-
-  def build(init: CQLQuery): CQLQuery = if (init.nonEmpty) {
-    qb.bpad prepend init
-  } else {
-    qb prepend init
-  }
-
-  def append(q: CQLQuery): T = instance(list ::: (q :: Nil))
-
-  def merge[X <: QueryPart[X]](part: X): MergedQueryList = {
-
-    val list = if (part.qb.nonEmpty) List(qb, part.qb) else List(qb)
-
-    new MergedQueryList(list)
-  }
+  override def apply(str: String): CQLQuery = CQLQuery(str)
 }
 
-sealed class MergedQueryList(val list: List[CQLQuery]) {
-
-  def this(query: CQLQuery) = this(List(query))
-
-  def build: CQLQuery = CQLQuery(list.map(_.queryString).mkString(" "))
-
-  /**
-   * This will build a merge list into a final executable query.
-   * It will also prepend the CQL query passed as a parameter to the final string.
-   *
-   * If the current list has only empty queries to merge, the init string is return instead.
-   * Alternatively, the init string is prepended after a single space.
-   *
-   * @param init The initialisation query of the part merge.
-   * @return A final, executable CQL query with all the parts merged.
-   */
-  def build(init: CQLQuery): CQLQuery = if (list.exists(_.nonEmpty)) {
-    build.bpad prepend init
-  } else {
-    init
-  }
-
-  def merge[X <: QueryPart[X]](part: X, init: CQLQuery = CQLQuery.empty): MergedQueryList = {
-
-    val appendable = part build init
-
-    if (appendable.nonEmpty) {
-      new MergedQueryList(list ::: List(appendable))
-    } else {
-      this
-    }
-  }
+sealed abstract class CQLQueryPart[Part <: CQLQueryPart[Part]](override val list: List[CQLQuery]) extends QueryPart[Part, CQLQuery](list) {
+  override def mergeList(list: List[CQLQuery]): MergedQueryList[CQLQuery] = new CQLMergeList(list)
 }
 
-sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends QueryPart[UsingPart](list) {
+sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[UsingPart](list) {
 
   override def qb: CQLQuery = list match {
     case head :: tail => QueryBuilder.Update.usingPart(list)
@@ -99,61 +54,61 @@ sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends QueryPar
   override def instance(l: List[CQLQuery]): UsingPart = new UsingPart(l)
 }
 
-sealed class WherePart(override val list: List[CQLQuery] = Nil) extends QueryPart[WherePart](list) {
+sealed class WherePart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[WherePart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(list: List[CQLQuery]): WherePart = new WherePart(list)
 }
 
-sealed class LimitedPart(override val list: List[CQLQuery] = Nil) extends QueryPart[LimitedPart](list) {
+sealed class LimitedPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[LimitedPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): LimitedPart = new LimitedPart(l)
 }
 
-sealed class OrderPart(override val list: List[CQLQuery] = Nil) extends QueryPart[OrderPart](list) {
+sealed class OrderPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[OrderPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): OrderPart = new OrderPart(l)
 }
 
-sealed class FilteringPart(override val list: List[CQLQuery] = Nil) extends QueryPart[FilteringPart](list) {
+sealed class FilteringPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[FilteringPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): FilteringPart = new FilteringPart(l)
 }
 
-sealed class SetPart(override val list: List[CQLQuery] = Nil) extends QueryPart[SetPart](list) {
+sealed class SetPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[SetPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.chain(list)
 
   override def instance(l: List[CQLQuery]): SetPart = new SetPart(l)
 }
 
-sealed class CompareAndSetPart(override val list: List[CQLQuery] = Nil) extends QueryPart[CompareAndSetPart](list) {
+sealed class CompareAndSetPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[CompareAndSetPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): CompareAndSetPart = new CompareAndSetPart(l)
 }
 
-sealed class ColumnsPart(override val list: List[CQLQuery] = Nil) extends QueryPart[ColumnsPart](list) {
+sealed class ColumnsPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[ColumnsPart](list) {
   override def qb: CQLQuery = QueryBuilder.Insert.columns(list)
 
   override def instance(l: List[CQLQuery]): ColumnsPart = new ColumnsPart(l)
 }
 
-sealed class ValuePart(override val list: List[CQLQuery] = Nil) extends QueryPart[ValuePart](list) {
+sealed class ValuePart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[ValuePart](list) {
   override def qb: CQLQuery = QueryBuilder.Insert.values(list)
 
   override def instance(l: List[CQLQuery]): ValuePart = new ValuePart(l)
 }
 
-sealed class LightweightPart(override val list: List[CQLQuery] = Nil) extends QueryPart[LightweightPart](list) {
+sealed class LightweightPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[LightweightPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): LightweightPart = new LightweightPart(l)
 }
 
-sealed class WithPart(override val list: List[CQLQuery]) extends QueryPart[WithPart] {
+sealed class WithPart(override val list: List[CQLQuery]) extends CQLQueryPart[WithPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 
   override def instance(l: List[CQLQuery]): WithPart = new WithPart(l)
