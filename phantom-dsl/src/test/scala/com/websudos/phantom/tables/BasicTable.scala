@@ -32,7 +32,7 @@ package com.websudos.phantom.tables
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 
-sealed class BasicTable extends CassandraTable[BasicTable, String] {
+class BasicTable extends CassandraTable[BasicTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -70,7 +70,7 @@ case class NamedEnumRecord(
   optEnum: Option[NamedRecords.type#Value]
 )
 
-sealed class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
+class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
   object enum extends EnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
   object optEnum extends OptionalEnumColumn[EnumTable, EnumRecord, Records.type](this, Records)

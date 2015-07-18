@@ -1,23 +1,25 @@
 package com.websudos.phantom.db
 
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.Session
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
-import scala.concurrent.Future
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 private object Lock
 
-abstract class DatabaseImpl(connector: KeySpaceDef) {
+abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
 
   private[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
 
   implicit val space: KeySpace = new KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
+
+  def tables: Set[CassandraTable[_, _]] = _tables.toSet
 
   Lock.synchronized {
 
@@ -44,15 +46,15 @@ abstract class DatabaseImpl(connector: KeySpaceDef) {
     }
   }
 
-  def autocreate(): Future[List[ResultSet]] = {
-    Future.sequence(_tables.toList.map {
-      table => table.create.ifNotExists().future()
+  def autocreate(): ExecutableStatementList = {
+    new ExecutableStatementList(_tables.toSeq.map {
+      table => table.create.ifNotExists().qb
     })
   }
 
-  def autotruncate(): Future[List[ResultSet]] = {
-    Future.sequence(_tables.toList.map {
-      table => table.truncate.future()
+  def autotruncate(): ExecutableStatementList = {
+    new ExecutableStatementList(_tables.toSeq.map {
+      table => table.truncate().qb
     })
   }
 }
