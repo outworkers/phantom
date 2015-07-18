@@ -46,7 +46,6 @@ object PhantomBuild extends Build {
   val PlayVersion = "2.4.0-M1"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.1.3.2"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
   val PhantomSbtVersion = "1.9.3"
@@ -154,7 +153,6 @@ object PhantomBuild extends Build {
     phantomExample,
     phantomConnectors,
     // phantomScalatraTest,
-    phantomSbtPlugin,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -320,24 +318,5 @@ object PhantomBuild extends Build {
     phantomThrift,
     phantomZookeeper,
     phantomTestKit
-  )
-
-  lazy val phantomSbtPlugin = Project(
-    id = "phantom-sbt",
-    base = file("phantom-sbt"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings
-  ).settings(
-    name := "phantom-sbt",
-    scalaVersion := "2.10.5",
-    sbtPlugin := true,
-    resolvers ++= Seq(
-      Resolver.bintrayRepo("websudos", "oss-releases")
-    ),
-    libraryDependencies ++= Seq(
-      "org.cassandraunit" % "cassandra-unit"  % CassandraUnitVersion  excludeAll (
-        ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "slf4j-jdk14")
-      )
-    )
   )
 }
