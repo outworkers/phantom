@@ -104,7 +104,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
   type SimpleCassandraConnector = com.websudos.phantom.connectors.SimpleConnector
-  type Databsae = com.websudos.phantom.db.DatabaseImpl
+  type Database = com.websudos.phantom.db.DatabaseImpl
 
   type DateTime = org.joda.time.DateTime
   type DateTimeZone = org.joda.time.DateTimeZone
