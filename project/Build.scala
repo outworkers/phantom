@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.10.1",
+    version := "1.10.2",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -134,7 +134,7 @@ object Build extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ StandardProject.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ StandardProject.newSettings
 
 
   lazy val phantom = Project(
