@@ -14,3 +14,11 @@ class TestDatabase extends DatabaseImpl(DefaultKeysapce.local) {
   object jsonTable extends JsonTable with connector.Connector
   object recipes extends Recipes with connector.Connector
 }
+
+
+class ValueInitDatabase extends DatabaseImpl(DefaultKeysapce.local) {
+  val basicTable = new BasicTable with connector.Connector
+  val enumTable = new EnumTable with connector.Connector
+  val jsonTable = new JsonTable with connector.Connector
+  val recipes = new Recipes with connector.Connector
+}

@@ -42,7 +42,7 @@ import scala.annotation.implicitNotFound
 import scala.util.Try
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Float, Long) RR: Primitive](t: CassandraTable[T, R])
+class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Float, Long) RR : Primitive](t: CassandraTable[T, R])
   extends Column[T, R, RR](t) {
 
   def cassandraType: String = Primitive[RR].cassandraType

@@ -103,6 +103,8 @@ class KeySpaceDef(val name: String, val provider: SessionProvider) { outer =>
 
     lazy val keySpace = outer.name
 
+    implicit val space: KeySpace = KeySpace(outer.name)
+
     def cassandraVersion: VersionNumber = outer.cassandraVersion
 
     def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
