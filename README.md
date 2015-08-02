@@ -67,7 +67,7 @@ QueryBuilder with full support for all CQL 3 features and even some of the more 
 offer a tool that's comprehensive and doesn't miss out on any feature of the protocol, no matter how small.
 
 If you are wondering what happened to 1.7.0, it was never publicly released as testing the new querybuilder entailed serious internal efforts and for such a drastic change
-we wanted to do as much as possible to eliminate books. Surely there will be some still found, but hopefully very few and with your help they will be very short lived.
+we wanted to do as much as possible to eliminate bugs. Surely there will be some still found, but hopefully very few and with your help they will be very short lived.
 
 Ditching the Java Driver was not a question of code quality in the driver, but rather an opportunity to exploit the more advanced Scala type system features
 to introduce behaviour such as preventing duplicate limits on queries using phantom types, to prevent even more invalid queries from compiling, and to switch
@@ -85,8 +85,8 @@ So you can have the series of ```import com.websudos.phantom.dsl._, import com.w
 <a id="propagating-parse-errors">Propagating parse errors</a>
 =============================================================
 
-Until now, our implementation of Cassandra primitives has been based on the Datastax Java Driver and on an ```Option``` based DSL. This made it heard to deal with parse errors at runtime, specifically those situations when
-the DSL was unable to parse the required type from the Cassandra result or in a simple case where ```null`` was returned for a non-optional column.
+Until now, our implementation of Cassandra primitives has been based on the Datastax Java Driver and on an ```Option``` based DSL. This made it hard to deal with parse errors at runtime, specifically in those situations when
+the DSL was unable to parse the required type from the Cassandra result or in a simple case where ```null``` was returned for a non-optional column.
 
 The core of the ```Column[Table, Record, ValueType].apply(value: ValueType]``` method which was used to parse rows in a type safe manner was written like this:
 
@@ -98,10 +98,10 @@ def apply(row: Row):  = optional(row).getOrElse(throw new Exception("Couldn't pa
 
 ```
 
-This approach left the original exception which caused the parser to parse a ```null``` and subsequently a ```None``` was ignored.
+This approach discarded the original exception which caused the parser to parse a ```null``` and subsequently a ```None``` was ignored.
 
 With the new type-safe primitive interface that no longer relies on the Datastax Java driver we were also able to move the ```Option``` based parsing mechanism to a ```Try``` mechanism which will now
- log all parse errors un-altered, in the exact same way the are thrown at compile time, using the ```logger``` for the given table.
+ log all parse errors un-altered, in the exact same way as are thrown at compile time, using the ```logger``` for the given table.
  
 Internally, we are now using something like this: 
  
@@ -119,7 +119,7 @@ Internally, we are now using something like this:
 
 ```
 
-The exception is now logged and propagated with no interference. We intercept it to provide consistent logging in the same table logger where you would naturally monitor for logs. 
+The exception is now logged and propagated as is. We intercept it to provide consistent logging in the same table logger where you would naturally monitor for logs. 
 
 
 <a id="improving-query-performance">Improving query performance</a>
@@ -160,9 +160,9 @@ This was never possible before in phantom, and now from 1.7.0 onwards we feature
 =====================================================
 <a href="#table-of-contents">back to top</a>
 
-We love Cassandra to bits and use it in every bit our stack. phantom makes it super trivial for Scala users to embrace Cassandra.
+We love Cassandra to bits and use it in every bit of our stack. phantom makes it super trivial for Scala users to embrace Cassandra.
 
-Cassandra is highly scalable and it's by far the most powerful database technology available, open source or otherwise.
+Cassandra is highly scalable and it is by far the most powerful database technology available, open source or otherwise.
 
 Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting. 
 
@@ -218,9 +218,7 @@ with prepared statements along with a nice DSL to get things done. Not to say it
 ======================================================================
 
 For ease of use and far better management of documentation, we have decided to export the `README.md` to a proper
-Wiki page, now available [here](https://github.com/websudos/phantom/wiki/). This is a standard Github Wiki in markdown foramt
-that will allow us to add documentation at a much much faster pace than before and hopefully vastly improve
-your experience using phantom.
+Wiki page, now available [here](https://github.com/websudos/phantom/wiki/). This is a standard Github Wiki in markdown format that will allow us to add documentation at a much much faster pace than before and hopefully vastly improve your experience using phantom.
 
 
 
