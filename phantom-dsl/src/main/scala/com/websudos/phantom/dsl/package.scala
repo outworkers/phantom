@@ -206,6 +206,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
 
+  trait ForwardDefinition {
+    implicit def space: KeySpace
+
+    implicit def session: Session
+  }
+
 
   implicit lazy val context = Manager.scalaExecutor
 
