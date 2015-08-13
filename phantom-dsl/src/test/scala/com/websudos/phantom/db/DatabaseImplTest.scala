@@ -20,11 +20,11 @@ class DatabaseImplTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "instantiate a database object and collect references to value fields" in {
+  ignore should "instantiate a database object and collect references to value fields" in {
     db2.tables.size shouldEqual 4
   }
 
-  it should "automatically generate the CQL schema and initialise tables for value tables" in {
+  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
     db2.autocreate().future().successful {
       res => {
         res.nonEmpty shouldEqual true
