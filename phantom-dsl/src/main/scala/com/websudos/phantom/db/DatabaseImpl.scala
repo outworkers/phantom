@@ -39,7 +39,7 @@ abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
       symbol =>
         val table =  if (symbol.isModule) {
           instanceMirror.reflectModule(symbol.asModule).instance
-        } else if (symbol.isTerm){
+        } else if (symbol.isTerm) {
           instanceMirror.reflectField(symbol.asTerm).get
         }
         _tables += table.asInstanceOf[CassandraTable[_, _]]

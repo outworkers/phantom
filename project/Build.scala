@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.10.4",
+    version := "1.10.6",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -128,12 +128,12 @@ object Build extends Build {
       "-feature",
       "-unchecked"
      ),
-    fork in Test := true,
+    fork in Test := false,
     javaOptions in Test ++= Seq("-Xmx2G"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
-    fork in PerformanceTest := true
+    fork in PerformanceTest := false
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
@@ -169,7 +169,6 @@ object Build extends Build {
       inConfig(PerformanceTest)(Defaults.testTasks): _*
     ).settings(
       name := "phantom-dsl",
-      fork := true,
       testOptions in Test += Tests.Argument("-oF"),
       logBuffered in Test := false,
       concurrentRestrictions in Test := Seq(
@@ -292,7 +291,7 @@ object Build extends Build {
     settings = sharedSettings
   ).settings(
     name := "phantom-test",
-    fork := true,
+    fork := false,
     logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
