@@ -9,7 +9,7 @@ services:
 
 scala:
  - "2.10.5"
- - "2.11.6"
+ - "2.11.7"
 
 # Emails to notify
 notifications:
@@ -28,10 +28,6 @@ jdk:
   - oraclejdk7
   - oraclejdk8
   - openjdk7
-
-cache:
-  directories:
-    - $HOME/.ivy2/cache
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
