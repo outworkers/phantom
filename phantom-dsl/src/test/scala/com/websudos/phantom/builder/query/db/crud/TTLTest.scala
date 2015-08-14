@@ -52,7 +52,7 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
+      store <- Primitives.store(row).ttl(2).future()
       get <- Primitives.select.where(_.pkey eqs row.pkey).one()
     } yield get
 
@@ -63,7 +63,6 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
         eventually {
           val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          info("After at most 7 seconds the record should have been removed")
           record.isDefined shouldEqual false
         }
       }
@@ -74,7 +73,7 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
+      store <- Primitives.store(row).ttl(2).execute()
       get <- Primitives.select.where(_.pkey eqs row.pkey).get()
     } yield get
 
@@ -85,7 +84,6 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
         eventually {
           val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          info("After at most 7 seconds the record should have been removed")
           record.isDefined shouldEqual false
         }
       }
