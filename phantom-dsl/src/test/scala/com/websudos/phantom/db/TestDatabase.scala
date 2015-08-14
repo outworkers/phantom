@@ -4,8 +4,8 @@ import com.websudos.phantom.connectors.ContactPoint
 import com.websudos.phantom.tables.{Recipes, JsonTable, EnumTable, BasicTable}
 
 
-private object DefaultKeysapce {
-  lazy val local = ContactPoint.local.keySpace("phantom_test")
+private[this] object DefaultKeysapce {
+  lazy val local = ContactPoint.local.keySpace("phantom")
 }
 
 class TestDatabase extends DatabaseImpl(DefaultKeysapce.local) {

@@ -29,18 +29,19 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
-import com.twitter.util.Duration
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Primitive, Primitives}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.scalatest.concurrent.{Eventually, PatienceConfiguration}
+import org.scalatest.time.SpanSugar._
+import org.scalatest.time.{Millis, Seconds, Span}
 
-class TTLTest extends PhantomCassandraTestSuite {
+class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
+
+  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Millis))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,33 +50,20 @@ class TTLTest extends PhantomCassandraTestSuite {
 
   it should "expire inserted records after 2 seconds" in {
     val row = gen[Primitive]
-    val test = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi)
-        .ttl(2)
-        .future() flatMap {
-          _ =>  Primitives.select.where(_.pkey eqs row.pkey).one()
-        }
 
-    test.successful {
+    val chain = for {
+      store <- Primitives.store(row).ttl(2).future()
+      get <- Primitives.select.where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    whenReady(chain) {
       record => {
         record.isEmpty shouldEqual false
         record.get shouldEqual row
-        Thread.sleep(Duration.fromSeconds(3).inMillis)
-        val test2 = Primitives.select.where(_.pkey eqs row.pkey).one()
-        test2 successful {
-          expired => {
-            expired.isEmpty shouldEqual true
-          }
+
+        eventually {
+          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          record.isDefined shouldEqual false
         }
       }
     }
@@ -83,33 +71,20 @@ class TTLTest extends PhantomCassandraTestSuite {
 
   it should "expire inserted records after 2 seconds with Twitter Futures" in {
     val row = gen[Primitive]
-    val test = Primitives.insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
-      .ttl(2)
-      .execute() flatMap {
-      _ =>  Primitives.select.where(_.pkey eqs row.pkey).get()
-    }
 
-    test.successful {
+    val chain = for {
+      store <- Primitives.store(row).ttl(2).execute()
+      get <- Primitives.select.where(_.pkey eqs row.pkey).get()
+    } yield get
+
+    chain.successful {
       record => {
         record.isEmpty shouldEqual false
         record.get shouldEqual row
-        Thread.sleep(Duration.fromSeconds(3).inMillis)
-        val test2 = Primitives.select.where(_.pkey eqs row.pkey).get
-        test2 successful {
-          expired => {
-            expired.isEmpty shouldEqual true
-          }
+
+        eventually {
+          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          record.isDefined shouldEqual false
         }
       }
     }
