@@ -169,11 +169,9 @@ class CreateQuery[
     if (table.secondaryKeys.isEmpty) {
       scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
     } else {
-
       super.future() flatMap {
         res => {
-
-          val indexes = table.secondaryKeys map {
+          val indexes = new ExecutableStatementList(table.secondaryKeys map {
             key => {
 
               val query = if(key.isMapKeyIndex) {
@@ -181,13 +179,12 @@ class CreateQuery[
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-
-              scalaQueryStringExecuteToFuture(new SimpleStatement(query.queryString))
+              query
             }
-          }
+          })
 
-          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          ScalaFuture.sequence(indexes) map { _ => res }
+          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          indexes.future() map { _ => res }
         }
       }
     }
@@ -202,21 +199,18 @@ class CreateQuery[
       super.execute() flatMap {
         res => {
 
-          val indexes = table.secondaryKeys map {
+          val indexes = new ExecutableStatementList(table.secondaryKeys map {
             key => {
-
-              val query = if(key.isMapKeyIndex) {
+               if(key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-
-              twitterQueryStringExecuteToFuture(new SimpleStatement(query.queryString))
             }
-          }
+          })
 
-          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          TwitterFuture.collect(indexes) map {_ => res}
+          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          indexes.execute() map {_ => res}
         }
       }
     }
