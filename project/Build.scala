@@ -35,7 +35,7 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.9.8"
+  val UtilVersion = "0.9.11"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
@@ -134,7 +134,7 @@ object Build extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
     id = "phantom",

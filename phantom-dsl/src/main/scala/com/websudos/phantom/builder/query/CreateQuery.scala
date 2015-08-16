@@ -171,20 +171,20 @@ class CreateQuery[
     } else {
       super.future() flatMap {
         res => {
-          val indexes = new ExecutableStatementList(table.secondaryKeys map {
+          new ExecutableStatementList(table.secondaryKeys map {
             key => {
-
-              val query = if(key.isMapKeyIndex) {
+              if (key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-              query
             }
-          })
-
-          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          indexes.future() map { _ => res }
+          }) future() map {
+            _ => {
+              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+              res
+            }
+          }
         }
       }
     }
@@ -198,8 +198,7 @@ class CreateQuery[
 
       super.execute() flatMap {
         res => {
-
-          val indexes = new ExecutableStatementList(table.secondaryKeys map {
+          new ExecutableStatementList(table.secondaryKeys map {
             key => {
                if(key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
@@ -207,10 +206,12 @@ class CreateQuery[
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
             }
-          })
-
-          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          indexes.execute() map {_ => res}
+          }) execute() map {
+            _ => {
+              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+              res
+            }
+          }
         }
       }
     }
