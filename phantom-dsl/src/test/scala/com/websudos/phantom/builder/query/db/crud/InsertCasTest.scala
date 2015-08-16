@@ -29,16 +29,14 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
+import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
-import com.twitter.util.{ Future => TwitterFuture }
 import com.websudos.util.testing._
-
-import scala.concurrent.Future
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class InsertCasTest extends PhantomCassandraTestSuite {
 
@@ -52,16 +50,22 @@ class InsertCasTest extends PhantomCassandraTestSuite {
     Recipes.insertSchema()
   }
 
-  "Standard inserts" should "create multiple database entries" in {
+  "Standard inserts" should "not create multiple database entries and perform upserts instead" in {
     val row = gen[Primitive]
+
+    val insertion = new ExecutableStatementList(
+      List(
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb
+      )
+    )
 
     val chain = for {
       truncate <- Primitives.truncate.future()
-      store <- Primitives.store(row).future()
-      store <- Primitives.store(row).future()
-      store <- Primitives.store(row).future()
-      store <- Primitives.store(row).future()
-      store <- Primitives.store(row).future()
+      store <- insertion.future()
       one <- Primitives.select.where(_.pkey eqs row.pkey).one
       multi <- Primitives.select.where(_.pkey eqs row.pkey).fetch()
       count <- Primitives.select.count.one()
@@ -91,11 +95,19 @@ class InsertCasTest extends PhantomCassandraTestSuite {
   "Conditional inserts" should "not create duplicate database entries" in {
     val row = gen[Primitive]
 
-    val insertion = Future.sequence(List.tabulate(5)(_ => row).map(Primitives.store(_).ifNotExists().future()))
+    val insertion = new ExecutableStatementList(
+      List(
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb
+      )
+    )
 
     val chain = for {
       truncate <- Primitives.truncate.future()
-      store <- insertion
+      store <- insertion.future()
       one <- Primitives.select.where(_.pkey eqs row.pkey).one
       multi <- Primitives.select.where(_.pkey eqs row.pkey).fetch()
       count <- Primitives.select.count.one()
@@ -126,11 +138,20 @@ class InsertCasTest extends PhantomCassandraTestSuite {
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
     val row = gen[Primitive]
 
-    val insertion = TwitterFuture.collect(List.tabulate(5)(_ => row).map(Primitives.store(_).ifNotExists().execute()))
+
+    val insertion = new ExecutableStatementList(
+      List(
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb,
+        Primitives.store(row).ifNotExists().qb
+      )
+    )
 
     val chain = for {
       truncate <- Primitives.truncate.execute()
-      store <- insertion
+      store <- insertion.execute()
       one <- Primitives.select.where(_.pkey eqs row.pkey).get
       multi <- Primitives.select.where(_.pkey eqs row.pkey).collect()
       count <- Primitives.select.count.get()

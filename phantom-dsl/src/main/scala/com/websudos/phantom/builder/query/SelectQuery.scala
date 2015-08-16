@@ -36,7 +36,7 @@ import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
 import scala.util.Try
 
-import com.datastax.driver.core.{Row, Session}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{ Future => TwitterFuture}
 
 import com.websudos.phantom.CassandraTable
@@ -60,8 +60,9 @@ class SelectQuery[
   orderPart: OrderPart = Defaults.EmptyOrderPart,
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
-  count: Boolean = false
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc) with ExecutableQuery[Table,
+  count: Boolean = false,
+  override val consistencyLevel: ConsistencyLevel = null
+) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
@@ -86,8 +87,18 @@ class SelectQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C] = {
-    new SelectQuery[T, R, L, O, S, C](t, r, q)
+  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+    new SelectQuery[T, R, L, O, S, C](
+      table = t,
+      rowFunc = r,
+      init = q,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count,
+      consistencyLevel = level
+    )
   }
 
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
@@ -99,7 +110,8 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
-      count = count
+      count = count,
+      consistencyLevel
     )
   }
 
@@ -120,7 +132,8 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
-      count = count
+      count = count,
+      consistencyLevel
     )
   }
 
@@ -140,7 +153,8 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
-      count = count
+      count = count,
+      consistencyLevel
     )
   }
 
@@ -154,15 +168,25 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart append QueryBuilder.limit(limit),
       filteringPart = filteringPart,
-      count = count
+      count = count,
+      consistencyLevel
     )
   }
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
   final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
-    val query = QueryBuilder.Select.Ordering.orderBy(clause(table).qb)
-    new SelectQuery(table, rowFunc, init, wherePart, orderPart append query, limitedPart, filteringPart, count)
+    new SelectQuery(
+      table,
+      rowFunc,
+      init,
+      wherePart,
+      orderPart append QueryBuilder.Select.Ordering.orderBy(clause(table).qb),
+      limitedPart,
+      filteringPart,
+      count,
+      consistencyLevel
+    )
   }
 
   /**
@@ -183,7 +207,8 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
-      count = count
+      count = count,
+      consistencyLevel
     ).singleFetch()
 
   }
@@ -206,7 +231,8 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
-      count = count
+      count = count,
+      consistencyLevel
     ).singleCollect()
   }
 }

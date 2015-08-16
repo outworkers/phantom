@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.ConsistencyLevel
+import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.DateTime
 import com.websudos.phantom.CassandraTable
@@ -47,7 +47,8 @@ class InsertQuery[
   columnsPart: ColumnsPart = Defaults.EmptyColumnsPart,
   valuePart: ValuePart = Defaults.EmptyValuePart,
   usingPart: UsingPart = Defaults.EmptyUsingPart,
-  lightweightPart: LightweightPart = Defaults.EmptyLightweightPart
+  lightweightPart: LightweightPart = Defaults.EmptyLightweightPart,
+  override val consistencyLevel: ConsistencyLevel = null
 ) extends ExecutableStatement with Batchable {
 
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
@@ -57,7 +58,8 @@ class InsertQuery[
       columnsPart append CQLQuery(col(table).name),
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
-      lightweightPart
+      lightweightPart,
+      consistencyLevel
     )
   }
 
@@ -70,7 +72,8 @@ class InsertQuery[
       columnsPart append CQLQuery(col(table).name),
       valuePart append CQLQuery(insertValue),
       usingPart,
-      lightweightPart
+      lightweightPart,
+      consistencyLevel
     )
   }
 
@@ -85,7 +88,8 @@ class InsertQuery[
       columnsPart,
       valuePart,
       usingPart append QueryBuilder.ttl(seconds.toString),
-      lightweightPart
+      lightweightPart,
+      consistencyLevel
     )
   }
 
@@ -104,19 +108,34 @@ class InsertQuery[
       columnsPart,
       valuePart,
       usingPart append QueryBuilder.timestamp(value.toString),
-      lightweightPart
+      lightweightPart,
+      consistencyLevel
     )
   }
 
-  def consistencyLevel_=(level: ConsistencyLevel): InsertQuery[Table, Record, Specified] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart append QueryBuilder.consistencyLevel(level.toString),
-      lightweightPart
-    )
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified] = {
+    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      new InsertQuery(
+        table,
+        init,
+        columnsPart,
+        valuePart,
+        usingPart,
+        lightweightPart,
+        level
+      )
+    } else {
+      new InsertQuery(
+        table,
+        init,
+        columnsPart,
+        valuePart,
+        usingPart append QueryBuilder.consistencyLevel(level.toString),
+        lightweightPart
+      )
+    }
   }
 
   final def timestamp(value: DateTime): InsertQuery[Table, Record, Status] = {
@@ -130,7 +149,8 @@ class InsertQuery[
       columnsPart,
       valuePart,
       usingPart,
-      lightweightPart append CQLQuery(CQLSyntax.ifNotExists)
+      lightweightPart append CQLQuery(CQLSyntax.ifNotExists),
+      consistencyLevel
     )
   }
 }

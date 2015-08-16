@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.query
 
 import java.util.{List => JavaList}
 
-import com.datastax.driver.core.{ResultSet, Row, Session}
+import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
@@ -44,16 +44,26 @@ import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
+  def consistencyLevel: ConsistencyLevel = null
+
   def qb: CQLQuery
 
   def queryString: String = qb.queryString
 
+  def statement: Statement = {
+    if (consistencyLevel == null) {
+      new SimpleStatement(qb.terminate().queryString)
+    } else {
+      new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel)
+    }
+  }
+
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(qb.terminate().queryString)
+    scalaQueryStringExecuteToFuture(statement)
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(qb.terminate().queryString)
+    twitterQueryStringExecuteToFuture(statement)
   }
 }
 
@@ -80,11 +90,11 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
   }
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(item.terminate().queryString)))
+    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(item.terminate().queryString)))
+    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 }
 
