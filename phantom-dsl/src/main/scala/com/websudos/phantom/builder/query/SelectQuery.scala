@@ -62,7 +62,7 @@ class SelectQuery[
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
   override val consistencyLevel: ConsistencyLevel = null
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc) with ExecutableQuery[Table,
+) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
