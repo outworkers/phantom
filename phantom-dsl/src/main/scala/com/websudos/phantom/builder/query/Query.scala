@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Row}
+import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
@@ -40,7 +40,7 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override val consistencyLevel: ConsistencyLevel = null) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -52,12 +52,18 @@ abstract class RootQuery[
     T <: CassandraTable[T, _],
     R,
     S <: ConsistencyBound
-  ](t: T, q: CQLQuery): QueryType[T, R, S]
+  ](t: T, q: CQLQuery, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, S]
 
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Specified] = {
-    create(table, QueryBuilder.consistencyLevel(qb, level.toString))
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified] = {
+    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      create(table, qb, level)
+    } else {
+      create(table, QueryBuilder.consistencyLevel(qb, level.toString))
+    }
   }
 }
 
@@ -69,7 +75,7 @@ abstract class Query[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound
-](table: Table, override val qb: CQLQuery, row: Row => Record) extends ExecutableStatement {
+](table: Table, override val qb: CQLQuery, row: Row => Record, override val consistencyLevel: ConsistencyLevel = null) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -87,11 +93,17 @@ abstract class Query[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C]
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
-    create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), row)
+  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
+    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      create[Table, Record, Limit, Order, Specified, Chain](table, qb, row, level)
+    } else {
+      create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), row)
+    }
   }
 
   @implicitNotFound("A limit was already specified for this query.")
