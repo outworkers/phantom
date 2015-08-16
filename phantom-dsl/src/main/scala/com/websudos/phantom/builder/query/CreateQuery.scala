@@ -29,17 +29,15 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ResultSet, Session}
-import com.twitter.util.{Await => TwitterAwait, Future => TwitterFuture}
+import com.datastax.driver.core._
+import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.{CassandraTable, Manager}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{Await => ScalaAwait, ExecutionContext, Future => ScalaFuture}
-
-
+import scala.concurrent.{ ExecutionContext, Future => ScalaFuture}
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
@@ -95,7 +93,22 @@ class CreateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val init: CQLQuery, val withClause: WithPart) extends ExecutableStatement {
+](
+  table: Table,
+  val init: CQLQuery,
+  val withClause: WithPart,
+  override val consistencyLevel: ConsistencyLevel = null
+) extends ExecutableStatement {
+
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
+    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      new CreateQuery(table, qb, withClause, level)
+    } else {
+      new CreateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), withClause)
+    }
+  }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause): CreateQuery[Table, Record, Status] = {
@@ -103,13 +116,15 @@ class CreateQuery[
       new CreateQuery(
         table,
         init,
-        withClause append QueryBuilder.Create.`with`(clause.qb)
+        withClause append QueryBuilder.Create.`with`(clause.qb),
+        consistencyLevel
       )
     } else {
       new CreateQuery(
         table,
         init,
-        withClause append QueryBuilder.Update.and(clause.qb)
+        withClause append QueryBuilder.Update.and(clause.qb),
+        consistencyLevel
       )
     }
   }
@@ -152,13 +167,11 @@ class CreateQuery[
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(qb.terminate().queryString)
+      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
     } else {
-
       super.future() flatMap {
         res => {
-
-          val indexes = table.secondaryKeys map {
+          val indexes = new ExecutableStatementList(table.secondaryKeys map {
             key => {
 
               val query = if(key.isMapKeyIndex) {
@@ -166,13 +179,12 @@ class CreateQuery[
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-
-              scalaQueryStringExecuteToFuture(query.queryString)
+              query
             }
-          }
+          })
 
-          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          ScalaFuture.sequence(indexes) map { _ => res }
+          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          indexes.future() map { _ => res }
         }
       }
     }
@@ -181,27 +193,24 @@ class CreateQuery[
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
 
     if (table.secondaryKeys.isEmpty) {
-      twitterQueryStringExecuteToFuture(qb.terminate().queryString)
+      twitterQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
     } else {
 
       super.execute() flatMap {
         res => {
 
-          val indexes = table.secondaryKeys map {
+          val indexes = new ExecutableStatementList(table.secondaryKeys map {
             key => {
-
-              val query = if(key.isMapKeyIndex) {
+               if(key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-
-              twitterQueryStringExecuteToFuture(query.queryString)
             }
-          }
+          })
 
-          Manager.logger.debug(s"Creating ${indexes.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          TwitterFuture.collect(indexes) map {_ => res}
+          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          indexes.execute() map {_ => res}
         }
       }
     }
