@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.{ResultSet, Session, Statement}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise, Return, Throw}
 import com.websudos.phantom.Manager
@@ -40,16 +40,16 @@ import scala.util.{Failure, Success}
 
 private[phantom] trait CassandraOperations {
 
-  protected[this] def scalaQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringToPromise(query).future
+  protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringToPromise(st).future
   }
 
-  protected[this] def scalaQueryStringToPromise(query: String)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $query")
+  protected[this] def scalaQueryStringToPromise(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
+    Manager.logger.debug(s"Executing query: ${st}")
 
     val promise = ScalaPromise[ResultSet]()
 
-    val future = session.executeAsync(query)
+    val future = session.executeAsync(st)
 
     val callback = new FutureCallback[ResultSet] {
       def onSuccess(result: ResultSet): Unit = {
@@ -66,9 +66,9 @@ private[phantom] trait CassandraOperations {
   }
 
 
-  protected[this] def twitterQueryStringExecuteToFuture(query: String)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
+  protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
     val promise = TwitterPromise[ResultSet]()
-    val future = session.executeAsync(query)
+    val future = session.executeAsync(str)
 
     val callback = new FutureCallback[ResultSet] {
       def onSuccess(result: ResultSet): Unit = {

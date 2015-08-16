@@ -40,6 +40,13 @@ import com.websudos.util.testing._
 
 class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Primitives.insertSchema()
+    TestTable.insertSchema()
+  }
+
+
   implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   "Update" should "work fine for primitives columns" in {
@@ -48,48 +55,28 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     val row = gen[Primitive]
 
     val updatedRow = gen[Primitive].copy(pkey = row.pkey)
-    Primitives.insertSchema()
-    val rcp = Primitives.insert
-        .value(_.pkey, row.pkey)
-        .value(_.long, row.long)
-        .value(_.boolean, row.boolean)
-        .value(_.bDecimal, row.bDecimal)
-        .value(_.double, row.double)
-        .value(_.float, row.float)
-        .value(_.inet, row.inet)
-        .value(_.int, row.int)
-        .value(_.date, row.date)
-        .value(_.uuid, row.uuid)
-        .value(_.bi, row.bi).future() flatMap {
-        _ => {
-          for {
-            a <- Primitives.select.where(_.pkey eqs row.pkey).one
-            b <- Primitives.select.fetch
-            u <- Primitives.update.where(_.pkey eqs row.pkey)
-                  .modify(_.long setTo updatedRow.long)
-                  .and(_.boolean setTo updatedRow.boolean)
-                  .and(_.bDecimal setTo updatedRow.bDecimal)
-                  .and(_.double setTo updatedRow.double)
-                  .and(_.float setTo updatedRow.float)
-                  .and(_.inet setTo updatedRow.inet)
-                  .and(_.int setTo updatedRow.int)
-                  .and(_.date setTo updatedRow.date)
-                  .and(_.uuid setTo updatedRow.uuid)
-                  .and(_.bi setTo updatedRow.bi)
-                  .future()
-            a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
-            b2 <- Primitives.select.fetch
 
-          } yield (
-            a,
-            b,
-            a2,
-            b2
-          )
-        }
-      }
+    val chain = for {
+      store <- Primitives.store(row).future()
+      a <- Primitives.select.where(_.pkey eqs row.pkey).one
+      b <- Primitives.select.fetch
+      u <- Primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setTo updatedRow.long)
+        .and(_.boolean setTo updatedRow.boolean)
+        .and(_.bDecimal setTo updatedRow.bDecimal)
+        .and(_.double setTo updatedRow.double)
+        .and(_.float setTo updatedRow.float)
+        .and(_.inet setTo updatedRow.inet)
+        .and(_.int setTo updatedRow.int)
+        .and(_.date setTo updatedRow.date)
+        .and(_.uuid setTo updatedRow.uuid)
+        .and(_.bi setTo updatedRow.bi)
+        .future()
+      a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
+      b2 <- Primitives.select.fetch
+    } yield (a, b, a2, b2)
 
-    rcp successful {
+    whenReady(chain) {
       r => {
         r._1.isDefined shouldEqual true
         r._1.get shouldEqual row
@@ -113,9 +100,6 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
       setInt = Set(3,4,7),
       mapIntToText = Map (-1 -> "&&&")
     )
-    scala.util.Right(5)
-
-    TestTable.insertSchema()
 
     val rcp = TestTable.insert
       .value(_.key, row.key)

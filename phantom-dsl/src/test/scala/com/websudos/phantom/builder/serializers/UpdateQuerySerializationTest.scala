@@ -2,11 +2,15 @@ package com.websudos.phantom.builder.serializers
 
 import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.builder.query.QueryBuilderTest
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.tables.Recipes
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 
-class UpdateQuerySerializationTest extends QueryBuilderTest {
+class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandraConnector {
+
+  override implicit val keySpace = KeySpace("phantom")
 
   "An Update query should" - {
     "allow specifying consistency levels" - {
@@ -20,7 +24,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest {
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url'"
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
 
       }
 
@@ -34,7 +38,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest {
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test'"
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
 
       }
     }

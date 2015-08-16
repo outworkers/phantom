@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, WhereClause}
@@ -47,8 +47,9 @@ class DeleteQuery[
 ](table: Table,
   init: CQLQuery,
   wherePart : WherePart = Defaults.EmptyWherePart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart
-                    ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  override val consistencyLevel: ConsistencyLevel = null
+) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -66,8 +67,8 @@ class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R): QueryType[T, R, L, O, S, C] = {
-    new DeleteQuery[T, R, L, O, S, C](t, q)
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+    new DeleteQuery[T, R, L, O, S, C](t, q, Defaults.EmptyWherePart, Defaults.EmptyCompareAndSetPart, consistencyLevel)
   }
 
   /**
