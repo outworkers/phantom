@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.websudos.phantom.builder.query.prepared.PreparedUpdateQuery
-
-import scala.annotation.implicitNotFound
-
-import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel, Row}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause, CompareAndSetClause}
+import com.websudos.phantom.builder.clauses.{CompareAndSetClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.PreparedUpdateQuery
 import com.websudos.phantom.connectors.KeySpace
+
+import scala.annotation.implicitNotFound
 
 class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -52,8 +51,8 @@ class UpdateQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null, consistencyLevel) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -80,7 +79,7 @@ class UpdateQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
     new UpdateQuery[T, R, L, O, S, C](
       t,
       q,
@@ -148,7 +147,7 @@ sealed class AssignmentsQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
   val qb: CQLQuery = {
@@ -179,10 +178,7 @@ sealed class AssignmentsQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
-
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       new AssignmentsQuery(
         table,
         init,
@@ -190,7 +186,7 @@ sealed class AssignmentsQuery[
         wherePart,
         setPart,
         casPart,
-        level
+        Some(level)
       )
     } else {
       new AssignmentsQuery(
@@ -219,8 +215,8 @@ sealed class ConditionalQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
-   ) extends ExecutableStatement with Batchable {
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends ExecutableStatement with Batchable {
 
   val qb: CQLQuery = {
     usingPart merge setPart merge wherePart merge casPart build init
@@ -240,10 +236,7 @@ sealed class ConditionalQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain] = {
-
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       new ConditionalQuery(
         table = table,
         init = init,
@@ -251,7 +244,7 @@ sealed class ConditionalQuery[
         wherePart = wherePart,
         setPart = setPart,
         casPart = casPart,
-        consistencyLevel = level
+        consistencyLevel = Some(level)
       )
     } else {
       new ConditionalQuery(

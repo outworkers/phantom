@@ -97,14 +97,12 @@ class CreateQuery[
   table: Table,
   val init: CQLQuery,
   val withClause: WithPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-      new CreateQuery(table, qb, withClause, level)
+    if (session.v3orNewer) {
+      new CreateQuery(table, qb, withClause, Some(level))
     } else {
       new CreateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), withClause)
     }

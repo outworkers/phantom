@@ -114,6 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.websudos.phantom.connectors.KeySpace
   val KeySpace = com.websudos.phantom.connectors.KeySpace
+  type RootConnector = com.websudos.phantom.connectors.RootConnector
 
   val Version = com.websudos.phantom.connectors.DefaultVersions
 
@@ -205,13 +206,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
-
-  trait ForwardDefinition {
-    implicit def space: KeySpace
-
-    implicit def session: Session
-  }
-
 
   implicit lazy val context = Manager.scalaExecutor
 

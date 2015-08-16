@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{Session, ProtocolVersion, ConsistencyLevel, Row}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, UpdateClause, WhereClause}
@@ -51,7 +51,7 @@ class PreparedUpdateQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
 
   override val qb: CQLQuery = {
@@ -75,7 +75,7 @@ class PreparedUpdateQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
     new PreparedUpdateQuery[T, R, L, O, S, C](
       table = t,
       init = q,
@@ -95,8 +95,15 @@ class PreparedUpdateQuery[
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
-    val query = QueryBuilder.Update.where(condition(table).qb)
-    new PreparedUpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart)
+    new PreparedUpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.where(condition(table).qb),
+      setPart,
+      casPart,
+      consistencyLevel
+    )
   }
 
   /**
@@ -107,13 +114,27 @@ class PreparedUpdateQuery[
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
   override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
-    val query = QueryBuilder.Update.and(condition(table).qb)
-    new PreparedUpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart)
+    new PreparedUpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.and(condition(table).qb),
+      setPart,
+      casPart,
+      consistencyLevel
+    )
   }
 
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.set(clause(table).qb)
-    new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart)
+    new AssignmentsQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart append QueryBuilder.Update.set(clause(table).qb),
+      casPart,
+      consistencyLevel
+    )
   }
 
   /**
@@ -125,8 +146,15 @@ class PreparedUpdateQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query)
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      consistencyLevel
+    )
   }
 }
 
@@ -143,7 +171,7 @@ sealed class AssignmentsQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends ExecutableStatement with Batchable {
 
   val qb: CQLQuery = {
@@ -151,13 +179,27 @@ sealed class AssignmentsQuery[
   }
 
   final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = clause(table).qb
-    new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart)
+    new AssignmentsQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart append clause(table).qb,
+      casPart,
+      consistencyLevel
+    )
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.using(QueryBuilder.timestamp(init, value.toString))
-    new AssignmentsQuery(table, init, usingPart append query, wherePart, setPart, casPart)
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.using(QueryBuilder.timestamp(init, value.toString)),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      consistencyLevel = consistencyLevel
+    )
   }
 
   /**
@@ -169,14 +211,19 @@ sealed class AssignmentsQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query)
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      consistencyLevel
+    )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       new AssignmentsQuery(
         table,
         init,
@@ -184,7 +231,7 @@ sealed class AssignmentsQuery[
         wherePart,
         setPart,
         casPart,
-        level
+        Some(level)
       )
     } else {
       new AssignmentsQuery(
@@ -213,7 +260,8 @@ sealed class ConditionalQuery[
   usingPart: UsingPart = Defaults.EmptyUsingPart,
   wherePart : WherePart = Defaults.EmptyWherePart,
   setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart
+  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends ExecutableStatement with Batchable {
 
   val qb: CQLQuery = {
@@ -229,21 +277,21 @@ sealed class ConditionalQuery[
       usingPart,
       wherePart,
       setPart,
-      casPart append query
+      casPart append query,
+      consistencyLevel
     )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       new ConditionalQuery(
         table,
         init,
         usingPart,
         wherePart,
         setPart,
-        casPart
+        casPart,
+        consistencyLevel
       )
     } else {
       new ConditionalQuery(

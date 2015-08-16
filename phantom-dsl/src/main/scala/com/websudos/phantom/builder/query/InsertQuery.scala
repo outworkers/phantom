@@ -29,13 +29,13 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel}
-import com.websudos.phantom.builder.syntax.CQLSyntax
-import org.joda.time.DateTime
+import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import org.joda.time.DateTime
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -48,7 +48,7 @@ class InsertQuery[
   valuePart: ValuePart = Defaults.EmptyValuePart,
   usingPart: UsingPart = Defaults.EmptyUsingPart,
   lightweightPart: LightweightPart = Defaults.EmptyLightweightPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
@@ -114,9 +114,8 @@ class InsertQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       new InsertQuery(
         table,
         init,
@@ -124,7 +123,7 @@ class InsertQuery[
         valuePart,
         usingPart,
         lightweightPart,
-        level
+        Some(level)
       )
     } else {
       new InsertQuery(

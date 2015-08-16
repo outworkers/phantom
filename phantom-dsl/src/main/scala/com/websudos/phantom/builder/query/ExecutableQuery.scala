@@ -35,26 +35,25 @@ import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.iteratee.{ResultSpool, Enumerator}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
-  def consistencyLevel: ConsistencyLevel = null
+  def consistencyLevel: Option[ConsistencyLevel] = None
 
   def qb: CQLQuery
 
   def queryString: String = qb.queryString
 
   def statement: Statement = {
-    if (consistencyLevel == null) {
-      new SimpleStatement(qb.terminate().queryString)
-    } else {
-      new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel)
+    consistencyLevel match {
+      case Some(level) => new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(level)
+      case None => new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(null)
     }
   }
 
