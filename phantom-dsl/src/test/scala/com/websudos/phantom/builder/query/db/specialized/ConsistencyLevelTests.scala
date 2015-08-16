@@ -15,24 +15,12 @@ class ConsistencyLevelTests extends PhantomCassandraTestSuite {
 
     val st = Primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.ONE).statement
 
-    st.getConsistencyLevel shouldEqual ConsistencyLevel.ONE
-
-    val chain = for {
-      store <- Primitives.store(row).future()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.ONE).future()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted, delete)
-
-    chain successful {
-      r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
-        r._3.wasApplied() shouldEqual true
-      }
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      st.getConsistencyLevel shouldEqual ConsistencyLevel.ONE
+    } else {
+      st.getConsistencyLevel shouldEqual null
     }
+
   }
 
   it should "set a custom consistency level of LOCAL_ONE in a DELETE query" in {
@@ -40,23 +28,10 @@ class ConsistencyLevelTests extends PhantomCassandraTestSuite {
 
     val st = Primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.LOCAL_ONE).statement
 
-    st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
-
-    val chain = for {
-      store <- Primitives.store(row).future()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.LOCAL_ONE).future()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted, delete)
-
-    chain successful {
-      r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
-        r._3.wasApplied() shouldEqual true
-      }
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
+    } else {
+      st.getConsistencyLevel shouldEqual null
     }
 
   }
