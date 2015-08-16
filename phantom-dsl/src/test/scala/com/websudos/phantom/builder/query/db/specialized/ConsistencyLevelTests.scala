@@ -78,7 +78,11 @@ class ConsistencyLevelTests extends PhantomCassandraTestSuite {
   it should "set a custom consistency level of QUORUM in a TRUNCATE query" in {
     val st = Primitives.truncate.consistencyLevel_=(ConsistencyLevel.QUORUM).statement
 
-    st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
+    } else {
+      st.getConsistencyLevel shouldEqual null
+    }
   }
 
   it should "set a custom consistency level of QUORUM in a CREATE query" in {
