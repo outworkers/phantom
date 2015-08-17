@@ -220,7 +220,7 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_]) extends ExecutableStatement {
+sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     twitterQueryStringExecuteToFuture(new SimpleStatement(udt.schema()))
