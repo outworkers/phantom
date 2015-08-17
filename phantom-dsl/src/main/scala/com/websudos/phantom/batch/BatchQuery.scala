@@ -105,6 +105,26 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     )
   }
 
+  def add(queries: Batchable with ExecutableStatement*): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator ++ queries.map(_.qb).iterator,
+      batchType,
+      usingPart,
+      added,
+      consistencyLevel
+    )
+  }
+
+  def add(queries: Iterator[Batchable with ExecutableStatement]): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator ++ queries.map(_.qb),
+      batchType,
+      usingPart,
+      added,
+      consistencyLevel
+    )
+  }
+
   def timestamp(stamp: Long): BatchQuery[Status] = {
     new BatchQuery(
       iterator,
