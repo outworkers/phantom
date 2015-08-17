@@ -269,15 +269,13 @@ sealed class ConditionalQuery[
   }
 
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.and(clause(table).qb)
-
     new ConditionalQuery(
       table,
       init,
       usingPart,
       wherePart,
       setPart,
-      casPart append query,
+      casPart append QueryBuilder.Update.and(clause(table).qb),
       consistencyLevel
     )
   }

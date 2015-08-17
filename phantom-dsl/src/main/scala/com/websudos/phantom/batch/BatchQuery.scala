@@ -29,11 +29,17 @@
  */
 package com.websudos.phantom.batch
 
+import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.{Batchable, CQLQuery, ExecutableStatement}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-sealed class BatchQuery(val init: CQLQuery, added: Boolean = false) extends ExecutableStatement {
+sealed class BatchQuery(
+  val init: CQLQuery,
+  added: Boolean = false,
+  override val consistencyLevel: Option[ConsistencyLevel]
+
+) extends ExecutableStatement {
 
   def add(queries: Batchable with ExecutableStatement*): BatchQuery = {
 
@@ -41,15 +47,15 @@ sealed class BatchQuery(val init: CQLQuery, added: Boolean = false) extends Exec
       (builder, query) => builder.forcePad.append(query.qb.terminate())
     }
 
-    new BatchQuery(chain)
+    new BatchQuery(chain, added, consistencyLevel)
   }
 
   def timestamp(stamp: Long) = {
-    new BatchQuery(QueryBuilder.timestamp(init, stamp.toString))
+    new BatchQuery(QueryBuilder.timestamp(init, stamp.toString), added, consistencyLevel)
   }
 
   def terminate: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.applyBatch(init), true)
+    new BatchQuery(QueryBuilder.Batch.applyBatch(init), true, consistencyLevel)
   }
 
   override def qb: CQLQuery = {
@@ -64,11 +70,11 @@ sealed class BatchQuery(val init: CQLQuery, added: Boolean = false) extends Exec
 private[phantom] trait Batcher {
 
   def apply(batchType: String = CQLSyntax.Batch.Logged): BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(batchType))
+    new BatchQuery(QueryBuilder.Batch.batch(batchType), false, None)
   }
 
   def logged: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(""))
+    new BatchQuery(QueryBuilder.Batch.batch(""), false, None)
   }
 
   def timestamp(stamp: Long) = {
@@ -76,11 +82,11 @@ private[phantom] trait Batcher {
   }
 
   def unlogged: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Unlogged))
+    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Unlogged), false, None)
   }
 
   def counter: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Counter))
+    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Counter), false, None)
   }
 }
 

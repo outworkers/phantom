@@ -99,8 +99,15 @@ class UpdateQuery[
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
-    val query = QueryBuilder.Update.where(condition(table).qb)
-    new UpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart, consistencyLevel)
+    new UpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.where(condition(table).qb),
+      setPart,
+      casPart,
+      consistencyLevel
+    )
   }
 
   /**
@@ -173,8 +180,15 @@ sealed class AssignmentsQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query, consistencyLevel)
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      consistencyLevel
+    )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
@@ -231,7 +245,8 @@ sealed class ConditionalQuery[
       usingPart,
       wherePart,
       setPart,
-      casPart append query
+      casPart append query,
+      consistencyLevel
     )
   }
 

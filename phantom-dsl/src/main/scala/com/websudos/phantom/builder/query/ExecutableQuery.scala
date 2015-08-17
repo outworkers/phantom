@@ -44,7 +44,7 @@ import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
-  def consistencyLevel: Option[ConsistencyLevel] = None
+  def consistencyLevel: Option[ConsistencyLevel]
 
   def qb: CQLQuery
 
