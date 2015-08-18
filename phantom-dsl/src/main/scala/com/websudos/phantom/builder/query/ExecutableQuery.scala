@@ -48,7 +48,7 @@ trait ExecutableStatement extends CassandraOperations {
 
   def qb: CQLQuery
 
-  def queryString: String = qb.queryString
+  def queryString: String = qb.terminate().queryString
 
   def statement: Statement = {
     consistencyLevel match {

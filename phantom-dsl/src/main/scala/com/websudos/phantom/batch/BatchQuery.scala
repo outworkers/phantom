@@ -71,7 +71,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     case BatchType.Counter => DatastaxBuilder.batch()
   }
 
-  protected[this] def makeBatch()(implicit session: Session): Statement = {
+  def makeBatch()(implicit session: Session): Statement = {
     val batch = initBatch()
 
     for (st <- iterator) {

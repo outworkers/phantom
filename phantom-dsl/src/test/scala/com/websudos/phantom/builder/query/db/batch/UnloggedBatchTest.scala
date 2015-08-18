@@ -59,6 +59,8 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     val batch = Batch.unlogged.add(statement3, statement4)
 
+    batch.iterator.size shouldEqual 2
+
   }
 
   it should "serialize a multiple table batch query applied to multiple statements" in {
@@ -76,7 +78,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.unlogged.add(statement3, statement4)
-    batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    batch.statement shouldEqual s"BEGIN UNLOGGED BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 
   it should "serialize a multiple table batch query chained from adding statements" in {
