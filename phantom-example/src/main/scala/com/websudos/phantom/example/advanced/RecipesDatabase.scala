@@ -29,9 +29,8 @@
  */
 package com.websudos.phantom.example.advanced
 
-import com.datastax.driver.core.ResultSet
 import com.websudos.phantom.connectors.KeySpaceDef
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.example.basics.Recipe
 
 import scala.concurrent.{Future => ScalaFuture}
@@ -45,7 +44,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-class RecipesDatabase(val keyspace: KeySpaceDef) extends DatabaseImpl(keyspace) {
+class RecipesDatabase(val keyspace: KeySpaceDef) extends Database(keyspace) {
 
   /**
    * Right now you can go for a really neat trick of the trade.
