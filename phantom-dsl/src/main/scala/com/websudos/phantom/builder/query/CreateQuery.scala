@@ -165,7 +165,7 @@ class CreateQuery[
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      scalaQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
       super.future() flatMap {
         res => {
@@ -191,7 +191,7 @@ class CreateQuery[
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
 
     if (table.secondaryKeys.isEmpty) {
-      twitterQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
 
       super.execute() flatMap {

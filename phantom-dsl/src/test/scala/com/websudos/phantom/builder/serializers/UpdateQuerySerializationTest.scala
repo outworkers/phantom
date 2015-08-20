@@ -12,7 +12,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
 
   override implicit val keySpace = KeySpace("phantom")
 
-  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
 
   "An Update query should" - {
     "allow specifying consistency levels" - {

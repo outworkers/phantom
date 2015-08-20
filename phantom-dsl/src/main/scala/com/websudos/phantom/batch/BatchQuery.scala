@@ -30,7 +30,7 @@
 package com.websudos.phantom.batch
 
 import com.datastax.driver.core._
-import com.datastax.driver.core.querybuilder.{Batch, QueryBuilder => DatastaxBuilder}
+import com.datastax.driver.core.querybuilder.{QueryBuilder => DatastaxBuilder}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -65,17 +65,16 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     twitterQueryStringExecuteToFuture(makeBatch())
   }
 
-  def initBatch(): Batch = batchType match {
-    case BatchType.Logged => DatastaxBuilder.batch()
-    case BatchType.Unlogged => DatastaxBuilder.unloggedBatch()
-    case BatchType.Counter => DatastaxBuilder.batch()
+  def initBatch(): BatchStatement = batchType match {
+    case BatchType.Logged => new BatchStatement()
+    case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
   }
 
   def makeBatch()(implicit session: Session): Statement = {
     val batch = initBatch()
 
     for (st <- iterator) {
-      batch.add(new SimpleStatement(st.queryString))
+      batch.add(session.newSimpleStatement(st.queryString))
     }
 
     consistencyLevel match {

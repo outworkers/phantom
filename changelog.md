@@ -167,3 +167,33 @@ Changelog
 - Removed `TestZookeeperConnector` from the default `phantom-testkit`.
 - Removed `BaseTest` and `FeatureBaseTest` from `phantom-testkit`.
 - Removed dependency on `phantom-zookeeper` from the default implementation of `phantom-connectors`. This was a very bad accident and Zk dependencies were being pulled in even if the end user wasn't relying on ZooKeeper for service discovery.
+
+<a id="version-1.10.0">1.10.0</a>
+===============================
+
+- Bumped Scala version to 2.11.7 for the 2.11.x releases.
+- Re-added ability to set consistency levels in every query except Batch queries.
+- Moved implementation of query execution back to simple statements in the Datastax Java driver.
+- Allowing Datastax Java driver to set the consistency level and control final levels of serialization.
+- Added ability to change CQL serialization based on CQL protocol version.
+
+
+<a id="version-1.11.0">1.11.0</a>
+================================
+
+- Changed the serialization technique used for consistency levels to use a Scala `Option[ConsistencyLevel]` definition
+instead of a nullable field.
+- Added support for protocol level specification of consistency levels inside `BatchStatement`.
+- Removed most of the remaining documentation from the GitHub readme and placed in the Wiki.
+- Added a list of tutorials for using phantom, including basic guidelines.
+- Added a default forwading mechanism for a `KeySpace` definition inside the `Connector` obtained via `KeySpaceDef`.
+- Upgraded to use Diesel engine for query operations.
+- Upgraded to use Diesel engine for multi-part queries.
+
+<a id="version-1.12.0">1.12.0</a>
+================================
+
+- Removed support for `java.util.Date` in date columns. This has been removed in Cassandra 2.2.
+- Replaced `java.util.Date` with `com.datastax.driver.core.LocalDate` primitive.
+- Replaced `BatchQuery` serialization to use `com.datastax.driver.core.BatchStatement` internally.
+- Removed superfluous check in `ExecutableQuery` for nullable consistency level definitions.

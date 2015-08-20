@@ -42,7 +42,7 @@ private[phantom] trait CassandraOperations {
 
   implicit class RichSession(val session: Session) {
     def protocolVersion: ProtocolVersion = {
-      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
     }
 
     def isNewerThan(pv: ProtocolVersion): Boolean = {
