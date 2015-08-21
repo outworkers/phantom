@@ -67,6 +67,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   def initBatch(): BatchStatement = batchType match {
     case BatchType.Logged => new BatchStatement()
+    case BatchType.Unlogged => new BatchStatement(BatchStatement.Type.UNLOGGED)
     case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
   }
 

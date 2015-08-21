@@ -20,40 +20,40 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
     "should serialise ALTER .. ADD queries" - {
       "serialise an ADD query for a column without a STATIC modifier" in {
         val qb = BasicTable.alter.add("test_big_decimal", CQLSyntax.Types.Decimal).queryString
-        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD test_big_decimal ${CQLSyntax.Types.Decimal}"
+        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD test_big_decimal ${CQLSyntax.Types.Decimal};"
       }
 
       "serialise an ADD query for a column with a STATIC modifier" in {
         val qb = BasicTable.alter.add("test_big_decimal", CQLSyntax.Types.Decimal, static = true).queryString
-        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD test_big_decimal ${CQLSyntax.Types.Decimal} STATIC"
+        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD test_big_decimal ${CQLSyntax.Types.Decimal} STATIC;"
       }
 
       "serialise an ADD query for a column without a STATIC modifier from a CQLQuery" in {
         val qb = BasicTable.alter.add(BasicTable.placeholder.qb).queryString
-        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD placeholder ${CQLSyntax.Types.Text}"
+        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD placeholder ${CQLSyntax.Types.Text};"
       }
 
       "serialise an ADD query for a column with a STATIC modifier from a CQLQuery" in {
         val qb = BasicTable.alter.add(StaticTableTest.staticTest.qb).queryString
-        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD staticTest ${CQLSyntax.Types.Text} STATIC"
+        qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD staticTest ${CQLSyntax.Types.Text} STATIC;"
       }
     }
 
     "should serialise ALTER .. DROP queries" - {
       "should serialise a DROP query based based on a column select" in {
         val qb = BasicTable.alter.drop(_.placeholder).queryString
-        qb shouldEqual "ALTER TABLE phantom.BasicTable DROP placeholder"
+        qb shouldEqual "ALTER TABLE phantom.BasicTable DROP placeholder;"
       }
 
       "should serialise a DROP query with no arguments to DROP a table" in {
         val qb = BasicTable.alter().drop().queryString
 
-        qb shouldEqual "DROP TABLE phantom.BasicTable"
+        qb shouldEqual "DROP TABLE phantom.BasicTable;"
       }
 
       "should serialise a DROP query based on string value" in {
         val qb = BasicTable.alter.drop("test").queryString
-        qb shouldEqual "ALTER TABLE phantom.BasicTable DROP test"
+        qb shouldEqual "ALTER TABLE phantom.BasicTable DROP test;"
       }
 
       "should not compile DROP queries on INDEX fields" in {
