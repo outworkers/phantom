@@ -63,7 +63,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
   }
 
-  it should "serialize a multiple table batch query applied to multiple statements" in {
+  ignore should "serialize a multiple table batch query applied to multiple statements" in {
 
     val row = gen[JodaRow]
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
@@ -99,7 +99,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
     batch.queryString shouldEqual s"BEGIN UNLOGGED BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 
-  it should "correctly execute a chain of INSERT queries" in {
+   should "correctly execute a chain of INSERT queries" in {
     val row = gen[JodaRow]
     val row2 = gen[JodaRow]
     val row3 = gen[JodaRow]

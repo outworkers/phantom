@@ -193,7 +193,9 @@ instead of a nullable field.
 <a id="version-1.12.0">1.12.0</a>
 ================================
 
-- Removed support for `java.util.Date` in date columns. This has been removed in Cassandra 2.2.
-- Replaced `java.util.Date` with `com.datastax.driver.core.LocalDate` primitive.
+- Removed support for `java.util.Date` in the default date columns. This has been removed in Cassandra 2.2.
+- Replaced default date parsing from `java.util.Date` with `com.datastax.driver.core.LocalDate` primitive.
+- Added a `LocalDate` column to offer complementary support for `com.datastax.driver.core.LocalDate`, `java.util.Date`
+and `org.joda.time.DateTime`.
 - Replaced `BatchQuery` serialization to use `com.datastax.driver.core.BatchStatement` internally.
 - Removed superfluous check in `ExecutableQuery` for nullable consistency level definitions.

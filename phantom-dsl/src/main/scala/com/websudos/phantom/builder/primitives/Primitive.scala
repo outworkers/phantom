@@ -201,7 +201,7 @@ trait DefaultPrimitives {
     }
 
     override def fromRow(column: String, row: Row): Try[Date] = nullCheck(column, row) {
-      r => new Date(r.getDate(column).getMillisSinceEpoch)
+      r => r.getTimestamp(column)
     }
 
     override def fromString(value: String): Date = {
@@ -247,7 +247,7 @@ trait DefaultPrimitives {
     }
 
     override def fromRow(column: String, row: Row): Try[DateTime] = nullCheck(column, row) {
-      r => new DateTime(r.getDate(column))
+      r => new DateTime(r.getTimestamp(column))
     }
 
     override def fromString(value: String): DateTime = new DateTime(value)
