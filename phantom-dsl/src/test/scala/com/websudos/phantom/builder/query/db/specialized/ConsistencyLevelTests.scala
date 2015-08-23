@@ -8,7 +8,7 @@ import com.websudos.phantom.dsl._
 
 class ConsistencyLevelTests extends PhantomCassandraTestSuite {
 
-  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
 
   it should "set a custom consistency level of ONE" in {
     val row = gen[Primitive]

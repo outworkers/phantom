@@ -29,58 +29,146 @@
  */
 package com.websudos.phantom.batch
 
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.{Batchable, CQLQuery, ExecutableStatement}
+import com.datastax.driver.core._
+import com.datastax.driver.core.querybuilder.{QueryBuilder => DatastaxBuilder}
+import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
+import com.websudos.phantom.connectors.KeySpace
 
-sealed class BatchQuery(val init: CQLQuery, added: Boolean = false) extends ExecutableStatement {
+import scala.annotation.implicitNotFound
+import scala.concurrent.{Future => ScalaFuture}
 
-  def add(queries: Batchable with ExecutableStatement*): BatchQuery = {
+class BatchType(val batch: String)
 
-    val chain = queries.foldLeft(init) {
-      (builder, query) => builder.forcePad.append(query.qb.terminate())
+object BatchType {
+  case object Logged extends BatchType(CQLSyntax.Batch.Logged)
+  case object Unlogged extends BatchType(CQLSyntax.Batch.Unlogged)
+  case object Counter extends BatchType(CQLSyntax.Batch.Counter)
+
+}
+
+sealed class BatchQuery[Status <: ConsistencyBound](
+  val iterator: Iterator[CQLQuery],
+  batchType: BatchType,
+  usingPart: UsingPart = UsingPart.empty,
+  added: Boolean = false,
+  override val consistencyLevel: Option[ConsistencyLevel]
+) extends ExecutableStatement {
+
+  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(makeBatch())
+  }
+
+  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
+    twitterQueryStringExecuteToFuture(makeBatch())
+  }
+
+  def initBatch(): BatchStatement = batchType match {
+    case BatchType.Logged => new BatchStatement()
+    case BatchType.Unlogged => new BatchStatement(BatchStatement.Type.UNLOGGED)
+    case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
+  }
+
+  def makeBatch()(implicit session: Session): Statement = {
+    val batch = initBatch()
+
+    for (st <- iterator) {
+      batch.add(session.newSimpleStatement(st.queryString))
     }
 
-    new BatchQuery(chain)
+    consistencyLevel match {
+      case Some(level) => batch.setConsistencyLevel(level)
+      case None => batch
+    }
+
   }
 
-  def timestamp(stamp: Long) = {
-    new BatchQuery(QueryBuilder.timestamp(init, stamp.toString))
-  }
-
-  def terminate: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.applyBatch(init), true)
-  }
-
-  override def qb: CQLQuery = {
-    if (added) {
-      init
+  @implicitNotFound("A ConsistencyLevel was already specified for this query.")
+  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): BatchQuery[Specified] = {
+    if (session.v3orNewer) {
+      new BatchQuery[Specified](
+        iterator,
+        batchType,
+        usingPart,
+        added,
+        Some(level)
+      )
     } else {
-      terminate.qb
+      new BatchQuery[Specified](
+        iterator,
+        batchType,
+        usingPart append QueryBuilder.consistencyLevel(level.toString),
+        added,
+        Some(level)
+      )
     }
   }
+
+  def add(query: Batchable with ExecutableStatement): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator ++ Iterator(query.qb),
+      batchType,
+      usingPart,
+      added,
+      consistencyLevel
+    )
+  }
+
+  def add(queries: Batchable with ExecutableStatement*): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator ++ queries.map(_.qb).iterator,
+      batchType,
+      usingPart,
+      added,
+      consistencyLevel
+    )
+  }
+
+  def add(queries: Iterator[Batchable with ExecutableStatement]): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator ++ queries.map(_.qb),
+      batchType,
+      usingPart,
+      added,
+      consistencyLevel
+    )
+  }
+
+  def timestamp(stamp: Long): BatchQuery[Status] = {
+    new BatchQuery(
+      iterator,
+      batchType,
+      usingPart append QueryBuilder.timestamp(stamp.toString),
+      added,
+      consistencyLevel
+    )
+  }
+
+  override def qb: CQLQuery = CQLQuery.empty
 }
 
 private[phantom] trait Batcher {
 
-  def apply(batchType: String = CQLSyntax.Batch.Logged): BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(batchType))
+  def apply(batchType: String = CQLSyntax.Batch.Logged): BatchQuery[Unspecified] = {
+    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, None)
   }
 
-  def logged: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(""))
+  def logged: BatchQuery[Unspecified] = {
+    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, None)
   }
 
-  def timestamp(stamp: Long) = {
+  def timestamp(stamp: Long): BatchQuery[Unspecified] = {
     apply().timestamp(stamp)
   }
 
-  def unlogged: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Unlogged))
+  def unlogged: BatchQuery[Unspecified] = {
+    new BatchQuery(Iterator.empty, BatchType.Unlogged, UsingPart.empty, false, None)
   }
 
-  def counter: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.batch(CQLSyntax.Batch.Counter))
+  def counter: BatchQuery[Unspecified] = {
+    new BatchQuery(Iterator.empty, BatchType.Counter, UsingPart.empty, false, None)
   }
 }
 
