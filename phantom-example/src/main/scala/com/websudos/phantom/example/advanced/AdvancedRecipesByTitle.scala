@@ -30,10 +30,11 @@
 package com.websudos.phantom.example.advanced
 
 import java.util.UUID
-import scala.concurrent.{ Future => ScalaFuture }
-import com.datastax.driver.core.{ ResultSet, Row }
+
+import com.datastax.driver.core.{ResultSet, Row}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.example.basics.ExampleConnector
+
+import scala.concurrent.{Future => ScalaFuture}
 
 
 // Now you want to enable querying Recipes by author.
@@ -42,7 +43,7 @@ import com.websudos.phantom.example.basics.ExampleConnector
 
 // Instead, you create mapping tables and ensure consistency from the application level.
 // This will illustrate just how easy it is to do that with com.websudos.phantom.
-sealed class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitle, (String, UUID)] {
+sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
 
   // In this table, the author will be PrimaryKey and PartitionKey.
   object title extends StringColumn(this) with PartitionKey[String]
@@ -55,7 +56,7 @@ sealed class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitl
   }
 }
 
-object AdvancedRecipesByTitle extends AdvancedRecipesByTitle with ExampleConnector {
+abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
   override lazy val tableName = "recipes_by_title"
 
 

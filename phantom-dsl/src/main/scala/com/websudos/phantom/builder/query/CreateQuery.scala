@@ -97,14 +97,12 @@ class CreateQuery[
   table: Table,
   val init: CQLQuery,
   val withClause: WithPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-      new CreateQuery(table, qb, withClause, level)
+    if (session.v3orNewer) {
+      new CreateQuery(table, qb, withClause, Some(level))
     } else {
       new CreateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), withClause)
     }
@@ -167,24 +165,24 @@ class CreateQuery[
     implicit val ex: ExecutionContext = Manager.scalaExecutor
 
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      scalaQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
       super.future() flatMap {
         res => {
-          val indexes = new ExecutableStatementList(table.secondaryKeys map {
+          new ExecutableStatementList(table.secondaryKeys map {
             key => {
-
-              val query = if(key.isMapKeyIndex) {
+              if (key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
               } else {
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
-              query
             }
-          })
-
-          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          indexes.future() map { _ => res }
+          }) future() map {
+            _ => {
+              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+              res
+            }
+          }
         }
       }
     }
@@ -193,13 +191,12 @@ class CreateQuery[
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
 
     if (table.secondaryKeys.isEmpty) {
-      twitterQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
 
       super.execute() flatMap {
         res => {
-
-          val indexes = new ExecutableStatementList(table.secondaryKeys map {
+          new ExecutableStatementList(table.secondaryKeys map {
             key => {
                if(key.isMapKeyIndex) {
                 QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
@@ -207,10 +204,12 @@ class CreateQuery[
                 QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
               }
             }
-          })
-
-          Manager.logger.debug(s"Creating ${indexes.list.size} indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          indexes.execute() map {_ => res}
+          }) execute() map {
+            _ => {
+              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+              res
+            }
+          }
         }
       }
     }

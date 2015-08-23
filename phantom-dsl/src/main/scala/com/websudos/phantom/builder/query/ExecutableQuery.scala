@@ -35,27 +35,23 @@ import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.iteratee.{ResultSpool, Enumerator}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
-  def consistencyLevel: ConsistencyLevel = null
+  def consistencyLevel: Option[ConsistencyLevel]
 
   def qb: CQLQuery
 
-  def queryString: String = qb.queryString
+  def queryString: String = qb.terminate().queryString
 
-  def statement: Statement = {
-    if (consistencyLevel == null) {
-      new SimpleStatement(qb.terminate().queryString)
-    } else {
-      new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel)
-    }
+  def statement()(implicit session: Session): Statement = {
+    session.newSimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel.orNull)
   }
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
@@ -90,11 +86,11 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
   }
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
   }
 }
 

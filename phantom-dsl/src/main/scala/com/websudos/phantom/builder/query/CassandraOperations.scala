@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ResultSet, Session, Statement}
+import com.datastax.driver.core.{ProtocolVersion, ResultSet, Session, Statement}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise, Return, Throw}
 import com.websudos.phantom.Manager
@@ -39,6 +39,18 @@ import scala.concurrent.{ExecutionContext, Future => ScalaFuture, Promise => Sca
 import scala.util.{Failure, Success}
 
 private[phantom] trait CassandraOperations {
+
+  implicit class RichSession(val session: Session) {
+    def protocolVersion: ProtocolVersion = {
+      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+    }
+
+    def isNewerThan(pv: ProtocolVersion): Boolean = {
+      protocolVersion.compareTo(pv) == 1
+    }
+
+    def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+  }
 
   protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
