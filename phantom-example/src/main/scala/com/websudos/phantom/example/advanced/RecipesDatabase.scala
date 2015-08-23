@@ -29,12 +29,11 @@
  */
 package com.websudos.phantom.example.advanced
 
-import scala.concurrent.{ Future => ScalaFuture }
-import com.datastax.driver.core.ResultSet
-import com.twitter.conversions.time._
-import com.twitter.util.{Await, Future}
+import com.websudos.phantom.connectors.KeySpaceDef
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.example.basics.{ExampleConnector, Recipe}
+import com.websudos.phantom.example.basics.Recipe
+
+import scala.concurrent.{Future => ScalaFuture}
 
 // In this section, we will show how you can create a real-world Cassandra service with com.websudos.phantom.
 // First you have to think of what queries you need to perform. The usual.
@@ -45,7 +44,7 @@ import com.websudos.phantom.example.basics.{ExampleConnector, Recipe}
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-object RecipesDatabaseService extends ExampleConnector {
+class RecipesDatabase(val keyspace: KeySpaceDef) extends Database(keyspace) {
 
   /**
    * Right now you can go for a really neat trick of the trade.
@@ -58,15 +57,16 @@ object RecipesDatabaseService extends ExampleConnector {
    * This is a very neat and simple trick which will initialise all your tables in parallel at any time you want. The initialisation will automatically
    * trigger the mecbanism that connects to Cassandra and gives you back a session.
    */
-  def init(): Unit = {
-    val creation = Future.join(
-      AdvancedRecipes.create.execute(),
-      AdvancedRecipesByTitle.create.execute()
-    )
-
-    Await.ready(creation, 2.seconds)
+  def init: ScalaFuture[Seq[ResultSet]] = {
+    this.autocreate().future()
   }
 
+  def destroy(): ScalaFuture[Seq[ResultSet]] = {
+    this.autotruncate().future()
+  }
+
+  object AdvancedRecipes extends ConcreteAdvancedRecipes with connector.Connector
+  object AdvancedRecipesByTitle extends ConcreteAdvancedRecipesByTitle with connector.Connector
 
   // For instance, right now when you want to insert a new recipe.
   // Say from a JavaScript client with a fancy interface.

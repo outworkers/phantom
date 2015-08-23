@@ -220,14 +220,14 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_]) extends ExecutableStatement {
+sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
-    twitterQueryStringExecuteToFuture(new SimpleStatement(udt.schema()))
+    twitterQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(new SimpleStatement(udt.schema()))
+    scalaQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
   }
 }
 

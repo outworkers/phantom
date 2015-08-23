@@ -65,7 +65,7 @@ class CountTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly retrieve a count of 1000" in {
-    val limit = 1000
+    val limit = 100
 
     val rows = genList[JodaRow](limit)
 
@@ -88,7 +88,7 @@ class CountTest extends PhantomCassandraTestSuite {
   }
 
   it should "correctly retrieve a count of 1000 with Twitter futures" in {
-    val limit = 1000
+    val limit = 100
 
     val rows = genList[JodaRow](limit)
 

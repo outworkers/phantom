@@ -48,7 +48,7 @@ class DeleteQuery[
   init: CQLQuery,
   wherePart : WherePart = Defaults.EmptyWherePart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
@@ -67,7 +67,7 @@ class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
     new DeleteQuery[T, R, L, O, S, C](t, q, Defaults.EmptyWherePart, Defaults.EmptyCompareAndSetPart, consistencyLevel)
   }
 
@@ -80,7 +80,7 @@ class DeleteQuery[
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
     val query = QueryBuilder.Update.where(condition(table).qb)
-    new DeleteQuery(table, init, wherePart append query, casPart)
+    new DeleteQuery(table, init, wherePart append query, casPart, consistencyLevel)
   }
 
   /**
@@ -92,7 +92,7 @@ class DeleteQuery[
   @implicitNotFound("You have to use an where clause before using an AND clause")
   override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
-    new DeleteQuery(table, init, wherePart append query, casPart)
+    new DeleteQuery(table, init, wherePart append query, casPart, consistencyLevel)
   }
 
   /**
@@ -104,7 +104,7 @@ class DeleteQuery[
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain] = {
     val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalDeleteQuery(table, init, wherePart, casPart append query)
+    new ConditionalDeleteQuery(table, init, wherePart, casPart append query, consistencyLevel)
   }
 
   override val qb: CQLQuery = {
@@ -135,8 +135,9 @@ sealed class ConditionalDeleteQuery[
 ](table: Table,
   val init: CQLQuery,
   wherePart : WherePart = Defaults.EmptyWherePart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart
-   ) extends ExecutableStatement with Batchable {
+  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+ ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
     (wherePart merge casPart) build init
@@ -147,7 +148,8 @@ sealed class ConditionalDeleteQuery[
       table,
       init,
       wherePart,
-      casPart append QueryBuilder.Update.and(clause(table).qb)
+      casPart append QueryBuilder.Update.and(clause(table).qb),
+      consistencyLevel
     )
   }
 }

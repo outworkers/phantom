@@ -61,7 +61,7 @@ class SelectQuery[
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
@@ -87,7 +87,7 @@ class SelectQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
+  ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C] = {
     new SelectQuery[T, R, L, O, S, C](
       table = t,
       rowFunc = r,

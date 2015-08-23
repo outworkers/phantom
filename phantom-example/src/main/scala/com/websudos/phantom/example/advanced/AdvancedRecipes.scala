@@ -30,14 +30,14 @@
 package com.websudos.phantom.example.advanced
 
 import java.util.UUID
-import scala.concurrent.{ Future => ScalaFuture }
+
+import com.datastax.driver.core.{ResultSet, Row}
+import com.twitter.conversions.time._
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.example.basics.Recipe
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.{ ResultSet, Row }
-
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.example.basics.{ExampleConnector, Recipe, Recipes}
-import com.twitter.conversions.time._
+import scala.concurrent.{Future => ScalaFuture}
 
 /**
  * In this example we will create a  table storing recipes.
@@ -47,7 +47,7 @@ import com.twitter.conversions.time._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class AdvancedRecipes private() extends CassandraTable[Recipes, Recipe] {
+sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -63,8 +63,8 @@ sealed class AdvancedRecipes private() extends CassandraTable[Recipes, Recipe] {
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[Recipes, Recipe, String](this)
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[ConcreteAdvancedRecipes, Recipe, String](this)
+  object props extends MapColumn[ConcreteAdvancedRecipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime]
 
   // Now the mapping function, transforming a row into a custom type.
@@ -84,7 +84,7 @@ sealed class AdvancedRecipes private() extends CassandraTable[Recipes, Recipe] {
 }
 
 
-object AdvancedRecipes extends AdvancedRecipes with ExampleConnector {
+abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnector {
 
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)

@@ -35,8 +35,8 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.9.8"
-  val DatastaxDriverVersion = "2.1.5"
+  val UtilVersion = "0.9.11"
+  val DatastaxDriverVersion = "2.2.0-rc3"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
   val FinagleVersion = "6.25.0"
@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.11.0",
+    version := "1.12.2",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -183,6 +183,7 @@ object Build extends Build {
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+        "org.slf4j"                    % "slf4j-log4j12"                      % "1.7.12" % "test, provided",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
