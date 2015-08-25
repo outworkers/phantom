@@ -3,7 +3,8 @@ resolvers ++= Seq(
     "jgit-repo"                                          at "http://download.eclipse.org/jgit/maven",
     "Twitter Repo"                                       at "http://maven.twttr.com/",
     "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
-    Resolver.bintrayRepo("websudos", "oss-releases")
+    Resolver.bintrayRepo("websudos", "oss-releases"),
+    Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
 )
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
@@ -16,7 +17,7 @@ addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.0.0")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.6.0")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.4")
 
