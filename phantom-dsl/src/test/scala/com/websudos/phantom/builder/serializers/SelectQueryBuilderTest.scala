@@ -53,7 +53,19 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
         )
 
         qb.queryString shouldEqual s"SELECT * FROM phantom.BasicTable ORDER BY ${BasicTable.id.name} DESC"
+      }
 
+      "should allow specifying multiple orderBy clauses in a single select query" in {
+
+        val orderings = Seq(
+          QueryBuilder.Select.Ordering.ascending("test"),
+          QueryBuilder.Select.Ordering.ascending("test_2"),
+          QueryBuilder.Select.Ordering.descending("test_3")
+        )
+
+        val qb = QueryBuilder.Select.Ordering.orderBy(orderings: _*).queryString
+
+        qb shouldEqual "ORDER BY (test ASC, test_2 ASC, test_3 DESC)"
       }
     }
 

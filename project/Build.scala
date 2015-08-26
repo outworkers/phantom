@@ -48,7 +48,7 @@ object Build extends Build {
   val ScalaMeterVersion = "0.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
-  val DieselEngineVersion = "0.2.2"
+  val DieselEngineVersion = "0.2.4"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),

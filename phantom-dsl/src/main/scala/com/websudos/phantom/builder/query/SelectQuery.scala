@@ -57,7 +57,7 @@ class SelectQuery[
   rowFunc: Row => Record,
   val init: CQLQuery,
   wherePart: WherePart = Defaults.EmptyWherePart,
-  orderPart: OrderPart = Defaults.EmptyOrderPart,
+  orderPart: OrderPart = OrderPart.empty,
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
@@ -175,13 +175,13 @@ class SelectQuery[
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
-  final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+  final def orderBy(clauses: (Table => OrderingClause.Condition)*)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
     new SelectQuery(
       table,
       rowFunc,
       init,
       wherePart,
-      orderPart append QueryBuilder.Select.Ordering.orderBy(clause(table).qb),
+      orderPart append clauses.map(_(table).qb).toList,
       limitedPart,
       filteringPart,
       count,
