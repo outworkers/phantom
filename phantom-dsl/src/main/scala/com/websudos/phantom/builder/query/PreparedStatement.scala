@@ -62,7 +62,7 @@ class PreparedStatement[P <: ParametricNode](args: Any*) {
    */
   def withParams[V1, V2, V3, V4](value: V1)
                                 (implicit ev: P =:= V4 ** V3 ** V2 ** V1 ** PNil): PreparedStatement[V4 ** V3 ** V2 ** PNil] = {
-    new PreparedStatement[PNil](value +: args)
+    new PreparedStatement[V4 ** V3 ** V2 ** PNil](value +: args)
   }
 
 }
