@@ -18,8 +18,35 @@ class PreparedStatement[P <: ParametricNode](args: Any*) {
     new PreparedStatement[V ** P](args)
   }
 
-  def withParams[V, PN <: ParametricNode](value: V)(implicit ev: P =:= V ** PN): PreparedStatement[PN] = {
+  /**
+   * A first approach to defining parametric values. The issue is that it takes them in reverse order
+   * @param value
+   * @param ev
+   * @tparam V
+   * @tparam PN
+   * @return
+   */
+  def withParam[V, PN <: ParametricNode](value: V)(implicit ev: P =:= V ** PN): PreparedStatement[PN] = {
     new PreparedStatement[PN](args :+ value)
+  }
+
+
+  /**
+   * Second option is to define `withParams` methods each with different number of parameters in the chain.
+   * @param v1
+   * @param v2
+   * @param v3
+   * @param v4
+   * @param ev
+   * @tparam V1
+   * @tparam V2
+   * @tparam V3
+   * @tparam V4
+   * @return
+   */
+  def withParams[V1, V2, V3, V4](v1: V1, v2: V2, v3: V3, v4: V4)
+                                (implicit ev: P =:= V4 ** V3 ** V2 ** V1 ** PNil): PreparedStatement[PNil] = {
+    new PreparedStatement[PNil](v1, v2, v3, v4)
   }
 
 }
