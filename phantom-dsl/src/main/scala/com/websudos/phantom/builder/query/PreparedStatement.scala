@@ -49,4 +49,20 @@ class PreparedStatement[P <: ParametricNode](args: Any*) {
     new PreparedStatement[PNil](v1, v2, v3, v4)
   }
 
+
+  /**
+   * It should be also possible to define parameter value one at once using the same technique.
+   * @param value First parameter value
+   * @param ev
+   * @tparam V1
+   * @tparam V2
+   * @tparam V3
+   * @tparam V4
+   * @return
+   */
+  def withParams[V1, V2, V3, V4](value: V1)
+                                (implicit ev: P =:= V4 ** V3 ** V2 ** V1 ** PNil): PreparedStatement[PNil] = {
+    new PreparedStatement[PNil](value +: args)
+  }
+
 }
