@@ -1,11 +1,15 @@
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.builder.clauses.WhereClause
+
 
 sealed trait ParametricNode
 final class ParametricValue[PVT, P <: ParametricNode] extends ParametricNode
 final class PNil extends ParametricNode
 
-sealed trait ParametricCondition[V]
+trait ParametricCondition[V] {
+  def parametrize(value: V): WhereClause.Condition
+}
 
 /**
   * Prepared statement
