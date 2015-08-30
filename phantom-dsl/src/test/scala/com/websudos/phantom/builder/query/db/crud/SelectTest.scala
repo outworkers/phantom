@@ -83,6 +83,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
+
     val chain = for {
       store <- Primitives.store(row).future
       get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()

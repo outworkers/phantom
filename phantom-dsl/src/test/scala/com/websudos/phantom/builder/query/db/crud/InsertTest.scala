@@ -71,7 +71,7 @@ class InsertTest extends PhantomCassandraTestSuite {
       store <- Primitives.store(row).execute()
       one <- Primitives.select.where(_.pkey eqs row.pkey).get
     } yield one
-    
+
     chain successful {
       res => {
         res shouldBe defined

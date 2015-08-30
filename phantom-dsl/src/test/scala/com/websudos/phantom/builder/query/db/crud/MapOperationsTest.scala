@@ -60,8 +60,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props + item
+        items.value shouldEqual recipe.props + item
       }
     }
   }
@@ -74,14 +73,11 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
       insertDone <- Recipes.store(recipe).execute()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).execute()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props + item
+        items.value shouldEqual recipe.props + item
       }
     }
   }
@@ -94,14 +90,11 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
       insertDone <- Recipes.store(recipe).future()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props ++ mapItems
+        items.value shouldEqual recipe.props ++ mapItems
       }
     }
   }
@@ -114,14 +107,11 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
       insertDone <- Recipes.store(recipe).execute()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).execute()
       select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props ++ mapItems
+        items.value shouldEqual recipe.props ++ mapItems
       }
     }
   }
@@ -136,8 +126,7 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual event
+        res.value shouldEqual event
       }
     }
 
