@@ -1,7 +1,6 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.Defaults.{EmptyFilteringPart, EmptyOrderPart, EmptySetPart, EmptyWherePart}
 import com.websudos.phantom.builder.query._
 import org.scalatest.FreeSpec
 
@@ -119,7 +118,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
     "merge any number of query parts using the MergePart interface" - {
 
       "merging consecutive empty parts with no initialization should build into the empty string" in {
-        val merged = (EmptySetPart merge EmptyWherePart merge EmptyOrderPart merge EmptyFilteringPart).build
+        val merged = (SetPart.empty merge WherePart.empty merge OrderPart.empty merge FilteringPart.empty).build
 
         merged.nonEmpty shouldEqual false
       }
@@ -128,7 +127,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
         val qb = QueryBuilder.Select.count("t", "k")
 
-        val merged = (EmptySetPart merge EmptyWherePart merge EmptyOrderPart merge EmptyFilteringPart).build(qb)
+        val merged = (SetPart.empty merge WherePart.empty merge OrderPart.empty merge FilteringPart.empty).build(qb)
 
         merged shouldEqual qb
       }
