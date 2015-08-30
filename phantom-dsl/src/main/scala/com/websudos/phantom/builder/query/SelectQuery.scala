@@ -56,10 +56,10 @@ class SelectQuery[
   table: Table,
   rowFunc: Row => Record,
   val init: CQLQuery,
-  wherePart: WherePart = Defaults.EmptyWherePart,
+  wherePart: WherePart = WherePart.empty,
   orderPart: OrderPart = OrderPart.empty,
-  limitedPart: LimitedPart = Defaults.EmptyLimitPart,
-  filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+  limitedPart: LimitedPart = LimitedPart.empty,
+  filteringPart: FilteringPart = FilteringPart.empty,
   count: Boolean = false,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
@@ -197,7 +197,7 @@ class SelectQuery[
    */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def one()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[Record]] = {
-    val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
       table = table,
@@ -221,7 +221,7 @@ class SelectQuery[
    */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): TwitterFuture[Option[Record]] = {
-    val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
       table = table,
@@ -259,11 +259,11 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
       table,
       extractCount,
       QueryBuilder.Select.count(table.tableName, keySpace.name),
-      Defaults.EmptyWherePart,
-      Defaults.EmptyOrderPart,
-      Defaults.EmptyLimitPart,
-      Defaults.EmptyFilteringPart,
-      true
+      WherePart.empty,
+      OrderPart.empty,
+      LimitedPart.empty,
+      FilteringPart.empty,
+      count = true
     )
   }
 }
