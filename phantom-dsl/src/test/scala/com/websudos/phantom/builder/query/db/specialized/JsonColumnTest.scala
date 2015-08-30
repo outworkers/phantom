@@ -52,15 +52,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
-
-
-  session
-
 
   it should "allow storing a JSON record with Twitter Futures" in {
     val sample = gen[JsonClass]
@@ -72,8 +67,7 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
@@ -99,11 +93,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get.json shouldEqual sample.json
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.json shouldEqual sample2.json
+        res._1.value.json shouldEqual sample.json
+        res._2.value.json shouldEqual sample2.json
       }
     }
   }
@@ -121,11 +112,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get.json shouldEqual sample.json
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.json shouldEqual sample2.json
+        res._1.value.json shouldEqual sample.json
+        res._2.value.json shouldEqual sample2.json
       }
     }
   }
@@ -143,11 +131,9 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
+        res._1.value shouldEqual sample
 
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonList(0) shouldEqual sample2.json
+        res._2.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -165,11 +151,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonList(0) shouldEqual sample2.json
+        res._1.value shouldEqual sample
+        res._2.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -187,11 +170,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonSet.contains(sample2.json) shouldEqual true
+        res._1.value shouldEqual sample
+        res._2.value.jsonSet should contain (sample2.json)
       }
     }
   }
@@ -209,11 +189,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonSet.contains(sample2.json) shouldEqual true
+        res._1.value shouldEqual sample
+        res._2.value.jsonSet should contain (sample2.json)
       }
     }
   }

@@ -59,8 +59,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
+        result.value.struct shouldEqual sample
       }
     }
   }
@@ -82,9 +81,8 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
-        result.get.thriftSet shouldEqual sampleList
+        result.value.struct shouldEqual sample
+        result.value.thriftSet shouldEqual sampleList
       }
     }
   }

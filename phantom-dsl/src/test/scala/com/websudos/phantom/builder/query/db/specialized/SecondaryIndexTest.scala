@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
-import scala.concurrent.{Await, blocking}
-import scala.concurrent.duration._
 import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-import scala.util.Try
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
@@ -60,12 +59,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
         val secondary = res._2
 
         info("Querying by primary key should return the record")
-        primary.isDefined shouldBe true
-        primary.get shouldEqual sample
+        primary.value shouldEqual sample
 
         info("Querying by the secondary index key should also return the record")
-        secondary.isDefined shouldEqual true
-        secondary.get shouldEqual sample
+        secondary.value shouldEqual sample
       }
     }
   }
@@ -85,12 +82,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
         val secondary = res._2
 
         info("Querying by primary key should return the record")
-        primary.isDefined shouldBe true
-        primary.get shouldEqual sample
+        primary.value shouldEqual sample
 
         info("Querying by the secondary index key should also return the record")
-        secondary.isDefined shouldEqual true
-        secondary.get shouldEqual sample
+        secondary.value shouldEqual sample
       }
     }
   }
@@ -112,12 +107,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
         val secondary = res._2
 
         info("Querying by primary key should return the record")
-        primary.isDefined shouldBe true
-        primary.get shouldEqual sample
+        primary.value shouldEqual sample
 
         info("Querying by the secondary index key should also return the record")
-        secondary.isDefined shouldEqual true
-        secondary.get shouldEqual sample.copy(secondary = updated)
+        secondary.value shouldEqual sample.copy(secondary = updated)
       }
     }
   }
@@ -131,8 +124,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
@@ -146,8 +138,7 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }

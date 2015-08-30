@@ -54,10 +54,8 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.enum shouldEqual sample.enum
-        res.get.optEnum.isDefined shouldEqual false
-        res.get.optEnum shouldEqual None
+        res.value.enum shouldEqual sample.enum
+        res.value.optEnum shouldBe empty
       }
     }
   }
@@ -73,10 +71,8 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.enum shouldEqual sample.enum
-        res.get.optEnum.isDefined shouldEqual true
-        res.get.optEnum shouldEqual sample.optEnum
+        res.value.enum shouldEqual sample.enum
+        res.value.optEnum shouldBe empty
       }
     }
   }
@@ -92,10 +88,8 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.enum shouldEqual sample.enum
-        res.get.optEnum.isDefined shouldEqual false
-        res.get.optEnum shouldEqual None
+        res.value.enum shouldEqual sample.enum
+        res.value.optEnum shouldBe empty
       }
     }
   }
@@ -110,10 +104,9 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.enum shouldEqual sample.enum
-        res.get.optEnum.isDefined shouldEqual true
-        res.get.optEnum shouldEqual sample.optEnum
+        res.value.enum shouldEqual sample.enum
+        res.value.optEnum shouldBe defined
+        res.value.optEnum shouldEqual sample.optEnum
       }
     }
   }
