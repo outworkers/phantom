@@ -59,8 +59,7 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 2500
+        res.value shouldEqual 2500
       }
     }
   }
@@ -82,8 +81,7 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 2500
+        res.value shouldEqual 2500
       }
     }
   }
@@ -112,14 +110,14 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         info("The first counter select should return the record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.get shouldEqual 2500
+        res._1.value shouldEqual 2500
 
         info("The second counter select should return the record")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.get shouldEqual 2500
+        res._2.value shouldEqual 2500
       }
     }
   }
@@ -148,15 +146,16 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         info("The first counter select should return the record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
+
         info("and the counter value should match the sum of the +=s")
-        res._1.get shouldEqual 2500
+        res._1.value shouldEqual 2500
 
         info("The second counter select should return the record")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
 
         info("and the counter value should match the sum of the +=s")
-        res._2.get shouldEqual 2500
+        res._2.value shouldEqual 2500
       }
     }
   }
@@ -186,14 +185,14 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         info("The first counter select should return the record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.get shouldEqual 500
+        res._1.value shouldEqual 500
 
         info("The second counter select should return the record")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.get shouldEqual 500
+        res._2.value shouldEqual 500
       }
     }
   }
@@ -223,14 +222,14 @@ class CounterBatchTest extends PhantomCassandraTestSuite {
     chain.successful {
       res => {
         info("The first counter select should return the record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.get shouldEqual 500
+        res._1.value shouldEqual 500
 
         info("The second counter select should return the record")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.get shouldEqual 500
+        res._2.value shouldEqual 500
       }
     }
   }
