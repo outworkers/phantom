@@ -53,8 +53,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe item.setText + someItem
+        items.value shouldBe item.setText + someItem
       }
     }
   }
@@ -71,8 +70,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe item.setText + someItem
+        items.value shouldBe item.setText + someItem
       }
     }
   }
@@ -89,8 +87,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe item.setText ++ someItems
+        items.value shouldBe item.setText ++ someItems
       }
     }
   }
@@ -107,8 +104,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe item.setText ++ someItems
+        items.value shouldBe item.setText ++ someItems
       }
     }
   }
@@ -126,8 +122,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe someItems.diff(Set(removal))
+        items.value shouldBe someItems.diff(Set(removal))
       }
     }
   }
@@ -145,8 +140,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe someItems.diff(Set(removal))
+        items.value shouldBe someItems.diff(Set(removal))
       }
     }
   }
@@ -164,8 +158,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe someItems.diff(removal)
+        items.value shouldBe someItems.diff(removal)
       }
     }
   }
@@ -183,8 +176,7 @@ class SetOperationsTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe someItems.diff(removal)
+        items.value shouldBe someItems.diff(removal)
       }
     }
   }
