@@ -65,7 +65,11 @@ sealed class OrderingModifier {
    * @return A final ORDER BY clause, with all the relevant query parts appended.
    */
   def orderBy(clauses: CQLQuery*): CQLQuery = {
-    CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
+
+    clauses.size match {
+      case 1 => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clauses.head.queryString)
+      case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
+    }
   }
 
   def orderBy(qb: CQLQuery, clause: CQLQuery): CQLQuery = {

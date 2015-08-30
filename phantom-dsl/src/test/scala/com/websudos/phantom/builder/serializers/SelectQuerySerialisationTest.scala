@@ -31,7 +31,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY (id2 DESC);"
+        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
       }
 
       "serialize an ordering by multiple columns" in {
