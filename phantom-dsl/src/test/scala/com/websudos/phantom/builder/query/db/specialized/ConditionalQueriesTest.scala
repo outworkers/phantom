@@ -62,16 +62,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -97,16 +97,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -132,16 +132,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -167,16 +167,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it shouldn't have updated the value")
-        second.get.description shouldNot equal(updated)
+        second.value.description shouldNot equal(updated)
       }
     }
   }
@@ -202,16 +202,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -238,16 +238,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it shouldn't have updated the value")
-        second.get.description shouldNot equal(updated)
+        second.value.description shouldNot equal(updated)
       }
     }
   }
@@ -273,16 +273,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldNot equal(updated)
+        second.value.description shouldNot equal(updated)
       }
     }
   }
@@ -308,16 +308,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldNot equal(updated)
+        second.value.description shouldNot equal(updated)
       }
     }
   }
@@ -344,16 +344,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -380,16 +380,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -416,16 +416,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -453,16 +453,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -490,16 +490,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -527,16 +527,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -565,16 +565,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }
@@ -604,16 +604,16 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
         val second = res._2
 
         info("The first record should not be empty")
-        initial.isDefined shouldEqual true
+        initial shouldBe defined
 
         info("And it should match the inserted values")
-        initial.get.url shouldEqual recipe.url
+        initial.value.url shouldEqual recipe.url
 
         info("The updated record should not be empty")
-        second.isDefined shouldEqual true
+        second shouldBe defined
 
         info("And it should contain the updated value of the uid")
-        second.get.description shouldEqual updated
+        second.value.description shouldEqual updated
       }
     }
   }

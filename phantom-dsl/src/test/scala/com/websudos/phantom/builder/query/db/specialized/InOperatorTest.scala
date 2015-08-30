@@ -51,8 +51,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldBe true
-        res.get.url shouldEqual recipe.url
+        res.value.url shouldEqual recipe.url
       }
     }
   }
@@ -67,8 +66,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldBe true
-        res.get.url shouldEqual recipe.url
+        res.value.url shouldEqual recipe.url
       }
     }
   }
@@ -83,7 +81,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldBe false
+        res shouldBe defined
       }
     }
   }
@@ -98,7 +96,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldBe false
+        res shouldBe defined
       }
     }
   }
