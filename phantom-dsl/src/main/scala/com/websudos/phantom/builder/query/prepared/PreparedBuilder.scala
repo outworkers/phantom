@@ -30,6 +30,8 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.prepared.PNil
+import com.websudos.phantom.builder.{Unchainned, Unspecified, Unordered, Unlimited}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.connectors.KeySpace
 
@@ -42,6 +44,8 @@ sealed class PreparedBuilder[T <: CassandraTable[T, _], R](table: T)(implicit ke
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery(table)
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery(table)
+
+  final def select()(implicit keySpace: KeySpace): PreparedSelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, PNil] = ???
 }
 
 

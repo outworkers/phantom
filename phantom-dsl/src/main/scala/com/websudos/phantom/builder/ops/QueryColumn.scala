@@ -51,10 +51,6 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, p.asCql(value)))
   }
 
-  final def eqs(value: PrepareMark): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.symbol))
-  }
-
   def lt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lt(col.name, p.asCql(value)))
   }
@@ -82,4 +78,10 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
   def in(values: List[RR]): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.in(col.name, values.map(p.asCql)))
   }
+
+  final def eqs(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
+  }
+
+
 }

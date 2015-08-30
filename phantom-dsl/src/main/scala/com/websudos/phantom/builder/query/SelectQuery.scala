@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.query
 
 
 import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
+import com.websudos.phantom.builder.prepared.{ParametricValue, ParametricNode}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
@@ -289,4 +290,47 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R](root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     root.all
   }
+}
+
+class PreparedSelectQuery[
+Table <: CassandraTable[Table, _],
+Record,
+Limit <: LimitBound,
+Order <: OrderBound,
+Status <: ConsistencyBound,
+Chain <: WhereBound,
+Parameters <: ParametricNode
+](
+   table: Table,
+   rowFunc: Row => Record,
+   init: CQLQuery,
+   wherePart: WherePart = Defaults.EmptyWherePart,
+   orderPart: OrderPart = Defaults.EmptyOrderPart,
+   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
+   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+   count: Boolean = false,
+   consistencyLevel: ConsistencyLevel = null
+   ) extends SelectQuery[Table, Record, Limit, Order, Status, Chain](table, rowFunc, init, wherePart, orderPart, limitedPart, filteringPart, count, consistencyLevel) {
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def where[RR](condition: Table => WhereClause.ParametricCondition[RR])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, Parameters]] = {
+    new PreparedSelectQuery(
+                     table = table,
+                     rowFunc = rowFunc,
+                     init = init,
+                     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+                     orderPart = orderPart,
+                     limitedPart = limitedPart,
+                     filteringPart = filteringPart,
+                     count = count,
+                     consistencyLevel
+                   )
+  }
+
 }
