@@ -40,14 +40,14 @@ object ContactPoint {
    * contact point running on the default
    * port on localhost.
    */
-  lazy val local = apply("127.0.0.1", DefaultPorts.live)
+  lazy val local = apply(DefaultPorts.live)
 
   /**
    * A keyspace builder based on a single
    * contact point running on the default
    * port of embedded Cassandra.
    */
-  lazy val embedded = apply("127.0.0.1", DefaultPorts.embedded)
+  lazy val embedded = apply(DefaultPorts.embedded)
 
   /**
    * A keyspace builder based on a single

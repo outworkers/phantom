@@ -47,10 +47,10 @@ class PreparedUpdateQuery[
   Chain <: WhereBound
 ](table: Table,
   init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
 
@@ -79,10 +79,10 @@ class PreparedUpdateQuery[
     new PreparedUpdateQuery[T, R, L, O, S, C](
       table = t,
       init = q,
-      usingPart = Defaults.EmptyUsingPart,
-      wherePart = Defaults.EmptyWherePart,
-      setPart = Defaults.EmptySetPart,
-      casPart = Defaults.EmptyCompareAndSetPart,
+      usingPart = UsingPart.empty,
+      wherePart = WherePart.empty,
+      setPart = SetPart.empty,
+      casPart = CompareAndSetPart.empty,
       consistencyLevel = consistencyLevel
     )
   }
@@ -167,10 +167,10 @@ sealed class AssignmentsQuery[
   Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends ExecutableStatement with Batchable {
 
@@ -257,10 +257,10 @@ sealed class ConditionalQuery[
   Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
    ) extends ExecutableStatement with Batchable {
 
