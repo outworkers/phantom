@@ -81,7 +81,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res shouldBe defined
+        res shouldBe empty
       }
     }
   }
@@ -96,7 +96,7 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res shouldBe defined
+        res shouldBe empty
       }
     }
   }
