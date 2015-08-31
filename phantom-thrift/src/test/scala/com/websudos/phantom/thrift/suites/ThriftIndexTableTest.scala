@@ -14,7 +14,7 @@ class ThriftIndexTableTest extends PhantomCassandraTestSuite {
     ThriftIndexedTable.insertSchema()
   }
 
-  implicit object SamplePrimitve extends ThriftPrimitive[ThriftTest] {
+  implicit object SamplePrimitive extends ThriftPrimitive[ThriftTest] {
     val serializer = CompactThriftSerializer(ThriftTest)
   }
 
