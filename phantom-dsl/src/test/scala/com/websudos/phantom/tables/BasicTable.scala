@@ -29,7 +29,9 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit
 import com.websudos.phantom.testkit._
 
 class BasicTable extends CassandraTable[BasicTable, String] {
@@ -84,7 +86,14 @@ class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
   }
 }
 
-object EnumTable extends EnumTable with PhantomCassandraConnector
+object EnumTable extends EnumTable with testkit.PhantomCassandraConnector {
+  def store(sample: EnumRecord): InsertQuery.Default[EnumTable, EnumRecord] = {
+    insert
+      .value(_.id, sample.name)
+      .value(_.enum, sample.enum)
+      .value(_.optEnum, sample.optEnum)
+  }
+}
 
 
 sealed class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumRecord] {
@@ -101,7 +110,14 @@ sealed class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumReco
   }
 }
 
-object NamedEnumTable extends NamedEnumTable with PhantomCassandraConnector
+object NamedEnumTable extends NamedEnumTable with PhantomCassandraConnector {
+  def store(sample: NamedEnumRecord): InsertQuery.Default[NamedEnumTable, NamedEnumRecord] = {
+    insert
+      .value(_.id, sample.name)
+      .value(_.enum, sample.enum)
+      .value(_.optEnum, sample.optEnum)
+  }
+}
 
 
 
