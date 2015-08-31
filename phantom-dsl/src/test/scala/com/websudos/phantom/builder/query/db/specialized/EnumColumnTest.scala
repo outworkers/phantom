@@ -48,7 +48,7 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, None)
 
     val chain = for {
-      insert <- EnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      insert <- EnumTable.store(sample).execute()
       get <- EnumTable.select.where(_.id eqs sample.name).get()
     } yield get
 
@@ -63,16 +63,16 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
   it should "store a simple record and parse an Enumeration value and an Optional value back from the stored value" in {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, Some(Records.TypeTwo))
 
-
     val chain = for {
-      insert <- EnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      insert <- EnumTable.store(sample).execute()
       get <- EnumTable.select.where(_.id eqs sample.name).get()
     } yield get
 
     chain.successful {
       res => {
         res.value.enum shouldEqual sample.enum
-        res.value.optEnum shouldBe empty
+        res.value.optEnum shouldBe defined
+        res.value.optEnum.value shouldBe Records.TypeTwo
       }
     }
   }
@@ -80,9 +80,8 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
   it should "store a named record and parse an Enumeration value back from the stored value" in {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, None)
 
-
     val chain = for {
-      insert <- NamedEnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      insert <- NamedEnumTable.store(sample).execute()
       get <- NamedEnumTable.select.where(_.id eqs sample.name).get()
     } yield get
 
@@ -98,7 +97,7 @@ class EnumColumnTest extends PhantomCassandraTestSuite {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, Some(NamedRecords.Two))
 
     val chain = for {
-      insert <- NamedEnumTable.insert.value(_.id, sample.name).value(_.enum, sample.enum).value(_.optEnum, sample.optEnum).execute()
+      insert <- NamedEnumTable.store(sample).execute()
       get <- NamedEnumTable.select.where(_.id eqs sample.name).get()
     } yield get
 
