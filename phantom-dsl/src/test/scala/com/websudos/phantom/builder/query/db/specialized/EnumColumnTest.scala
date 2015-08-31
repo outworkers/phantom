@@ -40,8 +40,8 @@ import com.websudos.util.testing._
 class EnumColumnTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(EnumTable.create.ifNotExists().execute(), 2.seconds)
-    Await.result(NamedEnumTable.create.ifNotExists().execute(), 2.seconds)
+    Await.result(EnumTable.create.ifNotExists().execute(), 5.seconds)
+    Await.result(NamedEnumTable.create.ifNotExists().execute(), 5.seconds)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
