@@ -31,8 +31,9 @@ package com.websudos.phantom.testkit.suites
 
 import com.datastax.driver.core.{Session, VersionNumber}
 import com.websudos.phantom.connectors.{ContactPoints, KeySpace, KeySpaceDef}
-import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
+import org.scalatest.concurrent.{Futures, AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest._
+import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
@@ -62,10 +63,14 @@ trait SimpleCassandraTest extends ScalaFutures
   with Matchers
   with Assertions
   with AsyncAssertions
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll with Futures {
   self : BeforeAndAfterAll with Suite =>
 
-  override val host = "localhost"
+  override val host = "127.0.0.1"
+
+  implicit override val patienceConfig: PatienceConfig = {
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(5, Millis))
+  }
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
