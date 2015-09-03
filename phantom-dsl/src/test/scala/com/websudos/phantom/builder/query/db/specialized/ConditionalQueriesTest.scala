@@ -79,7 +79,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "update the record if the optional column based condition matches with Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -114,7 +113,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update when a list column is used a conditional clause" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -148,7 +146,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
 
   it should "not execute the update when the list column in a conditional clause doesn't match" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val invalidMatch = genList[String](2)
     val updated = genOpt[String]
 
@@ -184,7 +181,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update when a list column is used a conditional clause with Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -218,7 +214,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
 
   it should "not execute the update when the list column in a conditional clause doesn't match with Twitter Futures" in {
     val recipe = gen[Recipe]
-    val id = gen[UUID]
 
     val invalidMatch = List("invalid1", "invalid2")
     val updated = genOpt[String]
@@ -255,7 +250,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "not update the record if the optional column based condition doesn't match" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -290,7 +284,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "not update the record if the optional column based condition doesn't match when using Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -361,7 +354,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update with a multi-part CAS conditional query with no collection columns in the CAS part with Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -470,7 +462,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns in the CAS part" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -507,7 +498,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns in the CAS part with Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -544,7 +534,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update with a dual-part CAS conditional query with a mixture of collection columns and simple comparisons in the CAS part" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
@@ -583,7 +572,6 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
   it should "execute an update with a dual-part CAS query with a mixture of columns with Twitter Futures" in {
 
     val recipe = gen[Recipe]
-    val id = gen[UUID]
     val updated = genOpt[String]
 
     val chain = for {
