@@ -127,6 +127,17 @@ class UpdateQuery[
     new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart, consistencyLevel)
   }
 
+  override def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new AssignmentsQuery(
+      table,
+      init, usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(seconds.toString),
+      casPart,
+      consistencyLevel
+    )
+  }
+
   /**
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
@@ -167,7 +178,7 @@ sealed class AssignmentsQuery[
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.using(QueryBuilder.timestamp(init, value.toString))
+    val query = QueryBuilder.timestamp(init, value.toString)
     new AssignmentsQuery(table, init, usingPart append query, wherePart, setPart, casPart, consistencyLevel)
   }
 
