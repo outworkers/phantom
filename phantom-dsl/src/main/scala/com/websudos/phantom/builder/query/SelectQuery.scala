@@ -30,20 +30,17 @@
 package com.websudos.phantom.builder.query
 
 
-import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
-import com.websudos.phantom.builder.prepared.{ParametricValue, ParametricNode}
-
-import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
-import scala.util.Try
-
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.twitter.util.{ Future => TwitterFuture}
-
+import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-
+import com.websudos.phantom.builder.clauses.{OrderingClause, WhereClause}
+import com.websudos.phantom.builder.prepared.{PNil, ParametricNode, ParametricValue}
 import com.websudos.phantom.connectors.KeySpace
+
+import scala.annotation.implicitNotFound
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.util.Try
 
 
 class SelectQuery[
@@ -52,7 +49,8 @@ class SelectQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: PSBound
 ](
   table: Table,
   rowFunc: Row => Record,
@@ -63,7 +61,7 @@ class SelectQuery[
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
   override val consistencyLevel: ConsistencyLevel = null
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
@@ -78,8 +76,9 @@ class SelectQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = SelectQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: PSBound
+  ] = SelectQuery[T, R, L, O, S, C, P]
 
   protected[this] def create[
     T <: CassandraTable[T, _],
@@ -87,9 +86,10 @@ class SelectQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
-    new SelectQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
+    new SelectQuery[T, R, L, O, S, C, P](
       table = t,
       rowFunc = r,
       init = q,
@@ -102,7 +102,7 @@ class SelectQuery[
     )
   }
 
-  def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -124,7 +124,8 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: PartialFunction[Table, WhereClause.Condition])
+                    (implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -138,6 +139,7 @@ class SelectQuery[
     )
   }
 
+
   /**
    * The where method of a select query.
    * @param condition A where clause condition restricted by path dependant types.
@@ -145,7 +147,29 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned] = {
+  def where[RR](condition: PartialFunction[Table, WhereClause.ParametricCondition[RR]])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, PNil]] = {
+    new PreparedSelectQuery(
+       table = table,
+       rowFunc = rowFunc,
+       init = init,
+       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+       orderPart = orderPart,
+       limitedPart = limitedPart,
+       filteringPart = filteringPart,
+       count = count,
+       consistencyLevel
+     )
+  }
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  override def and(condition: PartialFunction[Table, WhereClause.Condition])
+                  (implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -160,7 +184,8 @@ class SelectQuery[
   }
 
   @implicitNotFound("A limit was already specified for this query.")
-  override def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain] = {
+  override def limit(limit: Int)
+                    (implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -176,7 +201,8 @@ class SelectQuery[
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
-  final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+  final def orderBy(clause: Table => OrderingClause.Condition)
+                   (implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
     new SelectQuery(
       table,
       rowFunc,
@@ -278,16 +304,17 @@ object RootSelectBlock {
 
 object SelectQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
 
   def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
     new SelectQuery(table, row, qb)
   }
 }
 
+
 private[phantom] trait SelectImplicits {
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R](root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
+  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R] )( implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
     root.all
   }
 }
@@ -310,7 +337,7 @@ Parameters <: ParametricNode
    filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
    count: Boolean = false,
    consistencyLevel: ConsistencyLevel = null
-   ) extends SelectQuery[Table, Record, Limit, Order, Status, Chain](table, rowFunc, init, wherePart, orderPart, limitedPart, filteringPart, count, consistencyLevel) {
+   ) {
 
   /**
    * The where method of a select query.

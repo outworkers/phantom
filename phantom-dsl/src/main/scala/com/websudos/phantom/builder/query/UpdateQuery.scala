@@ -45,7 +45,8 @@ class UpdateQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: PSBound
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = Defaults.EmptyUsingPart,
@@ -53,7 +54,7 @@ class UpdateQuery[
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: ConsistencyLevel = null
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -69,8 +70,9 @@ class UpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = UpdateQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: PSBound
+  ] = UpdateQuery[T, R, L, O, S, C, P]
 
 
   protected[this] def create[
@@ -79,9 +81,10 @@ class UpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
-    new UpdateQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
+    new UpdateQuery[T, R, L, O, S, C, P](
       t,
       q,
       Defaults.EmptyUsingPart,
@@ -99,7 +102,7 @@ class UpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.where(condition(table).qb)
     new UpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart, consistencyLevel)
   }
@@ -111,7 +114,7 @@ class UpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new UpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart, consistencyLevel)
   }
@@ -269,10 +272,10 @@ sealed class ConditionalQuery[
 
 object UpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery](
       table,
       QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
