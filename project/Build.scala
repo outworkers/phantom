@@ -61,7 +61,7 @@ object Build extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
+    licenses += ("Websudos License", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
