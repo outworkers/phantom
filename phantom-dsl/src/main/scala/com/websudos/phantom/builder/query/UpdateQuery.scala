@@ -60,7 +60,7 @@ class UpdateQuery[
     usingPart merge setPart merge wherePart build init
   }
 
-  def prepare: PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def prepare: PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new PreparedUpdateQuery(table, init, usingPart, wherePart, setPart, casPart)
   }
 

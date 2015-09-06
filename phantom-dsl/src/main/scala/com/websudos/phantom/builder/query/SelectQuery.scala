@@ -124,7 +124,7 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: PartialFunction[Table, WhereClause.Condition])
+  override def where(condition: Table => WhereClause.Condition)
                     (implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
       table = table,
@@ -147,8 +147,9 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where[RR](condition: PartialFunction[Table, WhereClause.ParametricCondition[RR]])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, PNil]] = {
-    new PreparedSelectQuery(
+  def pwhere[RR](condition: Table => WhereClause.ParametricCondition[RR])
+                (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+    new SelectQuery(
        table = table,
        rowFunc = rowFunc,
        init = init,
@@ -161,14 +162,15 @@ class SelectQuery[
      )
   }
 
-  /**
+
+    /**
    * The where method of a select query.
    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def and(condition: PartialFunction[Table, WhereClause.Condition])
+  override def and(condition: Table => WhereClause.Condition)
                   (implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
       table = table,

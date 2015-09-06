@@ -1,7 +1,7 @@
 package com.websudos.phantom.builder.serializers
 
-import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.builder.query.prepared.?
+import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.tables.BasicTable
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
@@ -34,7 +34,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       "serialize a prepared statement" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.prepare.select.where(_.id eqs ?).allowFiltering().queryString
+        val qb = BasicTable.prepare.select.pwhere(_.id eqs ?).allowFiltering().queryString
 
         Console.println(qb)
 
