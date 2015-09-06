@@ -39,8 +39,6 @@ import org.scalatest.time.SpanSugar._
 
 class PartialSelectTest extends PhantomCassandraTestSuite {
 
-  override implicit val patienceConfig: PatienceConfiguration.Timeout = timeout(10 seconds)
-
   override def beforeAll(): Unit = {
     super.beforeAll()
     Primitives.insertSchema()
