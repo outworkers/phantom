@@ -60,7 +60,8 @@ class SelectQuery[
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
-  override val consistencyLevel: ConsistencyLevel = null
+  override val consistencyLevel: ConsistencyLevel = null,
+  val parameters: Seq[Any] = Seq.empty
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
@@ -162,8 +163,27 @@ class SelectQuery[
      )
   }
 
+  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
 
-    /**
+  @implicitNotFound("Parameters have been already specified.")
+  def bind[V1](v1: V1)
+                    (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limited, Order, Status, Chain, PSSpecified] = {
+    new SelectQuery(
+      table,
+      rowFunc,
+      init,
+      wherePart,
+      orderPart,
+      limitedPart,
+      filteringPart,
+      count,
+      consistencyLevel,
+      parameters = Seq(v1)
+    )
+  }
+
+
+  /**
    * The where method of a select query.
    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
