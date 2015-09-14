@@ -61,9 +61,9 @@ class SelectQuery[
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
   override val consistencyLevel: ConsistencyLevel = null,
-  val parameters: Seq[Any] = Seq.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
-  Record, Limit] {
+  override val parameters: Seq[Any] = Seq.empty
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel)
+  with ExecutableQuery[Table, Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
