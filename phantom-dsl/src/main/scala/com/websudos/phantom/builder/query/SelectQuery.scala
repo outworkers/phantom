@@ -35,7 +35,7 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, WhereClause}
-import com.websudos.phantom.builder.prepared.{PNil, ParametricNode, ParametricValue}
+import com.websudos.phantom.builder.query.prepared.{ParametricNode, PNil, ParametricValue}
 import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
