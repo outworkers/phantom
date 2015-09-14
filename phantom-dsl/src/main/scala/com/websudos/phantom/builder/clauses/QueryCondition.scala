@@ -56,6 +56,12 @@ object WhereClause extends Clause {
    * @param qb The underlying query builder of the condition.
    */
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+
+  /**
+   *
+   * @tparam T Type of argument
+   */
+  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
 /**

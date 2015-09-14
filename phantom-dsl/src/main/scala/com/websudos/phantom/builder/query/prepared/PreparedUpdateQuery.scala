@@ -44,7 +44,8 @@ class PreparedUpdateQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: PSBound
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = Defaults.EmptyUsingPart,
@@ -52,7 +53,7 @@ class PreparedUpdateQuery[
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: ConsistencyLevel = null
-   ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+   ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -64,8 +65,9 @@ class PreparedUpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = PreparedUpdateQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: PSBound
+  ] = PreparedUpdateQuery[T, R, L, O, S, C, P]
 
 
   protected[this] def create[
@@ -74,9 +76,10 @@ class PreparedUpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
-    new PreparedUpdateQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
+    new PreparedUpdateQuery[T, R, L, O, S, C, P](
       table = t,
       init = q,
       usingPart = Defaults.EmptyUsingPart,
@@ -94,7 +97,7 @@ class PreparedUpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.where(condition(table).qb)
     new PreparedUpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart)
   }
@@ -106,7 +109,7 @@ class PreparedUpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new PreparedUpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart)
   }
@@ -261,10 +264,10 @@ sealed class ConditionalQuery[
 
 object PreparedUpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = PreparedUpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = PreparedUpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): PreparedUpdateQuery.Default[T, R] = {
-    new PreparedUpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](
+    new PreparedUpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery](
       table,
       QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }

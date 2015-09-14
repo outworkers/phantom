@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.builder
 
+import com.websudos.phantom.builder.query.prepared.ParametricNode
+
 sealed trait LimitBound
 trait Limited extends LimitBound
 trait Unlimited extends LimitBound
@@ -44,3 +46,8 @@ trait Unspecified extends ConsistencyBound
 sealed trait WhereBound
 trait Chainned extends WhereBound
 trait Unchainned extends WhereBound
+
+sealed trait PSBound
+trait NoPSQuery extends PSBound
+trait PSUnspecified[P <: ParametricNode] extends PSBound
+trait PSSpecified extends PSBound

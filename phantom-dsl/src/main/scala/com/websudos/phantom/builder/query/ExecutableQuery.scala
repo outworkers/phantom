@@ -50,11 +50,26 @@ trait ExecutableStatement extends CassandraOperations {
 
   def queryString: String = qb.queryString
 
-  def statement: Statement = {
+  /**
+   * Prepared statement parameters
+   */
+  def parameters: Seq[Any] = Nil
+
+  def baseStatement(implicit session: Session) = {
+    parameters match {
+      case Nil =>
+        new SimpleStatement(qb.terminate().queryString)
+      case someParameters =>
+        session.prepare(qb.terminate().queryString).bind(parameters)
+    }
+  }
+
+  def statement(implicit session: Session): Statement = {
     if (consistencyLevel == null) {
-      new SimpleStatement(qb.terminate().queryString)
+      baseStatement
     } else {
-      new SimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel)
+      //the cast looks ugly but in reality setConsistencyLevel returns itself
+      baseStatement.setConsistencyLevel(consistencyLevel).asInstanceOf[RegularStatement]
     }
   }
 

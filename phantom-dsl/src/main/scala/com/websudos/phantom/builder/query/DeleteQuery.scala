@@ -43,13 +43,14 @@ class DeleteQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: PSBound
 ](table: Table,
   init: CQLQuery,
   wherePart : WherePart = Defaults.EmptyWherePart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: ConsistencyLevel = null
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -57,8 +58,9 @@ class DeleteQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = DeleteQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: PSBound
+  ] = DeleteQuery[T, R, L, O, S, C, P]
 
   protected[this] def create[
     T <: CassandraTable[T, _],
@@ -66,9 +68,10 @@ class DeleteQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C] = {
-    new DeleteQuery[T, R, L, O, S, C](t, q, Defaults.EmptyWherePart, Defaults.EmptyCompareAndSetPart, consistencyLevel)
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
+    new DeleteQuery[T, R, L, O, S, C, P](t, q, Defaults.EmptyWherePart, Defaults.EmptyCompareAndSetPart, consistencyLevel)
   }
 
   /**
@@ -78,7 +81,7 @@ class DeleteQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.where(condition(table).qb)
     new DeleteQuery(table, init, wherePart append query, casPart)
   }
@@ -90,7 +93,7 @@ class DeleteQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new DeleteQuery(table, init, wherePart append query, casPart)
   }
@@ -114,7 +117,7 @@ class DeleteQuery[
 
 object DeleteQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
