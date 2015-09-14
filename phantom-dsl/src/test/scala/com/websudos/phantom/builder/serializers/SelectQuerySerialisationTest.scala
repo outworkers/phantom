@@ -34,7 +34,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       "serialize a prepared statement" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.prepare.select.pwhere(_.id eqs ?).allowFiltering().queryString
+        val qb = BasicTable.prepare.select.p_where(_.id eqs ?).allowFiltering().queryString
 
         Console.println(qb)
 
