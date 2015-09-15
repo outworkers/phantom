@@ -54,6 +54,10 @@ sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends CQLQuery
   override def instance(l: List[CQLQuery]): UsingPart = new UsingPart(l)
 }
 
+object UsingPart {
+  def empty: UsingPart = new UsingPart()
+}
+
 sealed class WherePart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[WherePart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 

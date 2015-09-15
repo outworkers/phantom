@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.ops.DropColumn
 import com.websudos.phantom.builder.{QueryBuilder, Unspecified, ConsistencyBound}
@@ -43,7 +44,7 @@ class AlterQuery[
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
-](table: Table, val qb: CQLQuery) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override  val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -83,6 +84,14 @@ class AlterQuery[
     drop(columnSelect(table).column.name)
   }
 
+  /**
+   * Creates an ALTER DROP query that drops an entire table.
+   * This is equivalent to table truncation followed by table removal from the keyspace metadata.
+   * This action is irreversible and you should exercise caution is using it.
+   *
+   * @param keySpace The implicit keyspace definition to use.
+   * @return An alter query with a DROP TABLE instruction encoded in the query string.
+   */
   final def drop()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
     new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name))
   }

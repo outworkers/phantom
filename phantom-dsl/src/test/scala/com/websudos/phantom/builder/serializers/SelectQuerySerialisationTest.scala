@@ -16,9 +16,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(5).queryString
 
-        Console.println(qb)
-
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING"
+        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
 
       "serialize an allow filtering clause specified after a limit query" in {
@@ -28,7 +26,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         Console.println(qb)
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING"
+        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
 
       "serialize a prepared statement" in {

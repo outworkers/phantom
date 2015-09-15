@@ -60,10 +60,10 @@ class SelectQuery[
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
-  override val consistencyLevel: ConsistencyLevel = null,
+  override val consistencyLevel: Option[ConsistencyLevel] = None
   override val parameters: Seq[Any] = Seq.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel)
-  with ExecutableQuery[Table, Record, Limit] {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
+  Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
@@ -89,7 +89,7 @@ class SelectQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: PSBound
-  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
+  ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C, P] = {
     new SelectQuery[T, R, L, O, S, C, P](
       table = t,
       rowFunc = r,
