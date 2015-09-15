@@ -53,7 +53,7 @@ class UpdateQuery[
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null, consistencyLevel) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null, consistencyLevel) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init

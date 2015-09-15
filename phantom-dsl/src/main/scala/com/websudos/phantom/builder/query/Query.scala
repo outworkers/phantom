@@ -72,7 +72,8 @@ abstract class Query[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: PSBound
 ](
   table: Table,
   override val qb: CQLQuery,
@@ -97,15 +98,15 @@ abstract class Query[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    PS <: PSBound
-   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, PS]
+    P <: PSBound
+   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
-      create[Table, Record, Limit, Order, Specified, Chain](table, qb, row, Some(level))
+      create[Table, Record, Limit, Order, Specified, Chain, PS](table, qb, row, Some(level))
     } else {
-      create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
+      create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
     }
   }
 

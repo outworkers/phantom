@@ -60,7 +60,7 @@ class SelectQuery[
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val consistencyLevel: Option[ConsistencyLevel] = None,
   override val parameters: Seq[Any] = Seq.empty
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {

@@ -35,7 +35,6 @@ import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.iteratee.{ResultSpool, Enumerator}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
@@ -59,7 +58,7 @@ trait ExecutableStatement extends CassandraOperations {
   def baseStatement(implicit session: Session) = {
     parameters match {
       case Nil =>
-        new SimpleStatement(qb.terminate().queryString)
+        session.newSimpleStatement(qb.terminate().queryString)
       case someParameters =>
         session.prepare(qb.terminate().queryString).bind(parameters)
     }
@@ -70,7 +69,7 @@ trait ExecutableStatement extends CassandraOperations {
       baseStatement
     } else {
       //the cast looks ugly but in reality setConsistencyLevel returns itself
-      baseStatement.setConsistencyLevel(consistencyLevel).asInstanceOf[RegularStatement]
+      baseStatement.setConsistencyLevel(consistencyLevel.orNull)
     }
   }
 
