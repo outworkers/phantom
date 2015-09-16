@@ -44,19 +44,19 @@ case class Recipe(
   uid: UUID
 )
 
-class Recipes extends CassandraTable[Recipes, Recipe] {
+class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
   object url extends StringColumn(this) with PartitionKey[String]
 
   object description extends OptionalStringColumn(this)
 
-  object ingredients extends ListColumn[Recipes, Recipe, String](this)
+  object ingredients extends ListColumn[ConcreteRecipes, Recipe, String](this)
 
   object servings extends OptionalIntColumn(this)
 
   object last_checked_at extends DateTimeColumn(this)
 
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  object props extends MapColumn[ConcreteRecipes, Recipe, String, String](this)
 
   object uid extends UUIDColumn(this)
 
@@ -75,11 +75,11 @@ class Recipes extends CassandraTable[Recipes, Recipe] {
 
 }
 
-object Recipes extends Recipes with PhantomCassandraConnector {
+abstract class ConcreteRecipes extends Recipes with RootConnector {
 
   override def tableName = "Recipes"
 
-  def store(recipe: Recipe): InsertQuery.Default[Recipes, Recipe] = {
+  def store(recipe: Recipe): InsertQuery.Default[ConcreteRecipes, Recipe] = {
     insert
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)
@@ -94,21 +94,23 @@ object Recipes extends Recipes with PhantomCassandraConnector {
 
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
-sealed class Events extends CassandraTable[Events, SampleEvent] with PhantomCassandraConnector {
+sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent] with PhantomCassandraConnector {
   
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
-  object map extends MapColumn[Events, SampleEvent, Long, DateTime](this)
+  object map extends MapColumn[ConcreteEvents, SampleEvent, Long, DateTime](this)
 
-  def fromRow(row: Row): SampleEvent = SampleEvent(
-    id(row),
-    map(row)
-  )
+  def fromRow(row: Row): SampleEvent = {
+    SampleEvent(
+      id = id(row),
+      map = map(row)
+    )
+  }
 }
 
-object Events extends Events {
+abstract class ConcreteEvents extends Events {
 
-  def store(event: SampleEvent): InsertQuery.Default[Events, SampleEvent] = {
+  def store(event: SampleEvent): InsertQuery.Default[ConcreteEvents, SampleEvent] = {
     insert.value(_.id, event.id)
       .value(_.map, event.map)
   }

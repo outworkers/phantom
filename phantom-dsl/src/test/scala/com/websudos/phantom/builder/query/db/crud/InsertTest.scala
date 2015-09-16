@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
+import com.websudos.phantom.tables.{ListCollectionTable, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration

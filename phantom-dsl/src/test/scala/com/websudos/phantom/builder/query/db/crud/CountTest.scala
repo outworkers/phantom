@@ -53,12 +53,12 @@ class CountTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       truncate <- PrimitivesJoda.truncate.future()
-      count <- PrimitivesJoda.select.count.fetch()
+      count <- PrimitivesJoda.select.count.one()
     } yield count
 
     chain successful {
       res => {
-        res.headOption.value shouldEqual 0L
+        res.value shouldEqual 0L
       }
     }
   }

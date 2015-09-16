@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class MyTestRow(
   key: String,
@@ -40,24 +39,28 @@ case class MyTestRow(
 )
 
 
-sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
+sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
   def fromRow(r: Row): MyTestRow = {
-    MyTestRow(key(r), optionA(r), stringlist(r))
+    MyTestRow(
+      key(r),
+      optionA(r),
+      stringlist(r)
+    )
   }
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
+  object stringlist extends ListColumn[ConcreteListCollectionTable, MyTestRow, String](this)
 
   object optionA extends OptionalIntColumn(this)
 
 }
 
-object MyTest extends MyTest with PhantomCassandraConnector {
+abstract class ConcreteListCollectionTable extends ListCollectionTable with RootConnector {
 
   override val tableName = "mytest"
 
-  def store(row: MyTestRow): InsertQuery.Default[MyTest, MyTestRow] = {
+  def store(row: MyTestRow): InsertQuery.Default[ConcreteListCollectionTable, MyTestRow] = {
     insert().value(_.key, row.key)
       .value(_.stringlist, row.stringlist)
       .value(_.optionA, row.optionA)

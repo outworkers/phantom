@@ -40,19 +40,23 @@ case class JodaRow(
   bi: DateTime
 )
 
-sealed class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] {
-  override def fromRow(r: Row): JodaRow = {
-    JodaRow(pkey(r), intColumn(r), timestamp(r))
-  }
-
+sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaRow] {
   object pkey extends StringColumn(this) with PartitionKey[String]
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
+
+  override def fromRow(r: Row): JodaRow = {
+    JodaRow(
+      pkey = pkey(r),
+      int = intColumn(r),
+      bi = timestamp(r)
+    )
+  }
 }
 
-object PrimitivesJoda extends PrimitivesJoda with PhantomCassandraConnector {
+abstract class ConcretePrimitivesJoda extends PrimitivesJoda with PhantomCassandraConnector {
 
-  def store(primitive: JodaRow): InsertQuery.Default[PrimitivesJoda, JodaRow] = {
+  def store(primitive: JodaRow): InsertQuery.Default[ConcretePrimitivesJoda, JodaRow] = {
     insert.value(_.pkey, primitive.pkey)
       .value(_.intColumn, primitive.int)
       .value(_.timestamp, primitive.bi)

@@ -29,10 +29,8 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.builder.Unspecified
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class Primitive(
   pkey: String,
@@ -48,23 +46,7 @@ case class Primitive(
   bi: BigInt
 )
 
-sealed class Primitives extends CassandraTable[Primitives, Primitive] {
-  override def fromRow(r: Row): Primitive = {
-    Primitive(
-      pkey(r),
-      long(r),
-      boolean(r),
-      bDecimal(r),
-      double(r),
-      float(r),
-      inet(r),
-      int(r),
-      date(r),
-      uuid(r),
-      bi(r)
-    )
-  }
-
+sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
   object pkey extends StringColumn(this) with PartitionKey[String]
 
   object long extends LongColumn(this)
@@ -86,13 +68,29 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   object uuid extends UUIDColumn(this)
 
   object bi extends BigIntColumn(this)
+
+  override def fromRow(r: Row): Primitive = {
+    Primitive(
+      pkey = pkey(r),
+      long = long(r),
+      boolean = boolean(r),
+      bDecimal = bDecimal(r),
+      double = double(r),
+      float = float(r),
+      inet = inet(r),
+      int = int(r),
+      date = date(r),
+      uuid = uuid(r),
+      bi = bi(r)
+    )
+  }
 }
 
-object Primitives extends Primitives with PhantomCassandraConnector {
+abstract class ConcretePrimitives extends Primitives with RootConnector {
 
   override val tableName = "Primitives"
 
-  def store(row: Primitive): InsertQuery.Default[Primitives, Primitive] = {
+  def store(row: Primitive): InsertQuery.Default[ConcretePrimitives, Primitive] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

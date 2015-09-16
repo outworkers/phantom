@@ -41,7 +41,7 @@ case class TimeSeriesRecord(
   timestamp: DateTime
 )
 
-sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] {
+sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
@@ -55,6 +55,6 @@ sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesR
   }
 }
 
-object TimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector {
+abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector {
   val testUUID = gen[UUID]
 }

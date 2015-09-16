@@ -30,11 +30,10 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.joda.time.DateTime
 
-sealed class TimeSeriesTableWithTTL extends CassandraTable[TimeSeriesTableWithTTL, TimeSeriesRecord] {
+sealed class TimeSeriesTableWithTTL extends CassandraTable[ConcreteTimeSeriesTableWithTTL, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
@@ -48,11 +47,11 @@ sealed class TimeSeriesTableWithTTL extends CassandraTable[TimeSeriesTableWithTT
   }
 }
 
-object TimeSeriesTableWithTTL extends TimeSeriesTableWithTTL with PhantomCassandraConnector {
+abstract class ConcreteTimeSeriesTableWithTTL extends TimeSeriesTableWithTTL with RootConnector {
   val testUUID = gen[UUID]
 }
 
-sealed class TimeSeriesTableWithTTL2 extends CassandraTable[TimeSeriesTableWithTTL2, TimeSeriesRecord] {
+sealed class TimeSeriesTableWithTTL2 extends CassandraTable[ConcreteTimeSeriesTableWithTTL2, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this)
@@ -66,7 +65,7 @@ sealed class TimeSeriesTableWithTTL2 extends CassandraTable[TimeSeriesTableWithT
   }
 }
 
-object TimeSeriesTableWithTTL2 extends TimeSeriesTableWithTTL2 with PhantomCassandraConnector {
+abstract class ConcreteTimeSeriesTableWithTTL2 extends TimeSeriesTableWithTTL2 with RootConnector {
   val testUUID = gen[UUID]
 }
 

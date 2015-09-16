@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class TestRow(
   key: String,
@@ -42,33 +41,33 @@ case class TestRow(
   mapIntToText: Map[Int, String]
 )
 
-sealed class TestTable extends CassandraTable[TestTable, TestRow] {
+sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[TestTable, TestRow, String](this)
+  object list extends ListColumn[ConcreteTestTable, TestRow, String](this)
 
-  object setText extends SetColumn[TestTable, TestRow, String](this)
+  object setText extends SetColumn[ConcreteTestTable, TestRow, String](this)
 
-  object mapTextToText extends MapColumn[TestTable, TestRow, String, String](this)
+  object mapTextToText extends MapColumn[ConcreteTestTable, TestRow, String, String](this)
 
-  object setInt extends SetColumn[TestTable, TestRow, Int](this)
+  object setInt extends SetColumn[ConcreteTestTable, TestRow, Int](this)
 
-  object mapIntToText extends MapColumn[TestTable, TestRow, Int, String](this)
+  object mapIntToText extends MapColumn[ConcreteTestTable, TestRow, Int, String](this)
 
   def fromRow(r: Row): TestRow = {
     TestRow(
-      key(r),
-      list(r),
-      setText(r),
-      mapTextToText(r),
-      setInt(r).toSet,
-      mapIntToText(r)
+      key = key(r),
+      list = list(r),
+      setText = setText(r),
+      mapTextToText = mapTextToText(r),
+      setInt = setInt(r),
+      mapIntToText = mapIntToText(r)
     )
   }
 }
 
-object TestTable extends TestTable with PhantomCassandraConnector {
+abstract class ConcreteTestTable extends TestTable with RootConnector {
   override val tableName = "TestTable"
 
   def store(row: TestRow): InsertQuery.Default[TestTable, TestRow] = {
