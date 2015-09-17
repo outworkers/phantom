@@ -47,4 +47,4 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object events extends ConcreteEvents with connector.Connector
 }
 
-object TestDatabase extends TestDatabase(ContactPoint.local.keySpace("phantom_test"))
+object TestDatabase extends TestDatabase(ContactPoint.local.keySpace("phantom"))

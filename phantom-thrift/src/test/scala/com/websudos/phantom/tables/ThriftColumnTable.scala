@@ -178,4 +178,4 @@ class ThriftDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(c
   object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
 }
 
-object ThriftDatabase extends ThriftDatabase(ContactPoint.local.keySpace("phantom_test"))
+object ThriftDatabase extends ThriftDatabase(ContactPoint.local.keySpace("phantom"))
