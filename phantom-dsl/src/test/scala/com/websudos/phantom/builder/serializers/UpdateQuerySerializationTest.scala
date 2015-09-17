@@ -22,9 +22,9 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
           .queryString
 
         if (session.v3orNewer) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
+          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url'"
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
+          query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
         }
       }
 
@@ -39,9 +39,9 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
           .queryString
 
         if (session.v3orNewer) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
+          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
+          query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
         }
       }
     }

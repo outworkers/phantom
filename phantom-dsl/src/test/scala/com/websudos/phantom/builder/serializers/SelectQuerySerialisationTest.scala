@@ -17,7 +17,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(5).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
 
       "serialize an allow filtering clause specified after a limit query" in {
@@ -25,7 +25,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).limit(5).allowFiltering().queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
 
       "serialize a single ordering clause" in {
@@ -33,7 +33,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
       }
 
       "serialize an ordering by multiple columns" in {
@@ -41,7 +41,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
       }
     }
   }
