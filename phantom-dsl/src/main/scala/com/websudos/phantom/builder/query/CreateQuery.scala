@@ -168,24 +168,26 @@ class CreateQuery[
       scalaQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
       super.future() flatMap {
-        res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-              if (key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) future() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
+        res => secondaryIndexes().future() map {
+          _ => {
+            Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+            res
           }
         }
       }
     }
+  }
+
+  def secondaryIndexes()(implicit keySpace: KeySpace): ExecutableStatementList = {
+    new ExecutableStatementList(table.secondaryKeys map {
+      key => {
+        if(key.isMapKeyIndex) {
+          QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
+        } else {
+          QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
+        }
+      }
+    })
   }
 
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
@@ -193,27 +195,19 @@ class CreateQuery[
     if (table.secondaryKeys.isEmpty) {
       twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
-
       super.execute() flatMap {
         res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-               if(key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) execute() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
+          secondaryIndexes()
+        } execute() map {
+          _ => {
+            Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+            res
           }
         }
       }
     }
   }
+
 
 }
 
