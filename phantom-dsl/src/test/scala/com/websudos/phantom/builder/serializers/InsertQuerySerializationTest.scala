@@ -30,9 +30,11 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.Recipes
+import com.websudos.phantom.tables.TestDatabase
 
 class InsertQuerySerializationTest extends QueryBuilderTest {
+
+  val Recipes = TestDatabase.recipes
 
   "An INSERT query" - {
     "should correctly chain the addition of columns and values to the builder" - {

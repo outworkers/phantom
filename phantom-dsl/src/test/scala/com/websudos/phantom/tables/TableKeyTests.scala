@@ -30,7 +30,6 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class StubRecord(name: String, id: UUID)
 sealed class TableWithSingleKey extends CassandraTable[ConcreteTableWithSingleKey, StubRecord] {
@@ -74,7 +73,7 @@ sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompo
   }
 }
 
-abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with PhantomCassandraConnector
+abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with RootConnector
 
 sealed class TableWithNoKey extends CassandraTable[ConcreteTableWithNoKey, StubRecord] {
 
@@ -89,4 +88,4 @@ sealed class TableWithNoKey extends CassandraTable[ConcreteTableWithNoKey, StubR
   }
 }
 
-abstract class ConcreteTableWithNoKey extends TableWithNoKey with PhantomCassandraConnector
+abstract class ConcreteTableWithNoKey extends TableWithNoKey with RootConnector

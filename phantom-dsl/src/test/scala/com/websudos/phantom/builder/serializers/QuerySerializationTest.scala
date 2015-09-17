@@ -33,11 +33,15 @@ import java.util.UUID
 
 import com.websudos.phantom.builder.query.KeySpaceSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Articles, Recipes, TableWithCompoundKey}
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class QuerySerializationTest extends FlatSpec with Matchers with KeySpaceSuite {
+
+  val Articles = TestDatabase.articles
+  val Recipes = TestDatabase.recipes
+  val TableWithCompoundKey = TestDatabase.tableWithCompoundKey
 
   it should "compile a full select query" in {
     "Articles.select.where(_.id eqs gen[UUID])" should compile

@@ -31,7 +31,7 @@ package com.websudos.phantom.thrift.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -41,7 +41,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(5.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
@@ -52,7 +52,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     val sample = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -63,7 +63,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
+      select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     operation.successful {
@@ -78,7 +78,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     val sample = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -89,7 +89,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
+      select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     operation.successful {

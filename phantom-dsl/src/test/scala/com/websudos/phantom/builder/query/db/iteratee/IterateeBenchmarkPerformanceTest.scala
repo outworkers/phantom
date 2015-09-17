@@ -29,9 +29,9 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
+import com.websudos.phantom.iteratee.Iteratee
+import com.websudos.phantom.tables.{JodaRow, TestDatabase}
 import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
@@ -41,14 +41,14 @@ import scala.concurrent.{Await, Future}
 
 class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
 
-  PrimitivesJoda.insertSchema()
+  TestDatabase.primitivesJoda.insertSchema()
 
   val fs = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])
 
     batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = PrimitivesJoda.insert
+      val statement = TestDatabase.primitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
         .value(_.timestamp, row.bi)
@@ -66,7 +66,7 @@ class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark wi
   performance of "Enumerator" in {
     measure method "enumerator" in {
       using(sizes) in {
-        size => Await.ready(PrimitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
+        size => Await.ready(TestDatabase.primitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
       }
     }
   }

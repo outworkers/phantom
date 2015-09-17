@@ -1,11 +1,13 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.BasicTable
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 
 class SelectQuerySerialisationTest extends QueryBuilderTest {
+
+  val BasicTable = TestDatabase.basicTable
 
   "The select query builder" - {
     "should serialize " - {

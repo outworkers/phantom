@@ -39,7 +39,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{ PrimitivesJoda, JodaRow }
+import com.websudos.phantom.tables.{ TestDatabase, JodaRow }
 import com.websudos.util.testing._
 
 
@@ -47,14 +47,14 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
 
-  ignore should "get result fine" in {
-    PrimitivesJoda.insertSchema()
+  it should "retrieve the right amount of results" in {
+    TestDatabase.primitivesJoda.insertSchema()
     val fs = for {
       step <- 1 to 100
       rows = Iterator.fill(10000)(gen[JodaRow])
 
       batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-        val statement = PrimitivesJoda.insert
+        val statement = TestDatabase.primitivesJoda.insert
           .value(_.pkey, row.pkey)
           .value(_.intColumn, row.int)
           .value(_.timestamp, row.bi)
@@ -67,14 +67,14 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
 
     val combinedFuture = Future.sequence(fs) map {
-      r => PrimitivesJoda.select.count.one()
+      r => TestDatabase.primitivesJoda.select.count.one()
     }
 
     val counter: AtomicLong = new AtomicLong(0)
     val result = combinedFuture flatMap {
        rs => {
          info(s"done, inserted: $rs rows - start parsing")
-         PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
+         TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
        }
     }
 

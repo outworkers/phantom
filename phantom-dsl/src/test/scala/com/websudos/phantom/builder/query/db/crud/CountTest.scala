@@ -45,15 +45,15 @@ class CountTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    PrimitivesJoda.insertSchema()
+    TestDatabase.primitivesJoda.insertSchema()
   }
 
 
   it should "retrieve a count of 0 if the table has been truncated" in {
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.future()
-      count <- PrimitivesJoda.select.count.one()
+      truncate <- TestDatabase.primitivesJoda.truncate.future()
+      count <- TestDatabase.primitivesJoda.select.count.one()
     } yield count
 
     chain successful {
@@ -69,13 +69,13 @@ class CountTest extends PhantomCassandraTestSuite {
     val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(PrimitivesJoda.store(row))
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.future()
+      truncate <- TestDatabase.primitivesJoda.truncate.future()
       batch <- batch.future()
-      count <- PrimitivesJoda.select.count.one()
+      count <- TestDatabase.primitivesJoda.select.count.one()
     } yield count
 
     chain successful {
@@ -91,13 +91,13 @@ class CountTest extends PhantomCassandraTestSuite {
     val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(PrimitivesJoda.store(row))
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.execute()
+      truncate <- TestDatabase.primitivesJoda.truncate.execute()
       batch <- batch.execute()
-      count <- PrimitivesJoda.select.count.get()
+      count <- TestDatabase.primitivesJoda.select.count.get()
     } yield count
 
     chain successful {

@@ -70,7 +70,7 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 abstract class ConcreteTestTable extends TestTable with RootConnector {
   override val tableName = "TestTable"
 
-  def store(row: TestRow): InsertQuery.Default[TestTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[ConcreteTestTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)

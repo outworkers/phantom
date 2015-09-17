@@ -43,7 +43,7 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    OptionalPrimitives.insertSchema()
+    TestDatabase.optionalPrimitives.insertSchema()
   }
 
   "Selecting the whole row" should "work fine when optional value defined" in {
@@ -56,8 +56,8 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
 
   private[this] def checkRow(row: OptionalPrimitive) {
     val rcp = for {
-      store <- OptionalPrimitives.store(row).future()
-      b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.optionalPrimitives.store(row).future()
+      b <- TestDatabase.optionalPrimitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
     rcp successful {

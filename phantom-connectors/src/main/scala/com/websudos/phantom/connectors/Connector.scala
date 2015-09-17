@@ -16,7 +16,7 @@ package com.websudos.phantom.connectors
  * limitations under the License.
  */
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ProtocolVersion, Session}
 
 /* Trait to be mixed into the table classes that extend
  * phantom's CassandraTable.
@@ -64,18 +64,16 @@ trait Connector {
    */
   implicit lazy val session: Session = provider.getSession(keySpace)
 
-}
+  implicit class RichSession(val session: Session) {
+    def protocolVersion: ProtocolVersion = {
+      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+    }
 
-private object Defaults {
-  def getConnector(space: KeySpace) = {
-    ContactPoint.local.keySpace(space.name)
+    def isNewerThan(pv: ProtocolVersion): Boolean = {
+      protocolVersion.compareTo(pv) == 1
+    }
+
+    def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
   }
 }
 
-trait SimpleConnector {
-
-  implicit def keySpace: KeySpace
-
-  implicit lazy val session: Session = Defaults.getConnector(keySpace).session
-
-}

@@ -8,13 +8,15 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.KeySpaceSuite
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.BasicTable
+import com.websudos.phantom.tables.TestDatabase
 import org.joda.time.Seconds
 import org.scalatest.{FreeSpec, Matchers}
 
 import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
+
+  val BasicTable = TestDatabase.basicTable
 
   "The CREATE query builder" - {
     "should allow specifying table creation options" - {

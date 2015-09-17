@@ -38,7 +38,7 @@ case class Article(
   order_id: Long
 )
 
-sealed class Articles private() extends CassandraTable[ConcreteArticles, Article] {
+sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)

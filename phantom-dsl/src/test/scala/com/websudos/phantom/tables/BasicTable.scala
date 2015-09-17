@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 abstract class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
 
@@ -109,7 +108,7 @@ sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, Named
   }
 }
 
-abstract class ConcreteNamedEnumTable extends NamedEnumTable with PhantomCassandraConnector {
+abstract class ConcreteNamedEnumTable extends NamedEnumTable with RootConnector {
   def store(sample: NamedEnumRecord): InsertQuery.Default[ConcreteNamedEnumTable, NamedEnumRecord] = {
     insert
       .value(_.id, sample.name)

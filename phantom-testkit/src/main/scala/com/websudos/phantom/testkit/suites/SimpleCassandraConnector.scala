@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import com.datastax.driver.core.{Session, VersionNumber}
-import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
+import com.websudos.phantom.connectors.ContactPoint
 import org.scalatest._
 import org.scalatest.concurrent.{AsyncAssertions, Futures, PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
-private object Defaults {
+object TestDefaults {
   lazy val connector = ContactPoint.local.keySpace("phantom_test")
 }
 
@@ -54,29 +53,18 @@ trait SimpleCassandraTest extends ScalaFutures
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(5, Millis))
   }
 
-  private[this] lazy val connector = Defaults.connector
+  private[this] lazy val connector = TestDefaults.connector
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
    * @return The default timeout value.
    */
   implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
-
-  implicit def keySpace: KeySpace
-
-  implicit lazy val session: Session = connector.session
-
-  def cassandraVersion: VersionNumber =  connector.cassandraVersion
-
-  def cassandraVersions: Set[VersionNumber] =  connector.cassandraVersions
-
 }
 
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest with OptionValues
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
-trait PhantomCassandraConnector {
-  implicit val keySpace = KeySpace("phantom")
-}
+trait PhantomCassandraConnector extends TestDefaults.connector.Connector
 
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

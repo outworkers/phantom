@@ -29,11 +29,9 @@
  */
 package com.websudos.phantom.tables
 
-import org.joda.time.DateTime
-
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.joda.time.DateTime
 
 case class TimeSeriesRecord(
   id: UUID,
@@ -55,6 +53,6 @@ sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, Tim
   }
 }
 
-abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector {
+abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector {
   val testUUID = gen[UUID]
 }

@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import org.joda.time.DateTime
 
 case class JodaRow(
@@ -54,7 +53,7 @@ sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaR
   }
 }
 
-abstract class ConcretePrimitivesJoda extends PrimitivesJoda with PhantomCassandraConnector {
+abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {
 
   def store(primitive: JodaRow): InsertQuery.Default[ConcretePrimitivesJoda, JodaRow] = {
     insert.value(_.pkey, primitive.pkey)

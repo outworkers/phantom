@@ -7,13 +7,15 @@ import com.twitter.util.{Duration => TwitterDuration}
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{BasicTable, StaticTableTest}
+import com.websudos.phantom.tables.TestDatabase
 import org.joda.time.Seconds
 
 import scala.concurrent.duration._
 
 
 class AlterQueryBuilderTest extends QueryBuilderTest {
+
+  val BasicTable = TestDatabase.basicTable
 
   "The ALTER query builder" - {
 
@@ -34,7 +36,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
       }
 
       "serialise an ADD query for a column with a STATIC modifier from a CQLQuery" in {
-        val qb = BasicTable.alter.add(StaticTableTest.staticTest.qb).queryString
+        val qb = BasicTable.alter.add(TestDatabase.staticTable.staticTest.qb).queryString
         qb shouldEqual s"ALTER TABLE phantom.BasicTable ADD staticTest ${CQLSyntax.Types.Text} STATIC;"
       }
     }

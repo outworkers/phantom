@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import org.joda.time.DateTime
 
 case class Recipe(
@@ -94,7 +93,7 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
 
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
-sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent] with PhantomCassandraConnector {
+sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
   
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
@@ -108,7 +107,7 @@ sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent] with Pha
   }
 }
 
-abstract class ConcreteEvents extends Events {
+abstract class ConcreteEvents extends Events with RootConnector {
 
   def store(event: SampleEvent): InsertQuery.Default[ConcreteEvents, SampleEvent] = {
     insert.value(_.id, event.id)
