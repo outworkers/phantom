@@ -52,7 +52,7 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
           root, QueryBuilder.Select.Ordering.descending(TestDatabase.basicTable.id.name)
         )
 
-        qb.queryString shouldEqual s"SELECT * FROM phantom.BasicTable ORDER BY ${TestDatabase.basicTable.id.name} DESC"
+        qb.queryString shouldEqual s"SELECT * FROM phantom.basicTable ORDER BY ${TestDatabase.basicTable.id.name} DESC"
       }
 
       "should allow specifying multiple orderBy clauses in a single select query" in {
