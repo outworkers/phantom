@@ -37,7 +37,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import scala.concurrent.duration._
 
 object TestDefaults {
-  lazy val connector = ContactPoint.local.keySpace("phantom_test")
+  lazy val connector = ContactPoint.local.keySpace("phantom")
 }
 
 trait SimpleCassandraTest extends ScalaFutures
