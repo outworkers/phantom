@@ -207,8 +207,6 @@ class CreateQuery[
       }
     }
   }
-
-
 }
 
 object CreateQuery {
