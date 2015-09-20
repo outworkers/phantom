@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitive, Primitives}
+import com.websudos.phantom.tables.{TestDatabase, Primitive}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.{Eventually, PatienceConfiguration}
@@ -45,25 +45,24 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
+    TestDatabase.primitives.insertSchema()
   }
 
   it should "expire inserted records after 2 seconds" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).ttl(2).future()
-      get <- Primitives.select.where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).ttl(2).future()
+      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
       record => {
-        record.isEmpty shouldEqual false
-        record.get shouldEqual row
+        record.value shouldEqual row
 
         eventually {
-          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          record.isDefined shouldEqual false
+          val record = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          record shouldBe empty
         }
       }
     }
@@ -73,18 +72,17 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).ttl(2).execute()
-      get <- Primitives.select.where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).ttl(2).execute()
+      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain.successful {
       record => {
-        record.isEmpty shouldEqual false
-        record.get shouldEqual row
+        record.value shouldEqual row
 
         eventually {
-          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          record.isDefined shouldEqual false
+          val record = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          record shouldBe empty
         }
       }
     }

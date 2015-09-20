@@ -43,7 +43,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    CounterTableTest.insertSchema()
+    TestDatabase.counterTableTest.insertSchema()
   }
 
 
@@ -51,19 +51,18 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 1
+        result._1.value.count shouldEqual 0
+
+        result._2.value.count shouldEqual 1
       }
     }
   }
@@ -72,19 +71,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 1
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual 1
       }
     }
   }
@@ -94,19 +91,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).future()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select2 <- CounterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).future()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select2 <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 500
-        result._2.isEmpty shouldEqual false
-        result._2.get shouldEqual 501
+        result._1.value.count shouldEqual 500
+        result._2.value shouldEqual 501
       }
     }
   }
@@ -115,19 +110,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).execute()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select2 <- CounterTableTest.select(_.count_entries).where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).execute()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
+      select2 <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).get
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 500
-        result._2.isEmpty shouldEqual false
-        result._2.get shouldEqual 501
+        result._1.value.count shouldEqual 500
+        result._2.value shouldEqual 501
       }
     }
   }
@@ -137,19 +130,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val diff = 200
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).future()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).future()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual diff
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual diff
       }
     }
   }
@@ -159,19 +150,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val diff = 200
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).execute()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).execute()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual diff
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual diff
       }
     }
   }
@@ -180,19 +169,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).one()
+      incr1 <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0
+        result._1.value.count shouldEqual 1
+        result._2.value.count shouldEqual 0
       }
     }
   }
@@ -201,19 +188,17 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr1 <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).get()
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).execute()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).get()
+      incr1 <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get()
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).execute()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get()
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0
+        result._1.value.count shouldEqual 1
+        result._2.value.count shouldEqual 0
       }
     }
   }
@@ -224,18 +209,16 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val initial = 500
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual (initial - diff)
+        result._2.value.count shouldEqual (initial - diff)
       }
     }
   }
@@ -246,18 +229,16 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
     val initial = 500
 
     val chain = for {
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).execute()
-      select <- CounterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  CounterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).execute()
-      select2 <- CounterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).execute()
+      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
+      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).execute()
+      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual (initial - diff)
+        result._2.value.count shouldEqual (initial - diff)
       }
     }
   }

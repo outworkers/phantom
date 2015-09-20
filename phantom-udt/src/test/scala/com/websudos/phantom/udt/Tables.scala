@@ -38,9 +38,7 @@ trait UDTKeySpace {
   implicit val keySpace = KeySpace("phantom_udt_test")
 }
 
-trait UDTConnector extends SimpleCassandraConnector with UDTKeySpace
-
-object UDTConnector extends UDTConnector
+trait UDTConnector extends RootConnector with UDTKeySpace
 
 /*
 sealed class TestFields extends CassandraTable[TestFields, TestRecord] {

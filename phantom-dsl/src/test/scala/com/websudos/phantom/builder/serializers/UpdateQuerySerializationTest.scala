@@ -1,18 +1,13 @@
 package com.websudos.phantom.builder.serializers
 
-import com.datastax.driver.core.{ProtocolVersion, ConsistencyLevel}
-import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.tables.Recipes
+import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
+import org.scalatest.{FreeSpec, Matchers}
 
-class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandraConnector {
-
-  override implicit val keySpace = KeySpace("phantom")
-
-  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCassandraConnector {
 
   "An Update query should" - {
     "allow specifying consistency levels" - {
@@ -20,33 +15,33 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
 
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(5))
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
+        if (session.v3orNewer) {
+          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url'"
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
+          query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
         }
       }
 
       "specify a consistency level in a ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(5))
           .onlyIf(_.description is Some("test"))
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
+        if (session.v3orNewer) {
+          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
+          query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
         }
       }
     }

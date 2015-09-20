@@ -45,10 +45,8 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[phantom] def addTable() = Manager.addTable(this)
-
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
-    Await.ready(create.ifNotExists().future(), 3.seconds)
+    Await.ready(create.ifNotExists().future(), 5.seconds)
   }
 
   private[phantom] def self: T = this.asInstanceOf[T]

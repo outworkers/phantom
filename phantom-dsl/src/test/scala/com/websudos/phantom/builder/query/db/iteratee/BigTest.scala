@@ -39,6 +39,6 @@ trait BigTest extends PhantomCassandraTestSuite {
     ContactPoint.local.withClusterBuilder(
       _.withSocketOptions(new SocketOptions().setReadTimeoutMillis(1000).setConnectTimeoutMillis(1000))
       .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-    ).keySpace(keySpace.name).session
+    ).keySpace(keySpace).session
   }
 }

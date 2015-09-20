@@ -1,27 +1,22 @@
 package com.websudos.phantom.example
 
+import com.websudos.phantom.Manager._
+import com.websudos.phantom.example.advanced.RecipesDatabase
+import com.websudos.phantom.testkit._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import com.websudos.phantom.Manager
-import com.websudos.phantom.Manager._
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.testkit._
-
-sealed trait KeySpaceDefinition {
-  implicit val keySpace = KeySpace("phantom_example")
-}
-
-class ExampleFlatSuite extends CassandraFlatSpec with KeySpaceDefinition {
+class ExampleSuite extends CassandraFlatSpec with RecipesDatabase.connector.Connector {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(Manager.autocreate().future(), 5.seconds)
+    Await.ready(RecipesDatabase.autocreate().future(), 5.seconds)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    Await.ready(Manager.autotruncate().future(), 8.seconds)
+    Await.ready(RecipesDatabase.autotruncate().future(), 8.seconds)
   }
 }
 

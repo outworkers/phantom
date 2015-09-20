@@ -30,7 +30,7 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -43,7 +43,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "put an item to a thrift map column" in {
@@ -58,7 +58,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val expected = map + toAdd
 
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -71,8 +71,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
     } yield {
       select
     }
@@ -97,7 +97,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val expected = map + toAdd
 
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -109,8 +109,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -136,7 +136,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val expected = map ++ toAdd
 
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -148,8 +148,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
     } yield {
       select
     }
@@ -175,7 +175,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val expected = map ++ toAdd
 
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -186,8 +186,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
     } yield select
 
     operation.successful {

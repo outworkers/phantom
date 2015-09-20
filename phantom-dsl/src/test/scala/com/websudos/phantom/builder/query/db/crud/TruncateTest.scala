@@ -42,7 +42,7 @@ class TruncateTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Articles.insertSchema()
+    TestDatabase.articles.insertSchema()
   }
 
   it should "truncate all records in a table" in {
@@ -52,24 +52,24 @@ class TruncateTest extends PhantomCassandraTestSuite {
     val article4 = gen[Article]
 
     val result = for {
-      truncateBefore <- Articles.truncate.future()
-      i1 <- Articles.store(article1).future()
-      i2 <- Articles.store(article2).future()
-      i3 <- Articles.store(article3).future()
-      i4 <- Articles.store(article4).future()
+      truncateBefore <- TestDatabase.articles.truncate.future()
+      i1 <- TestDatabase.articles.store(article1).future()
+      i2 <- TestDatabase.articles.store(article2).future()
+      i3 <- TestDatabase.articles.store(article3).future()
+      i4 <- TestDatabase.articles.store(article4).future()
 
-      records <- Articles.select.fetch
-      truncate <- Articles.truncate.future()
-      records1 <- Articles.select.fetch
+      records <- TestDatabase.articles.select.fetch
+      truncate <- TestDatabase.articles.truncate.future()
+      records1 <- TestDatabase.articles.select.fetch
     } yield (records, records1)
 
 
     result successful {
       r => {
-        r._1.size shouldEqual 4
+        r._1 should have size 4
         info (s"inserted exactly ${r._1.size} records")
 
-        r._2.size shouldEqual 0
+        r._2 should have size 0
         info (s"got exactly ${r._2.size} records")
       }
     }
@@ -82,24 +82,24 @@ class TruncateTest extends PhantomCassandraTestSuite {
     val article4 = gen[Article]
 
     val result = for {
-      truncateBefore <- Articles.truncate.execute()
-      i1 <- Articles.store(article1).execute()
-      i2 <- Articles.store(article2).execute()
-      i3 <- Articles.store(article3).execute()
-      i4 <- Articles.store(article4).execute()
+      truncateBefore <- TestDatabase.articles.truncate.execute()
+      i1 <- TestDatabase.articles.store(article1).execute()
+      i2 <- TestDatabase.articles.store(article2).execute()
+      i3 <- TestDatabase.articles.store(article3).execute()
+      i4 <- TestDatabase.articles.store(article4).execute()
 
-      records <- Articles.select.collect()
-      truncate <- Articles.truncate.execute()
-      records1 <- Articles.select.collect()
+      records <- TestDatabase.articles.select.collect()
+      truncate <- TestDatabase.articles.truncate.execute()
+      records1 <- TestDatabase.articles.select.collect()
     } yield (records, records1)
 
 
     result successful {
       r => {
-        r._1.size shouldEqual 4
+        r._1 should have size 4
         info (s"inserted exactly ${r._1.size} records")
 
-        r._2.size shouldEqual 0
+        r._2 should have size 0
         info (s"got exactly ${r._2.size} records")
       }
     }

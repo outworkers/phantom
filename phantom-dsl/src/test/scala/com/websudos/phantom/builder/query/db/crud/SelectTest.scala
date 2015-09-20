@@ -39,29 +39,26 @@ import com.websudos.util.testing._
 
 class SelectTest extends PhantomCassandraTestSuite {
 
-
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
+    TestDatabase.primitives.insertSchema()
   }
 
   "Selecting the whole row" should "work fine" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      a <- Primitives.select.fetch
-      b <- Primitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.primitives.store(row).future()
+      a <- TestDatabase.primitives.select.fetch
+      b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, b)
 
     chain successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r._1 should contain (row)
+        r._2.value shouldEqual row
       }
     }
   }
@@ -70,17 +67,15 @@ class SelectTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      a <- Primitives.select.collect()
-      b <- Primitives.select.where(_.pkey eqs row.pkey).get
+      store <- TestDatabase.primitives.store(row).execute()
+      a <- TestDatabase.primitives.select.collect()
+      b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield (a, b)
 
     chain successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r._1 should contain (row)
+        r._2.value shouldEqual row
       }
     }
   }
@@ -88,15 +83,15 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
+
     val chain = for {
-      store <- Primitives.store(row).future
-      get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future
+      get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -106,14 +101,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -124,14 +118,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -141,14 +134,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -158,14 +150,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -175,14 +166,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -193,14 +183,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -210,14 +199,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -227,14 +215,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -244,14 +231,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -261,14 +247,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -278,14 +263,13 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -295,15 +279,14 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -313,15 +296,14 @@ class SelectTest extends PhantomCassandraTestSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      get <- Primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+      store <- TestDatabase.primitives.store(row).execute()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldEqual expected
+        r.value shouldBe expected
       }
     }
   }

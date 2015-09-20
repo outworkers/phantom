@@ -41,9 +41,5 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
         QueryBuilder.Update.and(QueryBuilder.Where.eqs("a", "b")).queryString shouldEqual "AND a = b"
       }
     }
-
-    "should allow specifying a ConsistencyLevel on an UPDATE clause" in {
-
-    }
   }
 }

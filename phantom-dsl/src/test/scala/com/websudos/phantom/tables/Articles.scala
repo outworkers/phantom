@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class Article(
   name: String,
@@ -39,21 +38,25 @@ case class Article(
   order_id: Long
 )
 
-sealed class Articles private() extends CassandraTable[Articles, Article] {
+sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
   override def fromRow(row: Row): Article = {
-    Article(name(row), id(row), orderId(row))
+    Article(
+      name = name(row),
+      id = id(row),
+      order_id = orderId(row)
+    )
   }
 }
 
-object Articles extends Articles with PhantomCassandraConnector {
+abstract class ConcreteArticles extends Articles with RootConnector {
   override def tableName = "articles"
 
-  def store(article: Article): InsertQuery.Default[Articles, Article] = {
+  def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
     insert.value(_.id, article.id)
       .value(_.name, article.name)
       .value(_.orderId, article.order_id)

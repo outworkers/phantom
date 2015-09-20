@@ -5,13 +5,12 @@ import java.util.UUID
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 
 import scala.concurrent.Future
 
 case class BufferRecord(id: UUID, buffer: ByteBuffer)
 
-sealed class ByteBufferTable extends CassandraTable[ByteBufferTable, BufferRecord] {
+sealed class ByteBufferTable extends CassandraTable[ConcreteByteBufferTable, BufferRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object buffer extends BlobColumn(this)
@@ -24,9 +23,9 @@ sealed class ByteBufferTable extends CassandraTable[ByteBufferTable, BufferRecor
   }
 }
 
-object ByteBufferTable extends ByteBufferTable with PhantomCassandraConnector {
+abstract class ConcreteByteBufferTable extends ByteBufferTable with RootConnector {
 
-  def store(record: BufferRecord): InsertQuery.Default[ByteBufferTable, BufferRecord] = {
+  def store(record: BufferRecord): InsertQuery.Default[ConcreteByteBufferTable, BufferRecord] = {
     insert.value(_.id, record.id)
       .value(_.buffer, record.buffer)
   }

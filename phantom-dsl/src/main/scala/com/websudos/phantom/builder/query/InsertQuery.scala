@@ -44,10 +44,10 @@ class InsertQuery[
 ](
   table: Table,
   val init: CQLQuery,
-  columnsPart: ColumnsPart = Defaults.EmptyColumnsPart,
-  valuePart: ValuePart = Defaults.EmptyValuePart,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  lightweightPart: LightweightPart = Defaults.EmptyLightweightPart,
+  columnsPart: ColumnsPart = ColumnsPart.empty,
+  valuePart: ValuePart = ValuePart.empty,
+  usingPart: UsingPart = UsingPart.empty,
+  lightweightPart: LightweightPart = LightweightPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 

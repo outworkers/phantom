@@ -2,19 +2,21 @@ package com.websudos.phantom.thrift.suites
 
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{ThriftColumnTable, Output, ThriftIndexedTable}
+import com.websudos.phantom.tables.{Output, ThriftDatabase}
 import com.websudos.phantom.testkit.PhantomCassandraTestSuite
 import com.websudos.phantom.thrift._
 import com.websudos.util.testing._
 
 class ThriftIndexTableTest extends PhantomCassandraTestSuite {
 
+  val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     ThriftIndexedTable.insertSchema()
   }
 
-  implicit object SamplePrimitve extends ThriftPrimitive[ThriftTest] {
+  implicit object SamplePrimitive extends ThriftPrimitive[ThriftTest] {
     val serializer = CompactThriftSerializer(ThriftTest)
   }
 
@@ -28,17 +30,15 @@ class ThriftIndexTableTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
+        res.value.id shouldEqual sample.id
+        res.value.name shouldEqual sample.name
+        res.value.struct shouldEqual sample.struct
+        res.value.optThrift shouldEqual sample.optThrift
+        res.value.thriftList shouldEqual sample.thriftList
+        res.value.thriftMap shouldEqual sample.thriftMap
+        res.value.thriftSet shouldEqual sample.thriftSet
 
-        res.get.id shouldEqual sample.id
-        res.get.name shouldEqual sample.name
-        res.get.struct shouldEqual sample.struct
-        res.get.optThrift shouldEqual sample.optThrift
-        res.get.thriftList shouldEqual sample.thriftList
-        res.get.thriftMap shouldEqual sample.thriftMap
-        res.get.thriftSet shouldEqual sample.thriftSet
-
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
@@ -53,17 +53,15 @@ class ThriftIndexTableTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
+        res.value.id shouldEqual sample.id
+        res.value.name shouldEqual sample.name
+        res.value.struct shouldEqual sample.struct
+        res.value.optThrift shouldEqual sample.optThrift
+        res.value.thriftList shouldEqual sample.thriftList
+        res.value.thriftMap shouldEqual sample.thriftMap
+        res.value.thriftSet shouldEqual sample.thriftSet
 
-        res.get.id shouldEqual sample.id
-        res.get.name shouldEqual sample.name
-        res.get.struct shouldEqual sample.struct
-        res.get.optThrift shouldEqual sample.optThrift
-        res.get.thriftList shouldEqual sample.thriftList
-        res.get.thriftMap shouldEqual sample.thriftMap
-        res.get.thriftSet shouldEqual sample.thriftSet
-
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }

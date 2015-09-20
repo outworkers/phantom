@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, compactRender}
 
 case class JsonTest(prop1: String, prop2: String)
@@ -45,7 +44,7 @@ case class JsonClass(
 )
 
 
-class JsonTable extends CassandraTable[JsonTable, JsonClass] {
+class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
 
   implicit val formats = DefaultFormats
 
@@ -53,7 +52,7 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
 
   object name extends StringColumn(this)
 
-  object json extends JsonColumn[JsonTable, JsonClass, JsonTest](this) {
+  object json extends JsonColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -63,7 +62,7 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
     }
   }
 
-  object jsonList extends JsonListColumn[JsonTable, JsonClass, JsonTest](this) {
+  object jsonList extends JsonListColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -73,7 +72,7 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
     }
   }
 
-  object jsonSet extends JsonSetColumn[JsonTable, JsonClass, JsonTest](this) {
+  object jsonSet extends JsonSetColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -85,17 +84,17 @@ class JsonTable extends CassandraTable[JsonTable, JsonClass] {
 
   def fromRow(row: Row): JsonClass = {
     JsonClass(
-      id(row),
-      name(row),
-      json(row),
-      jsonList(row),
-      jsonSet(row)
+      id = id(row),
+      name = name(row),
+      json = json(row),
+      jsonList = jsonList(row),
+      jsonSet = jsonSet(row)
     )
   }
 }
 
-object JsonTable extends JsonTable with PhantomCassandraConnector {
-  def store(sample: JsonClass): InsertQuery.Default[JsonTable, JsonClass] = {
+abstract class ConcreteJsonTable extends JsonTable with RootConnector {
+  def store(sample: JsonClass): InsertQuery.Default[ConcreteJsonTable, JsonClass] = {
     insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)

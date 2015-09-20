@@ -15,6 +15,12 @@ Changelog
     <li><a href="#version-1.3.0">1.3.0 - 05.09.2014</a></li>
     <li><a href="#version-1.4.0">1.4.0 - 07.11.2014</a></li>
     <li><a href="#version-1.5.0">1.5.0 - 05.01.2015</a></li>
+    <li><a href="#version-1.8.0">1.8.0 - 05.03.2015</a></li>
+    <li><a href="#version-1.8.12">1.8.12 - 21.05.2015</a></li>
+    <li><a href="#version-1.9.10">1.9.10 - 04.07.2015</a></li>
+    <li><a href="#version-1.10.1">1.10.1 - 18.07.2015</a></li>
+    <li><a href="#version-1.11.0">1.11.0 - 16.08.2015</a></li>
+    <li><a href="#version-1.12.0">1.12.0 - 03.09.2015</a></li>
 </ul>
 
 

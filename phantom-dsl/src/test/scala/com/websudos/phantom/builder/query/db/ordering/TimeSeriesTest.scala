@@ -44,7 +44,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TimeSeriesTable.insertSchema()
+    TestDatabase.timeSeriesTable.insertSchema()
   }
 
   it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
@@ -56,14 +56,14 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
@@ -71,9 +71,9 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     }
 
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.future()
+      truncate <- TestDatabase.timeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.limit(number).fetch()
+      chunks <- TestDatabase.timeSeriesTable.select.limit(number).fetch()
     } yield chunks
 
 
@@ -92,14 +92,14 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
@@ -107,9 +107,9 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     }
 
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.execute()
+      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TimeSeriesTable.select.limit(number).collect()
+      chunks <- TestDatabase.timeSeriesTable.select.limit(number).collect()
     } yield chunks
 
     chain.successful {
@@ -126,21 +126,26 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
       }
     }
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.future()
+      truncate <- TestDatabase.timeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.asc).limit(number).fetch()
+      chunks <- {
+        TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
+          .orderBy(_.timestamp.asc)
+          .limit(number)
+          .fetch()
+      }
     } yield chunks
 
     chain.successful {
@@ -159,21 +164,21 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) => {
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
       }
     }
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.execute()
+      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TimeSeriesTable.select.where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.asc).limit(number).collect()
+      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.asc).limit(number).collect()
     } yield chunks
 
     chain.successful {
@@ -191,20 +196,20 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) =>
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
     }
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.future()
+      truncate <- TestDatabase.timeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TimeSeriesTable.select.where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.descending).limit(number).fetch()
+      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.descending).limit(number).fetch()
     } yield chunks
 
     chain.successful {
@@ -221,20 +226,20 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
       (b, record) =>
-        b.add(TimeSeriesTable.insert
+        b.add(TestDatabase.timeSeriesTable.insert
           .value(_.id, record.id)
           .value(_.name, record.name)
           .value(_.timestamp, record.timestamp))
     }
     val chain = for {
-      truncate <- TimeSeriesTable.truncate.execute()
+      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TimeSeriesTable.select.where(_.id eqs TimeSeriesTable.testUUID).orderBy(_.timestamp.desc).limit(number).collect()
+      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.desc).limit(number).collect()
     } yield chunks
 
     chain.successful {

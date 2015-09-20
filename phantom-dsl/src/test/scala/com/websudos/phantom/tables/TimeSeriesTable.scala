@@ -29,11 +29,9 @@
  */
 package com.websudos.phantom.tables
 
-import org.joda.time.DateTime
-
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.joda.time.DateTime
 
 case class TimeSeriesRecord(
   id: UUID,
@@ -41,7 +39,7 @@ case class TimeSeriesRecord(
   timestamp: DateTime
 )
 
-sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] {
+sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
@@ -55,6 +53,6 @@ sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesR
   }
 }
 
-object TimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector {
+abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector {
   val testUUID = gen[UUID]
 }

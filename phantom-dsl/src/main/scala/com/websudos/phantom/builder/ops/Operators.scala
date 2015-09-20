@@ -34,7 +34,7 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.SelectClause
 import com.websudos.phantom.column.TimeUUIDColumn
 
-sealed class Operator {}
+sealed class Operator
 
 sealed class DateOfOperator extends Operator {
 

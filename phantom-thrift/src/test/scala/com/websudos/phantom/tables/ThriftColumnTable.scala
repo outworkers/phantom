@@ -34,8 +34,9 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.builder.query.InsertQuery
+import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
+import com.websudos.phantom.db.DatabaseImpl
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.thrift._
 
 case class Output(
@@ -48,35 +49,35 @@ case class Output(
   optThrift: Option[ThriftTest]
 )
 
-sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output] {
+sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable, Output] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
-  object ref extends ThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
+  object ref extends ThriftColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftSet extends ThriftSetColumn[ThriftColumnTable, Output, ThriftTest](this) {
+  object thriftSet extends ThriftSetColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftList extends ThriftListColumn[ThriftColumnTable, Output, ThriftTest](this) {
+  object thriftList extends ThriftListColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftMap extends ThriftMapColumn[ThriftColumnTable, Output, String, ThriftTest](this) {
+  object thriftMap extends ThriftMapColumn[ConcreteThriftColumnTable, Output, String, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, Output, ThriftTest](this) {
+  object optionalThrift extends OptionalThriftColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
@@ -84,22 +85,22 @@ sealed class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Output]
 
   def fromRow(row: Row): Output = {
     Output(
-      id(row),
-      name(row),
-      ref(row),
-      thriftSet(row),
-      thriftList(row),
-      thriftMap(row),
-      optionalThrift(row)
+      id = id(row),
+      name = name(row),
+      struct = ref(row),
+      thriftSet = thriftSet(row),
+      thriftList = thriftList(row),
+      thriftMap = thriftMap(row),
+      optThrift = optionalThrift(row)
     )
   }
 }
 
-object ThriftColumnTable extends ThriftColumnTable with PhantomCassandraConnector {
+abstract class ConcreteThriftColumnTable extends ThriftColumnTable with RootConnector {
   override val tableName = "thrift_column_table"
 
-  def store(sample: Output): InsertQuery.Default[ThriftColumnTable, Output] = {
-    ThriftColumnTable.insert
+  def store(sample: Output): InsertQuery.Default[ConcreteThriftColumnTable, Output] = {
+    insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)
       .value(_.ref, sample.struct)
@@ -109,36 +110,36 @@ object ThriftColumnTable extends ThriftColumnTable with PhantomCassandraConnecto
 }
 
 
-sealed class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, Output] {
+sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTable, Output] {
 
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
 
-  object ref extends ThriftColumn[ThriftIndexedTable, Output, ThriftTest](this) with PartitionKey[ThriftTest] {
+  object ref extends ThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) with PartitionKey[ThriftTest] {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftSet extends ThriftSetColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+  object thriftSet extends ThriftSetColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftList extends ThriftListColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+  object thriftList extends ThriftListColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object thriftMap extends ThriftMapColumn[ThriftIndexedTable, Output, String, ThriftTest](this) {
+  object thriftMap extends ThriftMapColumn[ConcreteThriftIndexedTable, Output, String, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
   }
 
-  object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, Output, ThriftTest](this) {
+  object optionalThrift extends OptionalThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
@@ -157,10 +158,10 @@ sealed class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, Outpu
   }
 }
 
-object ThriftIndexedTable extends ThriftIndexedTable with PhantomCassandraConnector {
+abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootConnector {
   override val tableName = "thrift_indexed_table"
 
-  def store(sample: Output): InsertQuery.Default[ThriftIndexedTable, Output] = {
+  def store(sample: Output): InsertQuery.Default[ConcreteThriftIndexedTable, Output] = {
     insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)
@@ -171,3 +172,10 @@ object ThriftIndexedTable extends ThriftIndexedTable with PhantomCassandraConnec
       .value(_.thriftMap, sample.thriftMap)
   }
 }
+
+class ThriftDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
+  object thriftColumnTable extends ConcreteThriftColumnTable with connector.Connector
+  object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
+}
+
+object ThriftDatabase extends ThriftDatabase(ContactPoint.local.keySpace("phantom"))

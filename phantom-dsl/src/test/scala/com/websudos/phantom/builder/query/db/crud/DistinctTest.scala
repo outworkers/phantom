@@ -15,7 +15,7 @@ class DistinctTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
       super.beforeAll()
-      TableWithCompoundKey.insertSchema()
+      TestDatabase.tableWithCompoundKey.insertSchema()
   }
 
   it should "return distinct primary keys" in {
@@ -28,7 +28,7 @@ class DistinctTest extends PhantomCassandraTestSuite {
 
     val batch = rows.foldLeft(Batch.unlogged)((batch, row) => {
       batch.add(
-        TableWithCompoundKey.insert
+        TestDatabase.tableWithCompoundKey.insert
           .value(_.id, row.id)
           .value(_.second, UUID.nameUUIDFromBytes(row.name.getBytes))
           .value(_.name, row.name)
@@ -36,9 +36,9 @@ class DistinctTest extends PhantomCassandraTestSuite {
     })
 
     val chain = for {
-      truncate <- TableWithCompoundKey.truncate.future()
+      truncate <- TestDatabase.tableWithCompoundKey.truncate.future()
       batch <- batch.future()
-      list <- TableWithCompoundKey.select(_.id).distinct.fetch
+      list <- TestDatabase.tableWithCompoundKey.select(_.id).distinct.fetch
     } yield list
 
     val expectedResult = rows.filter(_.name != "b").map(_.id)

@@ -39,41 +39,35 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    JsonTable.insertSchema()
+    TestDatabase.jsonTable.insertSchema()
   }
 
   it should "allow storing a JSON record" in {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
     } yield select
 
     chain.successful {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
-
-
-  session
-
 
   it should "allow storing a JSON record with Twitter Futures" in {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield select
 
     chain.successful {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual sample
+        res.value shouldEqual sample
       }
     }
   }
@@ -82,28 +76,17 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
 
-    val insert = JsonTable.insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-      .future()
-
     val chain = for {
-      done <- insert
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get.json shouldEqual sample.json
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.json shouldEqual sample2.json
+        res._1.value.json shouldEqual sample.json
+        res._2.value.json shouldEqual sample2.json
       }
     }
   }
@@ -113,19 +96,16 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get.json shouldEqual sample.json
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.json shouldEqual sample2.json
+        res._1.value.json shouldEqual sample.json
+        res._2.value.json shouldEqual sample2.json
       }
     }
   }
@@ -135,19 +115,17 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
+        res._1.value shouldEqual sample
 
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonList(0) shouldEqual sample2.json
+        res._2.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -157,19 +135,16 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonList(0) shouldEqual sample2.json
+        res._1.value shouldEqual sample
+        res._2.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -179,19 +154,16 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonSet.contains(sample2.json) shouldEqual true
+        res._1.value shouldEqual sample
+        res._2.value.jsonSet should contain (sample2.json)
       }
     }
   }
@@ -201,19 +173,16 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
       res => {
-        res._1.isEmpty shouldEqual false
-        res._1.get shouldEqual sample
-
-        res._2.isEmpty shouldEqual false
-        res._2.get.jsonSet.contains(sample2.json) shouldEqual true
+        res._1.value shouldEqual sample
+        res._2.value.jsonSet should contain (sample2.json)
       }
     }
   }

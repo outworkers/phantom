@@ -55,7 +55,7 @@ class RootCreateQuery[
   }
 
   private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
-    new CreateQuery[Table, Record, Unspecified](table, default, Defaults.EmptyWithPart)
+    new CreateQuery[Table, Record, Unspecified](table, default, WithPart.empty)
   }
 
 
@@ -81,9 +81,9 @@ class RootCreateQuery[
    */
   def ifNotExists()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
     if (table.clusteringColumns.nonEmpty) {
-      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart).withClustering()
+      new CreateQuery(table, lightweight(), WithPart.empty).withClustering()
     } else {
-      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart)
+      new CreateQuery(table, lightweight(), WithPart.empty)
     }
   }
 }
@@ -157,7 +157,7 @@ class CreateQuery[
   }
 
   override def qb: CQLQuery = {
-    (withClause merge Defaults.EmptyWithPart) build init
+    (withClause merge WithPart.empty) build init
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
@@ -168,24 +168,26 @@ class CreateQuery[
       scalaQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
       super.future() flatMap {
-        res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-              if (key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) future() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
+        res => secondaryIndexes().future() map {
+          _ => {
+            Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+            res
           }
         }
       }
     }
+  }
+
+  def secondaryIndexes()(implicit keySpace: KeySpace): ExecutableStatementList = {
+    new ExecutableStatementList(table.secondaryKeys map {
+      key => {
+        if(key.isMapKeyIndex) {
+          QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
+        } else {
+          QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
+        }
+      }
+    })
   }
 
   override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
@@ -193,28 +195,18 @@ class CreateQuery[
     if (table.secondaryKeys.isEmpty) {
       twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
-
       super.execute() flatMap {
         res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-               if(key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) execute() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
+          secondaryIndexes()
+        } execute() map {
+          _ => {
+            Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+            res
           }
         }
       }
     }
   }
-
 }
 
 object CreateQuery {
@@ -229,9 +221,9 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
     R] = {
 
     if (root.table.clusteringColumns.nonEmpty) {
-      new CreateQuery(root.table, root.default, Defaults.EmptyWithPart).withClustering()
+      new CreateQuery(root.table, root.default, WithPart.empty).withClustering()
     } else {
-      new CreateQuery(root.table, root.default, Defaults.EmptyWithPart)
+      new CreateQuery(root.table, root.default, WithPart.empty)
     }
   }
 }

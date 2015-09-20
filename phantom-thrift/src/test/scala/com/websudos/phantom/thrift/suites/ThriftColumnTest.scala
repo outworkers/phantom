@@ -31,7 +31,7 @@ package com.websudos.phantom.thrift.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
+import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -42,25 +42,24 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()
     val sample = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .future() flatMap {
-      _ => ThriftColumnTable.select.where(_.id eqs id).one()
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
+        result.value.struct shouldEqual sample
       }
     }
   }
@@ -71,20 +70,19 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sampleList = Set(sample, sample2)
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-      _ => ThriftColumnTable.select.where(_.id eqs id).one()
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
-        result.get.thriftSet shouldEqual sampleList
+        result.value.struct shouldEqual sample
+        result.value.thriftSet shouldEqual sampleList
       }
     }
   }

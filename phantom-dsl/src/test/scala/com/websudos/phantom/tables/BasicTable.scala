@@ -29,10 +29,10 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
-class BasicTable extends CassandraTable[BasicTable, String] {
+abstract class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -44,7 +44,7 @@ class BasicTable extends CassandraTable[BasicTable, String] {
   }
 }
 
-object BasicTable extends BasicTable with PhantomCassandraConnector
+abstract class ConcreteBasicTable extends BasicTable with RootConnector
 
 
 object Records extends Enumeration {
@@ -70,27 +70,34 @@ case class NamedEnumRecord(
   optEnum: Option[NamedRecords.type#Value]
 )
 
-class EnumTable extends CassandraTable[EnumTable, EnumRecord] {
+abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
-  object enum extends EnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
-  object optEnum extends OptionalEnumColumn[EnumTable, EnumRecord, Records.type](this, Records)
+  object enum extends EnumColumn[ConcreteEnumTable, EnumRecord, Records.type](this, Records)
+  object optEnum extends OptionalEnumColumn[ConcreteEnumTable, EnumRecord, Records.type](this, Records)
 
   def fromRow(row: Row): EnumRecord = {
     EnumRecord(
-      id(row),
-      enum(row),
-      optEnum(row)
+      name = id(row),
+      enum = enum(row),
+      optEnum = optEnum(row)
     )
   }
 }
 
-object EnumTable extends EnumTable with PhantomCassandraConnector
+abstract class ConcreteEnumTable extends EnumTable with RootConnector {
+  def store(sample: EnumRecord): InsertQuery.Default[ConcreteEnumTable, EnumRecord] = {
+    insert
+      .value(_.id, sample.name)
+      .value(_.enum, sample.enum)
+      .value(_.optEnum, sample.optEnum)
+  }
+}
 
 
-sealed class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumRecord] {
+sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
-  object enum extends EnumColumn[NamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
-  object optEnum extends OptionalEnumColumn[NamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
+  object enum extends EnumColumn[ConcreteNamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
+  object optEnum extends OptionalEnumColumn[ConcreteNamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
 
   def fromRow(row: Row): NamedEnumRecord = {
     NamedEnumRecord(
@@ -101,11 +108,18 @@ sealed class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumReco
   }
 }
 
-object NamedEnumTable extends NamedEnumTable with PhantomCassandraConnector
+abstract class ConcreteNamedEnumTable extends NamedEnumTable with RootConnector {
+  def store(sample: NamedEnumRecord): InsertQuery.Default[ConcreteNamedEnumTable, NamedEnumRecord] = {
+    insert
+      .value(_.id, sample.name)
+      .value(_.enum, sample.enum)
+      .value(_.optEnum, sample.optEnum)
+  }
+}
 
 
 
-sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
+sealed class ClusteringTable extends CassandraTable[ConcreteClusteringTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Ascending
@@ -117,9 +131,9 @@ sealed class ClusteringTable extends CassandraTable[ClusteringTable, String] {
   }
 }
 
-object ClusteringTable extends ClusteringTable with PhantomCassandraConnector
+abstract class ConcreteClusteringTable extends ClusteringTable with RootConnector
 
-sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
+sealed class ComplexClusteringTable extends CassandraTable[ConcreteComplexClusteringTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with ClusteringOrder[UUID] with Ascending
@@ -131,10 +145,10 @@ sealed class ComplexClusteringTable extends CassandraTable[ComplexClusteringTabl
   }
 }
 
-object ComplexClusteringTable extends ComplexClusteringTable with PhantomCassandraConnector
+abstract class ConcreteComplexClusteringTable extends ComplexClusteringTable with RootConnector
 
 
-sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable, String] {
+sealed class BrokenClusteringTable extends CassandraTable[ConcreteBrokenClusteringTable, String] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -146,10 +160,10 @@ sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable,
   }
 }
 
-object BrokenClusteringTable extends BrokenClusteringTable
+abstract class ConcreteBrokenClusteringTable extends BrokenClusteringTable
 
 
-sealed class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
+sealed class ComplexCompoundKeyTable extends CassandraTable[ConcreteComplexCompoundKeyTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -167,9 +181,9 @@ sealed class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTa
   }
 }
 
-object ComplexCompoundKeyTable extends ComplexCompoundKeyTable with PhantomCassandraConnector
+abstract class ConcreteComplexCompoundKeyTable extends ComplexCompoundKeyTable with RootConnector
 
-sealed class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTable, String] {
+sealed class SimpleCompoundKeyTable extends CassandraTable[ConcreteSimpleCompoundKeyTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -181,6 +195,6 @@ sealed class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTabl
   }
 }
 
-object SimpleCompoundKeyTable extends SimpleCompoundKeyTable with PhantomCassandraConnector
+abstract class ConcreteSimpleCompoundKeyTable extends SimpleCompoundKeyTable with RootConnector
 
 

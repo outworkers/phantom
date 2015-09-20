@@ -30,8 +30,8 @@
 package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.KeySpaceSuite
-import com.websudos.phantom.tables.Primitives
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -39,7 +39,7 @@ class WhereClauseRestrictionsTest extends FlatSpec with Matchers with KeySpaceSu
 
 
   val s = gen[String]
-  val p = Primitives
+  val Primitives = TestDatabase.primitives
   val c = context
 
   it should "allow using a Select.Where clause" in {

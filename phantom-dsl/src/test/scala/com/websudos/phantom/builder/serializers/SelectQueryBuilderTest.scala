@@ -2,7 +2,7 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.{CQLQuery, QueryBuilderTest}
-import com.websudos.phantom.tables.BasicTable
+import com.websudos.phantom.tables.TestDatabase
 
 class SelectQueryBuilderTest extends QueryBuilderTest {
 
@@ -46,14 +46,26 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
       }
 
       "should chain an ORDER BY clause to a CQLQuery" in {
-        val root = BasicTable.select.all().qb
+        val root = TestDatabase.basicTable.select.all().qb
 
         val qb = QueryBuilder.Select.Ordering.orderBy(
-          root, QueryBuilder.Select.Ordering.descending(BasicTable.id.name)
+          root, QueryBuilder.Select.Ordering.descending(TestDatabase.basicTable.id.name)
         )
 
-        qb.queryString shouldEqual s"SELECT * FROM phantom.BasicTable ORDER BY ${BasicTable.id.name} DESC"
+        qb.queryString shouldEqual s"SELECT * FROM phantom.basicTable ORDER BY ${TestDatabase.basicTable.id.name} DESC"
+      }
 
+      "should allow specifying multiple orderBy clauses in a single select query" in {
+
+        val orderings = Seq(
+          QueryBuilder.Select.Ordering.ascending("test"),
+          QueryBuilder.Select.Ordering.ascending("test_2"),
+          QueryBuilder.Select.Ordering.descending("test_3")
+        )
+
+        val qb = QueryBuilder.Select.Ordering.orderBy(orderings: _*).queryString
+
+        qb shouldEqual "ORDER BY (test ASC, test_2 ASC, test_3 DESC)"
       }
     }
 

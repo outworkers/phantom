@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Events, SampleEvent, Recipe, Recipes}
+import com.websudos.phantom.tables.{Recipe, SampleEvent, TestDatabase}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
@@ -42,8 +42,8 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
-    Events.insertSchema()
+    TestDatabase.recipes.insertSchema()
+    TestDatabase.events.insertSchema()
   }
 
   it should "support a single item map put operation" in {
@@ -51,17 +51,16 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[String, String]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
-      select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
+      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
       select
     }
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props + item
+        items.value shouldEqual recipe.props + item
       }
     }
   }
@@ -71,17 +70,14 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val item = gen[String, String]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props put item).execute()
-      select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
-    } yield {
-      select
-    }
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).execute()
+      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).get
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props + item
+        items.value shouldEqual recipe.props + item
       }
     }
   }
@@ -91,17 +87,14 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val mapItems = genMap[String, String](5)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
-      select <- Recipes.select(_.props).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
+      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props ++ mapItems
+        items.value shouldEqual recipe.props ++ mapItems
       }
     }
   }
@@ -111,17 +104,14 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val mapItems = genMap[String, String](5)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).execute()
-      select <- Recipes.select(_.props).where(_.url eqs recipe.url).get
-    } yield {
-      select
-    }
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).execute()
+      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).get
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual recipe.props ++ mapItems
+        items.value shouldEqual recipe.props ++ mapItems
       }
     }
   }
@@ -130,14 +120,13 @@ class MapOperationsTest extends PhantomCassandraTestSuite {
     val event = gen[SampleEvent]
 
     val chain = for {
-      store <- Events.store(event).future()
-      get <- Events.getById(event.id).one()
+      store <- TestDatabase.events.store(event).future()
+      get <- TestDatabase.events.getById(event.id).one()
     } yield get
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual event
+        res.value shouldEqual event
       }
     }
 
