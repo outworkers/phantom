@@ -13,7 +13,7 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(TestDatabase.autocreate().future(), 5.seconds)
+    Await.result(TestDatabase.primitivesJoda.create.ifNotExists().future(), 5.seconds)
   }
 
   it should "correctly execute a chain of INSERT queries" in {
