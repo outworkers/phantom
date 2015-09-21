@@ -16,7 +16,7 @@
 package com.websudos.phantom.connectors
 
 import com.datastax.driver.core.{Cluster, Session}
-
+import scala.concurrent.blocking
 import scala.collection.concurrent.TrieMap
 
 /**
@@ -27,8 +27,7 @@ import scala.collection.concurrent.TrieMap
  */
 class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
 
-  private val sessionCache = new Cache[String, Session]
-
+  private[this] val sessionCache = new Cache[String, Session]
 
   lazy val cluster: Cluster = {
     // TODO - the original phantom modules had .withoutJMXReporting().withoutMetrics() as defaults, discuss best choices
@@ -40,7 +39,7 @@ class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
    * Initializes the keySpace with the given name on
    * the specified Session.
    */
-  protected def initKeySpace(session: Session, keySpace: String): Session = {
+  protected[this] def initKeySpace(session: Session, keySpace: String): Session = {
     session.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
     session
   }
@@ -49,7 +48,10 @@ class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
    * Creates a new Session for the specified keySpace.
    */
   protected[this] def createSession(keySpace: String): Session = {
-    val session = cluster.connect
+    val session = blocking {
+      cluster.connect
+    }
+
     initKeySpace(session, keySpace)
   }
 

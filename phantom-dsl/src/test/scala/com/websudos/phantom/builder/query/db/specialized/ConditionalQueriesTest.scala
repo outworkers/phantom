@@ -33,13 +33,13 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables.{ Recipe, TestDatabase }
 import com.websudos.util.testing._
-
+import scala.concurrent.duration._
 
 class ConditionalQueriesTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.insertSchema()
+    TestDatabase.recipes.create.ifNotExists().future().block(4.seconds)
   }
 
   it should "update the record if the optional column based condition matches" in {
