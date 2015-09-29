@@ -31,12 +31,14 @@ package com.websudos.phantom.builder.primitives
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.{LocalDate, Row}
 import com.datastax.driver.core.utils.Bytes
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.util.ByteString
 import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.util.{Failure, Try}
@@ -348,6 +350,23 @@ trait DefaultPrimitives {
     override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
+  }
+
+  implicit object ByteStringPrimitive extends Primitive[ByteString] {
+    override type PrimitiveType = java.nio.ByteBuffer
+
+    val cassandraType = CQLSyntax.Types.Blob
+
+    override def fromRow(column: String, row: Row): Try[ByteString] = nullCheck(column, row) {
+      r => ByteString(r.getBytes(column))
+    }
+
+    override def asCql(value: ByteString): String = value.decodeString(StandardCharsets.UTF_8.name())
+
+    override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
+
+    override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
+
   }
 
 }
