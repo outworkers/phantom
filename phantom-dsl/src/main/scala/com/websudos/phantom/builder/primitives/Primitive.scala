@@ -363,7 +363,7 @@ trait DefaultPrimitives {
 
     override def asCql(value: ByteString): String = value.decodeString(StandardCharsets.UTF_8.name())
 
-    override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
+    override def fromString(value: String): ByteString = ByteString(Bytes.fromHexString(value))
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
 
