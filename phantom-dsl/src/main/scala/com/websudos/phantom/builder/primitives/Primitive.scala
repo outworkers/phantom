@@ -31,11 +31,10 @@ package com.websudos.phantom.builder.primitives
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 import java.util.{Date, UUID}
 
-import com.datastax.driver.core.{LocalDate, Row}
 import com.datastax.driver.core.utils.Bytes
+import com.datastax.driver.core.{LocalDate, Row}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
@@ -361,16 +360,14 @@ trait DefaultPrimitives {
       r => ByteString(r.getBytes(column))
     }
 
-    override def asCql(value: ByteString): String = value.decodeString(StandardCharsets.UTF_8.name())
+    override def asCql(value: ByteString): String = Bytes.toHexString(value.asByteBuffer)
 
     override def fromString(value: String): ByteString = ByteString(Bytes.fromHexString(value))
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
 
   }
-
 }
-
 
 object Primitive extends DefaultPrimitives {
   def apply[RR : Primitive] = implicitly[Primitive[RR]]
