@@ -113,7 +113,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -136,7 +136,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -159,7 +159,7 @@ class SelectQuery[
        limitedPart = limitedPart,
        filteringPart = filteringPart,
        count = count,
-       consistencyLevel
+       consistencyLevel = consistencyLevel
      )
   }
 
@@ -177,7 +177,7 @@ class SelectQuery[
       limitedPart,
       filteringPart,
       count,
-      consistencyLevel,
+      consistencyLevel = consistencyLevel,
       parameters = Seq(v1)
     )
   }
@@ -201,7 +201,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -223,7 +223,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -239,7 +239,7 @@ class SelectQuery[
       limitedPart = limitedPart append QueryBuilder.limit(limit),
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -256,7 +256,7 @@ class SelectQuery[
       limitedPart,
       filteringPart,
       count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -279,7 +279,7 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     ).singleFetch()
 
   }
@@ -303,7 +303,7 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel
+      consistencyLevel = consistencyLevel
     ).singleCollect()
   }
 }
