@@ -26,7 +26,6 @@ branches:
 
 jdk:
   - oraclejdk7
-  - oraclejdk8
   - openjdk7
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update

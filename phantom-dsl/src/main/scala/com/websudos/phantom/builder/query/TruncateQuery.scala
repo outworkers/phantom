@@ -29,24 +29,22 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel}
+import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.{Specified, QueryBuilder, Unspecified, ConsistencyBound}
+import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.websudos.phantom.connectors.KeySpace
 
 class TruncateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val consistencyLevel: ConsistencyLevel = null) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-      new TruncateQuery(table, qb, level)
+    if (session.v3orNewer) {
+      new TruncateQuery(table, qb, Some(level))
     } else {
-      new TruncateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString))
+      new TruncateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), None)
     }
   }
 }

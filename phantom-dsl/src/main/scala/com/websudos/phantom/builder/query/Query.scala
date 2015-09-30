@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ProtocolVersion, Session, ConsistencyLevel, Row}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
@@ -40,7 +40,7 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val consistencyLevel: ConsistencyLevel = null) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -52,17 +52,15 @@ abstract class RootQuery[
     T <: CassandraTable[T, _],
     R,
     S <: ConsistencyBound
-  ](t: T, q: CQLQuery, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, S]
+  ](t: T, q: CQLQuery, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, S]
 
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-      create(table, qb, level)
+    if (session.v3orNewer) {
+      create(table, qb, Some(level))
     } else {
-      create(table, QueryBuilder.consistencyLevel(qb, level.toString))
+      create(table, QueryBuilder.consistencyLevel(qb, level.toString), None)
     }
   }
 }
@@ -74,9 +72,13 @@ abstract class Query[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound,
-  PS <: PSBound
-](table: Table, override val qb: CQLQuery, row: Row => Record, override val consistencyLevel: ConsistencyLevel = null) extends ExecutableStatement {
+  Chain <: WhereBound
+](
+  table: Table,
+  override val qb: CQLQuery,
+  row: Row => Record,
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -94,24 +96,26 @@ abstract class Query[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound,
-    PS <: PSBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, PS]
+    C <: WhereBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, PS]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
-
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](table, qb, row, level)
+    if (session.v3orNewer) {
+      create[Table, Record, Limit, Order, Specified, Chain, PS](table, qb, row, Some(level))
     } else {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row)
+      create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
     }
   }
 
   @implicitNotFound("A limit was already specified for this query.")
   def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
-    create[Table, Record, Limited, Order, Status, Chain, PS](table, QueryBuilder.limit(qb, limit), row)
+    create[Table, Record, Limited, Order, Status, Chain, PS](
+      table,
+      QueryBuilder.limit(qb, limit),
+      row,
+      consistencyLevel
+    )
   }
 
   /**
@@ -121,9 +125,13 @@ abstract class Query[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where(condition: Table => WhereClause.Condition)
-           (implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    create[Table, Record, Limit, Order, Status, Chainned, PS](table, QueryBuilder.Where.where(qb, condition(table).qb), row)
+  def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    create[Table, Record, Limit, Order, Status, Chainned, PS](
+      table,
+      QueryBuilder.Where.where(qb, condition(table).qb),
+      row,
+      consistencyLevel
+    )
   }
 
   /**
@@ -134,12 +142,22 @@ abstract class Query[
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
   def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    create[Table, Record, Limit, Order, Status, Chainned, PS](table, QueryBuilder.Where.and(qb, condition(table).qb), row)
+    create[Table, Record, Limit, Order, Status, Chainned, PS](
+      table,
+      QueryBuilder.Where.and(qb, condition(table).qb),
+      row,
+      consistencyLevel
+    )
   }
 
 
   def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    create[Table, Record, Limit, Order, Status, Chain, PS](table, QueryBuilder.ttl(qb, seconds.toString), row)
+    create[Table, Record, Limit, Order, Status, Chain, PS](
+      table,
+      QueryBuilder.ttl(qb, seconds.toString),
+      row,
+      consistencyLevel
+    )
   }
 
   def ttl(duration: scala.concurrent.duration.FiniteDuration): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {

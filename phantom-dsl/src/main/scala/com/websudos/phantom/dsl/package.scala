@@ -32,6 +32,8 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
+import com.websudos.phantom.util.ByteString
+
 import scala.util.Try
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
@@ -64,6 +66,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type JsonListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.JsonListColumn[Owner, Record, T]
   type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigDecimal]
 
+  type ByteStringColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteString]
   type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteBuffer]
   type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigInt]
   type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
@@ -114,6 +117,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.websudos.phantom.connectors.KeySpace
   val KeySpace = com.websudos.phantom.connectors.KeySpace
+  type RootConnector = com.websudos.phantom.connectors.RootConnector
 
   val Version = com.websudos.phantom.connectors.DefaultVersions
 
@@ -205,13 +209,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
-
-  trait ForwardDefinition {
-    implicit def space: KeySpace
-
-    implicit def session: Session
-  }
-
 
   implicit lazy val context = Manager.scalaExecutor
 

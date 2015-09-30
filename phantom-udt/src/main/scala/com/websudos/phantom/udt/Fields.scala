@@ -34,7 +34,7 @@ import java.util.{UUID, Date}
 
 import org.joda.time.DateTime
 
-import com.datastax.driver.core.UDTValue
+import com.datastax.driver.core.{LocalDate, UDTValue}
 import com.websudos.phantom.CassandraTable
 
 object Fields {
@@ -90,15 +90,19 @@ object Fields {
   }
 
   class DateField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, Date](column) {
-    def apply(row: UDTValue): Option[Date] = Some(row.getDate(name))
+    def apply(row: UDTValue): Option[Date] = Some(new Date(row.getDate(name).getMillisSinceEpoch))
 
-    override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value)
+    override private[udt] def setSerialise(data: UDTValue): UDTValue = {
+      data.setDate(name, LocalDate.fromMillisSinceEpoch(value.getTime))
+    }
   }
 
   class DateTimeField[Owner <: CassandraTable[Owner, Record], Record, T <: UDTColumn[Owner, Record, _]](column: T) extends Field[Owner, Record, T, DateTime](column) {
     def apply(row: UDTValue): Option[DateTime] = Some(new DateTime(row.getDate(name)))
 
-    override private[udt] def setSerialise(data: UDTValue): UDTValue = data.setDate(name, value.toDate)
+    override private[udt] def setSerialise(data: UDTValue): UDTValue = {
+      data.setDate(name,  LocalDate.fromMillisSinceEpoch(value.getMillis))
+    }
   }
 
   /*

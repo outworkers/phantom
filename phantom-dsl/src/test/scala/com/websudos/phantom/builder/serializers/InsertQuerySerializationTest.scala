@@ -40,13 +40,13 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should serialize the addition of a single value" in {
         val query = Recipes.insert.value(_.url, "test").queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test')"
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test');"
       }
 
       "should serialize the addition of multiple values" in {
         val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test'])"
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']);"
       }
     }
 
@@ -55,25 +55,25 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should append a lightweight clause to a single value query" in {
         val query = Recipes.insert.value(_.url, "test").ifNotExists().queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS"
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS;"
       }
 
       "should append a lightweight clause to a double value query" in {
         val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).ifNotExists().queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS"
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
       }
 
       "should append a lightweight clause to a single value query if used before the value set" in {
         val query = Recipes.insert.ifNotExists().value(_.url, "test").queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS"
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS;"
       }
 
       "should append a lightweight clause to a double value query if used before the value set" in {
         val query = Recipes.insert.ifNotExists().value(_.url, "test").value(_.ingredients, List("test")).queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS"
+        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
       }
 
     }

@@ -42,12 +42,11 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "find a record with a in operator if the record exists" in {
-    val id = gen[UUID]
     val recipe = gen[Recipe]
 
     val chain = for {
       done <- Recipes.store(recipe).future()
-      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).one()
+      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
 
     chain.successful {
@@ -59,12 +58,11 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "find a record with a in operator if the record exists with Twitter Futures" in {
-    val id = gen[UUID]
     val recipe = gen[Recipe]
 
     val chain = for {
       done <- Recipes.store(recipe).execute()
-      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].address)).get()
+      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).get()
     } yield select
 
     chain.successful {
@@ -76,12 +74,11 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "not find a record with a in operator if the record doesn't exists" in {
-    val id = gen[UUID]
     val recipe = gen[Recipe]
 
     val chain = for {
       done <- Recipes.store(recipe).future()
-      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).one()
+      select <- Recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
     } yield select
 
     chain.successful {
@@ -92,12 +89,11 @@ class InOperatorTest extends PhantomCassandraTestSuite {
   }
 
   it should "not find a record with a in operator if the record doesn't exists with Twitter Futures" in {
-    val id = gen[UUID]
     val recipe = gen[Recipe]
 
     val chain = for {
       done <- Recipes.store(recipe).execute()
-      select <- Recipes.select.where(_.url in List(gen[EmailAddress].address)).get()
+      select <- Recipes.select.where(_.url in List(gen[EmailAddress].value)).get()
     } yield select
 
     chain.successful {

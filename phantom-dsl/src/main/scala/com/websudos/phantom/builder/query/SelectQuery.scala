@@ -30,6 +30,12 @@
 package com.websudos.phantom.builder.query
 
 
+import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
+
+import scala.annotation.implicitNotFound
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
+import scala.util.Try
+
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
@@ -60,10 +66,9 @@ class SelectQuery[
   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
-  override val consistencyLevel: ConsistencyLevel = null,
-  override val parameters: Seq[Any] = Seq.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel)
-  with ExecutableQuery[Table, Record, Limit] {
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
+  Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
@@ -87,10 +92,9 @@ class SelectQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: PSBound
-  ](t: T, q: CQLQuery, r: Row => R, level: ConsistencyLevel = null): QueryType[T, R, L, O, S, C, P] = {
-    new SelectQuery[T, R, L, O, S, C, P](
+    C <: WhereBound
+  ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C] = {
+    new SelectQuery[T, R, L, O, S, C](
       table = t,
       rowFunc = r,
       init = q,

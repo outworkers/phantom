@@ -33,10 +33,11 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.Bytes
+import com.datastax.driver.core.{LocalDate, Row}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.util.ByteString
 import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.util.{Failure, Try}
@@ -45,6 +46,8 @@ import scala.util.{Failure, Try}
 private[phantom] object DateSerializer {
 
   def asCql(date: Date): String = date.getTime.toString
+
+  def asCql(date: LocalDate): String = date.getMillisSinceEpoch.toString
 
   def asCql(date: DateTime): String = date.getMillis.toString
 }
@@ -192,19 +195,46 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Timestamp
 
     def fromRow(row: Row, name: String): Option[Date] =
-      if (row.isNull(name)) None else Try(row.getDate(name)).toOption
+      if (row.isNull(name)) None else Try(new Date(row.getDate(name).getMillisSinceEpoch)).toOption
 
     override def asCql(value: Date): String = {
       DateSerializer.asCql(value)
     }
 
     override def fromRow(column: String, row: Row): Try[Date] = nullCheck(column, row) {
+      r => r.getTimestamp(column)
+    }
+
+    override def fromString(value: String): Date = {
+      new DateTime(value, DateTimeZone.UTC).toDate
+    }
+
+    override def clz: Class[Date] = classOf[Date]
+  }
+
+
+  implicit object LocalDateIsPrimitive extends Primitive[LocalDate] {
+
+    override type PrimitiveType = com.datastax.driver.core.LocalDate
+
+    val cassandraType = CQLSyntax.Types.Timestamp
+
+    def fromRow(row: Row, name: String): Option[LocalDate] =
+      if (row.isNull(name)) None else Try(row.getDate(name)).toOption
+
+    override def asCql(value: LocalDate): String = {
+      DateSerializer.asCql(value)
+    }
+
+    override def fromRow(column: String, row: Row): Try[LocalDate] = nullCheck(column, row) {
       r => r.getDate(column)
     }
 
-    override def fromString(value: String): Date = new DateTime(value, DateTimeZone.UTC).toDate
+    override def fromString(value: String): LocalDate = {
+      LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
+    }
 
-    override def clz: Class[Date] = classOf[Date]
+    override def clz: Class[LocalDate] = classOf[LocalDate]
   }
 
   implicit object DateTimeIsPrimitive extends Primitive[DateTime] {
@@ -218,7 +248,7 @@ trait DefaultPrimitives {
     }
 
     override def fromRow(column: String, row: Row): Try[DateTime] = nullCheck(column, row) {
-      r => new DateTime(r.getDate(column))
+      r => new DateTime(r.getTimestamp(column))
     }
 
     override def fromString(value: String): DateTime = new DateTime(value)
@@ -321,8 +351,23 @@ trait DefaultPrimitives {
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
 
-}
+  implicit object ByteStringPrimitive extends Primitive[ByteString] {
+    override type PrimitiveType = java.nio.ByteBuffer
 
+    val cassandraType = CQLSyntax.Types.Blob
+
+    override def fromRow(column: String, row: Row): Try[ByteString] = nullCheck(column, row) {
+      r => ByteString(r.getBytes(column))
+    }
+
+    override def asCql(value: ByteString): String = Bytes.toHexString(value.asByteBuffer)
+
+    override def fromString(value: String): ByteString = ByteString(Bytes.fromHexString(value))
+
+    override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
+
+  }
+}
 
 object Primitive extends DefaultPrimitives {
   def apply[RR : Primitive] = implicitly[Primitive[RR]]
