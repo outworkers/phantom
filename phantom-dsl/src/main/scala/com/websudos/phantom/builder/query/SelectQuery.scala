@@ -189,6 +189,17 @@ class SelectQuery[
     )
   }
 
+  @implicitNotFound("A ConsistencyLevel was already specified for this query.")
+  override def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain] = {
+    val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+
+    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+      create[Table, Record, Limit, Order, Specified, Chain](table, init, rowFunc, level)
+    } else {
+      create[Table, Record, Limit, Order, Specified, Chain](table, QueryBuilder.consistencyLevel(qb, level.toString), rowFunc)
+    }
+  }
+
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The Cassandra session in use.
