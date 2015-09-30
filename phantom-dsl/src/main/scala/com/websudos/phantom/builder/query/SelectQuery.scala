@@ -35,7 +35,7 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, WhereClause}
-import com.websudos.phantom.builder.prepared.{PNil, ParametricNode, ParametricValue}
+import com.websudos.phantom.builder.query.prepared.{ParametricNode, PNil, ParametricValue}
 import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
@@ -61,9 +61,9 @@ class SelectQuery[
   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
   count: Boolean = false,
   override val consistencyLevel: ConsistencyLevel = null,
-  val parameters: Seq[Any] = Seq.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
-  Record, Limit] {
+  override val parameters: Seq[Any] = Seq.empty
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel)
+  with ExecutableQuery[Table, Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
@@ -142,13 +142,13 @@ class SelectQuery[
 
 
   /**
-   * The where method of a select query.
+   * The where method of a select query that takes parametric predicate as an argument.
    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def pwhere[RR](condition: Table => WhereClause.ParametricCondition[RR])
+  def p_where[RR](condition: Table => WhereClause.ParametricCondition[RR])
                 (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
        table = table,
@@ -184,12 +184,12 @@ class SelectQuery[
 
 
   /**
-   * The where method of a select query.
+   * The and operator used to concatenate where conditions of a select query.
    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
    * @return
    */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  @implicitNotFound("You cannot add condition in this place of the query")
   override def and(condition: Table => WhereClause.Condition)
                   (implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
@@ -197,6 +197,28 @@ class SelectQuery[
       rowFunc = rowFunc,
       init = init,
       wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count,
+      consistencyLevel
+    )
+  }
+
+  /**
+   * The and operator that adds parametric condition to the where predicates.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot add condition in this place of the query")
+  def p_and[RR](condition: Table => WhereClause.ParametricCondition[RR])
+                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,

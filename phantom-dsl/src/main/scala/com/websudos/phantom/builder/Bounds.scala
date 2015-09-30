@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder
 
-import com.websudos.phantom.builder.prepared.ParametricNode
+import com.websudos.phantom.builder.query.prepared.ParametricNode
 
 sealed trait LimitBound
 trait Limited extends LimitBound

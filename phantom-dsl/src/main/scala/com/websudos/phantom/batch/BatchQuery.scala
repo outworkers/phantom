@@ -44,20 +44,14 @@ sealed class BatchQuery(val init: CQLQuery, added: Boolean = false) extends Exec
     new BatchQuery(chain)
   }
 
-  def timestamp(stamp: Long) = {
-    new BatchQuery(QueryBuilder.timestamp(init, stamp.toString))
-  }
+  def timestamp(stamp: Long) = new BatchQuery(QueryBuilder.timestamp(init, stamp.toString))
 
-  def terminate: BatchQuery = {
-    new BatchQuery(QueryBuilder.Batch.applyBatch(init), true)
-  }
+  def terminate: BatchQuery = new BatchQuery(QueryBuilder.Batch.applyBatch(init), true)
 
-  override def qb: CQLQuery = {
-    if (added) {
-      init
-    } else {
-      terminate.qb
-    }
+  override def qb: CQLQuery = if (added) {
+    init
+  } else {
+    terminate.qb
   }
 }
 
