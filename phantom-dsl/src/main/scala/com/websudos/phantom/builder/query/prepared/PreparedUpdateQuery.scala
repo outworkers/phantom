@@ -53,7 +53,7 @@ class PreparedUpdateQuery[
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-   ) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+   ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -76,9 +76,10 @@ class PreparedUpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
-    new PreparedUpdateQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
+    new PreparedUpdateQuery[T, R, L, O, S, C, P](
       table = t,
       init = q,
       usingPart = Defaults.EmptyUsingPart,
@@ -96,7 +97,7 @@ class PreparedUpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new PreparedUpdateQuery(
       table,
       init,
@@ -115,7 +116,7 @@ class PreparedUpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): PreparedUpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new PreparedUpdateQuery(
       table,
       init,

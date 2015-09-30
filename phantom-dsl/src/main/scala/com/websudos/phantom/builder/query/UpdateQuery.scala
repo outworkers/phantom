@@ -53,7 +53,7 @@ class UpdateQuery[
   setPart : SetPart = Defaults.EmptySetPart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null, consistencyLevel) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null, consistencyLevel) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -80,9 +80,10 @@ class UpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
-    new UpdateQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: PSBound
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
+    new UpdateQuery[T, R, L, O, S, C, P](
       t,
       q,
       Defaults.EmptyUsingPart,
@@ -100,7 +101,7 @@ class UpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new UpdateQuery(
       table,
       init,

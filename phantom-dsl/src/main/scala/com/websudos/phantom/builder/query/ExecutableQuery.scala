@@ -35,7 +35,6 @@ import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.iteratee.{ResultSpool, Enumerator}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
@@ -56,21 +55,18 @@ trait ExecutableStatement extends CassandraOperations {
    */
   def parameters: Seq[Any] = Nil
 
-  def baseStatement(implicit session: Session): Statement = {
+  def baseStatement()(implicit session: Session): Statement = {
     parameters match {
-      case Nil =>
-        new SimpleStatement(qb.terminate().queryString)
+      case Nil => session.newSimpleStatement(qb.terminate().queryString)
       case someParameters =>
         session.prepare(qb.terminate().queryString).bind(parameters)
     }
   }
 
-  def statement(implicit session: Session): Statement = {
-    if (consistencyLevel == null) {
-      baseStatement
-    } else {
-      //the cast looks ugly but in reality setConsistencyLevel returns itself
-      baseStatement.setConsistencyLevel(consistencyLevel).asInstanceOf[RegularStatement]
+  def statement()(implicit session: Session): Statement = {
+    consistencyLevel match {
+      case Some(level) => baseStatement.setConsistencyLevel(level).asInstanceOf[RegularStatement]
+      case None => baseStatement
     }
   }
 

@@ -50,7 +50,7 @@ class DeleteQuery[
   wherePart : WherePart = Defaults.EmptyWherePart,
   casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
