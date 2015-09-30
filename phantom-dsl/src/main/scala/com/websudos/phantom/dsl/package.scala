@@ -32,6 +32,8 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
+import com.websudos.phantom.util.ByteString
+
 import scala.util.Try
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
@@ -64,6 +66,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type JsonListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.JsonListColumn[Owner, Record, T]
   type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigDecimal]
 
+  type ByteStringColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteString]
   type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteBuffer]
   type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigInt]
   type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
