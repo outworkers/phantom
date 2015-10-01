@@ -148,7 +148,7 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where[RR](condition: => Table => PreparedWhereClause.ParametricCondition[RR])
+  def where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
                 (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
        table = table,
@@ -212,7 +212,7 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot add condition in this place of the query")
-  def and[RR](condition: => Table => PreparedWhereClause.ParametricCondition[RR])
+  def and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
                         (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
       table = table,
