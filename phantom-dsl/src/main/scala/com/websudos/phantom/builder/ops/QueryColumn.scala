@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.WhereClause
+import com.websudos.phantom.builder.clauses.{PreparedWhereClause, WhereClause}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
@@ -79,8 +79,27 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
     new WhereClause.Condition(QueryBuilder.Where.in(col.name, values.map(p.asCql)))
   }
 
-  final def eqs(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
-    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
+  /**
+   * Equals clause defined for the prepared statement.
+   * When this prepared clause is applied, the value specified in the WHERE clause can be binded at a later stage.
+   *
+   * {{{
+   *   Example usage:
+   *
+   *   Table.select.where(_.id eqs ?)
+   *
+   *   Will produce
+   *
+   *   SELECT * FROM KEYSPACE.TABLE WHERE ID = ?
+   *
+   * }}}
+   *
+   *
+   * @param value The prepare mark value to use, the "?" singleton.
+   * @return A where clause with a parametric condition specified.
+   */
+  final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
   }
 
 
