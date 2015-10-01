@@ -34,12 +34,13 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{OrderingClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
 import com.websudos.phantom.builder.query.prepared.{PNil, ParametricNode, ParametricValue}
 import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.reflect.ClassTag
 import scala.util.Try
 
 
@@ -140,7 +141,6 @@ class SelectQuery[
     )
   }
 
-
   /**
    * The where method of a select query that takes parametric predicate as an argument.
    * @param condition A where clause condition restricted by path dependant types.
@@ -148,8 +148,8 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => WhereClause.ParametricCondition[RR])
-                (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+  def where[RR](condition: => Table => PreparedWhereClause.ParametricCondition[RR])
+                (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
        table = table,
        rowFunc = rowFunc,
@@ -212,8 +212,8 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => WhereClause.ParametricCondition[RR])
-                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+  def and[RR](condition: => Table => PreparedWhereClause.ParametricCondition[RR])
+                        (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -361,47 +361,4 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R] )( implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
     root.all
   }
-}
-
-class PreparedSelectQuery[
-Table <: CassandraTable[Table, _],
-Record,
-Limit <: LimitBound,
-Order <: OrderBound,
-Status <: ConsistencyBound,
-Chain <: WhereBound,
-Parameters <: ParametricNode
-](
-   table: Table,
-   rowFunc: Row => Record,
-   init: CQLQuery,
-   wherePart: WherePart = Defaults.EmptyWherePart,
-   orderPart: OrderPart = Defaults.EmptyOrderPart,
-   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
-   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
-   count: Boolean = false,
-   consistencyLevel: ConsistencyLevel = null
-   ) {
-
-  /**
-   * The where method of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where[RR](condition: Table => WhereClause.ParametricCondition[RR])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, Parameters]] = {
-    new PreparedSelectQuery(
-                     table = table,
-                     rowFunc = rowFunc,
-                     init = init,
-                     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-                     orderPart = orderPart,
-                     limitedPart = limitedPart,
-                     filteringPart = filteringPart,
-                     count = count,
-                     consistencyLevel
-                   )
-  }
-
 }
