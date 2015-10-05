@@ -65,6 +65,7 @@ object CQLSyntax {
 
   val insert = "INSERT"
   val ifNotExists = "IF NOT EXISTS"
+  val ifExists = "IF EXISTS"
   val temporary = "TEMPORARY"
 
   val where = "WHERE"

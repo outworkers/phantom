@@ -43,6 +43,10 @@ private[builder] class UpdateQueryBuilder {
     CQLQuery(CQLSyntax.`if`).forcePad.append(clause)
   }
 
+  val ifExists: CQLQuery = {
+    CQLQuery(CQLSyntax.ifExists)
+  }
+
   private[this] def counterSetter(column: String, op: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`)
       .forcePad.append(column)
