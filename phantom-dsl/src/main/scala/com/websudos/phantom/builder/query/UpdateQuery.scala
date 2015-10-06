@@ -191,6 +191,18 @@ sealed class AssignmentsQuery[
     )
   }
 
+  def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.ifExists,
+      consistencyLevel
+    )
+  }
+
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
     if (session.v3orNewer) {
       new AssignmentsQuery(
