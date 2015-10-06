@@ -56,7 +56,7 @@ trait ExecutableStatement extends CassandraOperations {
   def parameters: Seq[Any] = Nil
 
   def baseStatement()(implicit session: Session): Statement = {
-    parameters match {
+    parameters.toList match {
       case Nil => session.newSimpleStatement(qb.terminate().queryString)
       case someParameters =>
         session.prepare(qb.terminate().queryString).bind(parameters)

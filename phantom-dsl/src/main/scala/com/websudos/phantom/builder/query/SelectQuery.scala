@@ -40,7 +40,6 @@ import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
-import scala.reflect.ClassTag
 import scala.util.Try
 
 
@@ -148,8 +147,8 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-                (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+                (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
        table = table,
        rowFunc = rowFunc,
@@ -167,7 +166,7 @@ class SelectQuery[
 
   @implicitNotFound("Parameters have been already specified.")
   def bind[V1](v1: V1)
-                    (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limited, Order, Status, Chain, PSSpecified] = {
+                    (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limit, Order, Status, Chain, PSSpecified] = {
     new SelectQuery(
       table,
       rowFunc,
@@ -212,8 +211,8 @@ class SelectQuery[
    * @return
    */
   @implicitNotFound("You cannot add condition in this place of the query")
-  def and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-                        (implicit ev: Chain =:= Unchainned, mf: ClassTag[RR]): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
