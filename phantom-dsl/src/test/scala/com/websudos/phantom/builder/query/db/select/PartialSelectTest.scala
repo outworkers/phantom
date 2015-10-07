@@ -67,7 +67,6 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
   "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
 
-
     val chain = for {
       truncate <- Primitives.truncate.execute()
       insertDone <- Primitives.store(row).execute()

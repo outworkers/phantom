@@ -6,6 +6,7 @@ import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
 
 class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
+  
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
