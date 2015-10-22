@@ -64,14 +64,14 @@ trait SimpleCassandraTest extends ScalaFutures
   self : BeforeAndAfterAll with Suite =>
 
   implicit override val patienceConfig: PatienceConfig = {
-    PatienceConfig(timeout = Span(5, Seconds), interval = Span(5, Millis))
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(7, Millis))
   }
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
    * @return The default timeout value.
    */
-  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
+  implicit def patience: PatienceConfiguration.Timeout = timeout(7 seconds)
 
 
 }
