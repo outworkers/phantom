@@ -59,7 +59,7 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
     chain successful {
       result => {
         result._1 shouldEqual List(row.pkey)
-        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
+        result._2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }
@@ -76,8 +76,8 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       result => {
-        result._1.toList shouldEqual List(row.pkey)
-        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
+        result._1 shouldEqual List(row.pkey)
+        result._2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }
