@@ -79,7 +79,10 @@ object LimitedPart {
 }
 
 sealed class OrderPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[OrderPart](list) {
-  override def qb: CQLQuery = QueryBuilder.Select.Ordering.orderBy(list: _*)
+  override def qb: CQLQuery = list match {
+    case head :: tail => QueryBuilder.Select.Ordering.orderBy(list: _*)
+    case Nil => CQLQuery.empty
+  }
 
   override def instance(l: List[CQLQuery]): OrderPart = new OrderPart(l)
 

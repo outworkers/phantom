@@ -30,24 +30,21 @@
 package com.websudos.phantom.testkit.suites
 
 import com.datastax.driver.core.{Session, VersionNumber}
-import com.websudos.phantom.connectors.{ContactPoints, KeySpace, KeySpaceDef}
-import org.scalatest.concurrent.{Futures, AsyncAssertions, PatienceConfiguration, ScalaFutures}
+import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
 import org.scalatest._
+import org.scalatest.concurrent.{AsyncAssertions, Futures, PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
 private object Defaults {
-  def getDefaultConnector(host: String, keySpace: String): KeySpaceDef = {
-    ContactPoints(Seq(host), 9042).keySpace(keySpace)
-  }
+
+  val connector = ContactPoint.local.keySpace("phantom")
 }
 
 trait SimpleCassandraConnector {
 
-  private[this] lazy val connector = Defaults.getDefaultConnector(host, keySpace.name)
-
-  def host: String = "localhost"
+  val connector = Defaults.connector
 
   implicit def keySpace: KeySpace
 
