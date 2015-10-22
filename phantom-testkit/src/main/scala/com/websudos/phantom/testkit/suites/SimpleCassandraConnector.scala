@@ -66,8 +66,6 @@ trait SimpleCassandraTest extends ScalaFutures
   with BeforeAndAfterAll with Futures {
   self : BeforeAndAfterAll with Suite =>
 
-  override val host = "127.0.0.1"
-
   implicit override val patienceConfig: PatienceConfig = {
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(5, Millis))
   }
