@@ -71,11 +71,3 @@ private object Defaults {
     ContactPoint.local.keySpace(space.name)
   }
 }
-
-trait SimpleConnector {
-
-  implicit def keySpace: KeySpace
-
-  implicit lazy val session: Session = Defaults.getConnector(keySpace).session
-
-}
