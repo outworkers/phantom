@@ -29,11 +29,11 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.VersionNumber
+import com.datastax.driver.core.{ VersionNumber => DatastaxVersionNumber }
 
 sealed trait VersionBuilder {
-  def apply(major: Int, minor: Int, patch: Int): VersionNumber = {
-    VersionNumber.parse(s"$major.$minor.$patch")
+  def apply(major: Int, minor: Int, patch: Int): DatastaxVersionNumber = {
+    DatastaxVersionNumber.parse(s"$major.$minor.$patch")
   }
 }
 

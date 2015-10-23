@@ -32,6 +32,8 @@ trait SessionProvider {
    */
   def cluster: Cluster
 
+  def space: KeySpace
+
   /**
    * Returns a Session instance for the keySpace
    * with the specified name.
@@ -42,5 +44,5 @@ trait SessionProvider {
    * a client asks for the same keySpace multiple
    * times.
    */
-  def getSession(keySpace: String): Session
+  def session: Session
 }
