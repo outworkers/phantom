@@ -32,7 +32,7 @@ package com.websudos.phantom.testkit.suites
 import com.datastax.driver.core.{Session, VersionNumber}
 import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
 import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, Futures, PatienceConfiguration, ScalaFutures}
+import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
@@ -60,7 +60,7 @@ trait SimpleCassandraTest extends ScalaFutures
   with Matchers
   with Assertions
   with AsyncAssertions
-  with BeforeAndAfterAll with Futures {
+  with BeforeAndAfterAll {
   self : BeforeAndAfterAll with Suite =>
 
   implicit override val patienceConfig: PatienceConfig = {
