@@ -50,4 +50,11 @@ object DefaultVersions extends VersionBuilder {
   val `2.1.3` = apply(2, 1, 3)
   val `2.1.4` = apply(2, 1, 4)
   val `2.1.5` = apply(2, 1, 5)
+  val `2.1.6` = apply(2, 1, 6)
+  val `2.1.7` = apply(2, 1, 7)
+  val `2.1.8` = apply(2, 1, 8)
+  val `2.1.9` = apply(2, 1, 9)
+  val `2.2.0` = apply(2, 2, 0)
+  val `2.2.1` = apply(2, 2, 1)
+  val `2.2.2` = apply(2, 2, 2)
 }

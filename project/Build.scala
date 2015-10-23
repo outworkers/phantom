@@ -49,6 +49,7 @@ object Build extends Build {
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
   val DieselEngineVersion = "0.2.2"
+  val Slf4jVersion = "1.7.12"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -183,7 +184,7 @@ object Build extends Build {
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-        "org.slf4j"                    % "slf4j-log4j12"                      % "1.7.12" % "test, provided",
+        "org.slf4j"                    %  "slf4j-log4j12"                      % Slf4jVersion % "test, provided",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
@@ -234,6 +235,7 @@ object Build extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
+      "org.slf4j"                    % "slf4j-log4j12"                      % Slf4jVersion % "test, provided",
       "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
