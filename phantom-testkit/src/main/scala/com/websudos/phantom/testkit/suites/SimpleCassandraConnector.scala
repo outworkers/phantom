@@ -30,23 +30,21 @@
 package com.websudos.phantom.testkit.suites
 
 import com.datastax.driver.core.{Session, VersionNumber}
-import com.websudos.phantom.connectors.{ContactPoints, KeySpace, KeySpaceDef}
+import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
+import org.scalatest._
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
-import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
+import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
 private object Defaults {
-  def getDefaultConnector(host: String, keySpace: String): KeySpaceDef = {
-    ContactPoints(Seq(host), 9042).keySpace(keySpace)
-  }
+
+  val connector = ContactPoint.local.keySpace("phantom")
 }
 
 trait SimpleCassandraConnector {
 
-  private[this] lazy val connector = Defaults.getDefaultConnector(host, keySpace.name)
-
-  def host: String = "localhost"
+  val connector = Defaults.connector
 
   implicit def keySpace: KeySpace
 
@@ -65,18 +63,20 @@ trait SimpleCassandraTest extends ScalaFutures
   with BeforeAndAfterAll {
   self : BeforeAndAfterAll with Suite =>
 
-  override val host = "localhost"
+  implicit override val patienceConfig: PatienceConfig = {
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(7, Millis))
+  }
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
    * @return The default timeout value.
    */
-  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
+  implicit def patience: PatienceConfiguration.Timeout = timeout(7 seconds)
 
 
 }
 
-trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest
+trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest with OptionValues
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
 trait PhantomCassandraConnector extends SimpleCassandraConnector {

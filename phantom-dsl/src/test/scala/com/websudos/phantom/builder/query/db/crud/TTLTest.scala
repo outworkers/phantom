@@ -58,12 +58,11 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
     whenReady(chain) {
       record => {
-        record.isEmpty shouldEqual false
-        record.get shouldEqual row
+        record.value shouldEqual row
 
         eventually {
           val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          record.isDefined shouldEqual false
+          record shouldBe empty
         }
       }
     }
@@ -79,12 +78,11 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
 
     chain.successful {
       record => {
-        record.isEmpty shouldEqual false
-        record.get shouldEqual row
+        record.value shouldEqual row
 
         eventually {
           val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
-          record.isDefined shouldEqual false
+          record shouldBe empty
         }
       }
     }

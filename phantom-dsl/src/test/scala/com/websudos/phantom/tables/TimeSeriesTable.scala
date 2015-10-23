@@ -44,7 +44,9 @@ case class TimeSeriesRecord(
 sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending {
+    override val name = "unixTimestamp"
+  }
 
   def fromRow(row: Row): TimeSeriesRecord = {
     TimeSeriesRecord(

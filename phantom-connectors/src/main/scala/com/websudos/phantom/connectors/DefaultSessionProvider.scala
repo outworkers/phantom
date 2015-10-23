@@ -17,7 +17,7 @@ package com.websudos.phantom.connectors
 
 import com.datastax.driver.core.{Cluster, Session}
 
-import scala.collection.concurrent.TrieMap
+import scala.concurrent.blocking
 
 /**
  * The default SessionProvider implementation, which should be sufficient
@@ -25,14 +25,14 @@ import scala.collection.concurrent.TrieMap
  *
  * This implementation caches `Session` instances per keySpace.
  */
-class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
-
-  private val sessionCache = new Cache[String, Session]
-
+class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
 
   lazy val cluster: Cluster = {
-    // TODO - the original phantom modules had .withoutJMXReporting().withoutMetrics() as defaults, discuss best choices
+
     val cb = Cluster.builder
+      .withoutJMXReporting()
+      .withoutMetrics()
+
     builder(cb).build
   }
 
@@ -40,7 +40,7 @@ class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
    * Initializes the keySpace with the given name on
    * the specified Session.
    */
-  protected def initKeySpace(session: Session, keySpace: String): Session = {
+  protected[this] def initKeySpace(session: Session, keySpace: String): Session = blocking {
     session.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
     session
   }
@@ -49,52 +49,13 @@ class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
    * Creates a new Session for the specified keySpace.
    */
   protected[this] def createSession(keySpace: String): Session = {
-    val session = cluster.connect
+    val session = blocking {
+      cluster.connect
+    }
+
     initKeySpace(session, keySpace)
   }
 
-  def getSession(keySpace: String): Session = {
-    sessionCache.getOrElseUpdate(keySpace, createSession(keySpace))
-  }
-
-}
-
-/**
- * Thread-safe cache implementation.
- *
- * Given the expected use cases (a map with often just one or at most
- * a handful of elements in it and being accessed infrequently), this
- * implementation is not aggressively optimized and focusses on thread-safety.
- */
-class Cache[K, V] {
-
-  /* this implementation uses putIfAbsent from the underlying TrieMap as
-   * getOrElseUpdate is not thread-safe. */
-
-  private[this] val map = TrieMap[K, Lazy]()
-
-  private[this] class Lazy(value: => V) {
-    lazy val get: V = value
-  }
-
-  /**
-   * Get the element for the specified key
-   * if it has already been set or otherwise
-   * associate the key with the given (lazy) value.
-   *
-   * @return the value previously associated with the key
-   * or (if no value had been previously set) the specified new value.
-   */
-  def getOrElseUpdate(key: K, op: => V): V = {
-    val lazyOp = new Lazy(op)
-    map.putIfAbsent(key, lazyOp) match {
-      case Some(oldval) =>
-        // don't evaluate the new lazyOp, return existing value
-        oldval.get
-      case _ =>
-        // no existing value for key, evaluate lazyOp
-        lazyOp.get
-    }
-  }
+  val session = createSession(space.name)
 
 }

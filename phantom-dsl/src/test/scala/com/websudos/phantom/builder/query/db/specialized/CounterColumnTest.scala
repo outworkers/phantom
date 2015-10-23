@@ -60,10 +60,9 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 1
+        result._1.value.count shouldEqual 0
+
+        result._2.value.count shouldEqual 1
       }
     }
   }
@@ -81,10 +80,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 1
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual 1
       }
     }
   }
@@ -103,10 +100,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 500
-        result._2.isEmpty shouldEqual false
-        result._2.get shouldEqual 501
+        result._1.value.count shouldEqual 500
+        result._2.value shouldEqual 501
       }
     }
   }
@@ -124,10 +119,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 500
-        result._2.isEmpty shouldEqual false
-        result._2.get shouldEqual 501
+        result._1.value.count shouldEqual 500
+        result._2.value shouldEqual 501
       }
     }
   }
@@ -146,10 +139,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual diff
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual diff
       }
     }
   }
@@ -168,10 +159,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 0
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual diff
+        result._1.value.count shouldEqual 0
+        result._2.value.count shouldEqual diff
       }
     }
   }
@@ -189,10 +178,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0
+        result._1.value.count shouldEqual 1
+        result._2.value.count shouldEqual 0
       }
     }
   }
@@ -210,10 +197,8 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._1.get.count shouldEqual 1
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual 0
+        result._1.value.count shouldEqual 1
+        result._2.value.count shouldEqual 0
       }
     }
   }
@@ -233,9 +218,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual (initial - diff)
+        result._2.value.count shouldEqual (initial - diff)
       }
     }
   }
@@ -255,9 +238,7 @@ class CounterColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       result => {
-        result._1.isEmpty shouldEqual false
-        result._2.isEmpty shouldEqual false
-        result._2.get.count shouldEqual (initial - diff)
+        result._2.value.count shouldEqual (initial - diff)
       }
     }
   }

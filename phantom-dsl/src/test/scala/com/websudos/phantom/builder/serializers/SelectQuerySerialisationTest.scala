@@ -23,9 +23,23 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).limit(5).allowFiltering().queryString
 
-        Console.println(qb)
-
         qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+      }
+
+      "serialize a single ordering clause" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
+      }
+
+      "serialize an ordering by multiple columns" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
       }
     }
   }

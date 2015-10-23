@@ -28,8 +28,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
-
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {
@@ -51,7 +50,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
         res => {
           res.nonEmpty shouldEqual true
 
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {
@@ -71,8 +70,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
-
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {
@@ -92,8 +90,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
-
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {
@@ -113,8 +110,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
-
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {
@@ -134,8 +130,7 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
-
-          res contains record shouldEqual true
+          res should contain (record)
         }
       }
     } else {

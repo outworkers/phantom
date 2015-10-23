@@ -55,7 +55,7 @@ class RootCreateQuery[
   }
 
   private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
-    new CreateQuery[Table, Record, Unspecified](table, default, Defaults.EmptyWithPart)
+    new CreateQuery[Table, Record, Unspecified](table, default, WithPart.empty)
   }
 
 
@@ -81,9 +81,9 @@ class RootCreateQuery[
    */
   def ifNotExists()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
     if (table.clusteringColumns.nonEmpty) {
-      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart).withClustering()
+      new CreateQuery(table, lightweight(), WithPart.empty).withClustering()
     } else {
-      new CreateQuery(table, lightweight(), Defaults.EmptyWithPart)
+      new CreateQuery(table, lightweight(), WithPart.empty)
     }
   }
 }
@@ -157,7 +157,7 @@ class CreateQuery[
   }
 
   override def qb: CQLQuery = {
-    (withClause merge Defaults.EmptyWithPart) build init
+    (withClause merge WithPart.empty) build init
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
@@ -229,9 +229,9 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
     R] = {
 
     if (root.table.clusteringColumns.nonEmpty) {
-      new CreateQuery(root.table, root.default, Defaults.EmptyWithPart).withClustering()
+      new CreateQuery(root.table, root.default, WithPart.empty).withClustering()
     } else {
-      new CreateQuery(root.table, root.default, Defaults.EmptyWithPart)
+      new CreateQuery(root.table, root.default, WithPart.empty)
     }
   }
 }

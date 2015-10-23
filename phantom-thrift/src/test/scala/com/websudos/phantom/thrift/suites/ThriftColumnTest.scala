@@ -42,7 +42,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
+    ThriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "allow storing thrift columns" in {
@@ -59,8 +59,7 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
+        result.value.struct shouldEqual sample
       }
     }
   }
@@ -82,9 +81,8 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
 
     insert.successful {
       result => {
-        result.isEmpty shouldEqual false
-        result.get.struct shouldEqual sample
-        result.get.thriftSet shouldEqual sampleList
+        result.value.struct shouldEqual sample
+        result.value.thriftSet shouldEqual sampleList
       }
     }
   }
