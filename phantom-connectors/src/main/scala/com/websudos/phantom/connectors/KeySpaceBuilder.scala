@@ -32,7 +32,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   def withClusterBuilder(builder: ClusterBuilder): KeySpaceBuilder =
     new KeySpaceBuilder(clusterBuilder andThen builder)
 
-  private lazy val sessionProvider = new DefaultSessionProvider(clusterBuilder)
+  private[this] lazy val sessionProvider = new DefaultSessionProvider(clusterBuilder)
 
   /**
    * Create a new keySpace with the specified name.
