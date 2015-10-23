@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.query
 
 import com.websudos.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
 import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.syntax.CQLSyntax
 
 
 sealed class CQLMergeList(override val list: List[CQLQuery]) extends MergedQueryList[CQLQuery](list) {
@@ -56,6 +57,12 @@ sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends CQLQuery
 
 object UsingPart {
   def empty: UsingPart = new UsingPart()
+}
+
+sealed class JsonPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[JsonPart](list) {
+  override def qb: CQLQuery = list(0)
+
+  override def instance(list: List[CQLQuery]): JsonPart = new JsonPart(list)
 }
 
 sealed class WherePart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[WherePart](list) {
@@ -119,6 +126,7 @@ sealed class WithPart(override val list: List[CQLQuery]) extends CQLQueryPart[Wi
 }
 
 private[phantom] object Defaults {
+  val emptyJsonPart = new JsonPart()
   val EmptyUsingPart = new UsingPart()
   val EmptyWherePart = new WherePart()
   val EmptySetPart = new SetPart()

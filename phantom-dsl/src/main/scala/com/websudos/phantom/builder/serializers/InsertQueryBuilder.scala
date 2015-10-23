@@ -21,5 +21,4 @@ private[phantom] trait InsertQueryBuilder {
   def values(list: List[CQLQuery]) = {
     CQLQuery(CQLSyntax.values).wrapn(list.map(_.queryString))
   }
-
 }

@@ -44,6 +44,7 @@ class InsertQuery[
 ](
   table: Table,
   val init: CQLQuery,
+  jsonPart: JsonPart = Defaults.emptyJsonPart,
   columnsPart: ColumnsPart = Defaults.EmptyColumnsPart,
   valuePart: ValuePart = Defaults.EmptyValuePart,
   usingPart: UsingPart = Defaults.EmptyUsingPart,
@@ -51,10 +52,24 @@ class InsertQuery[
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
+  final def json[RR](value: String) : InsertQuery[Table, Record, Status] = {
+    new InsertQuery(
+      table,
+      init,
+      jsonPart append QueryBuilder.json(value),
+      columnsPart,
+      valuePart,
+      usingPart,
+      lightweightPart,
+      consistencyLevel
+    )
+  }
+
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
     new InsertQuery(
       table,
       init,
+      jsonPart,
       columnsPart append CQLQuery(col(table).name),
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
@@ -69,6 +84,7 @@ class InsertQuery[
     new InsertQuery(
       table,
       init,
+      jsonPart,
       columnsPart append CQLQuery(col(table).name),
       valuePart append CQLQuery(insertValue),
       usingPart,
@@ -78,13 +94,19 @@ class InsertQuery[
   }
 
   override def qb: CQLQuery = {
-    (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
+    if ( jsonPart == Defaults.emptyJsonPart) {
+      (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
+    }
+    else {
+      (jsonPart) build init
+    }
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
     new InsertQuery(
       table,
       init,
+      jsonPart,
       columnsPart,
       valuePart,
       usingPart append QueryBuilder.ttl(seconds.toString),
@@ -105,6 +127,7 @@ class InsertQuery[
     new InsertQuery(
       table,
       init,
+      jsonPart,
       columnsPart,
       valuePart,
       usingPart append QueryBuilder.timestamp(value.toString),
@@ -119,6 +142,7 @@ class InsertQuery[
       new InsertQuery(
         table,
         init,
+        jsonPart,
         columnsPart,
         valuePart,
         usingPart,
@@ -129,6 +153,7 @@ class InsertQuery[
       new InsertQuery(
         table,
         init,
+        jsonPart,
         columnsPart,
         valuePart,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
@@ -145,6 +170,7 @@ class InsertQuery[
     new InsertQuery(
       table,
       init,
+      jsonPart,
       columnsPart,
       valuePart,
       usingPart,

@@ -29,12 +29,19 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import java.net.InetAddress
+
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
+import org.json4s.jackson.Serialization._
 
 class InsertTest extends PhantomCassandraTestSuite {
 
@@ -46,6 +53,26 @@ class InsertTest extends PhantomCassandraTestSuite {
     TestTable.insertSchema()
     MyTest.insertSchema()
     Recipes.insertSchema()
+  }
+
+  "Insert json" should "work fine for primitives columns" in {
+    implicit val formats = DefaultFormats + InetAddressSerializer + UuidSerializer + DateSerializer
+
+    val row = gen[Primitive]
+    val jsonString: String = write(row)
+
+    val chain = for {
+      store <- Primitives.store(jsonString).future()
+      one <- Primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- Primitives.select.fetch
+    } yield (one.get === row, multi contains row)
+
+    chain successful {
+      res => {
+        assert(res._1)
+        assert(res._2)
+      }
+    }
   }
 
   "Insert" should "work fine for primitives columns" in {
@@ -265,3 +292,27 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
 }
+
+//
+// I had to add some custom converters for json4s so that it would
+// properly create the json string for the Primitive object.
+case object DateSerializer extends CustomSerializer[java.util.Date](format => ( {
+  case JString(s) => new java.util.Date(s.values.toString().toLong)
+}, {
+  case date: java.util.Date => {
+    JString(date.getTime().toString())
+  }
+}))
+
+case object InetAddressSerializer extends CustomSerializer[java.net.InetAddress](format => ( {
+  case JString(s) => InetAddress.getByName(s.values.toString())
+}, {
+  case i: InetAddress => JString(i.getHostAddress())
+}))
+
+case object UuidSerializer extends CustomSerializer[java.util.UUID](format => ( {
+  case JString(s) => java.util.UUID.fromString(s.values.toString())
+}, {
+  case uuid: java.util.UUID => JString(uuid.toString())
+}))
+

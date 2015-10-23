@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.12.2",
+    version := "1.12.3.PA",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -177,6 +177,10 @@ object Build extends Build {
       libraryDependencies ++= Seq(
         "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
         "com.websudos"                 %% "diesel-engine"                     % DieselEngineVersion,
+        "org.json4s"                   %% "json4s-jackson"                    % Json4SVersion,
+        "org.json4s"                   %% "json4s-ext"                        % Json4SVersion,
+        "org.json4s"                   %% "json4s-core"                       % Json4SVersion,
+        "org.json4s"                   %% "json4s-ast"                        % Json4SVersion,
         "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
         "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
         "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",

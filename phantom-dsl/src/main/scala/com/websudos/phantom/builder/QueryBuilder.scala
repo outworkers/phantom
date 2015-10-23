@@ -63,6 +63,10 @@ private[phantom] object QueryBuilder {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
   }
 
+  def json(value: String): CQLQuery = {
+    CQLQuery.empty.forcePad.append(CQLSyntax.json).forcePad.append(CQLQuery.empty.singleQuote(value))
+  }
+
   def using(qb: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.using)
   }

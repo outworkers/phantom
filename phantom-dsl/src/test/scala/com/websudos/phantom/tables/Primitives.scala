@@ -35,18 +35,18 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 
 case class Primitive(
-  pkey: String,
-  long: Long,
-  boolean: Boolean,
-  bDecimal: BigDecimal,
-  double: Double,
-  float: Float,
-  inet: java.net.InetAddress,
-  int: Int,
-  date: java.util.Date,
-  uuid: java.util.UUID,
-  bi: BigInt
-)
+                      pkey: String,
+                      long: Long,
+                      boolean: Boolean,
+                      bDecimal: BigDecimal,
+                      double: Double,
+                      float: Float,
+                      inet: java.net.InetAddress,
+                      int: Int,
+                      date: java.util.Date,
+                      uuid: java.util.UUID,
+                      bi: BigInt
+                      )
 
 sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   override def fromRow(r: Row): Primitive = {
@@ -86,6 +86,7 @@ sealed class Primitives extends CassandraTable[Primitives, Primitive] {
   object uuid extends UUIDColumn(this)
 
   object bi extends BigIntColumn(this)
+
 }
 
 object Primitives extends Primitives with PhantomCassandraConnector {
@@ -107,4 +108,7 @@ object Primitives extends Primitives with PhantomCassandraConnector {
       .value(_.bi, row.bi)
   }
 
+  def store(jsonString: String): InsertQuery.Default[Primitives, Primitive] = {
+    insert.json(jsonString)
+  }
 }

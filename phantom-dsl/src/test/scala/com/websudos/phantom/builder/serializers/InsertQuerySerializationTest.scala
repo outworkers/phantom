@@ -35,6 +35,15 @@ import com.websudos.phantom.tables.Recipes
 class InsertQuerySerializationTest extends QueryBuilderTest {
 
   "An INSERT query" - {
+    "should correctly form a propert 'INSERT JSON' statement" in {
+      info(s"insert query string ${Recipes.insert().queryString}")
+      info(s"insert query string with json ${Recipes.insert().json("""{ someIntValue: 10 }""").queryString}")
+
+      val qb = Recipes.insert.json("""{ someIntValue: 10 }""").queryString
+
+      qb shouldEqual "INSERT INTO phantom.Recipes JSON '{ someIntValue: 10 }';"
+    }
+
     "should correctly chain the addition of columns and values to the builder" - {
 
       "should serialize the addition of a single value" in {
