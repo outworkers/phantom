@@ -29,41 +29,40 @@
  */
 package com.websudos.phantom.builder.query
 
-
-import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
-
-import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
-import scala.util.Try
-
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.twitter.util.{ Future => TwitterFuture}
-
-import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-
+import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
+import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.connectors.KeySpace
 
+import scala.annotation.implicitNotFound
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+
+import scala.util.Try
+
+import scala.reflect.Manifest
+
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
+import com.twitter.util.{Future => TwitterFuture}
 
 class SelectQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound,
-  Chain <: WhereBound
+Table <: CassandraTable[Table, _],
+Record,
+Limit <: LimitBound,
+Order <: OrderBound,
+Status <: ConsistencyBound,
+Chain <: WhereBound
 ](
-  table: Table,
-  rowFunc: Row => Record,
-  val init: CQLQuery,
-  wherePart: WherePart = Defaults.EmptyWherePart,
-  orderPart: OrderPart = Defaults.EmptyOrderPart,
-  limitedPart: LimitedPart = Defaults.EmptyLimitPart,
-  filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
-  count: Boolean = false,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
-  Record, Limit] {
+   table: Table,
+   rowFunc: Row => Record,
+   val init: CQLQuery,
+   wherePart: WherePart = Defaults.EmptyWherePart,
+   orderPart: OrderPart = Defaults.EmptyOrderPart,
+   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
+   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+   count: Boolean = false,
+   override val consistencyLevel: Option[ConsistencyLevel] = None
+   ) extends Query[Table, Record, Limit, Order, Status, Chain](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
+  Record, Limit] with JsonUtils {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
@@ -72,21 +71,21 @@ class SelectQuery[
   }
 
   override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound
+  T <: CassandraTable[T, _],
+  R,
+  L <: LimitBound,
+  O <: OrderBound,
+  S <: ConsistencyBound,
+  C <: WhereBound
   ] = SelectQuery[T, R, L, O, S, C]
 
   protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound
+  T <: CassandraTable[T, _],
+  R,
+  L <: LimitBound,
+  O <: OrderBound,
+  S <: ConsistencyBound,
+  C <: WhereBound
   ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C] = {
     new SelectQuery[T, R, L, O, S, C](
       table = t,
@@ -114,7 +113,6 @@ class SelectQuery[
       consistencyLevel
     )
   }
-
 
   /**
    * The where method of a select query.
@@ -173,7 +171,6 @@ class SelectQuery[
     )
   }
 
-
   @implicitNotFound("You have already defined an ordering clause on this query.")
   final def orderBy(clause: Table => OrderingClause.Condition)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
     new SelectQuery(
@@ -182,6 +179,26 @@ class SelectQuery[
       init,
       wherePart,
       orderPart append QueryBuilder.Select.Ordering.orderBy(clause(table).qb),
+      limitedPart,
+      filteringPart,
+      count,
+      consistencyLevel
+    )
+  }
+
+  def fromJsonRow(r: Row)(implicit mf: Manifest[Record]): Record = {
+    val s = r.toString()
+
+    getRecord(s)
+  }
+
+  final def json()(implicit keySpace: KeySpace, mf: Manifest[Record]): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+    new SelectQuery(
+      table,
+      fromJsonRow,
+      QueryBuilder.Select.selectJson(table.tableName, keySpace.name),
+      wherePart,
+      orderPart,
       limitedPart,
       filteringPart,
       count,
@@ -290,3 +307,7 @@ private[phantom] trait SelectImplicits {
     root.all
   }
 }
+
+
+
+

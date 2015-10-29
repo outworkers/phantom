@@ -54,13 +54,9 @@ class RootCreateQuery[
       .append(CQLSyntax.Symbols.`)`)
   }
 
-  private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
-    new CreateQuery[Table, Record, Unspecified](table, default, Defaults.EmptyWithPart)
-  }
+  private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = new CreateQuery[Table, Record, Unspecified](table, default, Defaults.EmptyWithPart)
 
-
-  private[this] def lightweight()(implicit keySpace: KeySpace): CQLQuery = {
-    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+  private[this] def lightweight()(implicit keySpace: KeySpace): CQLQuery = CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
       .forcePad.append(CQLSyntax.ifNotExists)
       .forcePad.append(QueryBuilder.keyspace(keySpace.name, table.tableName))
       .forcePad.append(CQLSyntax.Symbols.`(`)
@@ -68,7 +64,6 @@ class RootCreateQuery[
       .append(CQLSyntax.Symbols.`,`)
       .forcePad.append(table.defineTableKey())
       .append(CQLSyntax.Symbols.`)`)
-  }
 
   /**
    * Creates a lightweight transaction Create query, only executed if a table with the given name is not found.

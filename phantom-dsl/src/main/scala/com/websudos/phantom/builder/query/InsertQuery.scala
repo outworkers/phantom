@@ -70,7 +70,7 @@ class InsertQuery[
       table,
       init,
       jsonPart,
-      columnsPart append CQLQuery(col(table).name),
+      columnsPart append CQLQuery.empty.prependIfAbsent("\"").append(col(table).name).appendIfAbsent("\""),
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
       lightweightPart,
@@ -97,7 +97,7 @@ class InsertQuery[
     if ( jsonPart == Defaults.emptyJsonPart) {
       (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
     }
-    else {
+    else {  // TODO: INSERT JSON queries may need using and lightweight clauses added
       (jsonPart) build init
     }
   }

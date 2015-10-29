@@ -55,7 +55,11 @@ private[builder] trait Utils {
   }
 
   def join(qbs: CQLQuery*): CQLQuery = {
-    CQLQuery(qbs.map(_.queryString).mkString(", "))
+    CQLQuery(qbs.map(cql => {
+      val qs = cql.queryString.split(" ")
+      val bool =  containsUppercaseChar(qs(0))
+      if (!bool) cql.queryString else s""""${qs(0)}" ${qs(1)}"""
+    }).mkString(", "))
   }
 
   def collection(list: TraversableOnce[String]): CQLQuery = {
@@ -68,9 +72,21 @@ private[builder] trait Utils {
 
   def map(list: TraversableOnce[(String, String)]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`)
-      .append(list.map(item => {s"${item._1} : ${item._2}"}).mkString(", "))
+      .append(list.map(item => {
+        s"${item._1} : ${item._2}"
+      }).mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
+
+  def containsUppercaseChar(qs: String): Boolean = {
+    val l =for {
+      c <- qs.toCharArray()
+      if Character.isUpperCase(c)
+    } yield true
+
+    l.contains(true)
+  }
+
 }
 
 private[builder] object qUtils extends Utils

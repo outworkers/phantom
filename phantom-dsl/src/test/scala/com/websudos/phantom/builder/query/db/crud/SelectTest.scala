@@ -66,6 +66,25 @@ class SelectTest extends PhantomCassandraTestSuite {
     }
   }
 
+  "Selecting the whole row in json format" should "work fine" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).future()
+      a <- Primitives.select.json.fetch
+      b <- Primitives.select.json.where(_.pkey eqs row.pkey).one
+    } yield (a, b)
+
+    chain successful {
+      r => {
+        r._1.contains(row) shouldEqual true
+
+        r._2.isDefined shouldEqual true
+        r._2.get shouldEqual row
+      }
+    }
+  }
+
   "Selecting the whole row" should "work fine with Twitter futures" in {
     val row = gen[Primitive]
 
@@ -85,8 +104,28 @@ class SelectTest extends PhantomCassandraTestSuite {
     }
   }
 
+  "Selecting the whole row in json format" should "work fine with Twitter futures" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- Primitives.store(row).execute()
+      a <- Primitives.select.json.collect()
+      b <- Primitives.select.json.where(_.pkey eqs row.pkey).get
+    } yield (a, b)
+
+    chain successful {
+      r => {
+        r._1 contains row shouldEqual true
+
+        r._2.isDefined shouldEqual true
+        r._2.get shouldEqual row
+      }
+    }
+  }
+
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long)
     val chain = for {
       store <- Primitives.store(row).future
@@ -103,6 +142,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 2 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long)
 
     val chain = for {
@@ -121,6 +161,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 3 columns" should "work fine" in {
 
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
@@ -138,6 +179,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 3 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
@@ -155,6 +197,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 4 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
@@ -172,6 +215,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 4 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
@@ -190,6 +234,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 5 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
@@ -207,6 +252,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 5 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
@@ -224,6 +270,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 6 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
@@ -241,6 +288,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 6 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
@@ -258,6 +306,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 7 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
@@ -275,6 +324,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 7 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
@@ -292,6 +342,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 8 columns" should "work fine" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {
@@ -310,6 +361,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
   "Selecting 8 columns" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
+
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {

@@ -29,10 +29,11 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.builder.serializers.Utils
+
 import com.websudos.diesel.engine.query.AbstractQuery
 
-case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) {
+case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) with Utils {
   def create(str: String): CQLQuery = CQLQuery(str)
 }
 
@@ -41,5 +42,22 @@ object CQLQuery {
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
 
-  def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
+  def apply(collection: TraversableOnce[String]): CQLQuery = {
+    val list = collection.map(x => {
+      val bool = containsUppercaseChar(x)
+
+      if (!bool) x else CQLQuery.empty.appendIfAbsent("\"").append(x).appendIfAbsent("\"").queryString
+    })
+    CQLQuery(list.mkString(", "))
+  }
+
+  def containsUppercaseChar(qs: String): Boolean = {
+    val l = for {
+      c <- qs.toCharArray()
+      if Character.isUpperCase(c)
+    } yield true
+
+    l.contains(true)
+  }
+
 }

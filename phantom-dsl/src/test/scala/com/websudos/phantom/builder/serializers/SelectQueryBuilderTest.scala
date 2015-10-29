@@ -9,6 +9,17 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
   "The Select query builder" - {
     "should allow serialising SELECT query clauses" - {
 
+      "should allow selecting all in json format" in {
+        val qb = QueryBuilder.Select.selectJson("testTableName", "testKeyspaceName")
+
+        qb.queryString shouldEqual "SELECT JSON * FROM testKeyspaceName.testTableName"
+      }
+
+      "should allow selecting a sequence of columns in json format" in {
+        val qb = QueryBuilder.Select.selectJson("testTableName", "testKeyspaceName", "test", "test2", "test3")
+        qb.queryString shouldEqual "SELECT JSON test, test2, test3 FROM testKeyspaceName.testTableName"
+      }
+
       "should allow selecting a sequence of columns" in {
         val qb = QueryBuilder.Select.select("t", "k", "test", "test2", "test3").queryString
 

@@ -181,6 +181,7 @@ object Build extends Build {
         "org.json4s"                   %% "json4s-ext"                        % Json4SVersion,
         "org.json4s"                   %% "json4s-core"                       % Json4SVersion,
         "org.json4s"                   %% "json4s-ast"                        % Json4SVersion,
+        "org.json4s"                   %% "json4s-native"                     % Json4SVersion,
         "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
         "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
         "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
