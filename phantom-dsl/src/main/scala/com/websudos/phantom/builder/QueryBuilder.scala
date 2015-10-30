@@ -103,9 +103,9 @@ private[phantom] object QueryBuilder {
   def keyspace(keySpace: String, tableQuery: CQLQuery): CQLQuery = {
     if (tableQuery.queryString.startsWith(keySpace + ".")) {
       val l = tableQuery.queryString.split('.')
-      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(s"$keySpace.")
+      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(CQLQuery.escapeDoubleQuotesQuery(keySpace).append("."))
     } else {
-      CQLQuery.escapeDoubleQuotesQuery(tableQuery).prepend(s"$keySpace.")
+      CQLQuery.escapeDoubleQuotesQuery(tableQuery).prepend(CQLQuery.escapeDoubleQuotesQuery(keySpace).append("."))
     }
   }
 
@@ -113,9 +113,9 @@ private[phantom] object QueryBuilder {
     if (table.startsWith(keySpace + ".")) {
       val l = table.split('.')
       System.out.println(s"l => ${l.length}, table => ${table}, keyspace => ${keySpace}")
-      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(s"$keySpace.")
+      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(CQLQuery.escapeDoubleQuotesQuery(keySpace).append("."))
     } else {
-      CQLQuery.escapeDoubleQuotesQuery(CQLQuery(table)).prepend(s"$keySpace.")
+      CQLQuery.escapeDoubleQuotesQuery(CQLQuery(table)).prepend(CQLQuery.escapeDoubleQuotesQuery(keySpace).append("."))
     }
   }
 
