@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.ops
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{WhereClause, OrderingColumn, CompareAndSetClause}
 import com.websudos.phantom.builder.primitives.Primitive
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.column._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.keys.{Undroppable, Indexed}

@@ -79,14 +79,14 @@ class ClassNameExtraction extends FlatSpec with Matchers {
   }
 
   it should "correctly extract long object name definitions in nested record classes" in {
-    TestTableNames.sampleLongTextColumnDefinition.name shouldEqual "sampleLongTextColumnDefinition"
+    TestTableNames.sampleLongTextColumnDefinition.name shouldEqual """"sampleLongTextColumnDefinition""""
   }
 
   it should "correctly name Cassandra Tables" in {
-    TestTableNames.tableName shouldEqual "TestTableNames"
+    TestTableNames.tableName shouldEqual """"TestTableNames""""
   }
 
   it should "correctly extract the object name " in {
-    Test.name shouldEqual "Test"
+    Test.name shouldEqual """"Test""""
   }
 }

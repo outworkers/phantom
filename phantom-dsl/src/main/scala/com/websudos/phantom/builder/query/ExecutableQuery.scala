@@ -34,6 +34,7 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.phantom.Manager
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
@@ -51,7 +52,12 @@ trait ExecutableStatement extends CassandraOperations {
   def queryString: String = qb.terminate().queryString
 
   def statement()(implicit session: Session): Statement = {
-    session.newSimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel.orNull)
+    val c = qb.terminate().queryString
+    val s = session.newSimpleStatement(c).setConsistencyLevel(consistencyLevel.orNull)
+
+    Manager.logger.debug(s"statement called with query ${c} and statement ${s}")
+
+    s
   }
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {

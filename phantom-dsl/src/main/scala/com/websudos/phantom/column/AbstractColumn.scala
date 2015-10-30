@@ -71,7 +71,7 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
   
-  def name: String = _name
+  def name: String = CQLQuery.escapeDoubleQuotes(_name)
 
   def qb: CQLQuery = {
     CQLQuery(name).forcePad.append(cassandraType)

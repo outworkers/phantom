@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -59,19 +60,32 @@ private[builder] class UpdateQueryBuilder {
   }
 
   def setTo(column: String, value: String): CQLQuery = {
-    Utils.concat(column, CQLSyntax.Symbols.`=`, value)
+    val cql = Utils.concat(column, CQLSyntax.Symbols.`=`, value)
+    Manager.logger.debug(s"setTo called for column ${column} and value ${value}")
+    cql
   }
 
   def set(clause: CQLQuery): CQLQuery = {
-    CQLQuery(CQLSyntax.set).forcePad.append(clause)
+    val cql = CQLQuery(CQLSyntax.set).forcePad.append(clause)
+
+    Manager.logger.debug(s"set passed CQL => ${clause.queryString}, returning ${cql.queryString}")
+
+    cql
   }
 
   def where(condition: CQLQuery): CQLQuery = {
-   Utils.operator(CQLSyntax.where, condition)
+    val cql = Utils.operator(CQLSyntax.where, condition)
+
+    Manager.logger.debug(s"where passed CQL => ${condition.queryString}, returning ${cql.queryString}")
+    cql
   }
 
   def and(condition: CQLQuery): CQLQuery = {
-    Utils.operator(CQLSyntax.and, condition)
+    val cql = Utils.operator(CQLSyntax.and, condition)
+
+    Manager.logger.debug(s"and passed CQL => ${condition.queryString}, returning ${cql.queryString}")
+
+    cql
   }
 
   def clauses(clauses: List[CQLQuery], sep: String = " "): CQLQuery = {

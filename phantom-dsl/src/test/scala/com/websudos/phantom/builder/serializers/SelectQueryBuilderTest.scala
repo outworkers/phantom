@@ -12,12 +12,7 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
       "should allow selecting all in json format" in {
         val qb = QueryBuilder.Select.selectJson("testTableName", "testKeyspaceName")
 
-        qb.queryString shouldEqual "SELECT JSON * FROM testKeyspaceName.testTableName"
-      }
-
-      "should allow selecting a sequence of columns in json format" in {
-        val qb = QueryBuilder.Select.selectJson("testTableName", "testKeyspaceName", "test", "test2", "test3")
-        qb.queryString shouldEqual "SELECT JSON test, test2, test3 FROM testKeyspaceName.testTableName"
+        qb.queryString shouldEqual """SELECT JSON * FROM testKeyspaceName."testTableName""""
       }
 
       "should allow selecting a sequence of columns" in {
@@ -63,7 +58,7 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
           root, QueryBuilder.Select.Ordering.descending(BasicTable.id.name)
         )
 
-        qb.queryString shouldEqual s"SELECT * FROM phantom.BasicTable ORDER BY ${BasicTable.id.name} DESC"
+        qb.queryString shouldEqual s"""SELECT * FROM phantom."BasicTable" ORDER BY ${BasicTable.id.name} DESC"""
 
       }
     }

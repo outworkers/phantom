@@ -33,6 +33,7 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.UpdateClause
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.column._
 import com.websudos.phantom.keys._
 import shapeless.<:!<

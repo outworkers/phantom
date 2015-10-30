@@ -33,6 +33,8 @@ import com.websudos.phantom.builder.Unspecified
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
+import com.websudos.phantom.Manager
+
 
 case class Primitive(
                       pkey: String,

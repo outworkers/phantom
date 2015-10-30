@@ -1,9 +1,12 @@
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.Manager
+
 import java.net.InetAddress
 import java.text.SimpleDateFormat
 
 import org.json4s.jackson.JsonMethods
+import org.json4s.jackson.Serialization._
 import org.json4s.{Formats, _}
 
 import scala.reflect.runtime.{universe => ru}
@@ -21,7 +24,10 @@ trait JsonUtils {
   implicit val formats = defaultFormats + InetAddressSerializer + UuidSerializer
 
   def getRecord[Record](json: String)(implicit mf: Manifest[Record]): Record = {
+    Manager.logger.debug(s"getRecord called for json => ${json}")
     val jObject = JsonMethods.parse(json.substring(4, json.length - 1)).asInstanceOf[JObject] // Chomp the 'Row[' and ']' off the string
+
+    Manager.logger.debug(s"jObject parsed from json ${jObject}")
 
     val modifiedTuples = jObject.obj.map(x => (unwrap(x._1), x._2))
 
@@ -36,6 +42,11 @@ trait JsonUtils {
     else
       s.toString()
   }
+
+  def parseToJObject(json: String): JObject = JsonMethods.parse(json).asInstanceOf[JObject]
+
+  def writeToString(jObject: JObject): String = write(jObject)
+
 }
 
 case object InetAddressSerializer extends CustomSerializer[java.net.InetAddress](format => ( {

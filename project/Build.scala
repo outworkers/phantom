@@ -40,7 +40,7 @@ object Build extends Build {
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
   val FinagleVersion = "6.25.0"
-  val TwitterUtilVersion = "6.24.0"
+  val TwitterUtilVersion = "6.22.0"
   val ScroogeVersion = "3.17.0"
   val ScalatraVersion = "2.3.0"
   val PlayVersion = "2.4.0-M1"
@@ -242,6 +242,11 @@ object Build extends Build {
       "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
+      "org.json4s"                   %% "json4s-jackson"                    % Json4SVersion,
+      "org.json4s"                   %% "json4s-ext"                        % Json4SVersion,
+      "org.json4s"                   %% "json4s-core"                       % Json4SVersion,
+      "org.json4s"                   %% "json4s-ast"                        % Json4SVersion,
+      "org.json4s"                   %% "json4s-native"                     % Json4SVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(

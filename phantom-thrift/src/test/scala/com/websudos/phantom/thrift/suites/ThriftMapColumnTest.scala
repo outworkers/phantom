@@ -43,7 +43,11 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(2.seconds)
+    val createQuery = ThriftColumnTable.create.ifNotExists()
+
+    System.out.println(s"Create Query: ${createQuery.queryString}")
+
+    createQuery.future().block(2.seconds)
   }
 
   it should "put an item to a thrift map column" in {
@@ -57,8 +61,7 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val toAdd = gen[String] -> sample2
     val expected = map + toAdd
 
-
-    val insert = ThriftColumnTable.insert
+    val insertQuery = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -66,16 +69,21 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
       .value(_.thriftList, List(sample))
       .value(_.thriftMap, map)
 
-      .future()
+    val insert = insertQuery
 
+      .future()
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      update <- {
+        ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).future()
+      }
+      select <- {
+        ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
+      }
     } yield {
-      select
-    }
+        select
+      }
 
     operation.successful {
       items => {
@@ -97,20 +105,24 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
     val expected = map + toAdd
 
 
-    val insert = ThriftColumnTable.insert
+    val insertQuery = ThriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample))
       .value(_.thriftList, List(sample))
       .value(_.thriftMap, map)
-      .execute()
 
+    val insert = insertQuery.execute()
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      update <- {
+        ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
+      }
+      select <- {
+        ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      }
     } yield select
 
     operation.successful {
@@ -151,8 +163,8 @@ class ThriftMapColumnTest extends PhantomCassandraTestSuite {
       update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
       select <- ThriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
     } yield {
-      select
-    }
+        select
+      }
 
     operation.successful {
       items => {

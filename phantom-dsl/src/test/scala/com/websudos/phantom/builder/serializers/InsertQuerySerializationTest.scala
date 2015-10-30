@@ -35,13 +35,12 @@ import com.websudos.phantom.tables.Recipes
 class InsertQuerySerializationTest extends QueryBuilderTest {
 
   "An INSERT query" - {
-    "should correctly form a propert 'INSERT JSON' statement" in {
-      info(s"insert query string ${Recipes.insert().queryString}")
-      info(s"insert query string with json ${Recipes.insert().json("""{ someIntValue: 10 }""").queryString}")
+    "should correctly form a proper 'INSERT JSON' statement" in {
+      val qb = Recipes.insert.json("""{ "someIntValue":10 }""").queryString
 
-      val qb = Recipes.insert.json("""{ someIntValue: 10 }""").queryString
+      System.out.println(s"qb => ${qb}")
 
-      qb shouldEqual "INSERT INTO phantom.Recipes JSON '{ someIntValue: 10 }';"
+      qb shouldEqual """INSERT INTO phantom."Recipes" JSON '{"\"someIntValue\"":10}';"""
     }
 
     "should correctly chain the addition of columns and values to the builder" - {
@@ -49,13 +48,13 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should serialize the addition of a single value" in {
         val query = Recipes.insert.value(_.url, "test").queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test');"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url) VALUES('test');"""
       }
 
       "should serialize the addition of multiple values" in {
         val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']);"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url, ingredients) VALUES('test', ['test']);"""
       }
     }
 
@@ -64,25 +63,25 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should append a lightweight clause to a single value query" in {
         val query = Recipes.insert.value(_.url, "test").ifNotExists().queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS;"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url) VALUES('test') IF NOT EXISTS;"""
       }
 
       "should append a lightweight clause to a double value query" in {
         val query = Recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).ifNotExists().queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"""
       }
 
       "should append a lightweight clause to a single value query if used before the value set" in {
         val query = Recipes.insert.ifNotExists().value(_.url, "test").queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS;"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url) VALUES('test') IF NOT EXISTS;"""
       }
 
       "should append a lightweight clause to a double value query if used before the value set" in {
         val query = Recipes.insert.ifNotExists().value(_.url, "test").value(_.ingredients, List("test")).queryString
 
-        query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
+        query shouldEqual """INSERT INTO phantom."Recipes" (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"""
       }
 
     }

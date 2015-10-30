@@ -30,6 +30,7 @@
 package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.websudos.phantom.Manager
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -70,7 +71,7 @@ class InsertQuery[
       table,
       init,
       jsonPart,
-      columnsPart append CQLQuery.empty.prependIfAbsent("\"").append(col(table).name).appendIfAbsent("\""),
+      columnsPart append CQLQuery.escapeDoubleQuotesQuery(col(table).name),
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
       lightweightPart,

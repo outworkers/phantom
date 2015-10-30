@@ -27,9 +27,9 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .queryString
 
         if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
+          query shouldEqual s"""UPDATE phantom."Recipes" SET servings = 5 WHERE url = '$url'"""
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
+          query shouldEqual s"""UPDATE phantom."Recipes" USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"""
         }
       }
 
@@ -44,9 +44,9 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .queryString
 
         if (protocol.compareTo(ProtocolVersion.V2) == 1) {
-          query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
+          query shouldEqual s"""UPDATE phantom."Recipes" SET servings = 5 WHERE url = '$url' IF description = 'test'"""
         } else {
-          query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
+          query shouldEqual s"""UPDATE phantom."Recipes" USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"""
         }
       }
     }

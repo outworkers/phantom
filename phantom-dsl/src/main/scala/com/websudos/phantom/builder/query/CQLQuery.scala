@@ -29,15 +29,18 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.serializers.Utils
 
 import com.websudos.diesel.engine.query.AbstractQuery
+
+import org.json4s.JObject
 
 case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) with Utils {
   def create(str: String): CQLQuery = CQLQuery(str)
 }
 
-object CQLQuery {
+object CQLQuery extends JsonUtils {
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
@@ -46,7 +49,7 @@ object CQLQuery {
     val list = collection.map(x => {
       val bool = containsUppercaseChar(x)
 
-      if (!bool) x else CQLQuery.empty.appendIfAbsent("\"").append(x).appendIfAbsent("\"").queryString
+      if (!bool) x else CQLQuery.empty.append(x).queryString
     })
     CQLQuery(list.mkString(", "))
   }
@@ -60,4 +63,54 @@ object CQLQuery {
     l.contains(true)
   }
 
+  def handleCaseSensitiveFieldNames[Record](json: String): String = {
+    Manager.logger.debug(s"handleCaseSensitiveFieldNames called for json ${json}")
+
+    val jObject = parseToJObject(json)
+
+    val modifiedTuples = jObject.obj.map(x => (escapeDoubleQuotes(x._1), x._2))
+
+    writeToString(JObject(modifiedTuples))
+  }
+
+  def escapeDoubleQuotes(s: String): String = {
+    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""") && !s.startsWith("""\"""")) {
+      """"""" + s + """""""
+    } else s
+
+    Manager.logger.debug(s"escapeDoubleQuotes called with string ${s} and return value ${ret}")
+
+    ret
+  }
+
+  def escapeBackslashDoubleQuotes(s: String): String = {
+    val ret = if (containsUppercaseChar(s) && !s.startsWith("""\"""")) {
+      """\"""" + s + """\""""
+    } else s
+
+    Manager.logger.debug(s"escapeDoubleQuotes called with string ${s} and return value ${ret}")
+
+    ret
+  }
+
+  def escapeDoubleQuotesQuery(s: String): CQLQuery = {
+    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""")) {
+      CQLQuery(""""""" + s + """"""")
+    } else CQLQuery(s)
+
+    Manager.logger.debug(s"escapeDoubleQuotesQuery called with string ${s} and return value ${ret}")
+
+    ret
+  }
+
+  def escapeDoubleQuotesQuery(cql: CQLQuery): CQLQuery = {
+    val s = cql.queryString
+    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""")) {
+      CQLQuery(""""""" + s + """"""")
+    } else CQLQuery(s)
+
+    Manager.logger.debug(s"escapeDoubleQuotesQuery called with string ${s} and return value ${ret}")
+
+    ret
+  }
 }

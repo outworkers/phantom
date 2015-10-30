@@ -63,7 +63,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def tableName: String = _name
+  def tableName: String = CQLQuery.escapeDoubleQuotes(_name)
 
   def fromRow(r: Row): R
 

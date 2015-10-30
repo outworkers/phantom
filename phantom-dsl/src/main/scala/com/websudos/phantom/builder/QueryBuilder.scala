@@ -32,6 +32,7 @@ package com.websudos.phantom.builder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.serializers._
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.Manager
 
 private[phantom] object QueryBuilder {
 
@@ -44,7 +45,7 @@ private[phantom] object QueryBuilder {
   case object Collections extends CollectionModifiers
 
   case object Where extends IndexModifiers
-  
+
   case object Select extends SelectQueryBuilder
 
   case object Batch extends BatchQueryBuilder
@@ -63,8 +64,12 @@ private[phantom] object QueryBuilder {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
   }
 
-  def json(value: String): CQLQuery = {
-    CQLQuery.empty.forcePad.append(CQLSyntax.json).forcePad.append(CQLQuery.empty.singleQuote(value))
+  def json(json: String): CQLQuery = {
+    val cql = CQLQuery.empty.forcePad.append(CQLSyntax.json).forcePad.append("'").append(CQLQuery.handleCaseSensitiveFieldNames(json)).append("'")
+
+    Manager.logger.debug(s"QueryBuilder.json called for json ${json} produced query ${cql.queryString}")
+
+    cql
   }
 
   def using(qb: CQLQuery): CQLQuery = {
@@ -97,17 +102,20 @@ private[phantom] object QueryBuilder {
 
   def keyspace(keySpace: String, tableQuery: CQLQuery): CQLQuery = {
     if (tableQuery.queryString.startsWith(keySpace + ".")) {
-      tableQuery
-    }  else {
-      tableQuery.prepend(s"$keySpace.")
+      val l = tableQuery.queryString.split('.')
+      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(s"$keySpace.")
+    } else {
+      CQLQuery.escapeDoubleQuotesQuery(tableQuery).prepend(s"$keySpace.")
     }
   }
 
   def keyspace(keySpace: String, table: String): CQLQuery = {
     if (table.startsWith(keySpace + ".")) {
-      CQLQuery(table)
-    }  else {
-      CQLQuery(table).prepend(s"$keySpace.")
+      val l = table.split('.')
+      System.out.println(s"l => ${l.length}, table => ${table}, keyspace => ${keySpace}")
+      CQLQuery.escapeDoubleQuotesQuery(l(1)).prepend(s"$keySpace.")
+    } else {
+      CQLQuery.escapeDoubleQuotesQuery(CQLQuery(table)).prepend(s"$keySpace.")
     }
   }
 

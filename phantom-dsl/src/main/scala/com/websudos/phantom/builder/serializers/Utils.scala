@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
@@ -51,15 +52,29 @@ private[builder] trait Utils {
   }
 
   def join(list: TraversableOnce[String]): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
+    val cql = CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
+
+    Manager.logger.debug(s"Utils.join(TravesableOnce) produced CQL ${cql.queryString}")
+
+    cql
   }
 
   def join(qbs: CQLQuery*): CQLQuery = {
-    CQLQuery(qbs.map(cql => {
+    val c= CQLQuery(qbs.map(cql => {
       val qs = cql.queryString.split(" ")
+
       val bool =  containsUppercaseChar(qs(0))
-      if (!bool) cql.queryString else s""""${qs(0)}" ${qs(1)}"""
+      val ret = if (!bool) cql.queryString else s"""${qs(0)} ${qs(1)}"""
+      val ret2 = if (bool && qs.length == 3) ret + s""" ${qs(2)}""" else ret
+
+      Manager.logger.debug(s"Utils.join(CQLQuery) individual CQL part qs => ${qs.length}, cql => '${cql}', result => '${ret2}'")
+
+      ret2
     }).mkString(", "))
+
+    Manager.logger.debug(s"Utils.join(CQLQuery) produced CQL '${c.queryString}'")
+
+    c
   }
 
   def collection(list: TraversableOnce[String]): CQLQuery = {
@@ -71,11 +86,15 @@ private[builder] trait Utils {
   }
 
   def map(list: TraversableOnce[(String, String)]): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`{`)
+    val cql = CQLQuery(CQLSyntax.Symbols.`{`)
       .append(list.map(item => {
         s"${item._1} : ${item._2}"
       }).mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
+
+    Manager.logger.debug(s"Utils.map produced CQL ${cql.queryString}")
+
+    cql
   }
 
   def containsUppercaseChar(qs: String): Boolean = {

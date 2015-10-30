@@ -28,7 +28,7 @@
     </logger>
 
     <logger name="com.websudos.phantom">
-        <level value="info"/>
+        <level value="error"/>
     </logger>
 
     <logger name="me.prettyprint">
