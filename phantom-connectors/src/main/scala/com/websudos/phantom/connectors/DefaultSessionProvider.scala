@@ -32,7 +32,8 @@ class DefaultSessionProvider(builder: ClusterBuilder) extends SessionProvider {
 
   lazy val cluster: Cluster = {
     // TODO - the original phantom modules had .withoutJMXReporting().withoutMetrics() as defaults, discuss best choices
-    val cb = Cluster.builder
+    val cb = Cluster
+      .builder
     builder(cb).build
   }
 

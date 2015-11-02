@@ -30,23 +30,22 @@
 package com.websudos.phantom.testkit.suites
 
 import com.datastax.driver.core.{Session, VersionNumber}
-import com.websudos.phantom.connectors.{ContactPoints, KeySpace, KeySpaceDef}
+import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FeatureSpec, FlatSpec, Matchers, Suite}
 
 import scala.concurrent.duration._
 
 private object Defaults {
-  def getDefaultConnector(host: String, keySpace: String): KeySpaceDef = {
-    ContactPoints(Seq(host), 9042).keySpace(keySpace)
-  }
+
+  val defaultConnector = ContactPoint.local
+    .withClusterBuilder(_.withoutJMXReporting().withoutMetrics())
+    .keySpace("phantom")
 }
 
 trait SimpleCassandraConnector {
 
-  private[this] lazy val connector = Defaults.getDefaultConnector(host, keySpace.name)
-
-  def host: String = "localhost"
+  private[this] val connector = Defaults.defaultConnector
 
   implicit def keySpace: KeySpace
 
@@ -65,15 +64,11 @@ trait SimpleCassandraTest extends ScalaFutures
   with BeforeAndAfterAll {
   self : BeforeAndAfterAll with Suite =>
 
-  override val host = "localhost"
-
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
    * @return The default timeout value.
    */
   implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
-
-
 }
 
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest

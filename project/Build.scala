@@ -129,6 +129,7 @@ object Build extends Build {
       "-unchecked"
      ),
     libraryDependencies ++= Seq(
+      "ch.qos.logback"               % "logback-classic"                    % "1.1.3",
       "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
     ),
     fork in Test := false,
