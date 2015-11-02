@@ -48,6 +48,30 @@ sealed class OrderingModifier {
     CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clause)
   }
 
+  /**
+   * OrderBy method used in combination with an OrderQueryPart to provide final serialization
+   * of a varargs call. It will take a list of queries in the "col ordering" format and produce a full clause.
+   *
+   * Example:
+   *
+   * {{{
+   *   val clauses = Seq("name ASC", "id DESC", "datetime ASC")
+   *   val output = orderBy(clauses: _*)
+   *
+   *   output = "ORDER BY (name ASC, id DESC, datetime ASC)"
+   * }}}
+   *
+   * @param clauses A sequence of ordering clauses to include in the query.
+   * @return A final ORDER BY clause, with all the relevant query parts appended.
+   */
+  def orderBy(clauses: CQLQuery*): CQLQuery = {
+
+    clauses.size match {
+      case 1 => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clauses.head.queryString)
+      case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
+    }
+  }
+
   def orderBy(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.Selection.OrderBy).forcePad.append(clause)
   }
@@ -170,8 +194,28 @@ private[builder] class SelectQueryBuilder {
     qb.pad.append(CQLSyntax.allowFiltering)
   }
 
+  /**
+   * Creates a select clause chaining the "dateOf" operator.
+   *
+   * Example output:
+   *
+   * {{{
+   *   dateOf(column)
+   * }}}
+   *
+   * @param column The name of the column to apply the operation to.
+   * @return A CQL query wrapping the "dateOf" clause and the column.
+   */
   def dateOf(column: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.DateOf).wrapn(column)
+  }
+
+  def maxTimeuuid(dateString: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.MaxTimeUUID).wrapn(dateString)
+  }
+
+  def minTimeuuid(dateString: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.MinTimeUUID).wrapn(dateString)
   }
 
   def blobAsText(qb: CQLQuery): CQLQuery = {

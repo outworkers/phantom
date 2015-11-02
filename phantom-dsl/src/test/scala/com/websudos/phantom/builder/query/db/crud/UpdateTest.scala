@@ -78,13 +78,12 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
 
     whenReady(chain) {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-        r._2 contains row shouldEqual true
+        r._1.value shouldEqual row
+        r._2 should contain (row)
 
-        r._3.isDefined shouldEqual true
-        r._3.get shouldEqual updatedRow
-        r._4 contains updatedRow shouldEqual true
+        r._3.value shouldEqual updatedRow
+
+        r._4 should contain (updatedRow)
       }
     }
   }
@@ -101,39 +100,32 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
       mapIntToText = Map (-1 -> "&&&")
     )
 
-    val rcp = TestTable.insert
-      .value(_.key, row.key)
-      .value(_.list, row.list)
-      .value(_.setText, row.setText)
-      .value(_.mapTextToText, row.mapTextToText)
-      .value(_.setInt, row.setInt)
-      .value(_.mapIntToText, row.mapIntToText)
-      .future() flatMap {
-        _ => for {
-        a <-TestTable.select.where(_.key eqs row.key).one
-        b <-TestTable.select.fetch
-        u <- TestTable.update
-          .where(_.key eqs row.key)
-          .modify(_.list setTo updatedRow.list)
-          .and(_.setText setTo updatedRow.setText)
-          .and(_.mapTextToText setTo updatedRow.mapTextToText)
-          .and(_.setInt setTo updatedRow.setInt)
-          .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
-        a2 <- TestTable.select.where(_.key eqs row.key).one
-        b2 <- TestTable.select.fetch
-        } yield (
-          a.get === row,
-          b.contains(row),
-          a2.get === updatedRow,
-          b2.contains(updatedRow)
-        )
-    }
-    rcp successful {
+    val chain = for {
+      store <- TestTable.store(row).future()
+      a <-TestTable.select.where(_.key eqs row.key).one
+      b <-TestTable.select.fetch
+      u <- TestTable.update
+        .where(_.key eqs row.key)
+        .modify(_.list setTo updatedRow.list)
+        .and(_.setText setTo updatedRow.setText)
+        .and(_.mapTextToText setTo updatedRow.mapTextToText)
+        .and(_.setInt setTo updatedRow.setInt)
+        .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
+      a2 <- TestTable.select.where(_.key eqs row.key).one
+      b2 <- TestTable.select.fetch
+    } yield (
+      a.get === row,
+      b.contains(row),
+      a2.get === updatedRow,
+      b2.contains(updatedRow)
+    )
+
+    chain successful {
       r => {
-        assert(r._1)
-        assert(r._2)
-        assert(r._3)
-        assert(r._4)
+        r._1 shouldEqual true
+        r._2 shouldEqual true
+        r._3 shouldEqual true
+        r._4 shouldEqual true
       }
     }
   }

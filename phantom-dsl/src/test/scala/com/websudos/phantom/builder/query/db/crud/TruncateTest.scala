@@ -66,10 +66,10 @@ class TruncateTest extends PhantomCassandraTestSuite {
 
     result successful {
       r => {
-        r._1.size shouldEqual 4
+        r._1 should have size 4
         info (s"inserted exactly ${r._1.size} records")
 
-        r._2.size shouldEqual 0
+        r._2 should have size 0
         info (s"got exactly ${r._2.size} records")
       }
     }
@@ -96,10 +96,10 @@ class TruncateTest extends PhantomCassandraTestSuite {
 
     result successful {
       r => {
-        r._1.size shouldEqual 4
+        r._1 should have size 4
         info (s"inserted exactly ${r._1.size} records")
 
-        r._2.size shouldEqual 0
+        r._2 should have size 0
         info (s"got exactly ${r._2.size} records")
       }
     }

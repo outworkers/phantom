@@ -56,14 +56,16 @@ import com.datastax.driver.core.Session
  * instances.
  *
  * @param name the name of the keySpace
- * @param provider the provider for this keySpace
+ * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(val name: String, val provider: SessionProvider) { outer =>
+class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
+
+  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder)
 
   /**
    * The Session associated with this keySpace.
    */
-  lazy val session: Session = provider.getSession(name)
+  lazy val session: Session = provider.session
 
 
   def cassandraVersions: Set[VersionNumber] = {
@@ -110,7 +112,6 @@ class KeySpaceDef(val name: String, val provider: SessionProvider) { outer =>
     def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
 
   }
-
 
 }
 
