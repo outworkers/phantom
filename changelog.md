@@ -15,6 +15,13 @@ Changelog
     <li><a href="#version-1.3.0">1.3.0 - 05.09.2014</a></li>
     <li><a href="#version-1.4.0">1.4.0 - 07.11.2014</a></li>
     <li><a href="#version-1.5.0">1.5.0 - 05.01.2015</a></li>
+    <li><a href="#version-1.8.0">1.8.0 - 05.03.2015</a></li>
+    <li><a href="#version-1.8.12">1.8.12 - 21.05.2015</a></li>
+    <li><a href="#version-1.9.10">1.9.10 - 04.07.2015</a></li>
+    <li><a href="#version-1.10.1">1.10.1 - 18.07.2015</a></li>
+    <li><a href="#version-1.11.0">1.11.0 - 16.08.2015</a></li>
+    <li><a href="#version-1.12.0">1.12.0 - 03.09.2015</a></li>
+    <li><a href="#version-1.13.0">1.13.0 - 02.11.2015</a></li>
 </ul>
 
 
@@ -199,3 +206,14 @@ instead of a nullable field.
 and `org.joda.time.DateTime`.
 - Replaced `BatchQuery` serialization to use `com.datastax.driver.core.BatchStatement` internally.
 - Removed superfluous check in `ExecutableQuery` for nullable consistency level definitions.
+
+<a id="version-1.13.0">1.13.0</a>
+================================
+
+- Added support for `maxTimeuuid` and `minTimeuuid` in query columns.
+- Added support for multiple `orderBy` statements in a single clause.
+- Removed implementation of `SessionProvider` in favour of a single global session object inside phantom.
+- Fixed implementation of logging by using logf4j12-over-slf4j bridge and logback-classic.
+- Removed IPv6 connectivity support from the Travis build.
+- Added `.jvmopts` to the Travis build configuration to prevent automated attempts to IPv6 connections in the Datastax driver.
+- Removed a lot of `.get` accessor calls in the test methods in favour of the idiomatic `OptionValues` DSL from ScalaTest.

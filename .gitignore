@@ -15,6 +15,10 @@ atlassian-ide-plugin.xml
 # Project statistics
 stats
 
+# Java heap dump files
+java_pid*
+
+
 # InteliJ IDEA
 *.iml
 

@@ -44,7 +44,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    PrimitivesJoda.create.ifNotExists().future().block(2.seconds)
+    PrimitivesJoda.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "get the correct count for batch queries" in {
@@ -129,8 +129,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -165,8 +164,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -189,8 +187,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -213,8 +210,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -254,10 +250,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     w successful {
       res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row2
+        res._1.value shouldEqual row2
 
-        res._2.isEmpty shouldEqual true
+        res._2 shouldBe empty
       }
     }
   }
@@ -297,10 +292,9 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     w successful {
       res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row2
+        res._1.value shouldEqual row2
 
-        res._2.isEmpty shouldEqual true
+        res._2 shouldBe empty
       }
     }
   }
@@ -355,8 +349,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }
@@ -384,8 +377,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 15)
+        res.value.int shouldEqual (row.int + 15)
       }
     }
   }
@@ -414,8 +406,7 @@ class UnloggedBatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 15)
+        res.value.int shouldEqual (row.int + 15)
       }
     }
   }

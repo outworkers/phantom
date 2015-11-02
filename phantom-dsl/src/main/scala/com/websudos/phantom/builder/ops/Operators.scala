@@ -29,22 +29,57 @@
  */
 package com.websudos.phantom.builder.ops
 
+import java.util.Date
+
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.SelectClause
+import com.websudos.phantom.builder.clauses.OperatorClause
+import com.websudos.phantom.builder.clauses.OperatorClause.Condition
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.TimeUUIDColumn
+import org.joda.time.DateTime
 
-sealed class Operator {}
+sealed class Operator
 
 sealed class DateOfOperator extends Operator {
 
-  def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): SelectClause.Condition = {
-    new SelectClause.Condition(QueryBuilder.Select.dateOf(pf.name))
+  def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): OperatorClause.Condition = {
+    new OperatorClause.Condition(QueryBuilder.Select.dateOf(pf.name))
+  }
+}
+
+sealed class MaxTimeUUID extends Operator {
+
+  private[this] val datePrimitive = implicitly[Primitive[Date]]
+  private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
+
+  def apply(date: Date): OperatorClause.Condition = {
+    new Condition(QueryBuilder.Select.maxTimeuuid(datePrimitive.asCql(date)))
   }
 
+  def apply(date: DateTime): OperatorClause.Condition = {
+    new Condition(QueryBuilder.Select.maxTimeuuid(dateTimePrimitive.asCql(date)))
+  }
 }
+
+sealed class MinTimeUUID extends Operator {
+
+  private[this] val datePrimitive = implicitly[Primitive[Date]]
+  private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
+
+  def apply(date: Date): OperatorClause.Condition = {
+    new Condition(QueryBuilder.Select.minTimeuuid(datePrimitive.asCql(date)))
+  }
+
+  def apply(date: DateTime): OperatorClause.Condition = {
+    new Condition(QueryBuilder.Select.minTimeuuid(dateTimePrimitive.asCql(date)))
+  }
+}
+
 
 trait Operators {
   object dateOf extends DateOfOperator
+  object minTimeuuid extends MinTimeUUID
+  object maxTimeuuid extends MaxTimeUUID
 }
 

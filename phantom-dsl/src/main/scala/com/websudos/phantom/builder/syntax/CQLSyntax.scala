@@ -149,6 +149,8 @@ object CQLSyntax {
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
     val OrderBy = "ORDER BY"
+    val MaxTimeUUID = "maxTimeuuid"
+    val MinTimeUUID = "minTimeuuid"
   }
 
   object Types {

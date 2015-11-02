@@ -39,7 +39,7 @@ import org.scalatest.time.SpanSugar._
 
 class PartialSelectTest extends PhantomCassandraTestSuite {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  override implicit val patience: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -59,14 +59,13 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
     chain successful {
       result => {
         result._1 shouldEqual List(row.pkey)
-        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
+        result._2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }
 
   "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
     val row = gen[Primitive]
-
 
     val chain = for {
       truncate <- Primitives.truncate.execute()
@@ -77,8 +76,8 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       result => {
-        result._1.toList shouldEqual List(row.pkey)
-        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
+        result._1 shouldEqual List(row.pkey)
+        result._2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }

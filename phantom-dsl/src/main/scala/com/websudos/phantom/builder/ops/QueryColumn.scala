@@ -34,6 +34,7 @@ import com.websudos.phantom.builder.clauses.WhereClause
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.builder.clauses.OperatorClause
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -55,29 +56,74 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.symbol))
   }
 
+  def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.qb.queryString))
+  }
+
+
   def lt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lt(col.name, p.asCql(value)))
   }
 
-  def < = lt _
+  def <(value: RR): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lt(col.name, p.asCql(value)))
+  }
+
+  def lt(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lt(col.name, value.qb.queryString))
+  }
+
+  def <(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lt(col.name, value.qb.queryString))
+  }
 
   def lte(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
   }
 
-  def <= = lte _
+  def <=(value: RR): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lte(col.name, implicitly[Primitive[RR]].asCql(value)))
+  }
+
+  def lte(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lte(col.name, value.qb.queryString))
+  }
+
+  def <=(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lte(col.name, value.qb.queryString))
+  }
 
   def gt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gt(col.name, p.asCql(value)))
   }
 
-  def > = gt _
+  def >(value: RR): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gt(col.name, p.asCql(value)))
+  }
+
+  def gt(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gt(col.name, value.qb.queryString))
+  }
+
+  def >(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gt(col.name, value.qb.queryString))
+  }
 
   def gte(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gte(col.name, p.asCql(value)))
   }
 
-  def >= = gte _
+  def >=(value: RR): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gte(col.name, p.asCql(value)))
+  }
+
+  def gte(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gte(col.name, value.qb.queryString))
+  }
+
+  def >=(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gte(col.name, value.qb.queryString))
+  }
 
   def in(values: List[RR]): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.in(col.name, values.map(p.asCql)))

@@ -58,8 +58,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     chain successful {
       res => {
-        res.isEmpty shouldEqual false
-        res.head shouldEqual 0L
+        res.headOption.value shouldEqual 0L
       }
     }
   }
@@ -81,8 +80,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     chain successful {
       res => {
-        res.isDefined shouldBe true
-        res.get shouldEqual limit.toLong
+        res.value shouldEqual limit.toLong
       }
     }
   }
@@ -104,8 +102,7 @@ class CountTest extends PhantomCassandraTestSuite {
 
     chain successful {
       res => {
-        res.isDefined shouldBe true
-        res.get shouldEqual limit.toLong
+        res.value shouldEqual limit.toLong
       }
     }
   }
