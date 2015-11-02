@@ -170,8 +170,28 @@ private[builder] class SelectQueryBuilder {
     qb.pad.append(CQLSyntax.allowFiltering)
   }
 
+  /**
+   * Creates a select clause chaining the "dateOf" operator.
+   *
+   * Example output:
+   *
+   * {{{
+   *   dateOf(column)
+   * }}}
+   *
+   * @param column The name of the column to apply the operation to.
+   * @return A CQL query wrapping the "dateOf" clause and the column.
+   */
   def dateOf(column: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.DateOf).wrapn(column)
+  }
+
+  def maxTimeuuid(dateString: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.MaxTimeUUID).wrapn(dateString)
+  }
+
+  def minTimeuuid(dateString: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.MinTimeUUID).wrapn(dateString)
   }
 
   def blobAsText(qb: CQLQuery): CQLQuery = {
