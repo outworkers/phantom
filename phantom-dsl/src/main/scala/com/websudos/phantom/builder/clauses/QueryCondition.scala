@@ -90,7 +90,7 @@ object UpdateClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
-object SelectClause extends Clause {
+object OperatorClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 

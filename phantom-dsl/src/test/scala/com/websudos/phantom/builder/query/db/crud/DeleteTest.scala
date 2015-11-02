@@ -58,10 +58,8 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
+        r._1.value shouldEqual row
+        r._2 shouldBe empty
       }
     }
   }
@@ -78,10 +76,8 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
+        r._1.value shouldEqual row
+        r._2 shouldBe empty
       }
     }
   }
@@ -98,10 +94,8 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
+        r._1.value shouldEqual row
+        r._2 shouldBe empty
       }
     }
   }
@@ -118,10 +112,8 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
-
-        r._2.isEmpty shouldEqual true
+        r._1.value shouldEqual row
+        r._2 shouldBe empty
       }
     }
   }
@@ -138,11 +130,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
+        r._1.value shouldEqual row
 
         info("The row should not have been deleted as the condition was not met")
-        r._1.isDefined shouldEqual true
+        r._2 shouldBe defined
       }
     }
   }
@@ -159,11 +150,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1.isDefined shouldEqual true
-        r._1.get shouldEqual row
+        r._1.value shouldEqual row
 
         info("The row should not have been deleted as the condition was not met")
-        r._1.isDefined shouldEqual true
+        r._2 shouldBe defined
       }
     }
   }

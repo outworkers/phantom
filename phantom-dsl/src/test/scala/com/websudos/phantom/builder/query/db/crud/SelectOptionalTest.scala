@@ -60,23 +60,22 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
       b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
-
     rcp successful {
       r => {
-        r.isDefined shouldEqual true
-        r.get.bDecimal shouldEqual row.bDecimal
-        r.get.bi shouldEqual row.bi
-        r.get.boolean shouldEqual row.boolean
-        r.get.date shouldEqual row.date
-        r.get.double shouldEqual row.double
-        r.get.float shouldEqual row.float
-        r.get.inet shouldEqual row.inet
-        r.get.int shouldEqual row.int
-        r.get.long shouldEqual row.long
-        r.get.pkey shouldEqual row.pkey
-        r.get.string shouldEqual row.string
-        r.get.timeuuid shouldEqual row.timeuuid
-        r.get.uuid shouldEqual row.uuid
+        r shouldBe defined
+        r.value.bDecimal shouldEqual row.bDecimal
+        r.value.bi shouldEqual row.bi
+        r.value.boolean shouldEqual row.boolean
+        r.value.date shouldEqual row.date
+        r.value.double shouldEqual row.double
+        r.value.float shouldEqual row.float
+        r.value.inet shouldEqual row.inet
+        r.value.int shouldEqual row.int
+        r.value.long shouldEqual row.long
+        r.value.pkey shouldEqual row.pkey
+        r.value.string shouldEqual row.string
+        r.value.timeuuid shouldEqual row.timeuuid
+        r.value.uuid shouldEqual row.uuid
       }
     }
   }

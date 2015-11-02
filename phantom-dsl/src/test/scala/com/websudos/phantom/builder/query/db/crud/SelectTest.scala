@@ -39,7 +39,6 @@ import com.websudos.util.testing._
 
 class SelectTest extends PhantomCassandraTestSuite {
 
-
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
@@ -58,10 +57,8 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r._1 should contain (row)
+        r._2.value shouldEqual row
       }
     }
   }
@@ -77,10 +74,8 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r._1 contains row shouldEqual true
-
-        r._2.isDefined shouldEqual true
-        r._2.get shouldEqual row
+        r._1 should contain (row)
+        r._2.value shouldEqual row
       }
     }
   }
@@ -88,6 +83,7 @@ class SelectTest extends PhantomCassandraTestSuite {
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
+
     val chain = for {
       store <- Primitives.store(row).future
       get <- Primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
@@ -95,8 +91,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -112,8 +107,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -130,8 +124,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldEqual expected
       }
     }
   }
@@ -147,8 +140,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -164,8 +156,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -181,8 +172,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -199,8 +189,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -216,8 +205,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -233,8 +221,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -250,8 +237,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -267,8 +253,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -284,8 +269,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -302,8 +286,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldBe expected
+        r.value shouldBe expected
       }
     }
   }
@@ -320,8 +303,7 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     chain successful {
       r => {
-        r.isDefined shouldBe true
-        r.get shouldEqual expected
+        r.value shouldBe expected
       }
     }
   }
