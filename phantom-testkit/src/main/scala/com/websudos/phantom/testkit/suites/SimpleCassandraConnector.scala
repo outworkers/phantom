@@ -72,8 +72,6 @@ trait SimpleCassandraTest extends ScalaFutures
    * @return The default timeout value.
    */
   implicit def patience: PatienceConfiguration.Timeout = timeout(7 seconds)
-
-
 }
 
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest with OptionValues
