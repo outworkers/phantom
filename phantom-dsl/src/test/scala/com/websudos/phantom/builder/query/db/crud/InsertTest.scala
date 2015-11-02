@@ -54,13 +54,12 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- Primitives.store(row).future()
       one <- Primitives.select.where(_.pkey eqs row.pkey).one
-      multi <- Primitives.select.fetch
-    } yield (one.get === row, multi contains row)
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res shouldBe defined
+        res shouldEqual row
       }
     }
 
@@ -73,12 +72,12 @@ class InsertTest extends PhantomCassandraTestSuite {
       store <- Primitives.store(row).execute()
       one <- Primitives.select.where(_.pkey eqs row.pkey).get
       multi <- Primitives.select.collect()
-    } yield (one.get === row, multi contains row)
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res shouldBe defined
+        res shouldEqual row
       }
     }
   }
