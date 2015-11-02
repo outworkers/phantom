@@ -32,48 +32,11 @@ package com.websudos.phantom
 import java.util.concurrent.Executors
 
 import com.google.common.util.concurrent.MoreExecutors
-import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, ExecutableStatementList}
-import com.websudos.phantom.connectors.KeySpace
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.ExecutionContext
 
-sealed class AutoCreate extends CreateImplicits {
-
-  protected[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
-  private[phantom] lazy val tableList = _tables.toList
-
-  def autoinit()(implicit keySpace: KeySpace): ExecutableStatementList = {
-    new ExecutableStatementList(creations())
-  }
-
-  private[this] def creations()(implicit keySpace: KeySpace): List[CQLQuery] = {
-    tableList map {
-      table => table.create.ifNotExists().qb
-    }
-  }
-
-  private[this] def truncations()(implicit keySpace: KeySpace): List[CQLQuery] = {
-    tableList map {
-      table => table.truncate().qb
-    }
-  }
-
-  def autocreate()(implicit keySpace: KeySpace): ExecutableStatementList = {
-    new ExecutableStatementList(creations())
-  }
-
-  def autotruncate()(implicit keySpace: KeySpace): ExecutableStatementList = {
-    new ExecutableStatementList(truncations())
-  }
-
-  private[phantom] def addTable(table: CassandraTable[_, _]): Unit = {
-    _tables += table
-  }
-}
-
-object Manager extends AutoCreate {
+object Manager {
 
   lazy val cores = Runtime.getRuntime.availableProcessors()
 
