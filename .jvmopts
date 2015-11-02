@@ -1,3 +1,5 @@
+-Xmx1G
 -Djava.net.preferIPv4Stack=true
 -Dio.netty.resourceLeakDetection
--Xmx2G
+-XX:PermSize=256m
+-XX:MaxPermSize=512m
