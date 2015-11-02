@@ -30,11 +30,16 @@
 package com.websudos.phantom.example.basics
 
 import com.datastax.driver.core.Session
-import com.websudos.phantom.connectors.{ContactPoints, KeySpace, SimpleConnector}
+import com.websudos.phantom.connectors._
 import com.websudos.phantom.zookeeper.ZkContactPointLookup
 
 trait KeyspaceDefinition {
-  implicit val keySpace = KeySpace("phantom_example")
+  implicit val space = KeySpace("phantom_example")
+}
+
+object Defaults extends KeyspaceDefinition {
+
+  val connector = ContactPoint.local.keySpace(space.name)
 }
 
 /**
@@ -46,7 +51,7 @@ trait KeyspaceDefinition {
  *
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
-trait ExampleConnector extends SimpleConnector with KeyspaceDefinition
+trait ExampleConnector extends Defaults.connector.Connector
 
 /**
  * Now you might ask yourself how to use service discovery with phantom. The Datastax Java Driver can automatically connect to multiple clusters.
@@ -57,10 +62,10 @@ trait ExampleConnector extends SimpleConnector with KeyspaceDefinition
  * .." sequence. All these settings are trivial to override in the below connector and you can adjust all the settings to fit your environment.
  */
 object ZkDefaults extends KeyspaceDefinition {
-  val connector = ZkContactPointLookup.local.keySpace(keySpace.name)
+  val connector = ZkContactPointLookup.local.keySpace(space.name)
 }
 
-trait DefaultZookeeperConnector extends SimpleConnector {
+trait DefaultZookeeperConnector extends RootConnector {
   override implicit lazy val session: Session = ZkDefaults.connector.session
 }
 
