@@ -30,7 +30,7 @@
 package com.websudos.phantom.testkit.suites
 
 
-import com.datastax.driver.core.{Session, VersionNumber}
+import com.datastax.driver.core.{PoolingOptions, Session, VersionNumber}
 import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
 import org.scalatest._
 import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
@@ -40,9 +40,13 @@ import scala.concurrent.duration._
 
 private object Defaults {
 
-  val defaultConnector = ContactPoint.local
-    .withClusterBuilder(_.withoutJMXReporting().withoutMetrics())
-    .keySpace("phantom")
+  final val defaultConnector = this.synchronized {
+
+    ContactPoint.local
+      .withClusterBuilder(
+        _.withoutJMXReporting().withoutMetrics().withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
+      ).keySpace("phantom")
+  }
 }
 
 trait SimpleCassandraConnector {

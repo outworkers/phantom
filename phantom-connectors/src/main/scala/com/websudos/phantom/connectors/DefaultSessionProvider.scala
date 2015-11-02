@@ -15,6 +15,8 @@
  */
 package com.websudos.phantom.connectors
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.datastax.driver.core.{Cluster, Session}
 
 import scala.concurrent.blocking
@@ -27,13 +29,17 @@ import scala.concurrent.blocking
  */
 class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
 
-  lazy val cluster: Cluster = {
+
+  val counter = new AtomicInteger()
+
+
+  val cluster: Cluster = {
 
     val cb = Cluster.builder
-      .withoutJMXReporting()
-      .withoutMetrics()
 
-    builder(cb).build
+    val composed = builder(cb).build
+
+    composed
   }
 
   /**
@@ -41,7 +47,10 @@ class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) exten
    * the specified Session.
    */
   protected[this] def initKeySpace(session: Session, keySpace: String): Session = blocking {
-    session.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
+    blocking {
+      session.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
+    }
+
     session
   }
 
