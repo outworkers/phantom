@@ -179,6 +179,7 @@ class CreateQuery[
             }
           }) future() map {
             _ => {
+              Console.println("Created secondary indexes")
               Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
               res
             }
