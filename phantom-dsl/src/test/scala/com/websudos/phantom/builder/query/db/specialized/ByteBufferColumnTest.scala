@@ -31,8 +31,7 @@ class ByteBufferColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual buffer
+        res.value shouldEqual buffer
       }
     }
   }

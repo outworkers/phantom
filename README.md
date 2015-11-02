@@ -76,11 +76,14 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [ING](http://www.ing.com/en.htm)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Pellucid Analytics](http://www.pellucid.com/)
-- [Sphonic](http://www.sphonic.com/)
-- [websudos](https://www.websudos.com/)
+- [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
+- [ING](http://www.ing.com/en.htm)
 - [Equens](http://www.equens.com/)
+- [websudos](https://www.websudos.com/)
 - [VictorOps](http://www.victorops.com/)
 - [Socrata](http://www.socrata.com) 
+- [Sphonic](http://www.sphonic.com/)
+- [Anomaly42](http://www.anomaly42.com/)
 
 
 <a id="contributors">Contributors</a>

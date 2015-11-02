@@ -1,11 +1,11 @@
 package com.websudos.phantom.builder.batch
 
-import org.joda.time.DateTime
-import com.websudos.phantom.dsl.Batch
-import com.websudos.phantom.tables.{PrimitivesJoda, JodaRow}
+import com.websudos.phantom.dsl.{Batch, _}
+import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
 import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
-import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
+import org.joda.time.DateTime
+import org.scalatest.OptionValues._
 
 class BatchQueryTest extends PhantomCassandraTestSuite {
 
@@ -44,8 +44,7 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -80,8 +79,7 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -104,8 +102,7 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -128,8 +125,7 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -169,10 +165,8 @@ class BatchQueryTest extends PhantomCassandraTestSuite {
 
     w successful {
       res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row2
-
-        res._2.isEmpty shouldEqual true
+        res._1.value shouldEqual row2
+        res._2 shouldNot be (defined)
       }
     }
   }

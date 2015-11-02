@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.iteratee
 
-import play.api.libs.iteratee.{Iteratee => PIteratee}
+import play.api.libs.iteratee.{Enumerator => PlayEnum, Iteratee => PIteratee}
 
 import scala.concurrent.ExecutionContext
 
@@ -43,6 +43,17 @@ object Iteratee {
 
   def chunks[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] = {
     PIteratee.getChunks
+  }
+
+  /**
+   *
+   * @param f
+   * @param ec
+   * @tparam E
+   * @return
+   */
+  def count[E](f: E => Long)(implicit ec: ExecutionContext): PIteratee[E, Long] = {
+    PIteratee.fold(0L)((acc, _) => acc + 1)
   }
 
   def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PIteratee[E, Unit] = PIteratee.foreach(f: E => Unit)

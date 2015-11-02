@@ -65,6 +65,7 @@ object CQLSyntax {
 
   val insert = "INSERT"
   val ifNotExists = "IF NOT EXISTS"
+  val ifExists = "IF EXISTS"
   val temporary = "TEMPORARY"
 
   val where = "WHERE"
@@ -148,6 +149,8 @@ object CQLSyntax {
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
     val OrderBy = "ORDER BY"
+    val MaxTimeUUID = "maxTimeuuid"
+    val MinTimeUUID = "minTimeuuid"
   }
 
   object Types {

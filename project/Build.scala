@@ -49,6 +49,7 @@ object Build extends Build {
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
   val DieselEngineVersion = "0.2.2"
+  val Slf4jVersion = "1.7.12"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -61,7 +62,7 @@ object Build extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
+    licenses += ("Websudos License", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
@@ -82,7 +83,7 @@ object Build extends Build {
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
       case "2.10.5" => "3.0-M1"
-      case _ => "3.0-M2"
+      case _ => "3.0-M6"
     }
   }
 
@@ -102,7 +103,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.12.3",
+    version := "1.13.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -128,12 +129,17 @@ object Build extends Build {
       "-feature",
       "-unchecked"
      ),
+    libraryDependencies ++= Seq(
+      "ch.qos.logback"               % "logback-classic"                    % "1.1.3",
+      "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
+    ),
     fork in Test := false,
-    javaOptions in Test ++= Seq("-Xmx2G"),
+    javaOptions in Test ++= Seq("-Xmx2G", "-Djava.net.preferIPv4Stack=true", "-Dio.netty.resourceLeakDetection"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
-    fork in PerformanceTest := false
+    fork in PerformanceTest := false,
+    parallelExecution in ThisBuild := false
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
@@ -183,7 +189,7 @@ object Build extends Build {
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-        "org.slf4j"                    % "slf4j-log4j12"                      % "1.7.12" % "test, provided",
+        "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
@@ -234,6 +240,7 @@ object Build extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
+      "org.slf4j"                    % "slf4j-log4j12"                      % Slf4jVersion % "test, provided",
       "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,

@@ -71,8 +71,8 @@ class ScalatraBootstrap extends LifeCycle with PhantomCassandraConnector {
 
     // Create cassandra keyspace in startup
     // Create prices tables
-    Await.ready(EquityPrices.create.ifNotExists().future(), 2.seconds)
-    Await.ready(OptionPrices.create.future(), 2.seconds)
+    Await.ready(EquityPrices.create.ifNotExists().future(), 5.seconds)
+    Await.ready(OptionPrices.create.ifNotExists().future(), 5.seconds)
 
     // Insert prices
     val insertApplePrices = ScalatraBootstrap.ApplePrices.map(EquityPrices.insertPrice).foldLeft(Batch.unlogged) {

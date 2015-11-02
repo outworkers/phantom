@@ -47,8 +47,8 @@ class DeleteQuery[
   PS <: PSBound
 ](table: Table,
   init: CQLQuery,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  wherePart : WherePart = WherePart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
@@ -137,8 +137,8 @@ sealed class ConditionalDeleteQuery[
   Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  wherePart : WherePart = WherePart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
  ) extends ExecutableStatement with Batchable {
 

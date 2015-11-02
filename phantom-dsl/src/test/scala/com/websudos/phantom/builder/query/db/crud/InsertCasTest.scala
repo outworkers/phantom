@@ -74,19 +74,19 @@ class InsertCasTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         info("The one query should return a record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.get shouldEqual row
+        res._1.value shouldEqual row
 
         info("And the count should be present")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.get shouldEqual 1L
+        res._2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3.size shouldEqual 1
+        res._3 should have size 1
       }
     }
   }
@@ -116,19 +116,19 @@ class InsertCasTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         info("The one query should return a record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.get shouldEqual row
+        res._1.value shouldEqual row
 
         info("And the count should be present")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.get shouldEqual 1L
+        res._2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3.size shouldEqual 1
+        res._3 should have size 1
       }
     }
   }
@@ -160,19 +160,19 @@ class InsertCasTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         info("The one query should return a record")
-        res._1.isDefined shouldEqual true
+        res._1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.get shouldEqual row
+        res._1.value shouldEqual row
 
         info("And the count should be present")
-        res._2.isDefined shouldEqual true
+        res._2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.get shouldEqual 1L
+        res._2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3.size shouldEqual 1
+        res._3 should have size 1
       }
     }
   }

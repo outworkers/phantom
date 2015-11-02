@@ -30,7 +30,7 @@
 package com.websudos.phantom.udt
 
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit.suites.SimpleCassandraConnector
 
 // case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
 

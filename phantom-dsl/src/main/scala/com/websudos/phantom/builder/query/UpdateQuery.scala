@@ -47,10 +47,10 @@ class UpdateQuery[
   PS <: PSBound
 ](table: Table,
   init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null, consistencyLevel) with Batchable {
 
@@ -81,13 +81,25 @@ class UpdateQuery[
     new UpdateQuery[T, R, L, O, S, C, P](
       t,
       q,
-      Defaults.EmptyUsingPart,
-      Defaults.EmptyWherePart,
-      Defaults.EmptySetPart,
-      Defaults.EmptyCompareAndSetPart,
+      UsingPart.empty,
+      WherePart.empty,
+      SetPart.empty,
+      CompareAndSetPart.empty,
       consistencyLevel
     )
   }
+
+  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new UpdateQuery(
+      table,
+      init, usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(seconds.toString),
+      casPart,
+      consistencyLevel
+    )
+  }
+
 
   /**
    * The where method of a select query.
@@ -148,10 +160,10 @@ sealed class AssignmentsQuery[
   Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
@@ -165,8 +177,28 @@ sealed class AssignmentsQuery[
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.using(QueryBuilder.timestamp(init, value.toString))
+    val query = QueryBuilder.timestamp(init, value.toString)
     new AssignmentsQuery(table, init, usingPart append query, wherePart, setPart, casPart, consistencyLevel)
+  }
+
+
+  def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new AssignmentsQuery(
+      table,
+      init, usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(seconds.toString),
+      casPart,
+      consistencyLevel
+    )
+  }
+
+  def ttl(duration: scala.concurrent.duration.FiniteDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.toSeconds)
+  }
+
+  def ttl(duration: com.twitter.util.Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.inSeconds)
   }
 
   /**
@@ -185,6 +217,18 @@ sealed class AssignmentsQuery[
       wherePart,
       setPart,
       casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      consistencyLevel
+    )
+  }
+
+  def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.ifExists,
       consistencyLevel
     )
   }
@@ -223,10 +267,10 @@ sealed class ConditionalQuery[
   Chain <: WhereBound
 ](table: Table,
   val init: CQLQuery,
-  usingPart: UsingPart = Defaults.EmptyUsingPart,
-  wherePart : WherePart = Defaults.EmptyWherePart,
-  setPart : SetPart = Defaults.EmptySetPart,
-  casPart : CompareAndSetPart = Defaults.EmptyCompareAndSetPart,
+  usingPart: UsingPart = UsingPart.empty,
+  wherePart : WherePart = WherePart.empty,
+  setPart : SetPart = SetPart.empty,
+  casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
@@ -269,6 +313,25 @@ sealed class ConditionalQuery[
         casPart = casPart
       )
     }
+  }
+
+  def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    new ConditionalQuery(
+      table,
+      init, usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(seconds.toString),
+      casPart,
+      consistencyLevel
+    )
+  }
+
+  def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.toSeconds)
+  }
+
+  def ttl(duration: com.twitter.util.Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+    ttl(duration.inSeconds)
   }
 
 }

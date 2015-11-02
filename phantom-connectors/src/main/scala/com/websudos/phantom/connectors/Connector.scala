@@ -62,7 +62,7 @@ trait Connector {
    * query and update operations in phantom
    * table implementations.
    */
-  implicit lazy val session: Session = provider.getSession(keySpace)
+  implicit lazy val session: Session = provider.session
 
 }
 
@@ -70,12 +70,4 @@ private object Defaults {
   def getConnector(space: KeySpace) = {
     ContactPoint.local.keySpace(space.name)
   }
-}
-
-trait SimpleConnector {
-
-  implicit def keySpace: KeySpace
-
-  implicit lazy val session: Session = Defaults.getConnector(keySpace).session
-
 }

@@ -30,6 +30,12 @@
 package com.websudos.phantom.builder.query
 
 
+import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
+
+import scala.annotation.implicitNotFound
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
+import scala.util.Try
+
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
@@ -55,10 +61,10 @@ class SelectQuery[
   table: Table,
   rowFunc: Row => Record,
   val init: CQLQuery,
-  wherePart: WherePart = Defaults.EmptyWherePart,
-  orderPart: OrderPart = Defaults.EmptyOrderPart,
-  limitedPart: LimitedPart = Defaults.EmptyLimitPart,
-  filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+  wherePart: WherePart = WherePart.empty,
+  orderPart: OrderPart = OrderPart.empty,
+  limitedPart: LimitedPart = LimitedPart.empty,
+  filteringPart: FilteringPart = FilteringPart.empty,
   count: Boolean = false,
   override val consistencyLevel: Option[ConsistencyLevel] = None,
   override val parameters: Seq[Any] = Seq.empty
@@ -245,14 +251,13 @@ class SelectQuery[
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
-  final def orderBy(clause: Table => OrderingClause.Condition)
-                   (implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
+  final def orderBy(clauses: (Table => OrderingClause.Condition)*)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
     new SelectQuery(
       table,
       rowFunc,
       init,
       wherePart,
-      orderPart append QueryBuilder.Select.Ordering.orderBy(clause(table).qb),
+      orderPart append clauses.map(_(table).qb).toList,
       limitedPart,
       filteringPart,
       count,
@@ -268,7 +273,7 @@ class SelectQuery[
    */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def one()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[Record]] = {
-    val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
       table = table,
@@ -292,7 +297,7 @@ class SelectQuery[
    */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): TwitterFuture[Option[Record]] = {
-    val enforceLimit = if (count) Defaults.EmptyLimitPart else limitedPart append QueryBuilder.limit(1)
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(
       table = table,
@@ -330,11 +335,11 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
       table,
       extractCount,
       QueryBuilder.Select.count(table.tableName, keySpace.name),
-      Defaults.EmptyWherePart,
-      Defaults.EmptyOrderPart,
-      Defaults.EmptyLimitPart,
-      Defaults.EmptyFilteringPart,
-      true
+      WherePart.empty,
+      OrderPart.empty,
+      LimitedPart.empty,
+      FilteringPart.empty,
+      count = true
     )
   }
 }

@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom.iteratee
 
-import java.util.{ArrayDeque => JavaArrayDeque, Deque => JavaDeque}
-
 import com.datastax.driver.core.{ResultSet, Row}
 import play.api.libs.iteratee.Execution.{defaultExecutionContext => dec}
 import play.api.libs.iteratee.{Cont, Done, Enumerator => PlayEnum, Error, Input, Iteratee => PlayIter, Step}
