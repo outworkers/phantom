@@ -24,6 +24,8 @@ package com.websudos.phantom.connectors
  */
 object ContactPoint {
 
+  private[this] val localhost = "localhost"
+
   /**
    * Cassandra's default ports.
    */
@@ -54,7 +56,7 @@ object ContactPoint {
    * contact point running on the specified
    * port on localhost.
    */
-  def apply(port: Int): KeySpaceBuilder = apply("localhost", port)
+  def apply(port: Int): KeySpaceBuilder = apply(localhost, port)
 
   /**
    * A keyspace builder based on a single

@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 
@@ -55,6 +56,12 @@ sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
 object MyTest extends MyTest with PhantomCassandraConnector {
 
   override val tableName = "mytest"
+
+  def store(row: MyTestRow): InsertQuery.Default[MyTest, MyTestRow] = {
+    insert().value(_.key, row.key)
+      .value(_.stringlist, row.stringlist)
+      .value(_.optionA, row.optionA)
+  }
 
 }
 

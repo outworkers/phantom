@@ -55,7 +55,7 @@ class JodaDateTimeColumn extends PhantomCassandraTestSuite {
     } yield select
 
     chain successful {
-      res => res.get shouldEqual row
+      res => res.value shouldEqual row
     }
   }
 
@@ -68,7 +68,7 @@ class JodaDateTimeColumn extends PhantomCassandraTestSuite {
     } yield select
 
     chain successful {
-      res => res.get shouldEqual row
+      res => res.value shouldEqual row
     }
   }
 }

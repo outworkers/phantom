@@ -1,14 +1,13 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import java.util.UUID
-import org.joda.time.DateTime
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
-import com.websudos.util.testing._
+import org.joda.time.DateTime
+import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.time.SpanSugar._
 
 class DistinctTest extends PhantomCassandraTestSuite {
   implicit val s: PatienceConfiguration.Timeout = timeout(5 seconds)
@@ -42,7 +41,8 @@ class DistinctTest extends PhantomCassandraTestSuite {
     } yield list
 
     val expectedResult = rows.filter(_.name != "b").map(_.id)
-    chain successful {
+
+    whenReady(chain) {
       res => {
         res should contain only (expectedResult: _*)
       }

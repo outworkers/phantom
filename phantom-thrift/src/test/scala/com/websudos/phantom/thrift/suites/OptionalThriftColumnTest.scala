@@ -68,8 +68,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       res => {
-        res.isDefined shouldBe true
-        res.get shouldBe Some(sample)
+        res.value shouldBe Some(sample)
       }
     }
   }
@@ -95,8 +94,7 @@ class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       res => {
-        res.isDefined shouldBe true
-        res.get.isDefined shouldBe false
+        res.value.isDefined shouldBe false
       }
     }
   }

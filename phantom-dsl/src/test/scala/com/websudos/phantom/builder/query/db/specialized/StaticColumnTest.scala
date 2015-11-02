@@ -61,8 +61,7 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get._3 shouldEqual static
+        res.value._3 shouldEqual static
       }
     }
   }
@@ -87,9 +86,8 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
         // The first record should hold the updated value.
-        res.get._3 shouldEqual static2
+        res.value._3 shouldEqual static2
       }
     }
   }
@@ -109,8 +107,7 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.list shouldEqual sample.list ::: List("test")
+        res.value.list shouldEqual sample.list ::: List("test")
       }
     }
   }

@@ -62,7 +62,7 @@ trait Connector {
    * query and update operations in phantom
    * table implementations.
    */
-  implicit lazy val session: Session = provider.getSession(keySpace)
+  implicit lazy val session: Session = provider.session
 
 }
 
