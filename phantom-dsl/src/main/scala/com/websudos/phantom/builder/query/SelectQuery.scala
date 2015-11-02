@@ -140,6 +140,7 @@ class SelectQuery[
     )
   }
 
+
   /**
    * The where method of a select query that takes parametric predicate as an argument.
    * @param condition A where clause condition restricted by path dependant types.
@@ -183,28 +184,6 @@ class SelectQuery[
 
 
   /**
-   * The and operator used to concatenate where conditions of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot add condition in this place of the query")
-  override def and(condition: Table => WhereClause.Condition)
-                  (implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new SelectQuery(
-      table = table,
-      rowFunc = rowFunc,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
-      orderPart = orderPart,
-      limitedPart = limitedPart,
-      filteringPart = filteringPart,
-      count = count,
-      consistencyLevel = consistencyLevel
-    )
-  }
-
-  /**
    * The and operator that adds parametric condition to the where predicates.
    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
@@ -223,6 +202,28 @@ class SelectQuery[
       filteringPart = filteringPart,
       count = count,
       consistencyLevel = consistencyLevel
+    )
+  }
+
+  /**
+   * The and operator that adds parametric condition to the where predicates.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot add condition in this place of the query")
+  def p_and[RR](condition: Table => WhereClause.ParametricCondition[RR])
+                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count,
+      consistencyLevel
     )
   }
 
@@ -360,4 +361,47 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R] )( implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
     root.all
   }
+}
+
+class PreparedSelectQuery[
+Table <: CassandraTable[Table, _],
+Record,
+Limit <: LimitBound,
+Order <: OrderBound,
+Status <: ConsistencyBound,
+Chain <: WhereBound,
+Parameters <: ParametricNode
+](
+   table: Table,
+   rowFunc: Row => Record,
+   init: CQLQuery,
+   wherePart: WherePart = Defaults.EmptyWherePart,
+   orderPart: OrderPart = Defaults.EmptyOrderPart,
+   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
+   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+   count: Boolean = false,
+   consistencyLevel: ConsistencyLevel = null
+   ) {
+
+  /**
+   * The where method of a select query.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def where[RR](condition: Table => WhereClause.ParametricCondition[RR])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, Parameters]] = {
+    new PreparedSelectQuery(
+                     table = table,
+                     rowFunc = rowFunc,
+                     init = init,
+                     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+                     orderPart = orderPart,
+                     limitedPart = limitedPart,
+                     filteringPart = filteringPart,
+                     count = count,
+                     consistencyLevel
+                   )
+  }
+
 }
