@@ -82,7 +82,7 @@ object Build extends Build {
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
       case "2.10.5" => "3.0-M1"
-      case _ => "3.0-M2"
+      case _ => "3.0-M6"
     }
   }
 
@@ -133,7 +133,7 @@ object Build extends Build {
       "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
     ),
     fork in Test := false,
-    javaOptions in Test ++= Seq("-Xmx2G"),
+    javaOptions in Test ++= Seq("-Xmx2G", "-Djava.net.preferIPv4Stack=true"),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
