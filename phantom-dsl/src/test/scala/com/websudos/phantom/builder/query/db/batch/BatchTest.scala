@@ -127,8 +127,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -163,8 +162,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 3
+        res.value shouldEqual 3
       }
     }
   }
@@ -187,8 +185,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -211,8 +208,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get shouldEqual 1
+        res.value shouldEqual 1
       }
     }
   }
@@ -242,10 +238,9 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     w successful {
       res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row2
+        res._1.value shouldEqual row2
 
-        res._2.isEmpty shouldEqual true
+        res._2 shouldBe empty
       }
     }
   }
@@ -285,10 +280,8 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     w successful {
       res => {
-        res._1.isDefined shouldEqual true
-        res._1.get shouldEqual row2
-
-        res._2.isEmpty shouldEqual true
+        res._1.value shouldEqual row2
+        res._2 shouldBe empty
       }
     }
   }
@@ -315,8 +308,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }
@@ -343,8 +335,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }
@@ -372,8 +363,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 15)
+        res.value.int shouldEqual (row.int + 15)
       }
     }
   }
@@ -402,8 +392,7 @@ class BatchTest extends PhantomCassandraTestSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 15)
+        res.value.int shouldEqual (row.int + 15)
       }
     }
   }

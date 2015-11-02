@@ -35,7 +35,7 @@ class UDTSchemaGenerationTest extends CassandraFlatSpec with UDTKeySpace {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestFields.udtExecute(), 2.seconds)
+    Await.ready(TestFields.udtExecute(), 5.seconds)
   }
 
   it should "generate the schema of an UDT during table creation" in {

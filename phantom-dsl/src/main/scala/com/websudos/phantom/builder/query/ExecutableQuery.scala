@@ -51,7 +51,10 @@ trait ExecutableStatement extends CassandraOperations {
   def queryString: String = qb.terminate().queryString
 
   def statement()(implicit session: Session): Statement = {
-    session.newSimpleStatement(qb.terminate().queryString).setConsistencyLevel(consistencyLevel.orNull)
+    consistencyLevel.fold(
+      session.newSimpleStatement(qb.terminate().queryString).asInstanceOf[Statement])(
+      level => session.newSimpleStatement(qb.terminate().queryString).setConsistencyLevel(level)
+    )
   }
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {

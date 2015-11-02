@@ -56,8 +56,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients
+        items.value shouldEqual recipe.ingredients
       }
     }
   }
@@ -73,8 +72,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients
+        items.value shouldEqual recipe.ingredients
       }
     }
   }
@@ -89,9 +87,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients
-        items.get.size shouldEqual recipe.ingredients.size
+        items.value shouldEqual recipe.ingredients
+        items.value should have size recipe.ingredients.size
       }
     }
   }
@@ -107,9 +104,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients
-        items.get.size shouldEqual recipe.ingredients.size
+        items.value shouldEqual recipe.ingredients
+        items.value should have size recipe.ingredients.size
       }
     }
   }
@@ -125,8 +121,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients ::: List("test")
+        items.value shouldEqual recipe.ingredients ::: List("test")
       }
     }
   }
@@ -142,8 +137,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients ::: List("test")
+        items.value shouldEqual recipe.ingredients ::: List("test")
       }
     }
   }
@@ -161,8 +155,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients ::: appendable
+        items.value shouldEqual recipe.ingredients ::: appendable
       }
     }
   }
@@ -180,8 +173,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual recipe.ingredients ::: appendable
+        items.value shouldEqual recipe.ingredients ::: appendable
       }
     }
   }
@@ -197,8 +189,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual List("test") :::  recipe.ingredients
+        items.value shouldEqual List("test") :::  recipe.ingredients
       }
     }
   }
@@ -214,8 +205,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual List("test") :::  recipe.ingredients
+        items.value shouldEqual List("test") :::  recipe.ingredients
       }
     }
   }
@@ -235,8 +225,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual prependedValues ::: recipe.ingredients
+        items.value shouldEqual prependedValues ::: recipe.ingredients
       }
     }
   }
@@ -256,8 +245,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual prependedValues ::: recipe.ingredients
+        items.value shouldEqual prependedValues ::: recipe.ingredients
       }
     }
   }
@@ -274,8 +262,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual list.tail
+        items.value shouldEqual list.tail
       }
     }
   }
@@ -293,8 +280,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual list.tail
+        items.value shouldEqual list.tail
       }
     }
   }
@@ -311,8 +297,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual List(list.head)
+        items.value shouldEqual List(list.head)
       }
     }
   }
@@ -329,8 +314,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldEqual List(list.head)
+        items.value shouldEqual List(list.head)
       }
     }
   }
@@ -347,8 +331,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get.head shouldEqual "updated"
+        items.value.headOption.value shouldEqual "updated"
       }
     }
   }
@@ -358,7 +341,6 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val list = genList[String]()
 
     val recipe = gen[Recipe].copy(ingredients = list)
-    val id = gen[UUID]
 
     val operation = for {
       insertDone <- Recipes.store(recipe).execute()
@@ -368,8 +350,7 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get.head shouldEqual "updated"
+        items.value.headOption.value shouldEqual "updated"
       }
     }
   }
@@ -380,13 +361,13 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val operation = for {
       insertDone <- Recipes.store(recipe).future()
       update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, "updated")).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one()
     } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get(3) shouldEqual "updated"
+        items shouldBe defined
+        items.value(3) shouldEqual "updated"
       }
     }
   }
@@ -404,8 +385,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get(3) shouldEqual updated
+        items shouldBe defined
+        items.value(3) shouldEqual updated
       }
     }
   }

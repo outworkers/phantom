@@ -49,6 +49,7 @@ object Build extends Build {
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
   val DieselEngineVersion = "0.2.2"
+  val Slf4jVersion = "1.7.12"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -61,7 +62,7 @@ object Build extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
+    licenses += ("Websudos License", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
@@ -102,7 +103,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.12.4",
+    version := "1.13.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -238,6 +239,7 @@ object Build extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
+      "org.slf4j"                    % "slf4j-log4j12"                      % Slf4jVersion % "test, provided",
       "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,

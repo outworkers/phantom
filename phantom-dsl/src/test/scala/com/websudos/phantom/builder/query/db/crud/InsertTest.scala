@@ -59,7 +59,6 @@ class InsertTest extends PhantomCassandraTestSuite {
     chain successful {
       res => {
         res shouldBe defined
-        res shouldEqual row
       }
     }
 
@@ -71,13 +70,11 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- Primitives.store(row).execute()
       one <- Primitives.select.where(_.pkey eqs row.pkey).get
-      multi <- Primitives.select.collect()
     } yield one
 
     chain successful {
       res => {
         res shouldBe defined
-        res shouldEqual row
       }
     }
   }
@@ -88,13 +85,11 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- TestTable.store(row).future()
       one <- TestTable.select.where(_.key eqs row.key).one
-      multi <- TestTable.select.fetch
-    } yield (one.get === row, multi.contains(row))
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res.value shouldEqual row
       }
     }
   }
@@ -105,13 +100,11 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- TestTable.store(row).execute()
       one <- TestTable.select.where(_.key eqs row.key).get
-      multi <- TestTable.select.collect()
-    } yield (one.get === row, multi.contains(row))
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res.value shouldEqual row
       }
     }
   }
@@ -122,13 +115,11 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- TestTable.store(row).future()
       one <- TestTable.select.where(_.key eqs row.key).one
-      multi <- TestTable.select.fetch
-    } yield (one.get === row, multi.contains(row))
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res.value shouldEqual row
       }
     }
   }
@@ -139,13 +130,11 @@ class InsertTest extends PhantomCassandraTestSuite {
     val chain = for {
       store <- TestTable.store(row).execute()
       one <- TestTable.select.where(_.key eqs row.key).get
-      multi <- TestTable.select.collect()
-    } yield (one.get === row, multi.contains(row))
+    } yield one
 
     chain successful {
       res => {
-        assert (res._1)
-        assert (res._2)
+        res.value shouldEqual row
       }
     }
   }
@@ -193,53 +182,48 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "support serializing/de-serializing empty lists " in {
-    val row = gen[MyTestRow]
-    val f = MyTest.insert
-      .value(_.key, row.key)
-      .value(_.stringlist, List.empty[String])
-      .future() flatMap {
-      _ => MyTest.select.where(_.key eqs row.key).one
-    }
+    val row = gen[MyTestRow].copy(stringlist = List.empty)
 
-    f successful  {
-      res =>
-        res.isEmpty shouldEqual false
-        res.get.stringlist.isEmpty shouldEqual true
+    val chain = for {
+      store <- MyTest.store(row).future()
+      get <- MyTest.select.where(_.key eqs row.key).one
+    } yield get
+
+    chain successful  {
+      res => {
+        res.value shouldEqual row
+        res.value.stringlist.isEmpty shouldEqual true
+      }
     }
   }
 
   it should "support serializing/de-serializing empty lists with Twitter futures" in {
-    val row = gen[MyTestRow]
+    val row = gen[MyTestRow].copy(stringlist = List.empty)
 
-    val f = MyTest.insert
-      .value(_.key, row.key)
-      .value(_.stringlist, List.empty[String])
-      .execute() flatMap {
-      _ => MyTest.select.where(_.key eqs row.key).get
-    }
+    val chain = for {
+      store <- MyTest.store(row).execute()
+      get <- MyTest.select.where(_.key eqs row.key).get
+    } yield get
 
-    f successful  {
-      res =>
-        res.isEmpty shouldEqual false
-        res.get.stringlist.isEmpty shouldEqual true
+    chain successful  {
+      res => {
+        res.value shouldEqual row
+        res.value.stringlist.isEmpty shouldEqual true
+      }
     }
   }
 
   it should "support serializing/de-serializing to List " in {
     val row = gen[MyTestRow]
 
-    val recipeF = MyTest.insert
-      .value(_.key, row.key)
-      .value(_.optionA, row.optionA)
-      .value(_.stringlist, row.stringlist)
-      .future() flatMap {
-      _ => MyTest.select.where(_.key eqs row.key).one
-    }
+    val chain = for {
+      store <- MyTest.store(row).future()
+      get <- MyTest.select.where(_.key eqs row.key).one
+    } yield get
 
-    recipeF successful  {
+    chain successful  {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual row
+        res.value shouldEqual row
       }
     }
   }
@@ -247,18 +231,14 @@ class InsertTest extends PhantomCassandraTestSuite {
   it should "support serializing/de-serializing to List with Twitter futures" in {
     val row = gen[MyTestRow]
 
-    val recipeF = MyTest.insert
-      .value(_.key, row.key)
-      .value(_.optionA, row.optionA)
-      .value(_.stringlist, row.stringlist)
-      .execute() flatMap {
-      _ => MyTest.select.where(_.key eqs row.key).get
-    }
+    val chain = for {
+      store <- MyTest.store(row).future()
+      get <- MyTest.select.where(_.key eqs row.key).one
+    } yield get
 
-    recipeF successful  {
+    chain successful  {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual row
+        res.value shouldEqual row
       }
     }
   }
