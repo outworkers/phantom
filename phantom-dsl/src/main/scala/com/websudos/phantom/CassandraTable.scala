@@ -59,8 +59,6 @@ class PreparedSelectTable[T <: CassandraTable[T, R], R](table: CassandraTable[T,
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
 
-  private[phantom] def addTable() = Manager.addTable(this)
-
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.ready(create.ifNotExists().future(), 3.seconds)
   }
