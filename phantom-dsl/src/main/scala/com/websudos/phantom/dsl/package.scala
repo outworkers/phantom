@@ -136,6 +136,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     val SERIAL = CLevel.SERIAL
   }
 
+  type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
+  val ContactPoint = com.websudos.phantom.connectors.ContactPoint
+  val ContactPoints = com.websudos.phantom.connectors.ContactPoints
+
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
     new Primitive[T#Value] {
 
