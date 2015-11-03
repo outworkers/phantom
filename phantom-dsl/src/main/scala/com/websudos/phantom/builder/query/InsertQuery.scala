@@ -208,3 +208,24 @@ object InsertQuery {
     )
   }
 }
+
+
+
+class InsertJsonQuery[
+  Table <: CassandraTable[Table, _],
+  Record,
+  Status <: ConsistencyBound
+](
+  table: Table,
+  val init: CQLQuery,
+  usingPart: UsingPart = UsingPart.empty,
+  lightweightPart: LightweightPart = LightweightPart.empty,
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends ExecutableStatement with Batchable {
+
+  override def qb: CQLQuery = {
+    (usingPart merge lightweightPart) build init
+  }
+}
+
+
