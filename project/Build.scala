@@ -134,7 +134,11 @@ object Build extends Build {
       "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
     ),
     fork in Test := false,
-    javaOptions in Test ++= Seq("-Xmx2G", "-Djava.net.preferIPv4Stack=true", "-Dio.netty.resourceLeakDetection"),
+    javaOptions in ThisBuild ++= Seq(
+      "-Xmx2G",
+      "-Djava.net.preferIPv4Stack=true",
+      "-Dio.netty.resourceLeakDetection"
+    ),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),

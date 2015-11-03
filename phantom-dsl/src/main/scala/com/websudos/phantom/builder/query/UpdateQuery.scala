@@ -89,7 +89,7 @@ class UpdateQuery[
     )
   }
 
-  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new UpdateQuery(
       table,
       init, usingPart,

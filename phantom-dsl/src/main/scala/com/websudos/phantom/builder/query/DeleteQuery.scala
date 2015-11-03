@@ -71,7 +71,7 @@ class DeleteQuery[
     C <: WhereBound,
     P <: PSBound
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
-    new DeleteQuery[T, R, L, O, S, C, P](t, q, Defaults.EmptyWherePart, Defaults.EmptyCompareAndSetPart, consistencyLevel)
+    new DeleteQuery[T, R, L, O, S, C, P](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
   }
 
   /**

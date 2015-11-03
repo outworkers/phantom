@@ -30,12 +30,6 @@
 package com.websudos.phantom.builder.query
 
 
-import com.websudos.phantom.builder.clauses.{WhereClause, OrderingClause}
-
-import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture }
-import scala.util.Try
-
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
@@ -211,27 +205,6 @@ class SelectQuery[
     )
   }
 
-  /**
-   * The and operator that adds parametric condition to the where predicates.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => WhereClause.ParametricCondition[RR])
-                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
-    new SelectQuery(
-      table = table,
-      rowFunc = rowFunc,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-      orderPart = orderPart,
-      limitedPart = limitedPart,
-      filteringPart = filteringPart,
-      count = count,
-      consistencyLevel
-    )
-  }
 
   @implicitNotFound("A limit was already specified for this query.")
   override def limit(limit: Int)
@@ -251,7 +224,7 @@ class SelectQuery[
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
-  final def orderBy(clauses: (Table => OrderingClause.Condition)*)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {
+  final def orderBy(clauses: (Table => OrderingClause.Condition)*)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
     new SelectQuery(
       table,
       rowFunc,
@@ -284,7 +257,8 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     ).singleFetch()
 
   }
@@ -380,10 +354,10 @@ Parameters <: ParametricNode
    table: Table,
    rowFunc: Row => Record,
    init: CQLQuery,
-   wherePart: WherePart = Defaults.EmptyWherePart,
-   orderPart: OrderPart = Defaults.EmptyOrderPart,
-   limitedPart: LimitedPart = Defaults.EmptyLimitPart,
-   filteringPart: FilteringPart = Defaults.EmptyFilteringPart,
+   wherePart: WherePart = WherePart.empty,
+   orderPart: OrderPart = OrderPart.empty,
+   limitedPart: LimitedPart = LimitedPart.empty,
+   filteringPart: FilteringPart = FilteringPart.empty,
    count: Boolean = false,
    consistencyLevel: ConsistencyLevel = null
    ) {
@@ -397,16 +371,16 @@ Parameters <: ParametricNode
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   def where[RR](condition: Table => WhereClause.ParametricCondition[RR])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, Parameters]] = {
     new PreparedSelectQuery(
-                     table = table,
-                     rowFunc = rowFunc,
-                     init = init,
-                     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-                     orderPart = orderPart,
-                     limitedPart = limitedPart,
-                     filteringPart = filteringPart,
-                     count = count,
-                     consistencyLevel
-                   )
+     table = table,
+     rowFunc = rowFunc,
+     init = init,
+     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+     orderPart = orderPart,
+     limitedPart = limitedPart,
+     filteringPart = filteringPart,
+     count = count,
+     consistencyLevel
+   )
   }
 
 }

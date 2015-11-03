@@ -34,7 +34,7 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
-import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.{Manager, CassandraTable}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
@@ -55,22 +55,20 @@ trait ExecutableStatement extends CassandraOperations {
    */
   def parameters: Seq[Any] = Nil
 
-  def baseStatement(implicit session: Session) = {
+  def baseStatement()(implicit session: Session) = {
     parameters match {
       case Nil =>
         session.newSimpleStatement(qb.terminate().queryString)
-      case someParameters =>
-        session.prepare(qb.terminate().queryString).bind(parameters)
+      case someParameters => {
+        Manager.logger.debug("Executing prepared statement " + qb.queryString + " with bind params " + parameters.mkString(", "))
+        session.prepare(qb.queryString).bind(parameters.map(_.asInstanceOf[AnyRef]): _*)
+      }
+
     }
   }
 
-  def statement(implicit session: Session): Statement = {
-    if (consistencyLevel == null) {
-      baseStatement
-    } else {
-      //the cast looks ugly but in reality setConsistencyLevel returns itself
-      baseStatement.setConsistencyLevel(consistencyLevel.orNull)
-    }
+  def statement()(implicit session: Session): Statement = {
+    baseStatement.setConsistencyLevel(consistencyLevel.orNull)
   }
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {

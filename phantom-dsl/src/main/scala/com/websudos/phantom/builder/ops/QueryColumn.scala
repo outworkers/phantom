@@ -52,10 +52,6 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, p.asCql(value)))
   }
 
-  final def eqs(value: PrepareMark): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.symbol))
-  }
-
   def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.qb.queryString))
   }
