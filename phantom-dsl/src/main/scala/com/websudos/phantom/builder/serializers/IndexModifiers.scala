@@ -71,16 +71,20 @@ private[builder] class IndexModifiers extends BaseModifiers {
     CQLQuery(name).append(Utils.join(params))
   }
 
-  def token(name: String): String = {
-    CQLQuery(CQLSyntax.token).wrap(name).queryString
-  }
-
   def where(qb: CQLQuery, condition: CQLQuery): CQLQuery = {
     Utils.concat(qb, CQLSyntax.where, condition)
   }
 
   def and(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     Utils.concat(qb, CQLSyntax.and, clause)
+  }
+
+  def token(clause: String): CQLQuery = {
+    CQLQuery(CQLSyntax.token).pad.wrapn(clause)
+  }
+
+  def token(clauses: String*): CQLQuery = {
+    CQLQuery(CQLSyntax.token).pad.wrapn(CQLQuery(clauses))
   }
 
   /**

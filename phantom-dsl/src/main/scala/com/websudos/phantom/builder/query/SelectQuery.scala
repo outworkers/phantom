@@ -344,7 +344,7 @@ object SelectQuery {
 
 private[phantom] trait SelectImplicits {
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R] )( implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
+  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R])(implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
     root.all
   }
 }

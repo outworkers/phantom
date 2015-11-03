@@ -51,14 +51,12 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       store <- Primitives.store(row).future()
-      a <- Primitives.select.fetch
       b <- Primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, b)
+    } yield b
 
     chain successful {
       r => {
-        r._1 should contain (row)
-        r._2.value shouldEqual row
+        r.value shouldEqual row
       }
     }
   }
@@ -68,14 +66,12 @@ class SelectTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       store <- Primitives.store(row).execute()
-      a <- Primitives.select.collect()
       b <- Primitives.select.where(_.pkey eqs row.pkey).get
-    } yield (a, b)
+    } yield b
 
     chain successful {
       r => {
-        r._1 should contain (row)
-        r._2.value shouldEqual row
+        r.value shouldEqual row
       }
     }
   }

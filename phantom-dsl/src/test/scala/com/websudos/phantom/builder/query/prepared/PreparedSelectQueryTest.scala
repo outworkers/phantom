@@ -28,11 +28,4 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
       }
     }
   }
-
-  it should "serialize a statement with a prepared statement" in {
-
-    val recipe = gen[Recipe]
-
-    Console.println(Recipes.select.p_where(_.url eqs ?).bind(recipe.url).baseStatement().toString)
-  }
 }
