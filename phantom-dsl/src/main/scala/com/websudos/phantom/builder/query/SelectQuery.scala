@@ -99,7 +99,8 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = level
+      consistencyLevel = level,
+      parameters = parameters
     )
   }
 
@@ -113,7 +114,8 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
       count = count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     )
   }
 
@@ -136,7 +138,8 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     )
   }
 
@@ -159,7 +162,8 @@ class SelectQuery[
        limitedPart = limitedPart,
        filteringPart = filteringPart,
        count = count,
-       consistencyLevel = consistencyLevel
+       consistencyLevel = consistencyLevel,
+       parameters = parameters
      )
   }
 
@@ -201,7 +205,8 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     )
   }
 
@@ -234,7 +239,8 @@ class SelectQuery[
       limitedPart,
       filteringPart,
       count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     )
   }
 
@@ -282,7 +288,8 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
     ).singleCollect()
   }
 }
@@ -340,47 +347,4 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R] )( implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
     root.all
   }
-}
-
-class PreparedSelectQuery[
-Table <: CassandraTable[Table, _],
-Record,
-Limit <: LimitBound,
-Order <: OrderBound,
-Status <: ConsistencyBound,
-Chain <: WhereBound,
-Parameters <: ParametricNode
-](
-   table: Table,
-   rowFunc: Row => Record,
-   init: CQLQuery,
-   wherePart: WherePart = WherePart.empty,
-   orderPart: OrderPart = OrderPart.empty,
-   limitedPart: LimitedPart = LimitedPart.empty,
-   filteringPart: FilteringPart = FilteringPart.empty,
-   count: Boolean = false,
-   consistencyLevel: ConsistencyLevel = null
-   ) {
-
-  /**
-   * The where method of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def where[RR](condition: Table => WhereClause.ParametricCondition[RR])(implicit ev: Chain =:= Unchainned): PreparedSelectQuery[Table, Record, Limit, Order, Status, Chainned, ParametricValue[RR, Parameters]] = {
-    new PreparedSelectQuery(
-     table = table,
-     rowFunc = rowFunc,
-     init = init,
-     wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-     orderPart = orderPart,
-     limitedPart = limitedPart,
-     filteringPart = filteringPart,
-     count = count,
-     consistencyLevel
-   )
-  }
-
 }
