@@ -62,8 +62,12 @@ class InsertTest extends PhantomCassandraTestSuite with JsonUtils {
 
     info(s"Primitive ${primitive}")
 
-    val jsonString = compact(render(Extraction.decompose(primitive)))
+    val v = Extraction.decompose(primitive)
+    val v2 = render(v)
+    val jsonString = compact(v2)
 
+    info(s"decomposed => ${jsonString}")
+    info(s"rendered => ${jsonString}")
     info(s"jsonString ${jsonString}")
 
     val chain = for {

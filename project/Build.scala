@@ -221,6 +221,11 @@ object Build extends Build {
       "-language:experimental.macros"
     ),
     libraryDependencies ++= Seq(
+      "org.json4s"                   %% "json4s-jackson"                    % Json4SVersion,
+      "org.json4s"                   %% "json4s-ext"                        % Json4SVersion,
+      "org.json4s"                   %% "json4s-core"                       % Json4SVersion,
+      "org.json4s"                   %% "json4s-ast"                        % Json4SVersion,
+      "org.json4s"                   %% "json4s-native"                     % Json4SVersion,
       "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
     )
   ).dependsOn(

@@ -34,7 +34,7 @@ import com.websudos.phantom.builder.serializers.Utils
 
 import com.websudos.diesel.engine.query.AbstractQuery
 
-import org.json4s.JObject
+import org.json4s._
 
 case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) with Utils {
   def create(str: String): CQLQuery = CQLQuery(str)
@@ -68,13 +68,17 @@ object CQLQuery extends JsonUtils {
 
     val jObject = parseToJObject(json)
 
-    val modifiedTuples = jObject.obj.map(x => (escapeDoubleQuotes(x._1), x._2))
+    Manager.logger.debug(s"parsed JObject => ${jObject}")
 
-    writeToString(JObject(modifiedTuples))
+    val modifiedJObject = recurseAndEscapeDoubleQuote(jObject)
+
+    Manager.logger.debug(s"modified JObject => ${modifiedJObject}")
+
+    writeToString(modifiedJObject.asInstanceOf[JObject])
   }
 
   def escapeDoubleQuotes(s: String): String = {
-    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""") && !s.startsWith("""\"""")) {
+    val ret = if (containsUppercaseChar(s) && !s.startsWith( """"""") && !s.startsWith( """\"""")) {
       """"""" + s + """""""
     } else s
 
@@ -84,7 +88,7 @@ object CQLQuery extends JsonUtils {
   }
 
   def escapeBackslashDoubleQuotes(s: String): String = {
-    val ret = if (containsUppercaseChar(s) && !s.startsWith("""\"""")) {
+    val ret = if (containsUppercaseChar(s) && !s.startsWith( """\"""")) {
       """\"""" + s + """\""""
     } else s
 
@@ -94,8 +98,8 @@ object CQLQuery extends JsonUtils {
   }
 
   def escapeDoubleQuotesQuery(s: String): CQLQuery = {
-    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""")) {
-      CQLQuery(""""""" + s + """"""")
+    val ret = if (containsUppercaseChar(s) && !s.startsWith( """"""")) {
+      CQLQuery( """"""" + s + """"""")
     } else CQLQuery(s)
 
     Manager.logger.debug(s"escapeDoubleQuotesQuery called with string ${s} and return value ${ret}")
@@ -105,8 +109,8 @@ object CQLQuery extends JsonUtils {
 
   def escapeDoubleQuotesQuery(cql: CQLQuery): CQLQuery = {
     val s = cql.queryString
-    val ret = if (containsUppercaseChar(s) && !s.startsWith(""""""")) {
-      CQLQuery(""""""" + s + """"""")
+    val ret = if (containsUppercaseChar(s) && !s.startsWith( """"""")) {
+      CQLQuery( """"""" + s + """"""")
     } else CQLQuery(s)
 
     Manager.logger.debug(s"escapeDoubleQuotesQuery called with string ${s} and return value ${ret}")

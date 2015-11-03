@@ -187,7 +187,7 @@ Chain <: WhereBound
   }
 
   def fromJsonRow(r: Row)(implicit mf: Manifest[Record]): Record = {
-    val s = r.toString()
+    val s = r.getString(0)
 
     getRecord(s)
   }
