@@ -274,6 +274,7 @@ object Build extends Build {
     name := "phantom-testkit",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
+      "com.websudos"                     %% "util-lift"                % UtilVersion,
       "com.websudos"                     %% "util-testing"             % UtilVersion
     )
   ).dependsOn(
