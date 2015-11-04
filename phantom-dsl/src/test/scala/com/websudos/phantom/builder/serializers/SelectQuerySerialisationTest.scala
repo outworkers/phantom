@@ -3,7 +3,7 @@ package com.websudos.phantom.builder.serializers
 import java.util.Date
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.{TimeSeriesTable, BasicTable}
+import com.websudos.phantom.tables.{ArticlesByAuthor, TimeSeriesTable, BasicTable}
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 
@@ -58,6 +58,17 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
         qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+      }
+
+      "a multiple column token clause" in {
+        val qb = ArticlesByAuthor.select.where(t => { t.id < token(t.author_id, t.category) }).queryString
+        Console.println(qb)
+      }
+
+      "a single column token clause" in {
+        val qb = ArticlesByAuthor.select.where(_.author_id gtToken gen[UUID]).queryString
+
+        Console.println(qb)
       }
     }
   }

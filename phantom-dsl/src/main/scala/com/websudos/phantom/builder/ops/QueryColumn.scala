@@ -147,6 +147,9 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
   final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
     new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
   }
+}
 
+
+sealed class OperatorQueryColumn(val clause: OperatorClause.Condition) {
 
 }
