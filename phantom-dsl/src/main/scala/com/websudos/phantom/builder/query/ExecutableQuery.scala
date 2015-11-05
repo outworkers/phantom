@@ -55,13 +55,23 @@ trait ExecutableStatement extends CassandraOperations {
    */
   def parameters: Seq[Any] = Nil
 
+  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[Any] = {
+    parameters map {
+      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[_]].get
+      case x => x
+    }
+  }
+
   def baseStatement()(implicit session: Session) = {
     parameters match {
       case Nil =>
         session.newSimpleStatement(qb.terminate().queryString)
       case someParameters => {
         Manager.logger.debug("Executing prepared statement " + qb.queryString + " with bind params " + parameters.mkString(", "))
-        session.prepare(qb.queryString).bind(parameters.map(_.asInstanceOf[AnyRef]): _*)
+
+        val params = flattenOpt(parameters).map(_.asInstanceOf[AnyRef])
+
+        session.prepare(qb.queryString).bind(params: _*)
       }
 
     }

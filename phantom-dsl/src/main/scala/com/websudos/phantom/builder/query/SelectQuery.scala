@@ -167,7 +167,7 @@ class SelectQuery[
      )
   }
 
-  def bind[V1, VL1 <: HList, Reversed <: HList](v1: V1)(
+  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
     implicit rev: Reverse.Aux[PS, Reversed],
     gen: Generic.Aux[V1, VL1],
     ev: VL1 =:= Reversed
@@ -182,7 +182,7 @@ class SelectQuery[
       filteringPart,
       count,
       consistencyLevel = consistencyLevel,
-      parameters = Seq(v1)
+      parameters = v1.productIterator.toSeq
     )
   }
 
