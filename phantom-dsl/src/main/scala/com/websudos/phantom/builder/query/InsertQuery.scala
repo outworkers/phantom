@@ -37,12 +37,13 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
+import shapeless.{HNil, Generic, HList, ::}
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound,
-  PS <: PSBound
+  PS <: HList
 ](
   table: Table,
   val init: CQLQuery,
@@ -53,8 +54,6 @@ class InsertQuery[
   override val consistencyLevel: Option[ConsistencyLevel] = None,
   override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
-
-  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
 
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
@@ -69,7 +68,7 @@ class InsertQuery[
     )
   }
 
-  final def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, PSUnspecified[ParametricValue[RR, PNil]]] = {
+  def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, RR :: PS] = {
     new InsertQuery(
       table,
       init,
@@ -82,8 +81,7 @@ class InsertQuery[
     )
   }
 
-  def bind[V1](v1: V1)
-      (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): InsertQuery[Table, Record, Status, PSSpecified] = {
+  def bind[V1, VL1 <: HList](v1: V1)(implicit gen: Generic.Aux[V1, VL1], ev: VL1 =:= PS): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -196,10 +194,10 @@ class InsertQuery[
 
 object InsertQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified, NoPSQuery]
+  type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
-    new InsertQuery[T, R, Unspecified, NoPSQuery](
+    new InsertQuery(
       table,
       QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName))
     )

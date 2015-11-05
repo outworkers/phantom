@@ -35,8 +35,8 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
-import com.websudos.phantom.builder.query.prepared.{PNil, ParametricNode, ParametricValue}
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.{::, Generic, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -50,7 +50,7 @@ class SelectQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: PSBound
+  PS <: HList
 ](
   table: Table,
   rowFunc: Row => Record,
@@ -65,8 +65,6 @@ class SelectQuery[
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
-  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
-
   def fromRow(row: Row): Record = rowFunc(row)
 
   override val qb: CQLQuery = {
@@ -80,7 +78,7 @@ class SelectQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ] = SelectQuery[T, R, L, O, S, C, P]
 
   protected[this] def create[
@@ -90,7 +88,7 @@ class SelectQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C, P] = {
     new SelectQuery[T, R, L, O, S, C, P](
       table = t,
@@ -154,7 +152,7 @@ class SelectQuery[
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-                (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+                (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new SelectQuery(
        table = table,
        rowFunc = rowFunc,
@@ -169,8 +167,7 @@ class SelectQuery[
      )
   }
 
-  def bind[V1](v1: V1)
-                    (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limit, Order, Status, Chain, PSSpecified] = {
+  def bind[V1, VL1 <: HList](v1: V1)(implicit gen: Generic.Aux[V1, VL1], ev: VL1 =:= PS): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
     new SelectQuery(
       table,
       rowFunc,
@@ -194,12 +191,12 @@ class SelectQuery[
    */
   @implicitNotFound("You cannot add condition in this place of the query")
   def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-                        (implicit ev: Chain =:= Unchainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PSUnspecified[ParametricValue[RR, PNil]]] = {
+                        (implicit ev: Chain =:= Chainned): SelectQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
       init = init,
-      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
@@ -333,7 +330,7 @@ object RootSelectBlock {
 
 object SelectQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
+  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
     new SelectQuery(table, row, qb)

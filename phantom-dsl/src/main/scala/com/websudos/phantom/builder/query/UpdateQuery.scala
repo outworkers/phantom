@@ -34,6 +34,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, UpdateClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.{HNil, HList}
 
 import scala.annotation.implicitNotFound
 
@@ -44,7 +45,7 @@ class UpdateQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: PSBound
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
@@ -65,7 +66,7 @@ class UpdateQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ] = UpdateQuery[T, R, L, O, S, C, P]
 
 
@@ -76,7 +77,7 @@ class UpdateQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
     new UpdateQuery[T, R, L, O, S, C, P](
       t,
@@ -338,12 +339,13 @@ sealed class ConditionalQuery[
 
 object UpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery](
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil](
       table,
-      QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
+      QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
+    )
   }
 
 }

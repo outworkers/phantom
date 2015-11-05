@@ -33,6 +33,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
+import shapeless.HList
 
 import scala.annotation.implicitNotFound
 
@@ -73,7 +74,7 @@ abstract class Query[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: PSBound
+  PS <: HList
 ](
   table: Table,
   override val qb: CQLQuery,
@@ -88,7 +89,7 @@ abstract class Query[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ] <: Query[T, R, L, O, S, C, P]
 
   protected[this] def create[
@@ -98,7 +99,7 @@ abstract class Query[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")

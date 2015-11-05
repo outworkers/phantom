@@ -25,7 +25,7 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
       .p_value(_.last_checked_at, ?)
       .p_value(_.props, ?)
 
-
+  /*
     val exec = query.bind(
       sample.uid,
       sample.url,
@@ -47,7 +47,7 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
         res.value shouldEqual sample
       }
     }
-
+  */
   }
 
 }

@@ -33,9 +33,17 @@ import com.websudos.phantom.builder.query._
 
 import com.websudos.phantom.builder.clauses.WhereClause
 
-sealed trait ParametricNode
-final class ParametricValue[PVT, P <: ParametricNode] extends ParametricNode
-final class PNil extends ParametricNode
+sealed trait ParametricNode {
+  type Out
+}
+
+final class ParametricValue[PVT, P <: ParametricNode] extends ParametricNode {
+  override type Out = PVT
+}
+
+final class PNil extends ParametricNode {
+  type Out = Nothing
+}
 
 /**
  * Condition resulting from creating predicate with a parameter.

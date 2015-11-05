@@ -34,6 +34,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.{HNil, HList}
 
 import scala.annotation.implicitNotFound
 
@@ -44,7 +45,7 @@ class DeleteQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: PSBound
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
@@ -59,7 +60,7 @@ class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ] = DeleteQuery[T, R, L, O, S, C, P]
 
   protected[this] def create[
@@ -69,7 +70,7 @@ class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: PSBound
+    P <: HList
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
     new DeleteQuery[T, R, L, O, S, C, P](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
   }
@@ -117,7 +118,7 @@ class DeleteQuery[
 
 object DeleteQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, NoPSQuery]
+  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))

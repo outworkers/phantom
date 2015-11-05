@@ -51,10 +51,10 @@ sealed class Articles private() extends CassandraTable[Articles, Article] {
 }
 
 object Articles extends Articles with PhantomCassandraConnector {
-  override def tableName = "articles"
 
   def store(article: Article): InsertQuery.Default[Articles, Article] = {
-    insert.value(_.id, article.id)
+    insert
+      .value(_.id, article.id)
       .value(_.name, article.name)
       .value(_.orderId, article.order_id)
   }
@@ -79,4 +79,14 @@ sealed class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] 
   }
 }
 
-object ArticlesByAuthor extends ArticlesByAuthor with PhantomCassandraConnector
+object ArticlesByAuthor extends ArticlesByAuthor with PhantomCassandraConnector {
+
+  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ArticlesByAuthor, Article] = {
+    insert
+      .value(_.author_id, author)
+      .value(_.category, category)
+      .value(_.id, article.id)
+      .value(_.name, article.name)
+      .value(_.orderId, article.order_id)
+  }
+}
