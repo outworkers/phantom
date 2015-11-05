@@ -34,12 +34,15 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.{Manager, CassandraTable}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
+import org.joda.time.DateTime
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
@@ -57,7 +60,11 @@ trait ExecutableStatement extends CassandraOperations {
 
   protected[this] def flattenOpt(parameters: Seq[Any]): Seq[Any] = {
     parameters map {
-      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[_]].get
+      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[Any]].get
+      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
+      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
+      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
+      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].getMillis
       case x => x
     }
   }
