@@ -34,11 +34,10 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.{Manager, CassandraTable}
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
+import com.websudos.phantom.{CassandraTable, Manager}
 import org.joda.time.DateTime
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
