@@ -169,7 +169,6 @@ class SelectQuery[
 
   type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
 
-  @implicitNotFound("Parameters have been already specified.")
   def bind[V1](v1: V1)
                     (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limit, Order, Status, Chain, PSSpecified] = {
     new SelectQuery(
