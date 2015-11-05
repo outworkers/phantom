@@ -169,7 +169,8 @@ class SelectQuery[
 
   def bind[V1, VL1 <: HList, Reversed <: HList](v1: V1)(
     implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1], ev: VL1 =:= Reversed
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
   ): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
     new SelectQuery(
       table,
