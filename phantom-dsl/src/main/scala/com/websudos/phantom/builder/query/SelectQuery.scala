@@ -36,7 +36,8 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.ops.hlist.Reverse
+import shapeless.{Generic, HList, HNil, ::}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -143,7 +144,6 @@ class SelectQuery[
     )
   }
 
-
   /**
    * The where method of a select query that takes parametric predicate as an argument.
    * @param condition A where clause condition restricted by path dependant types.
@@ -167,7 +167,10 @@ class SelectQuery[
      )
   }
 
-  def bind[V1, VL1 <: HList](v1: V1)(implicit gen: Generic.Aux[V1, VL1], ev: VL1 =:= PS): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def bind[V1, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1], ev: VL1 =:= Reversed
+  ): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
     new SelectQuery(
       table,
       rowFunc,

@@ -4,7 +4,6 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
 import com.websudos.util.testing._
-import shapeless.syntax.std.tuple.hlistOps
 
 
 class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
@@ -20,7 +19,7 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     val operation = for {
       truncate <- Recipes.truncate.future
       insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select.p_where(_.url eqs ?).bind(recipe.url).one()
+      select <- Recipes.select.p_where(_.url eqs ?).bind(Tuple1(recipe.url)).one()
     } yield select
 
     operation.successful {
@@ -31,7 +30,6 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     }
   }
 
-  /*
   it should "serialzie and execute a prepared statement with 2 arguments" in {
     val sample = gen[Article]
     val owner = gen[UUID]
@@ -48,5 +46,5 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
         res.value shouldEqual sample
       }
     }
-  }*/
+  }
 }
