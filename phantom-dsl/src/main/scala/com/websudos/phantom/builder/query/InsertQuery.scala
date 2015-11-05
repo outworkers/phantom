@@ -32,12 +32,13 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.query.prepared.{PrepareMark, PNil, ParametricValue, ParametricNode}
+import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
-import shapeless.{HNil, Generic, HList, ::}
+import shapeless.ops.hlist.Reverse
+import shapeless.{::, Generic, HList, HNil}
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -81,7 +82,11 @@ class InsertQuery[
     )
   }
 
-  def bind[V1, VL1 <: HList](v1: V1)(implicit gen: Generic.Aux[V1, VL1], ev: VL1 =:= PS): InsertQuery[Table, Record, Status, PS] = {
+  def bind[V1, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
+  ) : InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
