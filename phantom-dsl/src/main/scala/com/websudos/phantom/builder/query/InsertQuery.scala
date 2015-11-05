@@ -37,6 +37,7 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
+import org.json4s.Formats
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -57,7 +58,7 @@ class InsertQuery[
     new InsertQuery(
       table,
       init,
-      jsonPart append QueryBuilder.json(value),
+      jsonPart append QueryBuilder.json(value, table.formats),
       columnsPart,
       valuePart,
       usingPart,

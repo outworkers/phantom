@@ -63,7 +63,7 @@ object CQLQuery extends JsonUtils {
     l.contains(true)
   }
 
-  def handleCaseSensitiveFieldNames[Record](json: String): String = {
+  def handleCaseSensitiveFieldNames[Record](json: String, formats: Formats): String = {
     Manager.logger.debug(s"handleCaseSensitiveFieldNames called for json ${json}")
 
     val jObject = parseToJObject(json)
@@ -74,7 +74,7 @@ object CQLQuery extends JsonUtils {
 
     Manager.logger.debug(s"modified JObject => ${modifiedJObject}")
 
-    writeToString(modifiedJObject.asInstanceOf[JObject])
+    writeToString(modifiedJObject.asInstanceOf[JObject], formats)
   }
 
   def escapeDoubleQuotes(s: String): String = {

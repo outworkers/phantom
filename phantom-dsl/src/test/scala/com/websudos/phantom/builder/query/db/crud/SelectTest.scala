@@ -39,7 +39,6 @@ import com.websudos.util.testing._
 
 class SelectTest extends PhantomCassandraTestSuite {
 
-
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {

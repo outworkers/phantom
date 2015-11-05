@@ -43,6 +43,8 @@ import scala.concurrent.duration._
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
+import org.json4s.Formats
+
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
   private[phantom] def addTable() = Manager.addTable(this)
@@ -66,6 +68,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   def tableName: String = CQLQuery.escapeDoubleQuotes(_name)
 
   def fromRow(r: Row): R
+
+  val formats: Formats = JsonUtils.formats
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.

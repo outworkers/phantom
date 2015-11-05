@@ -47,7 +47,7 @@ case class JsonClass(
 
 class JsonTable extends CassandraTable[JsonTable, JsonClass] {
 
-  implicit val formats = DefaultFormats
+  implicit val liftwebFormats = DefaultFormats
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 

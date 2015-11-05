@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.column
 
+import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.reflect.runtime.{currentMirror => cm}
@@ -68,7 +69,9 @@ private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boo
   private[phantom] val isMapKeyIndex = false
 
   private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
+    val ret = cm.reflect(this).symbol.name.toTypeName.decodedName.toString
+    Manager.logger.debug(s"Getting column name from type name ${ret}")
+    ret
   }
   
   def name: String = CQLQuery.escapeDoubleQuotes(_name)

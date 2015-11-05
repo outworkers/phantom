@@ -34,6 +34,8 @@ import com.websudos.phantom.builder.serializers._
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.Manager
 
+import org.json4s.Formats
+
 private[phantom] object QueryBuilder {
 
   case object Create extends CreateTableBuilder
@@ -64,8 +66,8 @@ private[phantom] object QueryBuilder {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
   }
 
-  def json(json: String): CQLQuery = {
-    val cql = CQLQuery.empty.forcePad.append(CQLSyntax.json).forcePad.append("'").append(CQLQuery.handleCaseSensitiveFieldNames(json)).append("'")
+  def json(json: String, formats: Formats): CQLQuery = {
+    val cql = CQLQuery.empty.forcePad.append(CQLSyntax.json).forcePad.append("'").append(CQLQuery.handleCaseSensitiveFieldNames(json, formats)).append("'")
 
     Manager.logger.debug(s"QueryBuilder.json called for json ${json} produced query ${cql.queryString}")
 

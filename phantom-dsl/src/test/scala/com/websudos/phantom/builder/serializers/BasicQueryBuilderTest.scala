@@ -1,12 +1,12 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.{CQLQuery, QueryBuilderTest}
+import com.websudos.phantom.builder.query.{JsonUtils, CQLQuery, QueryBuilderTest}
 
 class BasicQueryBuilderTest extends QueryBuilderTest {
   "The QueryBuilder should perform basic operations" - {
     "should append the JSON keyword to a insert statement" in {
-      val qb = CQLQuery(s"INSERT INTO ${QueryBuilder.keyspace("phantom", "tableName").queryString}").append(QueryBuilder.json("""{"someJsonValue": 10}""")).queryString
+      val qb = CQLQuery(s"INSERT INTO ${QueryBuilder.keyspace("phantom", "tableName").queryString}").append(QueryBuilder.json("""{"someJsonValue": 10}""", JsonUtils.formats)).queryString
 
       qb shouldEqual """INSERT INTO phantom."tableName" JSON '{"\"someJsonValue\"":10}'"""
     }

@@ -1,16 +1,20 @@
 package com.websudos.phantom.builder.query
 
 import com.websudos.phantom.Manager
+import com.websudos.phantom.builder.query.CQLQuery._
 
 import java.net.InetAddress
 import java.text.SimpleDateFormat
 
-import com.websudos.phantom.builder.query.CQLQuery._
+import org.joda.time.DateTime
+import org.joda.time.format._
+
 import org.json4s.Extraction._
 import org.json4s.jackson.JsonMethods
 import org.json4s.jackson.Serialization._
 import org.json4s.{Formats, _}
 
+import scala.math.BigInt
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.runtime.universe._
 import scala.reflect.Manifest
@@ -18,16 +22,17 @@ import scala.reflect.Manifest
 /**
  * Created by rbolen on 10/29/15.
  */
-trait JsonUtils {
-
+object JsonUtils {
   val defaultFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
   }
-  implicit val formats = defaultFormats + InetAddressSerializer + UuidSerializer + ScalaBigIntSerializer
+  implicit val formats = defaultFormats + InetAddressSerializer + UuidSerializer + ScalaBigIntSerializer + JodaDateTimeSerializer
+}
 
-  def getRecord[Record](json: String)(implicit mf: Manifest[Record]): Record = {
+trait JsonUtils {
+  def getRecord[Record](json: String, formats: Formats = JsonUtils.formats)(implicit mf: Manifest[Record]): Record = {
     Manager.logger.debug(s"getRecord called for json => ${json}")
-    //    val jObject = JsonMethods.parse(json.substring(4, json.length - 1)).asInstanceOf[JObject] // Chomp the 'Row[' and ']' off the string
+
     val jObject = JsonMethods.parse(json).asInstanceOf[JObject] // Chomp the 'Row[' and ']' off the string
 
     Manager.logger.debug(s"jObject parsed from json ${jObject}")
@@ -36,9 +41,9 @@ trait JsonUtils {
 
     Manager.logger.debug(s"modified tuples ${unwrappedJObject}")
 
-    implicitly[TypeTag[Record]]
+//    implicitly[TypeTag[Record]]
 
-    unwrappedJObject.extract[Record]
+    unwrappedJObject.extract(formats, mf)
   }
 
   def unwrapJObject(map: Map[String, Any]): JObject = {
@@ -84,10 +89,6 @@ trait JsonUtils {
         case jb: JBool => (unwrap(x._1), jb)
         case m: Map[String, JValue] => (unwrap(x._1), unwrapJObject(m))
         case l: List[Any] => (unwrap(x._1), unwrapJArray(l))
-//        case s: String => (unwrap(x._1), JString(s))
-//        case bi: BigInt => (unwrap(x._1), JInt(bi))
-//        case d: Double => (unwrap(x._1), JDouble(d))
-//        case b: Boolean => (unwrap(x._1), JBool(b))
         case default => {
           Manager.logger.debug(s"Unwrapping default value from JObject ${x._1} => ${default}")
           if (default != null) Manager.logger.debug(s"with type ${default.getClass().getCanonicalName()}")
@@ -162,7 +163,9 @@ trait JsonUtils {
 
   def parseToJObject(json: String): JObject = JsonMethods.parse(json).asInstanceOf[JObject]
 
-  def writeToString(jObject: JObject): String = write(jObject)
+  def writeToString(jObject: JObject, formats: Formats = JsonUtils.formats): String = {
+    write(jObject)(formats)
+  }
 
   def modifyJObject(jObject: JObject): JObject = {
     Manager.logger.debug(s"modifyJObject ${jObject}")
@@ -257,6 +260,15 @@ trait JsonUtils {
     }
   }
 }
+
+case object JodaDateTimeSerializer extends CustomSerializer[org.joda.time.DateTime](format => ( {
+  case JNull => null
+  case JString(s) => {
+    DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").parseDateTime(s)
+  }
+}, {
+  case d: DateTime => JString(d.toString())
+}))
 
 case object InetAddressSerializer extends CustomSerializer[java.net.InetAddress](format => ( {
   case JString(s) => InetAddress.getByName(s)

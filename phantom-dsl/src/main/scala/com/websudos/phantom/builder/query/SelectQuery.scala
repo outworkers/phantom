@@ -44,6 +44,8 @@ import scala.reflect.Manifest
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 
+import org.json4s.Formats
+
 class SelectQuery[
 Table <: CassandraTable[Table, _],
 Record,
@@ -189,7 +191,7 @@ Chain <: WhereBound
   def fromJsonRow(r: Row)(implicit mf: Manifest[Record]): Record = {
     val s = r.getString(0)
 
-    getRecord(s)
+    getRecord(s, table.formats)
   }
 
   final def json()(implicit keySpace: KeySpace, mf: Manifest[Record]): SelectQuery[Table, Record, Limit, Ordered, Status, Chain] = {

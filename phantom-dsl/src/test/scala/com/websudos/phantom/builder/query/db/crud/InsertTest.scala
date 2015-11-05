@@ -49,6 +49,8 @@ class InsertTest extends PhantomCassandraTestSuite with JsonUtils {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
+  implicit val formats = JsonUtils.formats
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     Primitives.insertSchema()
