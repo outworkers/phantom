@@ -35,10 +35,10 @@ import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise, Ret
 import com.websudos.phantom.Manager
 import com.websudos.phantom.connectors.KeySpace
 
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture, Promise => ScalaPromise}
-import scala.util.{Failure, Success}
+import scala.concurrent.{Future => ScalaFuture, Promise => ScalaPromise}
 
 private[phantom] trait CassandraOperations {
+
 
   implicit class RichSession(val session: Session) {
     def protocolVersion: ProtocolVersion = {
@@ -57,7 +57,7 @@ private[phantom] trait CassandraOperations {
   }
 
   protected[this] def scalaQueryStringToPromise(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: ${st}")
+    Manager.logger.debug(s"Executing query: $st")
 
     val promise = ScalaPromise[ResultSet]()
 
@@ -79,6 +79,8 @@ private[phantom] trait CassandraOperations {
 
 
   protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
+    Manager.logger.debug(s"Executing query: $str")
+
     val promise = TwitterPromise[ResultSet]()
     val future = session.executeAsync(str)
 
@@ -93,19 +95,6 @@ private[phantom] trait CassandraOperations {
       }
     }
     Futures.addCallback(future, callback, Manager.executor)
-    promise
-  }
-
-  protected[this] def scalaFutureToTwitter[R](future: ScalaFuture[R])(implicit ctx: ExecutionContext): TwitterFuture[R] = {
-    val promise = TwitterPromise[R]()
-
-    future onComplete {
-      case Success(res) => promise update Return(res)
-      case Failure(err) => {
-        Manager.logger.error(err.getMessage)
-        promise update Throw(err)
-      }
-    }
     promise
   }
 }

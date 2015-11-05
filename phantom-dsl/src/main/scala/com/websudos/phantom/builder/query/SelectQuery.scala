@@ -65,6 +65,8 @@ class SelectQuery[
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
+  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
+
   def fromRow(row: Row): Record = rowFunc(row)
 
   override val qb: CQLQuery = {
@@ -166,8 +168,6 @@ class SelectQuery[
        parameters = parameters
      )
   }
-
-  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
 
   def bind[V1](v1: V1)
                     (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): QueryType[Table, Record, Limit, Order, Status, Chain, PSSpecified] = {

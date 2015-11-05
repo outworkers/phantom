@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.query.prepared.{PrepareMark, PNil, ParametricValue, ParametricNode}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
@@ -40,7 +41,8 @@ import org.joda.time.DateTime
 class InsertQuery[
   Table <: CassandraTable[Table, _],
   Record,
-  Status <: ConsistencyBound
+  Status <: ConsistencyBound,
+  PS <: PSBound
 ](
   table: Table,
   val init: CQLQuery,
@@ -48,10 +50,13 @@ class InsertQuery[
   valuePart: ValuePart = ValuePart.empty,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val consistencyLevel: Option[ConsistencyLevel] = None,
+  override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
+  type **[PV, PN <: ParametricNode] = ParametricValue[PV, PN]
+
+  final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -59,11 +64,40 @@ class InsertQuery[
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
       lightweightPart,
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 
-  final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status] = {
+  final def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, PSUnspecified[ParametricValue[RR, PNil]]] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart append CQLQuery(col(table).name),
+      valuePart append value.qb,
+      usingPart,
+      lightweightPart,
+      consistencyLevel,
+      parameters
+    )
+  }
+
+  def bind[V1](v1: V1)
+      (implicit ev: PS =:= PSUnspecified[V1 ** PNil]): InsertQuery[Table, Record, Status, PSSpecified] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart,
+      valuePart,
+      usingPart,
+      lightweightPart,
+      consistencyLevel = consistencyLevel,
+      parameters = Seq(v1)
+    )
+  }
+
+
+  final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
     val insertValue = if (value != null) col(table).asCql(value) else null.asInstanceOf[String]
 
     new InsertQuery(
@@ -73,7 +107,8 @@ class InsertQuery[
       valuePart append CQLQuery(insertValue),
       usingPart,
       lightweightPart,
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 
@@ -81,7 +116,7 @@ class InsertQuery[
     (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
   }
 
-  def ttl(seconds: Long): InsertQuery[Table, Record, Status] = {
+  def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -89,19 +124,20 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.ttl(seconds.toString),
       lightweightPart,
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 
-  def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status] = {
+  def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status, PS] = {
     ttl(seconds.toSeconds)
   }
 
-  def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status] = {
+  def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
     ttl(duration.inSeconds)
   }
 
-  final def timestamp(value: Long): InsertQuery[Table, Record, Status] = {
+  final def timestamp(value: Long): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -109,12 +145,12 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.timestamp(value.toString),
       lightweightPart,
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified] = {
-
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
     if (session.v3orNewer) {
       new InsertQuery(
         table,
@@ -123,7 +159,8 @@ class InsertQuery[
         valuePart,
         usingPart,
         lightweightPart,
-        Some(level)
+        Some(level),
+        parameters
       )
     } else {
       new InsertQuery(
@@ -132,16 +169,18 @@ class InsertQuery[
         columnsPart,
         valuePart,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
-        lightweightPart
+        lightweightPart,
+        None,
+        parameters
       )
     }
   }
 
-  final def timestamp(value: DateTime): InsertQuery[Table, Record, Status] = {
+  final def timestamp(value: DateTime): InsertQuery[Table, Record, Status, PS] = {
     timestamp(value.getMillis)
   }
 
-  def ifNotExists(): InsertQuery[Table, Record, Status] = {
+  def ifNotExists(): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -149,17 +188,18 @@ class InsertQuery[
       valuePart,
       usingPart,
       lightweightPart append CQLQuery(CQLSyntax.ifNotExists),
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 }
 
 object InsertQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified]
+  type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified, NoPSQuery]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
-    new InsertQuery[T, R, Unspecified](
+    new InsertQuery[T, R, Unspecified, NoPSQuery](
       table,
       QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName))
     )
