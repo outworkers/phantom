@@ -101,7 +101,11 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
     val chain = for {
       store1 <- StaticCollectionTableTest.store(sample).future()
       store2 <- StaticCollectionTableTest.store(sample2).future()
-      update <- StaticCollectionTableTest.update.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).modify(_.staticList append "test").future()
+      update <- StaticCollectionTableTest.update.where(_.id eqs id)
+        .and(_.clusteringId eqs sample.clustering)
+        .modify(_.staticList append "test")
+        .future()
+
       get <- StaticCollectionTableTest.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
     } yield get
 
