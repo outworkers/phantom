@@ -75,6 +75,8 @@ class PreparedWhereClause extends Clause {
   class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
+object PreparedWhereClause extends PreparedWhereClause
+
 /**
  * Object enclosing a path dependant definition for compare-and-set operations.
  */
@@ -98,8 +100,6 @@ object CompareAndSetClause extends Clause {
    */
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
-
-object PreparedWhereClause extends PreparedWhereClause
 
 object OrderingClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)

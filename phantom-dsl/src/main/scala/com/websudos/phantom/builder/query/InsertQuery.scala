@@ -69,7 +69,7 @@ class InsertQuery[
     )
   }
 
-  def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, RR :: PS] = {
+  final def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, RR :: PS] = {
     new InsertQuery(
       table,
       init,

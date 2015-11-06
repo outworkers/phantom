@@ -45,17 +45,10 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 
 /**
- * Class representing prepared statement
- * @param table This table composed into prepared statement abstraction
- * @tparam T Type of this table
- * @tparam R Type of record
+ * Main representation of a Cassandra table.
+ * @tparam T Type of this table.
+ * @tparam R Type of record.
  */
-class PreparedSelectTable[T <: CassandraTable[T, R], R](table: CassandraTable[T, R]) {
-
-  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](table.asInstanceOf[T], Nil, table.fromRow)
-
-}
-
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
 
@@ -99,8 +92,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
-
-  def prepare: PreparedSelectTable[T, R] = new PreparedSelectTable(self)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
