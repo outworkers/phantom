@@ -15,8 +15,6 @@
  */
 package com.websudos.phantom.connectors
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import com.datastax.driver.core.{Cluster, Session}
 
 import scala.concurrent.blocking
@@ -29,15 +27,11 @@ import scala.concurrent.blocking
  */
 class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
 
-
-  val counter = new AtomicInteger()
-
-
   val cluster: Cluster = {
 
     val cb = Cluster.builder
 
-    val composed = builder(cb).build
+    val composed = builder(cb).withoutJMXReporting().withoutMetrics().build
 
     composed
   }
