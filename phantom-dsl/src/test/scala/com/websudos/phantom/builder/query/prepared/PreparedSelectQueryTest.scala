@@ -19,7 +19,7 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     val operation = for {
       truncate <- Recipes.truncate.future
       insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select.p_where(_.url eqs ?).bind(Tuple1(recipe.url)).one()
+      select <- Recipes.select.p_where(_.url eqs ?).bind(recipe.url.tp).one()
     } yield select
 
     operation.successful {

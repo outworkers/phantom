@@ -215,6 +215,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
   implicit lazy val context = Manager.scalaExecutor
 
+  implicit class AutoTupler[V](val v: V) extends AnyVal {
+    def tp: Tuple1[V] = Tuple1(v)
+
+    def tuple = tp _
+  }
+
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
