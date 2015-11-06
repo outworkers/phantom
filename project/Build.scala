@@ -50,34 +50,34 @@ object Build extends Build {
   val ThriftVersion = "0.5.0"
   val DieselEngineVersion = "0.2.2"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    publishMavenStyle := true,
-    publishTo <<= version.apply {
-      v =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true },
-    pomExtra :=
-      <url>https://github.com/websudos/phantom</url>
-        <scm>
-          <url>git@github.com:websudos/phantom.git</url>
-          <connection>scm:git:git@github.com:websudos/phantom.git</connection>
-        </scm>
-        <developers>
-          <developer>
-            <id>alexflav</id>
-            <name>Flavian Alexandru</name>
-            <url>http://github.com/alexflav23</url>
-          </developer>
-        </developers>
-  )
+  // val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
+  //   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+  //   publishMavenStyle := true,
+  //   publishTo <<= version.apply {
+  //     v =>
+  //       val nexus = "https://oss.sonatype.org/"
+  //       if (v.trim.endsWith("SNAPSHOT"))
+  //         Some("snapshots" at nexus + "content/repositories/snapshots")
+  //       else
+  //         Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  //   },
+  //   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
+  //   publishArtifact in Test := false,
+  //   pomIncludeRepository := { _ => true },
+  //   pomExtra :=
+  //     <url>https://github.com/websudos/phantom</url>
+  //       <scm>
+  //         <url>git@github.com:websudos/phantom.git</url>
+  //         <connection>scm:git:git@github.com:websudos/phantom.git</connection>
+  //       </scm>
+  //       <developers>
+  //         <developer>
+  //           <id>alexflav</id>
+  //           <name>Flavian Alexandru</name>
+  //           <url>http://github.com/alexflav23</url>
+  //         </developer>
+  //       </developers>
+  // )
 
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
@@ -89,15 +89,15 @@ object Build extends Build {
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
-  val publishSettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
-    bintray.BintrayKeys.bintrayRepository := "oss-releases",
-    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
-  )
+  // val publishSettings: Seq[Def.Setting[_]] = Seq(
+  //   publishMavenStyle := true,
+  //   bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
+  //   bintray.BintrayKeys.bintrayRepository := "oss-releases",
+  //   bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
+  //   publishArtifact in Test := false,
+  //   pomIncludeRepository := { _ => true},
+  //   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+  // )
 
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -134,7 +134,7 @@ object Build extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings // ++ publishSettings 
 
   lazy val phantom = Project(
     id = "phantom",
@@ -161,8 +161,7 @@ object Build extends Build {
     id = "phantom-dsl",
     base = file("phantom-dsl"),
     settings = Defaults.coreDefaultSettings ++
-      sharedSettings ++
-      publishSettings
+      sharedSettings // ++ publishSettings
   ).configs(
       PerformanceTest
     ).settings(
@@ -239,7 +238,7 @@ object Build extends Build {
     base = file("phantom-thrift"),
     settings = Defaults.coreDefaultSettings ++
       sharedSettings ++
-      publishSettings ++
+      // publishSettings ++
       ScroogeSBT.newSettings
   ).settings(
     name := "phantom-thrift",
