@@ -135,6 +135,7 @@ object Build extends Build {
       "ch.qos.logback"               % "logback-classic"                    % "1.1.3",
       "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
     ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
     fork in Test := false,
     javaOptions in ThisBuild ++= Seq(
       "-Xmx2G",

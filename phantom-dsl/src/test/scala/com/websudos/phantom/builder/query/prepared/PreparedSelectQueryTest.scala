@@ -34,7 +34,6 @@ import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
 import com.websudos.util.testing._
 
-
 class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
