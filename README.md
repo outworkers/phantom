@@ -75,6 +75,8 @@ Adopters
 This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
+- [ING](http://www.ing.com/en.htm)
+- [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [ING](http://www.ing.com/en.htm)

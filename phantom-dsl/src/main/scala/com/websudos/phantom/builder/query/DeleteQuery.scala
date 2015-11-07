@@ -32,8 +32,10 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{PreparedWhereClause, CompareAndSetClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.ops.hlist.Reverse
+import shapeless.{Generic, ::, HNil, HList}
 
 import scala.annotation.implicitNotFound
 
@@ -43,13 +45,15 @@ class DeleteQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null) with Batchable {
+  override val consistencyLevel: Option[ConsistencyLevel] = None,
+  override val parameters: Seq[Any] = Seq.empty
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -57,8 +61,9 @@ class DeleteQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = DeleteQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: HList
+  ] = DeleteQuery[T, R, L, O, S, C, P]
 
   protected[this] def create[
     T <: CassandraTable[T, _],
@@ -66,9 +71,10 @@ class DeleteQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
-    new DeleteQuery[T, R, L, O, S, C](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
+    C <: WhereBound,
+    P <: HList
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
+    new DeleteQuery[T, R, L, O, S, C, P](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
   }
 
   /**
@@ -78,9 +84,49 @@ class DeleteQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
-    val query = QueryBuilder.Update.where(condition(table).qb)
-    new DeleteQuery(table, init, wherePart append query, casPart, consistencyLevel)
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    new DeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      casPart = casPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  /**
+   * The where method of a select query that takes parametric predicate as an argument.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+      (implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    new DeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      casPart = casPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
+  ): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
+    new DeleteQuery(
+      table,
+      init,
+      wherePart,
+      casPart,
+      consistencyLevel = consistencyLevel,
+      parameters = v1.productIterator.toSeq
+    )
   }
 
   /**
@@ -90,9 +136,35 @@ class DeleteQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
-    new DeleteQuery(table, init, wherePart append query, casPart, consistencyLevel)
+    new DeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart append query,
+      casPart = casPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  /**
+   * The and operator that adds parametric condition to the where predicates.
+   * @param condition A where clause condition restricted by path dependant types.
+   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+   * @return
+   */
+  @implicitNotFound("You cannot add condition in this place of the query")
+  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+      (implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    new DeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      casPart = casPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
   }
 
   /**
@@ -102,9 +174,15 @@ class DeleteQuery[
    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalDeleteQuery(table, init, wherePart, casPart append query, consistencyLevel)
+  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    new ConditionalDeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart,
+      casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
   }
 
   override val qb: CQLQuery = {
@@ -114,7 +192,7 @@ class DeleteQuery[
 
 object DeleteQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
@@ -131,25 +209,28 @@ sealed class ConditionalDeleteQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: HList
 ](table: Table,
   val init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val consistencyLevel: Option[ConsistencyLevel] = None,
+  override val parameters: Seq[Any] = Seq.empty
  ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
     (wherePart merge casPart) build init
   }
 
-  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalDeleteQuery(
       table,
       init,
       wherePart,
       casPart append QueryBuilder.Update.and(clause(table).qb),
-      consistencyLevel
+      consistencyLevel,
+      parameters
     )
   }
 }
