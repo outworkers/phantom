@@ -29,35 +29,6 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.websudos.phantom.builder.query._
+class PreparedDeleteQueryTest {
 
-import com.websudos.phantom.builder.clauses.WhereClause
-
-sealed trait ParametricNode {
-  type Out
 }
-
-final class ParametricValue[PVT, P <: ParametricNode] extends ParametricNode {
-  override type Out = PVT
-}
-
-final class PNil extends ParametricNode {
-  type Out = Nothing
-}
-
-/**
- * Condition resulting from creating predicate with a parameter.
- * @tparam V Type of parameter.
- */
-trait ParametricCondition[V] {
-  def parametrize(value: V): WhereClause.Condition
-}
-
-private[phantom] trait PrepareMark {
-
-  def symbol: String = "?"
-
-  def qb: CQLQuery = CQLQuery("?")
-}
-
-object ? extends PrepareMark

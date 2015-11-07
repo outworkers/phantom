@@ -34,12 +34,14 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
-import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
+import com.websudos.phantom.{CassandraTable, Manager}
+import org.joda.time.DateTime
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
@@ -50,11 +52,39 @@ trait ExecutableStatement extends CassandraOperations {
 
   def queryString: String = qb.terminate().queryString
 
+  /**
+   * Prepared statement parameters
+   */
+  def parameters: Seq[Any] = Nil
+
+  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[Any] = {
+    parameters map {
+      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[Any]].get
+      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
+      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
+      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
+      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].getMillis
+      case x => x
+    }
+  }
+
+  def baseStatement()(implicit session: Session) = {
+    parameters match {
+      case Nil =>
+        session.newSimpleStatement(qb.terminate().queryString)
+      case someParameters => {
+        Manager.logger.debug("Executing prepared statement " + qb.queryString + " with bind params " + parameters.mkString(", "))
+
+        val params = flattenOpt(parameters).map(_.asInstanceOf[AnyRef])
+
+        session.prepare(qb.queryString).bind(params: _*)
+      }
+
+    }
+  }
+
   def statement()(implicit session: Session): Statement = {
-    consistencyLevel.fold(
-      session.newSimpleStatement(qb.terminate().queryString).asInstanceOf[Statement])(
-      level => session.newSimpleStatement(qb.terminate().queryString).setConsistencyLevel(level)
-    )
+    baseStatement.setConsistencyLevel(consistencyLevel.orNull)
   }
 
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
