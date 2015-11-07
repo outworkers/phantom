@@ -34,6 +34,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, UpdateClause, WhereClause}
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.{HNil, HList}
 
 import scala.annotation.implicitNotFound
 
@@ -43,7 +44,8 @@ class UpdateQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
@@ -51,7 +53,7 @@ class UpdateQuery[
   setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain](table, init, null, consistencyLevel) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null, consistencyLevel) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -63,8 +65,9 @@ class UpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ] = UpdateQuery[T, R, L, O, S, C]
+    C <: WhereBound,
+    P <: HList
+  ] = UpdateQuery[T, R, L, O, S, C, P]
 
 
   protected[this] def create[
@@ -73,9 +76,10 @@ class UpdateQuery[
     L <: LimitBound,
     O <: OrderBound,
     S <: ConsistencyBound,
-    C <: WhereBound
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C] = {
-    new UpdateQuery[T, R, L, O, S, C](
+    C <: WhereBound,
+    P <: HList
+  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
+    new UpdateQuery[T, R, L, O, S, C, P](
       t,
       q,
       UsingPart.empty,
@@ -86,7 +90,7 @@ class UpdateQuery[
     )
   }
 
-  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain] = {
+  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new UpdateQuery(
       table,
       init, usingPart,
@@ -105,7 +109,7 @@ class UpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new UpdateQuery(
       table,
       init,
@@ -124,7 +128,7 @@ class UpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned] = {
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new UpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart, consistencyLevel)
   }
@@ -335,12 +339,13 @@ sealed class ConditionalQuery[
 
 object UpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned]
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned](
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil](
       table,
-      QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
+      QueryBuilder.Update.update(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
+    )
   }
 
 }

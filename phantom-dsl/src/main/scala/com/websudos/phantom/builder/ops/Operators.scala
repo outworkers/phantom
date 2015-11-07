@@ -36,7 +36,8 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.column.TimeUUIDColumn
+import com.websudos.phantom.column.{Column, TimeUUIDColumn}
+import com.websudos.phantom.keys.PartitionKey
 import org.joda.time.DateTime
 
 sealed class Operator
@@ -77,9 +78,23 @@ sealed class MinTimeUUID extends Operator {
 }
 
 
+
+
+sealed class TokenOperator extends Operator {
+  def apply[
+    Owner <: CassandraTable[Owner, Record], Record
+  ](fn: Column[Owner, Record, _] with PartitionKey[_]*) = {
+    new OperatorClause.Condition(
+      QueryBuilder.Where.token(fn.map(_.name): _*)
+    )
+  }
+}
+
+
 trait Operators {
   object dateOf extends DateOfOperator
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
+  object token extends TokenOperator
 }
 
