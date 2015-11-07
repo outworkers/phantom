@@ -39,6 +39,7 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     Recipes.insertSchema()
+    ArticlesByAuthor.insertSchema()
   }
 
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
