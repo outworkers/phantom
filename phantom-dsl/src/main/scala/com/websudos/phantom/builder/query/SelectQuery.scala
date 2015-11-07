@@ -127,7 +127,6 @@ class SelectQuery[
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
    * @return
    */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
   override def where(condition: Table => WhereClause.Condition)
                     (implicit ev: Chain =:= Unchainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new SelectQuery(
@@ -135,6 +134,21 @@ class SelectQuery[
       rowFunc = rowFunc,
       init = init,
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      orderPart = orderPart,
+      limitedPart = limitedPart,
+      filteringPart = filteringPart,
+      count = count,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
