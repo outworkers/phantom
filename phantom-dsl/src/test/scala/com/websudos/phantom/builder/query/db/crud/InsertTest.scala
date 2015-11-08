@@ -288,13 +288,16 @@ class InsertTest extends PhantomCassandraTestSuite {
       get <- Recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
+    if (cassandraVersion > Version.`2.2.0`) {
+      whenReady(chain) {
+        res => {
+          res shouldBe defined
+          res.value shouldEqual sample
+        }
       }
+    } else {
+      chain.failing[Exception]
     }
-
   }
 
 }
