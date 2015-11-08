@@ -105,7 +105,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.14.1",
+    version := "1.14.2",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -198,6 +198,7 @@ object Build extends Build {
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
         "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
+        "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
@@ -281,6 +282,7 @@ object Build extends Build {
     name := "phantom-testkit",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
+      "com.websudos"                     %% "util-lift"                % UtilVersion,
       "com.websudos"                     %% "util-testing"             % UtilVersion
     )
   ).dependsOn(
