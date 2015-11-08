@@ -397,7 +397,7 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
       update <- Recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
-        .and(_.last_checked_at is recipe.lastCheckedAt)
+        .and(_.lastcheckedat is recipe.lastCheckedAt)
         .and(_.uid is recipe.uid).future()
       select2 <- Recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
@@ -433,7 +433,7 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
       update <- Recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
-        .and(_.last_checked_at is recipe.lastCheckedAt)
+        .and(_.lastcheckedat is recipe.lastCheckedAt)
         .and(_.uid is recipe.uid).execute()
 
       select2 <- Recipes.select.where(_.url eqs recipe.url).get()

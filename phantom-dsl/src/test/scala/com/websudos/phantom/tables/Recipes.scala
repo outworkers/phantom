@@ -54,7 +54,7 @@ class Recipes extends CassandraTable[Recipes, Recipe] {
 
   object servings extends OptionalIntColumn(this)
 
-  object last_checked_at extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn(this)
 
   object props extends MapColumn[Recipes, Recipe, String, String](this)
 
@@ -67,7 +67,7 @@ class Recipes extends CassandraTable[Recipes, Recipe] {
       description(r),
       ingredients(r),
       servings(r),
-      last_checked_at(r),
+      lastcheckedat(r),
       props(r),
       uid(r)
     )
@@ -84,7 +84,7 @@ object Recipes extends Recipes with PhantomCassandraConnector {
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)
       .value(_.ingredients, recipe.ingredients)
-      .value(_.last_checked_at, recipe.lastCheckedAt)
+      .value(_.lastcheckedat, recipe.lastCheckedAt)
       .value(_.props, recipe.props)
       .value(_.uid, recipe.uid)
       .value(_.servings, recipe.servings)
