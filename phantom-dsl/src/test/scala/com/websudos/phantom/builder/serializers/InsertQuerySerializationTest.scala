@@ -38,6 +38,8 @@ class InsertQuerySerializationTest extends QueryBuilderTest with OptionValues {
 
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer
 
+  implicit val formats = net.liftweb.json.DefaultFormats
+
   "An INSERT query" - {
     "should correctly chain the addition of columns and values to the builder" - {
 
@@ -79,6 +81,15 @@ class InsertQuerySerializationTest extends QueryBuilderTest with OptionValues {
 
         query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
       }
+
+      "should serialize a JSON clause as the insert part" in {
+        val sample = gen[Recipe]
+        val query = Recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
+
+        Console.println(query)
+
+      }
+
 
     }
   }
