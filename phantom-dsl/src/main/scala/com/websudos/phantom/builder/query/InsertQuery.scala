@@ -56,6 +56,17 @@ class InsertQuery[
   override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
 
+  final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
+    new InsertJsonQuery(
+      table = table,
+      init = QueryBuilder.Insert.json(init, value),
+      usingPart = usingPart,
+      lightweightPart = lightweightPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
   final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
@@ -214,13 +225,15 @@ object InsertQuery {
 class InsertJsonQuery[
   Table <: CassandraTable[Table, _],
   Record,
-  Status <: ConsistencyBound
+  Status <: ConsistencyBound,
+  PS <: HList
 ](
   table: Table,
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val consistencyLevel: Option[ConsistencyLevel] = None,
+  override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
 
   override def qb: CQLQuery = {

@@ -30,14 +30,13 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.{Recipe, Recipes}
-import net.liftweb.json.{ compactRender, Extraction }
-import com.websudos.util.testing._
+import com.websudos.phantom.tables.Recipes
+import com.websudos.util.lift.UUIDSerializer
+import org.scalatest.OptionValues
 
+class InsertQuerySerializationTest extends QueryBuilderTest with OptionValues {
 
-class InsertQuerySerializationTest extends QueryBuilderTest {
-
-  implicit val formats = net.liftweb.json.DefaultFormats
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer
 
   "An INSERT query" - {
     "should correctly chain the addition of columns and values to the builder" - {
@@ -80,15 +79,6 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
 
         query shouldEqual "INSERT INTO phantom.Recipes (url, ingredients) VALUES('test', ['test']) IF NOT EXISTS;"
       }
-
-      "should serialize a JSON clause as the insert part" in {
-        val sample = gen[Recipe]
-        val query = Recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
-
-        Console.println(query)
-
-      }
-
 
     }
   }

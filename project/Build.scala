@@ -198,6 +198,7 @@ object Build extends Build {
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
         "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
+        "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
