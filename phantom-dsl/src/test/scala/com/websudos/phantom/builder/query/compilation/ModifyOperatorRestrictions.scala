@@ -29,13 +29,15 @@
  */
 package com.websudos.phantom.builder.query.compilation
 
-import com.websudos.phantom.PhantomKeySpace
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TimeSeriesTable
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution with PhantomKeySpace {
+class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
+
+  implicit val keySpace: KeySpace = KeySpace("phantom")
 
   val t = TimeSeriesTable
   val c = context

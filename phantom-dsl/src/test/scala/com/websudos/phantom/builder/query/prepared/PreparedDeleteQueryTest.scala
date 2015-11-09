@@ -27,20 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query
+package com.websudos.phantom.builder.query.prepared
 
-import com.websudos.phantom.dsl._
-import org.scalatest.{Matchers, FreeSpec, Suite}
+class PreparedDeleteQueryTest {
 
-trait KeySpaceSuite {
-
-  self: Suite =>
-
-  implicit val keySpace = KeySpace("phantom")
 }
-
-trait SerializationTest extends Matchers with KeySpaceSuite {
-  self: Suite =>
-}
-
-trait QueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite

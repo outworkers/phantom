@@ -29,16 +29,50 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import java.util.UUID
+
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
 import com.websudos.phantom.testkit._
+import com.websudos.util.lift.UUIDSerializer
 import com.websudos.util.testing._
+import net.liftweb.json.JsonAST.{JString, JValue}
+import net.liftweb.json._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
+import com.websudos.phantom.builder.primitives.DefaultPrimitives
+
+import scala.util.control.NonFatal
+
+sealed class DateTimeSerializer extends Serializer[DateTime] with DefaultPrimitives {
+  private val Class = classOf[UUID]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), DateTime] = {
+    case (TypeInfo(Class, _), json) => json match {
+      case JString(value) => try {
+        DateTimeIsPrimitive.fromString(value)
+      }  catch {
+        case NonFatal(err) => {
+          val exception =  new MappingException(s"Couldn't extract an UUID from $value")
+          exception.initCause(err)
+          throw exception
+        }
+      }
+      case x => throw new MappingException("Can't convert " + x + " to UUID")
+    }
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case x: DateTime => JString(DateTimeIsPrimitive.asCql(x))
+  }
+}
+
 
 class InsertTest extends PhantomCassandraTestSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -240,6 +274,29 @@ class InsertTest extends PhantomCassandraTestSuite {
       res => {
         res.value shouldEqual row
       }
+    }
+  }
+
+
+  it should "serialize a JSON clause as the insert part" in {
+    val sample = gen[Recipe]
+
+    Console.println(pretty(render(Extraction.decompose(sample))))
+
+    val chain = for {
+      store <- Recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
+      get <- Recipes.select.where(_.url eqs sample.url).one()
+    } yield get
+
+    if (cassandraVersion > Version.`2.2.0`) {
+      whenReady(chain) {
+        res => {
+          res shouldBe defined
+          res.value shouldEqual sample
+        }
+      }
+    } else {
+      chain.failing[Exception]
     }
   }
 

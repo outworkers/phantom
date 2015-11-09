@@ -94,7 +94,9 @@ object Build extends Build {
   val publishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
-    bintray.BintrayKeys.bintrayRepository := "oss-releases",
+    bintray.BintrayKeys.bintrayRepository <<= scalaVersion.apply {
+      v => if (v.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases"
+    },
     bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
@@ -104,7 +106,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.13.0",
+    version := "1.14.2",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -134,14 +136,19 @@ object Build extends Build {
       "ch.qos.logback"               % "logback-classic"                    % "1.1.3",
       "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
     ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
     fork in Test := false,
-    javaOptions in Test ++= Seq("-Xmx2G", "-Djava.net.preferIPv4Stack=true", "-Dio.netty.resourceLeakDetection"),
+    javaOptions in ThisBuild ++= Seq(
+      "-Xmx2G",
+      "-Djava.net.preferIPv4Stack=true",
+      "-Dio.netty.resourceLeakDetection"
+    ),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
     id = "phantom",
@@ -192,6 +199,7 @@ object Build extends Build {
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
         "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
+        "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
@@ -275,6 +283,7 @@ object Build extends Build {
     name := "phantom-testkit",
     libraryDependencies ++= Seq(
       "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
+      "com.websudos"                     %% "util-lift"                % UtilVersion,
       "com.websudos"                     %% "util-testing"             % UtilVersion
     )
   ).dependsOn(

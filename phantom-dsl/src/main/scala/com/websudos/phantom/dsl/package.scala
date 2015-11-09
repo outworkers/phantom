@@ -135,6 +135,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     val SERIAL = CLevel.SERIAL
   }
 
+  type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
+  val ContactPoint = com.websudos.phantom.connectors.ContactPoint
+  val ContactPoints = com.websudos.phantom.connectors.ContactPoints
+
   implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
     new Primitive[T#Value] {
 
@@ -161,7 +165,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def ltToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.lt(
-          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.token(p.name).queryString,
           QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
@@ -170,7 +174,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def lteToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.lte(
-          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.token(p.name).queryString,
           QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
@@ -179,7 +183,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def gtToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.gt(
-          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.token(p.name).queryString,
           QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
@@ -188,7 +192,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def gteToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.gte(
-          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.token(p.name).queryString,
           QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
@@ -197,7 +201,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def eqsToken (value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.eqs(
-          QueryBuilder.Where.token(p.name),
+          QueryBuilder.Where.token(p.name).queryString,
           QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
         )
       )
@@ -209,6 +213,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   }
 
   implicit lazy val context = Manager.scalaExecutor
+
+  implicit class AutoTupler[V](val v: V) extends AnyVal {
+    def tp: Tuple1[V] = Tuple1(v)
+
+    def tuple = tp _
+  }
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Condition = {

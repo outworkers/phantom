@@ -66,6 +66,7 @@ trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
   with Matchers
   with Assertions
+  with OptionValues
   with AsyncAssertions
   with BeforeAndAfterAll {
   self : BeforeAndAfterAll with Suite =>

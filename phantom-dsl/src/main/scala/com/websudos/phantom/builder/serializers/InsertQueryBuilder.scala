@@ -14,6 +14,16 @@ private[phantom] trait InsertQueryBuilder {
     insert(table.queryString)
   }
 
+  /**
+   * Creates a CQL 2.2 JSON insert clause using a pre-serialized JSON string.
+   * @param init The initialization query of the Insert clause, generally comprising the "INSERT INTO tableName" part.
+   * @param jsonString The pre-serialized JSON string to insert into the Cassandra table.
+   * @return A CQL query with the JSON prefix appended to the insert.
+   */
+  def json(init: CQLQuery, jsonString: String): CQLQuery = {
+    init.pad.append("JSON").pad.append(CQLQuery.escape(jsonString))
+  }
+
   def columns(list: List[CQLQuery]) = {
     CQLQuery.empty.wrapn(list.map(_.queryString))
   }

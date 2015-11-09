@@ -27,20 +27,54 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query
+package com.websudos.phantom.builder.query.prepared
 
+import com.websudos.phantom.tables.{Recipe, Recipes}
+import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
+import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
-import org.scalatest.{Matchers, FreeSpec, Suite}
 
-trait KeySpaceSuite {
+class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
 
-  self: Suite =>
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Recipes.insertSchema()
+  }
 
-  implicit val keySpace = KeySpace("phantom")
+  it should "serialize an insert query" in {
+
+    val sample = gen[Recipe]
+
+    val query = Recipes.insert
+      .p_value(_.uid, ?)
+      .p_value(_.url, ?)
+      .p_value(_.servings, ?)
+      .p_value(_.ingredients, ?)
+      .p_value(_.description, ?)
+      .p_value(_.lastcheckedat, ?)
+      .p_value(_.props, ?)
+
+    val exec = query.bind(
+      sample.uid,
+      sample.url,
+      sample.servings,
+      sample.ingredients,
+      sample.description,
+      sample.lastCheckedAt,
+      sample.props
+    ).future()
+
+    val chain = for {
+      store <- exec
+      get <- Recipes.select.where(_.url eqs sample.url).one()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
+
 }
-
-trait SerializationTest extends Matchers with KeySpaceSuite {
-  self: Suite =>
-}
-
-trait QueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite

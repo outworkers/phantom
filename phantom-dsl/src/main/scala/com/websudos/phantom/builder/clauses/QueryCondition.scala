@@ -40,7 +40,7 @@ sealed trait Clause {
   sealed abstract class QueryCondition(val qb: CQLQuery)
 }
 
-object WhereClause extends Clause {
+class WhereClause extends Clause {
 
   /**
    * A path dependant type condition used explicitly for WHERE clauses.
@@ -56,7 +56,26 @@ object WhereClause extends Clause {
    * @param qb The underlying query builder of the condition.
    */
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+
+  /**
+   *
+   * @tparam T Type of argument
+   */
+  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition(qb)
 }
+
+object WhereClause extends WhereClause
+
+class PreparedWhereClause extends Clause {
+
+  /**
+   *
+   * @tparam T Type of argument
+   */
+  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition(qb)
+}
+
+object PreparedWhereClause extends PreparedWhereClause
 
 /**
  * Object enclosing a path dependant definition for compare-and-set operations.

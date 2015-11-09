@@ -1,6 +1,8 @@
 phantom [![Build Status](https://travis-ci.org/websudos/phantom.svg?branch=develop)](https://travis-ci.org/websudos/phantom) [![Coverage Status](https://coveralls.io/repos/websudos/phantom/badge.svg)](https://coveralls.io/r/websudos/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) [![Download](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion)
 
 ==============
+
+[![Join the chat at https://gitter.im/websudos/phantom](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/websudos/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Reactive type-safe Scala DSL for Cassandra
 
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@websudos](https://twitter.com/websudos).
@@ -73,6 +75,8 @@ Adopters
 This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
+- [ING](http://www.ing.com/en.htm)
+- [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [ING](http://www.ing.com/en.htm)

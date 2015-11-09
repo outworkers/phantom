@@ -30,8 +30,8 @@
 package com.websudos.phantom
 
 import com.datastax.driver.core.{Row, Session}
+import com.websudos.phantom.builder.ops.SelectColumn
 import com.websudos.phantom.builder.query._
-import com.websudos.phantom.builder.query.prepared.PreparedBuilder
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
@@ -43,9 +43,14 @@ import scala.concurrent.duration._
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
-abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] {
 
-  private[phantom] def addTable() = Manager.addTable(this)
+/**
+ * Main representation of a Cassandra table.
+ * @tparam T Type of this table.
+ * @tparam R Type of record.
+ */
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
+
 
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.ready(create.ifNotExists().future(), 3.seconds)
@@ -87,8 +92,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
-
-  def prepare()(implicit keySpace: KeySpace): PreparedBuilder[T, R] = new PreparedBuilder[T, R](this.asInstanceOf[T])
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
