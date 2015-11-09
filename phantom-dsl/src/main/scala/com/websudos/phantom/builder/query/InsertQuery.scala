@@ -56,11 +56,21 @@ class InsertQuery[
   override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
 
-  final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
-
+  def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
     new InsertJsonQuery(
       table = table,
       init = QueryBuilder.Insert.json(init, value),
+      usingPart = usingPart,
+      lightweightPart = lightweightPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  def json(value: PrepareMark): InsertJsonQuery[Table, Record, Status, String :: PS] = {
+    new InsertJsonQuery(
+      table = table,
+      init = QueryBuilder.Insert.json(init, value.qb.queryString),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
       consistencyLevel = consistencyLevel,
