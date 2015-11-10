@@ -29,9 +29,10 @@
  */
 package com.websudos.phantom.column
 
-import scala.util.{Failure, Success, Try}
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
+
+import scala.util.{Failure, Success, Try}
 
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {

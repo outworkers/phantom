@@ -57,15 +57,29 @@ trait ExecutableStatement extends CassandraOperations {
    */
   def parameters: Seq[Any] = Nil
 
-  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[Any] = {
+  /**
+   * Cleans up the series of parameters passed to the bind query to match
+   * the codec registry collection that the Java Driver has internally.
+   *
+   * If the type of the object passed through to the driver doesn't match a known type for the specific Cassandra column
+   * type, then the driver will crash with an error.
+   *
+   * There are known associations of (Cassandra Column Type -> Java Type) that we need to provide for binding to work.
+   *
+   * @param parameters The sequence of parameters to bind.
+   * @return A clansed set of parameters.
+   */
+  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[AnyRef] = {
+    //noinspection ComparingUnrelatedTypes
     parameters map {
       case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[Any]].get
       case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
       case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
       case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
       case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
+      case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
       case x => x
-    }
+    } map(_.asInstanceOf[AnyRef])
   }
 
   def baseStatement()(implicit session: Session) = {
@@ -75,7 +89,7 @@ trait ExecutableStatement extends CassandraOperations {
       case someParameters => {
         Manager.logger.debug("Executing prepared statement " + qb.queryString + " with bind params " + parameters.mkString(", "))
 
-        val params = flattenOpt(parameters).map(_.asInstanceOf[AnyRef])
+        val params = flattenOpt(parameters)
 
         session.prepare(qb.queryString).bind(params: _*)
       }

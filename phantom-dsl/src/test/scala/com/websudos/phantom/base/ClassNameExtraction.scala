@@ -54,11 +54,11 @@ trait Test {
 case class CustomRecord(name: String, mp: Map[String, String])
 
 trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-  object record extends StringColumn(this) with PartitionKey[String]
+  object rec extends StringColumn(this) with PartitionKey[String]
   object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
 
   override def fromRow(r: Row): CustomRecord = {
-    CustomRecord(record(r), sampleLongTextColumnDefinition(r))
+    CustomRecord(rec(r), sampleLongTextColumnDefinition(r))
   }
 }
 
@@ -75,7 +75,7 @@ class ClassNameExtraction extends FlatSpec with Matchers {
 
 
   it should "correctly name objects inside record classes " in {
-    TestTableNames.record.name shouldEqual "record"
+    TestTableNames.rec.name shouldEqual "rec"
   }
 
   it should "correctly extract long object name definitions in nested record classes" in {

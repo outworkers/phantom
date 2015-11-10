@@ -43,7 +43,6 @@ import scala.concurrent.duration._
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
-
 /**
  * Main representation of a Cassandra table.
  * @tparam T Type of this table.
@@ -51,16 +50,15 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
-
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.ready(create.ifNotExists().future(), 3.seconds)
   }
 
   private[phantom] def self: T = this.asInstanceOf[T]
 
-  private[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
+  protected[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 
-  private[this] lazy val _name: String = {
+  protected[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
 
@@ -214,8 +212,5 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 }
-
-
-
 
 private[phantom] case object Lock

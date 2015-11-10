@@ -164,7 +164,7 @@ object Build extends Build {
     phantomDsl,
     phantomExample,
     phantomConnectors,
-    phantomContainerTests,
+    //phantomContainerTests,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -320,8 +320,7 @@ object Build extends Build {
       "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
       "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",
-      "org.eclipse.jetty"         % "jetty-webapp"                    % JettyVersion           % "container, provided",
-      "org.eclipse.jetty"         % "jetty-plus"                      % JettyVersion           % "container, provided",
+      "javax.servlet"             % "javax.servlet-api"               % "3.0.1"                % "provided",
       "com.websudos"              %% "util-testing"                   % UtilVersion            % "provided"
     )
   ).dependsOn(
