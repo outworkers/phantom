@@ -22,6 +22,7 @@ Changelog
     <li><a href="#version-1.11.0">1.11.0 - 16.08.2015</a></li>
     <li><a href="#version-1.12.0">1.12.0 - 03.09.2015</a></li>
     <li><a href="#version-1.13.0">1.13.0 - 02.11.2015</a></li>
+    <li><a href="#version-1.15.0">1.15.0 - 10.11.2015</a></li>
 </ul>
 
 
@@ -217,3 +218,9 @@ and `org.joda.time.DateTime`.
 - Removed IPv6 connectivity support from the Travis build.
 - Added `.jvmopts` to the Travis build configuration to prevent automated attempts to IPv6 connections in the Datastax driver.
 - Removed a lot of `.get` accessor calls in the test methods in favour of the idiomatic `OptionValues` DSL from ScalaTest.
+
+<a id="version-1.15.0">1.15.0</a>
+================================
+
+- Added support for Reactive Streams in phantom, with a default mapper subscriber.
+- Implemented a publisher for reactive streams based on Play Enumerators convertions.

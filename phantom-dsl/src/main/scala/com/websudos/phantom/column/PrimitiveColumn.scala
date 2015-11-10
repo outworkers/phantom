@@ -82,16 +82,20 @@ class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cass
   extends PrimitiveColumn[Owner, Record, DateTime](table) {
 }
 
-
 /*
 class Tuple2Column[Owner <: CassandraTable[Owner, Record], Record, K1 : Primitive, K2 : Primitive](table: Owner)
   extends Column[Owner, Record, (K1, K2)](table) {
 
-  override def optional(r: Row): Option[(K1, K2)] = Option(r.getTupleValue(name)).map(value => {
-    implicitly[Primitive[K1]].fromRow(name, value),
-    implicitly[Primitive[K2]].fromRow(name, value)
+  val p1 = implicitly[Primitive[K1]]
+  val p2 = implicitly[Primitive[K2]]
 
-  })
+  override def optional(r: Row): Option[(K1, K2)] = Option(r.getTupleValue(name)).map(value => {
+    p1.fromRow(name, value.getTupleValue()
+    p2.fromRow(name, value)
+  }) match {
+    case Tuple2(Success(tp1, tp2)) => Some(Tuple2(tp1, tp2))
+    case _ => None
+  }
 
   override def cassandraType: String = {
     QueryBuilder.Collections.tuple(

@@ -27,15 +27,55 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.column
+package com.websudos.phantom.reactivestreams.suites
 
-import java.util.UUID
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import akka.actor.ActorSystem
+import com.websudos.phantom.builder.query.ExecutableStatement
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.reactivestreams.RequestBuilder
+import com.websudos.phantom.testkit.suites.{PhantomCassandraConnector, PhantomCassandraTestSuite}
+import com.websudos.util.testing._
+import org.scalatest.Suite
 
-class OptionalTimeUUIDColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-](table: CassandraTable[Owner, Record]) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
-  override val cassandraType = CQLSyntax.Types.TimeUUID
+trait TestImplicits {
+  implicit val system = ActorSystem()
+
+  implicit object OperaRequestBuilder extends RequestBuilder[OperaTable, Opera] {
+
+    override def request(ct: OperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement = {
+      ct.insert.value(_.name, t.name)
+    }
+  }
+
+}
+
+trait StreamTest extends PhantomCassandraTestSuite with TestImplicits {
+  self: Suite =>
+
+  override def beforeAll() {
+    super.beforeAll()
+    OperaTable.insertSchema()
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    system.shutdown()
+  }
+
+}
+
+case class Opera(name: String)
+
+abstract class OperaTable extends CassandraTable[OperaTable, Opera] with PhantomCassandraConnector {
+  object name extends StringColumn(this) with PartitionKey[String]
+
+  def fromRow(row: Row): Opera = {
+    Opera(name(row))
+  }
+}
+
+object OperaTable extends OperaTable with PhantomCassandraConnector
+
+object OperaData {
+  val operas = genList[String]().map(Opera)
 }
