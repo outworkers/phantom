@@ -27,15 +27,66 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.column
+package com.websudos.phantom.reactivestreams.suites
 
-import java.util.UUID
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
-class OptionalTimeUUIDColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-](table: CassandraTable[Owner, Record]) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
-  override val cassandraType = CQLSyntax.Types.TimeUUID
+import com.websudos.phantom.batch.BatchType
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.reactivestreams._
+import org.reactivestreams.{Publisher, Subscriber, Subscription}
+import org.scalatest.FlatSpec
+import org.scalatest.concurrent.ScalaFutures
+
+class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+
+  it should "persist all data" in {
+    val completionLatch = new CountDownLatch(1)
+
+
+    StreamedCassandraTable(OperaTable)
+
+    val subscriber = OperaTable.subscriber(
+      2,
+      2,
+      BatchType.Unlogged,
+      None,
+      () => completionLatch.countDown()
+    )
+
+    OperaPublisher.subscribe(subscriber)
+
+    completionLatch.await(5, TimeUnit.SECONDS)
+
+    whenReady(OperaTable.select.count().one()) {
+      res => {
+        res.value shouldEqual OperaData.operas.length
+      }
+    }
+
+  }
+
+}
+
+object OperaPublisher extends Publisher[Opera] {
+
+  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
+    var remaining = OperaData.operas
+
+    s.onSubscribe(new Subscription {
+      override def cancel(): Unit = ()
+
+      override def request(l: Long): Unit = {
+
+        remaining.take(l.toInt).foreach(s.onNext)
+
+        remaining = remaining.drop(l.toInt)
+
+        if (remaining.isEmpty) {
+          s.onComplete()
+        }
+      }
+    })
+  }
+
 }

@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.testkit.suites
 
-
 import com.datastax.driver.core.{PoolingOptions, Session, VersionNumber}
 import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
 import org.scalatest._

@@ -68,7 +68,7 @@ trait ExecutableStatement extends CassandraOperations {
     }
   }
 
-  def baseStatement()(implicit session: Session) = {
+  def baseStatement()(implicit session: Session): Statement = {
     parameters match {
       case Nil =>
         session.newSimpleStatement(qb.terminate().queryString)
@@ -79,7 +79,6 @@ trait ExecutableStatement extends CassandraOperations {
 
         session.prepare(qb.queryString).bind(params: _*)
       }
-
     }
   }
 
