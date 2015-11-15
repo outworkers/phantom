@@ -43,13 +43,16 @@ object Build extends Build {
   val TwitterUtilVersion = "6.24.0"
   val ScroogeVersion = "3.17.0"
   val ScalatraVersion = "2.3.0"
-  val PlayVersion = "2.4.0-M1"
+  val PlayVersion = "2.4.3"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
   val DieselEngineVersion = "0.2.2"
   val Slf4jVersion = "1.7.12"
+  val ReactiveStreamsVersion = "1.0.0"
+  val AkkaVersion = "2.3.14"
+  val TypesafeConfigVersion = "1.2.1"
   val JettyVersion = "9.1.2.v20140210"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
@@ -58,10 +61,11 @@ object Build extends Build {
     publishTo <<= version.apply {
       v =>
         val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT"))
+        if (v.trim.endsWith("SNAPSHOT")) {
           Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
+        } else {
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
+        }
     },
     licenses += ("Websudos License", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
@@ -106,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.14.2",
+    version := "1.15.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -164,7 +168,7 @@ object Build extends Build {
     phantomDsl,
     phantomExample,
     phantomConnectors,
-    //phantomContainerTests,
+    phantomReactiveStreams,
     phantomTestKit,
     phantomThrift,
     phantomUdt,
@@ -193,7 +197,7 @@ object Build extends Build {
         "com.websudos"                 %% "diesel-engine"                     % DieselEngineVersion,
         "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
         "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
-        "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1",
+        "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1" exclude ("com.typesafe", "config"),
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
@@ -273,6 +277,26 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomConnectors
+  )
+
+  lazy val phantomReactiveStreams = Project(
+    id = "phantom-reactivestreams",
+    base = file("phantom-reactivestreams"),
+    settings = sharedSettings
+  ).settings(
+    name := "phantom-reactivestreams",
+    libraryDependencies ++= Seq(
+      "com.typesafe.play"   %% "play-streams-experimental" % PlayVersion exclude("com.typesafe", "config"),
+      "com.typesafe"        % "config"                % TypesafeConfigVersion,
+      "org.reactivestreams" % "reactive-streams"      % ReactiveStreamsVersion,
+      "com.typesafe.akka"   %% s"akka-actor"          % AkkaVersion,
+      "com.websudos"        %% "util-testing"         % UtilVersion            % "test, provided",
+      "org.reactivestreams" % "reactive-streams-tck"  % ReactiveStreamsVersion % "test, provided"
+    )
+  ).dependsOn(
+    phantomConnectors,
+    phantomDsl,
+    phantomTestKit % "test, provided"
   )
 
   lazy val phantomTestKit = Project(
