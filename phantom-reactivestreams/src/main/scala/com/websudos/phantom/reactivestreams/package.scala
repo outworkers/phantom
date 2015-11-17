@@ -137,4 +137,26 @@ package object reactivestreams {
     }
   }
 
+  /**
+    * Returns the product of the arguments,
+    * throwing an exception if the result overflows a {@code long}.
+    *
+    * @param x the first value
+    * @param y the second value
+    * @return the result
+    * @throws ArithmeticException if the result overflows a long
+    * @since 1.8
+    */
+  def multiplyExact(x: Long, y: Long): Long = {
+    val r: Long = x * y
+    val ax: Long = Math.abs(x)
+    val ay: Long = Math.abs(y)
+    if (((ax | ay) >> 31) != 0) {
+      if (((y != 0) && (r / y != x)) || (x == Long.MinValue && y == -1)) {
+        throw new ArithmeticException("long overflow")
+      }
+    }
+    r
+  }
+
 }

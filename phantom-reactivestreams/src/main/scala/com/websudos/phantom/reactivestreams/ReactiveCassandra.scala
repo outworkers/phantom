@@ -39,7 +39,7 @@ import org.reactivestreams.{ Subscription, Subscriber }
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{ Success, Failure }
+import scala.util.{Try, Success, Failure}
 
 /**
  * The [[Subscriber]] internal implementation based on Akka actors.
@@ -78,7 +78,12 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
           )
         ))
       )
-      s.request(batchSize * concurrentRequests)
+
+      val requestSize = Try {
+        multiplyExact(batchSize, concurrentRequests)
+      } getOrElse Long.MaxValue
+
+      s.request(requestSize)
     } else {
       // rule 2.5, must cancel subscription as onSubscribe has been invoked twice
       // https://github.com/reactive-streams/reactive-streams-jvm#2.5
@@ -88,16 +93,16 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
 
   override def onNext(t: T): Unit = {
     if (Option(t).isEmpty) {
-      throw new NullPointerException("On next should not be called until onSubscribe has returned")
+      throw new NullPointerException("onNext should not be called until onSubscribe has returned")
     }
-    actor.get ! t
+    actor.get ! WrappedRequest(t)
   }
 
   override def onError(t: Throwable): Unit = {
     if (Option(t).isEmpty) {
       throw new NullPointerException()
     }
-    actor.get ! t
+    actor.get ! WrappedRequest(t)
   }
 
   override def onComplete(): Unit = {
@@ -110,6 +115,8 @@ object BatchActor {
   case object Completed
   case object ForceExecution
 }
+
+case class WrappedRequest[T](obj: T)
 
 class BatchActor[CT <: CassandraTable[CT, T], T](
   table: CT,
@@ -158,8 +165,8 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
         subscription.request(batchSize)
       }
 
-    case t: T =>
-      buffer.append(t)
+    case t: WrappedRequest[T] =>
+      buffer.append(t.obj)
       if (buffer.size == batchSize) {
         executeStatements()
       }
@@ -190,7 +197,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
     )
     query.future().onComplete {
       case Failure(e) => self ! e
-      case Success(resp) => self ! resp
+      case Success(resp) => self ! WrappedRequest(resp)
     }
     buffer.clear()
   }
