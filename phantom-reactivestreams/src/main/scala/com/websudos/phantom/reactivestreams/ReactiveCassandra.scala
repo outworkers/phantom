@@ -78,12 +78,7 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
           )
         ))
       )
-
-      val requestSize = Try {
-        multiplyExact(batchSize, concurrentRequests)
-      } getOrElse Long.MaxValue
-
-      s.request(requestSize)
+      s.request(multiplyExact(batchSize, concurrentRequests))
     } else {
       // rule 2.5, must cancel subscription as onSubscribe has been invoked twice
       // https://github.com/reactive-streams/reactive-streams-jvm#2.5
@@ -132,7 +127,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   import context.{ dispatcher, system }
 
-  private[this] val buffer = ArrayBuffer.empty[T]
+  private[this] val buffer = ArrayBuffer.empty[WrappedRequest[T]]
 
   buffer.sizeHint(batchSize)
 
@@ -171,7 +166,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
       }
 
     case t: WrappedRequest[T] =>
-      buffer.append(t.obj)
+      buffer.append(t)
       if (buffer.size == batchSize) {
         executeStatements()
       }
@@ -194,7 +189,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   private[this] def executeStatements(): Unit = {
     val query = new BatchQuery(
-      buffer.map(builder.request(table, _).qb).toIterator,
+      buffer.map(r => builder.request(table, r.obj).qb).toIterator,
       batchType,
       UsingPart.empty,
       false,
