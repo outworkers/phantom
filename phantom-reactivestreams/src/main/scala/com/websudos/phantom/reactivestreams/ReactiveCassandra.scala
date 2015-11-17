@@ -140,7 +140,12 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   /** It's only created if a flushInterval is provided */
   private[this] val scheduler = flushInterval.map { interval =>
-    system.scheduler.schedule(interval, interval, self, BatchActor.ForceExecution)
+    system.scheduler.schedule(
+      interval,
+      interval,
+      self,
+      BatchActor.ForceExecution
+    )
   }
 
   def receive: Receive = {
