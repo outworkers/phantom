@@ -197,7 +197,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
     )
     query.future().onComplete {
       case Failure(e) => self ! e
-      case Success(resp) => self ! WrappedRequest(resp)
+      case Success(resp) => self ! resp
     }
     buffer.clear()
   }
