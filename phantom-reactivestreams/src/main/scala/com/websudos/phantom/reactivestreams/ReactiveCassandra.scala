@@ -90,14 +90,14 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
     if (Option(t).isEmpty) {
       throw new NullPointerException("onNext should not be called until onSubscribe has returned")
     }
-    actor.get ! WrappedRequest(t)
+    actor.get ! t
   }
 
   override def onError(t: Throwable): Unit = {
     if (Option(t).isEmpty) {
       throw new NullPointerException()
     }
-    actor.get ! WrappedRequest(t)
+    actor.get ! ErrorWrapper(t)
   }
 
   override def onComplete(): Unit = {
@@ -111,7 +111,7 @@ object BatchActor {
   case object ForceExecution
 }
 
-case class WrappedRequest[T](obj: T)
+case class ErrorWrapper(err: Throwable)
 
 class BatchActor[CT <: CassandraTable[CT, T], T](
   table: CT,
@@ -127,7 +127,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   import context.{ dispatcher, system }
 
-  private[this] val buffer = ArrayBuffer.empty[WrappedRequest[T]]
+  private[this] val buffer = ArrayBuffer.empty[T]
 
   buffer.sizeHint(batchSize)
 
@@ -144,8 +144,8 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
   }
 
   def receive: Receive = {
-    case t: Throwable =>
-      handleError(t)
+    case t: ErrorWrapper =>
+      handleError(t.err)
 
     case BatchActor.Completed =>
       if (buffer.nonEmpty) {
@@ -165,7 +165,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
         subscription.request(batchSize)
       }
 
-    case t: WrappedRequest[T] =>
+    case t: T =>
       buffer.append(t)
       if (buffer.size == batchSize) {
         executeStatements()
@@ -189,14 +189,14 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   private[this] def executeStatements(): Unit = {
     val query = new BatchQuery(
-      buffer.map(r => builder.request(table, r.obj).qb).toIterator,
+      buffer.map(r => builder.request(table, r).qb).toIterator,
       batchType,
       UsingPart.empty,
       false,
       None
     )
     query.future().onComplete {
-      case Failure(e) => self ! e
+      case Failure(e) => self ! ErrorWrapper(e)
       case Success(resp) => self ! resp
     }
     buffer.clear()
