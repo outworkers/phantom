@@ -29,17 +29,17 @@
  */
 package com.websudos.phantom.reactivestreams
 
-import akka.actor.{ Props, Actor, ActorRef, ActorSystem }
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.batch.{ BatchType, BatchQuery }
-import com.websudos.phantom.builder.query.{ UsingPart, ExecutableStatement }
+import com.websudos.phantom.batch.{BatchQuery, BatchType}
+import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, UsingPart}
 import com.websudos.phantom.dsl._
-import org.reactivestreams.{ Subscription, Subscriber }
+import org.reactivestreams.{Subscriber, Subscription}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success}
 
 /**
  * The [[Subscriber]] internal implementation based on Akka actors.
@@ -125,7 +125,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
   errorFn: Throwable => Unit
 )(implicit session: Session, space: KeySpace, ev: Manifest[T]) extends Actor {
 
-  import context.{ dispatcher, system }
+  import context.{dispatcher, system}
 
   private[this] val buffer = ArrayBuffer.empty[T]
 
@@ -221,5 +221,5 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
  * @tparam T the type of streamed elements
  */
 trait RequestBuilder[CT <: CassandraTable[CT, T], T] {
-  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): ExecutableStatement
+  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable
 }
