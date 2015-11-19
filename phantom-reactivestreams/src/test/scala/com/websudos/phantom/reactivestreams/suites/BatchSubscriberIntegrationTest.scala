@@ -37,14 +37,18 @@ import com.websudos.phantom.reactivestreams._
 import org.reactivestreams.{Publisher, Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.ScalaFutures
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Await.result(OperaTable.truncate().future(), 5.seconds)
+  }
+
   it should "persist all data" in {
     val completionLatch = new CountDownLatch(1)
-
-
-    StreamedCassandraTable(OperaTable)
 
     val subscriber = OperaTable.subscriber(
       2,
@@ -58,7 +62,12 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
 
     completionLatch.await(5, TimeUnit.SECONDS)
 
-    whenReady(OperaTable.select.count().one()) {
+    val chain = for {
+      count <- OperaTable.select.count().one()
+    } yield count
+
+
+    whenReady(chain) {
       res => {
         res.value shouldEqual OperaData.operas.length
       }

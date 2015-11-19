@@ -45,7 +45,6 @@ import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-
 package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]

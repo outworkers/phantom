@@ -29,17 +29,17 @@
  */
 package com.websudos.phantom.reactivestreams
 
-import akka.actor.{ Props, Actor, ActorRef, ActorSystem }
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.batch.{ BatchType, BatchQuery }
-import com.websudos.phantom.builder.query.{ UsingPart, ExecutableStatement }
+import com.websudos.phantom.batch.{BatchQuery, BatchType}
+import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, UsingPart}
 import com.websudos.phantom.dsl._
-import org.reactivestreams.{ Subscription, Subscriber }
+import org.reactivestreams.{Subscriber, Subscription}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{ Success, Failure }
+import scala.util.{Failure, Success}
 
 /**
  * The [[Subscriber]] internal implementation based on Akka actors.
@@ -78,7 +78,7 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
           )
         ))
       )
-      s.request(batchSize * concurrentRequests)
+      s.request(multiplyExact(batchSize, concurrentRequests))
     } else {
       // rule 2.5, must cancel subscription as onSubscribe has been invoked twice
       // https://github.com/reactive-streams/reactive-streams-jvm#2.5
@@ -88,7 +88,7 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
 
   override def onNext(t: T): Unit = {
     if (Option(t).isEmpty) {
-      throw new NullPointerException("On next should not be called until onSubscribe has returned")
+      throw new NullPointerException("onNext should not be called until onSubscribe has returned")
     }
     actor.get ! t
   }
@@ -97,7 +97,7 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
     if (Option(t).isEmpty) {
       throw new NullPointerException()
     }
-    actor.get ! t
+    actor.get ! ErrorWrapper(t)
   }
 
   override def onComplete(): Unit = {
@@ -111,6 +111,8 @@ object BatchActor {
   case object ForceExecution
 }
 
+case class ErrorWrapper(err: Throwable)
+
 class BatchActor[CT <: CassandraTable[CT, T], T](
   table: CT,
   builder: RequestBuilder[CT, T],
@@ -123,7 +125,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
   errorFn: Throwable => Unit
 )(implicit session: Session, space: KeySpace, ev: Manifest[T]) extends Actor {
 
-  import context.{ dispatcher, system }
+  import context.{dispatcher, system}
 
   private[this] val buffer = ArrayBuffer.empty[T]
 
@@ -133,12 +135,17 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   /** It's only created if a flushInterval is provided */
   private[this] val scheduler = flushInterval.map { interval =>
-    system.scheduler.schedule(interval, interval, self, BatchActor.ForceExecution)
+    system.scheduler.schedule(
+      interval,
+      interval,
+      self,
+      BatchActor.ForceExecution
+    )
   }
 
   def receive: Receive = {
-    case t: Throwable =>
-      handleError(t)
+    case t: ErrorWrapper =>
+      handleError(t.err)
 
     case BatchActor.Completed =>
       if (buffer.nonEmpty) {
@@ -182,14 +189,14 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   private[this] def executeStatements(): Unit = {
     val query = new BatchQuery(
-      buffer.map(builder.request(table, _).qb).toIterator,
+      buffer.map(r => builder.request(table, r).qb).toIterator,
       batchType,
       UsingPart.empty,
       false,
       None
     )
     query.future().onComplete {
-      case Failure(e) => self ! e
+      case Failure(e) => self ! ErrorWrapper(e)
       case Success(resp) => self ! resp
     }
     buffer.clear()
@@ -214,5 +221,5 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
  * @tparam T the type of streamed elements
  */
 trait RequestBuilder[CT <: CassandraTable[CT, T], T] {
-  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): ExecutableStatement
+  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable
 }

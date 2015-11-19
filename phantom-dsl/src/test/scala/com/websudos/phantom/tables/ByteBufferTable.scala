@@ -40,4 +40,10 @@ object ByteBufferTable extends ByteBufferTable with PhantomCassandraConnector {
   def getById(id: UUID): Future[Option[BufferRecord]] = {
     select.where(_.id eqs id).one()
   }
+
+
+
+
+
+
 }

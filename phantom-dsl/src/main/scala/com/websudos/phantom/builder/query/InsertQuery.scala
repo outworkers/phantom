@@ -57,10 +57,20 @@ class InsertQuery[
 ) extends ExecutableStatement with Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
-
     new InsertJsonQuery(
       table = table,
       init = QueryBuilder.Insert.json(init, value),
+      usingPart = usingPart,
+      lightweightPart = lightweightPart,
+      consistencyLevel = consistencyLevel,
+      parameters = parameters
+    )
+  }
+
+  final def json(value: PrepareMark): InsertJsonQuery[Table, Record, Status, String :: PS] = {
+    new InsertJsonQuery(
+      table = table,
+      init = QueryBuilder.Insert.json(init, value.qb.queryString),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
       consistencyLevel = consistencyLevel,
@@ -237,8 +247,23 @@ class InsertJsonQuery[
   override val parameters: Seq[Any] = Seq.empty
 ) extends ExecutableStatement with Batchable {
 
-  override def qb: CQLQuery = {
+  override val qb: CQLQuery = {
     (usingPart merge lightweightPart) build init
+  }
+
+  final def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
+  ) : InsertJsonQuery[Table, Record, Status, PS] = {
+    new InsertJsonQuery(
+      table,
+      init,
+      usingPart,
+      lightweightPart,
+      consistencyLevel = consistencyLevel,
+      parameters = v1.productIterator.toSeq
+    )
   }
 }
 
