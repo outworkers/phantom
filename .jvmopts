@@ -2,5 +2,3 @@
 -Djava.net.preferIPv4Stack=true
 -XX:PermSize=256m
 -XX:MaxPermSize=512m
--XX:Metaspace=512m
--XX:MaxMetaspace=1024m

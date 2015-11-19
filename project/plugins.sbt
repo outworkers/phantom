@@ -53,5 +53,3 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
-
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
