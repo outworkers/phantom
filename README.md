@@ -77,6 +77,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
+- [Mobli](https://www.mobli.com/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Equens](http://www.equens.com/)
 - [websudos](https://www.websudos.com/)
@@ -84,7 +85,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Socrata](http://www.socrata.com) 
 - [Sphonic](http://www.sphonic.com/)
 - [Anomaly42](http://www.anomaly42.com/)
-
+- [Tecsisa](http://www.tecsisa.com/en/)
 
 <a id="contributors">Contributors</a>
 =====================================
@@ -94,14 +95,16 @@ Phantom was developed at websudos as an in-house project. All Cassandra integrat
 Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
-* Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
-* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
-* Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1))
+* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
 * Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev))
+* Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
+* Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
+* Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
 * Tomasz Perek ([@tperek](https://github.com/tperek))
 * Evan Chan ([@evanfchan](https://github.com/evanfchan))
+
 
 <a id="copyright">Copyright</a>
 ===============================

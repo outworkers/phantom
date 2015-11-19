@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.ops
 
-import java.util.Date
+import java.util.{UUID, Date}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
@@ -46,6 +46,20 @@ sealed class DateOfOperator extends Operator {
 
   def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): OperatorClause.Condition = {
     new OperatorClause.Condition(QueryBuilder.Select.dateOf(pf.name))
+  }
+
+  def apply(uuid: UUID): OperatorClause.Condition = {
+    new OperatorClause.Condition(QueryBuilder.Select.dateOf(uuid.toString))
+  }
+
+  def apply(op: OperatorClause.Condition): OperatorClause.Condition = {
+    new OperatorClause.Condition(QueryBuilder.Select.dateOf(op.qb.queryString))
+  }
+}
+
+sealed class NowOperator extends Operator {
+  def apply(): OperatorClause.Condition = {
+    new OperatorClause.Condition(QueryBuilder.Select.now())
   }
 }
 

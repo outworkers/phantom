@@ -29,73 +29,65 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
-import com.websudos.phantom.batch.BatchType
+import org.reactivestreams.{Subscription, Subscriber}
+import org.scalatest.FlatSpec
+import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
-import org.reactivestreams.{Publisher, Subscriber, Subscription}
-import org.scalatest.FlatSpec
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.Eventually
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    Await.result(OperaTable.truncate().future(), 5.seconds)
-  }
+  override implicit val patienceConfig = PatienceConfig(Duration(5, TimeUnit.SECONDS), Duration(300, TimeUnit.MILLISECONDS))
 
-  it should "persist all data" in {
-    val completionLatch = new CountDownLatch(1)
-
-    val subscriber = OperaTable.subscriber(
-      2,
-      2,
-      BatchType.Unlogged,
-      None,
-      () => completionLatch.countDown()
-    )
-
-    OperaPublisher.subscribe(subscriber)
-
-    completionLatch.await(5, TimeUnit.SECONDS)
+  it should "correctly consume the entire stream of items published from a Cassandra table" in {
+    val counter = new AtomicInteger(0)
+    val generatorCount = 100
+    val samples = genList[String](generatorCount).map(Opera)
 
     val chain = for {
-      count <- OperaTable.select.count().one()
-    } yield count
-
-
-    whenReady(chain) {
-      res => {
-        res.value shouldEqual OperaData.operas.length
-      }
-    }
-
-  }
-
-}
-
-object OperaPublisher extends Publisher[Opera] {
-
-  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
-    var remaining = OperaData.operas
-
-    s.onSubscribe(new Subscription {
-      override def cancel(): Unit = ()
-
-      override def request(l: Long): Unit = {
-
-        remaining.take(l.toInt).foreach(s.onNext)
-
-        remaining = remaining.drop(l.toInt)
-
-        if (remaining.isEmpty) {
-          s.onComplete()
+      truncate <- OperaTable.truncate().future()
+      store <- samples.foldLeft(Batch.unlogged) {
+        (acc, item) => {
+          acc.add(OperaTable.store(item))
         }
+      } future()
+    } yield store
+
+    Await.result(chain, 10.seconds)
+
+    val publisher = OperaTable.publisher
+
+    publisher.subscribe(new Subscriber[Opera] {
+      override def onError(t: Throwable): Unit = {
+        fail(t)
+      }
+
+      override def onSubscribe(s: Subscription): Unit = {
+        s.request(Long.MaxValue)
+      }
+
+      override def onComplete(): Unit = {
+        info(s"Finished streaming, total count is ${counter.get()}")
+      }
+
+      override def onNext(t: Opera): Unit = {
+        info(s"The current item is ${t.name}")
+        info(s"The current count is ${counter.incrementAndGet()}")
       }
     })
-  }
 
+
+    eventually {
+      counter.get() shouldEqual generatorCount
+    }
+
+
+  }
 }
