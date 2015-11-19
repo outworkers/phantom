@@ -15,8 +15,7 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
   it should "correctly consume the entire stream of items published from a Cassandra table" in {
     val counter = new AtomicInteger(0)
-    val generatorCount = 50
-
+    val generatorCount = 100
     val samples = genList[String](generatorCount).map(Opera)
 
     val chain = for {
