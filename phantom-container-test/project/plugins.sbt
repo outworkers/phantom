@@ -1,5 +1,3 @@
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "0.7.0")
-
 resolvers ++= Seq(
   "Sonatype snapshots"                                 at "http://oss.sonatype.org/content/repositories/snapshots/",
   "jgit-repo"                                          at "http://download.eclipse.org/jgit/maven",
@@ -8,3 +6,5 @@ resolvers ++= Seq(
   Resolver.bintrayRepo("websudos", "oss-releases"),
   Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
 )
+
+addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
