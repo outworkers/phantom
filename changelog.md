@@ -23,6 +23,7 @@ Changelog
     <li><a href="#version-1.12.0">1.12.0 - 03.09.2015</a></li>
     <li><a href="#version-1.13.0">1.13.0 - 02.11.2015</a></li>
     <li><a href="#version-1.15.0">1.15.0 - 10.11.2015</a></li>
+    <li><a href="#version-1.16.0">1.16.0 - 19.11.2015</a></li>
 </ul>
 
 
@@ -224,3 +225,14 @@ and `org.joda.time.DateTime`.
 
 - Added support for Reactive Streams in phantom, with a default mapper subscriber.
 - Implemented a publisher for reactive streams based on Play Enumerators convertions.
+
+<a id="version-1.16.0">1.16.0</a>
+================================
+
+- Fixed buffer overflow issue in Reactive streams.
+- Added tests for the reactive streams publisher.
+- Added support for binding in INSERT JSON clauses.
+- Forcing request builders in reactive streams to be `Batchable`.
+- Allowing elements to be derived from `Throwable` by adding an `ErrorWrapper` to error propagation in actors.
+- Adding support for binding `scala.Enumeration#Value` in prepared statements.
+- Bumped `xsbt-web-plugin` to `2.0.4`.

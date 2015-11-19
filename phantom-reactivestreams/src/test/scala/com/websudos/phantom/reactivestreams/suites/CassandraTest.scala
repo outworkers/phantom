@@ -30,7 +30,7 @@
 package com.websudos.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
-import com.websudos.phantom.builder.query.ExecutableStatement
+import com.websudos.phantom.builder.query.{InsertQuery, ExecutableStatement, Batchable}
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams.RequestBuilder
 import com.websudos.phantom.testkit.suites.{PhantomCassandraConnector, PhantomCassandraTestSuite}
@@ -42,7 +42,7 @@ trait TestImplicits {
 
   implicit object OperaRequestBuilder extends RequestBuilder[OperaTable, Opera] {
 
-    override def request(ct: OperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement = {
+    override def request(ct: OperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable = {
       ct.insert.value(_.name, t.name)
     }
   }
@@ -74,7 +74,11 @@ abstract class OperaTable extends CassandraTable[OperaTable, Opera] with Phantom
   }
 }
 
-object OperaTable extends OperaTable with PhantomCassandraConnector
+object OperaTable extends OperaTable with PhantomCassandraConnector {
+  def store(item: Opera): InsertQuery.Default[OperaTable, Opera] = {
+    insert.value(_.name, item.name)
+  }
+}
 
 object OperaData {
   val operas = genList[String]().map(Opera)

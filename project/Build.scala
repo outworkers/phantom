@@ -36,7 +36,7 @@ import sbt._
 object Build extends Build {
 
   val UtilVersion = "0.9.11"
-  val DatastaxDriverVersion = "2.2.0-rc3"
+  val DatastaxDriverVersion = "3.0.0-alpha4"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
   val FinagleVersion = "6.25.0"
@@ -53,6 +53,7 @@ object Build extends Build {
   val ReactiveStreamsVersion = "1.0.0"
   val AkkaVersion = "2.3.14"
   val TypesafeConfigVersion = "1.2.1"
+  val JettyVersion = "9.1.2.v20140210"
 
   val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -109,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.15.0",
+    version := "1.16.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -326,9 +327,9 @@ object Build extends Build {
     phantomTestKit
   )
 
-  lazy val phantomScalatraTest = Project(
-    id = "phantom-scalatra-test",
-    base = file("phantom-scalatra-test"),
+  lazy val phantomContainerTests = Project(
+    id = "phantom-container-test",
+    base = file("phantom-container-test"),
     settings = sharedSettings
   ).settings(
     name := "phantom-test",
@@ -340,17 +341,11 @@ object Build extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
-      "org.scalatra"              %% "scalatra"                         % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-scalate"                 % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-json"                    % ScalatraVersion,
-      "org.scalatra"              %% "scalatra-specs2"                  % ScalatraVersion        % "test",
-      "org.json4s"                %% "json4s-jackson"                   % Json4SVersion,
-      "org.json4s"                %% "json4s-ext"                       % Json4SVersion,
-      "net.databinder.dispatch"   %% "dispatch-core"                    % "0.11.0"               % "test",
-      "net.databinder.dispatch"   %% "dispatch-json4s-jackson"          % "0.11.0"               % "test",
-      "org.eclipse.jetty"         % "jetty-webapp"                      % "8.1.8.v20121106",
-      "org.eclipse.jetty.orbit"   % "javax.servlet"                     % "3.0.0.v201112011016"  % "provided;test" artifacts Artifact("javax.servlet", "jar", "jar"),
-      "com.websudos"              %% "util-testing"                     % UtilVersion            % "provided"
+      "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
+      "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
+      "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",
+      "javax.servlet"             % "javax.servlet-api"               % "3.0.1"                % "provided",
+      "com.websudos"              %% "util-testing"                   % UtilVersion            % "provided"
     )
   ).dependsOn(
     phantomDsl,
