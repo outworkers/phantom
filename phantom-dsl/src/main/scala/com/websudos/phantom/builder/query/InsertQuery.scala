@@ -32,13 +32,12 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.query.prepared.PrepareMark
+import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
-import shapeless.ops.hlist.Reverse
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.{=:!=, ::, HList, HNil}
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -52,8 +51,7 @@ class InsertQuery[
   valuePart: ValuePart = ValuePart.empty,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None,
-  override val parameters: Seq[Any] = Seq.empty
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
@@ -62,8 +60,7 @@ class InsertQuery[
       init = QueryBuilder.Insert.json(init, value),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -73,8 +70,7 @@ class InsertQuery[
       init = QueryBuilder.Insert.json(init, value.qb.queryString),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -86,8 +82,7 @@ class InsertQuery[
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
       lightweightPart,
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 
@@ -99,31 +94,16 @@ class InsertQuery[
       valuePart append value.qb,
       usingPart,
       lightweightPart,
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 
-  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
-    implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1],
-    ev: VL1 =:= Reversed
-  ) : InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart,
-      lightweightPart,
-      consistencyLevel = consistencyLevel,
-      parameters = v1.productIterator.toSeq
-    )
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb)
   }
-
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
-    val insertValue = if (value != null) col(table).asCql(value) else null.asInstanceOf[String]
+    val insertValue = if (Option(value).isDefined) col(table).asCql(value) else null.asInstanceOf[String]
 
     new InsertQuery(
       table,
@@ -132,8 +112,7 @@ class InsertQuery[
       valuePart append CQLQuery(insertValue),
       usingPart,
       lightweightPart,
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 
@@ -149,8 +128,7 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.ttl(seconds.toString),
       lightweightPart,
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 
@@ -170,8 +148,7 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.timestamp(value.toString),
       lightweightPart,
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 
@@ -184,8 +161,7 @@ class InsertQuery[
         valuePart,
         usingPart,
         lightweightPart,
-        Some(level),
-        parameters
+        Some(level)
       )
     } else {
       new InsertQuery(
@@ -195,8 +171,7 @@ class InsertQuery[
         valuePart,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
         lightweightPart,
-        None,
-        parameters
+        None
       )
     }
   }
@@ -213,8 +188,7 @@ class InsertQuery[
       valuePart,
       usingPart,
       lightweightPart append CQLQuery(CQLSyntax.ifNotExists),
-      consistencyLevel,
-      parameters
+      consistencyLevel
     )
   }
 }
@@ -243,28 +217,17 @@ class InsertJsonQuery[
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None,
-  override val parameters: Seq[Any] = Seq.empty
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement with Batchable {
+
+  def prepare()(implicit session: Session, keySpace: KeySpace): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb)
+  }
 
   override val qb: CQLQuery = {
     (usingPart merge lightweightPart) build init
   }
 
-  final def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
-    implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1],
-    ev: VL1 =:= Reversed
-  ) : InsertJsonQuery[Table, Record, Status, PS] = {
-    new InsertJsonQuery(
-      table,
-      init,
-      usingPart,
-      lightweightPart,
-      consistencyLevel = consistencyLevel,
-      parameters = v1.productIterator.toSeq
-    )
-  }
 }
 
 
