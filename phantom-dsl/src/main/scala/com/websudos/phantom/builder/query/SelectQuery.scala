@@ -35,9 +35,9 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.ops.hlist.Reverse
-import shapeless.{Generic, HList, HNil, ::}
+import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -61,8 +61,7 @@ class SelectQuery[
   limitedPart: LimitedPart = LimitedPart.empty,
   filteringPart: FilteringPart = FilteringPart.empty,
   count: Boolean = false,
-  override val consistencyLevel: Option[ConsistencyLevel] = None,
-  override val parameters: Seq[Any] = Seq.empty
+  override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
   Record, Limit] {
 
@@ -100,8 +99,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = level,
-      parameters = parameters
+      consistencyLevel = level
     )
   }
 
@@ -115,11 +113,13 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= shapeless.HNil): PreparedSelectBlock[Table, Record, Limit, PS] = {
+    new PreparedSelectBlock(qb, rowFunc, consistencyLevel)
+  }
 
   /**
    * The where method of a select query.
@@ -138,8 +138,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -153,8 +152,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -176,28 +174,8 @@ class SelectQuery[
        limitedPart = limitedPart,
        filteringPart = filteringPart,
        count = count,
-       consistencyLevel = consistencyLevel,
-       parameters = parameters
+       consistencyLevel = consistencyLevel
      )
-  }
-
-  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
-    implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1],
-    ev: VL1 =:= Reversed
-  ): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new SelectQuery(
-      table,
-      rowFunc,
-      init,
-      wherePart,
-      orderPart,
-      limitedPart,
-      filteringPart,
-      count,
-      consistencyLevel = consistencyLevel,
-      parameters = v1.productIterator.toSeq
-    )
   }
 
 
@@ -219,8 +197,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -253,8 +230,7 @@ class SelectQuery[
       limitedPart,
       filteringPart,
       count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     )
   }
 
@@ -277,8 +253,7 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     ).singleFetch()
 
   }
@@ -302,8 +277,7 @@ class SelectQuery[
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = consistencyLevel,
-      parameters = parameters
+      consistencyLevel = consistencyLevel
     ).singleCollect()
   }
 }
@@ -358,7 +332,7 @@ object SelectQuery {
 
 private[phantom] trait SelectImplicits {
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R])(implicit keySpace: KeySpace ): SelectQuery.Default[T, R] = {
+  final implicit def rootSelectBlockToSelectQuery[T <: CassandraTable[T, _], R]( root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     root.all
   }
 }
