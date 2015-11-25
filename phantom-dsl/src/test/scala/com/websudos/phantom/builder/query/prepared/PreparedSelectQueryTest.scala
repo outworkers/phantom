@@ -65,10 +65,11 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     val sample = gen[Article]
     val owner = gen[UUID]
     val category = gen[UUID]
+    val query = ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
 
     val op = for {
       store <- ArticlesByAuthor.store(owner, category, sample).future()
-      get <- ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).bind(owner, category).one()
+      get <- query.bind(owner, category).one()
     } yield get
 
     whenReady(op) {
