@@ -45,10 +45,12 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
+    val query = Recipes.select.p_where(_.url eqs ?).prepare()
+
     val operation = for {
       truncate <- Recipes.truncate.future
       insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select.p_where(_.url eqs ?).bind(recipe.url.tp).one()
+      select <- query.bind(recipe.url.tp).one()
     } yield select
 
     operation.successful {

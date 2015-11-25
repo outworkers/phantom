@@ -29,7 +29,16 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
+import com.datastax.driver.core.{Statement, ResultSet, ConsistencyLevel, Session}
+import com.twitter.util.{ Future => TwitterFuture }
 import com.websudos.phantom.builder.query._
+import com.websudos.phantom.connectors.KeySpace
+import org.joda.time.DateTime
+import shapeless.ops.hlist.Reverse
+import shapeless.{Generic, HList}
+
+import scala.collection.JavaConverters._
+import scala.concurrent.{Future => ScalaFuture, blocking}
 
 private[phantom] trait PrepareMark {
 
@@ -39,3 +48,61 @@ private[phantom] trait PrepareMark {
 }
 
 object ? extends PrepareMark
+
+
+class ExecutablePreparedQuery(val statement: Statement) extends ExecutableStatement {
+  override val qb = CQLQuery.empty
+
+  override def consistencyLevel: Option[ConsistencyLevel] = None
+
+  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(statement)
+  }
+
+  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
+    twitterQueryStringExecuteToFuture(statement)
+  }
+}
+
+
+class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) {
+
+  val query = blocking {
+    session.prepare(qb.queryString)
+  }
+
+  /**
+    * Cleans up the series of parameters passed to the bind query to match
+    * the codec registry collection that the Java Driver has internally.
+    *
+    * If the type of the object passed through to the driver doesn't match a known type for the specific Cassandra column
+    * type, then the driver will crash with an error.
+    *
+    * There are known associations of (Cassandra Column Type -> Java Type) that we need to provide for binding to work.
+    *
+    * @param parameters The sequence of parameters to bind.
+    * @return A clansed set of parameters.
+    */
+  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[AnyRef] = {
+    //noinspection ComparingUnrelatedTypes
+    parameters map {
+      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[Any]].get
+      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
+      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
+      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
+      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
+      case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
+      case x => x
+    } map(_.asInstanceOf[AnyRef])
+  }
+
+
+  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
+  ): ExecutablePreparedQuery = {
+    val params = flattenOpt(v1.productIterator.toSeq)
+    new ExecutablePreparedQuery(query.bind(params: _*))
+  }
+}
