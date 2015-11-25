@@ -29,8 +29,10 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{Statement, ResultSet, ConsistencyLevel, Session}
+import com.datastax.driver.core._
 import com.twitter.util.{ Future => TwitterFuture }
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
@@ -38,7 +40,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{Generic, HList}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{Future => ScalaFuture, blocking}
+import scala.concurrent.{Future => ScalaFuture, ExecutionContext, blocking}
 
 private[phantom] trait PrepareMark {
 
@@ -64,13 +66,38 @@ class ExecutablePreparedQuery(val statement: Statement) extends ExecutableStatem
   }
 }
 
+class ExecutablePreparedSelectQuery[
+  Table <: CassandraTable[Table, _],
+  R,
+  Limit <: LimitBound
+](val statement: Statement, fn: Row => R, level: Option[ConsistencyLevel]) extends ExecutableQuery[Table, R, Limit] {
 
-class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) {
+  override def fromRow(r: Row): R = fn(r)
 
-  val query = blocking {
-    session.prepare(qb.queryString)
+  /**
+    * Returns the first row from the select ignoring everything else
+    * @param session The Cassandra session in use.
+    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+    */
+  override def one()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): ScalaFuture[Option[R]] = {
+    singleFetch()
   }
 
+  /**
+    * Get the result of an operation as a Twitter Future.
+    * @param session The Datastax Cassandra session.
+    * @return A Twitter future wrapping the result.
+    */
+  override def get()(implicit session: Session, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): TwitterFuture[Option[R]] = {
+    singleCollect()
+  }
+
+  override def qb: CQLQuery = CQLQuery.empty
+
+  override def consistencyLevel: Option[ConsistencyLevel] = level
+}
+
+trait PreparedFlattener {
   /**
     * Cleans up the series of parameters passed to the bind query to match
     * the codec registry collection that the Java Driver has internally.
@@ -95,7 +122,13 @@ class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpa
       case x => x
     } map(_.asInstanceOf[AnyRef])
   }
+}
 
+class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
+
+  val query = blocking {
+    session.prepare(qb.queryString)
+  }
 
   def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
     implicit rev: Reverse.Aux[PS, Reversed],
@@ -104,5 +137,23 @@ class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpa
   ): ExecutablePreparedQuery = {
     val params = flattenOpt(v1.productIterator.toSeq)
     new ExecutablePreparedQuery(query.bind(params: _*))
+  }
+}
+
+class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS <: HList](
+  qb: CQLQuery, fn: Row => R, level: Option[ConsistencyLevel])
+  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
+
+  val query = blocking {
+    session.prepare(qb.queryString)
+  }
+
+  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
+    implicit rev: Reverse.Aux[PS, Reversed],
+    gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= Reversed
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    val params = flattenOpt(v1.productIterator.toSeq)
+    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
   }
 }

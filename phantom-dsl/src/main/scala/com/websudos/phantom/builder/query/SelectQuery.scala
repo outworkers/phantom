@@ -35,8 +35,9 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{::, HList, HNil}
+import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -114,6 +115,10 @@ class SelectQuery[
       count = count,
       consistencyLevel = consistencyLevel
     )
+  }
+
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= shapeless.HNil): PreparedSelectBlock[Table, Record, Limit, PS] = {
+    new PreparedSelectBlock(qb, rowFunc, consistencyLevel)
   }
 
   /**

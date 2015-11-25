@@ -33,10 +33,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
-import com.websudos.phantom.builder.query.prepared.PreparedBlock
-import com.websudos.phantom.connectors.KeySpace
-import net.liftweb.common.HLists.HNil
-import shapeless.{=:!=, HList}
+import shapeless.HList
 
 import scala.annotation.implicitNotFound
 
@@ -112,10 +109,6 @@ abstract class Query[
     } else {
       create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
     }
-  }
-
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb)
   }
 
   @implicitNotFound("A limit was already specified for this query.")

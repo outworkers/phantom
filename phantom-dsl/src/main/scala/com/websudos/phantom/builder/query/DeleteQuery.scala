@@ -29,12 +29,13 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Row}
+import com.datastax.driver.core.{Session, ConsistencyLevel, Row}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{::, HList, HNil}
+import shapeless.{=:!=, ::, HList, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -73,6 +74,11 @@ class DeleteQuery[
     P <: HList
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
     new DeleteQuery[T, R, L, O, S, C, P](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
+  }
+
+
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb)
   }
 
   /**
