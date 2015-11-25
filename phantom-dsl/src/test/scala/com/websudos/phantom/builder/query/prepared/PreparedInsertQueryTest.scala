@@ -53,6 +53,7 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
       .p_value(_.description, ?)
       .p_value(_.lastcheckedat, ?)
       .p_value(_.props, ?)
+      .prepare()
 
     val exec = query.bind(
       sample.uid,

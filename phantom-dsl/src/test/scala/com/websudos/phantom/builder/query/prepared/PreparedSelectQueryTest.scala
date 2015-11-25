@@ -45,10 +45,12 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
+    val query = Recipes.select.p_where(_.url eqs ?).prepare()
+
     val operation = for {
       truncate <- Recipes.truncate.future
       insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select.p_where(_.url eqs ?).bind(recipe.url.tp).one()
+      select <- query.bind(recipe.url.tp).one()
     } yield select
 
     operation.successful {
@@ -59,20 +61,29 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     }
   }
 
-  it should "serialzie and execute a prepared statement with 2 arguments" in {
+  it should "serialise and execute a prepared statement with 2 arguments" in {
     val sample = gen[Article]
+    val sample2 = gen[Article]
     val owner = gen[UUID]
     val category = gen[UUID]
+    val category2 = gen[UUID]
+
+    val query = ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
 
     val op = for {
       store <- ArticlesByAuthor.store(owner, category, sample).future()
-      get <- ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).bind(owner, category).one()
-    } yield get
+      store2 <- ArticlesByAuthor.store(owner, category2, sample2).future()
+      get <- query.bind(owner, category).one()
+      get2 <- query.bind(owner, category2).one()
+    } yield (get, get2)
 
     whenReady(op) {
-      res => {
+      case (res, res2) => {
         res shouldBe defined
         res.value shouldEqual sample
+
+        res2 shouldBe defined
+        res2.value shouldEqual sample2
       }
     }
   }
