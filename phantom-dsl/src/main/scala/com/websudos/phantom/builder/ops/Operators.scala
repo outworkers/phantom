@@ -29,14 +29,13 @@
  */
 package com.websudos.phantom.builder.ops
 
-import java.util.{UUID, Date}
+import java.util.{Date, UUID}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.column.{Column, TimeUUIDColumn}
 import com.websudos.phantom.keys.PartitionKey
 import org.joda.time.DateTime
@@ -97,13 +96,14 @@ sealed class TokenOperator extends Operator {
   def apply[
     Owner <: CassandraTable[Owner, Record], Record
   ](fn: Column[Owner, Record, _] with PartitionKey[_]*): OperatorClause.Condition = {
+
     new OperatorClause.Condition(
       QueryBuilder.Where.token(fn.map(_.name): _*)
     )
   }
 
   def apply[RR : Primitive](value: RR): OperatorClause.Condition = {
-    new OperatorClause.Condition(CQLQuery(Primitive[RR].asCql(value)))
+    new OperatorClause.Condition(QueryBuilder.Where.token(Primitive[RR].asCql(value)))
   }
 }
 
