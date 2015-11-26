@@ -61,7 +61,7 @@ abstract class Primitive[RR] {
   type PrimitiveType
 
   protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
-    if (row == null || row.isNull(column)) {
+    if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null"))
     } else {
       Try(fn(row))
