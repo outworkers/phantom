@@ -92,23 +92,25 @@ sealed class MinTimeUUID extends Operator {
 }
 
 
-
-
 sealed class TokenOperator extends Operator {
   def apply[
     Owner <: CassandraTable[Owner, Record], Record
-  ](fn: Column[Owner, Record, _] with PartitionKey[_]*) = {
+  ](fn: Column[Owner, Record, _] with PartitionKey[_]*): OperatorClause.Condition = {
     new OperatorClause.Condition(
       QueryBuilder.Where.token(fn.map(_.name): _*)
     )
   }
 }
 
-
 trait Operators {
   object dateOf extends DateOfOperator
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
   object token extends TokenOperator
+
+  implicit def tokenToTokenQueryOperator(token: OperatorClause.Condition): OperatorQueryColumn = {
+    new OperatorQueryColumn(token)
+  }
+
 }
 

@@ -56,7 +56,6 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
     new WhereClause.Condition(QueryBuilder.Where.eqs(col.name, value.qb.queryString))
   }
 
-
   def lt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lt(col.name, p.asCql(value)))
   }
@@ -151,5 +150,41 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
 
 
 sealed class OperatorQueryColumn(val clause: OperatorClause.Condition) {
+
+  def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.eqs(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def lt(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lt(value.qb.queryString, value.qb.queryString))
+  }
+
+  def <(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lt(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def lte(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lte(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def <=(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.lte(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def gt(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gt(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def >(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gt(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def gte(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gte(value.qb.queryString, clause.qb.queryString))
+  }
+
+  def >=(value: OperatorClause.Condition): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.Where.gte(value.qb.queryString, clause.qb.queryString))
+  }
 
 }
