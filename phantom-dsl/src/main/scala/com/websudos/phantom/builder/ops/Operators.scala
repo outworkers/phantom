@@ -39,6 +39,7 @@ import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.{Column, TimeUUIDColumn}
 import com.websudos.phantom.keys.PartitionKey
 import org.joda.time.DateTime
+import shapeless.HList
 
 sealed class Operator
 
@@ -91,6 +92,8 @@ sealed class MinTimeUUID extends Operator {
   }
 }
 
+
+class TokenConstructor[RR, P <: HList](mapper : Seq[String])(implicit ev: Primitive[RR])
 
 sealed class TokenOperator extends Operator {
   def apply[
