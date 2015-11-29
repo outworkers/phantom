@@ -90,7 +90,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a multiple column token clause" in {
-        val qb = ArticlesByAuthor.select.where(t => { token(gen[UUID]) < token(t.author_id, t.category) }).queryString
+        val qb = ArticlesByAuthor.select.where(t => { token(gen[UUID], gen[UUID]) < token(t.author_id, t.category) }).queryString
         Console.println(qb)
       }
 

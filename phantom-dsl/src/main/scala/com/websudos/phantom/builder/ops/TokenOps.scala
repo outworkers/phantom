@@ -62,18 +62,13 @@ sealed trait TokenValueApplyOps {
 
 sealed trait TokenColumnApplyOps {
 
-  def apply[_ <: AbstractColumn[R1], R1](value: R1)(
-    implicit ev: Primitive[R1]
-  ): TokenConstructor[R1 :: HNil] = {
-    new TokenConstructor(Seq(ev.asCql(value)))
+  def apply[V1 <: AbstractColumn[R1], R1](value: V1): TokenConstructor[R1 :: HNil] = {
+    new TokenConstructor[R1 :: HNil](Seq(value.name))
   }
 
-  def apply[X1 <: AbstractColumn[R1], X2 <: AbstractColumn[R2], R1, R2, VL <: HList](value: R1, value2: R2)(
-    implicit ev: Primitive[R1],
-    ev2: Primitive[R2],
-    gen: Generic.Aux[(R1, R2), VL]
-  ): TokenConstructor[VL] = {
-    new TokenConstructor(Seq(ev.asCql(value), ev2.asCql(value2)))
+  def apply[X1 <: AbstractColumn[_], X2 <: AbstractColumn[_], VL <: HList](value: X1, value2: X2)(
+    implicit gen: Generic.Aux[(X1#Value, X2#Value), VL]): TokenConstructor[VL] = {
+    new TokenConstructor[VL](Seq(value.name, value2.name))
   }
 }
 

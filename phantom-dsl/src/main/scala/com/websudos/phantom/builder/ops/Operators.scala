@@ -110,11 +110,11 @@ sealed class TokenConstructor[P <: HList](val mapper : Seq[String]) {
     * @tparam VL
     * @return
     */
-  def eqs[VL <: HList](tk: TokenConstructor[VL])(implicit ev: VL =:= P): WhereClause.Condition = {
+  def eqs[VL <: HList](tk: TokenConstructor[VL]): WhereClause.Condition = {
     new WhereClause.Condition(joinOp(tk.mapper, CQLSyntax.Operators.eqs))
   }
 
-  def <[VL <: HList](tk: TokenConstructor[VL])(implicit ev: VL =:= P): WhereClause.Condition = {
+  def <[VL <: HList](tk: TokenConstructor[VL]): WhereClause.Condition = {
     new WhereClause.Condition(joinOp(tk.mapper, CQLSyntax.Operators.lt))
   }
 
