@@ -70,6 +70,11 @@ sealed trait TokenColumnApplyOps {
     implicit gen: Generic.Aux[(X1#Value, X2#Value), VL]): TokenConstructor[VL] = {
     new TokenConstructor[VL](Seq(value.name, value2.name))
   }
+
+  def apply[X1 <: AbstractColumn[_], X2 <: AbstractColumn[_], X3 <: AbstractColumn[_], VL <: HList](value: X1, value2: X2, value3: X3)(
+    implicit gen: Generic.Aux[(X1#Value, X2#Value, X3#Value), VL]): TokenConstructor[VL] = {
+    new TokenConstructor[VL](Seq(value.name, value2.name, value3.name))
+  }
 }
 
 
