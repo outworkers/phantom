@@ -56,3 +56,22 @@ sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesR
 }
 
 object TimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector
+
+
+sealed class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeSeriesRecord] {
+  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
+  object name extends StringColumn(this)
+  object timestamp extends DateTimeColumn(this) {
+    override val name = "unixTimestamp"
+  }
+
+  def fromRow(row: Row): TimeSeriesRecord = {
+    TimeSeriesRecord(
+      id(row),
+      name(row),
+      timestamp(row)
+    )
+  }
+}
+
+object TimeUUIDTable extends TimeUUIDTable
