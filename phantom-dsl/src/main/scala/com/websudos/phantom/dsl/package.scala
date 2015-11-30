@@ -32,18 +32,18 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
-import com.websudos.phantom.util.ByteString
-
-import scala.util.Try
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses.UpdateClause
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.util.ByteString
+
+import scala.util.Try
 
 package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
 
@@ -121,19 +121,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
   case object Batch extends Batcher
 
-  object ConsistencyLevel {
-    val ALL = CLevel.ALL
-    val Any = CLevel.ANY
-    val ONE = CLevel.ONE
-    val TWO = CLevel.TWO
-    val THREE = CLevel.THREE
-    val QUORUM = CLevel.QUORUM
-    val LOCAL_QUORUM = CLevel.LOCAL_QUORUM
-    val EACH_QUORUM = CLevel.EACH_QUORUM
-    val LOCAL_SERIAL = CLevel.LOCAL_SERIAL
-    val LOCAL_ONE = CLevel.LOCAL_ONE
-    val SERIAL = CLevel.SERIAL
-  }
+  val ConsistencyLevel = CLevel
 
   type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
   val ContactPoint = com.websudos.phantom.connectors.ContactPoint
@@ -160,54 +148,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     }
   }
 
-  implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
-
-    def ltToken (value: T): WhereClause.Condition = {
-      new WhereClause.Condition(
-        QueryBuilder.Where.lt(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
-        )
-      )
-    }
-
-    def lteToken (value: T): WhereClause.Condition = {
-      new WhereClause.Condition(
-        QueryBuilder.Where.lte(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
-        )
-      )
-    }
-
-    def gtToken (value: T): WhereClause.Condition = {
-      new WhereClause.Condition(
-        QueryBuilder.Where.gt(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
-        )
-      )
-    }
-
-    def gteToken (value: T): WhereClause.Condition = {
-      new WhereClause.Condition(
-        QueryBuilder.Where.gte(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
-        )
-      )
-    }
-
-    def eqsToken (value: T): WhereClause.Condition = {
-      new WhereClause.Condition(
-        QueryBuilder.Where.eqs(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
-        )
-      )
-    }
-  }
-
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
@@ -217,7 +157,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   implicit class AutoTupler[V](val v: V) extends AnyVal {
     def tp: Tuple1[V] = Tuple1(v)
 
-    def tuple = tp _
+    def tuple: Tuple1[V] = Tuple1(v)
   }
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
