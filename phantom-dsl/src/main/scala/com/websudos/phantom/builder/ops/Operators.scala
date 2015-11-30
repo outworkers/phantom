@@ -29,16 +29,17 @@
  */
 package com.websudos.phantom.builder.ops
 
-import java.util.{UUID, Date}
+import java.util.{Date, UUID}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
+import com.websudos.phantom.builder.clauses.{OperatorClause, WhereClause}
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.column.{Column, TimeUUIDColumn}
-import com.websudos.phantom.keys.PartitionKey
+import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.column.TimeUUIDColumn
 import org.joda.time.DateTime
+import shapeless.{=:!=, HList}
 
 sealed class Operator
 
@@ -91,24 +92,58 @@ sealed class MinTimeUUID extends Operator {
   }
 }
 
+sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Seq[String]) {
 
+  type Out = P
 
+  private[this] def joinOp(comp: Seq[String], op: String): WhereClause.Condition = {
+    val qb = QueryBuilder.Where.token(mapper: _*)
+      .pad
+      .append(op)
+      .pad
+      .append(QueryBuilder.Where.token(comp: _*))
 
-sealed class TokenOperator extends Operator {
-  def apply[
-    Owner <: CassandraTable[Owner, Record], Record
-  ](fn: Column[Owner, Record, _] with PartitionKey[_]*) = {
-    new OperatorClause.Condition(
-      QueryBuilder.Where.token(fn.map(_.name): _*)
-    )
+    new WhereClause.Condition(qb)
+  }
+
+  /**
+    * An equals comparison clause between token definitions.
+    * @param tk The token constructor to compare against.
+    * @tparam VL
+    * @return
+    */
+  def eqs[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+    joinOp(tk.mapper, CQLSyntax.Operators.eqs)
+  }
+
+  def <[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+    joinOp(tk.mapper, CQLSyntax.Operators.lt)
+  }
+
+  def <=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+    joinOp(tk.mapper, CQLSyntax.Operators.lte)
+  }
+
+  def >[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+    joinOp(tk.mapper, CQLSyntax.Operators.gt)
+  }
+
+  def >=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+    joinOp(tk.mapper, CQLSyntax.Operators.gte)
   }
 }
 
+sealed class TokenOperator extends Operator with TokenComparisonOps
 
 trait Operators {
   object dateOf extends DateOfOperator
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
   object token extends TokenOperator
+
+  implicit def tokenToTokenQueryOperator(token: OperatorClause.Condition): OperatorQueryColumn = {
+    new OperatorQueryColumn(token)
+  }
+
 }
 
