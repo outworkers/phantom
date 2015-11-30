@@ -95,7 +95,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a single column token clause" in {
-        val qb = ArticlesByAuthor.select.where(_.author_id gtToken gen[UUID]).queryString
+        val qb = ArticlesByAuthor.select.where(t => token(t.author_id) > token(gen[UUID])).queryString
 
         Console.println(qb)
       }

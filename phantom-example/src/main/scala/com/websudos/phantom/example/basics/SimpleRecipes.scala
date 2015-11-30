@@ -146,9 +146,8 @@ object Recipes extends Recipes with ExampleConnector {
   // The fetch method will collect an asynchronous lazy iterator into a Seq.
   // It's a good way to avoid boilerplate when retrieving a small number of items.
   def getRecipesPage(start: UUID, limit: Int): ScalaFuture[Seq[Recipe]] = {
-    select.where(_.id gtToken start).limit(limit).fetch()
+    select.where(t => {token(t.id) > start }).limit(limit).fetch()
   }
-
 
   // The fetchEnumerator method is the real power behind the scenes.
   // You can retrieve a whole table, even with billions of records, in a single query.

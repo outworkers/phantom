@@ -121,7 +121,19 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
   case object Batch extends Batcher
 
-  val ConsistencyLevel = CLevel
+  object ConsistencyLevel {
+    val ALL = CLevel.ALL
+    val Any = CLevel.ANY
+    val ONE = CLevel.ONE
+    val TWO = CLevel.TWO
+    val THREE = CLevel.THREE
+    val QUORUM = CLevel.QUORUM
+    val LOCAL_QUORUM = CLevel.LOCAL_QUORUM
+    val EACH_QUORUM = CLevel.EACH_QUORUM
+    val LOCAL_SERIAL = CLevel.LOCAL_SERIAL
+    val LOCAL_ONE = CLevel.LOCAL_ONE
+    val SERIAL = CLevel.SERIAL
+  }
 
   type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
   val ContactPoint = com.websudos.phantom.connectors.ContactPoint
@@ -154,12 +166,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
   implicit lazy val context = Manager.scalaExecutor
 
-  implicit class AutoTupler[V](val v: V) extends AnyVal {
-    def tp: Tuple1[V] = Tuple1(v)
-
-    def tuple: Tuple1[V] = Tuple1(v)
-  }
-
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
@@ -174,7 +180,11 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     final def decrement[T : Numeric](value: T): UpdateClause.Condition = -=(value)
   }
 
-
+  /**
+    * Augments Cassandra VersionNumber descriptors to support simple comparison of versions.
+    * This allows for operations that can differ based on the Cassandra version used by the session.
+    * @param version The Cassandra version number.
+    */
   implicit class VersionAugmenter(val version: VersionNumber) extends AnyVal {
     def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
     def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0

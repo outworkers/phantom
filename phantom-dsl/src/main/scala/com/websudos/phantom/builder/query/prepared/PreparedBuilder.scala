@@ -146,6 +146,11 @@ class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpa
     val params = flattenOpt(v1.productIterator.toSeq)
     new ExecutablePreparedQuery(query.bind(params: _*))
   }
+
+  def bind[V](v: V): ExecutablePreparedQuery = {
+    val params = flattenOpt(Seq(v))
+    new ExecutablePreparedQuery(query.bind(params: _*))
+  }
 }
 
 class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS <: HList](
@@ -162,6 +167,11 @@ class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS 
     ev: VL1 =:= Reversed
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     val params = flattenOpt(v1.productIterator.toSeq)
+    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
+  }
+
+  def bind[V](v: V): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    val params = flattenOpt(Seq(v))
     new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
   }
 }

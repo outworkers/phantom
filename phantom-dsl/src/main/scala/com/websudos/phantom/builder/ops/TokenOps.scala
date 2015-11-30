@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.AbstractColumn
-import shapeless.{Generic, HList, ::, HNil}
+import shapeless._
 
 object TokenTypes {
   sealed trait Root
@@ -42,10 +42,7 @@ object TokenTypes {
 
 sealed trait TokenValueApplyOps {
 
-  def apply[R1, VL <: HList](value: R1)(
-    implicit ev: Primitive[R1],
-    gen: Generic.Aux[Tuple1[R1], VL]
-  ): TokenConstructor[VL, TokenTypes.ValueToken] = {
+  def apply[R1](value: R1)(implicit ev: Primitive[R1]): TokenConstructor[R1 :: HNil, TokenTypes.ValueToken] = {
     new TokenConstructor(Seq(ev.asCql(value)))
   }
 
@@ -79,7 +76,8 @@ sealed trait TokenValueApplyOps {
 
 sealed trait TokenColumnApplyOps {
 
-  def apply[V1 <: AbstractColumn[R1], R1](value: V1): TokenConstructor[R1 :: HNil, TokenTypes.ColumnToken] = {
+  def apply[V1 <: AbstractColumn[R1], R1](value: V1)
+    (implicit ev: V1 <:< AbstractColumn[R1]): TokenConstructor[R1 :: HNil, TokenTypes.ColumnToken] = {
     new TokenConstructor(Seq(value.name))
   }
 
@@ -115,4 +113,4 @@ sealed trait TokenColumnApplyOps {
 }
 
 
-trait TokenComparisonOps extends TokenValueApplyOps with TokenColumnApplyOps
+trait TokenComparisonOps extends TokenColumnApplyOps with TokenValueApplyOps
