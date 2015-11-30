@@ -54,7 +54,7 @@ sealed trait CassandraWrites[T] {
   def cassandraType: String
 }
 
-private[phantom] trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
+trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   type Value = T
 
