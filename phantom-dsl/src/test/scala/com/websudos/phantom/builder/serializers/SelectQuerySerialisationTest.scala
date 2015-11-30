@@ -99,6 +99,10 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         Console.println(qb)
       }
+
+      "a single dateOf column apply" in {
+        val qb = ArticlesByAuthor.select.where(t => dateOf(t))
+      }
     }
   }
 
