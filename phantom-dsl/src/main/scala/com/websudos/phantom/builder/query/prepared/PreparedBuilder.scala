@@ -127,6 +127,7 @@ trait PreparedFlattener {
       case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
       case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
       case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
+      case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
       case x => x
     } map(_.asInstanceOf[AnyRef])
   }
