@@ -42,8 +42,8 @@ object TokenTypes {
 
 sealed trait TokenValueApplyOps {
 
-  def apply[R1](value: R1)(implicit ev: Primitive[R1]): TokenConstructor[R1 :: HNil, TokenTypes.ValueToken] = {
-    new TokenConstructor(Seq(ev.asCql(value)))
+  def apply[R1 : Primitive](value: R1): TokenConstructor[R1 :: HNil, TokenTypes.ValueToken] = {
+    new TokenConstructor(Seq(Primitive[R1].asCql(value)))
   }
 
   def apply[R1, R2, VL <: HList](value: R1, value2: R2)(
