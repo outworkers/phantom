@@ -140,5 +140,6 @@ trait Operators {
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
   object token extends TokenOperator
+  object now extends NowOperator
 }
 
