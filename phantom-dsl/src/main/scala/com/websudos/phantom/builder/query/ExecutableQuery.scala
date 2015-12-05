@@ -56,10 +56,40 @@ trait ExecutableStatement extends CassandraOperations {
       .setConsistencyLevel(consistencyLevel.orNull)
   }
 
+  /**
+    * Default asynchronous query execution method. This will convert the underlying
+    * call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Scala Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * The execution context of the transformation is provided by phantom via
+    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * use [[com.websudos.phantom.dsl.context]] for operations that chain
+    * database calls.
+    *
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @return
+    */
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
   }
 
+  /**
+    * Default asynchronous query execution method based on Twitter Future API. This will convert the underlying
+    * call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Twitter Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * Unlike Scala Futures, Twitter Futures and operations on them do not require an implicit context.
+    * Instead, the context propagates from one future to another inside a flatMap chain which means
+    * all operations(map, flatMap) that originate on a Twitter Future obtained as the result of a database
+    * call will execute inside [[com.websudos.phantom.Manager.executor]].
+    *
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @return
+    */
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
     twitterQueryStringExecuteToFuture(statement)
   }
