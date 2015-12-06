@@ -78,7 +78,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
         .value(_.orderId, article4.order_id)
         .future()
       one <- Articles.select.one
-      next <- Articles.select.where(t => token(t.id) > token(one.get.id)).fetch
+      next <- Articles.select.where(_.id gtToken one.get.id).fetch
     } yield next
 
     result successful {
@@ -96,7 +96,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
 
-      next <- Articles.select.where(t => { token(t.id) eqs token(articles.head.id) }).fetch
+      next <- Articles.select.where(_.id eqsToken articles.head.id).fetch
     } yield next
 
 
@@ -115,7 +115,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
 
-      next <- Articles.select.where(t => { token(t.id) >= token(articles.head.id) }).fetch
+      next <- Articles.select.where(_.id gteToken articles.head.id).fetch
     } yield next
 
 
@@ -134,7 +134,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
 
-      next <- Articles.select.where(t => { token(t.id) < token(articles.last.id) }).fetch
+      next <- Articles.select.where(_.id ltToken articles.last.id).fetch
     } yield next
 
 
@@ -152,7 +152,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
     val result = for {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
-      next <- Articles.select.where(t => { token(t.id <= token(articles.last.id) }).fetch
+      next <- Articles.select.where(_.id lteToken articles.last.id).fetch
     } yield next
 
 
