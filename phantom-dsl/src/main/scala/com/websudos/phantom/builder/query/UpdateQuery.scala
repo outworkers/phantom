@@ -53,7 +53,7 @@ class UpdateQuery[
   setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null, consistencyLevel) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, consistencyLevel) with Batchable {
 
   override val qb: CQLQuery = {
     usingPart merge setPart merge wherePart build init
@@ -129,8 +129,15 @@ class UpdateQuery[
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
   override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    val query = QueryBuilder.Update.and(condition(table).qb)
-    new UpdateQuery(table, init, usingPart, wherePart append query, setPart, casPart, consistencyLevel)
+    new UpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.and(condition(table).qb),
+      setPart,
+      casPart,
+      consistencyLevel
+    )
   }
 
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {

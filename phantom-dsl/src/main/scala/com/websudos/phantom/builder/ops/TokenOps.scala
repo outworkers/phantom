@@ -76,8 +76,7 @@ sealed trait TokenValueApplyOps {
 
 sealed trait TokenColumnApplyOps {
 
-  def apply[V1 <: AbstractColumn[R1], R1](value: V1)
-    (implicit ev: V1 <:< AbstractColumn[R1]): TokenConstructor[R1 :: HNil, TokenTypes.ColumnToken] = {
+  def apply[V1 <: AbstractColumn[R1], R1](value: V1): TokenConstructor[R1 :: HNil, TokenTypes.ColumnToken] = {
     new TokenConstructor(Seq(value.name))
   }
 

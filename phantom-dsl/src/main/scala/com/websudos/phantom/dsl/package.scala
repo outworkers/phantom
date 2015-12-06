@@ -42,6 +42,7 @@ import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
+import shapeless.{HNil, ::}
 
 import scala.util.Try
 
@@ -162,6 +163,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+  }
+
+  implicit def primitiveToTokenOp[RR : Primitive](value: RR): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
+    new TokenConstructor(Seq(Primitive[RR].asCql(value)))
   }
 
   implicit lazy val context = Manager.scalaExecutor

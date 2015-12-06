@@ -152,7 +152,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
     val result = for {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
-      next <- Articles.select.where(t => { token(t.id) <= token(articles.last.id) }).fetch
+      next <- Articles.select.where(t => { token(t.id <= token(articles.last.id) }).fetch
     } yield next
 
 
