@@ -42,10 +42,6 @@ object TokenTypes {
 
 sealed trait TokenValueApplyOps {
 
-  def apply[R1 : Primitive](value: R1): TokenConstructor[R1 :: HNil, TokenTypes.ValueToken] = {
-    new TokenConstructor(Seq(Primitive[R1].asCql(value)))
-  }
-
   def apply[R1, R2, VL <: HList](value: R1, value2: R2)(
     implicit ev: Primitive[R1],
     ev2: Primitive[R2],
@@ -75,10 +71,6 @@ sealed trait TokenValueApplyOps {
 }
 
 sealed trait TokenColumnApplyOps {
-
-  def apply[V1 <: AbstractColumn[R1], R1](value: V1): TokenConstructor[R1 :: HNil, TokenTypes.ColumnToken] = {
-    new TokenConstructor(Seq(value.name))
-  }
 
   def apply[
     X1 <: AbstractColumn[_],
