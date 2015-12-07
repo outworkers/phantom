@@ -78,7 +78,7 @@ class SkipRecordsByToken extends PhantomCassandraTestSuite {
         .value(_.orderId, article4.order_id)
         .future()
       one <- Articles.select.one
-      next <- Articles.select.where(_.id gtToken one.get.id ).fetch
+      next <- Articles.select.where(_.id gtToken one.get.id).fetch
     } yield next
 
     result successful {

@@ -149,7 +149,6 @@ object Recipes extends Recipes with ExampleConnector {
     select.where(_.id gtToken start).limit(limit).fetch()
   }
 
-
   // The fetchEnumerator method is the real power behind the scenes.
   // You can retrieve a whole table, even with billions of records, in a single query.
   // Phantom will collect them into an asynchronous, lazy iterator with very low memory foot print.

@@ -99,11 +99,11 @@ class InsertQuery[
   }
 
   def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb)
+    new PreparedBlock[PS](qb, consistencyLevel)
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
-    val insertValue = if (Option(value).isDefined) col(table).asCql(value) else null.asInstanceOf[String]
+    val insertValue = if (Option(value).isDefined) col(table).asCql(value) else None.orNull.asInstanceOf[String]
 
     new InsertQuery(
       table,
@@ -221,7 +221,7 @@ class InsertJsonQuery[
 ) extends ExecutableStatement with Batchable {
 
   def prepare()(implicit session: Session, keySpace: KeySpace): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb)
+    new PreparedBlock[PS](qb, consistencyLevel)
   }
 
   override val qb: CQLQuery = {
