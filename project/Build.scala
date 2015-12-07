@@ -67,7 +67,7 @@ object Build extends Build {
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
         }
     },
-    licenses += ("Websudos License", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
+    licenses += ("Apache-2.0", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
@@ -110,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.17.3",
+    version := "1.17.4",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(

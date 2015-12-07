@@ -48,6 +48,10 @@ object Manager {
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
 
+  /**
+    * Shuts down the default task executors for Guava ListenableFutures and for Scala Futures.
+    * @deprecated("Call shutdown on a [[com.websudos.phantom.db.DatabaseImpl]] instead", "1.15.0")
+    */
   def shutdown(): Unit = {
     logger.info("Shutting down executors")
     taskExecutor.shutdown()

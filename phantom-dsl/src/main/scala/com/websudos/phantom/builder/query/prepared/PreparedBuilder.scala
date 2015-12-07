@@ -52,10 +52,10 @@ private[phantom] trait PrepareMark {
 object ? extends PrepareMark
 
 
-class ExecutablePreparedQuery(val statement: Statement) extends ExecutableStatement {
+class ExecutablePreparedQuery(val statement: Statement, level: Option[ConsistencyLevel]) extends ExecutableStatement {
   override val qb = CQLQuery.empty
 
-  override def consistencyLevel: Option[ConsistencyLevel] = None
+  override def consistencyLevel: Option[ConsistencyLevel] = level
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
@@ -133,7 +133,7 @@ trait PreparedFlattener {
   }
 }
 
-class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
+class PreparedBlock[PS <: HList](qb: CQLQuery, level: Option[ConsistencyLevel])(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
 
   val query = blocking {
     session.prepare(qb.queryString)
@@ -145,7 +145,12 @@ class PreparedBlock[PS <: HList](qb: CQLQuery)(implicit session: Session, keySpa
     ev: VL1 =:= Reversed
   ): ExecutablePreparedQuery = {
     val params = flattenOpt(v1.productIterator.toSeq)
-    new ExecutablePreparedQuery(query.bind(params: _*))
+    new ExecutablePreparedQuery(query.bind(params: _*), level)
+  }
+
+  def bind[V](v: V): ExecutablePreparedQuery = {
+    val params = flattenOpt(Seq(v))
+    new ExecutablePreparedQuery(query.bind(params: _*), level)
   }
 }
 
@@ -163,6 +168,11 @@ class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS 
     ev: VL1 =:= Reversed
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     val params = flattenOpt(v1.productIterator.toSeq)
+    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
+  }
+
+  def bind[V](v: V): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    val params = flattenOpt(Seq(v))
     new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
   }
 }

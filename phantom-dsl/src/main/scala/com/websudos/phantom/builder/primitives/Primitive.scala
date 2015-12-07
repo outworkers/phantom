@@ -370,5 +370,5 @@ trait DefaultPrimitives {
 }
 
 object Primitive extends DefaultPrimitives {
-  def apply[RR : Primitive] = implicitly[Primitive[RR]]
+  def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 }

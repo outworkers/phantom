@@ -91,13 +91,15 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
       "a multiple column token clause" in {
         val qb = ArticlesByAuthor.select.where(t => { token(gen[UUID], gen[UUID]) > token(t.author_id, t.category) }).queryString
-        Console.println(qb)
       }
 
       "a single column token clause" in {
         val qb = ArticlesByAuthor.select.where(_.author_id gtToken gen[UUID]).queryString
 
-        Console.println(qb)
+      }
+
+      "a single dateOf column apply" in {
+        //val qb = ArticlesByAuthor.select.where(t => dateOf(t))
       }
     }
   }
