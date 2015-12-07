@@ -52,7 +52,7 @@ class DeleteQuery[
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, null) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -78,7 +78,7 @@ class DeleteQuery[
 
 
   def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb)
+    new PreparedBlock[PS](qb, consistencyLevel)
   }
 
   /**

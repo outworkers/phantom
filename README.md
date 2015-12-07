@@ -96,7 +96,7 @@ Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
 * Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1))
-* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji)
+* Benjamin Edwards ([@benjumanji](https://github.com/benjumanji))
 * Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev))
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))

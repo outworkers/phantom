@@ -140,10 +140,6 @@ trait Operators {
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
   object token extends TokenOperator
-
-  implicit def tokenToTokenQueryOperator(token: OperatorClause.Condition): OperatorQueryColumn = {
-    new OperatorQueryColumn(token)
-  }
-
+  object now extends NowOperator
 }
 

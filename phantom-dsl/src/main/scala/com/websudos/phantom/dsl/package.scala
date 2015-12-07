@@ -32,18 +32,19 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
-import com.websudos.phantom.util.ByteString
-
-import scala.util.Try
 
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.util.ByteString
+import shapeless.{HNil, ::}
+
+import scala.util.Try
 
 package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
 
@@ -160,6 +161,16 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     }
   }
 
+  implicit class RichNumber(val percent: Int) extends AnyVal {
+    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+  }
+
+  implicit def primitiveToTokenOp[RR : Primitive](value: RR): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
+    new TokenConstructor(Seq(Primitive[RR].asCql(value)))
+  }
+
+  implicit lazy val context = Manager.scalaExecutor
+
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
     def ltToken (value: T): WhereClause.Condition = {
@@ -208,18 +219,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     }
   }
 
-  implicit class RichNumber(val percent: Int) extends AnyVal {
-    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
-  }
-
-  implicit lazy val context = Manager.scalaExecutor
-
-  implicit class AutoTupler[V](val v: V) extends AnyVal {
-    def tp: Tuple1[V] = Tuple1(v)
-
-    def tuple = tp _
-  }
-
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Condition = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
@@ -234,7 +233,11 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     final def decrement[T : Numeric](value: T): UpdateClause.Condition = -=(value)
   }
 
-
+  /**
+    * Augments Cassandra VersionNumber descriptors to support simple comparison of versions.
+    * This allows for operations that can differ based on the Cassandra version used by the session.
+    * @param version The Cassandra version number.
+    */
   implicit class VersionAugmenter(val version: VersionNumber) extends AnyVal {
     def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
     def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
