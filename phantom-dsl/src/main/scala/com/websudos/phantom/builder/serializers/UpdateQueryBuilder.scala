@@ -35,10 +35,6 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 
 private[builder] class UpdateQueryBuilder {
 
-  def `if`(column: String, value: String): CQLQuery = {
-    Utils.concat(column, CQLSyntax.Operators.eqs, value)
-  }
-
   def onlyIf(clause: CQLQuery): CQLQuery = {
     CQLQuery(CQLSyntax.`if`).forcePad.append(clause)
   }
@@ -55,7 +51,7 @@ private[builder] class UpdateQueryBuilder {
   }
 
   def increment(column: String, value: String): CQLQuery = {
-    counterSetter(column, CQLSyntax.Symbols.+, value)
+    counterSetter(column, CQLSyntax.Symbols.plus, value)
   }
 
   def decrement(column: String, value: String): CQLQuery = {
@@ -96,11 +92,10 @@ private[builder] class UpdateQueryBuilder {
     clauses(CQLSyntax.using, queries)
   }
 
-  def update(tableName: String) = {
+  def update(tableName: String): CQLQuery = {
     CQLQuery(CQLSyntax.update)
       .forcePad.append(tableName)
   }
-
 
 }
 
