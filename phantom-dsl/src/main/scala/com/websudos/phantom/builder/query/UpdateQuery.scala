@@ -193,9 +193,10 @@ sealed class AssignmentsQuery[
   def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
     new AssignmentsQuery(
       table,
-      init, usingPart,
+      init,
+      usingPart append QueryBuilder.ttl(seconds.toString),
       wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
+      setPart,
       casPart,
       consistencyLevel
     )

@@ -37,6 +37,8 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 
+import scala.concurrent.duration._
+
 class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandraConnector {
 
   override implicit val keySpace = new KeySpace("phantom")
@@ -55,7 +57,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) > 0) {
+        if (protocol.compareTo(ProtocolVersion.V2) >= 0) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
@@ -63,7 +65,15 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
       }
 
       "chain a ttl clause to an UpdateQuery" in {
+        val url = gen[String]
+        val uid = gen[UUID]
 
+        val query = Recipes.update.where(_.url eqs url)
+          .modify(_.uid setTo uid)
+          .ttl(5.seconds)
+          .queryString
+
+        Console.println(query)
       }
 
       "specify a consistency level in a ConditionUpdateQuery" in {
@@ -76,7 +86,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) > 0) {
+        if (protocol.compareTo(ProtocolVersion.V2) >= 0) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
