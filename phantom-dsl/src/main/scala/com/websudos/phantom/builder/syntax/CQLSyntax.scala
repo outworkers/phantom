@@ -123,6 +123,7 @@ object CQLSyntax {
     val `>` = ">"
     val `=` = "="
     val + = "+"
+    val plus = "+"
     val - = "-"
   }
 
