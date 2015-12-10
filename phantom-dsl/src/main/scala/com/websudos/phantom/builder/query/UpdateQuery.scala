@@ -326,7 +326,8 @@ sealed class ConditionalQuery[
   def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
     new ConditionalQuery(
       table,
-      init, usingPart,
+      init,
+      usingPart,
       wherePart,
       setPart append QueryBuilder.ttl(seconds.toString),
       casPart,

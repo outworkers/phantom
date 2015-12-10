@@ -39,7 +39,7 @@ import com.websudos.util.testing._
 
 class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandraConnector {
 
-  override implicit val keySpace = KeySpace("phantom")
+  override implicit val keySpace = new KeySpace("phantom")
 
   val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
 
@@ -55,11 +55,15 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+        if (protocol.compareTo(ProtocolVersion.V2) > 0) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
         }
+      }
+
+      "chain a ttl clause to an UpdateQuery" in {
+
       }
 
       "specify a consistency level in a ConditionUpdateQuery" in {
@@ -72,7 +76,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+        if (protocol.compareTo(ProtocolVersion.V2) > 0) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
