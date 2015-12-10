@@ -35,7 +35,7 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.9.11"
+  val UtilVersion = "0.10.0"
   val DatastaxDriverVersion = "3.0.0-alpha4"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
@@ -110,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.17.5",
+    version := "1.17.6",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
