@@ -46,7 +46,7 @@ private[phantom] trait CassandraOperations {
     }
 
     def isNewerThan(pv: ProtocolVersion): Boolean = {
-      protocolVersion.compareTo(pv) == 1
+      protocolVersion.compareTo(pv) > 0
     }
 
     def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)

@@ -43,9 +43,12 @@ The following are the current resources available for learning phantom, outside 
 highlighting all the possible features in phantom and how to use them.
 
 
+
+
 This is a list of resources to help you learn phantom and Cassandra:
 
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
+- [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/websudos/phantom/wiki)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
 - [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://blog.websudos.com/2014/08/16/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality/)

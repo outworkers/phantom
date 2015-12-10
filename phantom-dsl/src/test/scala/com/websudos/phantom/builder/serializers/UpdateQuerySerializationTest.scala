@@ -57,7 +57,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) >= 0) {
+        if (protocol.compareTo(ProtocolVersion.V2) >= 1) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
@@ -73,7 +73,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .ttl(5.seconds)
           .queryString
 
-        Console.println(query)
+        query shouldEqual s"UPDATE phantom.Recipes USING TTL 5 SET uid = $uid WHERE url = '$url';"
       }
 
       "specify a consistency level in a ConditionUpdateQuery" in {
@@ -86,7 +86,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (protocol.compareTo(ProtocolVersion.V2) >= 0) {
+        if (protocol.compareTo(ProtocolVersion.V2) >= 1) {
           query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
         } else {
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
