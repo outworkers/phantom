@@ -29,10 +29,10 @@
  */
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.testkit.suites.SimpleCassandraConnector
-
-// case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
+import com.websudos.phantom.dsl._
+import scala.concurrent.Future
 
 trait UDTKeySpace {
   implicit val keySpace = KeySpace("phantom_udt_test")
@@ -42,18 +42,25 @@ trait UDTConnector extends SimpleCassandraConnector with UDTKeySpace
 
 object UDTConnector extends UDTConnector
 
-/*
-sealed class TestFields extends CassandraTable[TestFields, TestRecord] {
+abstract class Address[
+  Owner <: CassandraTable[Owner, Record],
+  Record
+](table: CassandraTable[Owner, Record]) extends UDTColumn[Owner, Record, Address[Owner, Record]](table) {
+
+}
+
+case class TestRecord(
+  id: UUID,
+  name: String,
+  address: Address[TestFields, TestRecord]
+)
+
+sealed class TestFields extends CassandraTable[TestFields, TestRecord] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
 
-  object address extends UDTColumn(this) {
-    val connector = UDTConnector
-    object postCode extends StringField[TestFields, TestRecord, address.type](this)
-    object street extends StringField[TestFields, TestRecord, address.type](this)
-    object test extends IntField[TestFields, TestRecord, address.type](this)
-  }
+  object address extends Address(this)
 
   def fromRow(row: Row): TestRecord = {
     TestRecord(
@@ -71,4 +78,3 @@ object TestFields extends TestFields with UDTConnector {
   }
 
 }
-*/

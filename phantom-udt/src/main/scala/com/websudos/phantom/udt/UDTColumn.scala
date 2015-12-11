@@ -172,7 +172,7 @@ sealed trait UDTDefinition[T] {
     queryInit + queryColumns + ");"
   }
 
-  def create(): UDTCreateQuery = new UDTCreateQuery(null, this)
+  def create(): UDTCreateQuery = new UDTCreateQuery(None.orNull, this)
 
   /**
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
@@ -185,11 +185,11 @@ sealed trait UDTDefinition[T] {
 abstract class UDTColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  T
-](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, UDTColumn[Owner, Record, T]](table) with UDTDefinition[T] {
+  T <: UDTColumn[Owner, Record, T]
+](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, T](table) with UDTDefinition[T] {
 
-   override def apply(row: Row): UDTColumn[Owner, Record, T] = {
-    val instance: UDTColumn[Owner, Record, T] = clone().asInstanceOf[UDTColumn[Owner, Record, T]]
+   override def apply(row: Row): T = {
+    val instance: T = clone().asInstanceOf[T]
     val data = row.getUDTValue(name)
 
     instance.fields.foreach(field => {
@@ -198,9 +198,9 @@ abstract class UDTColumn[
     instance
   }
 
-  override def optional(r: Row): Try[UDTColumn[Owner, Record, T]] = {
+  override def optional(r: Row): Try[T] = {
     Try {
-      val instance = clone().asInstanceOf[UDTColumn[Owner, Record, T]]
+      val instance = clone().asInstanceOf[T]
       val data = r.getUDTValue(name)
 
       instance.fields.foreach(field => {
@@ -211,7 +211,7 @@ abstract class UDTColumn[
     }
   }
 
-  def asCql(v: T)(implicit session: Session, keySpace: KeySpace): String = {
+  def asCql(v: T): String = {
     val data = typeDef.newValue()
     fields.foreach(field => {
       field.setSerialise(data)
@@ -220,7 +220,11 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
+sealed class UDTCreateQuery(
+  val qb: CQLQuery,
+  udt: UDTDefinition[_],
+  override val consistencyLevel: Option[ConsistencyLevel] = None
+) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     twitterQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
