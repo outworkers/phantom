@@ -119,17 +119,23 @@ trait PreparedFlattener {
     * @return A clansed set of parameters.
     */
   protected[this] def flattenOpt(parameters: Seq[Any]): Seq[AnyRef] = {
-    //noinspection ComparingUnrelatedTypes
-    parameters map {
-      case x if x.isInstanceOf[Some[_]] => x.asInstanceOf[Some[Any]].get
-      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
-      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
-      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
-      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
-      case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
-      case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
-      case x => x
-    } map(_.asInstanceOf[AnyRef])
+
+    def flattenOpt(param: Any): Any = {
+      //noinspection ComparingUnrelatedTypes
+      param match {
+        case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[Any]].get)
+        case x if x.isInstanceOf[None.type] => null.asInstanceOf[Any]
+        case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
+        case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
+        case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
+        case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
+        case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
+        case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
+        case x => x
+      }
+    }
+
+    parameters map flattenOpt map(_.asInstanceOf[AnyRef])
   }
 }
 
