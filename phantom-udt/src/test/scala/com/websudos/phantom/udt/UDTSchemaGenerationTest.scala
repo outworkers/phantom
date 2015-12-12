@@ -41,7 +41,9 @@ class UDTSchemaGenerationTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(TestFields.udt.future(), 5.seconds)
+    if (session.v3orNewer) {
+      Await.result(TestFields.udt.future(), 5.seconds)
+    }
   }
 
   it should "generate the schema of an UDT during table creation" in {
