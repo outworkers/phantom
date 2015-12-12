@@ -31,12 +31,9 @@ package com.websudos.phantom.udt
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit.suites.TestDefaults
 
 import scala.concurrent.Future
-
-object UDT {
-  val connector = ContactPoint.local.keySpace("phantom_udt_test")
-}
 
 abstract class Address[
   T <: CassandraTable[T, R],
@@ -59,7 +56,7 @@ abstract class TestFields extends CassandraTable[TestFields, TestRecord] with Ro
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
 
-  object address extends Address(this)(UDT.connector)
+  object address extends Address(this)(TestDefaults.defaultConnector)
 
   def fromRow(row: Row): TestRecord = {
     TestRecord(
@@ -70,7 +67,7 @@ abstract class TestFields extends CassandraTable[TestFields, TestRecord] with Ro
   }
 }
 
-object TestFields extends TestFields with UDT.connector.Connector {
+object TestFields extends TestFields with TestDefaults.defaultConnector.Connector {
 
   def getAddress(id: UUID): Future[Option[TestRecord]] = {
     select.where(_.id eqs id).one()

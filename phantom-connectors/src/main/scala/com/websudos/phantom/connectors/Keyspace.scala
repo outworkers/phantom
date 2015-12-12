@@ -74,6 +74,7 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
       .toSet[VersionNumber]
   }
 
+
   def cassandraVersion: VersionNumber = {
     val versions = cassandraVersions
 

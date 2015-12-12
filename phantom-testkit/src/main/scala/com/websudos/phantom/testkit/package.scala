@@ -29,7 +29,22 @@
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.{ProtocolVersion, Session}
+
 package object testkit {
+
+  implicit class RichSession(val session: Session) {
+    def protocolVersion: ProtocolVersion = {
+      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+    }
+
+    def isNewerThan(pv: ProtocolVersion): Boolean = {
+      protocolVersion.compareTo(pv) > 0
+    }
+
+    def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+  }
+
   type PhantomCassandraTestSuite = com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
   type PhantomCassandraConnector = com.websudos.phantom.testkit.suites.PhantomCassandraConnector
   type CassandraFlatSpec = com.websudos.phantom.testkit.suites.CassandraFlatSpec

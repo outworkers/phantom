@@ -99,10 +99,10 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
 
   /**
    * Secondary constructor to allow passing in Sets instead of Sequences.
-   * Although this may appear to be fruitless and uninteresting it a necessary evil.
+   * Although this may appear to be fruitless and uninteresting it is a necessary evil.
    *
    * The TwitterFuture.collect method does not support passing in arbitrary collections using the Scala API
-   * just as Scala.future does. Scala Futures can sequence over traversables and return a collection of the appropiate type.
+   * just as Scala.future does. Scala Futures can sequence over traversables and return a collection of the appropriate type.
    *
    * @param queries The list of CQL queries to execute.
    * @return An instance of an ExecutableStatement with the matching sequence of CQL queries.
@@ -137,7 +137,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
   def fromRow(r: Row): R
 
   private[this] def singleResult(row: Row): Option[R] = {
-    if (row != null) Some(fromRow(row)) else None
+    if (Option(row).isDefined) Some(fromRow(row)) else None
   }
 
   private[this] def directMapper(results: JavaList[Row]): List[R] = {

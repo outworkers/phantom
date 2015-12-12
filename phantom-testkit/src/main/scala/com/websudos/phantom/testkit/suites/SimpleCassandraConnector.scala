@@ -37,7 +37,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
-private object Defaults {
+private[phantom] object TestDefaults {
 
   final val defaultConnector = this.synchronized {
 
@@ -50,7 +50,7 @@ private object Defaults {
 
 trait SimpleCassandraConnector {
 
-  private[this] val connector = Defaults.defaultConnector
+  private[this] val connector = TestDefaults.defaultConnector
 
   implicit def keySpace: KeySpace
 
