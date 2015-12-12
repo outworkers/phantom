@@ -29,10 +29,13 @@
  */
 package com.websudos.phantom.udt
 
+import com.websudos.phantom.connectors.KeySpace
 import org.scalatest.{Matchers, FlatSpec}
 
 
 class TypeDefinitionTest extends FlatSpec with Matchers {
+
+  implicit val keySpace = KeySpace("phantom")
 
   it should "extract the name of an UDT column" in {
     TestFields.address.name shouldEqual "address"
@@ -48,7 +51,7 @@ class TypeDefinitionTest extends FlatSpec with Matchers {
 
 
   it should "correctly serialise a UDT definition into a schema" in {
-    TestFields.address.schema() shouldEqual
-      s"""CREATE TYPE IF NOT EXISTS address(postCode text, street text, test int);""".stripMargin
+    TestFields.address.schema(keySpace.name) shouldEqual
+      s"""CREATE TYPE IF NOT EXISTS phantom.address(postCode text, street text, test int);""".stripMargin
   }
 }

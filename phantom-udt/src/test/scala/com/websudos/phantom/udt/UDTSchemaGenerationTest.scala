@@ -29,16 +29,21 @@
  */
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.dsl._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.{OptionValues, BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+import com.websudos.phantom.dsl._
 
 
-class UDTSchemaGenerationTest extends FlatSpec with Matchers with BeforeAndAfterAll with ScalaFutures with UDT.connector.Connector {
+class UDTSchemaGenerationTest extends FlatSpec
+  with Matchers
+  with OptionValues
+  with BeforeAndAfterAll
+  with ScalaFutures
+  with UDT.connector.Connector {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -46,9 +51,12 @@ class UDTSchemaGenerationTest extends FlatSpec with Matchers with BeforeAndAfter
   }
 
   it should "generate the schema of an UDT during table creation" in {
+    info(UDTCollector.statements.list.map(_.queryString).mkString("\n"))
+
     whenReady(TestFields.udt.future()) {
       res => {
-        info(res.toString)
+        res.isEmpty shouldEqual false
+        res.headOption.value.wasApplied() shouldEqual true
       }
     }
   }

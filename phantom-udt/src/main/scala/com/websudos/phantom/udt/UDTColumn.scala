@@ -109,7 +109,7 @@ private[udt] object UDTCollector {
     _udts += udt
   }
 
-  def statements: ExecutableStatementList = {
+  def statements()(implicit keySpace: KeySpace): ExecutableStatementList = {
     new ExecutableStatementList(_udts.toSeq.map(_.create().qb))
   }
 }
@@ -151,8 +151,8 @@ sealed trait UDTDefinition[T] {
     UDTCollector.push(this)
   }
 
-  def schema(): String = {
-    val queryInit = s"CREATE TYPE IF NOT EXISTS $name("
+  def schema(keyspace: String): String = {
+    val queryInit = s"CREATE TYPE IF NOT EXISTS $keyspace.$name("
     val queryColumns = _fields.foldLeft("")((qb, c) => {
       if (qb.isEmpty) {
         s"${c.name} ${c.cassandraType}"
@@ -163,7 +163,9 @@ sealed trait UDTDefinition[T] {
     queryInit + queryColumns + ");"
   }
 
-  def create(): UDTCreateQuery = new UDTCreateQuery(None.orNull, this)
+  def create()(implicit keySpace: KeySpace): UDTCreateQuery = {
+    new UDTCreateQuery(CQLQuery(schema(keySpace.name)), this)
+  }
 
   /**
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
@@ -220,11 +222,11 @@ sealed class UDTCreateQuery(
 ) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
-    twitterQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
+    twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.queryString))
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
+    scalaQueryStringExecuteToFuture(session.newSimpleStatement(qb.queryString))
   }
 }
 
