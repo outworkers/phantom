@@ -31,15 +31,15 @@ package com.websudos.phantom.udt
 
 import java.util.Date
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{ConsistencyLevel, ResultSet, Row, Session, _}
 import com.twitter.util.Future
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
-import com.websudos.phantom.dsl.{Column, KeySpace}
+import com.websudos.phantom.dsl.{Column, KeySpace, KeySpaceDef }
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{blocking, ExecutionContext, Future => ScalaFuture}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.{DynamicVariable, Try}
@@ -131,8 +131,10 @@ sealed trait UDTDefinition[T] {
 
   def fields: List[AbstractField[_]] = _fields.toList
 
-  def typeDef()(implicit session: Session, keySpace: KeySpace): UserType = {
-    session.getCluster.getMetadata.getKeyspace(keySpace.name).getUserType(name)
+  def typeDef()(implicit connector: KeySpaceDef): UserType = {
+    blocking {
+      connector.session.getCluster.getMetadata.getKeyspace(connector.name).getUserType(name)
+    }
   }
 
   val cassandraType = name.toLowerCase
@@ -186,7 +188,7 @@ abstract class UDTColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
   T <: UDTColumn[Owner, Record, T]
-](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, T](table) with UDTDefinition[T] {
+](table: CassandraTable[Owner, Record])(implicit connector: KeySpaceDef) extends Column[Owner, Record, T](table) with UDTDefinition[T] {
 
    override def apply(row: Row): T = {
     val instance: T = clone().asInstanceOf[T]
