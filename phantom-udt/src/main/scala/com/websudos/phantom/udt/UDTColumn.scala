@@ -35,11 +35,11 @@ import com.datastax.driver.core.{ConsistencyLevel, ResultSet, Row, Session, _}
 import com.twitter.util.Future
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
-import com.websudos.phantom.dsl.{Column, KeySpace, KeySpaceDef }
+import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement, ExecutableStatementList}
+import com.websudos.phantom.dsl.{Column, KeySpace, KeySpaceDef}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
-import scala.concurrent.{blocking, ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{Future => ScalaFuture, blocking}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 import scala.util.{DynamicVariable, Try}
@@ -109,19 +109,8 @@ private[udt] object UDTCollector {
     _udts += udt
   }
 
-  /**
-   * This is a working version of an attempt to combine all UDT creation futures in a single result.
-   * This way, the end user can await for a single result with a single Future before being able to use the entire set of UDT definitions.
-   *
-   * @param session The Cassandra database connection session.
-   * @return
-   */
-  def future()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(_udts.toSeq.map(_.create().future()))
-  }
-
-  def execute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
-    Future.collect(_udts.map(_.create().execute()))
+  def statements: ExecutableStatementList = {
+    new ExecutableStatementList(_udts.toSeq.map(_.create().qb))
   }
 }
 
@@ -189,6 +178,8 @@ abstract class UDTColumn[
   Record,
   T <: UDTColumn[Owner, Record, T]
 ](table: CassandraTable[Owner, Record])(implicit connector: KeySpaceDef) extends Column[Owner, Record, T](table) with UDTDefinition[T] {
+
+  type UDTType = T
 
    override def apply(row: Row): T = {
     val instance: T = clone().asInstanceOf[T]

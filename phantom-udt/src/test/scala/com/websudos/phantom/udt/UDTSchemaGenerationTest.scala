@@ -29,21 +29,27 @@
  */
 package com.websudos.phantom.udt
 
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit.CassandraFlatSpec
+import com.websudos.util.testing._
 
-/*
-class UDTSchemaGenerationTest extends CassandraFlatSpec with UDTKeySpace {
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+
+
+class UDTSchemaGenerationTest extends CassandraFlatSpec with UDT.connector.Connector {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestFields.udtExecute(), 5.seconds)
+    Await.result(TestFields.udt.future(), 5.seconds)
   }
 
   it should "generate the schema of an UDT during table creation" in {
-    TestFields.udtExecute().successful {
+    TestFields.udt.future().successful {
       res => {
-        Console.println(res.toString)
+        info(res.toString)
       }
     }
   }
 }
-*/

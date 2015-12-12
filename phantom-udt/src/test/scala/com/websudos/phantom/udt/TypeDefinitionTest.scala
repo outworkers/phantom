@@ -29,7 +29,9 @@
  */
 package com.websudos.phantom.udt
 
-/*
+import org.scalatest.{Matchers, FlatSpec}
+
+
 class TypeDefinitionTest extends FlatSpec with Matchers {
 
   it should "extract the name of an UDT column" in {
@@ -50,4 +52,3 @@ class TypeDefinitionTest extends FlatSpec with Matchers {
       s"""CREATE TYPE IF NOT EXISTS address(postCode text, street text, test int);""".stripMargin
   }
 }
-*/

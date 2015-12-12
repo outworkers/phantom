@@ -29,56 +29,53 @@
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.Session
+import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.KeySpace
 
-import scala.concurrent.{Future => ScalaFuture, ExecutionContext}
-import com.datastax.driver.core.{Session, ResultSet}
-import com.twitter.util.Future
+import scala.concurrent.{Future => ScalaFuture}
 
 package object udt {
 
-  type BooleanField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.BooleanField[Owner,
+  type BooleanField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.BooleanField[Owner,
     Record, Col]
 
-  type BigIntField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.BigIntField[Owner,
+  type BigIntField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.BigIntField[Owner,
     Record, Col]
 
   type BigDecimalField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record,
-    Col]] = com.websudos.phantom.udt.Fields.BigDecimalField[Owner, Record, _]
+    Col]] = com.websudos.phantom.udt.Fields.BigDecimalField[Owner, Record, Col]
 
   type UUIDField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record,
-    Col]] = com.websudos.phantom.udt.Fields.UUIDField[Owner, Record, _]
+    Col]] = com.websudos.phantom.udt.Fields.UUIDField[Owner, Record, Col]
 
 
-  type StringField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.StringField[Owner,
+  type StringField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.StringField[Owner,
     Record, Col]
 
-  type IntField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.IntField[Owner,
+  type IntField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.IntField[Owner,
     Record, Col]
 
-  type InetField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.InetField[Owner,
+  type InetField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.InetField[Owner,
     Record, Col]
 
-  type DoubleField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.DoubleField[Owner,
+  type DoubleField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.DoubleField[Owner,
     Record, Col]
 
-  type LongField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.LongField[Owner,
+  type LongField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.LongField[Owner,
     Record, Col]
 
-  type DateField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.DateField[Owner,
+  type DateField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.DateField[Owner,
     Record, Col]
 
-  type DateTimeField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, _]] = com.websudos.phantom.udt.Fields.DateTimeField[Owner,
+  type DateTimeField[Owner <: CassandraTable[Owner, Record], Record, Col <: UDTColumn[Owner, Record, Col]] = com.websudos.phantom.udt.Fields.DateTimeField[Owner,
     Record, Col]
 
   implicit class CassandraUDT[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
-    def udtExecute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
-      UDTCollector.execute()
+    def udt()(implicit session: Session, keySpace: KeySpace): ExecutableStatementList = {
+      UDTCollector.statements
     }
 
-    def udtFuture()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Seq[ResultSet]] = {
-      UDTCollector.future()
-    }
   }
 
 

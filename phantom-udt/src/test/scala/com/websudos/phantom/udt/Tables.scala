@@ -39,10 +39,12 @@ object UDT {
 }
 
 abstract class Address[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-](table: CassandraTable[Owner, Record])(implicit connector: KeySpaceDef) extends UDTColumn[Owner, Record, Address[Owner, Record]](table) {
-
+  T <: CassandraTable[T, R],
+  R
+](table: CassandraTable[T, R])(implicit connector: KeySpaceDef) extends UDTColumn[T, R, Address[T, R]](table) {
+  object postCode extends StringField[TestFields, TestRecord, Address[T, R]](this)
+  object street extends StringField[TestFields, TestRecord, Address[T, R]](this)
+  object test extends IntField[TestFields, TestRecord, Address[T, R]](this)
 }
 
 case class TestRecord(
