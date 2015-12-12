@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.udt
 
+import com.datastax.driver.core.exceptions.SyntaxError
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
@@ -58,7 +59,7 @@ class UDTSchemaGenerationTest extends PhantomCassandraTestSuite {
         }
       }
     } else {
-      TestFields.udt.future().failing
+      TestFields.udt.future().failing[SyntaxError]
     }
 
   }
