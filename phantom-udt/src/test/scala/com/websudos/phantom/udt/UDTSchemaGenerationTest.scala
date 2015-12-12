@@ -41,7 +41,8 @@ class UDTSchemaGenerationTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (session.v3orNewer) {
+
+    if (cassandraVersion > Version.`2.1.0`) {
       Await.result(TestFields.udt.future(), 5.seconds)
     }
   }
@@ -49,8 +50,7 @@ class UDTSchemaGenerationTest extends PhantomCassandraTestSuite {
   it should "generate the schema of an UDT during table creation" in {
     info(UDTCollector.statements.list.map(_.queryString).mkString("\n"))
 
-    if (session.v3orNewer) {
-
+    if (cassandraVersion > Version.`2.1.0`) {
       whenReady(TestFields.udt.future()) {
         res => {
           res.isEmpty shouldEqual false
