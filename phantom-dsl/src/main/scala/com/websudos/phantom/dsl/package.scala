@@ -242,5 +242,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
     def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
     def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
     def > (other: VersionNumber): Boolean = version.compareTo(other) == 1
+
+    def >= (other: VersionNumber): Boolean = {
+      version.compareTo(other) >= 0
+    }
   }
 }
