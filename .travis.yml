@@ -30,5 +30,8 @@ jdk:
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
-script: sbt ++$TRAVIS_SCALA_VERSION clean test
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageAggregate
 
+after_success:
+  - sbt ++$TRAVIS_SCALA_VERSION coveralls
