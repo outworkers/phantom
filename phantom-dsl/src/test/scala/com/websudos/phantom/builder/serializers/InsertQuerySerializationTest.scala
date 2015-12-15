@@ -88,7 +88,15 @@ class InsertQuerySerializationTest extends QueryBuilderTest with OptionValues {
 
         Console.println(query)
       }
-    }
+
+      "should append USING clause after lightweight part " in {
+        val smt = Recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L)
+        val query = Recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L).queryString
+
+        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
+      }
+
+}
   }
 
 }

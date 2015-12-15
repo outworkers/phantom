@@ -117,7 +117,7 @@ class InsertQuery[
   }
 
   override def qb: CQLQuery = {
-    (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
+    (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = {
