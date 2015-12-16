@@ -29,10 +29,9 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.ops.DropColumn
-import com.websudos.phantom.builder.{QueryBuilder, Unspecified, ConsistencyBound}
+import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 
@@ -44,7 +43,7 @@ class AlterQuery[
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
-](table: Table, val qb: CQLQuery, override  val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -53,19 +52,19 @@ class AlterQuery[
       QueryBuilder.Alter.add(qb, column, columnType)
     }
 
-    new AlterQuery(table, query)
+    new AlterQuery(table, query, options)
   }
 
   final def add(definition: CQLQuery): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.add(qb, definition))
+    new AlterQuery(table, QueryBuilder.Alter.add(qb, definition), options)
   }
 
   final def alter[RR](columnSelect: Table => AbstractColumn[RR], newType: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.alter(qb, columnSelect(table).name, newType))
+    new AlterQuery(table, QueryBuilder.Alter.alter(qb, columnSelect(table).name, newType), options)
   }
 
   final def rename[RR](select: Table => AbstractColumn[RR], newName: String) : AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.rename(qb, select(table).name, newName))
+    new AlterQuery(table, QueryBuilder.Alter.rename(qb, select(table).name, newName), options)
   }
 
   /**
@@ -93,7 +92,7 @@ class AlterQuery[
    * @return An alter query with a DROP TABLE instruction encoded in the query string.
    */
   final def drop()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name))
+    new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name), options)
   }
 
   /**
@@ -111,22 +110,22 @@ class AlterQuery[
    * @return A new alter query with the underlying builder containing a DROP clause.
    */
   final def drop(column: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.drop(qb, column))
+    new AlterQuery(table, QueryBuilder.Alter.drop(qb, column), options)
   }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb))
+    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb), options)
   }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def option(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb))
+    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb), options)
   }
 
   @implicitNotFound("You have to use `with` before using `and` in a create query.")
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb))
+    new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
   }
 
 }
@@ -156,6 +155,10 @@ object AlterQuery {
    * @return A raw ALTER query, without any further options set on it.
    */
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = {
-    new AlterQuery[T, R, Unspecified, WithUnchainned](table, QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
+    new AlterQuery[T, R, Unspecified, WithUnchainned](
+      table,
+      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
+      QueryOptions.empty
+    )
   }
 }

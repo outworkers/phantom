@@ -73,8 +73,8 @@ class DeleteQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
-    new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, usingPart, options)
+  ](t: T, q: CQLQuery, r: Row => R, part: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
+    new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
   }
 
 
@@ -154,7 +154,7 @@ class DeleteQuery[
   }
 
   override def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): DeleteQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    (implicit ev: Status =:= Unspecified, session: Session): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
       new DeleteQuery(
         table = table,

@@ -90,7 +90,7 @@ class SelectQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, opts: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
+  ](t: T, q: CQLQuery, r: Row => R, part: UsingPart, opts: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
     new SelectQuery[T, R, L, O, S, C, P](
       table = t,
       rowFunc = r,
@@ -99,6 +99,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
+      usingPart = part,
       count = count,
       options = opts
     )

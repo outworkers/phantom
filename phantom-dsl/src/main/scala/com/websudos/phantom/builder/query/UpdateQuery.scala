@@ -78,14 +78,14 @@ class UpdateQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
+  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
     new UpdateQuery[T, R, L, O, S, C, P](
       t,
       q,
-      UsingPart.empty,
-      WherePart.empty,
-      SetPart.empty,
-      CompareAndSetPart.empty,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart,
       options
     )
   }
@@ -109,7 +109,8 @@ class UpdateQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  override def where(condition: Table => WhereClause.Condition)
+    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new UpdateQuery(
       table,
       init,
@@ -128,7 +129,8 @@ class UpdateQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  override def and(condition: Table => WhereClause.Condition)
+    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new UpdateQuery(
       table,
       init,
@@ -242,7 +244,8 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
+  def consistencyLevel_=(level: ConsistencyLevel)
+    (implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
     if (session.v3orNewer) {
       new AssignmentsQuery(
         table,
@@ -260,6 +263,7 @@ sealed class AssignmentsQuery[
         usingPart append QueryBuilder.consistencyLevel(level.toString),
         wherePart,
         setPart,
+        casPart,
         options
       )
     }
