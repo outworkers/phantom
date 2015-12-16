@@ -48,7 +48,7 @@ sealed trait CompactionStrategies {
   }
 
   case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
-  case object LeveledCompactionStrategy extends CompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
+  case object LeveledCompactionStrategy extends CompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.LeveledCompactionStrategy))
   case object DateTieredCompactionStrategy extends CompactionStrategy(rootStrategy(CQLSyntax.CompactionStrategies.DateTieredCompactionStrategy))
 }
 
