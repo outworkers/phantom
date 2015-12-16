@@ -51,8 +51,9 @@ class DeleteQuery[
   init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull) with Batchable {
+  usingPart: UsingPart = UsingPart.empty,
+  override val options: QueryOptions = QueryOptions.empty
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -78,7 +79,7 @@ class DeleteQuery[
 
 
   def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, consistencyLevel)
+    new PreparedBlock[PS](qb, options)
   }
 
   /**
@@ -94,7 +95,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       casPart = casPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -112,7 +113,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       casPart = casPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -130,7 +131,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append query,
       casPart = casPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -148,7 +149,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       casPart = casPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -165,7 +166,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart,
       casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -200,7 +201,7 @@ sealed class ConditionalDeleteQuery[
   val init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val options: QueryOptions
  ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
@@ -213,7 +214,7 @@ sealed class ConditionalDeleteQuery[
       init,
       wherePart,
       casPart append QueryBuilder.Update.and(clause(table).qb),
-      consistencyLevel
+      options
     )
   }
 }
