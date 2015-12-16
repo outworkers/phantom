@@ -33,7 +33,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.batch.{BatchQuery, BatchType}
-import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, UsingPart}
+import com.websudos.phantom.builder.query.{QueryOptions, Batchable, ExecutableStatement, UsingPart}
 import com.websudos.phantom.dsl._
 import org.reactivestreams.{Subscriber, Subscription}
 
@@ -193,7 +193,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
       batchType,
       UsingPart.empty,
       false,
-      None
+      QueryOptions.empty
     )
     query.future().onComplete {
       case Failure(e) => self ! ErrorWrapper(e)

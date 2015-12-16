@@ -41,7 +41,7 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -53,15 +53,15 @@ abstract class RootQuery[
     T <: CassandraTable[T, _],
     R,
     S <: ConsistencyBound
-  ](t: T, q: CQLQuery, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, S]
+  ](t: T, q: CQLQuery, options: QueryOptions): QueryType[T, R, S]
 
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified] = {
     if (session.v3orNewer) {
-      create(table, qb, Some(level))
+      create(table, qb, options.consistencyLevel_=(level))
     } else {
-      create(table, QueryBuilder.consistencyLevel(qb, level.toString), None)
+      create(table, QueryBuilder.consistencyLevel(qb, level.toString), options)
     }
   }
 }
@@ -79,7 +79,8 @@ abstract class Query[
   table: Table,
   override val qb: CQLQuery,
   row: Row => Record,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  usingPart: UsingPart = UsingPart.empty,
+  override val options: QueryOptions
 ) extends ExecutableStatement {
 
   protected[this] type QueryType[
@@ -100,14 +101,27 @@ abstract class Query[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P]
+  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  def consistencyLevel_=(level: ConsistencyLevel)
+    (implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](table, qb, row, Some(level))
+      create[Table, Record, Limit, Order, Specified, Chain, PS](
+        table,
+        CQLQuery.empty,
+        row,
+        usingPart,
+        options.consistencyLevel_=(level)
+      )
     } else {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
+      create[Table, Record, Limit, Order, Specified, Chain, PS](
+        table,
+        CQLQuery.empty,
+        row,
+        usingPart append QueryBuilder.consistencyLevel(level.toString),
+        options
+      )
     }
   }
 
@@ -117,7 +131,8 @@ abstract class Query[
       table,
       QueryBuilder.limit(qb, limit),
       row,
-      consistencyLevel
+      usingPart,
+      options
     )
   }
 
@@ -133,7 +148,8 @@ abstract class Query[
       table,
       QueryBuilder.Where.where(qb, condition(table).qb),
       row,
-      consistencyLevel
+      usingPart,
+      options
     )
   }
 
@@ -149,7 +165,8 @@ abstract class Query[
       table,
       QueryBuilder.Where.and(qb, condition(table).qb),
       row,
-      consistencyLevel
+      usingPart,
+      options
     )
   }
 
@@ -159,7 +176,8 @@ abstract class Query[
       table,
       QueryBuilder.ttl(qb, seconds.toString),
       row,
-      consistencyLevel
+      usingPart,
+      options
     )
   }
 
