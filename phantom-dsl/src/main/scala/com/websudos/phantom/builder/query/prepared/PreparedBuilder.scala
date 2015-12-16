@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{ QueryOptions => _ , _ }
 import com.twitter.util.{ Future => TwitterFuture }
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
@@ -52,10 +52,8 @@ private[phantom] trait PrepareMark {
 object ? extends PrepareMark
 
 
-class ExecutablePreparedQuery(val statement: Statement, level: Option[ConsistencyLevel]) extends ExecutableStatement {
+class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement {
   override val qb = CQLQuery.empty
-
-  override def consistencyLevel: Option[ConsistencyLevel] = level
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
@@ -70,7 +68,7 @@ class ExecutablePreparedSelectQuery[
   Table <: CassandraTable[Table, _],
   R,
   Limit <: LimitBound
-](val st: Statement, fn: Row => R, level: Option[ConsistencyLevel]) extends ExecutableQuery[Table, R, Limit] {
+](val st: Statement, fn: Row => R, options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
 
@@ -101,8 +99,6 @@ class ExecutablePreparedSelectQuery[
   }
 
   override def qb: CQLQuery = CQLQuery.empty
-
-  override def consistencyLevel: Option[ConsistencyLevel] = level
 }
 
 trait PreparedFlattener {
@@ -139,46 +135,80 @@ trait PreparedFlattener {
   }
 }
 
-class PreparedBlock[PS <: HList](qb: CQLQuery, level: Option[ConsistencyLevel])(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
+class PreparedBlock[PS <: HList](qb: CQLQuery, options: QueryOptions)(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
 
   val query = blocking {
     session.prepare(qb.queryString)
   }
 
+  /**
+    * Method used to bind a set of arguments to a prepared query in a typesafe manner.
+    * @param v1 The argument used for the assertion, inferred as a tuple by the compiler.
+    * @param rev The Shapeless HList type reversal operation.
+    * @param gen The Shapeless Generic implicit builder to cast the autotupled arguments to an HList.
+    * @param ev The equality parameter to check that the types provided in the tuple match the prepared query.
+    * @tparam V1 The argument tuple type, auto-tupled by the compiler from varargs.
+    * @tparam VL1 The type argument used to cast the Generic.
+    * @tparam Reversed The Type used to cast the inner HList type of the prepared query to the result of the reverse.
+    * @return An final form prepared select query that can be asynchronously executed.
+    */
   def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
     implicit rev: Reverse.Aux[PS, Reversed],
     gen: Generic.Aux[V1, VL1],
     ev: VL1 =:= Reversed
   ): ExecutablePreparedQuery = {
     val params = flattenOpt(v1.productIterator.toSeq)
-    new ExecutablePreparedQuery(query.bind(params: _*), level)
+    new ExecutablePreparedQuery(query.bind(params: _*), options)
   }
 
+  /**
+    * Method used to bind a single argument to a prepared statement.
+    * @param v A single argument that will be interpreted as a sequence of 1 for binding.
+    * @tparam V The type of the argument.
+    * @return An final form prepared select query that can be asynchronously executed.
+    */
   def bind[V](v: V): ExecutablePreparedQuery = {
     val params = flattenOpt(Seq(v))
-    new ExecutablePreparedQuery(query.bind(params: _*), level)
+    new ExecutablePreparedQuery(query.bind(params: _*), options)
   }
 }
 
 class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS <: HList](
-  qb: CQLQuery, fn: Row => R, level: Option[ConsistencyLevel])
+  qb: CQLQuery, fn: Row => R, options: QueryOptions)
   (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
 
   val query = blocking {
     session.prepare(qb.queryString)
   }
 
+  /**
+    * Method used to bind a set of arguments to a prepared query in a typesafe manner.
+    * @param v1 The argument used for the assertion, inferred as a tuple by the compiler.
+    * @param rev The Shapeless HList type reversal operation.
+    * @param gen The Shapeless Generic implicit builder to cast the autotupled arguments to an HList.
+    * @param ev The equality parameter to check that the types provided in the tuple match the prepared query.
+    * @tparam V1 The argument tuple type, auto-tupled by the compiler from varargs.
+    * @tparam VL1 The type argument used to cast the Generic.
+    * @tparam Reversed The Type used to cast the inner HList type of the prepared query to the result of the reverse.
+    * @return An final form prepared select query that can be asynchronously executed.
+    */
   def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
     implicit rev: Reverse.Aux[PS, Reversed],
     gen: Generic.Aux[V1, VL1],
     ev: VL1 =:= Reversed
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     val params = flattenOpt(v1.productIterator.toSeq)
-    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
+    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, options)
   }
 
+  /**
+    * Method used to bind a single argument to a prepared statement.
+    * @param v A single argument that will be interpreted as a sequence of 1 for binding.
+    * @tparam V The type of the argument.
+    * @return An final form prepared select query that can be asynchronously executed.
+    */
   def bind[V](v: V): ExecutablePreparedSelectQuery[T, R, Limit] = {
     val params = flattenOpt(Seq(v))
-    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, level)
+    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, options)
   }
 }

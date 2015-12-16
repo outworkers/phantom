@@ -33,7 +33,58 @@ import com.datastax.driver.core.ConsistencyLevel
 
 class QueryOptions(
   val consistencyLevel: Option[ConsistencyLevel],
-  val serialConsistencyLevel: Option[ConsistencyLevel]
+  val serialConsistencyLevel: Option[ConsistencyLevel],
+  val enableTracing: Boolean,
+  val fetchSize: Int
 ) {
 
+  def options: com.datastax.driver.core.QueryOptions = ???
+
+  def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
+    new QueryOptions(
+      Some(level),
+      serialConsistencyLevel,
+      enableTracing,
+      fetchSize
+    )
+  }
+
+  def serialConsistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      Some(level),
+      enableTracing,
+      fetchSize
+    )
+  }
+
+  def enableTracing_=(flag: Boolean): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      serialConsistencyLevel,
+      flag,
+      fetchSize
+    )
+  }
+
+  def fetchSize_=(size: Int): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      serialConsistencyLevel,
+      enableTracing,
+      size
+    )
+  }
+
+}
+
+object QueryOptions {
+  def empty: QueryOptions = {
+    new QueryOptions(
+      consistencyLevel = None,
+      serialConsistencyLevel = None,
+      enableTracing = false,
+      fetchSize = 0
+    )
+  }
 }

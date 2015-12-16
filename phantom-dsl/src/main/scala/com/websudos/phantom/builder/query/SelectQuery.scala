@@ -62,8 +62,8 @@ class SelectQuery[
   filteringPart: FilteringPart = FilteringPart.empty,
   usingPart: UsingPart = UsingPart.empty,
   count: Boolean = false,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
+  override val options: QueryOptions
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, usingPart, options) with ExecutableQuery[Table,
   Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
@@ -100,7 +100,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      consistencyLevel = level
+      options
     )
   }
 
@@ -120,7 +120,7 @@ class SelectQuery[
   }
 
   def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= shapeless.HNil): PreparedSelectBlock[Table, Record, Limit, PS] = {
-    new PreparedSelectBlock(qb, rowFunc, consistencyLevel)
+    new PreparedSelectBlock(qb, rowFunc, options)
   }
 
   /**
@@ -141,7 +141,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -156,7 +156,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -203,7 +203,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -221,7 +221,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -239,7 +239,7 @@ class SelectQuery[
       filteringPart,
       usingPart = usingPart,
       count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -263,7 +263,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     ).singleFetch()
 
   }
@@ -288,7 +288,7 @@ class SelectQuery[
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     ).singleCollect()
   }
 }
@@ -297,7 +297,11 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
-    new SelectQuery(table, rowFunc, QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*))
+    new SelectQuery(
+      table,
+      rowFunc,
+      QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*)
+    )
   }
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
