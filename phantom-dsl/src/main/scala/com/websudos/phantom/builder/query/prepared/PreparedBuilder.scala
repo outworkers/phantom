@@ -68,7 +68,7 @@ class ExecutablePreparedSelectQuery[
   Table <: CassandraTable[Table, _],
   R,
   Limit <: LimitBound
-](val st: Statement, fn: Row => R, options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
+](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
 
@@ -135,7 +135,8 @@ trait PreparedFlattener {
   }
 }
 
-class PreparedBlock[PS <: HList](qb: CQLQuery, options: QueryOptions)(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
+class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
+  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
 
   val query = blocking {
     session.prepare(qb.queryString)

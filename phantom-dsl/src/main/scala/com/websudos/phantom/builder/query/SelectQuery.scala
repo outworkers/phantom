@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query
 
 
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
+import com.datastax.driver.core.{Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
@@ -62,7 +62,7 @@ class SelectQuery[
   filteringPart: FilteringPart = FilteringPart.empty,
   usingPart: UsingPart = UsingPart.empty,
   count: Boolean = false,
-  override val options: QueryOptions
+  override val options: QueryOptions = QueryOptions.empty
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, usingPart, options) with ExecutableQuery[Table,
   Record, Limit] {
 
@@ -90,7 +90,7 @@ class SelectQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, level: Option[ConsistencyLevel]): QueryType[T, R, L, O, S, C, P] = {
+  ](t: T, q: CQLQuery, r: Row => R, opts: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
     new SelectQuery[T, R, L, O, S, C, P](
       table = t,
       rowFunc = r,
@@ -100,7 +100,7 @@ class SelectQuery[
       limitedPart = limitedPart,
       filteringPart = filteringPart,
       count = count,
-      options
+      options = opts
     )
   }
 
@@ -115,7 +115,7 @@ class SelectQuery[
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
       usingPart = usingPart,
       count = count,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -179,7 +179,7 @@ class SelectQuery[
        filteringPart = filteringPart,
        usingPart = usingPart,
        count = count,
-       consistencyLevel = consistencyLevel
+       options = options
      )
   }
 
