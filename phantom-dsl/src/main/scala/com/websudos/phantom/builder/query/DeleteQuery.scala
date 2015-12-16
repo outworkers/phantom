@@ -29,13 +29,13 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{Session, ConsistencyLevel, Row}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, WhereClause}
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{=:!=, ::, HList, HNil}
+import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -73,8 +73,8 @@ class DeleteQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P] = {
-    new DeleteQuery[T, R, L, O, S, C, P](t, q, WherePart.empty, CompareAndSetPart.empty, consistencyLevel)
+  ](t: T, q: CQLQuery, r: Row => R, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
+    new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, usingPart, options)
   }
 
 
@@ -151,6 +151,29 @@ class DeleteQuery[
       casPart = casPart,
       options = options
     )
+  }
+
+  override def consistencyLevel_=(level: ConsistencyLevel)
+    (implicit ev: Status =:= Unspecified, session: Session): DeleteQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    if (session.v3orNewer) {
+      new DeleteQuery(
+        table = table,
+        init = init,
+        usingPart = usingPart,
+        wherePart = wherePart,
+        casPart = casPart,
+        options = options.consistencyLevel_=(level)
+      )
+    } else {
+      new DeleteQuery(
+        table = table,
+        init = init,
+        usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
+        wherePart = wherePart,
+        casPart = casPart,
+        options = options
+      )
+    }
   }
 
   /**

@@ -101,7 +101,7 @@ abstract class Query[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, options: QueryOptions): QueryType[T, R, L, O, S, C, P]
+  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   def consistencyLevel_=(level: ConsistencyLevel)
@@ -111,13 +111,15 @@ abstract class Query[
         table,
         CQLQuery.empty,
         row,
+        usingPart,
         options.consistencyLevel_=(level)
       )
     } else {
       create[Table, Record, Limit, Order, Specified, Chain, PS](
         table,
-        QueryBuilder.consistencyLevel(qb, level.toString),
+        CQLQuery.empty,
         row,
+        usingPart append QueryBuilder.consistencyLevel(level.toString),
         options
       )
     }
@@ -129,6 +131,7 @@ abstract class Query[
       table,
       QueryBuilder.limit(qb, limit),
       row,
+      usingPart,
       options
     )
   }
@@ -145,6 +148,7 @@ abstract class Query[
       table,
       QueryBuilder.Where.where(qb, condition(table).qb),
       row,
+      usingPart,
       options
     )
   }
@@ -161,6 +165,7 @@ abstract class Query[
       table,
       QueryBuilder.Where.and(qb, condition(table).qb),
       row,
+      usingPart,
       options
     )
   }
@@ -171,6 +176,7 @@ abstract class Query[
       table,
       QueryBuilder.ttl(qb, seconds.toString),
       row,
+      usingPart,
       options
     )
   }
