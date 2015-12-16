@@ -96,15 +96,28 @@ class CreateQuery[
 ](
   table: Table,
   val init: CQLQuery,
-  val withClause: WithPart,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  val withClause: WithPart = WithPart.empty,
+  val usingPart: UsingPart = UsingPart.empty,
+  override val options: QueryOptions = QueryOptions.empty
 ) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.v3orNewer) {
-      new CreateQuery(table, qb, withClause, Some(level))
+      new CreateQuery(
+        table,
+        qb,
+        withClause,
+        usingPart,
+        options.consistencyLevel_=(level)
+      )
     } else {
-      new CreateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), withClause)
+      new CreateQuery(
+        table,
+        init,
+        withClause,
+        usingPart append QueryBuilder.consistencyLevel(level.toString),
+        options
+      )
     }
   }
 
@@ -115,14 +128,16 @@ class CreateQuery[
         table,
         init,
         withClause append QueryBuilder.Create.`with`(clause.qb),
-        consistencyLevel
+        usingPart,
+        options
       )
     } else {
       new CreateQuery(
         table,
         init,
         withClause append QueryBuilder.Update.and(clause.qb),
-        consistencyLevel
+        usingPart,
+        options
       )
     }
   }
@@ -160,6 +175,18 @@ class CreateQuery[
     (withClause merge WithPart.empty) build init
   }
 
+  private[this] def indexList(name: String): ExecutableStatementList = {
+    new ExecutableStatementList(table.secondaryKeys map {
+      key => {
+        if (key.isMapKeyIndex) {
+          QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
+        } else {
+          QueryBuilder.Create.index(table.tableName, name, key.name)
+        }
+      }
+    })
+  }
+
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
 
     implicit val ex: ExecutionContext = Manager.scalaExecutor
@@ -169,15 +196,7 @@ class CreateQuery[
     } else {
       super.future() flatMap {
         res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-              if (key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) future() map {
+           indexList(keySpace.name).future() map {
             _ => {
               Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
               res
@@ -193,18 +212,9 @@ class CreateQuery[
     if (table.secondaryKeys.isEmpty) {
       twitterQueryStringExecuteToFuture(session.newSimpleStatement(qb.terminate().queryString))
     } else {
-
       super.execute() flatMap {
         res => {
-          new ExecutableStatementList(table.secondaryKeys map {
-            key => {
-               if(key.isMapKeyIndex) {
-                QueryBuilder.Create.mapIndex(table.tableName, keySpace.name, key.name)
-              } else {
-                QueryBuilder.Create.index(table.tableName, keySpace.name, key.name)
-              }
-            }
-          }) execute() map {
+          indexList(keySpace.name).execute() map {
             _ => {
               Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
               res
@@ -225,8 +235,10 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
 
   val Cache = CacheStrategies
 
-  implicit def rootCreateQueryToCreateQuery[T <: CassandraTable[T, _], R](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T,
-    R] = {
+  implicit def rootCreateQueryToCreateQuery[
+  T <: CassandraTable[T, _],
+  R]
+  (root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = {
 
     if (root.table.clusteringColumns.nonEmpty) {
       new CreateQuery(root.table, root.default, WithPart.empty).withClustering()
