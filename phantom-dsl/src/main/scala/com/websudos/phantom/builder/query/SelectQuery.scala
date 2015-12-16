@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query
 
 
-import com.datastax.driver.core.{Row, Session}
+import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
@@ -69,7 +69,7 @@ class SelectQuery[
   def fromRow(row: Row): Record = rowFunc(row)
 
   override val qb: CQLQuery = {
-    (wherePart merge orderPart merge limitedPart merge filteringPart) build init
+    (wherePart merge orderPart merge limitedPart merge filteringPart merge usingPart) build init
   }
 
   override protected[this] type QueryType[
@@ -206,6 +206,37 @@ class SelectQuery[
       count = count,
       options = options
     )
+  }
+
+  override def consistencyLevel_=(level: ConsistencyLevel)
+    (implicit ev: Status =:= Unspecified, session: Session): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+    if (session.v3orNewer) {
+      new SelectQuery(
+        table = table,
+        rowFunc = rowFunc,
+        init = init,
+        wherePart = wherePart,
+        orderPart = orderPart,
+        limitedPart = limitedPart,
+        filteringPart = filteringPart,
+        usingPart = usingPart,
+        count = count,
+        options = options.consistencyLevel_=(level)
+      )
+    } else {
+      new SelectQuery(
+        table = table,
+        rowFunc = rowFunc,
+        init = init,
+        wherePart = wherePart,
+        orderPart = orderPart,
+        limitedPart = limitedPart,
+        filteringPart = filteringPart,
+        usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
+        count = count,
+        options = options.consistencyLevel_=(level)
+      )
+    }
   }
 
 
