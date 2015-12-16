@@ -51,7 +51,6 @@ private[phantom] trait PrepareMark {
 
 object ? extends PrepareMark
 
-
 class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement {
   override val qb = CQLQuery.empty
 
