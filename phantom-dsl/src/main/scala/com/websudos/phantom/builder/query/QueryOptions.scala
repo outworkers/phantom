@@ -29,37 +29,62 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
-import com.websudos.phantom.connectors.KeySpace
+import com.datastax.driver.core.ConsistencyLevel
 
-class TruncateQuery[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
+class QueryOptions(
+  val consistencyLevel: Option[ConsistencyLevel],
+  val serialConsistencyLevel: Option[ConsistencyLevel],
+  val enableTracing: Boolean,
+  val fetchSize: Int
+) {
 
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
-    if (session.v3orNewer) {
-      new TruncateQuery(table, qb, options.consistencyLevel_=(level))
-    } else {
-      new TruncateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), options)
-    }
-  }
-}
+  def options: com.datastax.driver.core.QueryOptions = ???
 
-
-object TruncateQuery {
-
-  type Default[T <: CassandraTable[T, _], R] = TruncateQuery[T, R, Unspecified]
-
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = {
-    new TruncateQuery(
-      table,
-      QueryBuilder.truncate(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
-      QueryOptions.empty
+  def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
+    new QueryOptions(
+      Some(level),
+      serialConsistencyLevel,
+      enableTracing,
+      fetchSize
     )
   }
 
+  def serialConsistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      Some(level),
+      enableTracing,
+      fetchSize
+    )
+  }
+
+  def enableTracing_=(flag: Boolean): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      serialConsistencyLevel,
+      flag,
+      fetchSize
+    )
+  }
+
+  def fetchSize_=(size: Int): QueryOptions = {
+    new QueryOptions(
+      consistencyLevel,
+      serialConsistencyLevel,
+      enableTracing,
+      size
+    )
+  }
+
+}
+
+object QueryOptions {
+  def empty: QueryOptions = {
+    new QueryOptions(
+      consistencyLevel = None,
+      serialConsistencyLevel = None,
+      enableTracing = false,
+      fetchSize = 0
+    )
+  }
 }

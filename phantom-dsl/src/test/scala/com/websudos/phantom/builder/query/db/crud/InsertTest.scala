@@ -29,21 +29,15 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import java.util.UUID
-
 import com.websudos.phantom.DateTimeSerializer
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
 import com.websudos.phantom.testkit._
 import com.websudos.util.lift.UUIDSerializer
 import com.websudos.util.testing._
-import net.liftweb.json.JsonAST.{JString, JValue}
 import net.liftweb.json._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.builder.primitives.DefaultPrimitives
-
-import scala.util.control.NonFatal
 
 class InsertTest extends PhantomCassandraTestSuite {
 
@@ -258,7 +252,7 @@ class InsertTest extends PhantomCassandraTestSuite {
   it should "serialize a JSON clause as the insert part" in {
     val sample = gen[Recipe]
 
-    Console.println(pretty(render(Extraction.decompose(sample))))
+    info(pretty(render(Extraction.decompose(sample))))
 
     val chain = for {
       store <- Recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
