@@ -31,11 +31,11 @@ package com.websudos.phantom.udt
 
 import java.util.Date
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{ QueryOptions => _, _ }
 import com.twitter.util.Future
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatement}
+import com.websudos.phantom.builder.query.{QueryOptions, CQLQuery, ExecutableStatement}
 import com.websudos.phantom.dsl.{Column, KeySpace}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
@@ -172,7 +172,7 @@ sealed trait UDTDefinition[T] {
     queryInit + queryColumns + ");"
   }
 
-  def create(): UDTCreateQuery = new UDTCreateQuery(null, this)
+  def create(): UDTCreateQuery = new UDTCreateQuery(None.orNull, this, QueryOptions.empty)
 
   /**
    * Much like the definition of a Cassandra table where the columns are collected, the fields of an UDT are collected inside this buffer.
@@ -220,7 +220,7 @@ abstract class UDTColumn[
   }
 }
 
-sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val consistencyLevel: Option[ConsistencyLevel] = None) extends ExecutableStatement {
+sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val options: QueryOptions) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
     twitterQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))

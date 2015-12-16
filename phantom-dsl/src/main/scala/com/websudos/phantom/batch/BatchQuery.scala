@@ -29,8 +29,7 @@
  */
 package com.websudos.phantom.batch
 
-import com.datastax.driver.core._
-import com.datastax.driver.core.querybuilder.{QueryBuilder => DatastaxBuilder}
+import com.datastax.driver.core.{ QueryOptions => _, _ }
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -54,7 +53,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
   batchType: BatchType,
   usingPart: UsingPart = UsingPart.empty,
   added: Boolean = false,
-  override val consistencyLevel: Option[ConsistencyLevel]
+  override val options: QueryOptions
 ) extends ExecutableStatement {
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
@@ -78,7 +77,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batch.add(session.newSimpleStatement(st.queryString))
     }
 
-    consistencyLevel match {
+    options.consistencyLevel match {
       case Some(level) => batch.setConsistencyLevel(level)
       case None => batch
     }
@@ -94,7 +93,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
         batchType,
         usingPart,
         added,
-        Some(level)
+        options.consistencyLevel_=(level)
       )
     } else {
       new BatchQuery[Specified](
@@ -102,7 +101,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
         batchType,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
         added,
-        Some(level)
+        options
       )
     }
   }
@@ -113,7 +112,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batchType,
       usingPart,
       added,
-      consistencyLevel
+      options
     )
   }
 
@@ -123,7 +122,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batchType,
       usingPart,
       added,
-      consistencyLevel
+      options
     )
   }
 
@@ -133,7 +132,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batchType,
       usingPart,
       added,
-      consistencyLevel
+      options
     )
   }
 
@@ -143,7 +142,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batchType,
       usingPart append QueryBuilder.timestamp(stamp.toString),
       added,
-      consistencyLevel
+      options
     )
   }
 
@@ -153,11 +152,11 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 private[phantom] trait Batcher {
 
   def apply(batchType: String = CQLSyntax.Batch.Logged): BatchQuery[Unspecified] = {
-    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, None)
+    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, QueryOptions.empty)
   }
 
   def logged: BatchQuery[Unspecified] = {
-    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, None)
+    new BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, false, QueryOptions.empty)
   }
 
   def timestamp(stamp: Long): BatchQuery[Unspecified] = {
@@ -165,11 +164,11 @@ private[phantom] trait Batcher {
   }
 
   def unlogged: BatchQuery[Unspecified] = {
-    new BatchQuery(Iterator.empty, BatchType.Unlogged, UsingPart.empty, false, None)
+    new BatchQuery(Iterator.empty, BatchType.Unlogged, UsingPart.empty, false, QueryOptions.empty)
   }
 
   def counter: BatchQuery[Unspecified] = {
-    new BatchQuery(Iterator.empty, BatchType.Counter, UsingPart.empty, false, None)
+    new BatchQuery(Iterator.empty, BatchType.Counter, UsingPart.empty, false, QueryOptions.empty)
   }
 }
 

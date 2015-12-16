@@ -32,11 +32,17 @@ package com.websudos.phantom.builder.serializers
 import java.util.Date
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
+import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.tables.{ArticlesByAuthor, TimeSeriesTable, BasicTable}
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.testkit.{SimpleCassandraTest, PhantomCassandraTestSuite}
+import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
+import org.scalatest.FreeSpec
 
-class SelectQuerySerialisationTest extends QueryBuilderTest {
+class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
+
+  implicit val keySpace = new KeySpace("phantom")
 
   "The select query builder" - {
     "should serialize " - {
@@ -95,7 +101,15 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
       "a single column token clause" in {
         val qb = ArticlesByAuthor.select.where(_.author_id gtToken gen[UUID]).queryString
+        info(qb)
+      }
 
+      "a consistency level setting" in {
+        val qb = ArticlesByAuthor.select.where(_.author_id eqs gen[UUID])
+          .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
+          .queryString
+
+        Console.println(qb)
       }
 
       "a single dateOf column apply" in {
