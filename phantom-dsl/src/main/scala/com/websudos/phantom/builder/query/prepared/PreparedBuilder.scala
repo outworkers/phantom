@@ -101,7 +101,12 @@ class ExecutablePreparedSelectQuery[
   override def qb: CQLQuery = CQLQuery.empty
 }
 
-trait PreparedFlattener {
+abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) {
+
+  protected[this] val query: PreparedStatement = {
+    blocking(session.prepare(qb.queryString))
+  }
+
   /**
     * Cleans up the series of parameters passed to the bind query to match
     * the codec registry collection that the Java Driver has internally.
@@ -136,11 +141,7 @@ trait PreparedFlattener {
 }
 
 class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
-
-  val query = blocking {
-    session.prepare(qb.queryString)
-  }
+  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
@@ -174,13 +175,13 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
   }
 }
 
-class PreparedSelectBlock[T <: CassandraTable[T, _], R, Limit <: LimitBound, PS <: HList](
-  qb: CQLQuery, fn: Row => R, options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener {
-
-  val query = blocking {
-    session.prepare(qb.queryString)
-  }
+class PreparedSelectBlock[
+  T <: CassandraTable[T, _],
+  R,
+  Limit <: LimitBound,
+  PS <: HList
+](qb: CQLQuery, fn: Row => R, options: QueryOptions)
+  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
