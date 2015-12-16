@@ -234,7 +234,7 @@ class SelectQuery[
         filteringPart = filteringPart,
         usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
         count = count,
-        options = options.consistencyLevel_=(level)
+        options = options
       )
     }
   }
