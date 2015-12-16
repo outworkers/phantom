@@ -79,6 +79,7 @@ abstract class Query[
   table: Table,
   override val qb: CQLQuery,
   row: Row => Record,
+  usingPart: UsingPart = UsingPart.empty,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends ExecutableStatement {
 
@@ -103,9 +104,9 @@ abstract class Query[
   ](t: T, q: CQLQuery, r: Row => R, consistencyLevel: Option[ConsistencyLevel] = None): QueryType[T, R, L, O, S, C, P]
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](table, qb, row, Some(level))
+      create[Table, Record, Limit, Order, Specified, Chain, PS](table, CQLQuery.empty, row, Some(level))
     } else {
       create[Table, Record, Limit, Order, Specified, Chain, PS](table, QueryBuilder.consistencyLevel(qb, level.toString), row, None)
     }

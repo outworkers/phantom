@@ -60,6 +60,7 @@ class SelectQuery[
   orderPart: OrderPart = OrderPart.empty,
   limitedPart: LimitedPart = LimitedPart.empty,
   filteringPart: FilteringPart = FilteringPart.empty,
+  usingPart: UsingPart = UsingPart.empty,
   count: Boolean = false,
   override val consistencyLevel: Option[ConsistencyLevel] = None
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, consistencyLevel) with ExecutableQuery[Table,
@@ -112,6 +113,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart append QueryBuilder.Select.allowFiltering(),
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     )
@@ -137,6 +139,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     )
@@ -151,6 +154,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     )
@@ -173,6 +177,7 @@ class SelectQuery[
        orderPart = orderPart,
        limitedPart = limitedPart,
        filteringPart = filteringPart,
+       usingPart = usingPart,
        count = count,
        consistencyLevel = consistencyLevel
      )
@@ -196,6 +201,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart,
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     )
@@ -213,6 +219,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = limitedPart append QueryBuilder.limit(limit),
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     )
@@ -220,7 +227,8 @@ class SelectQuery[
 
 
   @implicitNotFound("You have already defined an ordering clause on this query.")
-  final def orderBy(clauses: (Table => OrderingClause.Condition)*)(implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
+  final def orderBy(clauses: (Table => OrderingClause.Condition)*)
+    (implicit ev: Order =:= Unordered): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
     new SelectQuery(
       table,
       rowFunc,
@@ -229,6 +237,7 @@ class SelectQuery[
       orderPart append clauses.map(_(table).qb).toList,
       limitedPart,
       filteringPart,
+      usingPart = usingPart,
       count,
       consistencyLevel = consistencyLevel
     )
@@ -252,6 +261,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     ).singleFetch()
@@ -276,6 +286,7 @@ class SelectQuery[
       orderPart = orderPart,
       limitedPart = enforceLimit,
       filteringPart = filteringPart,
+      usingPart = usingPart,
       count = count,
       consistencyLevel = consistencyLevel
     ).singleCollect()
@@ -308,6 +319,7 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
       OrderPart.empty,
       LimitedPart.empty,
       FilteringPart.empty,
+      UsingPart.empty,
       count = true
     )
   }

@@ -27,12 +27,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.websudos.phantom.builder.query
 
-package object testkit {
-  type PhantomCassandraTestSuite = com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
-  type PhantomCassandraConnector = com.websudos.phantom.testkit.suites.PhantomCassandraConnector
-  type CassandraFlatSpec = com.websudos.phantom.testkit.suites.CassandraFlatSpec
-  type CassandraFeatureSpec = com.websudos.phantom.testkit.suites.CassandraFeatureSpec
-  type SimpleCassandraTest = com.websudos.phantom.testkit.suites.SimpleCassandraTest
+import com.datastax.driver.core.ConsistencyLevel
+
+class QueryOptions(
+  val consistencyLevel: Option[ConsistencyLevel],
+  val serialConsistencyLevel: Option[ConsistencyLevel]
+) {
+
 }
