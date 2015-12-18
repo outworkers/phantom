@@ -141,6 +141,7 @@ object CQLSyntax {
 
     val in = "IN"
     val eqs = "="
+    val notEqs = "!="
 
     val contains = "CONTAINS"
     val containsKey = "CONTAINS KEY"

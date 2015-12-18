@@ -156,8 +156,15 @@ class UpdateQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.onlyIf(clause(table).qb)
-    new ConditionalQuery(table, init, usingPart, wherePart, setPart, casPart append query, options)
+    new ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      options
+    )
   }
 }
 
