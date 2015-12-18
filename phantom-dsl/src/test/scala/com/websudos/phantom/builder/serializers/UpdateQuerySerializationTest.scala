@@ -29,11 +29,11 @@
  */
 package com.websudos.phantom.builder.serializers
 
-import com.datastax.driver.core.{ProtocolVersion, ConsistencyLevel}
+import com.datastax.driver.core.ProtocolVersion
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.tables.Recipes
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.Recipes
 import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 
@@ -42,6 +42,8 @@ import scala.concurrent.duration._
 class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandraConnector {
 
   override implicit val keySpace = new KeySpace("phantom")
+
+  val comparisonValue = 5
 
   val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
 
@@ -53,7 +55,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
 
         val query = Recipes.update()
           .where(_.url eqs url)
-          .modify(_.servings setTo Some(5))
+          .modify(_.servings setTo Some(comparisonValue))
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
@@ -81,7 +83,7 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
 
         val query = Recipes.update()
           .where(_.url eqs url)
-          .modify(_.servings setTo Some(5))
+          .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description is Some("test"))
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
@@ -92,6 +94,67 @@ class UpdateQuerySerializationTest extends QueryBuilderTest with PhantomCassandr
           query shouldEqual s"UPDATE phantom.Recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
         }
       }
+
+      "specify a non equals clause inside an ConditionUpdateQuery" in {
+        val url = gen[String]
+
+        val query = Recipes.update()
+          .where(_.url eqs url)
+          .modify(_.servings setTo Some(comparisonValue))
+          .onlyIf(_.description isNot Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description != 'test';"
+      }
+
+      "specify a gt clause inside an ConditionUpdateQuery" in {
+        val url = gen[String]
+
+        val query = Recipes.update()
+          .where(_.url eqs url)
+          .modify(_.servings setTo Some(comparisonValue))
+          .onlyIf(_.description gt Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description > 'test';"
+      }
+
+      "specify a gte clause inside an ConditionUpdateQuery" in {
+        val url = gen[String]
+
+        val query = Recipes.update()
+          .where(_.url eqs url)
+          .modify(_.servings setTo Some(comparisonValue))
+          .onlyIf(_.description gte Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description >= 'test';"
+      }
+
+      "specify a lt clause inside an ConditionUpdateQuery" in {
+        val url = gen[String]
+
+        val query = Recipes.update()
+          .where(_.url eqs url)
+          .modify(_.servings setTo Some(comparisonValue))
+          .onlyIf(_.description lt Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description < 'test';"
+      }
+
+      "specify a lte clause inside an ConditionUpdateQuery" in {
+        val url = gen[String]
+
+        val query = Recipes.update()
+          .where(_.url eqs url)
+          .modify(_.servings setTo Some(comparisonValue))
+          .onlyIf(_.description lte Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description <= 'test';"
+      }
+
     }
   }
 

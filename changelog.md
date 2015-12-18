@@ -24,6 +24,10 @@ Changelog
     <li><a href="#version-1.13.0">1.13.0 - 02.11.2015</a></li>
     <li><a href="#version-1.15.0">1.15.0 - 10.11.2015</a></li>
     <li><a href="#version-1.16.0">1.16.0 - 19.11.2015</a></li>
+    <li><a href="#version-1.17.5">1.17.5 - 8.12.2015</a></li>
+    <li><a href="#version-1.17.7">1.17.7 - 10.12.2015</a></li>
+    <li><a href="#version-1.18.0">1.18.0 - 14.12.2015</a></li>
+    <li><a href="#version-1.18.1">1.18.1 - 17.12.2015</a></li>
 </ul>
 
 
@@ -236,3 +240,37 @@ and `org.joda.time.DateTime`.
 - Allowing elements to be derived from `Throwable` by adding an `ErrorWrapper` to error propagation in actors.
 - Adding support for binding `scala.Enumeration#Value` in prepared statements.
 - Bumped `xsbt-web-plugin` to `2.0.4`.
+
+<a id="version-1.17.5">1.17.5</a>
+================================
+
+- Fixed support for token operators for multiple tokens.
+- Fixed support for binding single arguments to a prepared statement by adding specialized 1 arg methods.
+- Adding better comments to the basic implementation.
+- Removed unused dead code in operator query columns for multi-column token operators.
+- Deprecated shutdown method on the main `Manager`.
+
+<a id="version-1.17.7">1.17.7</a>
+================================
+
+- Fixed serialization of `InsertQuery` builders that specify a using clause.
+- Fixed serialization of `InsertJsonQuery` builders that specify a using clause.
+- Fixed primitive serialization inside `PreparedStatements`.
+- Added primitive parsing of `BigDecimal` inside prepared statements.
+- Added support for binding lists inside prepared statements.
+- Fixed TTL support in `UpdateClause`.
+- Fixed protocol version comparisons to address non standard greater than 1 results in `compareTo` implementation.
+
+<a id="version-1.18.0">1.18.0</a>
+================================
+
+- Added a query options DSL to fix using `consistencyLevel` settings in `SelectQuery`.
+- Added a `QueryOptions` DSL to replace `Option[ConsistencyLevel]` setting in `ExecutableQuery`.
+- Bumped major version to `1.18.0` to address backwards incompatible change.
+- Fixed serialization issue in defining `LeveledCompactionStrategy`.
+
+<a id="version-1.18.1">1.18.1</a>
+================================
+
+- Adding the ability to use `gt`, `gte`, `lt`, `lte` and `isNot` operators with a conditional update clause.
+- Bumping the version to `1.18.1`.

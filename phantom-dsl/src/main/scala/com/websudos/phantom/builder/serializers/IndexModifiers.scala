@@ -39,6 +39,10 @@ private[builder] class IndexModifiers extends BaseModifiers {
     modifier(column, CQLSyntax.Operators.eqs, value)
   }
 
+  def notEqs(column: String, value: String): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.notEqs, value)
+  }
+
   def ==(column: String, value: String): CQLQuery = {
     modifier(column, CQLSyntax.Operators.eqs, value)
   }

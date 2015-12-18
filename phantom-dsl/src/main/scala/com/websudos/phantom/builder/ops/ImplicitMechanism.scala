@@ -62,6 +62,26 @@ sealed class CasConditionalOperators[RR](col: AbstractColumn[RR]) {
   final def is(value: RR): CompareAndSetClause.Condition = {
     new CompareAndSetClause.Condition(QueryBuilder.Where.eqs(col.name, col.asCql(value)))
   }
+
+  final def isNot(value: RR): CompareAndSetClause.Condition = {
+    new CompareAndSetClause.Condition(QueryBuilder.Where.notEqs(col.name, col.asCql(value)))
+  }
+
+  final def gt(value: RR): CompareAndSetClause.Condition = {
+    new CompareAndSetClause.Condition(QueryBuilder.Where.gt(col.name, col.asCql(value)))
+  }
+
+  final def gte(value: RR): CompareAndSetClause.Condition = {
+    new CompareAndSetClause.Condition(QueryBuilder.Where.gte(col.name, col.asCql(value)))
+  }
+
+  final def lt(value: RR): CompareAndSetClause.Condition = {
+    new CompareAndSetClause.Condition(QueryBuilder.Where.lt(col.name, col.asCql(value)))
+  }
+
+  final def lte(value: RR): CompareAndSetClause.Condition = {
+    new CompareAndSetClause.Condition(QueryBuilder.Where.lte(col.name, col.asCql(value)))
+  }
 }
 
 sealed class SetConditionals[T <: CassandraTable[T, R], R, RR](val col: AbstractSetColumn[T, R, RR]) {
