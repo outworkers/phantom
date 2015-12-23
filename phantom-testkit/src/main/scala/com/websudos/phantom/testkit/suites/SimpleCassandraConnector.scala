@@ -43,7 +43,9 @@ private object Defaults {
 
     ContactPoint.local
       .withClusterBuilder(
-        _.withoutJMXReporting().withoutMetrics().withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
+        _.withoutJMXReporting()
+          .withoutMetrics()
+          .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
       ).keySpace("phantom")
   }
 }
