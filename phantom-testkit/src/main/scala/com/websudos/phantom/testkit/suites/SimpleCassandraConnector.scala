@@ -37,6 +37,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 private object Defaults {
 
   final val defaultConnector = this.synchronized {
@@ -50,6 +51,7 @@ private object Defaults {
   }
 }
 
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait SimpleCassandraConnector {
 
   private[this] val connector = Defaults.defaultConnector
@@ -63,6 +65,7 @@ trait SimpleCassandraConnector {
   def cassandraVersions: Set[VersionNumber] =  connector.cassandraVersions
 }
 
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait SimpleCassandraTest extends ScalaFutures
   with SimpleCassandraConnector
   with Matchers
@@ -82,12 +85,16 @@ trait SimpleCassandraTest extends ScalaFutures
    */
   implicit def patience: PatienceConfiguration.Timeout = timeout(7 seconds)
 }
-
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest with OptionValues
+
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait PhantomCassandraConnector extends SimpleCassandraConnector {
   implicit val keySpace = KeySpace("phantom")
 }
 
+@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

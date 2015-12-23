@@ -30,9 +30,18 @@
 package com.websudos.phantom
 
 package object testkit {
+  @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
   type PhantomCassandraTestSuite = com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
+
+  @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
   type PhantomCassandraConnector = com.websudos.phantom.testkit.suites.PhantomCassandraConnector
+
+  @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
   type CassandraFlatSpec = com.websudos.phantom.testkit.suites.CassandraFlatSpec
+
+  @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
   type CassandraFeatureSpec = com.websudos.phantom.testkit.suites.CassandraFeatureSpec
+
+  @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
   type SimpleCassandraTest = com.websudos.phantom.testkit.suites.SimpleCassandraTest
 }
