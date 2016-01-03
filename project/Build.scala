@@ -169,7 +169,6 @@ object Build extends Build {
     phantomExample,
     phantomConnectors,
     phantomReactiveStreams,
-    phantomTestKit,
     phantomThrift,
     phantomUdt,
     phantomZookeeper
@@ -209,7 +208,6 @@ object Build extends Build {
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
       )
     ).dependsOn(
-      phantomTestKit % "test, provided",
       phantomConnectors
     )
 
@@ -239,8 +237,7 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomDsl,
-    phantomZookeeper,
-    phantomTestKit % "test, provided"
+    phantomZookeeper
   )
 
   lazy val phantomThrift = Project(
@@ -260,8 +257,7 @@ object Build extends Build {
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
-    phantomDsl,
-    phantomTestKit % "test, provided"
+    phantomDsl
   )
 
   lazy val phantomZookeeper = Project(
@@ -295,23 +291,7 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomConnectors,
-    phantomDsl,
-    phantomTestKit % "test, provided"
-  )
-
-  lazy val phantomTestKit = Project(
-    id = "phantom-testkit",
-    base = file("phantom-testkit"),
-    settings = sharedSettings
-  ).settings(
-    name := "phantom-testkit",
-    libraryDependencies ++= Seq(
-      "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
-      "com.websudos"                     %% "util-lift"                % UtilVersion,
-      "com.websudos"                     %% "util-testing"             % UtilVersion
-    )
-  ).dependsOn(
-    phantomConnectors
+    phantomDsl
   )
 
   lazy val phantomExample = Project(
@@ -323,8 +303,7 @@ object Build extends Build {
   ).dependsOn(
     phantomDsl,
     phantomThrift,
-    phantomZookeeper,
-    phantomTestKit
+    phantomZookeeper
   )
 
   lazy val phantomContainerTests = Project(
@@ -350,7 +329,6 @@ object Build extends Build {
   ).dependsOn(
     phantomDsl,
     phantomThrift,
-    phantomZookeeper,
-    phantomTestKit
+    phantomZookeeper
   )
 }
