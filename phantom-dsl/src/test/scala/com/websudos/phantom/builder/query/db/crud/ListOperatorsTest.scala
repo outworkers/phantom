@@ -42,16 +42,16 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
+    TestDatabase.recipes.insertSchema()
   }
 
   it should "store items in a list in the same order" in {
     val recipe = gen[Recipe]
 
     val operation = for {
-      truncate <- Recipes.truncate.future
-      insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      truncate <- TestDatabase.recipes.truncate.future
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -65,9 +65,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      truncate <- Recipes.truncate.execute
-      insertDone <- Recipes.store(recipe).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      truncate <- TestDatabase.recipes.truncate.execute
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -81,8 +81,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -98,8 +98,8 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val limit = 5
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -114,9 +114,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -130,9 +130,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -148,9 +148,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val appendable = List("test", "test2")
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -166,9 +166,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val appendable = List("test", "test2")
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -182,9 +182,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -198,9 +198,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -218,9 +218,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -238,9 +238,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -255,9 +255,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -273,9 +273,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).execute
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).execute
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -290,9 +290,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -307,9 +307,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -324,9 +324,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
     operation.successful {
@@ -343,9 +343,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -359,9 +359,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).future()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, "updated")).future()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).one()
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, "updated")).future()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one()
     } yield select
 
     operation.successful {
@@ -378,9 +378,9 @@ class ListOperatorsTest extends PhantomCassandraTestSuite {
 
 
     val operation = for {
-      insertDone <- Recipes.store(recipe).execute()
-      update <- Recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updated)).execute()
-      select <- Recipes.select(_.ingredients).where(_.url eqs recipe.url).get
+      insertDone <- TestDatabase.recipes.store(recipe).execute()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updated)).execute()
+      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {

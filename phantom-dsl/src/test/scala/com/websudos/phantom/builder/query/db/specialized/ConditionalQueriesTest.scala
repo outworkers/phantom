@@ -31,15 +31,15 @@ package com.websudos.phantom.builder.query.db.specialized
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.testkit._
-import com.websudos.phantom.tables.{ Recipe, Recipes }
+import com.websudos.phantom.tables.{ Recipe, TestDatabase }
 import com.websudos.util.testing._
-
+import scala.concurrent.duration._
 
 class ConditionalQueriesTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
+    TestDatabase.recipes.create.ifNotExists().future().block(4.seconds)
   }
 
   it should "update the record if the optional column based condition matches" in {
@@ -48,12 +48,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description).future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -82,12 +82,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description).execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -116,12 +116,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is recipe.ingredients).future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -150,12 +150,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is invalidMatch).future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -184,12 +184,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is recipe.ingredients).execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -219,12 +219,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is invalidMatch).execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -253,12 +253,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is updated).future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -287,12 +287,12 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is updated).execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -321,14 +321,14 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.uid is recipe.uid).future()
 
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -357,13 +357,13 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.uid is recipe.uid).execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -392,14 +392,14 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.lastcheckedat is recipe.lastCheckedAt)
         .and(_.uid is recipe.uid).future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -428,15 +428,15 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.lastcheckedat is recipe.lastCheckedAt)
         .and(_.uid is recipe.uid).execute()
 
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -465,14 +465,14 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.ingredients is recipe.ingredients)
         .future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -501,14 +501,14 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.ingredients is recipe.ingredients)
         .execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {
@@ -537,15 +537,15 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).future()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).one()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).future()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.uid is recipe.uid)
         .and(_.ingredients is recipe.ingredients)
         .future()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
     chain.successful {
@@ -575,15 +575,15 @@ class ConditionalQueriesTest extends PhantomCassandraTestSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- Recipes.store(recipe).execute()
-      select1 <- Recipes.select.where(_.url eqs recipe.url).get()
-      update <- Recipes.update.where(_.url eqs recipe.url)
+      insert <- TestDatabase.recipes.store(recipe).execute()
+      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.uid is recipe.uid)
         .and(_.ingredients is recipe.ingredients)
         .execute()
-      select2 <- Recipes.select.where(_.url eqs recipe.url).get()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get()
     } yield (select1, select2)
 
     chain.successful {

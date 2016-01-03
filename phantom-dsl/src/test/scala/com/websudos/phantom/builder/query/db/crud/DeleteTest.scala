@@ -43,17 +43,17 @@ class DeleteTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
+    TestDatabase.primitives.insertSchema()
   }
 
   "A delete query" should "delete a row by its single primary key" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).future()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.primitives.store(row).future()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).future()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
     chain successful {
@@ -68,10 +68,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).execute()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).get
+      store <- TestDatabase.primitives.store(row).execute()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).execute()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield (inserted, deleted)
 
     chain successful {
@@ -86,10 +86,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.primitives.store(row).future()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
     chain successful {
@@ -104,10 +104,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).execute()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).get
+      store <- TestDatabase.primitives.store(row).execute()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).execute()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield (inserted, deleted)
 
     chain successful {
@@ -122,10 +122,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.primitives.store(row).future()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
     chain successful {
@@ -142,10 +142,10 @@ class DeleteTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      inserted <- Primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- Primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).execute()
-      deleted <- Primitives.select.where(_.pkey eqs row.pkey).get
+      store <- TestDatabase.primitives.store(row).execute()
+      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
+      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).execute()
+      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield (inserted, deleted)
 
     chain successful {

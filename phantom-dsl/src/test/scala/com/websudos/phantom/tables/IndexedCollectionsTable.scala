@@ -4,38 +4,37 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.column.{ListColumn, MapColumn, SetColumn}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
-sealed class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] {
+sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedCollectionsTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[IndexedCollectionsTable, TestRow, String](this)
+  object list extends ListColumn[ConcreteIndexedCollectionsTable, TestRow, String](this)
 
-  object setText extends SetColumn[IndexedCollectionsTable, TestRow, String](this) with Index[Set[String]]
+  object setText extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, String](this) with Index[Set[String]]
 
-  object mapTextToText extends MapColumn[IndexedCollectionsTable, TestRow, String, String](this) with Index[Map[String, String]]
+  object mapTextToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, String, String](this) with Index[Map[String, String]]
 
-  object setInt extends SetColumn[IndexedCollectionsTable, TestRow, Int](this)
+  object setInt extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, Int](this)
 
-  object mapIntToText extends MapColumn[IndexedCollectionsTable, TestRow, Int, String](this) with Index[Map[Int, String]] with Keys
+  object mapIntToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, Int, String](this) with Index[Map[Int, String]] with Keys
 
   def fromRow(r: Row): TestRow = {
     TestRow(
-      key(r),
-      list(r),
-      setText(r),
-      mapTextToText(r),
-      setInt(r),
-      mapIntToText(r)
+      key = key(r),
+      list = list(r),
+      setText = setText(r),
+      mapTextToText = mapTextToText(r),
+      setInt = setInt(r),
+      mapIntToText = mapIntToText(r)
     )
   }
 }
 
-object IndexedCollectionsTable extends IndexedCollectionsTable with PhantomCassandraConnector {
+abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable with RootConnector {
   override val tableName = "indexed_collections"
 
-  def store(row: TestRow): InsertQuery.Default[IndexedCollectionsTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[ConcreteIndexedCollectionsTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)

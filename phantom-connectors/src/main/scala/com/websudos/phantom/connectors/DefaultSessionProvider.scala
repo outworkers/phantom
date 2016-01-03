@@ -52,9 +52,9 @@ class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) exten
    * Creates a new Session for the specified keySpace.
    */
   protected[this] def createSession(keySpace: String): Session = {
-    val session = blocking {
-      cluster.connect
-    }
+    val session = cluster.connect
+    initKeySpace(session, keySpace)
+  }
 
     initKeySpace(session, keySpace)
   }

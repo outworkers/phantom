@@ -42,8 +42,8 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
-    TestTable.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    TestDatabase.testTable.insertSchema()
   }
 
 
@@ -57,10 +57,10 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     val updatedRow = gen[Primitive].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      a <- Primitives.select.where(_.pkey eqs row.pkey).one
-      b <- Primitives.select.fetch
-      u <- Primitives.update.where(_.pkey eqs row.pkey)
+      store <- TestDatabase.primitives.store(row).future()
+      a <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      b <- TestDatabase.primitives.select.fetch
+      u <- TestDatabase.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo updatedRow.long)
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -72,8 +72,8 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
         .future()
-      a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
-      b2 <- Primitives.select.fetch
+      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      b2 <- TestDatabase.primitives.select.fetch
     } yield (a, b, a2, b2)
 
     whenReady(chain) {
@@ -101,18 +101,18 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     )
 
     val chain = for {
-      store <- TestTable.store(row).future()
-      a <-TestTable.select.where(_.key eqs row.key).one
-      b <-TestTable.select.fetch
-      u <- TestTable.update
+      store <- TestDatabase.testTable.store(row).future()
+      a <-TestDatabase.testTable.select.where(_.key eqs row.key).one
+      b <-TestDatabase.testTable.select.fetch
+      u <- TestDatabase.testTable.update
         .where(_.key eqs row.key)
         .modify(_.list setTo updatedRow.list)
         .and(_.setText setTo updatedRow.setText)
         .and(_.mapTextToText setTo updatedRow.mapTextToText)
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
-      a2 <- TestTable.select.where(_.key eqs row.key).one
-      b2 <- TestTable.select.fetch
+      a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
+      b2 <- TestDatabase.testTable.select.fetch
     } yield (
       a.get === row,
       b.contains(row),

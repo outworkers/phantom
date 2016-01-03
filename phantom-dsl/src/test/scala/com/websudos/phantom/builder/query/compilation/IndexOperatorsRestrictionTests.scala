@@ -31,14 +31,14 @@ package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.KeySpaceSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.Primitives
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpaceSuite {
 
   val s = gen[String]
-  val p = Primitives
+  val Primitives = TestDatabase.primitives
   val b = Batch.logged
   
   it should "allow using the eqs operator on index columns" in {

@@ -39,15 +39,15 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    JsonTable.insertSchema()
+    TestDatabase.jsonTable.insertSchema()
   }
 
   it should "allow storing a JSON record" in {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
     } yield select
 
     chain.successful {
@@ -61,8 +61,8 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield select
 
     chain.successful {
@@ -77,10 +77,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
@@ -96,10 +96,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
@@ -115,10 +115,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
@@ -135,10 +135,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
@@ -154,10 +154,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).future()
-      select <- JsonTable.select.where(_.id eqs sample.id).one
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).one()
+      done <- TestDatabase.jsonTable.store(sample).future()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
     chain.successful {
@@ -173,10 +173,10 @@ class JsonColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- JsonTable.store(sample).execute()
-      select <- JsonTable.select.where(_.id eqs sample.id).get
-      update <- JsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
-      select2 <- JsonTable.select.where(_.id eqs sample.id).get
+      done <- TestDatabase.jsonTable.store(sample).execute()
+      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
+      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
+      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {

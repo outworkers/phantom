@@ -43,15 +43,15 @@ class JodaDateTimeColumn extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    PrimitivesJoda.insertSchema()
+    TestDatabase.primitivesJoda.insertSchema()
   }
 
   it should "correctly insert and extract a JodaTime date" in {
     val row = gen[JodaRow]
 
     val chain = for {
-      store <- PrimitivesJoda.store(row).future()
-      select <- PrimitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitivesJoda.store(row).future()
+      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield select
 
     chain successful {
@@ -63,8 +63,8 @@ class JodaDateTimeColumn extends PhantomCassandraTestSuite {
     val row = gen[JodaRow]
 
     val chain = for {
-      store <- PrimitivesJoda.store(row).execute()
-      select <- PrimitivesJoda.select.where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitivesJoda.store(row).execute()
+      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).get()
     } yield select
 
     chain successful {

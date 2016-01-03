@@ -31,26 +31,27 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class SecondaryIndexRecord(primary: UUID, secondary: UUID, name: String)
 
-sealed class SecondaryIndexTable extends CassandraTable[SecondaryIndexTable, SecondaryIndexRecord] {
+sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTable, SecondaryIndexRecord] {
   
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object secondary extends UUIDColumn(this) with Index[UUID]
   object name extends StringColumn(this)
   
-  def fromRow(r: Row): SecondaryIndexRecord = SecondaryIndexRecord(
-    id(r),
-    secondary(r),
-    name(r)
-  )
+  def fromRow(r: Row): SecondaryIndexRecord = {
+    SecondaryIndexRecord(
+      primary = id(r),
+      secondary = secondary(r),
+      name = name(r)
+    )
+  }
 }
 
-object SecondaryIndexTable extends SecondaryIndexTable with PhantomCassandraConnector {
+abstract class ConcreteSecondaryIndexTable extends SecondaryIndexTable with RootConnector {
 
-  def store(sample: SecondaryIndexRecord): InsertQuery.Default[SecondaryIndexTable, SecondaryIndexRecord] = {
+  def store(sample: SecondaryIndexRecord): InsertQuery.Default[ConcreteSecondaryIndexTable, SecondaryIndexRecord] = {
     insert
       .value(_.id, sample.primary)
       .value(_.secondary, sample.secondary)

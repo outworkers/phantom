@@ -31,14 +31,16 @@ package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.KeySpaceSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitives, TimeSeriesTable}
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class CompareAndSetRestrictionsTest extends FlatSpec with Matchers with KeySpaceSuite {
 
-  val p = Primitives
-  val t = TimeSeriesTable
+  val Primitives = TestDatabase.primitives
+  val TimeSeriesTable = TestDatabase.timeSeriesTable
+  val SecondaryIndexTable = TestDatabase.secondaryIndexTable
+  val TwoKeys = TestDatabase.twoKeysTable
   val b = Batch
 
   it should "allow using a non-index column in a conditional update clause" in {

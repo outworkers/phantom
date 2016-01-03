@@ -42,15 +42,15 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(SecondaryIndexTable.create.ifNotExists().future(), 4.seconds)
+    Await.ready(TestDatabase.secondaryIndexTable.create.ifNotExists().future(), 4.seconds)
   }
 
   it should "allow fetching a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).future()
-      select <- SecondaryIndexTable.select.where(_.id eqs sample.primary).one
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).future()
+      select <- TestDatabase.secondaryIndexTable.select.where(_.id eqs sample.primary).one
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
     } yield (select, select2)
 
     chain.successful {
@@ -71,9 +71,9 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     val sample = gen[SecondaryIndexRecord]
 
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).execute()
-      select <- SecondaryIndexTable.select.where(_.id eqs sample.primary).get
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().get()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
+      select <- TestDatabase.secondaryIndexTable.select.where(_.id eqs sample.primary).get
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().get()
     } yield (select, select2)
 
     chain.successful {
@@ -95,10 +95,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     val updated = gen[UUID]
 
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).future()
-      selected <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
-      select <- SecondaryIndexTable.update.where(_.id eqs sample.primary).modify(_.secondary setTo updated).future()
-      updated <- SecondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).future()
+      selected <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
+      select <- TestDatabase.secondaryIndexTable.update.where(_.id eqs sample.primary).modify(_.secondary setTo updated).future()
+      updated <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
     } yield (selected, updated)
 
     chain.successful {
@@ -118,8 +118,8 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "not throw an error if filtering is not enabled when querying by secondary keys" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).future()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).future()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield select2
 
     chain.successful {
@@ -132,8 +132,8 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "not throw an error if filtering is not enabled when querying by secondary keys with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).execute()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
     } yield select2
 
     chain.successful {
@@ -147,10 +147,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).future()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
-      update <- SecondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).future()
-      select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).future()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+      update <- TestDatabase.secondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).future()
+      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
     chain.failing[InvalidQueryException]
@@ -160,10 +160,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).execute()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-      update <- SecondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).execute()
-      select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
+      update <- TestDatabase.secondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).execute()
+      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
     } yield (select2, select3)
 
 
@@ -173,10 +173,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "throw an error when deleting a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).future()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
-      delete <- SecondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
-      select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).future()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+      delete <- TestDatabase.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
+      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
     chain.failing[InvalidQueryException]
@@ -185,10 +185,10 @@ class SecondaryIndexTest extends PhantomCassandraTestSuite {
   it should "throw an error when deleting a record by its secondary index with Twitter Futures" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- SecondaryIndexTable.store(sample).execute()
-      select2 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-      delete <- SecondaryIndexTable.delete.where(_.secondary eqs sample.secondary).execute()
-      select3 <- SecondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
+      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
+      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
+      delete <- TestDatabase.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).execute()
+      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
     } yield (select2, select3)
 
     chain.failing[InvalidQueryException]

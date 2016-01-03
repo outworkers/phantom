@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Recipe, Recipes}
+import com.websudos.phantom.tables.{ TestDatabase, Recipe }
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
@@ -38,15 +38,15 @@ class InOperatorTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
+    TestDatabase.recipes.insertSchema()
   }
 
   it should "find a record with a in operator if the record exists" in {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- Recipes.store(recipe).future()
-      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
+      done <- TestDatabase.recipes.store(recipe).future()
+      select <- TestDatabase.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
 
     chain.successful {
@@ -60,8 +60,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- Recipes.store(recipe).execute()
-      select <- Recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).get()
+      done <- TestDatabase.recipes.store(recipe).execute()
+      select <- TestDatabase.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).get()
     } yield select
 
     chain.successful {
@@ -75,8 +75,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- Recipes.store(recipe).future()
-      select <- Recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
+      done <- TestDatabase.recipes.store(recipe).future()
+      select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
     } yield select
 
     chain.successful {
@@ -90,8 +90,8 @@ class InOperatorTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- Recipes.store(recipe).execute()
-      select <- Recipes.select.where(_.url in List(gen[EmailAddress].value)).get()
+      done <- TestDatabase.recipes.store(recipe).execute()
+      select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).get()
     } yield select
 
     chain.successful {

@@ -30,12 +30,12 @@
 package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.SerializationTest
-import com.websudos.phantom.tables.Primitives
+import com.websudos.phantom.tables.TestDatabase
 import org.scalatest.FlatSpec
 
 class TypeRestrictionsTest extends FlatSpec with SerializationTest {
 
-  val P = Primitives
+  val Primitives = TestDatabase.primitives
 
   it should "allow using a correct type for a value method" in {
     "Primitives.insert.value(_.boolean, true)" should compile

@@ -225,8 +225,6 @@ class CreateQuery[
     }
   }
 
-}
-
 object CreateQuery {
   type Default[T <: CassandraTable[T, _], R] = CreateQuery[T, R, Unspecified]
 }

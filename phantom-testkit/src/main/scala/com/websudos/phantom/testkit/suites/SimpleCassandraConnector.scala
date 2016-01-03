@@ -29,32 +29,22 @@
  */
 package com.websudos.phantom.testkit.suites
 
-import com.datastax.driver.core.{PoolingOptions, Session, VersionNumber}
-import com.websudos.phantom.connectors.{ContactPoint, KeySpace}
+import com.websudos.phantom.connectors.ContactPoint
 import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
+import org.scalatest.concurrent.{AsyncAssertions, Futures, PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.duration._
 
-@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
-private object Defaults {
-
-  final val defaultConnector = this.synchronized {
-
-    ContactPoint.local
-      .withClusterBuilder(
-        _.withoutJMXReporting()
-          .withoutMetrics()
-          .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-      ).keySpace("phantom")
-  }
+object TestDefaults {
+  lazy val connector = ContactPoint.local.keySpace("phantom")
 }
 
-@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait SimpleCassandraConnector {
 
-  private[this] val connector = Defaults.defaultConnector
+  private[this] lazy val connector = Defaults.getDefaultConnector(host, keySpace.name)
+
+  def host: String = "localhost"
 
   implicit def keySpace: KeySpace
 
@@ -67,34 +57,34 @@ trait SimpleCassandraConnector {
 
 @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait SimpleCassandraTest extends ScalaFutures
-  with SimpleCassandraConnector
   with Matchers
   with Assertions
   with OptionValues
   with AsyncAssertions
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll with Futures {
   self : BeforeAndAfterAll with Suite =>
 
+  val host = "127.0.0.1"
+
   implicit override val patienceConfig: PatienceConfig = {
-    PatienceConfig(timeout = Span(5, Seconds), interval = Span(7, Millis))
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(5, Millis))
   }
+
+  private[this] lazy val connector = TestDefaults.connector
 
   /**
    * The default timeout value for phantom tests, passed implicitly to the testing framework.
    * @return The default timeout value.
    */
-  implicit def patience: PatienceConfiguration.Timeout = timeout(7 seconds)
+  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
 }
 @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest with OptionValues
 
-@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
+trait CassandraFlatSpec extends FlatSpec with SimpleCassandraTest
 trait CassandraFeatureSpec extends FeatureSpec with SimpleCassandraTest
 
-@deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
-trait PhantomCassandraConnector extends SimpleCassandraConnector {
-  implicit val keySpace = KeySpace("phantom")
-}
+trait PhantomCassandraConnector extends TestDefaults.connector.Connector
 
 @deprecated("Use connectors with regular ScalaTest suites instead", "1.19.0")
 trait PhantomCassandraTestSuite extends CassandraFlatSpec with PhantomCassandraConnector

@@ -93,6 +93,10 @@ object OrderPart {
   def empty: OrderPart = new OrderPart(Nil)
 }
 
+object OrderPart {
+  def empty: OrderPart = new OrderPart()
+}
+
 sealed class FilteringPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[FilteringPart](list) {
   override def qb: CQLQuery = QueryBuilder.Update.clauses(list)
 

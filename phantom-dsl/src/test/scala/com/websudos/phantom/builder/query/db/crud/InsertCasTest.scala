@@ -44,10 +44,9 @@ class InsertCasTest extends PhantomCassandraTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
-    TestTable.insertSchema()
-    MyTest.insertSchema()
-    Recipes.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    TestDatabase.testTable.insertSchema()
+    TestDatabase.recipes.insertSchema()
   }
 
   "Standard inserts" should "not create multiple database entries and perform upserts instead" in {
@@ -55,20 +54,20 @@ class InsertCasTest extends PhantomCassandraTestSuite {
 
     val insertion = new ExecutableStatementList(
       List(
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb
       )
     )
 
     val chain = for {
-      truncate <- Primitives.truncate.future()
+      truncate <- TestDatabase.primitives.truncate.future()
       store <- insertion.future()
-      one <- Primitives.select.where(_.pkey eqs row.pkey).one
-      multi <- Primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- Primitives.select.count.one()
+      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
+      count <- TestDatabase.primitives.select.count.one()
     } yield (one, count, multi)
 
     chain successful {
@@ -97,20 +96,20 @@ class InsertCasTest extends PhantomCassandraTestSuite {
 
     val insertion = new ExecutableStatementList(
       List(
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb
       )
     )
 
     val chain = for {
-      truncate <- Primitives.truncate.future()
+      truncate <- TestDatabase.primitives.truncate.future()
       store <- insertion.future()
-      one <- Primitives.select.where(_.pkey eqs row.pkey).one
-      multi <- Primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- Primitives.select.count.one()
+      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
+      count <- TestDatabase.primitives.select.count.one()
     } yield (one, count, multi)
 
     chain successful {
@@ -141,20 +140,20 @@ class InsertCasTest extends PhantomCassandraTestSuite {
 
     val insertion = new ExecutableStatementList(
       List(
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb,
-        Primitives.store(row).ifNotExists().qb
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb,
+        TestDatabase.primitives.store(row).ifNotExists().qb
       )
     )
 
     val chain = for {
-      truncate <- Primitives.truncate.execute()
+      truncate <- TestDatabase.primitives.truncate.execute()
       store <- insertion.execute()
-      one <- Primitives.select.where(_.pkey eqs row.pkey).get
-      multi <- Primitives.select.where(_.pkey eqs row.pkey).collect()
-      count <- Primitives.select.count.get()
+      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
+      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).collect()
+      count <- TestDatabase.primitives.select.count.get()
     } yield (one, count, multi)
 
     chain successful {
