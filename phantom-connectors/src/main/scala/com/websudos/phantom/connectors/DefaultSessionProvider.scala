@@ -28,12 +28,7 @@ import scala.concurrent.blocking
 class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
 
   val cluster: Cluster = {
-
-    val cb = Cluster.builder
-
-    val composed = builder(cb).withoutJMXReporting().withoutMetrics().build
-
-    composed
+    builder(Cluster.builder).withoutJMXReporting().withoutMetrics().build
   }
 
   /**
@@ -56,9 +51,5 @@ class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) exten
     initKeySpace(session, keySpace)
   }
 
-    initKeySpace(session, keySpace)
-  }
-
   val session = createSession(space.name)
-
 }

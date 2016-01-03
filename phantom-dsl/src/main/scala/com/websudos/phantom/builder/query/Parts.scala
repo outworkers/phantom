@@ -85,16 +85,10 @@ sealed class OrderPart(override val list: List[CQLQuery] = Nil) extends CQLQuery
   }
 
   override def instance(l: List[CQLQuery]): OrderPart = new OrderPart(l)
-
-  def append(clauses: List[CQLQuery]) = instance(clauses ::: list)
 }
 
 object OrderPart {
   def empty: OrderPart = new OrderPart(Nil)
-}
-
-object OrderPart {
-  def empty: OrderPart = new OrderPart()
 }
 
 sealed class FilteringPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[FilteringPart](list) {
