@@ -32,17 +32,13 @@ package com.websudos.phantom.thrift.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftDatabase
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.FlatSpec
-import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class ThriftColumnTest extends FlatSpec with ThriftTestSuite { {
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
     ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 

@@ -44,13 +44,13 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(OperaTable.truncate().future(), 5.seconds)
+    Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
   }
 
   it should "persist all data" in {
     val completionLatch = new CountDownLatch(1)
 
-    val subscriber = OperaTable.subscriber(
+    val subscriber = StreamDatabase.operaTable.subscriber(
       2,
       2,
       BatchType.Unlogged,
@@ -63,7 +63,7 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
     completionLatch.await(5, TimeUnit.SECONDS)
 
     val chain = for {
-      count <- OperaTable.select.count().one()
+      count <- StreamDatabase.operaTable.select.count().one()
     } yield count
 
 

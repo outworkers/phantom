@@ -31,10 +31,8 @@ package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftDatabase
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.FlatSpec
-import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {

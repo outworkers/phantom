@@ -30,10 +30,15 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.tables.ThriftDatabase
+import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import scala.concurrent.duration._
 import org.scalatest.{OptionValues, Matchers, BeforeAndAfterAll, Suite}
 
 trait ThriftTestSuite extends Suite
   with BeforeAndAfterAll
   with Matchers
   with OptionValues
-  with ThriftDatabase.connector.Connector
+  with ThriftDatabase.connector.Connector {
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+}

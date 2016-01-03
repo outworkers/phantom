@@ -41,7 +41,7 @@ import scala.concurrent.blocking
 
 private object Lock
 
-abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
+abstract class DatabaseImpl(val connector: KeySpaceDef) {
 
   private[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
 
