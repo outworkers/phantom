@@ -33,13 +33,13 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.util.testing._
+import org.scalatest.{Matchers, OptionValues, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class OptionalThriftColumnTest extends PhantomCassandraTestSuite {
+class OptionalThriftColumnTest extends FlatSpec with OptionValues with Matchers with BeforeAndAfterAll with ThriftDatabase.connector.Connector {
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
     ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 

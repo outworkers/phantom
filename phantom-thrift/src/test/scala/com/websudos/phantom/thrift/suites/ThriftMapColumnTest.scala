@@ -33,13 +33,11 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
+import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-
-class ThriftMapColumnTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
