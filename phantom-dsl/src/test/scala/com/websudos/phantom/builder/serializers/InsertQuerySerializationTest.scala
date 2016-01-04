@@ -36,6 +36,8 @@ import net.liftweb.json.{ compactRender, Extraction }
 
 class InsertQuerySerializationTest extends QueryBuilderTest {
 
+  final val defaultTimeout = 1000L
+
   "An INSERT query" - {
     "should correctly chain the addition of columns and values to the builder" - {
 
@@ -85,9 +87,7 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       }
 
       "should append USING clause after lightweight part " in {
-        val smt = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L)
-        val query = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L).queryString
-
+        val query = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(defaultTimeout).queryString
         query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
       }
 

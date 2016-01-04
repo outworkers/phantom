@@ -33,6 +33,7 @@ import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
+import scala.concurrent.duration._
 
 import org.scalatest.FreeSpec
 

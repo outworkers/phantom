@@ -38,8 +38,6 @@ import net.liftweb.json._
 
 class InsertTest extends PhantomSuite {
 
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
-
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.listCollectionTable.insertSchema()
