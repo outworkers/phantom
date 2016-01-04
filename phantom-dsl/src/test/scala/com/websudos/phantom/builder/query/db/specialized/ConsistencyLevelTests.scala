@@ -29,11 +29,10 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.ProtocolVersion
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.{TestDatabase, Primitive}
-import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{Primitive, TestDatabase}
+import com.websudos.util.testing._
 
 class ConsistencyLevelTests extends PhantomSuite {
 

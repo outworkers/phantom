@@ -83,7 +83,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
       }
 
       "a maxTimeuuid comparison clause with a DateTime object" in {
@@ -91,7 +91,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
       }
 
       "a minTimeuuid comparison clause" in {
@@ -99,7 +99,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateIsPrimitive.asCql(date)});"
       }
 
       "a minTimeuuid comparison clause with a DateTime object" in {
@@ -107,7 +107,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
       }
 
       "a multiple column token clause" in {

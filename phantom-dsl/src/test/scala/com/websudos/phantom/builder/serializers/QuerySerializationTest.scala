@@ -49,7 +49,7 @@ class QuerySerializationTest extends FlatSpec with Matchers with KeySpaceSuite {
 
   it should "serialize a full select query" in {
     val someId = gen[UUID]
-    Articles.select.where(_.id eqs someId).qb.queryString shouldBe s"SELECT * FROM phantom.Articles WHERE id = $someId"
+    Articles.select.where(_.id eqs someId).qb.queryString shouldBe s"SELECT * FROM phantom.articles WHERE id = $someId"
   }
 
   it should "compile a single column partial select query" in {
@@ -68,12 +68,12 @@ class QuerySerializationTest extends FlatSpec with Matchers with KeySpaceSuite {
   it should "serialize a condition query to a query condition" in {
     val someId = gen[UUID]
     val query = Articles.update.where(_.id eqs someId).modify(_.name setTo "test").onlyIf(_.name is "update").qb.queryString
-    query shouldEqual s"UPDATE phantom.Articles SET name = 'test' WHERE id = $someId IF name = 'update'"
+    query shouldEqual s"UPDATE phantom.articles SET name = 'test' WHERE id = $someId IF name = 'update'"
   }
 
   it should "serialize a 2 column partial select query" in {
     val someId = gen[UUID]
-    Articles.select(_.id, _.name).where(_.id eqs someId).qb.queryString shouldBe s"SELECT id, name FROM phantom.Articles WHERE id = $someId"
+    Articles.select(_.id, _.name).where(_.id eqs someId).qb.queryString shouldBe s"SELECT id, name FROM phantom.articles WHERE id = $someId"
   }
 
   it should "serialize a 3 column partial select query" in {

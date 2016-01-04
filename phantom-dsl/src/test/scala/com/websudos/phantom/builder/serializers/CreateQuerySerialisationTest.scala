@@ -40,7 +40,7 @@ class CreateQuerySerialisationTest extends QueryBuilderTest {
       "generate a descending order clustering key on a table with a single clustering key" in {
         val qb = TestDatabase.timeSeriesTable.create.qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.TimeSeriesTable (id uuid, name text, unixTimestamp timestamp, " +
+        qb shouldEqual "CREATE TABLE phantom.timeSeriesTable (id uuid, name text, unixTimestamp timestamp, " +
           "PRIMARY KEY (id, unixTimestamp)) WITH CLUSTERING ORDER BY (unixTimestamp DESC)"
       }
     }
