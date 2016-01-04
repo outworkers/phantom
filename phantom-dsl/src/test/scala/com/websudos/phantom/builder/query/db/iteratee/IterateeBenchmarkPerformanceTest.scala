@@ -32,7 +32,6 @@ package com.websudos.phantom.builder.query.db.iteratee
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._

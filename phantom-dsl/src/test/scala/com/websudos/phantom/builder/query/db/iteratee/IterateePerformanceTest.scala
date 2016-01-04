@@ -30,12 +30,12 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicInteger
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.iteratee.Iteratee
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 class IterateePerformanceTest extends PhantomSuite {

@@ -32,12 +32,9 @@ package com.websudos.phantom.builder.query.db.crud
 import com.websudos.phantom.{PhantomSuite, DateTimeSerializer}
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.lift.UUIDSerializer
 import com.websudos.util.testing._
 import net.liftweb.json._
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 
 class InsertTest extends PhantomSuite {
 
@@ -239,7 +236,7 @@ class InsertTest extends PhantomSuite {
       get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
-    recipeF successful  {
+    chain successful  {
       res => {
         res.isEmpty shouldEqual false
         res.get shouldEqual row
@@ -254,8 +251,8 @@ class InsertTest extends PhantomSuite {
     info(pretty(render(Extraction.decompose(sample))))
 
     val chain = for {
-      store <- Recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
-      get <- Recipes.select.where(_.url eqs sample.url).one()
+      store <- TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
+      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
     if (cassandraVersion > Version.`2.2.0`) {

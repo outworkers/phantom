@@ -34,7 +34,6 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._

@@ -32,7 +32,6 @@ package com.websudos.phantom.builder.query.db.batch
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, JodaRow}
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.joda.time.DateTime
 import org.scalatest.concurrent.PatienceConfiguration
@@ -41,8 +40,6 @@ import org.scalatest.time.SpanSugar._
 
 class BatchTest extends PhantomSuite {
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
-  
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitivesJoda.insertSchema()
