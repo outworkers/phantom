@@ -42,8 +42,6 @@ class SkipRecordsByToken extends PhantomSuite {
 
   val Articles = TestDatabase.articles
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
-
   override def beforeAll(): Unit = {
     blocking {
       super.beforeAll()

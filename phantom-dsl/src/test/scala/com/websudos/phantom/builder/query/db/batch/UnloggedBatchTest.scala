@@ -40,8 +40,6 @@ import com.websudos.util.testing._
 
 class UnloggedBatchTest extends PhantomSuite {
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
-
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitivesJoda.create.ifNotExists().future().block(5.seconds)
