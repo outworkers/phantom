@@ -34,11 +34,12 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, Primitive}
 import com.websudos.util.testing._
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.time.SpanSugar._
 
 class TTLTest extends PhantomSuite with Eventually {
 
-  override implicit val patienceConfig = PatienceConfig(7.seconds, 200.millis)
+  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Milliseconds))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
