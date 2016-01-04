@@ -44,7 +44,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
         val id = gen[UUID]
         val qb = BasicTable.delete.where(_.id eqs id).qb.queryString
 
-        qb shouldEqual s"DELETE FROM ${keySpace}.${BasicTable.tableName} WHERE id = ${id.toString}"
+        qb shouldEqual s"DELETE FROM $keySpace.${BasicTable.tableName} WHERE id = ${id.toString}"
       }
 
       "should create a conditional delete query if an onlyIf clause is used" in {
@@ -54,7 +54,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .onlyIf(_.placeholder is "test")
           .qb.queryString
 
-        qb shouldEqual s"DELETE FROM ${keySpace}.${BasicTable.tableName} WHERE id = ${id.toString} IF placeholder = 'test'"
+        qb shouldEqual s"DELETE FROM $keySpace.${BasicTable.tableName} WHERE id = ${id.toString} IF placeholder = 'test'"
       }
 
       "should serialise a deleteColumn query, equivalent to an ALTER DROP" in {
@@ -63,7 +63,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
         val qb = BasicTable.delete(_.placeholder).where(_.id eqs id)
           .qb.queryString
 
-        qb shouldEqual s"DELETE placeholder FROM ${keySpace}.${BasicTable.tableName} WHERE id = ${id.toString}"
+        qb shouldEqual s"DELETE placeholder FROM $keySpace.${BasicTable.tableName} WHERE id = ${id.toString}"
       }
 
       "should serialise a delete column query with a conditional clause" in {
@@ -73,8 +73,18 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .onlyIf(_.placeholder is "test")
           .qb.queryString
 
-        qb shouldEqual s"DELETE placeholder FROM ${keySpace}.${BasicTable.tableName} WHERE id = ${id.toString} IF placeholder = 'test'"
+        qb shouldEqual s"DELETE placeholder FROM $keySpace.${BasicTable.tableName} WHERE id = ${id.toString} IF placeholder = 'test'"
       }
+
+
+      "should serialize a delete map column query" in {
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes.delete(_.props("test")).where(_.url eqs url).queryString
+
+        qb shouldEqual s"DELETE props['test'] FROM phantom.recipes WHERE url = '$url';"
+      }
+
     }
   }
 }

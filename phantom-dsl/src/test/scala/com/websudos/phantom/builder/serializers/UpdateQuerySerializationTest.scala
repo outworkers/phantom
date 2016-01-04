@@ -149,7 +149,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description <= 'test';"
       }
 
-      "update a single entry inside a map column" in {
+      "update a single entry inside a map column using a string apply" in {
         val url = gen[String]
 
         val query = TestDatabase.recipes.update
@@ -158,7 +158,17 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes SET props['test'] = 'test2' WHERE url = '$url';"
+      }
 
+      "update a single entry inside a map column using an int column" in {
+        val id = gen[UUID]
+
+        val query = TestDatabase.events.update
+          .where(_.id eqs id)
+          .modify(_.map(5L) setTo new DateTime)
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes SET props['test'] = 'test2' WHERE id = '$id';"
       }
 
     }

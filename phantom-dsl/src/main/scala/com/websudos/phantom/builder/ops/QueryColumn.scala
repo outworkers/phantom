@@ -147,7 +147,10 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
   }
 }
 
-class ColumnUpdateClause[K : Primitive, V : Primitive](column: String, key: K) {
+class ColumnUpdateClause[K : Primitive, V : Primitive](val column: String, val key: K) {
+
+  def keyName: String = Primitive[K].asCql(key)
+
   def setTo(v: V): UpdateClause.Condition = {
     val qb = QueryBuilder.Update.updateMapColumn(
       column,

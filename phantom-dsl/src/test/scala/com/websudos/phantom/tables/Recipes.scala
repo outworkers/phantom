@@ -29,9 +29,11 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.builder.query.InsertQuery
+import com.websudos.phantom.builder.query.{SelectQuery, InsertQuery}
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
+
+import scala.concurrent.Future
 
 case class Recipe(
   url: String,
