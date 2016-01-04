@@ -29,21 +29,16 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class SelectOptionalTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class SelectOptionalTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    OptionalPrimitives.insertSchema()
+    TestDatabase.optionalPrimitives.insertSchema()
   }
 
   "Selecting the whole row" should "work fine when optional value defined" in {
@@ -56,8 +51,8 @@ class SelectOptionalTest extends PhantomCassandraTestSuite {
 
   private[this] def checkRow(row: OptionalPrimitive) {
     val rcp = for {
-      store <- OptionalPrimitives.store(row).future()
-      b <- OptionalPrimitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.optionalPrimitives.store(row).future()
+      b <- TestDatabase.optionalPrimitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
     rcp successful {

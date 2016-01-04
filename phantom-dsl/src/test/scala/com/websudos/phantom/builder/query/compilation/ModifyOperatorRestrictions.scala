@@ -31,15 +31,17 @@ package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.TimeSeriesTable
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
 
-  implicit val keySpace: KeySpace = KeySpace("phantom")
+  implicit val keySpace: KeySpace = new KeySpace("phantom")
 
-  val t = TimeSeriesTable
+  val TimeSeriesTable = TestDatabase.timeSeriesTable
+  val CounterTableTest = TestDatabase.counterTableTest
+  val TwoKeys = TestDatabase.twoKeysTable
   val c = context
   val update = gen[String]
 

@@ -30,19 +30,16 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.{ThriftDatabase}
 import com.websudos.util.testing._
+import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(5.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "add an item to a thrift set column" in {
@@ -53,7 +50,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -62,8 +59,8 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
-      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select
     }
@@ -83,7 +80,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -92,8 +89,8 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
-      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select
     }
@@ -113,7 +110,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -122,8 +119,8 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
-      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
     operation.successful {
@@ -141,7 +138,7 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -150,8 +147,8 @@ class ThriftSetOperationsTest extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet removeAll Set(sample2, sample3)).future()
-      select <- ThriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet removeAll Set(sample2, sample3)).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select
     }

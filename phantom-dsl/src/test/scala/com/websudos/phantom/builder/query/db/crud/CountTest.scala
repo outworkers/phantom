@@ -30,35 +30,31 @@
 package com.websudos.phantom.builder.query.db.crud
 
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl.Batch
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class CountTest extends PhantomCassandraTestSuite {
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class CountTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    PrimitivesJoda.insertSchema()
+    TestDatabase.primitivesJoda.insertSchema()
   }
 
 
   it should "retrieve a count of 0 if the table has been truncated" in {
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.future()
-      count <- PrimitivesJoda.select.count.fetch()
+      truncate <- TestDatabase.primitivesJoda.truncate.future()
+      count <- TestDatabase.primitivesJoda.select.count.one()
     } yield count
 
     chain successful {
       res => {
-        res.headOption.value shouldEqual 0L
+        res.value shouldEqual 0L
       }
     }
   }
@@ -69,13 +65,13 @@ class CountTest extends PhantomCassandraTestSuite {
     val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(PrimitivesJoda.store(row))
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.future()
+      truncate <- TestDatabase.primitivesJoda.truncate.future()
       batch <- batch.future()
-      count <- PrimitivesJoda.select.count.one()
+      count <- TestDatabase.primitivesJoda.select.count.one()
     } yield count
 
     chain successful {
@@ -91,13 +87,13 @@ class CountTest extends PhantomCassandraTestSuite {
     val rows = genList[JodaRow](limit)
 
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(PrimitivesJoda.store(row))
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
 
     val chain = for {
-      truncate <- PrimitivesJoda.truncate.execute()
+      truncate <- TestDatabase.primitivesJoda.truncate.execute()
       batch <- batch.execute()
-      count <- PrimitivesJoda.select.count.get()
+      count <- TestDatabase.primitivesJoda.select.count.get()
     } yield count
 
     chain successful {

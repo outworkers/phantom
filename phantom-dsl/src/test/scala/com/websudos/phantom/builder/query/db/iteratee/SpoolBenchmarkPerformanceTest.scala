@@ -29,27 +29,26 @@
  */
 package com.websudos.phantom.builder.query.db.iteratee
 
-import scala.concurrent.{Await, Future}
+import com.twitter.util.{Await => TwitterAwait}
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, TestDatabase}
+import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
-import com.twitter.util.{Await => TwitterAwait}
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit._
-import com.websudos.util.testing._
+import scala.concurrent.{Await, Future}
 
 
-class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with PhantomCassandraConnector {
+class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
 
-  PrimitivesJoda.insertSchema()
+  TestDatabase.primitivesJoda.insertSchema()
 
   val fs = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])
 
     batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = PrimitivesJoda.insert
+      val statement = TestDatabase.primitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
         .value(_.timestamp, row.bi)
@@ -68,7 +67,7 @@ class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with 
     measure method "fetchSpool" in {
       using(sizes) in {
         size => TwitterAwait.ready {
-          PrimitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
+          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
         }
       }
     }

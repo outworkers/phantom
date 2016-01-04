@@ -29,8 +29,7 @@
  */
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.testkit.suites.SimpleCassandraConnector
+import com.websudos.phantom.connectors.{RootConnector, KeySpace}
 
 // case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
 
@@ -38,9 +37,7 @@ trait UDTKeySpace {
   implicit val keySpace = KeySpace("phantom_udt_test")
 }
 
-trait UDTConnector extends SimpleCassandraConnector with UDTKeySpace
-
-object UDTConnector extends UDTConnector
+trait UDTConnector extends RootConnector with UDTKeySpace
 
 /*
 sealed class TestFields extends CassandraTable[TestFields, TestRecord] {

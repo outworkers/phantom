@@ -30,12 +30,12 @@
 package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.SerializationTest
-import com.websudos.phantom.tables.Primitives
+import com.websudos.phantom.tables.TestDatabase
 import org.scalatest.FlatSpec
 
 class TypeRestrictionsTest extends FlatSpec with SerializationTest {
 
-  val P = Primitives
+  val Primitives = TestDatabase.primitives
 
   it should "allow using a correct type for a value method" in {
     "Primitives.insert.value(_.boolean, true)" should compile
@@ -43,5 +43,9 @@ class TypeRestrictionsTest extends FlatSpec with SerializationTest {
 
   it should "not allow using a wrong type for a value method" in {
     "Primitives.insert.value(_.boolean, 5)" shouldNot compile
+  }
+
+  it should "not allow chaining 2 limit clauses on the same query" in {
+    "Primitives.select.all().limit(5).limit(5)" shouldNot compile
   }
 }

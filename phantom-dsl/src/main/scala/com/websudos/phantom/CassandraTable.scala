@@ -30,7 +30,10 @@
 package com.websudos.phantom
 
 import com.datastax.driver.core.{Row, Session}
-import com.websudos.phantom.builder.ops.SelectColumn
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.clauses.DeleteClause
+import com.websudos.phantom.builder.ops.{ColumnUpdateClause, SelectColumn}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
@@ -85,8 +88,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  final def delete(condition: T => DeleteClause.Condition)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    DeleteQuery[T, R](this.asInstanceOf[T], condition(this.asInstanceOf[T]).qb)
   }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])

@@ -29,27 +29,27 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
 import com.websudos.util.testing._
 
-class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
+class PreparedSelectQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
-    ArticlesByAuthor.insertSchema()
+    TestDatabase.recipes.insertSchema()
+    TestDatabase.articlesByAuthor.insertSchema()
   }
 
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
-    val query = Recipes.select.p_where(_.url eqs ?).prepare()
+    val query = TestDatabase.recipes.select.p_where(_.url eqs ?).prepare()
 
     val operation = for {
-      truncate <- Recipes.truncate.future
-      insertDone <- Recipes.store(recipe).future()
+      truncate <- TestDatabase.recipes.truncate.future
+      insertDone <- TestDatabase.recipes.store(recipe).future()
       select <- query.bind(recipe.url).one()
     } yield select
 
@@ -68,11 +68,11 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     val category = gen[UUID]
     val category2 = gen[UUID]
 
-    val query = ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
+    val query = TestDatabase.articlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
 
     val op = for {
-      store <- ArticlesByAuthor.store(owner, category, sample).future()
-      store2 <- ArticlesByAuthor.store(owner, category2, sample2).future()
+      store <- TestDatabase.articlesByAuthor.store(owner, category, sample).future()
+      store2 <- TestDatabase.articlesByAuthor.store(owner, category2, sample2).future()
       get <- query.bind(owner, category).one()
       get2 <- query.bind(owner, category2).one()
     } yield (get, get2)

@@ -28,6 +28,7 @@ Changelog
     <li><a href="#version-1.17.7">1.17.7 - 10.12.2015</a></li>
     <li><a href="#version-1.18.0">1.18.0 - 14.12.2015</a></li>
     <li><a href="#version-1.18.1">1.18.1 - 17.12.2015</a></li>
+    <li><a href="#version-1.19.0">1.19.1 - 04.01.2016</a></li>
 </ul>
 
 
@@ -274,3 +275,13 @@ and `org.joda.time.DateTime`.
 
 - Adding the ability to use `gt`, `gte`, `lt`, `lte` and `isNot` operators with a conditional update clause.
 - Bumping the version to `1.18.1`.
+
+<a id="version-1.19.0">1.19.0</a>
+================================
+
+- Deprecated and completely removed the `phantom-teskit` module as it is now obsolete.
+- Upgraded the entire set of tests to use the new `Database` API.
+- Added support for updating specific entries in a `MapColumn`.
+- Added support for deleting specific entries from a `MapColumn`.
+- Fixed timeout configuration for ScalaTest based entries.
+- Updated examples to showcase new Database API.

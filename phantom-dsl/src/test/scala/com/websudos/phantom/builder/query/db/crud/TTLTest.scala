@@ -29,31 +29,29 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitive, Primitives}
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.{TestDatabase, Primitive}
 import com.websudos.util.testing._
-import org.scalatest.concurrent.{Eventually, PatienceConfiguration}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.time.SpanSugar._
-import org.scalatest.time.{Millis, Seconds, Span}
 
-class TTLTest extends PhantomCassandraTestSuite with Eventually {
+class TTLTest extends PhantomSuite with Eventually {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
-
-  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Millis))
+  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Milliseconds))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
+    TestDatabase.primitives.insertSchema()
   }
 
   it should "expire inserted records after 2 seconds" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).ttl(2).future()
-      get <- Primitives.select.where(_.pkey eqs row.pkey).one()
+      store <- TestDatabase.primitives.store(row).ttl(2).future()
+      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -61,7 +59,7 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
         record.value shouldEqual row
 
         eventually {
-          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          val record = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
           record shouldBe empty
         }
       }
@@ -72,8 +70,8 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).ttl(2).execute()
-      get <- Primitives.select.where(_.pkey eqs row.pkey).get()
+      store <- TestDatabase.primitives.store(row).ttl(2).execute()
+      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain.successful {
@@ -81,7 +79,7 @@ class TTLTest extends PhantomCassandraTestSuite with Eventually {
         record.value shouldEqual row
 
         eventually {
-          val record = Primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
+          val record = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one().block(3.seconds)
           record shouldBe empty
         }
       }

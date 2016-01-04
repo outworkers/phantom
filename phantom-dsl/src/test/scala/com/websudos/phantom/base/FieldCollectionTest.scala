@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.base
 
-import com.websudos.phantom.tables.{Articles, Primitives}
+import com.websudos.phantom.tables.TestDatabase
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
@@ -38,26 +38,26 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
   it should "correctly initialise objects in the order they are written in" in {
     forAll(minSuccessful(300)) { (d: String) =>
       whenever (d.length > 0) {
-        val collected = Articles.columns.map(_.name).mkString(" ")
-        val expected = s"${Articles.id.name} ${Articles.name.name} ${Articles.orderId.name}"
+        val collected = TestDatabase.articles.columns.map(_.name).mkString(" ")
+        val expected = s"${TestDatabase.articles.id.name} ${TestDatabase.articles.name.name} ${TestDatabase.articles.orderId.name}"
         collected shouldEqual expected
       }
     }
   }
 
   it should "collect objects in the same order they are written" in {
-    val collected = Articles.columns.map(_.name).mkString(" ")
-    val expected = s"${Articles.id.name} ${Articles.name.name} ${Articles.orderId.name}"
+    val collected = TestDatabase.articles.columns.map(_.name).mkString(" ")
+    val expected = s"${TestDatabase.articles.id.name} ${TestDatabase.articles.name.name} ${TestDatabase.articles.orderId.name}"
     collected shouldEqual expected
   }
 
 
   it should "correctly reference the same table" in {
-     Primitives.pkey.table shouldEqual Primitives
+     TestDatabase.primitives.pkey.table shouldEqual TestDatabase.primitives
   }
 
 
   it should "initialise fields by default" in {
-    Articles.columns.length shouldEqual 3
+    TestDatabase.articles.columns.length shouldEqual 3
   }
 }

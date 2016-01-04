@@ -29,47 +29,43 @@
  */
 package com.websudos.phantom.tables
 
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import org.joda.time.DateTime
 
-case class TimeSeriesRecord(
-  id: UUID,
-  name: String,
-  timestamp: DateTime
+case class MyTestRow(
+  key: String,
+  optionA: Option[Int],
+  stringlist: List[String]
 )
 
-sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending {
-    override val name = "unixTimestamp"
-  }
 
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
+sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
+  def fromRow(r: Row): MyTestRow = {
+    MyTestRow(
+      key(r),
+      optionA(r),
+      stringlist(r)
     )
   }
+
+  object key extends StringColumn(this) with PartitionKey[String]
+
+  object stringlist extends ListColumn[ConcreteListCollectionTable, MyTestRow, String](this)
+
+  object optionA extends OptionalIntColumn(this)
+
 }
 
-abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
+abstract class ConcreteListCollectionTable extends ListCollectionTable with RootConnector {
 
-sealed class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeSeriesRecord] {
-  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) {
-    override val name = "unixTimestamp"
+  override val tableName = "mytest"
+
+  def store(row: MyTestRow): InsertQuery.Default[ConcreteListCollectionTable, MyTestRow] = {
+    insert().value(_.key, row.key)
+      .value(_.stringlist, row.stringlist)
+      .value(_.optionA, row.optionA)
   }
 
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
 }
 
-object TimeUUIDTable extends TimeUUIDTable
+

@@ -45,7 +45,7 @@
 package com.websudos.phantom.connectors
 
 import scala.collection.JavaConverters._
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ProtocolVersion, Session}
 
 
 /**
@@ -100,6 +100,18 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
    * instances.
    */
   trait Connector extends com.websudos.phantom.connectors.Connector {
+
+    implicit class RichSession(val session: Session) {
+      def protocolVersion: ProtocolVersion = {
+        session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+      }
+
+      def isNewerThan(pv: ProtocolVersion): Boolean = {
+        protocolVersion.compareTo(pv) > 0
+      }
+
+      def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+    }
 
     lazy val provider = outer.provider
 
