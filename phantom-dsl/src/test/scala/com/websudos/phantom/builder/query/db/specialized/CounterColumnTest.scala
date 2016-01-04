@@ -29,11 +29,11 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
+import com.websudos.phantom.PhantomSuite
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 

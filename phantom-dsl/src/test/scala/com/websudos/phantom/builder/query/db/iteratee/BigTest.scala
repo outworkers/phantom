@@ -32,7 +32,6 @@ package com.websudos.phantom.builder.query.db.iteratee
 import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.testkit._
 
 trait BigTest extends PhantomSuite {
 
