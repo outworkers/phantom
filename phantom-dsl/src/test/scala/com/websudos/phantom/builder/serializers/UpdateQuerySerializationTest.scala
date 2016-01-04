@@ -37,7 +37,7 @@ import scala.concurrent.duration._
 
 import org.scalatest.FreeSpec
 
-class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite {
+class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
 
   val comparisonValue = 10
 
