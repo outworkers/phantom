@@ -113,7 +113,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description > 'test';"
       }
 
-      "specify a gte clause inside an ConditionUpdateQuery" in {
+      "specify a gte clause inside an ConditionalUpdateQuery" in {
         val url = gen[String]
 
         val query = TestDatabase.recipes.update()
@@ -125,7 +125,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description >= 'test';"
       }
 
-      "specify a lt clause inside an ConditionUpdateQuery" in {
+      "specify a lt clause inside an ConditionalUpdateQuery" in {
         val url = gen[String]
 
         val query = TestDatabase.recipes.update()
@@ -137,7 +137,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description < 'test';"
       }
 
-      "specify a lte clause inside an ConditionUpdateQuery" in {
+      "specify a lte clause inside an ConditionalUpdateQuery" in {
         val url = gen[String]
 
         val query = TestDatabase.recipes.update()
