@@ -32,9 +32,9 @@ package com.websudos.phantom
 import com.websudos.phantom.connectors.RootConnector
 import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.lift.UUIDSerializer
-import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest._
-import org.scalatest.time.SpanSugar._
+import org.scalatest.concurrent.{Futures, PatienceConfiguration, ScalaFutures}
+import org.scalatest.time._
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
@@ -42,9 +42,13 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
-
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
+
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(Span(10, Seconds))
+
+  implicit val defaultPatience = PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+
+}

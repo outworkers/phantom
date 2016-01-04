@@ -46,8 +46,6 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     TestDatabase.testTable.insertSchema()
   }
 
-  override implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(20 seconds)
-
   "Update" should "work fine for primitives columns" in {
     //char is not supported
     //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
