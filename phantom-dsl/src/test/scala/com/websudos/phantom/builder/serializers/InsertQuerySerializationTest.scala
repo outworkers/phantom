@@ -88,7 +88,7 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
 
       "should append USING clause after lightweight part " in {
         val query = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(insertionTimeout).queryString
-        query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
+        query shouldEqual "INSERT INTO phantom.recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
       }
 
 }
