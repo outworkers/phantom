@@ -27,49 +27,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom
 
-import com.websudos.phantom.dsl._
-import org.joda.time.DateTime
+import com.websudos.phantom.connectors.RootConnector
+import com.websudos.phantom.tables.TestDatabase
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest._
 
-case class TimeSeriesRecord(
-  id: UUID,
-  name: String,
-  timestamp: DateTime
-)
+trait PhantomBaseSuite extends Suite with Matchers
+  with BeforeAndAfterAll
+  with RootConnector
+  with ScalaFutures
+  with OptionValues
 
-sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending {
-    override val name = "unixTimestamp"
-  }
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
-}
-
-abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
-
-sealed class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeSeriesRecord] {
-  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) {
-    override val name = "unixTimestamp"
-  }
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
-}
-
-object TimeUUIDTable extends TimeUUIDTable
+trait PhantomSuite extends FlatSpec with PhantomSuite with TestDatabase.connector.Connector

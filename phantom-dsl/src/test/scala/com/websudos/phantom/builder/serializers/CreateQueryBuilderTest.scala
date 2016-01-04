@@ -46,6 +46,8 @@ import scala.concurrent.duration._
 class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
 
   val BasicTable = TestDatabase.basicTable
+  final val DefaultTtl = 500
+  final val OneDay = 86400
 
   "The CREATE query builder" - {
     "should allow specifying table creation options" - {
@@ -109,12 +111,12 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
       }
 
       "allow specifying larger custom units as gc_grace_seconds using the Twitter conversions API" in {
-        val qb = BasicTable.create.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(86400)).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(OneDay)).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
-        val qb = BasicTable.create.`with`(gc_grace_seconds eqs Seconds.seconds(86400)).qb.queryString
+        val qb = BasicTable.create.`with`(gc_grace_seconds eqs Seconds.seconds(OneDay)).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
       }
 
@@ -139,22 +141,22 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
 
     "should allow specifying a default_time_to_live" - {
       "specify a default time to live using a Long value" in {
-        val qb = BasicTable.create.`with`(default_time_to_live eqs 500L).qb.queryString
+        val qb = BasicTable.create.`with`(default_time_to_live eqs DefaultTtl.toLong).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a org.joda.time.Seconds value" in {
-        val qb = BasicTable.create.`with`(default_time_to_live eqs Seconds.seconds(500)).qb.queryString
+        val qb = BasicTable.create.`with`(default_time_to_live eqs Seconds.seconds(DefaultTtl)).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
-        val qb = BasicTable.create.`with`(default_time_to_live eqs FiniteDuration.apply(500, TimeUnit.SECONDS)).qb.queryString
+        val qb = BasicTable.create.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a com.twitter.util.Duration value" in {
-        val qb = BasicTable.create.`with`(default_time_to_live eqs com.twitter.util.Duration.fromSeconds(500)).qb.queryString
+        val qb = BasicTable.create.`with`(default_time_to_live eqs com.twitter.util.Duration.fromSeconds(DefaultTtl)).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
       }
     }

@@ -30,7 +30,9 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.TestDatabase
+import com.websudos.phantom.tables.{Recipe, TestDatabase}
+import com.websudos.util.testing._
+import net.liftweb.json.{ compactRender, Extraction }
 
 class InsertQuerySerializationTest extends QueryBuilderTest {
 
@@ -78,14 +80,13 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
 
       "should serialize a JSON clause as the insert part" in {
         val sample = gen[Recipe]
-        val query = Recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
+        val query = TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
 
-        Console.println(query)
       }
 
       "should append USING clause after lightweight part " in {
-        val smt = Recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L)
-        val query = Recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L).queryString
+        val smt = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L)
+        val query = TestDatabase.recipes.insert.ifNotExists().value(_.url, "test").ttl(1000L).queryString
 
         query shouldEqual "INSERT INTO phantom.Recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
       }

@@ -46,6 +46,9 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
   val BasicTable = TestDatabase.basicTable
 
+  final val DefaultTtl = 500
+  final val OneDay = 86400
+
   "The ALTER query builder" - {
 
     "should serialise ALTER .. ADD queries" - {
@@ -156,12 +159,12 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
       }
 
       "allow specifying larger custom units as gc_grace_seconds using the Twitter conversions API" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(86400)).qb.queryString
+        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(OneDay)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs Seconds.seconds(86400)).qb.queryString
+        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs Seconds.seconds(OneDay)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
       }
 
@@ -186,22 +189,22 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying a default_time_to_live" - {
       "specify a default time to live using a Long value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs 500L).qb.queryString
+        val qb = BasicTable.alter.`with`(default_time_to_live eqs DefaultTtl).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a org.joda.time.Seconds value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs Seconds.seconds(500)).qb.queryString
+        val qb = BasicTable.alter.`with`(default_time_to_live eqs Seconds.seconds(DefaultTtl)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs FiniteDuration(500, TimeUnit.SECONDS)).qb.queryString
+        val qb = BasicTable.alter.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a com.twitter.util.Duration value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs com.twitter.util.Duration.fromSeconds(500)).qb.queryString
+        val qb = BasicTable.alter.`with`(default_time_to_live eqs com.twitter.util.Duration.fromSeconds(DefaultTtl)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
     }

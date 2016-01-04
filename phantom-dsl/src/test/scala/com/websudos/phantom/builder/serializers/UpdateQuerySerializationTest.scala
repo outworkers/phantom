@@ -29,14 +29,16 @@
  */
 package com.websudos.phantom.builder.serializers
 
-import com.datastax.driver.core.ConsistencyLevel
+import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
-import org.scalatest.{FreeSpec, Matchers}
 
-class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCassandraConnector {
+import org.scalatest.FreeSpec
+
+class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite {
+
+  val comparisonValue = 10
 
   "An Update query should" - {
     "allow specifying consistency levels" - {
@@ -61,7 +63,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
         val url = gen[String]
         val uid = gen[UUID]
 
-        val query = Recipes.update.where(_.url eqs url)
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
           .modify(_.uid setTo uid)
           .ttl(5.seconds)
           .queryString
@@ -89,7 +91,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
       "specify a non equals clause inside an ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description isNot Some("test"))
@@ -101,7 +103,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
       "specify a gt clause inside an ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description gt Some("test"))
@@ -113,7 +115,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
       "specify a gte clause inside an ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description gte Some("test"))
@@ -125,7 +127,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
       "specify a lt clause inside an ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description lt Some("test"))
@@ -137,7 +139,7 @@ class UpdateQuerySerializationTest extends FreeSpec with Matchers with PhantomCa
       "specify a lte clause inside an ConditionUpdateQuery" in {
         val url = gen[String]
 
-        val query = Recipes.update()
+        val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
           .onlyIf(_.description lte Some("test"))

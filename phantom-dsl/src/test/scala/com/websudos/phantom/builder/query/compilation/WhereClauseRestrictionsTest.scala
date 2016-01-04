@@ -37,7 +37,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class WhereClauseRestrictionsTest extends FlatSpec with Matchers with KeySpaceSuite {
 
-
   val s = gen[String]
   val Primitives = TestDatabase.primitives
   val c = context

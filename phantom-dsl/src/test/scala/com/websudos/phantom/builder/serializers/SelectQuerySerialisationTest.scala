@@ -32,15 +32,16 @@ package com.websudos.phantom.builder.serializers
 import java.util.Date
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.BasicTable
+import com.websudos.phantom.tables.{ArticlesByAuthor, BasicTable, TestDatabase}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.FreeSpec
 
 class SelectQuerySerialisationTest extends QueryBuilderTest {
 
   val BasicTable = TestDatabase.basicTable
+  val ArticlesByAuthor = TestDatabase.articlesByAuthor
+  val TimeSeriesTable = TestDatabase.timeSeriesTable
 
   "The select query builder" - {
     "should serialize " - {

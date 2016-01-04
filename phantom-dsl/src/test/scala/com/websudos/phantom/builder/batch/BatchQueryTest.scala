@@ -1,17 +1,16 @@
 package com.websudos.phantom.builder.batch
 
-import com.websudos.phantom.dsl.{Batch, _}
-import com.websudos.phantom.tables.{JodaRow, PrimitivesJoda}
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{TestDatabase, JodaRow, PrimitivesJoda}
 import com.websudos.util.testing._
 import org.joda.time.DateTime
-import org.scalatest.OptionValues._
 
-class BatchQueryTest extends PhantomCassandraTestSuite {
+class BatchQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(TestDatabase.primitivesJoda.create.ifNotExists().future(), 5.seconds)
+    TestDatabase.primitivesJoda.create.ifNotExists().future().blocking(5.seconds)
   }
 
   it should "correctly execute a chain of INSERT queries" in {

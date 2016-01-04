@@ -29,16 +29,16 @@
  */
 package com.websudos.phantom.base
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Article, TestDatabase}
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.{Future, blocking}
 
-class SkipRecordsByToken extends PhantomCassandraTestSuite {
+class SkipRecordsByToken extends PhantomSuite {
 
   val Articles = TestDatabase.articles
 

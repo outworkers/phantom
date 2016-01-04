@@ -54,7 +54,7 @@ sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 }
 
 abstract class ConcreteArticles extends Articles with RootConnector {
-  override def tableName = "articles"
+  override def tableName: String = "articles"
 
   def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
     insert.value(_.id, article.id)
@@ -64,7 +64,7 @@ abstract class ConcreteArticles extends Articles with RootConnector {
 }
 
 
-sealed class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] {
+sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, Article] {
 
   object author_id extends UUIDColumn(this) with PartitionKey[UUID]
   object category extends UUIDColumn(this) with PartitionKey[UUID]
@@ -82,9 +82,9 @@ sealed class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] 
   }
 }
 
-object ArticlesByAuthor extends ArticlesByAuthor with PhantomCassandraConnector {
+abstract class ConcreteArticlesByAuthor extends ArticlesByAuthor with RootConnector {
 
-  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ArticlesByAuthor, Article] = {
+  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ConcreteArticlesByAuthor, Article] = {
     insert
       .value(_.author_id, author)
       .value(_.category, category)

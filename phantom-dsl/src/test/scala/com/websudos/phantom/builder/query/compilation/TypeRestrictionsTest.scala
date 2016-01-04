@@ -44,4 +44,8 @@ class TypeRestrictionsTest extends FlatSpec with SerializationTest {
   it should "not allow using a wrong type for a value method" in {
     "Primitives.insert.value(_.boolean, 5)" shouldNot compile
   }
+
+  it should "not allow chaining 2 limit clauses on the same query" in {
+    "Primitives.select.all().limit(5).limit(5)" shouldNot compile
+  }
 }

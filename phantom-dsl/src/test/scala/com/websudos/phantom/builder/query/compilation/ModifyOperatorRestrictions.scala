@@ -37,7 +37,7 @@ import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTestExecution {
 
-  implicit val keySpace: KeySpace = KeySpace("phantom")
+  implicit val keySpace: KeySpace = new KeySpace("phantom")
 
   val TimeSeriesTable = TestDatabase.timeSeriesTable
   val CounterTableTest = TestDatabase.counterTableTest
