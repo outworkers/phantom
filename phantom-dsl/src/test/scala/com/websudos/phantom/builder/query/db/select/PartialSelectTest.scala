@@ -29,15 +29,13 @@
  */
 package com.websudos.phantom.builder.query.db.select
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 
-class PartialSelectTest extends PhantomCassandraTestSuite {
-
-  override implicit val patience: PatienceConfiguration.Timeout = timeout(10 seconds)
+class PartialSelectTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

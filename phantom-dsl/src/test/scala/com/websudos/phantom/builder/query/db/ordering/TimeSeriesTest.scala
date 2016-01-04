@@ -29,16 +29,17 @@
  */
 package com.websudos.phantom.builder.query.db.ordering
 
+import com.websudos.phantom.PhantomSuite
+
 import scala.concurrent.duration._
 
 import org.scalatest.concurrent.PatienceConfiguration
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class TimeSeriesTest extends PhantomCassandraTestSuite {
+class TimeSeriesTest extends PhantomSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
@@ -129,7 +130,7 @@ class TimeSeriesTest extends PhantomCassandraTestSuite {
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TimeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {

@@ -29,17 +29,15 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.websudos.phantom.PhantomSuite
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
-class DeleteTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class DeleteTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

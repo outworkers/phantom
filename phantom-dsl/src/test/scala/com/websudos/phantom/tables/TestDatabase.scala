@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.tables
 
+import java.util.UUID
+
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.db.DatabaseImpl
 
@@ -70,7 +72,9 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object tableWithNoKey extends ConcreteTableWithNoKey with connector.Connector
 
   object testTable extends ConcreteTestTable with connector.Connector
-  object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector
+  object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {
+    val testUUID = UUID.randomUUID()
+  }
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
   object twoKeysTable extends ConcreteTwoKeys with connector.Connector

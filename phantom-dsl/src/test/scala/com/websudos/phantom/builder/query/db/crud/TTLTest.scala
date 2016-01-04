@@ -29,19 +29,16 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, Primitive}
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
-import org.scalatest.concurrent.{Eventually, PatienceConfiguration}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.time.SpanSugar._
-import org.scalatest.time.{Millis, Seconds, Span}
 
-class TTLTest extends PhantomCassandraTestSuite with Eventually {
+class TTLTest extends PhantomSuite with Eventually {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
-
-  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Millis))
+  override implicit val patienceConfig = PatienceConfig(7.seconds, 200.millis)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

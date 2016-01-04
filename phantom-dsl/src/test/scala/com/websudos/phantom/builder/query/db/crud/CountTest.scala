@@ -30,18 +30,14 @@
 package com.websudos.phantom.builder.query.db.crud
 
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl.Batch
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class CountTest extends PhantomCassandraTestSuite {
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class CountTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

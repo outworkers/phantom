@@ -32,12 +32,12 @@ package com.websudos.phantom.builder.query.db.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.twitter.conversions.time._
 import com.twitter.util.Await
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
-class EnumColumnTest extends PhantomCassandraTestSuite {
+class EnumColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     Await.result(TestDatabase.enumTable.create.ifNotExists().execute(), 5.seconds)

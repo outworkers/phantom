@@ -30,12 +30,12 @@
 package com.websudos.phantom.builder.query.db.batch
 
 import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.PhantomSuite
 import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables.{TestDatabase}
 
-class CounterBatchTest extends PhantomCassandraTestSuite {
+class CounterBatchTest extends PhantomSuite {
 
   val x = TestDatabase.counterTableTest
   val y = TestDatabase.secondaryCounterTable

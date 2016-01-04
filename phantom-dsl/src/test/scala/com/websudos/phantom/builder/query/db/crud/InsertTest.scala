@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import com.websudos.phantom.DateTimeSerializer
+import com.websudos.phantom.{PhantomSuite, DateTimeSerializer}
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
@@ -39,9 +39,7 @@ import net.liftweb.json._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class InsertTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class InsertTest extends PhantomSuite {
 
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 

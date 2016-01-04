@@ -33,13 +33,13 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{BufferRecord, TestDatabase}
-import com.websudos.phantom.testkit._
 import com.websudos.phantom.util.ByteString
 import com.websudos.util.testing._
 
-class ByteBufferColumnTest extends PhantomCassandraTestSuite {
+class ByteBufferColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

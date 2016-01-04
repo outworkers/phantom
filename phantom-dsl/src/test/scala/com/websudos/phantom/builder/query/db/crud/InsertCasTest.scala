@@ -30,6 +30,7 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
@@ -38,9 +39,7 @@ import com.websudos.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class InsertCasTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class InsertCasTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

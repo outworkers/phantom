@@ -31,13 +31,17 @@ package com.websudos.phantom
 
 import com.websudos.phantom.connectors.RootConnector
 import com.websudos.phantom.tables.TestDatabase
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest._
+import org.scalatest.time.SpanSugar._
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
   with RootConnector
   with ScalaFutures
-  with OptionValues
+  with OptionValues {
 
-trait PhantomSuite extends FlatSpec with PhantomSuite with TestDatabase.connector.Connector
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
+}
+
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector

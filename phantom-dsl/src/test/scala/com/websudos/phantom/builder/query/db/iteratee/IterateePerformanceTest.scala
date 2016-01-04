@@ -38,7 +38,7 @@ import com.websudos.phantom.tables._
 import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class IterateePerformanceTest extends PhantomCassandraTestSuite {
+class IterateePerformanceTest extends PhantomSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 

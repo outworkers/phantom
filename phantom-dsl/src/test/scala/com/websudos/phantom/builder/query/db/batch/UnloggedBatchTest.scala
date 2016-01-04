@@ -29,18 +29,18 @@
  */
 package com.websudos.phantom.builder.query.db.batch
 
+import com.websudos.phantom.PhantomSuite
 import org.joda.time.DateTime
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class UnloggedBatchTest extends PhantomCassandraTestSuite {
+class UnloggedBatchTest extends PhantomSuite {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

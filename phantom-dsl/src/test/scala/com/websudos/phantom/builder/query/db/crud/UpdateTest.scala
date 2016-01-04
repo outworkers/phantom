@@ -29,16 +29,16 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.websudos.phantom.PhantomSuite
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
+class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -46,8 +46,7 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     TestDatabase.testTable.insertSchema()
   }
 
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
+  override implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   "Update" should "work fine for primitives columns" in {
     //char is not supported
@@ -96,7 +95,7 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
       list = List("new"),
       setText = Set("newSet"),
       mapTextToText =  Map("n" -> "newVal"),
-      setInt = Set(3,4,7),
+      setInt = Set(3, 4, 7),
       mapIntToText = Map (-1 -> "&&&")
     )
 

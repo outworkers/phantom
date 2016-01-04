@@ -29,12 +29,12 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{ TestDatabase, Recipe }
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class InOperatorTest extends PhantomCassandraTestSuite {
+class InOperatorTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

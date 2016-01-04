@@ -37,7 +37,7 @@ import com.websudos.phantom.testkit._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
-class CounterColumnTest extends PhantomCassandraTestSuite {
+class CounterColumnTest extends PhantomSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 

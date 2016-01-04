@@ -30,15 +30,15 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.exceptions.SyntaxError
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, TestRow}
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class IndexedCollectionsTest extends PhantomCassandraTestSuite {
+class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
