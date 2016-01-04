@@ -205,7 +205,7 @@ sealed class AssignmentsQuery[
       init,
       usingPart append QueryBuilder.ttl(seconds.toString),
       wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
+      setPart,
       casPart,
       options
     )
