@@ -113,6 +113,9 @@ object OperatorClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
+object DeleteClause extends Clause {
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+}
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
 

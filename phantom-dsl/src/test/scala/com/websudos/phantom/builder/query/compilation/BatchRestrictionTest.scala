@@ -31,20 +31,19 @@ package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.SerializationTest
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitives, Recipe, Recipes}
+import com.websudos.phantom.tables.{Recipe, TestDatabase}
 import com.websudos.util.testing._
 import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 
 class BatchRestrictionTest extends FlatSpec with SerializationTest {
 
-   val s = Recipes
+   val Recipes = TestDatabase.recipes
    val b = Batch.logged
    val d = new DateTime
 
-
   val str = gen[String]
-  val p = Primitives
+  val Primitives = TestDatabase.primitives
 
    it should "not allow using Select queries in a batch" in {
      "Batch.logged.add(Primitives.select)" shouldNot compile

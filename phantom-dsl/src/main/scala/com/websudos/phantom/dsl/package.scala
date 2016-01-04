@@ -39,14 +39,18 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
+import com.websudos.phantom.builder.query.{DeleteImplicits, CQLQuery, CreateImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
 import shapeless.{HNil, ::}
 
 import scala.util.Try
 
-package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
+package object dsl extends ImplicitMechanism with CreateImplicits
+  with DefaultPrimitives
+  with SelectImplicits
+  with Operators
+  with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
 

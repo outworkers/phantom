@@ -41,23 +41,27 @@ case class SampleRecord(
   thriftModel: SampleModel
 )
 
-sealed class ThriftTable extends CassandraTable[ThriftTable,  SampleRecord] {
+sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object stuff extends StringColumn(this)
-  object someList extends ListColumn[ThriftTable, SampleRecord, String](this)
+  object someList extends ListColumn[ConcreteThriftTable, SampleRecord, String](this)
 
 
   // As you can see, com.websudos.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ThriftTable, SampleRecord, SampleModel](this) {
+  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
     def serializer = new CompactThriftSerializer[SampleModel] {
       override def codec = SampleModel
     }
   }
 
   def fromRow(r: Row): SampleRecord = {
-    SampleRecord(stuff(r), someList(r), thriftModel(r))
+    SampleRecord(
+      stuff = stuff(r),
+      someList = someList(r),
+      thriftModel = thriftModel(r)
+    )
   }
 }
 
-object ThriftTable extends ThriftTable with ExampleConnector
+abstract class ConcreteThriftTable extends ThriftTable with RootConnector

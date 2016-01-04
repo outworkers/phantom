@@ -31,30 +31,27 @@ package com.websudos.phantom.thrift.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.ThriftColumnTable
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.ThriftDatabase
 import com.websudos.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._
 
-class ThriftColumnTest extends PhantomCassandraTestSuite {
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(5.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()
     val sample = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .future() flatMap {
-      _ => ThriftColumnTable.select.where(_.id eqs id).one()
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {
@@ -70,13 +67,13 @@ class ThriftColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[ThriftTest]
     val sampleList = Set(sample, sample2)
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-      _ => ThriftColumnTable.select.where(_.id eqs id).one()
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
     insert.successful {

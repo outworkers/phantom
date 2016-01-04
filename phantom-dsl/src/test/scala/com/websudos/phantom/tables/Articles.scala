@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class Article(
   name: String,
@@ -39,29 +38,33 @@ case class Article(
   order_id: Long
 )
 
-sealed class Articles private() extends CassandraTable[Articles, Article] {
+sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
   override def fromRow(row: Row): Article = {
-    Article(name(row), id(row), orderId(row))
+    Article(
+      name = name(row),
+      id = id(row),
+      order_id = orderId(row)
+    )
   }
 }
 
-object Articles extends Articles with PhantomCassandraConnector {
+abstract class ConcreteArticles extends Articles with RootConnector {
+  override def tableName: String = "articles"
 
-  def store(article: Article): InsertQuery.Default[Articles, Article] = {
-    insert
-      .value(_.id, article.id)
+  def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
+    insert.value(_.id, article.id)
       .value(_.name, article.name)
       .value(_.orderId, article.order_id)
   }
 }
 
 
-sealed class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] {
+sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, Article] {
 
   object author_id extends UUIDColumn(this) with PartitionKey[UUID]
   object category extends UUIDColumn(this) with PartitionKey[UUID]
@@ -79,9 +82,9 @@ sealed class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] 
   }
 }
 
-object ArticlesByAuthor extends ArticlesByAuthor with PhantomCassandraConnector {
+abstract class ConcreteArticlesByAuthor extends ArticlesByAuthor with RootConnector {
 
-  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ArticlesByAuthor, Article] = {
+  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ConcreteArticlesByAuthor, Article] = {
     insert
       .value(_.author_id, author)
       .value(_.category, category)

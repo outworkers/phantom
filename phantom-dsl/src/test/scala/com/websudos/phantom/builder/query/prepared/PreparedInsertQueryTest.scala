@@ -29,23 +29,23 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.websudos.phantom.tables.{Recipe, Recipes}
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.tables.{TestDatabase, Recipe}
 import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
 
-class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
+class PreparedInsertQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
+    TestDatabase.recipes.insertSchema()
   }
 
   it should "serialize an insert query" in {
 
     val sample = gen[Recipe]
 
-    val query = Recipes.insert
+    val query = TestDatabase.recipes.insert
       .p_value(_.uid, ?)
       .p_value(_.url, ?)
       .p_value(_.servings, ?)
@@ -67,7 +67,7 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       store <- exec
-      get <- Recipes.select.where(_.url eqs sample.url).one()
+      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
     whenReady(chain) {

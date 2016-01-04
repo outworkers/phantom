@@ -30,27 +30,27 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.exceptions.SyntaxError
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{IndexedCollectionsTable, TestRow}
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.{TestDatabase, TestRow}
 import com.websudos.util.testing._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class IndexedCollectionsTest extends PhantomCassandraTestSuite {
+class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(IndexedCollectionsTable.create.ifNotExists().future(), 4.seconds)
+    Await.ready(TestDatabase.indexedCollectionsTable.create.ifNotExists().future(), 4.seconds)
   }
 
   it should "store a record and retrieve it with a CONTAINS query on the SET" in {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).future()
-      get <- IndexedCollectionsTable.select.where(_.setText contains record.setText.head).fetch()
+      store <- TestDatabase.indexedCollectionsTable.store(record).future()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.setText contains record.setText.head).fetch()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {
@@ -70,8 +70,8 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).execute()
-      get <- IndexedCollectionsTable.select.where(_.setText contains record.setText.head).collect()
+      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.setText contains record.setText.head).collect()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {
@@ -91,8 +91,8 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).future()
-      get <- IndexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).fetch()
+      store <- TestDatabase.indexedCollectionsTable.store(record).future()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).fetch()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {
@@ -111,8 +111,8 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).execute()
-      get <- IndexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).collect()
+      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).collect()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {
@@ -131,8 +131,8 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).future()
-      get <- IndexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).fetch()
+      store <- TestDatabase.indexedCollectionsTable.store(record).future()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).fetch()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {
@@ -151,8 +151,8 @@ class IndexedCollectionsTest extends PhantomCassandraTestSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- IndexedCollectionsTable.store(record).execute()
-      get <- IndexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).collect()
+      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).collect()
     } yield get
 
     if (cassandraVersion > Version.`2.1.0`) {

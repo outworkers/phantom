@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Websudos, Limited.
  *
  * All rights reserved.
  *
@@ -27,42 +27,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom.thrift.suites
 
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.ThriftDatabase
+import com.websudos.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
+import scala.concurrent.duration._
+import org.scalatest.{OptionValues, Matchers, BeforeAndAfterAll, Suite}
 
-case class MyTestRow(
-  key: String,
-  optionA: Option[Int],
-  stringlist: List[String]
-)
-
-
-sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
-  def fromRow(r: Row): MyTestRow = {
-    MyTestRow(key(r), optionA(r), stringlist(r))
-  }
-
-  object key extends StringColumn(this) with PartitionKey[String]
-
-  object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
-
-  object optionA extends OptionalIntColumn(this)
-
+trait ThriftTestSuite extends Suite
+  with BeforeAndAfterAll
+  with Matchers
+  with OptionValues
+  with ThriftDatabase.connector.Connector {
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 }
-
-object MyTest extends MyTest with PhantomCassandraConnector {
-
-  override val tableName = "mytest"
-
-  def store(row: MyTestRow): InsertQuery.Default[MyTest, MyTestRow] = {
-    insert().value(_.key, row.key)
-      .value(_.stringlist, row.stringlist)
-      .value(_.optionA, row.optionA)
-  }
-
-}
-
-

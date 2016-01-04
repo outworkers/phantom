@@ -31,7 +31,6 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
 case class OptionalPrimitive(
@@ -54,18 +53,24 @@ object OptionalPrimitive {
 
   def none: OptionalPrimitive = {
     OptionalPrimitive(
-      gen[String],
-      None, None, None, None, None, None, None, None, None, None, None, None
+      pkey = gen[String],
+      string = None,
+      long = None,
+      boolean = None,
+      bDecimal = None,
+      double = None,
+      float = None,
+      inet = None,
+      int = None,
+      date = None,
+      uuid = None,
+      timeuuid = None,
+      bi = None
     )
   }
 }
 
-sealed class OptionalPrimitives extends CassandraTable[OptionalPrimitives, OptionalPrimitive] {
-  override def fromRow(r: Row): OptionalPrimitive = {
-    OptionalPrimitive(pkey(r), string(r), long(r), boolean(r), bDecimal(r), double(r), float(r), inet(r),
-      int(r), date(r), uuid(r), timeuuid(r), bi(r))
-  }
-
+sealed class OptionalPrimitives extends CassandraTable[ConcreteOptionalPrimitives, OptionalPrimitive] {
   object pkey extends StringColumn(this) with PartitionKey[String]
 
   object string extends OptionalStringColumn(this)
@@ -91,13 +96,31 @@ sealed class OptionalPrimitives extends CassandraTable[OptionalPrimitives, Optio
   object timeuuid extends OptionalTimeUUIDColumn(this)
 
   object bi extends OptionalBigIntColumn(this)
+
+  override def fromRow(r: Row): OptionalPrimitive = {
+    OptionalPrimitive(
+      pkey = pkey(r),
+      string = string(r),
+      long = long(r),
+      boolean = boolean(r),
+      bDecimal = bDecimal(r),
+      double = double(r),
+      float = float(r),
+      inet = inet(r),
+      int = int(r),
+      date = date(r),
+      uuid = uuid(r),
+      timeuuid = timeuuid(r),
+      bi = bi(r)
+    )
+  }
 }
 
-object OptionalPrimitives extends OptionalPrimitives with PhantomCassandraConnector {
+abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootConnector {
 
   override val tableName = "OptionalPrimitives"
 
-  def store(row: OptionalPrimitive): InsertQuery.Default[OptionalPrimitives, OptionalPrimitive] = {
+  def store(row: OptionalPrimitive): InsertQuery.Default[ConcreteOptionalPrimitives, OptionalPrimitive] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
