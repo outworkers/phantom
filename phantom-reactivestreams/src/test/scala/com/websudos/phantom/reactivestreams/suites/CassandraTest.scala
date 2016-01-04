@@ -92,9 +92,11 @@ object StreamConnector {
   val connector = ContactPoint.local.keySpace("phantom")
 }
 
-object StreamDatabase extends DatabaseImpl(StreamConnector.connector) {
+class StreamDatabase extends DatabaseImpl(StreamConnector.connector) {
   object operaTable extends ConcreteOperaTable with connector.Connector
 }
+
+object StreamDatabase extends StreamDatabase
 
 object OperaData {
   val operas = genList[String]().map(Opera)
