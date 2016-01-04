@@ -30,31 +30,38 @@
 package com.websudos.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
-import com.websudos.phantom.builder.query.{InsertQuery, ExecutableStatement, Batchable}
+import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
+import com.websudos.phantom.db.DatabaseImpl
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams.RequestBuilder
-import com.websudos.phantom.testkit.suites.{PhantomCassandraConnector, PhantomCassandraTestSuite}
 import com.websudos.util.testing._
-import org.scalatest.Suite
+import org.scalatest._
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 trait TestImplicits {
   implicit val system = ActorSystem()
 
-  implicit object OperaRequestBuilder extends RequestBuilder[OperaTable, Opera] {
+  implicit object OperaRequestBuilder extends RequestBuilder[ConcreteOperaTable, Opera] {
 
-    override def request(ct: OperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable = {
+    override def request(ct: ConcreteOperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable = {
       ct.insert.value(_.name, t.name)
     }
   }
 
 }
 
-trait StreamTest extends PhantomCassandraTestSuite with TestImplicits {
+trait StreamTest extends FlatSpec with BeforeAndAfterAll
+  with OptionValues
+  with Matchers
+  with TestImplicits
+  with StreamDatabase.connector.Connector {
   self: Suite =>
 
   override def beforeAll() {
     super.beforeAll()
-    OperaTable.insertSchema()
+    Await.result(StreamDatabase.autocreate().future(), 5.seconds)
   }
 
   override def afterAll(): Unit = {
@@ -66,7 +73,7 @@ trait StreamTest extends PhantomCassandraTestSuite with TestImplicits {
 
 case class Opera(name: String)
 
-abstract class OperaTable extends CassandraTable[OperaTable, Opera] with PhantomCassandraConnector {
+abstract class OperaTable extends CassandraTable[ConcreteOperaTable, Opera] {
   object name extends StringColumn(this) with PartitionKey[String]
 
   def fromRow(row: Row): Opera = {
@@ -74,11 +81,22 @@ abstract class OperaTable extends CassandraTable[OperaTable, Opera] with Phantom
   }
 }
 
-object OperaTable extends OperaTable with PhantomCassandraConnector {
-  def store(item: Opera): InsertQuery.Default[OperaTable, Opera] = {
+abstract class ConcreteOperaTable extends OperaTable with RootConnector {
+  def store(item: Opera): InsertQuery.Default[ConcreteOperaTable, Opera] = {
     insert.value(_.name, item.name)
   }
 }
+
+
+object StreamConnector {
+  val connector = ContactPoint.local.keySpace("phantom")
+}
+
+class StreamDatabase extends DatabaseImpl(StreamConnector.connector) {
+  object operaTable extends ConcreteOperaTable with connector.Connector
+}
+
+object StreamDatabase extends StreamDatabase
 
 object OperaData {
   val operas = genList[String]().map(Opera)

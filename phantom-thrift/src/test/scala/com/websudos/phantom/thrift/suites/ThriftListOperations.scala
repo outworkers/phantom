@@ -30,19 +30,16 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Output, ThriftColumnTable}
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.tables.{Output, ThriftDatabase}
 import com.websudos.util.testing._
+import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class ThriftListOperations extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
-    ThriftColumnTable.create.ifNotExists().future().block(5.seconds)
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "prepend an item to a thrift list column" in {
@@ -51,7 +48,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     val sample = gen[ThriftTest]
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -61,8 +58,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend sample2).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend sample2).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -82,7 +79,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -92,8 +89,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend sample2).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList prepend sample2).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -112,9 +109,9 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- ThriftColumnTable.store(sample).future()
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield {
       select
     }
@@ -135,9 +132,9 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- ThriftColumnTable.store(sample).execute()
-      update <- ThriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
     } yield {
         select
       }
@@ -156,7 +153,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
     val sample = gen[ThriftTest]
 
     val sample2 = gen[ThriftTest]
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -166,8 +163,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append sample2).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append sample2).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -187,7 +184,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -197,8 +194,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append sample2).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append sample2).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -220,7 +217,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val toAppend = List(sample2, sample3)
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -230,8 +227,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -255,7 +252,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val toAppend = List(sample2, sample3)
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -265,8 +262,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -284,7 +281,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -294,8 +291,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard sample2).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard sample2).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -315,7 +312,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample2 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -325,8 +322,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard sample2).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard sample2).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -346,7 +343,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -356,8 +353,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -379,7 +376,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -389,8 +386,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -410,7 +407,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -420,8 +417,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(0, sample3)).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(0, sample3)).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield {
       select
     }
@@ -443,7 +440,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -453,8 +450,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(0, sample3)).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(0, sample3)).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {
@@ -474,7 +471,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -484,8 +481,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(2, sample3)).future()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).one
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(2, sample3)).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield select
 
     operation.successful {
@@ -505,7 +502,7 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val sample3 = gen[ThriftTest]
 
-    val insert = ThriftColumnTable.insert
+    val insert = ThriftDatabase.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -515,8 +512,8 @@ class ThriftListOperations extends PhantomCassandraTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(2, sample3)).execute()
-      select <- ThriftColumnTable.select(_.thriftList).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(2, sample3)).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
     operation.successful {

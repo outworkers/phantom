@@ -31,9 +31,8 @@ package com.websudos.phantom.tables
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
-class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {
+class TwoKeys extends CassandraTable[ConcreteTwoKeys, Option[TwoKeys]] {
 
   object pkey extends StringColumn(this) with PartitionKey[String]
   object intColumn1 extends IntColumn(this) with PrimaryKey[Int]
@@ -48,6 +47,6 @@ class TwoKeys extends CassandraTable[TwoKeys, Option[TwoKeys]] {
   def fromRow(r: Row): Option[TwoKeys] = None
 }
 
-object TwoKeys extends TwoKeys with PhantomCassandraConnector {
+abstract class ConcreteTwoKeys extends TwoKeys with RootConnector {
   override val tableName = "AJ"
 }

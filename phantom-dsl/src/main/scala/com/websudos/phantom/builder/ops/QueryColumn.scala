@@ -30,11 +30,10 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, PreparedWhereClause, WhereClause, OperatorClause}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.builder.clauses.OperatorClause
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -145,5 +144,20 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
    */
   final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
     new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
+  }
+}
+
+class ColumnUpdateClause[K : Primitive, V : Primitive](val column: String, val key: K) {
+
+  def keyName: String = Primitive[K].asCql(key)
+
+  def setTo(v: V): UpdateClause.Condition = {
+    val qb = QueryBuilder.Update.updateMapColumn(
+      column,
+      Primitive[K].asCql(key),
+      Primitive[V].asCql(v)
+    )
+
+    new UpdateClause.Condition(qb)
   }
 }

@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.testkit._
-
 case class SimpleStringClass(something: String)
 
 case class SimpleMapOfStringsClass(something: Map[String, Int])
@@ -44,5 +42,3 @@ case class TestRow2(
   optionalSimpleMapOfString: Option[SimpleMapOfStringsClass],
   mapOfStringToCaseClass: Map[String, SimpleMapOfStringsClass]
 )
-
-object TestRow2 extends PhantomCassandraConnector {}

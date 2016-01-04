@@ -31,17 +31,16 @@ package com.websudos.phantom.reactivestreams.suites
 
 import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.reactivestreams._
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}
 import org.reactivestreams.tck.{SubscriberWhiteboxVerification, TestEnvironment}
 import org.reactivestreams.{Subscriber, Subscription}
 
 class BatchSubscriberWhiteboxTest
-  extends SubscriberWhiteboxVerification[Opera](new TestEnvironment(1500)) with PhantomCassandraConnector with TestImplicits {
+  extends SubscriberWhiteboxVerification[Opera](new TestEnvironment()) with StreamDatabase.connector.Connector with TestImplicits {
 
   override def createSubscriber(probe: WhiteboxSubscriberProbe[Opera]): Subscriber[Opera] = {
-    new BatchSubscriber[OperaTable, Opera](
-      OperaTable,
+    new BatchSubscriber[ConcreteOperaTable, Opera](
+      StreamDatabase.operaTable,
       OperaRequestBuilder,
       5,
       2,

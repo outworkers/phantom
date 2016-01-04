@@ -30,15 +30,19 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.testkit._
 
-trait BigTest extends PhantomCassandraTestSuite {
+trait BigTest extends PhantomSuite {
+
+  val connectionTimeoutMillis = 1000
 
   override implicit lazy val session: Session = {
     ContactPoint.local.withClusterBuilder(
-      _.withSocketOptions(new SocketOptions().setReadTimeoutMillis(1000).setConnectTimeoutMillis(1000))
-      .withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-    ).keySpace(keySpace.name).session
+      _.withSocketOptions(new SocketOptions()
+        .setReadTimeoutMillis(connectionTimeoutMillis)
+        .setConnectTimeoutMillis(connectionTimeoutMillis)
+      ).withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
+    ).keySpace(keySpace).session
   }
 }

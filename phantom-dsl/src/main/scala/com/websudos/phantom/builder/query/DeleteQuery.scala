@@ -32,8 +32,10 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{DeleteClause, CompareAndSetClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.ops.ColumnUpdateClause
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
+import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import shapeless.{::, =:!=, HList, HNil}
 
@@ -199,6 +201,17 @@ class DeleteQuery[
 
 }
 
+
+trait DeleteImplicits {
+  implicit def columnUpdateClauseToDeleteCondition(clause: ColumnUpdateClause[_, _]): DeleteClause.Condition = {
+    new DeleteClause.Condition(QueryBuilder.Collections.mapColumnType(clause.column, clause.keyName))
+  }
+
+  implicit def columnClauseToDeleteCondition(col: AbstractColumn[_]): DeleteClause.Condition = {
+    new DeleteClause.Condition(CQLQuery(col.name))
+  }
+}
+
 object DeleteQuery {
 
   type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
@@ -207,8 +220,8 @@ object DeleteQuery {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 
-  def apply[T <: CassandraTable[T, _], R](table: T, col: String)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    new DeleteQuery(table, QueryBuilder.Delete.deleteColumn(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString, col))
+  def apply[T <: CassandraTable[T, _], R](table: T, cond: CQLQuery)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString, cond))
   }
 }
 

@@ -32,35 +32,50 @@ package com.websudos.phantom.builder.serializers
 import java.util.Date
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.tables.{ArticlesByAuthor, TimeSeriesTable, BasicTable}
+import com.websudos.phantom.tables.{ArticlesByAuthor, BasicTable, TestDatabase}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit.{SimpleCassandraTest, PhantomCassandraTestSuite}
-import com.websudos.phantom.testkit.suites.PhantomCassandraConnector
 import com.websudos.util.testing._
 import org.scalatest.FreeSpec
 
-class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
+class SelectQuerySerialisationTest extends QueryBuilderTest {
 
-  implicit val keySpace = new KeySpace("phantom")
+  val BasicTable = TestDatabase.basicTable
+  val ArticlesByAuthor = TestDatabase.articlesByAuthor
+  val TimeSeriesTable = TestDatabase.timeSeriesTable
 
   "The select query builder" - {
     "should serialize " - {
 
-      "an allow filtering clause in the init position" in {
+      "serialise an allow filtering clause in the init position" in {
         val id = gen[UUID]
 
         val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(5).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
 
-      "an allow filtering clause specified after a limit query" in {
+      "serialize an allow filtering clause specified after a limit query" in {
         val id = gen[UUID]
 
         val qb = BasicTable.select.where(_.id eqs id).limit(5).allowFiltering().queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+      }
+
+      "serialize a single ordering clause" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
+      }
+
+      "serialize an ordering by multiple columns" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
       }
 
       "a maxTimeuuid comparison clause" in {
@@ -68,7 +83,7 @@ class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
       }
 
       "a maxTimeuuid comparison clause with a DateTime object" in {
@@ -76,7 +91,7 @@ class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
       }
 
       "a minTimeuuid comparison clause" in {
@@ -84,7 +99,7 @@ class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateIsPrimitive.asCql(date)});"
       }
 
       "a minTimeuuid comparison clause with a DateTime object" in {
@@ -92,7 +107,7 @@ class SelectQuerySerialisationTest extends FreeSpec with SimpleCassandraTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
       }
 
       "a multiple column token clause" in {
