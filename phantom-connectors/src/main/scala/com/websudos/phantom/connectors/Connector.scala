@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.{ProtocolVersion, Session}
+import com.datastax.driver.core.Session
 
 /* Trait to be mixed into the table classes that extend
  * phantom's CassandraTable.
