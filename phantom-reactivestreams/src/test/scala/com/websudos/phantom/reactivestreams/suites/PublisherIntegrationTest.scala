@@ -39,7 +39,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import org.scalatest.time.SpanSugar._
 
 class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 
