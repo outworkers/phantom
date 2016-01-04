@@ -29,8 +29,7 @@
  */
 package com.websudos.phantom.udt
 
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.testkit.suites.SimpleCassandraConnector
+import com.websudos.phantom.connectors.{RootConnector, KeySpace}
 
 // case class TestRecord(id: UUID, name: String, address: TestFields.address.type)
 

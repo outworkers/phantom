@@ -39,7 +39,7 @@ import org.scalatest.FreeSpec
 
 class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
 
-  val comparisonValue = 10
+  val comparisonValue = 5
 
   "An Update query should" - {
     "allow specifying consistency levels" - {
@@ -69,7 +69,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .ttl(5.seconds)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes USING TTL 5 SET uid = $uid WHERE url = '$url';"
+        query shouldEqual s"UPDATE phantom.recipes USING TTL 5 SET uid = $uid WHERE url = '$url';"
       }
 
       "specify a consistency level in a ConditionUpdateQuery" in {
@@ -83,7 +83,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .queryString
 
         if (session.v3orNewer) {
-          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test'"
+          query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test';"
         } else {
           query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
         }
@@ -98,7 +98,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description isNot Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description != 'test';"
+        query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description != 'test';"
       }
 
       "specify a gt clause inside an ConditionUpdateQuery" in {
@@ -110,7 +110,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description gt Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description > 'test';"
+        query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description > 'test';"
       }
 
       "specify a gte clause inside an ConditionUpdateQuery" in {
@@ -122,7 +122,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description gte Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description >= 'test';"
+        query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description >= 'test';"
       }
 
       "specify a lt clause inside an ConditionUpdateQuery" in {
@@ -134,7 +134,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description lt Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description < 'test';"
+        query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description < 'test';"
       }
 
       "specify a lte clause inside an ConditionUpdateQuery" in {
@@ -146,7 +146,19 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description lte Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.Recipes SET servings = 5 WHERE url = '$url' IF description <= 'test';"
+        query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description <= 'test';"
+      }
+
+      "update a single entry inside a map column" in {
+        val url = gen[String]
+
+        val query = TestDatabase.recipes.update
+          .where(_.url eqs url)
+          .modify(_.props("test") setTo "test2")
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes SET props['test'] = 'test2' WHERE url = '$url';"
+
       }
 
     }

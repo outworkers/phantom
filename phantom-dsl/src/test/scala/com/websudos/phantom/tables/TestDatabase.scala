@@ -60,6 +60,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object primitives extends ConcretePrimitives with connector.Connector
 
   object primitivesJoda extends ConcretePrimitivesJoda with connector.Connector
+
   object recipes extends ConcreteRecipes with connector.Connector
 
   object secondaryIndexTable extends ConcreteSecondaryIndexTable with connector.Connector

@@ -110,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.18.1",
+    version := "1.19.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -299,7 +299,11 @@ object Build extends Build {
     base = file("phantom-example"),
     settings = sharedSettings ++ ScroogeSBT.newSettings
   ).settings(
-    name := "phantom-example"
+    name := "phantom-example",
+    libraryDependencies ++= Seq(
+      "com.websudos"                 %% "util-lift"                         % UtilVersion            % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
+    )
   ).dependsOn(
     phantomDsl,
     phantomThrift,
