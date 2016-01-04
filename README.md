@@ -89,6 +89,8 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Sphonic](http://www.sphonic.com/)
 - [Anomaly42](http://www.anomaly42.com/)
 - [Tecsisa](http://www.tecsisa.com/en/)
+- [Tuplejump](http://www.tuplejump.com/)
+- [FiloDB](http://www.github.com/tuplejump/FiloDB) - the fast analytics database built on Cassandra and Spark
 
 <a id="contributors">Contributors</a>
 =====================================
