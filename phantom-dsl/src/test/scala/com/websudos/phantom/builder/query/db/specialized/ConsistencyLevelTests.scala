@@ -44,7 +44,7 @@ class ConsistencyLevelTests extends PhantomSuite {
 
     val st = TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.ONE).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.ONE
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -57,7 +57,7 @@ class ConsistencyLevelTests extends PhantomSuite {
 
     val st = TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).consistencyLevel_=(ConsistencyLevel.LOCAL_ONE).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -71,7 +71,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     val st = TestDatabase.primitives.select.where(_.pkey eqs row.pkey)
       .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.EACH_QUORUM
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -84,7 +84,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     val st = TestDatabase.primitives.update.where(_.pkey eqs row.pkey)
       .consistencyLevel_=(ConsistencyLevel.LOCAL_ONE).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -97,7 +97,7 @@ class ConsistencyLevelTests extends PhantomSuite {
 
     val st = TestDatabase.primitives.store(row).consistencyLevel_=(ConsistencyLevel.QUORUM).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -107,7 +107,7 @@ class ConsistencyLevelTests extends PhantomSuite {
   it should "set a custom consistency level of QUORUM in a TRUNCATE query" in {
     val st = TestDatabase.primitives.truncate.consistencyLevel_=(ConsistencyLevel.QUORUM).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
     } else {
       st.getConsistencyLevel shouldEqual null
@@ -118,7 +118,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     val st = TestDatabase.primitives.create.ifNotExists()
       .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM).statement
 
-    if (protocol.compareTo(ProtocolVersion.V2) == 1) {
+    if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_QUORUM
     } else {
       st.getConsistencyLevel shouldEqual null
