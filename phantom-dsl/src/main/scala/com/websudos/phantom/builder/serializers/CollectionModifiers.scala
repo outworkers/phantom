@@ -172,4 +172,9 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
   def setType(valueType: String): CQLQuery = {
     diamond(CQLSyntax.Collections.set, valueType)
   }
+
+  def mapColumnType(column: String, key: String): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
+      .append(key).append(CQLSyntax.Symbols.`]`)
+  }
 }

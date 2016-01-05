@@ -29,10 +29,26 @@
  */
 package com.websudos.phantom
 
-package object testkit {
-  type PhantomCassandraTestSuite = com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
-  type PhantomCassandraConnector = com.websudos.phantom.testkit.suites.PhantomCassandraConnector
-  type CassandraFlatSpec = com.websudos.phantom.testkit.suites.CassandraFlatSpec
-  type CassandraFeatureSpec = com.websudos.phantom.testkit.suites.CassandraFeatureSpec
-  type SimpleCassandraTest = com.websudos.phantom.testkit.suites.SimpleCassandraTest
+import com.websudos.phantom.connectors.RootConnector
+import com.websudos.phantom.tables.TestDatabase
+import com.websudos.util.lift.UUIDSerializer
+import org.scalatest._
+import org.scalatest.concurrent.{Futures, PatienceConfiguration, ScalaFutures}
+import org.scalatest.time._
+
+trait PhantomBaseSuite extends Suite with Matchers
+  with BeforeAndAfterAll
+  with RootConnector
+  with ScalaFutures
+  with OptionValues {
+
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
+
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(Span(10, Seconds))
+
+  implicit val defaultPatience = PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
+}
+
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+
 }

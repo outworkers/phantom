@@ -31,19 +31,20 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
-sealed class StaticTableTest extends CassandraTable[StaticTableTest, (UUID, UUID, String)] {
+sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, (UUID, UUID, String)] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
   object staticTest extends StringColumn(this) with StaticColumn[String]
 
-  def fromRow(row: Row): (UUID, UUID, String) = (id(row), clusteringId(row), staticTest(row))
+  def fromRow(row: Row): (UUID, UUID, String) = {
+    (id(row), clusteringId(row), staticTest(row))
+  }
 }
 
-object StaticTableTest extends StaticTableTest with PhantomCassandraConnector
+abstract class ConcreteStaticTableTest extends StaticTableTest with RootConnector
 
 
 case class StaticCollectionRecord(
@@ -52,20 +53,24 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-sealed class StaticCollectionTableTest extends CassandraTable[StaticCollectionTableTest, StaticCollectionRecord] {
+sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticCollectionTableTest, StaticCollectionRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticList extends ListColumn[StaticCollectionTableTest, StaticCollectionRecord, String](this) with StaticColumn[List[String]]
+  object staticList extends ListColumn[ConcreteStaticCollectionTableTest, StaticCollectionRecord, String](this) with StaticColumn[List[String]]
 
   def fromRow(row: Row): StaticCollectionRecord = {
-    StaticCollectionRecord(id(row), clusteringId(row), staticList(row))
+    StaticCollectionRecord(
+      id = id(row),
+      clustering = clusteringId(row),
+      list = staticList(row)
+    )
   }
 }
 
-object StaticCollectionTableTest extends StaticCollectionTableTest with PhantomCassandraConnector {
-  def store(record: StaticCollectionRecord): InsertQuery.Default[StaticCollectionTableTest, StaticCollectionRecord] = {
+abstract class ConcreteStaticCollectionTableTest extends StaticCollectionTableTest with RootConnector {
+  def store(record: StaticCollectionRecord): InsertQuery.Default[ConcreteStaticCollectionTableTest, StaticCollectionRecord] = {
     insert.value(_.id, record.id)
       .value(_.clusteringId, record.clustering)
       .value(_.staticList, record.list)

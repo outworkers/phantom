@@ -39,7 +39,6 @@ import scala.concurrent.{Future => ScalaFuture, Promise => ScalaPromise}
 
 private[phantom] trait CassandraOperations {
 
-
   implicit class RichSession(val session: Session) {
     def protocolVersion: ProtocolVersion = {
       session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion

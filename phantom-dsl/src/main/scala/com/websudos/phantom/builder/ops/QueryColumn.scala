@@ -30,11 +30,10 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, PreparedWhereClause, WhereClause, OperatorClause}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.builder.clauses.OperatorClause
 
 sealed class RequiredQueryColumn[RR : Primitive](col: AbstractColumn[RR]) extends QueryColumn(col)
 sealed class OptionalQueryColumn[RR : Primitive](col: AbstractColumn[Option[RR]]) extends QueryColumn(col)
@@ -148,5 +147,20 @@ sealed abstract class QueryColumn[RR : Primitive](val col: AbstractColumn[_]) {
    */
   final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
     new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
+  }
+}
+
+class ColumnUpdateClause[K : Primitive, V : Primitive](val column: String, val key: K) {
+
+  def keyName: String = Primitive[K].asCql(key)
+
+  def setTo(v: V): UpdateClause.Condition = {
+    val qb = QueryBuilder.Update.updateMapColumn(
+      column,
+      Primitive[K].asCql(key),
+      Primitive[V].asCql(v)
+    )
+
+    new UpdateClause.Condition(qb)
   }
 }

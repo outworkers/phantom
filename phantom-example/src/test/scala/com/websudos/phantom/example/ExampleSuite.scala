@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Websudos, Limited.
  *
  * All rights reserved.
  *
@@ -27,22 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.testkit.suites
+package com.websudos.phantom.example
 
-import com.datastax.driver.core.Session
+import com.websudos.phantom.Manager._
+import com.websudos.phantom.connectors.RootConnector
+import com.websudos.phantom.example.advanced.RecipesDatabase
+import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
+import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest._
-import org.scalatest.concurrent.{AsyncAssertions, ScalaFutures}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
-trait CassandraTest extends ScalaFutures
-  with Matchers with Assertions
-  with AsyncAssertions
-  with BeforeAndAfterAll {
+trait BaseSuite extends Suite with Matchers
+  with BeforeAndAfterAll
+  with RootConnector
+  with ScalaFutures
+  with OptionValues {
 
-  self : BeforeAndAfterAll with Suite =>
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
 
-  implicit def session: Session
-  implicit lazy val context: ExecutionContext = global
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 }
+
+
+class ExampleSuite extends FreeSpec with BaseSuite with RecipesDatabase.connector.Connector {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    Await.ready(RecipesDatabase.autocreate().future(), 5.seconds)
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    Await.ready(RecipesDatabase.autotruncate().future(), 8.seconds)
+  }
+}
+
+

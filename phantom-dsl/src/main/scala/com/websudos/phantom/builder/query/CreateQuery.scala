@@ -143,12 +143,12 @@ class CreateQuery[
   }
 
   /**
-   * Used to automatically define a CLUSTERING ORDER BY clause using the columns already defined in the table.
-   * This will use the built in reflection mechanism to fetch all columns defined inside a table.
-   * It will then filter the columns that mix in a definition of a clustering key.
-   *
-   * @return A new Create query, where the builder contains a full clustering clause specified.
-   */
+    * Used to automatically define a CLUSTERING ORDER BY clause using the columns already defined in the table.
+    * This will use the built in reflection mechanism to fetch all columns defined inside a table.
+    * It will then filter the columns that mix in a definition of a clustering key.
+    *
+    * @return A new Create query, where the builder contains a full clustering clause specified.
+    */
   final def withClustering(): CreateQuery[Table, Record, Status] = {
 
     val clusteringPairs = table.clusteringColumns.map {
@@ -196,7 +196,7 @@ class CreateQuery[
     } else {
       super.future() flatMap {
         res => {
-           indexList(keySpace.name).future() map {
+          indexList(keySpace.name).future() map {
             _ => {
               Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
               res
@@ -224,7 +224,6 @@ class CreateQuery[
       }
     }
   }
-
 }
 
 object CreateQuery {

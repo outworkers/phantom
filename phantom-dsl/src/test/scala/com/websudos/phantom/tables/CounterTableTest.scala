@@ -30,49 +30,57 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class CounterRecord(id: UUID, count: Long)
 
-class CounterTableTest extends CassandraTable[CounterTableTest, CounterRecord] {
+class CounterTableTest extends CassandraTable[ConcreteCounterTableTest, CounterRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object count_entries extends CounterColumn(this)
 
   def fromRow(row: Row): CounterRecord = {
-    CounterRecord(id(row), count_entries(row))
+    CounterRecord(
+      id = id(row),
+      count = count_entries(row)
+    )
   }
 }
 
-object CounterTableTest extends CounterTableTest with PhantomCassandraConnector {
+abstract class ConcreteCounterTableTest extends CounterTableTest with RootConnector {
   override val tableName = "counter_column_tests"
 }
 
-class SecondaryCounterTable extends CassandraTable[SecondaryCounterTable, CounterRecord] {
+class SecondaryCounterTable extends CassandraTable[ConcreteSecondaryCounterTable, CounterRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object count_entries extends CounterColumn(this)
 
   def fromRow(row: Row): CounterRecord = {
-    CounterRecord(id(row), count_entries(row))
+    CounterRecord(
+      id = id(row),
+      count = count_entries(row)
+    )
   }
 }
 
-object SecondaryCounterTable extends SecondaryCounterTable with PhantomCassandraConnector {
+abstract class ConcreteSecondaryCounterTable extends SecondaryCounterTable with RootConnector {
   override val tableName = "secondary_column_tests"
 }
 
-class BrokenCounterTableTest extends CassandraTable[BrokenCounterTableTest, CounterRecord] {
+class BrokenCounterTableTest extends CassandraTable[ConcreteBrokenCounterTableTest, CounterRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object count_entries extends CounterColumn(this)
 
   def fromRow(row: Row): CounterRecord = {
-    CounterRecord(id(row), count_entries(row))
+    CounterRecord(
+      id = id(row),
+      count = count_entries(row)
+    )
   }
 
 }
 
-object BrokenCounterTableTest extends BrokenCounterTableTest with PhantomCassandraConnector {
+abstract class ConcreteBrokenCounterTableTest extends BrokenCounterTableTest with RootConnector {
   override val tableName = "counter_column_tests"
 }
 

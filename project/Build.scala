@@ -35,12 +35,12 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.10.0"
+  val UtilVersion = "0.10.5"
   val DatastaxDriverVersion = "3.0.0-alpha4"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
-  val FinagleVersion = "6.25.0"
-  val TwitterUtilVersion = "6.24.0"
+  val FinagleVersion = "6.28.0"
+  val TwitterUtilVersion = "6.27.0"
   val ScroogeVersion = "3.17.0"
   val ScalatraVersion = "2.3.0"
   val PlayVersion = "2.4.3"
@@ -48,7 +48,7 @@ object Build extends Build {
   val ScalaMeterVersion = "0.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
-  val DieselEngineVersion = "0.2.2"
+  val DieselEngineVersion = "0.2.4"
   val Slf4jVersion = "1.7.12"
   val ReactiveStreamsVersion = "1.0.0"
   val AkkaVersion = "2.3.14"
@@ -110,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.18.1",
+    version := "1.19.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -169,7 +169,6 @@ object Build extends Build {
     phantomExample,
     phantomConnectors,
     phantomReactiveStreams,
-    phantomTestKit,
     phantomThrift,
     phantomUdt,
     phantomZookeeper
@@ -209,7 +208,6 @@ object Build extends Build {
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
       )
     ).dependsOn(
-      phantomTestKit % "test, provided",
       phantomConnectors
     )
 
@@ -239,8 +237,7 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomDsl,
-    phantomZookeeper,
-    phantomTestKit % "test, provided"
+    phantomZookeeper
   )
 
   lazy val phantomThrift = Project(
@@ -260,8 +257,7 @@ object Build extends Build {
       "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
     )
   ).dependsOn(
-    phantomDsl,
-    phantomTestKit % "test, provided"
+    phantomDsl
   )
 
   lazy val phantomZookeeper = Project(
@@ -295,23 +291,7 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomConnectors,
-    phantomDsl,
-    phantomTestKit % "test, provided"
-  )
-
-  lazy val phantomTestKit = Project(
-    id = "phantom-testkit",
-    base = file("phantom-testkit"),
-    settings = sharedSettings
-  ).settings(
-    name := "phantom-testkit",
-    libraryDependencies ++= Seq(
-      "com.twitter"                      %% "util-core"                % TwitterUtilVersion,
-      "com.websudos"                     %% "util-lift"                % UtilVersion,
-      "com.websudos"                     %% "util-testing"             % UtilVersion
-    )
-  ).dependsOn(
-    phantomConnectors
+    phantomDsl
   )
 
   lazy val phantomExample = Project(
@@ -319,12 +299,15 @@ object Build extends Build {
     base = file("phantom-example"),
     settings = sharedSettings ++ ScroogeSBT.newSettings
   ).settings(
-    name := "phantom-example"
+    name := "phantom-example",
+    libraryDependencies ++= Seq(
+      "com.websudos"                 %% "util-lift"                         % UtilVersion            % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
+    )
   ).dependsOn(
     phantomDsl,
     phantomThrift,
-    phantomZookeeper,
-    phantomTestKit
+    phantomZookeeper
   )
 
   lazy val phantomContainerTests = Project(
@@ -350,7 +333,6 @@ object Build extends Build {
   ).dependsOn(
     phantomDsl,
     phantomThrift,
-    phantomZookeeper,
-    phantomTestKit
+    phantomZookeeper
   )
 }
