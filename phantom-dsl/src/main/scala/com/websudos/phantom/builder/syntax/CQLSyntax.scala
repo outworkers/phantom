@@ -50,6 +50,7 @@ object CQLSyntax {
   }
 
   val Keys = "KEYS"
+  val Entries = "ENTRIES"
 
   val Describe = "DESCRIBE"
   val truncate = "TRUNCATE"

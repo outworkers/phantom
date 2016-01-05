@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -94,7 +95,7 @@ private[builder] class IndexModifiers extends BaseModifiers {
   /**
    * Creates a CONTAINS where clause applicable to SET columns.
    * @param column The name of the column in which to look for the value.
-   * @param value The CQL serialized value of the element to look for in the CQL SET.
+   * @param value The CQL serialized value of the element to look for in the CQL MAP.
    * @return A CQL Query wrapping the contains clause.
    */
   def contains(column: String, value: String): CQLQuery = {
@@ -104,11 +105,21 @@ private[builder] class IndexModifiers extends BaseModifiers {
   /**
    * Creates a CONTAINS KEY where clause applicable to Map columns.
    * @param column The name of the column in which to look for the value.
-   * @param value The CQL serialized value of the element to look for in the CQL SET.
+   * @param value The CQL serialized value of the element to look for in the CQL MAP.
    * @return A CQL Query wrapping the contains clause.
    */
   def containsKey(column: String, value: String): CQLQuery = {
     modifier(column, CQLSyntax.Operators.containsKey, value)
+  }
+
+  /**
+    * Creates a CONTAINS ENTRY where clause applicable to Map columns.
+    * @param column The name of the column in which to look for the value.
+    * @param value The CQL serialized value of the element to look for in the CQL MAP.
+    * @return A CQL Query wrapping the contains clause.
+    */
+  def containsEntry(column: String, key: String, value: String): CQLQuery = {
+    modifier(QueryBuilder.Utils.mapKey(column, key).queryString, CQLSyntax.Operators.eqs, value)
   }
 
 }

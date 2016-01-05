@@ -191,7 +191,8 @@ package object tables {
       genList[String]().toSet,
       genMap[String, String](5),
       genList[Int]().toSet,
-      genMap[Int, String](5)
+      genMap[Int, String](5),
+      genMap[Int, Int](5)
     )
   }
 
