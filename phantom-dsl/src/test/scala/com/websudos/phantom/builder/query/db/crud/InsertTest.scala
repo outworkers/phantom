@@ -107,7 +107,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
