@@ -29,10 +29,9 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import com.websudos.phantom.{PhantomSuite, DateTimeSerializer}
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.lift.UUIDSerializer
 import com.websudos.util.testing._
 import net.liftweb.json._
 
