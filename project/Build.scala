@@ -152,7 +152,7 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
     id = "phantom",
