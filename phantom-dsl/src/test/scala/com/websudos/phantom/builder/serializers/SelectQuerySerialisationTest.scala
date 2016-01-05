@@ -82,7 +82,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb should contain (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(")
       }
 
       "a maxTimeuuid comparison clause with a DateTime object" in {
@@ -90,7 +90,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb should contain s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid("
+        qb should contain ("SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(")
       }
 
       "a minTimeuuid comparison clause" in {
@@ -98,7 +98,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb should contain s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid("
+        qb should contain (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(")
       }
 
       "a minTimeuuid comparison clause with a DateTime object" in {
@@ -106,7 +106,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb should contain s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid("
+        qb should contain (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(")
       }
 
       "a multiple column token clause" in {
