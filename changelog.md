@@ -28,7 +28,7 @@ Changelog
     <li><a href="#version-1.17.7">1.17.7 - 10.12.2015</a></li>
     <li><a href="#version-1.18.0">1.18.0 - 14.12.2015</a></li>
     <li><a href="#version-1.18.1">1.18.1 - 17.12.2015</a></li>
-    <li><a href="#version-1.19.0">1.19.1 - 04.01.2016</a></li>
+    <li><a href="#version-1.19.0">1.19.0 - 04.01.2016</a></li>
 </ul>
 
 
@@ -286,7 +286,7 @@ and `org.joda.time.DateTime`.
 - Fixed timeout configuration for ScalaTest based entries.
 - Updated examples to showcase new Database API.
 
-<a id="version-1.19.1">1.19.1</a>
+<a id="version-1.19.0">1.19.0</a>
 ================================
 
 - Fixed `maxTimeUUID` and `minTimeUUID` implementations to use proper serialization for `TimeUUID` range queries.
