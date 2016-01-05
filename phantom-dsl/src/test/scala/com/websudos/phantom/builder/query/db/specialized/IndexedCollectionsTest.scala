@@ -175,7 +175,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).collect()
     } yield get
 
-    if (cassandraVersion > Version.`2.2.0`) {
+    if (cassandraVersion > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
