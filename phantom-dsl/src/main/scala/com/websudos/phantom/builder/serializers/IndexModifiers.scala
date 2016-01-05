@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -118,7 +119,7 @@ private[builder] class IndexModifiers extends BaseModifiers {
     * @return A CQL Query wrapping the contains clause.
     */
   def containsEntry(column: String, key: String, value: String): CQLQuery = {
-    modifier(column + "[" + key + "]", CQLSyntax.Operators.eqs, value)
+    modifier(QueryBuilder.Utils.mapKey(column, key).queryString, CQLSyntax.Operators.eqs, value)
   }
 
 }

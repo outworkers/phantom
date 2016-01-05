@@ -46,7 +46,7 @@ private[builder] trait Utils {
     CQLQuery(op).forcePad.append(clause)
   }
 
-  def concat(column: String, op: String, value: String) = {
+  def concat(column: String, op: String, value: String): CQLQuery = {
     CQLQuery(column).pad.append(op).forcePad.append(value)
   }
 
@@ -70,6 +70,24 @@ private[builder] trait Utils {
     CQLQuery(CQLSyntax.Symbols.`{`)
       .append(list.map(item => {s"${item._1} : ${item._2}"}).mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
+  }
+
+  /**
+    * Serializes the CQL definition of a map key based on a column and a key value.
+    * When this method is called, the key should be already serialized using the Primitive API.
+    * It will take 2 strings and produce an output of the following type:
+    *
+    * {{{
+    *   QueryBuilder.Utils.mapKey("col", "test") == "col['test']"
+    * }}}
+    *
+    * @param column The name of the column.
+    * @param key The value of the key, pre-escaped and converted from a CQL Primitive to a string serialization.
+    * @return
+    */
+  def mapKey(column: String, key: String): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
+      .append(key).append(CQLSyntax.Symbols.`]`)
   }
 }
 
