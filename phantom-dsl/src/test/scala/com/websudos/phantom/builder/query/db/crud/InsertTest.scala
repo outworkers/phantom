@@ -78,7 +78,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
@@ -93,7 +93,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them with Twitter Futures" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).execute()

@@ -99,7 +99,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
-      a <-TestDatabase.testTable.select.where(_.key eqs row.key).one
+      a <- TestDatabase.testTable.select.where(_.key eqs row.key).one
       b <-TestDatabase.testTable.select.fetch
       u <- TestDatabase.testTable.update
         .where(_.key eqs row.key)
