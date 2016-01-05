@@ -64,3 +64,9 @@ trait Keys {
 
   override private[phantom] val isMapKeyIndex = true
 }
+
+trait Entries {
+  self: Index[_] with AbstractColumn[_] =>
+
+  override private[phantom] val isMapEntryIndex = true
+}

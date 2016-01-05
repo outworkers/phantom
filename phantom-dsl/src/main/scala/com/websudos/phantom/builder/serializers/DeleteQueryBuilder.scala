@@ -55,10 +55,7 @@ private[builder] class DeleteQueryBuilder {
 
   def deleteMapColumn(table: String, column: String, key: String): CQLQuery = {
     CQLQuery(CQLSyntax.delete)
-      .forcePad.append(column)
-      .append(CQLSyntax.Symbols.`[`)
-      .append(key)
-      .append(CQLSyntax.Symbols.`]`)
+      .forcePad.append(qUtils.mapKey(column, key))
       .forcePad.append(CQLSyntax.from)
       .forcePad.append(table)
   }

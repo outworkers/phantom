@@ -107,7 +107,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
-          .onlyIf(_.description gt Some("test"))
+          .onlyIf(_.description isGt Some("test"))
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description > 'test';"
@@ -119,7 +119,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
-          .onlyIf(_.description gte Some("test"))
+          .onlyIf(_.description isGte  Some("test"))
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description >= 'test';"
@@ -131,7 +131,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
-          .onlyIf(_.description lt Some("test"))
+          .onlyIf(_.description isLt Some("test"))
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description < 'test';"
@@ -143,7 +143,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         val query = TestDatabase.recipes.update()
           .where(_.url eqs url)
           .modify(_.servings setTo Some(comparisonValue))
-          .onlyIf(_.description lte Some("test"))
+          .onlyIf(_.description isLte Some("test"))
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description <= 'test';"

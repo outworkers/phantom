@@ -85,9 +85,9 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     }
   }
 
-  it should "work fine with List, Set, Map" in {
+  it should "successfully store a table with a mixture of collection columns: List, Set, Map" in {
 
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val updatedRow = row.copy(
       list = List("new"),
@@ -99,8 +99,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
-      a <-TestDatabase.testTable.select.where(_.key eqs row.key).one
-      b <-TestDatabase.testTable.select.fetch
+      a <- TestDatabase.testTable.select.where(_.key eqs row.key).one
       u <- TestDatabase.testTable.update
         .where(_.key eqs row.key)
         .modify(_.list setTo updatedRow.list)
@@ -108,21 +107,17 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
         .and(_.mapTextToText setTo updatedRow.mapTextToText)
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
+
       a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
-      b2 <- TestDatabase.testTable.select.fetch
     } yield (
       a.get === row,
-      b.contains(row),
-      a2.get === updatedRow,
-      b2.contains(updatedRow)
+      a2.get === updatedRow
     )
 
     chain successful {
       r => {
         r._1 shouldEqual true
         r._2 shouldEqual true
-        r._3 shouldEqual true
-        r._4 shouldEqual true
       }
     }
   }

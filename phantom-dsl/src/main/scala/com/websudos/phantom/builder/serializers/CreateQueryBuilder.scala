@@ -174,6 +174,24 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
       .wrapn(CQLQuery(CQLSyntax.Keys).wrapn(column))
   }
 
+  /**
+    * Creates an index on the entries of a Map column.
+    * By default, mixing an index in a column will result in an index created on the values of the map.
+    * To allow secondary indexing on entries, Cassandra appends a ENTRIES($column) wrapper to the CQL query.
+    *
+    * @param table The name of the table to create the index on.
+    * @param keySpace The keyspace to whom the table belongs to.
+    * @param column The name of the column to create the secondary index on.
+    * @return A CQLQuery containing the valid CQL of creating a secondary index for the entries of a Map column.
+    */
+  def mapEntries(table: String, keySpace: String, column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
+      .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(CQLSyntax.On)
+      .forcePad.append(QueryBuilder.keyspace(keySpace, table))
+      .wrapn(CQLQuery(CQLSyntax.Entries).wrapn(column))
+  }
+
   def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
 
     val list = orderings.foldRight(List.empty[String])((item, l) => {

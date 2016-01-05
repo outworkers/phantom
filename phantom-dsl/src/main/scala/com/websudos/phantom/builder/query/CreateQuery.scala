@@ -180,6 +180,8 @@ class CreateQuery[
       key => {
         if (key.isMapKeyIndex) {
           QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
+        } else if (key.isMapEntryIndex) {
+          QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
         } else {
           QueryBuilder.Create.index(table.tableName, name, key.name)
         }
