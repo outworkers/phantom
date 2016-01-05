@@ -29,15 +29,16 @@
  */
 package com.websudos.phantom.db
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ResultSet, Session}
+import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-import scala.concurrent.blocking
 
 private object Lock
 
@@ -96,10 +97,8 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autocreate(): ExecutableStatementList = {
-    new ExecutableStatementList(_tables.toSeq.map {
-      table => table.create.ifNotExists().qb
-    })
+  def autocreate(): ExecutableCreateStatementsList = {
+    new ExecutableCreateStatementsList(tables)
   }
 
   /**
@@ -139,4 +138,14 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
   }
 }
 
+sealed class ExecutableCreateStatementsList(tables: Set[CassandraTable[_, _]]) {
 
+  def future()(implicit ct: ExecutionContext, session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
+    Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
+  }
+
+  def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
+    TwitterFuture.collect(tables.toSeq.map(_.create.ifNotExists().execute()))
+  }
+
+}

@@ -29,10 +29,18 @@
  */
 package com.websudos.phantom.tables
 
+import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
 
 case class TimeSeriesRecord(
+  id: UUID,
+  name: String,
+  timestamp: DateTime
+)
+
+case class TimeUUIDRecord(
   id: UUID,
   name: String,
   timestamp: DateTime
@@ -56,20 +64,23 @@ sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, Tim
 
 abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
 
-sealed class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeSeriesRecord] {
+sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUIDRecord] {
   object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) {
-    override val name = "unixTimestamp"
-  }
 
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
+  def fromRow(row: Row): TimeUUIDRecord = {
+    TimeUUIDRecord(
       id(row),
       name(row),
-      timestamp(row)
+      new DateTime(UUIDs.unixTimestamp(id(row)))
     )
   }
 }
 
-object TimeUUIDTable extends TimeUUIDTable
+abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
+
+  def store(rec: TimeUUIDRecord): InsertQuery.Default[ConcreteTimeUUIDTable, TimeUUIDRecord] = {
+    insert.value(_.id, rec.id)
+      .value(_.name, rec.name)
+  }
+}

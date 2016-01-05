@@ -31,11 +31,12 @@ package com.websudos.phantom.builder.ops
 
 import java.util.{Date, UUID}
 
+import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.clauses.{OperatorClause, WhereClause}
-import com.websudos.phantom.builder.primitives.Primitive
+import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.TimeUUIDColumn
 import org.joda.time.DateTime
@@ -64,31 +65,31 @@ sealed class NowOperator extends Operator {
   }
 }
 
-sealed class MaxTimeUUID extends Operator {
+sealed class MaxTimeUUID extends Operator with DefaultPrimitives {
 
   private[this] val datePrimitive = implicitly[Primitive[Date]]
   private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
 
   def apply(date: Date): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.maxTimeuuid(datePrimitive.asCql(date)))
+    new Condition(QueryBuilder.Select.maxTimeuuid(UUIDPrimitive.asCql(UUIDs.endOf(date.getTime))))
   }
 
   def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.maxTimeuuid(dateTimePrimitive.asCql(date)))
+    new Condition(QueryBuilder.Select.maxTimeuuid(UUIDPrimitive.asCql(UUIDs.endOf(date.getMillis))))
   }
 }
 
-sealed class MinTimeUUID extends Operator {
+sealed class MinTimeUUID extends Operator with DefaultPrimitives {
 
   private[this] val datePrimitive = implicitly[Primitive[Date]]
   private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
 
   def apply(date: Date): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.minTimeuuid(datePrimitive.asCql(date)))
+    new Condition(QueryBuilder.Select.minTimeuuid(UUIDPrimitive.asCql(UUIDs.startOf(date.getTime))))
   }
 
   def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.minTimeuuid(dateTimePrimitive.asCql(date)))
+    new Condition(QueryBuilder.Select.minTimeuuid(UUIDPrimitive.asCql(UUIDs.startOf(date.getMillis))))
   }
 }
 

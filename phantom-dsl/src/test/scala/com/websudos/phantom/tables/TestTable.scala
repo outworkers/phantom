@@ -38,7 +38,8 @@ case class TestRow(
   setText: Set[String],
   mapTextToText: Map[String, String],
   setInt: Set[Int],
-  mapIntToText: Map[Int, String]
+  mapIntToText: Map[Int, String],
+  mapIntToInt: Map[Int, Int]
 )
 
 sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
@@ -62,7 +63,8 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
       setText = setText(r),
       mapTextToText = mapTextToText(r),
       setInt = setInt(r),
-      mapIntToText = mapIntToText(r)
+      mapIntToText = mapIntToText(r),
+      mapIntToInt = Map.empty[Int, Int]
     )
   }
 }
