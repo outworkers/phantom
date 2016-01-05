@@ -35,6 +35,9 @@ import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
 
+sealed class RequiredQueryColumn[RR : Primitive](col: AbstractColumn[RR]) extends QueryColumn(col)
+sealed class OptionalQueryColumn[RR : Primitive](col: AbstractColumn[Option[RR]]) extends QueryColumn(col)
+
 /**
  * A class enforcing columns used in where clauses to be indexed.
  * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
@@ -43,7 +46,7 @@ import com.websudos.phantom.column.AbstractColumn
  * @param col The column to cast to an IndexedColumn.
  * @tparam RR The type of the value the column holds.
  */
-sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
+sealed abstract class QueryColumn[RR : Primitive](val col: AbstractColumn[_]) {
 
   private[this] val p = implicitly[Primitive[RR]]
 
