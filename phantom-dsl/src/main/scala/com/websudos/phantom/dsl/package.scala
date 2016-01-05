@@ -108,6 +108,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type Keys = com.websudos.phantom.keys.Keys
+  type Entries = com.websudos.phantom.keys.Entries
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
   type Database = com.websudos.phantom.db.DatabaseImpl

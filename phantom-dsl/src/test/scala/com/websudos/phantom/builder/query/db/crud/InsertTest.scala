@@ -29,10 +29,9 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import com.websudos.phantom.{PhantomSuite, DateTimeSerializer}
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.lift.UUIDSerializer
 import com.websudos.util.testing._
 import net.liftweb.json._
 
@@ -78,7 +77,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
@@ -93,7 +92,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them with Twitter Futures" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).execute()
@@ -108,7 +107,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
@@ -123,7 +122,7 @@ class InsertTest extends PhantomSuite {
   }
 
   it should "work fine with List, Set, Map and Twitter futures" in {
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).execute()

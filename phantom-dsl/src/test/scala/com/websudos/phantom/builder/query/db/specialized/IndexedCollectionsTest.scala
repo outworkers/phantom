@@ -167,4 +167,24 @@ class IndexedCollectionsTest extends PhantomSuite {
     }
   }
 
+  it should "store a record and retrieve it with a CONTAINS ENTRY equals query on the map" in {
+    val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
+
+    val chain = for {
+      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
+      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).collect()
+    } yield get
+
+    if (cassandraVersion > Version.`2.1.0`) {
+      chain.successful {
+        res => {
+          res.nonEmpty shouldEqual true
+          res should contain (record)
+        }
+      }
+    } else {
+      chain.failing[SyntaxError]
+    }
+  }
+
 }

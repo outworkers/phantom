@@ -285,3 +285,15 @@ and `org.joda.time.DateTime`.
 - Added support for deleting specific entries from a `MapColumn`.
 - Fixed timeout configuration for ScalaTest based entries.
 - Updated examples to showcase new Database API.
+
+<a id="version-1.19.1">1.19.1</a>
+================================
+
+- Fixed `maxTimeUUID` and `minTimeUUID` implementations to use proper serialization for `TimeUUID` range queries.
+
+<a id="version-1.20.0">1.20.0</a>
+================================
+
+- Renamed all CAS comparison operators to match `is$Op` format.
+- Added `ExecutableCreateStatementsList` to fix index creation issues inside `Database.autocreate`.
+- Added support for Map entry comparisons and the `Entries` mixin trait for map columns with secondary indexes.
