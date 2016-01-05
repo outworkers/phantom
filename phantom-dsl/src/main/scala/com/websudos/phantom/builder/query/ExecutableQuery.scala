@@ -40,6 +40,7 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
@@ -204,6 +205,16 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    */
   def fetch()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
     future() map { resultSet => { directMapper(resultSet.all) } }
+  }
+
+  /**
+   * Returns a parsed iterator of [R]ows
+   * @param session The Cassandra session in use.
+   * @param ec The Execution Context.
+   * @return A Scala future wrapping scala iterator of mapped results.
+   */
+  def iterator()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Iterator[R]] = {
+    future() map { _.iterator().asScala.map(fromRow) }
   }
 
   /**
