@@ -140,7 +140,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
 
 sealed class ExecutableCreateStatementsList(tables: Set[CassandraTable[_, _]]) {
 
-  def future()(implicit ct: ExecutionContext, session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
+  def future()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Future[Seq[ResultSet]] = {
     Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
   }
 
