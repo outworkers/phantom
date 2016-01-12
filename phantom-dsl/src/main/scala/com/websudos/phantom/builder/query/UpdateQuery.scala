@@ -32,9 +32,10 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{PreparedWhereClause, CompareAndSetClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{HNil, HList}
+import shapeless.{::, =:!=, HNil, HList}
 
 import scala.annotation.implicitNotFound
 
@@ -69,6 +70,9 @@ class UpdateQuery[
     P <: HList
   ] = UpdateQuery[T, R, L, O, S, C, P]
 
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb, options)
+  }
 
   protected[this] def create[
     T <: CassandraTable[T, _],
@@ -131,6 +135,47 @@ class UpdateQuery[
   @implicitNotFound("You have to use an where clause before using an AND clause")
   override def and(condition: Table => WhereClause.Condition)
     (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    new UpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.and(condition(table).qb),
+      setPart,
+      casPart,
+      options
+    )
+  }
+
+  /**
+    * The where method of a select query that takes parametric predicate as an argument.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    new UpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart append QueryBuilder.Update.where(condition(table).qb),
+      setPart,
+      casPart,
+      options
+    )
+  }
+
+
+  /**
+    * The where method of a select query that takes parametric predicate as an argument.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new UpdateQuery(
       table,
       init,
