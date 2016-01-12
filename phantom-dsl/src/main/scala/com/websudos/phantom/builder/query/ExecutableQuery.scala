@@ -76,6 +76,25 @@ trait ExecutableStatement extends CassandraOperations {
   }
 
   /**
+    * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Scala Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * The execution context of the transformation is provided by phantom via
+    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * use [[com.websudos.phantom.dsl.context]] for operations that chain
+    * database calls.
+    *
+    * @param modifyStatement The function allowing to modify underlying [[Statement]]
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @return
+    */
+  def future(modifyStatement : Statement => Statement)(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(modifyStatement(statement))
+  }
+
+  /**
     * Default asynchronous query execution method based on Twitter Future API. This will convert the underlying
     * call to Cassandra done with Google Guava ListenableFuture to a consumable
     * Twitter Future that will be completed once the operation is completed on the
