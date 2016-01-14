@@ -30,15 +30,7 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.Recipe
-import com.websudos.util.testing._
 
-class PreparedDeleteQueryTest extends PhantomSuite {
-
-  it should "correctly execute a prepared delete query" in {
-    val recipe = gen[Recipe]
-
-    
-  }
+class PreparedUpdateQuery extends PhantomSuite {
 
 }
