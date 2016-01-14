@@ -33,7 +33,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{PreparedWhereClause, CompareAndSetClause, UpdateClause, WhereClause}
-import com.websudos.phantom.builder.query.prepared.PreparedBlock
+import com.websudos.phantom.builder.query.prepared.{PrepareMark, ?, PreparedBlock}
 import com.websudos.phantom.connectors.KeySpace
 import shapeless.{::, =:!=, HNil, HList}
 
@@ -100,6 +100,26 @@ class UpdateQuery[
       init, usingPart,
       wherePart,
       setPart append QueryBuilder.ttl(seconds.toString),
+      casPart,
+      options
+    )
+  }
+
+  /**
+    * The where method of a select query that takes parametric predicate as an argument.
+    * @param mark An instance of the prepared statement mark.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  @implicitNotFound("You cannot use multiple where clauses in the same builder")
+  def p_ttl(mark: PrepareMark)
+    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Long :: PS] = {
+    new UpdateQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(?.qb.queryString),
       casPart,
       options
     )
