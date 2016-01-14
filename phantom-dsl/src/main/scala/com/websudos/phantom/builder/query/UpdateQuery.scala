@@ -174,7 +174,7 @@ class UpdateQuery[
     * @return
     */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
+  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
     (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new UpdateQuery(
       table,
@@ -188,8 +188,15 @@ class UpdateQuery[
   }
 
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.Update.set(clause(table).qb)
-    new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart, options)
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart append QueryBuilder.Update.set(clause(table).qb),
+      casPart = casPart,
+      options = options
+    )
   }
 
   /**
