@@ -272,11 +272,6 @@ sealed class AssignmentsQuery[
   }
 
   final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    val query = clause(table).qb
-    new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart, options)
-  }
-
-  final def p_and[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, RR :: PS] = {
     new AssignmentsQuery(
       table,
       init,
@@ -288,6 +283,18 @@ sealed class AssignmentsQuery[
     )
   }
 
+  final def p_and[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, RR :: PS] = {
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart append clause(table).qb,
+      casPart = casPart,
+      options = options
+    )
+  }
+
   /**
     * The prepared TTL clause, allows using a prepared bounded value for a timeout.
     * @param mark An instance of the prepared statement mark.
@@ -295,13 +302,13 @@ sealed class AssignmentsQuery[
     */
   final def p_ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
     new AssignmentsQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(?.qb.queryString),
-      casPart,
-      options
+      table = table,
+      init = init,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart append QueryBuilder.ttl(?.qb.queryString),
+      casPart = casPart,
+      options = options
     )
   }
 

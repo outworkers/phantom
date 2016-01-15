@@ -113,7 +113,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     }
   }
 
-  it should "execute a prepared update query with a three argument bind and a TTL clause" in {
+  ignore should "execute a prepared update query with a three argument bind and a TTL clause" in {
 
     val updated = genOpt[ShortString].map(_.value)
     val updatedServings = gen[UUID]
