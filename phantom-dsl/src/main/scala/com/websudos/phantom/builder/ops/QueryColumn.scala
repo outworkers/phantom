@@ -174,9 +174,22 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
     new UpdateClause.Condition(qb)
   }
 
-  def setTo(mark: PrepareMark): PreparedWhereClause.ParametricCondition[V] = {
+  /**
+    * Overloaded variants of setTo that allows using prepared statements for map key updates.
+    * This will only accept the ? global singleton found in [[com.websudos.phantom.dsl]].
+    * When used, the final "bind" to the prepared clause will require an additional V type
+    * in the provided tuple to match the type of the MapColumn being updated.
+    *
+    * @param mark The value of the prepared mark used.
+    * @return A parametric condition on the value type of the map.
+    */
+  final def setTo(mark: PrepareMark): PreparedWhereClause.ParametricCondition[V] = {
     new PreparedWhereClause.ParametricCondition[V](
-      QueryBuilder.Update.setTo(column, mark.qb.queryString)
+      QueryBuilder.Update.updateMapColumn(
+        column,
+        Primitive[K].asCql(key),
+        mark.symbol
+      )
     )
   }
 }
