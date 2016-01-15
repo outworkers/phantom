@@ -42,15 +42,38 @@ class PreparedUpdateQueryTest extends PhantomSuite {
   }
 
   it should "execute a prepared update query with a single argument bind" in {
-    val query = database.recipes.update.p_where(_.url eqs ?).modify().prepare()
+
+    val updated = genOpt[ShortString].map(_.value)
+
+    val query = database.recipes.update
+      .p_where(_.url eqs ?)
+      .p_modify(_.description setTo ?)
+      .prepare()
+
     val recipe = gen[Recipe]
 
     val chain = for {
       store <- database.recipes.store(recipe).future()
+      get <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- query.bind(recipe.url, updated).future()
+      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (get, get2)
 
+    whenReady(chain) {
+      case (initial, afterUpdate) => {
+        initial shouldBe defined
+        initial.value shouldEqual recipe
+
+        afterUpdate shouldBe defined
+        afterUpdate.value.url shouldEqual recipe.url
+        afterUpdate.value.props shouldEqual recipe.props
+        afterUpdate.value.ingredients shouldEqual recipe.ingredients
+        afterUpdate.value.servings shouldEqual recipe.servings
+        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+        afterUpdate.value.uid shouldEqual recipe.uid
+        afterUpdate.value.description shouldEqual recipe.description
+      }
     }
-
-
   }
 
 }

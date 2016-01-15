@@ -108,7 +108,7 @@ sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: Colum
     * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
     * This limitation will be lifted in the future.
     *
-    * @param col The clause produced by the MapColumn.apply(keyValue) definition.
+    * @param entry The map entry to look for.
     * @return A Where clause.
     */
   final def eqs(entry: V): WhereClause.Condition = {

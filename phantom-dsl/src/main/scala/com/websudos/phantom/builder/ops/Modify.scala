@@ -67,11 +67,10 @@ private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]
     * }}}
     *
     * @param value The prepare mark value to set this to. This is just provided for consnistency with natural CQL.
-    * @tparam R The type of the bind value. This is used to provide typesafety on the final bind.
     * @return The prepared setTo clause part that gets appended to the Set Part of the update query.
     */
-  def setTo[R](value: PrepareMark): PreparedWhereClause.ParametricCondition[R] = {
-    new PreparedWhereClause.ParametricCondition[R](
+  def setTo(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](
       QueryBuilder.Update.setTo(col.name, value.qb.queryString)
     )
   }

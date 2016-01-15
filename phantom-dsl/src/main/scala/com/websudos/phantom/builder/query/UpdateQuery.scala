@@ -111,8 +111,7 @@ class UpdateQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_ttl(mark: PrepareMark)
+  final def p_ttl(mark: PrepareMark)
     (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Long :: PS] = {
     new UpdateQuery(
       table,
@@ -207,7 +206,19 @@ class UpdateQuery[
     )
   }
 
-  final def modify[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart append QueryBuilder.Update.set(clause(table).qb),
+      casPart = casPart,
+      options = options
+    )
+  }
+
+  final def p_modify[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, RR :: PS] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -227,7 +238,7 @@ class UpdateQuery[
    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalQuery(
       table,
       init,
@@ -311,6 +322,10 @@ sealed class AssignmentsQuery[
     ttl(duration.inSeconds)
   }
 
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb, options)
+  }
+
   /**
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
@@ -319,7 +334,7 @@ sealed class AssignmentsQuery[
    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalQuery(
       table,
       init,
@@ -331,7 +346,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalQuery(
       table,
       init,
@@ -376,7 +391,8 @@ sealed class ConditionalQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: HList
 ](table: Table,
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
@@ -390,7 +406,7 @@ sealed class ConditionalQuery[
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
-  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     val query = QueryBuilder.Update.and(clause(table).qb)
 
     new ConditionalQuery(
@@ -405,7 +421,7 @@ sealed class ConditionalQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    (implicit ev: Status =:= Unspecified, session: Session): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
       new ConditionalQuery(
         table = table,
@@ -429,7 +445,7 @@ sealed class ConditionalQuery[
     }
   }
 
-  def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalQuery(
       table,
       init,
@@ -441,12 +457,16 @@ sealed class ConditionalQuery[
     )
   }
 
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     ttl(duration.toSeconds)
   }
 
-  def ttl(duration: com.twitter.util.Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ttl(duration: com.twitter.util.Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     ttl(duration.inSeconds)
+  }
+
+  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
+    new PreparedBlock[PS](qb, options)
   }
 
 }
