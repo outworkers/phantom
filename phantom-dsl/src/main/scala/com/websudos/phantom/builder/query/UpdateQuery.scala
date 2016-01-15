@@ -32,10 +32,10 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{PreparedWhereClause, CompareAndSetClause, UpdateClause, WhereClause}
-import com.websudos.phantom.builder.query.prepared.{PrepareMark, ?, PreparedBlock}
+import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.{::, =:!=, HNil, HList}
+import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -104,24 +104,6 @@ class UpdateQuery[
       options
     )
   }
-
-  /**
-    * The prepared TTL clause, allows using a prepared bounded value for a timeout.
-    * @param mark An instance of the prepared statement mark.
-    * @return
-    */
-  final def p_ttl(mark: PrepareMark): UpdateQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(?.qb.queryString),
-      casPart,
-      options
-    )
-  }
-
 
   /**
    * The where method of a select query.
@@ -290,23 +272,6 @@ sealed class AssignmentsQuery[
       usingPart = usingPart,
       wherePart = wherePart,
       setPart = setPart append clause(table).qb,
-      casPart = casPart,
-      options = options
-    )
-  }
-
-  /**
-    * The prepared TTL clause, allows using a prepared bounded value for a timeout.
-    * @param mark An instance of the prepared statement mark.
-    * @return
-    */
-  final def p_ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart = setPart append QueryBuilder.ttl(?.qb.queryString),
       casPart = casPart,
       options = options
     )
