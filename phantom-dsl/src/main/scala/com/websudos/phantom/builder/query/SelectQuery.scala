@@ -34,7 +34,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{OrderingClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
 import com.websudos.phantom.connectors.KeySpace
 import shapeless.{::, =:!=, HList, HNil}
@@ -325,15 +325,30 @@ class SelectQuery[
   }
 }
 
-private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, rowFunc: Row => R, columns: List[String]) {
+private[phantom] class RootSelectBlock[
+  T <: CassandraTable[T, _],
+  R
+](table: T, rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
-    new SelectQuery(
-      table,
-      rowFunc,
-      QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*)
-    )
+
+    clause match {
+      case Some(opt) => {
+        new SelectQuery(
+          table,
+          rowFunc,
+          QueryBuilder.Select.select(table.tableName, keySpace.name, opt)
+        )
+      }
+      case None => {
+        new SelectQuery(
+          table,
+          rowFunc,
+          QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*)
+        )
+      }
+    }
   }
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
@@ -343,6 +358,25 @@ private[phantom] class RootSelectBlock[T <: CassandraTable[T, _], R](table: T, r
 
   private[this] def extractCount(r: Row): Long = {
     Try(r.getLong("count")).getOrElse(0L)
+  }
+
+
+  private[this] def extractWritetime(r: Row): Long = {
+    Try(r.getLong("writetime")).getOrElse(0L)
+  }
+
+  def clause[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {
+    new SelectQuery(
+      table,
+      f1(table).extractor,
+      QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
+      WherePart.empty,
+      OrderPart.empty,
+      LimitedPart.empty,
+      FilteringPart.empty,
+      UsingPart.empty,
+      count = false
+    )
   }
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")

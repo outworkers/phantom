@@ -29,8 +29,12 @@
  */
 package com.websudos.phantom
 
+import com.datastax.driver.core.Row
+import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.ops.SelectColumn
 import com.websudos.phantom.builder.query.RootSelectBlock
+
+import scala.util.Try
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
@@ -40,7 +44,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
   def select[A](f1: T => SelectColumn[A]): RootSelectBlock[T, A] = {
     val t = this.asInstanceOf[T]
     val c = f1(t)
-    RootSelectBlock(t,List(c.col.name), c.apply)
+    RootSelectBlock(t, List(c.col.name), c.apply)
   }
 
   def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): RootSelectBlock[T, (A, B)] = {

@@ -127,7 +127,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a single dateOf column apply" in {
-        //val qb = ArticlesByAuthor.select.where(t => dateOf(t))
+        val qb = ArticlesByAuthor.select.where(t => dateOf(t))
       }
     }
   }

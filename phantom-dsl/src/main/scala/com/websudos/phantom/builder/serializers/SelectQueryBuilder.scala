@@ -214,6 +214,10 @@ private[builder] class SelectQueryBuilder {
     CQLQuery("now()")
   }
 
+  def writetime(col: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.Writetime).wrap(col)
+  }
+
   def maxTimeuuid(dateString: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.MaxTimeUUID).wrapn(dateString)
   }

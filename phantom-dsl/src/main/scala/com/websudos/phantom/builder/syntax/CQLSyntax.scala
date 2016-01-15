@@ -154,6 +154,7 @@ object CQLSyntax {
     val OrderBy = "ORDER BY"
     val MaxTimeUUID = "maxTimeuuid"
     val MinTimeUUID = "minTimeuuid"
+    val Writetime = "WRITETIME"
   }
 
   object Types {
