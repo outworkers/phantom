@@ -160,4 +160,10 @@ class ColumnUpdateClause[K : Primitive, V : Primitive](val column: String, val k
 
     new UpdateClause.Condition(qb)
   }
+
+  def setTo[RR](mark: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](
+      QueryBuilder.Update.setTo(column, mark.qb.queryString)
+    )
+  }
 }

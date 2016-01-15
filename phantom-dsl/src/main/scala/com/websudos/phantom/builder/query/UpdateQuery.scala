@@ -207,7 +207,7 @@ class UpdateQuery[
     )
   }
 
-  final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def modify[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -246,7 +246,8 @@ sealed class AssignmentsQuery[
   Limit <: LimitBound,
   Order <: OrderBound,
   Status <: ConsistencyBound,
-  Chain <: WhereBound
+  Chain <: WhereBound,
+  PS <: HList
 ](table: Table,
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
@@ -260,34 +261,53 @@ sealed class AssignmentsQuery[
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
-  final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     val query = clause(table).qb
     new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart, options)
   }
 
-  final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
-    val query = QueryBuilder.timestamp(init, value.toString)
-    new AssignmentsQuery(table, init, usingPart append query, wherePart, setPart, casPart, options)
-  }
-
-
-  def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+  final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new AssignmentsQuery(
-      table,
-      init,
-      usingPart append QueryBuilder.ttl(seconds.toString),
-      wherePart,
-      setPart,
-      casPart,
-      options
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.timestamp(init, value.toString),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      options = options
     )
   }
 
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      options = options
+    )
+  }
+
+
+  def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.ttl(seconds.toString),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      options = options
+    )
+  }
+
+  def ttl(duration: scala.concurrent.duration.FiniteDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     ttl(duration.toSeconds)
   }
 
-  def ttl(duration: com.twitter.util.Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain] = {
+  def ttl(duration: com.twitter.util.Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     ttl(duration.inSeconds)
   }
 
@@ -324,7 +344,7 @@ sealed class AssignmentsQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain] = {
+    (implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
       new AssignmentsQuery(
         table,

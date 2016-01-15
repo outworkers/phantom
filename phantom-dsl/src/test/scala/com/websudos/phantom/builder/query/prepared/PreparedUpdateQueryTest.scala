@@ -34,7 +34,7 @@ import com.websudos.phantom.tables.Recipe
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 
-class PreparedUpdateQuery extends PhantomSuite {
+class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -42,7 +42,7 @@ class PreparedUpdateQuery extends PhantomSuite {
   }
 
   it should "execute a prepared update query with a single argument bind" in {
-    val query = database.recipes.update.p_where(_.url eqs ?).prepare()
+    val query = database.recipes.update.p_where(_.url eqs ?).modify().prepare()
     val recipe = gen[Recipe]
 
     val chain = for {
