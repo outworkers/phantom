@@ -106,13 +106,11 @@ class UpdateQuery[
   }
 
   /**
-    * The where method of a select query that takes parametric predicate as an argument.
+    * The prepared TTL clause, allows using a prepared bounded value for a timeout.
     * @param mark An instance of the prepared statement mark.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  final def p_ttl(mark: PrepareMark)
-    : UpdateQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
+  final def p_ttl(mark: PrepareMark): UpdateQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
     new UpdateQuery(
       table,
       init,
