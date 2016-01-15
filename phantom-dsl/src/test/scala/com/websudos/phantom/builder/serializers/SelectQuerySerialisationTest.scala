@@ -127,8 +127,11 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
       "a single dateOf column apply" in {
         val qb = TestDatabase.timeuuidTable.select
-          .clause(t => dateOf(t.id))
+          .function(t => dateOf(t.id))
           .where(_.id eqs UUIDs.timeBased())
+          .qb.queryString
+
+        info(qb)
       }
     }
   }

@@ -365,7 +365,7 @@ private[phantom] class RootSelectBlock[
     Try(r.getLong("writetime")).getOrElse(0L)
   }
 
-  def clause[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {
+  def function[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {
     new SelectQuery(
       table,
       f1(table).extractor,
