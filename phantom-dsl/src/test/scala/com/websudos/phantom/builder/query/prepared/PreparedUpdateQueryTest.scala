@@ -79,12 +79,12 @@ class PreparedUpdateQueryTest extends PhantomSuite {
   it should "execute a prepared update query with a three argument bind" in {
 
     val updated = genOpt[ShortString].map(_.value)
-    val updatedServings = genOpt[Int]
+    val updatedServings = gen[UUID]
 
     val query = database.recipes.update
       .p_where(_.url eqs ?)
       .p_modify(_.description setTo ?)
-      .p_and(_.servings setTo ?)
+      .p_and(_.uid setTo ?)
       .prepare()
 
     val recipe = gen[Recipe]
@@ -116,12 +116,12 @@ class PreparedUpdateQueryTest extends PhantomSuite {
   it should "execute a prepared update query with a three argument bind and a TTL clause" in {
 
     val updated = genOpt[ShortString].map(_.value)
-    val updatedServings = genOpt[Int]
+    val updatedServings = gen[UUID]
 
     val query = database.recipes.update
       .p_where(_.url eqs ?)
       .p_modify(_.description setTo ?)
-      .p_and(_.servings setTo ?)
+      .p_and(_.uid setTo ?)
       .p_ttl(?)
       .prepare()
 
