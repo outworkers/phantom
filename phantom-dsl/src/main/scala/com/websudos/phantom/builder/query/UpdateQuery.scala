@@ -204,6 +204,7 @@ class UpdateQuery[
     )
   }
 
+
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new AssignmentsQuery(
       table = table,
@@ -282,6 +283,23 @@ sealed class AssignmentsQuery[
       usingPart,
       wherePart,
       setPart append clause(table).qb,
+      casPart,
+      options
+    )
+  }
+
+  /**
+    * The prepared TTL clause, allows using a prepared bounded value for a timeout.
+    * @param mark An instance of the prepared statement mark.
+    * @return
+    */
+  final def p_ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
+    new AssignmentsQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart append QueryBuilder.ttl(?.qb.queryString),
       casPart,
       options
     )

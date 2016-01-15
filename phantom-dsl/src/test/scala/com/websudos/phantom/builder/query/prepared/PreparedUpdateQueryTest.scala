@@ -130,7 +130,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val chain = for {
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(recipe.url, updated, updatedServings).future()
+      update <- query.bind(recipe.url, updated, updatedServings, 5L).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
