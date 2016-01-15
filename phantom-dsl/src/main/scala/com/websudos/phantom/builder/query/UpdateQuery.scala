@@ -112,7 +112,7 @@ class UpdateQuery[
     * @return
     */
   final def p_ttl(mark: PrepareMark)
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Long :: PS] = {
+    : UpdateQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS] = {
     new UpdateQuery(
       table,
       init,
@@ -275,6 +275,18 @@ sealed class AssignmentsQuery[
   final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     val query = clause(table).qb
     new AssignmentsQuery(table, init, usingPart, wherePart, setPart append query, casPart, options)
+  }
+
+  final def p_and[RR](clause: Table => PreparedWhereClause.ParametricCondition[RR]): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, RR :: PS] = {
+    new AssignmentsQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart append clause(table).qb,
+      casPart,
+      options
+    )
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
