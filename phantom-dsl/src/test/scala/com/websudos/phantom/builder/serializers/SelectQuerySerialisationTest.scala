@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.serializers
 
 import java.util.Date
 
+import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
@@ -122,12 +123,12 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
         val qb = ArticlesByAuthor.select.where(_.author_id eqs gen[UUID])
           .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
           .queryString
-
-        Console.println(qb)
       }
 
       "a single dateOf column apply" in {
-        val qb = ArticlesByAuthor.select.where(t => dateOf(t))
+        val qb = TestDatabase.timeuuidTable.select
+          .clause(t => dateOf(t.id))
+          .where(_.id eqs UUIDs.timeBased())
       }
     }
   }

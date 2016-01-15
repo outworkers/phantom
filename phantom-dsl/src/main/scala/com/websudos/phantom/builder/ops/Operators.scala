@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.ops
 
-import java.util.{Date, UUID}
+import java.util.Date
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
@@ -55,10 +55,6 @@ sealed class DateOfCqlFunction extends CqlFunction {
 
   def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): TypedClause.Condition[Long] = {
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), timestamp)
-  }
-
-  def apply(uuid: UUID): TypedClause.Condition[Long] = {
-    new TypedClause.Condition(QueryBuilder.Select.dateOf(uuid.toString), timestamp)
   }
 
   def apply(op: OperatorClause.Condition): TypedClause.Condition[Long] = {
