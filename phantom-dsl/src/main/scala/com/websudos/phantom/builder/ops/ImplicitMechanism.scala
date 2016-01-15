@@ -98,7 +98,7 @@ sealed class SetConditionals[T <: CassandraTable[T, R], R, RR](val col: Abstract
   }
 }
 
-sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: ColumnUpdateClause[K, V]) {
+sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKeyUpdateClause[K, V]) {
 
   /**
     * Generates a Map CONTAINS ENTRY clause that can be used inside a CQL Where condition.
@@ -183,7 +183,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   implicit def mapColumnDefinitionToEntriesQueryColumn[
     K : Primitive,
     V: Primitive
-  ](cond: ColumnUpdateClause[K, V]): MapEntriesConditionals[K, V] = {
+  ](cond: MapKeyUpdateClause[K, V]): MapEntriesConditionals[K, V] = {
     new MapEntriesConditionals[K, V](cond)
   }
 

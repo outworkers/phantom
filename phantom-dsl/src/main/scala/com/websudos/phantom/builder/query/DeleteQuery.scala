@@ -33,7 +33,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{DeleteClause, CompareAndSetClause, PreparedWhereClause, WhereClause}
-import com.websudos.phantom.builder.ops.ColumnUpdateClause
+import com.websudos.phantom.builder.ops.MapKeyUpdateClause
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
@@ -203,7 +203,7 @@ class DeleteQuery[
 
 
 trait DeleteImplicits {
-  implicit def columnUpdateClauseToDeleteCondition(clause: ColumnUpdateClause[_, _]): DeleteClause.Condition = {
+  implicit def columnUpdateClauseToDeleteCondition(clause: MapKeyUpdateClause[_, _]): DeleteClause.Condition = {
     new DeleteClause.Condition(QueryBuilder.Collections.mapColumnType(clause.column, clause.keyName))
   }
 
