@@ -32,7 +32,8 @@ package com.websudos.phantom.builder.ops
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.UpdateClause
+import com.websudos.phantom.builder.clauses.{PreparedWhereClause, UpdateClause}
+import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column._
 import com.websudos.phantom.keys._
 import shapeless.<:!<
@@ -41,7 +42,38 @@ import scala.annotation.implicitNotFound
 
 private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]) {
 
-  def setTo(value: RR): UpdateClause.Condition = new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, col.asCql(value)))
+  /**
+    * Default setTo clause for all update queries except for map columns.
+    * All setTo operations from the DSL will be serialized through a modify column
+    * through an implicit conversion at the DSL level.
+    *
+    * Map columns have a different implicits that take precedence over ModifyColumn
+    * to allow for better support of map updates.
+    *
+    * @param value The typed value to set the column to.
+    * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
+    */
+  def setTo(value: RR): UpdateClause.Condition = {
+    new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, col.asCql(value)))
+  }
+
+  /**
+    * Set to method used to support prepared modify queries.
+    * It will only accept prepared mark arguments, where phantom provides only one global instance called "?"
+    * to match the CQL syntax expected by the end user.
+    * Example:
+    * {{{
+    *   database.table.column.update.p_modify(_.bla setTo ?).where(_.a eqs ?)
+    * }}}
+    *
+    * @param value The prepare mark value to set this to. This is just provided for consnistency with natural CQL.
+    * @return The prepared setTo clause part that gets appended to the Set Part of the update query.
+    */
+  def setTo(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](
+      QueryBuilder.Update.setTo(col.name, value.qb.queryString)
+    )
+  }
 }
 
 sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col)

@@ -34,16 +34,26 @@ import com.datastax.driver.core.ConsistencyLevel
 class QueryOptions(
   val consistencyLevel: Option[ConsistencyLevel],
   val serialConsistencyLevel: Option[ConsistencyLevel],
-  val enableTracing: Boolean,
-  val fetchSize: Int
+  val pagingState: Option[String] = None,
+  val enableTracing: Option[Boolean] = None,
+  val fetchSize: Option[Int] = None
 ) {
 
-  def options: com.datastax.driver.core.QueryOptions = ???
+  def options: com.datastax.driver.core.QueryOptions = {
+    val opt = new com.datastax.driver.core.QueryOptions()
+
+    consistencyLevel map opt.setConsistencyLevel
+    serialConsistencyLevel map opt.setSerialConsistencyLevel
+    fetchSize map opt.setFetchSize
+
+    opt
+  }
 
   def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
     new QueryOptions(
       Some(level),
       serialConsistencyLevel,
+      pagingState,
       enableTracing,
       fetchSize
     )
@@ -53,6 +63,7 @@ class QueryOptions(
     new QueryOptions(
       consistencyLevel,
       Some(level),
+      pagingState,
       enableTracing,
       fetchSize
     )
@@ -62,7 +73,8 @@ class QueryOptions(
     new QueryOptions(
       consistencyLevel,
       serialConsistencyLevel,
-      flag,
+      pagingState,
+      Some(flag),
       fetchSize
     )
   }
@@ -71,8 +83,9 @@ class QueryOptions(
     new QueryOptions(
       consistencyLevel,
       serialConsistencyLevel,
+      pagingState,
       enableTracing,
-      size
+      Some(size)
     )
   }
 
@@ -83,8 +96,9 @@ object QueryOptions {
     new QueryOptions(
       consistencyLevel = None,
       serialConsistencyLevel = None,
-      enableTracing = false,
-      fetchSize = 0
+      pagingState = None,
+      enableTracing = None,
+      fetchSize = None
     )
   }
 }

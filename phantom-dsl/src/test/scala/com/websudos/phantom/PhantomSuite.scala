@@ -51,4 +51,6 @@ trait PhantomBaseSuite extends Suite with Matchers
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
 
+  val database = TestDatabase
+
 }

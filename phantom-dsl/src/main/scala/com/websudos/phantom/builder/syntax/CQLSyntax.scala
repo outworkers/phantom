@@ -151,9 +151,11 @@ object CQLSyntax {
   object Selection {
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
+    val UnixTimestampOf = "unixTimestampOf"
     val OrderBy = "ORDER BY"
     val MaxTimeUUID = "maxTimeuuid"
     val MinTimeUUID = "minTimeuuid"
+    val Writetime = "WRITETIME"
   }
 
   object Types {

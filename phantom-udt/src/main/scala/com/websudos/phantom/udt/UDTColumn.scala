@@ -223,11 +223,11 @@ abstract class UDTColumn[
 sealed class UDTCreateQuery(val qb: CQLQuery, udt: UDTDefinition[_], override val options: QueryOptions) extends ExecutableStatement {
 
   override def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
-    twitterQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
+    twitterQueryStringExecuteToFuture(new SimpleStatement(udt.schema()))
   }
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(session.newSimpleStatement(udt.schema()))
+    scalaQueryStringExecuteToFuture(new SimpleStatement(udt.schema()))
   }
 }
 

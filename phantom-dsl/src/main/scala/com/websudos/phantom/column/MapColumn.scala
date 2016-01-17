@@ -32,7 +32,7 @@ package com.websudos.phantom.column
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.ops.ColumnUpdateClause
+import com.websudos.phantom.builder.ops.MapKeyUpdateClause
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 
@@ -98,7 +98,7 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
     }
   }
 
-  def apply(k: K): ColumnUpdateClause[K, V] = {
-    new ColumnUpdateClause[K, V](name, k)
+  def apply(k: K): MapKeyUpdateClause[K, V] = {
+    new MapKeyUpdateClause[K, V](name, k)
   }
 }

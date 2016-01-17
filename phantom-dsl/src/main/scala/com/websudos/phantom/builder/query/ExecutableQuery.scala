@@ -51,8 +51,7 @@ trait ExecutableStatement extends CassandraOperations {
   def queryString: String = qb.terminate().queryString
 
   def statement()(implicit session: Session): Statement = {
-    session
-      .newSimpleStatement(qb.terminate().queryString)
+    new SimpleStatement(qb.terminate().queryString)
       .setConsistencyLevel(options.consistencyLevel.orNull)
   }
 
@@ -137,11 +136,11 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
   }
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
+    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
+    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 }
 

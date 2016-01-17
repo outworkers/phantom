@@ -79,6 +79,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
   object twoKeysTable extends ConcreteTwoKeys with connector.Connector
+  object timeuuidTable extends ConcreteTimeUUIDTable with connector.Connector
 
   object events extends ConcreteEvents with connector.Connector
 }

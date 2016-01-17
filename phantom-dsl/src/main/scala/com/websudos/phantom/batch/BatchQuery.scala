@@ -74,7 +74,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     val batch = initBatch()
 
     for (st <- iterator) {
-      batch.add(session.newSimpleStatement(st.queryString))
+      batch.add(new SimpleStatement(st.queryString))
     }
 
     options.consistencyLevel match {
