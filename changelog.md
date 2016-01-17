@@ -312,3 +312,5 @@ and `org.joda.time.DateTime`.
 removed `session.newSimpleStatement`.
 - Added ability to modify a `statement` directly the execution operation to set options via the Java DSL.
 - Added support for `Table.select.function(t => fn(t.column)`, including `dateOf`, `unixTimestampOf` and `writetime`.
+- Increased default schema synchronisation timeout to 10 seconds inside phantom tests.
+- Added `sbt-sonatype` plugin to re-enable Maven Central syncing.
