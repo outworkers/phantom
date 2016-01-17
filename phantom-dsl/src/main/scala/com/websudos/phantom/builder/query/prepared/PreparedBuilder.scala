@@ -130,7 +130,7 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
           Console.println(x.asInstanceOf[UUID])
           x
         }
-        case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[Any]].get)
+        case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
         case x if x.isInstanceOf[None.type] => null.asInstanceOf[Any]
         case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
         case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava

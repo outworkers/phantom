@@ -45,7 +45,9 @@ import shapeless.{=:!=, HList}
 
 trait Extractors {
   protected[this] def timestamp(row: Row): Long = {
-    row.getLong("timestamp")
+    Console.println(row.toString)
+    Console.println(row.getColumnDefinitions.toString)
+    row.getLong("")
   }
 }
 
@@ -105,8 +107,12 @@ sealed class MinTimeUUID extends CqlFunction with DefaultPrimitives {
 }
 
 sealed class WritetimeCqlFunction extends CqlFunction {
-  def apply[RR](col: AbstractColumn[RR]): TypedClause.Condition[Long] = {
-    new TypedClause.Condition(QueryBuilder.Select.writetime(col.name), timestamp)
+  def apply(col: AbstractColumn[_])(implicit ev: Primitive[BigDecimal]): TypedClause.Condition[Long] = {
+    val qb = QueryBuilder.Select.writetime(col.name)
+
+    new TypedClause.Condition(qb, row => {
+      row.getLong(qb.queryString)
+    })
   }
 }
 

@@ -33,11 +33,13 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.Recipe
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
+import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {
 
   it should "retrieve the writetime of a field from Cassandra" in {
     val record = gen[Recipe]
+  
 
     val chain = for {
       store <- database.recipes.store(record).future()
@@ -50,7 +52,7 @@ class SelectFunctionsTesting extends PhantomSuite {
         res shouldBe defined
         shouldNotThrow {
           info(res.value.toString)
-          // new DateTime(res.value)
+          new DateTime(res.value.microseconds.inMillis)
         }
       }
     }
