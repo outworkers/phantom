@@ -35,10 +35,10 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.10.6"
-  val DatastaxDriverVersion = "3.0.0-alpha4"
+  val UtilVersion = "0.10.8"
+  val DatastaxDriverVersion = "3.0.0-rc1"
   val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.4"
+  val ShapelessVersion = "2.2.5"
   val FinagleVersion = "6.28.0"
   val TwitterUtilVersion = "6.27.0"
   val ScroogeVersion = "3.17.0"
@@ -110,7 +110,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.20.1",
+    version := "1.21.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
