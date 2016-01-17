@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.serializers
 
+import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
@@ -71,7 +72,7 @@ private[builder] trait Utils {
       .append(list.map(item => {s"${item._1} : ${item._2}"}).mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
-
+  
   /**
     * Serializes the CQL definition of a map key based on a column and a key value.
     * When this method is called, the key should be already serialized using the Primitive API.
@@ -88,6 +89,14 @@ private[builder] trait Utils {
   def mapKey(column: String, key: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def tableOption(option: String, value: String): CQLQuery = {
+    Utils.concat(option, CQLSyntax.Symbols.`=`, value)
+  }
+
+  def tableOption(option: String, value: CQLQuery): CQLQuery = {
+    tableOption(option, value.queryString)
   }
 }
 

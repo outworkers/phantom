@@ -29,43 +29,67 @@
  */
 package com.websudos.phantom.builder.ops
 
-import java.util.{Date, UUID}
+import java.util.Date
 
+import com.datastax.driver.core.Session
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
-import com.websudos.phantom.builder.clauses.{OperatorClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.query.SessionAugmenter
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.column.TimeUUIDColumn
+import com.websudos.phantom.column.{AbstractColumn, TimeUUIDColumn}
 import org.joda.time.DateTime
 import shapeless.{=:!=, HList}
 
-sealed class Operator
+sealed class CqlFunction extends SessionAugmenter
 
-sealed class DateOfOperator extends Operator {
+sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): OperatorClause.Condition = {
-    new OperatorClause.Condition(QueryBuilder.Select.dateOf(pf.name))
-  }
-
-  def apply(uuid: UUID): OperatorClause.Condition = {
-    new OperatorClause.Condition(QueryBuilder.Select.dateOf(uuid.toString))
-  }
-
-  def apply(op: OperatorClause.Condition): OperatorClause.Condition = {
-    new OperatorClause.Condition(QueryBuilder.Select.dateOf(op.qb.queryString))
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[Long], session: Session): TypedClause.Condition[Long] = {
+    new TypedClause.Condition(QueryBuilder.Select.unixTimestampOf(pf.name), row => {
+      if (session.v3orNewer) {
+        ev.fromRow(s"system.unixtimestampof(${pf.name})", row).get
+      } else {
+        ev.fromRow(s"unixtimestampof(${pf.name})", row).get
+      }
+    })
   }
 }
 
-sealed class NowOperator extends Operator {
+sealed class DateOfCqlFunction extends CqlFunction {
+
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[DateTime] = {
+    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
+      if (session.v3orNewer) {
+        ev.fromRow(s"system.dateof(${pf.name})", row).get
+      } else {
+        ev.fromRow(s"dateof(${pf.name})", row).get
+      }
+    })
+  }
+
+  def apply(op: OperatorClause.Condition)(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[DateTime] = {
+    val pf = op.qb.queryString
+
+    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf), row => {
+      if (session.v3orNewer) {
+        ev.fromRow(s"system.dateof($pf)", row).get
+      } else {
+        ev.fromRow(s"dateof($pf)", row).get
+      }
+    })
+  }
+}
+
+sealed class NowCqlFunction extends CqlFunction {
   def apply(): OperatorClause.Condition = {
     new OperatorClause.Condition(QueryBuilder.Select.now())
   }
 }
 
-sealed class MaxTimeUUID extends Operator with DefaultPrimitives {
+sealed class MaxTimeUUID extends CqlFunction with DefaultPrimitives {
 
   private[this] val datePrimitive = implicitly[Primitive[Date]]
   private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
@@ -79,17 +103,35 @@ sealed class MaxTimeUUID extends Operator with DefaultPrimitives {
   }
 }
 
-sealed class MinTimeUUID extends Operator with DefaultPrimitives {
+sealed class MinTimeUUID extends CqlFunction with DefaultPrimitives {
 
   private[this] val datePrimitive = implicitly[Primitive[Date]]
   private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
 
   def apply(date: Date): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.minTimeuuid(UUIDPrimitive.asCql(UUIDs.startOf(date.getTime))))
+    new Condition(
+      QueryBuilder.Select.minTimeuuid(
+        UUIDPrimitive.asCql(UUIDs.startOf(date.getTime))
+      )
+    )
   }
 
   def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.minTimeuuid(UUIDPrimitive.asCql(UUIDs.startOf(date.getMillis))))
+    new Condition(
+      QueryBuilder.Select.minTimeuuid(
+        UUIDPrimitive.asCql(UUIDs.startOf(date.getMillis))
+      )
+    )
+  }
+}
+
+sealed class WritetimeCqlFunction extends CqlFunction {
+  def apply(col: AbstractColumn[_])(implicit ev: Primitive[BigDecimal]): TypedClause.Condition[Long] = {
+    val qb = QueryBuilder.Select.writetime(col.name)
+
+    new TypedClause.Condition(qb, row => {
+      row.getLong(qb.queryString)
+    })
   }
 }
 
@@ -134,13 +176,16 @@ sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Se
   }
 }
 
-sealed class TokenOperator extends Operator with TokenComparisonOps
+sealed class TokenCqlFunction extends CqlFunction with TokenComparisonOps
 
 trait Operators {
-  object dateOf extends DateOfOperator
+  object dateOf extends DateOfCqlFunction
+  object unixTimestampOf extends UnixTimestampOfCqlFunction
+
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
-  object token extends TokenOperator
-  object now extends NowOperator
+  object token extends TokenCqlFunction
+  object now extends NowCqlFunction
+  object writetime extends WritetimeCqlFunction
 }
 

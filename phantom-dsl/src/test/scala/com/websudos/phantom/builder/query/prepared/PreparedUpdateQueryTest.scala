@@ -30,66 +30,86 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.{Article, Recipe}
+import com.websudos.phantom.tables.Recipe
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 
-class PreparedDeleteQueryTest extends PhantomSuite {
+class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.recipes.insertSchema()
-    database.articlesByAuthor.insertSchema()
   }
 
-  it should "correctly execute a prepared delete query" in {
-    val recipe = gen[Recipe]
+  it should "execute a prepared update query with a single argument bind" in {
 
-    val query = database.recipes.delete.p_where(_.url eqs ?).prepare()
+    val updated = genOpt[ShortString].map(_.value)
+
+    val query = database.recipes.update
+      .p_where(_.url eqs ?)
+      .p_modify(_.description setTo ?)
+      .prepare()
+
+    val recipe = gen[Recipe]
 
     val chain = for {
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      delete <- query.bind(recipe.url).future()
+      update <- query.bind(recipe.url, updated).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
     whenReady(chain) {
-      case (initial, afterDelete) => {
+      case (initial, afterUpdate) => {
         initial shouldBe defined
         initial.value shouldEqual recipe
-        afterDelete shouldBe empty
+
+        afterUpdate shouldBe defined
+        afterUpdate.value.url shouldEqual recipe.url
+        afterUpdate.value.props shouldEqual recipe.props
+        afterUpdate.value.ingredients shouldEqual recipe.ingredients
+        afterUpdate.value.servings shouldEqual recipe.servings
+        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+        afterUpdate.value.uid shouldEqual recipe.uid
+        afterUpdate.value.description shouldEqual recipe.description
       }
     }
   }
 
-  it should "correctly execute a prepared delete query with 2 bound values" in {
-    val sample = database.twoKeysTable
+  ignore should "execute a prepared update query with a three argument bind" in {
 
-    val author = gen[UUID]
-    val cat = gen[UUID]
-    val article = gen[Article]
+    val updated = genOpt[ShortString].map(_.value)
+    val updatedServings = gen[UUID]
 
-    val query = database.articlesByAuthor.delete
-      .p_where(_.category eqs ?)
-      .p_and(_.author_id eqs ?)
+    val query = database.recipes.update
+      .p_where(_.url eqs ?)
+      .p_modify(_.description setTo ?)
+      .p_and(_.uid setTo ?)
       .prepare()
 
+    val recipe = gen[Recipe]
+
     val chain = for {
-      store <- database.articlesByAuthor.store(author, cat, article).future()
-      get <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
-      delete <- query.bind(cat, author).future()
-      get2 <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
+      store <- database.recipes.store(recipe).future()
+      get <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- query.bind(recipe.url, updated, updatedServings).future()
+      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
     whenReady(chain) {
-      case (initial, afterDelete) => {
+      case (initial, afterUpdate) => {
         initial shouldBe defined
-        initial.value shouldEqual article
-        afterDelete shouldBe empty
+        initial.value shouldEqual recipe
+
+        afterUpdate shouldBe defined
+        afterUpdate.value.url shouldEqual recipe.url
+        afterUpdate.value.props shouldEqual recipe.props
+        afterUpdate.value.ingredients shouldEqual recipe.ingredients
+        afterUpdate.value.servings shouldEqual updatedServings
+        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+        afterUpdate.value.uid shouldEqual recipe.uid
+        afterUpdate.value.description shouldEqual recipe.description
       }
     }
-
   }
-
 }

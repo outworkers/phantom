@@ -29,6 +29,8 @@ Changelog
     <li><a href="#version-1.18.0">1.18.0 - 14.12.2015</a></li>
     <li><a href="#version-1.18.1">1.18.1 - 17.12.2015</a></li>
     <li><a href="#version-1.19.0">1.19.1 - 04.01.2016</a></li>
+    <li><a href="#version-1.20.0">1.20.0 - 08.01.2016</a></li>
+    <li><a href="#version-1.21.0">1.21.0 - 18.01.2016</a></li>
 </ul>
 
 
@@ -297,3 +299,18 @@ and `org.joda.time.DateTime`.
 - Renamed all CAS comparison operators to match `is$Op` format.
 - Added `ExecutableCreateStatementsList` to fix index creation issues inside `Database.autocreate`.
 - Added support for Map entry comparisons and the `Entries` mixin trait for map columns with secondary indexes.
+
+<a id="version-1.21.0">1.21.0</a>
+================================
+
+- Added support for preparing `UpdateQuery` via `p_where` -> `p_and` pairs and `p_modify` -> `p_and` pairs.
+- Added more tests for prepared delete queries and update queries.
+- Added the ability to set more options on a statement before executing it.
+- Added ability to prepare map entry update clauses.
+- Bumped util library version to `0.10.8`.
+- Bumped Datastax Java Driver version to `3.0.0-rc1` and using `new SimpleStatement` constructor in favour the now
+removed `session.newSimpleStatement`.
+- Added ability to modify a `statement` directly the execution operation to set options via the Java DSL.
+- Added support for `Table.select.function(t => fn(t.column)`, including `dateOf`, `unixTimestampOf` and `writetime`.
+- Increased default schema synchronisation timeout to 10 seconds inside phantom tests.
+- Added `sbt-sonatype` plugin to re-enable Maven Central syncing.

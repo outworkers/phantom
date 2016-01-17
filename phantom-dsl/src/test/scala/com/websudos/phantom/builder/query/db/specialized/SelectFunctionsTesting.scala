@@ -27,69 +27,78 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.prepared
+package com.websudos.phantom.builder.query.db.specialized
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.{Article, Recipe}
+import com.websudos.phantom.tables.{TimeUUIDRecord, Recipe}
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
+import com.twitter.conversions.time._
 
-class PreparedDeleteQueryTest extends PhantomSuite {
+class SelectFunctionsTesting extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.recipes.insertSchema()
-    database.articlesByAuthor.insertSchema()
+    database.timeuuidTable.insertSchema()
   }
 
-  it should "correctly execute a prepared delete query" in {
-    val recipe = gen[Recipe]
+  it should "retrieve the writetime of a field from Cassandra" in {
+    val record = gen[Recipe]
 
-    val query = database.recipes.delete.p_where(_.url eqs ?).prepare()
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
-      get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      delete <- query.bind(recipe.url).future()
-      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
-    } yield (get, get2)
+      store <- database.recipes.store(record).future()
+      timestamp <- database.recipes.select.function(t => writetime(t.description))
+        .where(_.url eqs record.url).one()
+    } yield timestamp
 
     whenReady(chain) {
-      case (initial, afterDelete) => {
-        initial shouldBe defined
-        initial.value shouldEqual recipe
-        afterDelete shouldBe empty
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+          new DateTime(res.value.microseconds.inMillis)
+        }
       }
     }
   }
 
-  it should "correctly execute a prepared delete query with 2 bound values" in {
-    val sample = database.twoKeysTable
-
-    val author = gen[UUID]
-    val cat = gen[UUID]
-    val article = gen[Article]
-
-    val query = database.articlesByAuthor.delete
-      .p_where(_.category eqs ?)
-      .p_and(_.author_id eqs ?)
-      .prepare()
+  it should "retrieve the dateOf of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
 
     val chain = for {
-      store <- database.articlesByAuthor.store(author, cat, article).future()
-      get <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
-      delete <- query.bind(cat, author).future()
-      get2 <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
-    } yield (get, get2)
+      store <- database.timeuuidTable.store(record).future()
+      timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id))
+        .where(_.id eqs record.id).one()
+    } yield timestamp
 
     whenReady(chain) {
-      case (initial, afterDelete) => {
-        initial shouldBe defined
-        initial.value shouldEqual article
-        afterDelete shouldBe empty
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+        }
       }
     }
-
   }
 
+  it should "retrieve the unixTimestamp of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
+
+    val chain = for {
+      store <- database.timeuuidTable.store(record).future()
+      timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id))
+        .where(_.id eqs record.id).one()
+    } yield timestamp
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+        }
+      }
+    }
+  }
 }
