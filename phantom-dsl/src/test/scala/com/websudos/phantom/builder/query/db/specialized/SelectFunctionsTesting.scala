@@ -30,16 +30,22 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.Recipe
+import com.websudos.phantom.tables.{TimeUUIDRecord, Recipe}
 import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.recipes.insertSchema()
+    database.timeuuidTable.insertSchema()
+  }
+
   it should "retrieve the writetime of a field from Cassandra" in {
     val record = gen[Recipe]
-  
+
 
     val chain = for {
       store <- database.recipes.store(record).future()
@@ -56,8 +62,43 @@ class SelectFunctionsTesting extends PhantomSuite {
         }
       }
     }
-
   }
 
+  it should "retrieve the dateOf of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
 
+    val chain = for {
+      store <- database.timeuuidTable.store(record).future()
+      timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id))
+        .where(_.id eqs record.id).one()
+    } yield timestamp
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+        }
+      }
+    }
+  }
+
+  it should "retrieve the unixTimestamp of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
+
+    val chain = for {
+      store <- database.timeuuidTable.store(record).future()
+      timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id))
+        .where(_.id eqs record.id).one()
+    } yield timestamp
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+        }
+      }
+    }
+  }
 }

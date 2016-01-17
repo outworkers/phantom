@@ -80,7 +80,8 @@ sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUI
 abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
 
   def store(rec: TimeUUIDRecord): InsertQuery.Default[ConcreteTimeUUIDTable, TimeUUIDRecord] = {
-    insert.value(_.id, rec.id)
+    insert
+      .value(_.id, rec.id)
       .value(_.name, rec.name)
   }
 }

@@ -155,6 +155,18 @@ package object tables {
     def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(genMap[String, Int](5))
   }
 
+  implicit object TimeUUIDRecordSampler extends Sample[TimeUUIDRecord] {
+    override def sample: TimeUUIDRecord = {
+      val id = UUIDs.timeBased()
+
+      TimeUUIDRecord(
+        id = id,
+        name = gen[ShortString].value,
+        timestamp = new DateTime(UUIDs.unixTimestamp(id))
+      )
+    }
+  }
+
   implicit object RecipeSampler extends Sample[Recipe] {
     def sample: Recipe = {
       Recipe(

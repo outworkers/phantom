@@ -311,4 +311,4 @@ and `org.joda.time.DateTime`.
 - Bumped Datastax Java Driver version to `3.0.0-rc1` and using `new SimpleStatement` constructor in favour the now
 removed `session.newSimpleStatement`.
 - Added ability to modify a `statement` directly the execution operation to set options via the Java DSL.
-- Added support for `Table.select.function(t => writetime(t.column)`, including `dateOf`, `now` and `writetime`.
+- Added support for `Table.select.function(t => fn(t.column)`, including `dateOf`, `unixTimestampOf` and `writetime`.

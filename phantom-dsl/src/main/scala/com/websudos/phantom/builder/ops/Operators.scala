@@ -31,9 +31,7 @@ package com.websudos.phantom.builder.ops
 
 import java.util.Date
 
-import com.datastax.driver.core.Row
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
@@ -43,30 +41,35 @@ import com.websudos.phantom.column.{AbstractColumn, TimeUUIDColumn}
 import org.joda.time.DateTime
 import shapeless.{=:!=, HList}
 
-trait Extractors {
-  protected[this] def timestamp(row: Row): Long = {
-    Console.println(row.toString)
-    Console.println(row.getColumnDefinitions.toString)
-    row.getLong("")
+sealed class CqlFunction
+
+sealed class UnixTimestampOfCqlFunction extends CqlFunction {
+
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[Long]): TypedClause.Condition[Long] = {
+    new TypedClause.Condition(QueryBuilder.Select.unixTimestampOf(pf.name), row => {
+      ev.fromRow(s"system.unixtimestampof(${pf.name})", row).get
+    })
   }
 }
 
-sealed class CqlFunction extends Extractors
-
 sealed class DateOfCqlFunction extends CqlFunction {
 
-  def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R]): TypedClause.Condition[Long] = {
-    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), timestamp)
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime]): TypedClause.Condition[DateTime] = {
+    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
+      ev.fromRow(s"system.dateof(${pf.name})", row).get
+    })
   }
 
-  def apply(op: OperatorClause.Condition): TypedClause.Condition[Long] = {
-    new TypedClause.Condition(QueryBuilder.Select.dateOf(op.qb.queryString), timestamp)
+  def apply(op: OperatorClause.Condition)(implicit ev: Primitive[DateTime]): TypedClause.Condition[DateTime] = {
+    new TypedClause.Condition(QueryBuilder.Select.dateOf(op.qb.queryString), row => {
+      ev.fromRow(s"system.dateof(${op.qb.queryString})", row).get
+    })
   }
 }
 
 sealed class NowCqlFunction extends CqlFunction {
-  def apply(): TypedClause.Condition[Long] = {
-    new TypedClause.Condition(QueryBuilder.Select.now(), timestamp)
+  def apply(): OperatorClause.Condition = {
+    new OperatorClause.Condition(QueryBuilder.Select.now())
   }
 }
 
@@ -161,6 +164,8 @@ sealed class TokenCqlFunction extends CqlFunction with TokenComparisonOps
 
 trait Operators {
   object dateOf extends DateOfCqlFunction
+  object unixTimestampOf extends UnixTimestampOfCqlFunction
+
   object minTimeuuid extends MinTimeUUID
   object maxTimeuuid extends MaxTimeUUID
   object token extends TokenCqlFunction
