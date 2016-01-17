@@ -36,9 +36,9 @@ import sbt._
 object Build extends Build {
 
   val UtilVersion = "0.10.8"
-  val DatastaxDriverVersion = "3.0.0-alpha4"
+  val DatastaxDriverVersion = "3.0.0-rc1"
   val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.4"
+  val ShapelessVersion = "2.2.5"
   val FinagleVersion = "6.28.0"
   val TwitterUtilVersion = "6.27.0"
   val ScroogeVersion = "3.17.0"
