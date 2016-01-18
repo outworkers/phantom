@@ -320,3 +320,4 @@ removed `session.newSimpleStatement`.
 ================================
 
 - Added ability to merge batch queries.
+- Adding support for `iterator` method on queries.
