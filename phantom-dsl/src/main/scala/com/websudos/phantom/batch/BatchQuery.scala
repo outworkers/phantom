@@ -136,6 +136,21 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     )
   }
 
+  /**
+    * Adds the statement of another query to the statements of this batch query.
+    * @param batch A batch query.
+    * @return A batch query with the same consistencyLevel as the original query.
+    */
+  def add(batch: BatchQuery[_]): BatchQuery[Status] = {
+    new BatchQuery[Status](
+      this.iterator ++ batch.iterator,
+      this.batchType,
+      this.usingPart,
+      this.added,
+      this.options
+    )
+  }
+
   def timestamp(stamp: Long): BatchQuery[Status] = {
     new BatchQuery(
       iterator,
