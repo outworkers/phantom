@@ -31,6 +31,7 @@ Changelog
     <li><a href="#version-1.19.0">1.19.1 - 04.01.2016</a></li>
     <li><a href="#version-1.20.0">1.20.0 - 08.01.2016</a></li>
     <li><a href="#version-1.21.0">1.21.0 - 18.01.2016</a></li>
+    <li><a href="#version-1.21.1">1.21.1 - 19.01.2016</a></li>
 </ul>
 
 
@@ -314,3 +315,8 @@ removed `session.newSimpleStatement`.
 - Added support for `Table.select.function(t => fn(t.column)`, including `dateOf`, `unixTimestampOf` and `writetime`.
 - Increased default schema synchronisation timeout to 10 seconds inside phantom tests.
 - Added `sbt-sonatype` plugin to re-enable Maven Central syncing.
+
+<a id="version-1.21.1">1.21.1</a>
+================================
+
+- Added ability to merge batch queries.
