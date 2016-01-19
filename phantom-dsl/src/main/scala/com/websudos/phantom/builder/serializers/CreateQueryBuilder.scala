@@ -81,6 +81,14 @@ sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
     simpleValue(qb, CQLSyntax.CompactionOptions.cold_reads_to_omit, size.toString)
   }
 
+  def max_threshold(qb: CQLQuery, value: Int): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.max_threshold, value.toString)
+  }
+
+  def min_threshold(qb: CQLQuery, value: Int): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.min_threshold, value.toString)
+  }
+
   def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
     simpleValue(qb, CQLSyntax.CompactionOptions.bucket_high, size.toString)
   }
