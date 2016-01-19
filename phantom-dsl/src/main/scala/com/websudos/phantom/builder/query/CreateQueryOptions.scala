@@ -137,6 +137,23 @@ sealed trait CompactionStrategies {
     override protected[this] def instance(qb: CQLQuery): DateTieredCompactionStrategy = {
       new DateTieredCompactionStrategy(qb)
     }
+
+    def base_time_seconds(value: Long): DateTieredCompactionStrategy = {
+      new DateTieredCompactionStrategy(QueryBuilder.Create.base_time_seconds(qb, value))
+    }
+
+    def max_sstable_age_days(value: Long): DateTieredCompactionStrategy = {
+      new DateTieredCompactionStrategy(QueryBuilder.Create.max_sstable_age_days(qb, value))
+    }
+
+    def max_threshold(value: Int): DateTieredCompactionStrategy = {
+      new DateTieredCompactionStrategy(QueryBuilder.Create.max_threshold(qb, value))
+    }
+
+    def min_threshold(value: Int): DateTieredCompactionStrategy = {
+      new DateTieredCompactionStrategy(QueryBuilder.Create.min_threshold(qb, value))
+    }
+
   }
 
   case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))

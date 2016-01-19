@@ -222,6 +222,9 @@ object CQLSyntax {
     val bucket_low = "bucket_low"
     val cold_reads_to_omit = "cold_reads_to_omit"
     val unchecked_tombstone_compaction = "unchecked_tombstone_compaction"
+    val base_time_seconds = "base_time_seconds"
+    val max_sstable_age_days = "max_sstable_age_days"
+    val timestamp_resolution = "timestamp_resolution"
   }
 
   object CompactionStrategies {
