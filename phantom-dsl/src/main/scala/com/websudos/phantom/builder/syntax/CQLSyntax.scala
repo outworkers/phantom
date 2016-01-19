@@ -211,6 +211,7 @@ object CQLSyntax {
 
   object CompactionOptions {
     val `class` = "class"
+    val enabled = "enabled"
     val max_threshold = "max_threshold"
     val min_threshold = "min_threshold"
     val min_sstable_size = "min_sstable_size"
@@ -219,6 +220,8 @@ object CQLSyntax {
     val tombstone_threshold = "tombstone_threshold"
     val bucket_high = "bucket_high"
     val bucket_low = "bucket_low"
+    val cold_reads_to_omit = "cold_reads_to_omit"
+    val unchecked_tombstone_compaction = "unchecked_tombstone_compaction"
   }
 
   object CompactionStrategies {

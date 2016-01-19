@@ -58,13 +58,45 @@ sealed trait CompactionStrategies {
       .forcePad.appendSingleQuote(strategy)
   }
 
-  sealed class SizeTieredCompactionStrategy(override val qb: CQLQuery) extends CompactionStrategy(qb) {
-    def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.Create.min_sstable_size(qb, unit.inMegabytes.toString))
+
+  sealed abstract class CompactionProperties[
+    T <: CompactionStrategy
+  ](override val qb: CQLQuery) extends CompactionStrategy(qb) {
+
+    protected[this] def instance(qb: CQLQuery): T
+
+    def enabled(flag: Boolean): T = {
+      instance(QueryBuilder.Create.enabled(qb, flag))
     }
 
-    def sstable_size_in_mb(unit: StorageUnit): SizeTieredCompactionStrategy = {
-      new SizeTieredCompactionStrategy(QueryBuilder.Create.sstable_size_in_mb(qb, unit.inMegabytes.toString))
+    def tombstone_compaction_interval(interval: Long): T = {
+      instance(QueryBuilder.Create.tombstone_compaction_interval(qb, interval.toString))
+    }
+
+    def tombstone_threshold(value: Double): T = {
+      instance(QueryBuilder.Create.tombstone_threshold(qb, value))
+    }
+
+    def unchecked_tombstone_compaction(value: Double): T = {
+      instance(QueryBuilder.Create.unchecked_tombstone_compaction(qb, value))
+    }
+
+  }
+
+  sealed class SizeTieredCompactionStrategy(override val qb: CQLQuery)
+    extends CompactionProperties[SizeTieredCompactionStrategy](qb) {
+    
+    def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(
+        QueryBuilder.Create.min_sstable_size(
+          qb,
+          unit.inMegabytes.toString
+        )
+      )
+    }
+
+    def cold_reads_to_omit(value: Double): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(QueryBuilder.Create.cold_reads_to_omit(qb, value))
     }
 
     def bucket_high(size: Double): SizeTieredCompactionStrategy = {
@@ -74,10 +106,20 @@ sealed trait CompactionStrategies {
     def bucket_low(size: Double): SizeTieredCompactionStrategy = {
       new SizeTieredCompactionStrategy(QueryBuilder.Create.bucket_low(qb, size))
     }
+
+    override protected[this] def instance(qb: CQLQuery): SizeTieredCompactionStrategy = {
+      new SizeTieredCompactionStrategy(qb)
+    }
+  }
+
+  sealed class LeveledCompactionStrategy(override val qb: CQLQuery) extends CompactionStrategy(qb) {
+    def sstable_size_in_mb(unit: StorageUnit): LeveledCompactionStrategy = {
+      new LeveledCompactionStrategy(QueryBuilder.Create.sstable_size_in_mb(qb, unit.inMegabytes.toString))
+    }
   }
 
   case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
-  case object LeveledCompactionStrategy extends CompactionStrategy(strategy(CQLSyntax.CompactionStrategies.LeveledCompactionStrategy))
+  case object LeveledCompactionStrategy extends LeveledCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.LeveledCompactionStrategy))
   case object DateTieredCompactionStrategy extends CompactionStrategy(strategy(CQLSyntax.CompactionStrategies.DateTieredCompactionStrategy))
 }
 
@@ -123,7 +165,7 @@ sealed trait TableProperty
 
 /**
   * A collection of available table property clauses with all the default objects available.
-  * This serves as a helper trait for [[com.websudos.phantom.dsl._]] and brings all the relevant options into scope.
+  * This serves as a helper trait for [[com.websudos.phantom.dsl]] and brings all the relevant options into scope.
   */
 private[phantom] trait TablePropertyClauses extends CompactionStrategies with CompressionStrategies {
   object Storage {

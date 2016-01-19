@@ -53,6 +53,10 @@ sealed trait CreateOptionsBuilder {
 
 sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
 
+  def enabled(qb: CQLQuery, flag: Boolean): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.enabled, flag.toString)
+  }
+
   def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
     quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size)
   }
@@ -62,11 +66,19 @@ sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
   }
 
   def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
+    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
   }
 
   def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
     simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_threshold, size.toString)
+  }
+
+  def unchecked_tombstone_compaction(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.unchecked_tombstone_compaction, size.toString)
+  }
+
+  def cold_reads_to_omit(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.cold_reads_to_omit, size.toString)
   }
 
   def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
