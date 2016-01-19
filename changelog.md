@@ -32,6 +32,7 @@ Changelog
     <li><a href="#version-1.20.0">1.20.0 - 08.01.2016</a></li>
     <li><a href="#version-1.21.0">1.21.0 - 18.01.2016</a></li>
     <li><a href="#version-1.21.1">1.21.1 - 19.01.2016</a></li>
+    <li><a href="#version-1.21.2">1.21.2 - 20.01.2016</a></li>
 </ul>
 
 
@@ -321,3 +322,8 @@ removed `session.newSimpleStatement`.
 
 - Added ability to merge batch queries.
 - Adding support for `iterator` method on queries.
+
+<a id="version-1.21.1">1.21.2</a>
+================================
+
+- Fixing serialization of Compaction properties in CREATE and ALTER queries.
