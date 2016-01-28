@@ -174,7 +174,7 @@ class UpdateQuery[
     */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
   def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new UpdateQuery(
       table,
       init,
