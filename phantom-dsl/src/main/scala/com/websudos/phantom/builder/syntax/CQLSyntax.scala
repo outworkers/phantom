@@ -174,6 +174,8 @@ object CQLSyntax {
     val List = "list"
     val Map = "map"
     val Set = "set"
+    val SmallInt = "smallint"
+    val TinyInt = "tinyint"
     val Timestamp = "timestamp"
     val Tuple = "tuple"
     val Text = "text"

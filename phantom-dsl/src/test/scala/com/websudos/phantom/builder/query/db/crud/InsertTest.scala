@@ -41,6 +41,9 @@ class InsertTest extends PhantomSuite {
     super.beforeAll()
     TestDatabase.listCollectionTable.insertSchema()
     TestDatabase.primitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
     TestDatabase.testTable.insertSchema()
     TestDatabase.recipes.insertSchema()
   }
@@ -58,7 +61,23 @@ class InsertTest extends PhantomSuite {
         res shouldBe defined
       }
     }
+  }
 
+  if(session.v4orNewer) {
+    "Insert" should "work fine for primitives cassandra 2.2 columns" in {
+      val row = gen[PrimitiveCassandra22]
+
+      val chain = for {
+        store <- TestDatabase.primitivesCassandra22.store(row).future()
+        one <- TestDatabase.primitivesCassandra22.select.where(_.pkey eqs row.pkey).one
+      } yield one
+
+      chain successful {
+        res => {
+          res shouldBe defined
+        }
+      }
+    }
   }
 
   "Insert" should "work fine for primitives columns with twitter futures" in {

@@ -135,6 +135,7 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
         case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
         case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
         case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
+        case x if x.isInstanceOf[BigInt] => x.asInstanceOf[BigInt].bigInteger
         case x => x
       }
     }
