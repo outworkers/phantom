@@ -53,15 +53,12 @@ private[phantom] trait PrepareMark {
 
 object ? extends PrepareMark
 
-class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement {
+class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 
-  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(statement)
-  }
-
-  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(statement)
+  override def statement()(implicit session: Session): Statement = {
+    statement
+      .setConsistencyLevel(options.consistencyLevel.orNull)
   }
 }
 

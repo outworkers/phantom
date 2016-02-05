@@ -27,22 +27,58 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query
+package com.websudos.phantom.builder.query.prepared
 
-import com.websudos.phantom.PhantomBaseSuite
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.TestDatabase
-import org.scalatest.{FreeSpec, Matchers, Suite}
+import com.websudos.phantom.dsl.Batch
+import com.websudos.phantom.tables.{Recipe, TestDatabase}
+import com.websudos.util.testing._
 
-trait KeySpaceSuite {
+class BatchablePreparedInsertQueryTest extends PhantomSuite {
 
-  self: Suite =>
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    TestDatabase.recipes.insertSchema()
+  }
 
-  implicit val keySpace = KeySpace("phantom")
+  it should "serialize an prepared batch query" in {
+    val sample1 = gen[Recipe]
+    val sample2 = gen[Recipe]
+
+    val query = TestDatabase.recipes.insert
+      .p_value(_.uid, ?)
+      .p_value(_.url, ?)
+      .p_value(_.servings, ?)
+      .p_value(_.ingredients, ?)
+      .p_value(_.description, ?)
+      .p_value(_.lastcheckedat, ?)
+      .p_value(_.props, ?)
+      .prepare()
+
+    def bind(recipe: Recipe): ExecutablePreparedQuery = query.bind(
+      recipe.uid,
+      recipe.url,
+      recipe.servings,
+      recipe.ingredients,
+      recipe.description,
+      recipe.lastCheckedAt,
+      recipe.props
+    )
+
+    val exec1 = bind(sample1)
+    val exec2 = bind(sample2)
+
+    val chain = for {
+      truncate <- TestDatabase.recipes.truncate.future()
+      store <- Batch.unlogged.add(exec1, exec2).future()
+      get <- TestDatabase.recipes.select.fetch()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res should contain theSameElementsAs Seq(sample1, sample2)
+      }
+    }
+  }
 }
-
-trait SerializationTest extends Matchers with TestDatabase.connector.Connector {
-  self: Suite =>
-}
-
-trait QueryBuilderTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector

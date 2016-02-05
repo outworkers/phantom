@@ -49,7 +49,7 @@ object BatchType {
 }
 
 sealed class BatchQuery[Status <: ConsistencyBound](
-  val iterator: Iterator[CQLQuery],
+  val iterator: Iterator[_ <: Statement],
   batchType: BatchType,
   usingPart: UsingPart = UsingPart.empty,
   added: Boolean = false,
@@ -74,7 +74,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     val batch = initBatch()
 
     for (st <- iterator) {
-      batch.add(new SimpleStatement(st.queryString))
+      batch.add(st)
     }
 
     options.consistencyLevel match {
@@ -106,9 +106,9 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add(query: Batchable with ExecutableStatement): BatchQuery[Status] = {
+  def add(query: Batchable with ExecutableStatement)(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ Iterator(query.qb),
+      iterator ++ Iterator(query.statement()),
       batchType,
       usingPart,
       added,
@@ -116,9 +116,9 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     )
   }
 
-  def add(queries: Batchable with ExecutableStatement*): BatchQuery[Status] = {
+  def add(queries: Batchable with ExecutableStatement*)(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ queries.map(_.qb).iterator,
+      iterator ++ queries.map(_.statement()).iterator,
       batchType,
       usingPart,
       added,
@@ -126,9 +126,9 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     )
   }
 
-  def add(queries: Iterator[Batchable with ExecutableStatement]): BatchQuery[Status] = {
+  def add(queries: Iterator[Batchable with ExecutableStatement])(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ queries.map(_.qb),
+      iterator ++ queries.map(_.statement()),
       batchType,
       usingPart,
       added,
