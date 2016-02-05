@@ -195,7 +195,7 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Timestamp
 
     def fromRow(row: Row, name: String): Option[Date] =
-      if (row.isNull(name)) None else Try(new Date(row.getDate(name).getMillisSinceEpoch)).toOption
+      if (row.isNull(name)) None else Try(row.getTimestamp(name)).toOption
 
     override def asCql(value: Date): String = {
       DateSerializer.asCql(value)
@@ -212,12 +212,11 @@ trait DefaultPrimitives {
     override def clz: Class[Date] = classOf[Date]
   }
 
-
   implicit object LocalDateIsPrimitive extends Primitive[LocalDate] {
 
     override type PrimitiveType = com.datastax.driver.core.LocalDate
 
-    val cassandraType = CQLSyntax.Types.Timestamp
+    val cassandraType = CQLSyntax.Types.Date
 
     def fromRow(row: Row, name: String): Option[LocalDate] =
       if (row.isNull(name)) None else Try(row.getDate(name)).toOption
