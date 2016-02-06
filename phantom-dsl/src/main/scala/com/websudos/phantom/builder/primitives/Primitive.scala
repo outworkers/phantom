@@ -49,6 +49,8 @@ private[phantom] object DateSerializer {
 
   def asCql(date: LocalDate): String = date.getMillisSinceEpoch.toString
 
+  def asCql(date: org.joda.time.LocalDate): String = date.toString
+
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
@@ -268,6 +270,30 @@ trait DefaultPrimitives {
     }
 
     override def clz: Class[LocalDate] = classOf[LocalDate]
+  }
+
+  implicit object JodaLocalDateIsPrimitive extends Primitive[org.joda.time.LocalDate] {
+
+    override type PrimitiveType = com.datastax.driver.core.LocalDate
+
+    val cassandraType = CQLSyntax.Types.Date
+
+    def fromRow(row: Row, name: String): Option[org.joda.time.LocalDate] =
+      if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch).toLocalDate).toOption
+
+    override def asCql(value: org.joda.time.LocalDate): String = {
+      CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
+    }
+
+    override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
+      r => new DateTime(r.getDate(column).getMillisSinceEpoch).toLocalDate
+    }
+
+    override def fromString(value: String): org.joda.time.LocalDate = {
+      new DateTime(value, DateTimeZone.UTC).toLocalDate
+    }
+
+    override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
   }
 
   implicit object DateTimeIsPrimitive extends Primitive[DateTime] {

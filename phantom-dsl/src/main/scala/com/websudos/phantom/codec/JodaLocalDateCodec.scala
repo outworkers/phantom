@@ -27,48 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom.codec
 
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.column.LocalDateColumn
-import com.websudos.phantom.dsl._
-import org.joda.time.LocalDate
+import com.datastax.driver.core._
+import com.datastax.driver.extras.codecs.MappingCodec
 
-case class PrimitiveCassandra22(
-                      pkey: String,
-                      short: Short,
-                      byte: Byte,
-                      localDate: LocalDate
-                    )
+class JodaLocalDateCodec extends MappingCodec(TypeCodec.date(), classOf[org.joda.time.LocalDate]) {
 
-sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  override def serialize(value: org.joda.time.LocalDate): LocalDate = LocalDate.fromYearMonthDay(value.getYear, value.getMonthOfYear, value.getDayOfMonth)
 
-  object short extends SmallIntColumn(this)
-
-  object byte extends TinyIntColumn(this)
-
-  object date extends LocalDateColumn(this)
-
-  override def fromRow(r: Row): PrimitiveCassandra22 = {
-    PrimitiveCassandra22(
-      pkey = pkey(r),
-      short = short(r),
-      byte = byte(r),
-      localDate = date(r)
-    )
-  }
-}
-
-abstract class ConcretePrimitivesCassandra22 extends PrimitivesCassandra22 with RootConnector {
-
-  override val tableName = "PrimitivesCassandra22"
-
-  def store(row: PrimitiveCassandra22): InsertQuery.Default[ConcretePrimitivesCassandra22, PrimitiveCassandra22] = {
-    insert
-      .value(_.pkey, row.pkey)
-      .value(_.short, row.short)
-      .value(_.byte, row.byte)
-      .value(_.date, row.localDate)
-  }
+  override def deserialize(value: LocalDate): org.joda.time.LocalDate = new org.joda.time.LocalDate(value.getYear, value.getMonth, value.getDay)
 }

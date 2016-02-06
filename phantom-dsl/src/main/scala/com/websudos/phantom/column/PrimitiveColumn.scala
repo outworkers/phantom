@@ -36,7 +36,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import org.joda.time.DateTime
+import org.joda.time.{LocalDate, DateTime}
 
 import scala.annotation.implicitNotFound
 import scala.util.Try
@@ -80,6 +80,16 @@ class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassandr
  */
 class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
   extends PrimitiveColumn[Owner, Record, DateTime](table) {
+}
+
+/**
+  * A LocalDate Column.
+  * @param table The Cassandra Table to which the column belongs to.
+  * @tparam Owner The Owner of the Record.
+  * @tparam Record The Record type.
+  */
+class LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
+  extends PrimitiveColumn[Owner, Record, LocalDate](table) {
 }
 
 /*
