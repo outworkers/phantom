@@ -164,6 +164,7 @@ object CQLSyntax {
     val Blob = "blob"
     val Boolean = "boolean"
     val Counter = "counter"
+    val Date = "date"
     val Decimal = "decimal"
     val Double = "double"
     val Long = "long"
