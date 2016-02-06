@@ -34,6 +34,7 @@ Changelog
     <li><a href="#version-1.21.1">1.21.1 - 19.01.2016</a></li>
     <li><a href="#version-1.21.2">1.21.2 - 20.01.2016</a></li>
     <li><a href="#version-1.21.3">1.21.3 - 28.01.2016</a></li>
+    <li><a href="#version-1.21.4">1.21.4 - 06.02.2016</a></li>
 </ul>
 
 
@@ -333,3 +334,10 @@ removed `session.newSimpleStatement`.
 ================================
 
 - Fixing type evidence required for `p_and` chains in `UpdateQuery`.
+
+<a id="version-1.21.4">1.21.4</a>
+================================
+
+- #414 Added ablity to use prepared statements inside of batch statemets.
+- #417 Corrected cql type for LocalDate and Date accessor method.
+- #412 Bumped Datastax Java Driver version to 3.0.0

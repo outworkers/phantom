@@ -28,8 +28,8 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 Check the badges at the top of this README for the latest version. The badges are automatically updated in realtime, where as this README isn't.
 
-- Latest stable version: 1.11.0 (Maven Central)
-- Bleeding edge: 1.12.2 (Websudos OSS releases on Bintray)
+- Latest stable version: 1.21.0 (Maven Central)
+- Bleeding edge: 1.21.4 (Websudos OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
