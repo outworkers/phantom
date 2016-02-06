@@ -147,8 +147,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Long = value.toLong
 
-    override def fromRow(column: String, row: Row): Try[Long] = nullCheck(column, row) {
-      r => r.getLong(column)
+    override def fromRow(column: String, row: Row): Try[Long] = {
+      nullCheck(column, row)(_.getLong(column))
     }
 
     override def clz: Class[java.lang.Long] = classOf[java.lang.Long]
