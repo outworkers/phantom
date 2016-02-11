@@ -141,6 +141,26 @@ package object tables {
     }
   }
 
+  implicit object PrimitiveCassandra22Sampler extends Sample[PrimitiveCassandra22] {
+    def sample: PrimitiveCassandra22 = {
+      PrimitiveCassandra22(
+        gen[String],
+        gen[Int].toShort,
+        gen[Int].toByte
+      )
+    }
+  }
+
+  implicit object OptionalPrimitiveCassandra22Sampler extends Sample[OptionalPrimitiveCassandra22] {
+    def sample: OptionalPrimitiveCassandra22 = {
+      OptionalPrimitiveCassandra22(
+        gen[String],
+        genOpt[Int].map(_.toShort),
+        genOpt[Int].map(_.toByte)
+      )
+    }
+  }
+
   implicit object TimeSeriesRSampler extends Sample[TimeSeriesRecord] {
     def sample: TimeSeriesRecord = {
       TimeSeriesRecord(

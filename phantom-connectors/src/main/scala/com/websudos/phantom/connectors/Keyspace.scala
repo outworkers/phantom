@@ -111,6 +111,8 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
       }
 
       def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+
+      def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
     }
 
     lazy val provider = outer.provider

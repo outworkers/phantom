@@ -120,6 +120,40 @@ trait DefaultPrimitives {
     override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
   }
 
+  implicit object SmallIntPrimitive extends Primitive[Short] {
+
+    override type PrimitiveType = java.lang.Short
+
+    def asCql(value: Short): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.SmallInt
+
+    override def fromString(value: String): Short = value.toShort
+
+    override def fromRow(column: String, row: Row): Try[Short] = nullCheck(column, row) {
+      r => r.getShort(column)
+    }
+
+    override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
+  }
+
+  implicit object TinyIntPrimitive extends Primitive[Byte] {
+
+    override type PrimitiveType = java.lang.Byte
+
+    def asCql(value: Byte): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.TinyInt
+
+    override def fromString(value: String): Byte = value.toByte
+
+    override def fromRow(column: String, row: Row): Try[Byte] = nullCheck(column, row) {
+      r => r.getByte(column)
+    }
+
+    override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
+  }
+
   implicit object DoublePrimitive extends Primitive[Double] {
 
     override type PrimitiveType = java.lang.Double

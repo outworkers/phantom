@@ -40,6 +40,10 @@ class PreparedSelectQueryTest extends PhantomSuite {
     super.beforeAll()
     TestDatabase.recipes.insertSchema()
     TestDatabase.articlesByAuthor.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
   }
 
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
@@ -84,6 +88,46 @@ class PreparedSelectQueryTest extends PhantomSuite {
 
         res2 shouldBe defined
         res2.value shouldEqual sample2
+      }
+    }
+  }
+
+  it should "serialise and execute a primitives prepared select statement with the correct number of arguments" in {
+    val primitive = gen[Primitive]
+
+    val query = TestDatabase.primitives.select.p_where(_.pkey eqs ?).prepare()
+
+    val operation = for {
+      truncate <- TestDatabase.primitives.truncate.future
+      insertDone <- TestDatabase.primitives.store(primitive).future()
+      select <- query.bind(primitive.pkey).one()
+    } yield select
+
+    operation.successful {
+      items => {
+        items shouldBe defined
+        items.value shouldEqual primitive
+      }
+    }
+  }
+
+  if(session.v4orNewer) {
+    it should "serialise and execute a primitives cassandra 2.2 prepared select statement with the correct number of arguments" in {
+      val primitive = gen[PrimitiveCassandra22]
+
+      val query = TestDatabase.primitivesCassandra22.select.p_where(_.pkey eqs ?).prepare()
+
+      val operation = for {
+        truncate <- TestDatabase.primitivesCassandra22.truncate.future
+        insertDone <- TestDatabase.primitivesCassandra22.store(primitive).future()
+        select <- query.bind(primitive.pkey).one()
+      } yield select
+
+      operation.successful {
+        items => {
+          items shouldBe defined
+          items.value shouldEqual primitive
+        }
       }
     }
   }

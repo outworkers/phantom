@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.{TestDatabase, Recipe}
+import com.websudos.phantom.tables.{PrimitiveCassandra22, Primitive, TestDatabase, Recipe}
 import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
 
@@ -39,6 +39,10 @@ class PreparedInsertQueryTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.recipes.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
   }
 
   it should "serialize an insert query" in {
@@ -78,4 +82,77 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
+  it should "serialize a primitives insert query" in {
+    val sample = gen[Primitive]
+
+    val query = TestDatabase.primitives.insert
+      .p_value(_.pkey, ?)
+      .p_value(_.long, ?)
+      .p_value(_.boolean, ?)
+      .p_value(_.bDecimal, ?)
+      .p_value(_.double, ?)
+      .p_value(_.float, ?)
+      .p_value(_.inet, ?)
+      .p_value(_.int, ?)
+      .p_value(_.date, ?)
+      .p_value(_.uuid, ?)
+      .p_value(_.bi, ?)
+      .prepare()
+
+    val exec = query.bind(
+      sample.pkey,
+      sample.long,
+      sample.boolean,
+      sample.bDecimal,
+      sample.double,
+      sample.float,
+      sample.inet,
+      sample.int,
+      sample.date,
+      sample.uuid,
+      sample.bi
+    ).future()
+
+    val chain = for {
+      store <- exec
+      get <- TestDatabase.primitives.select.where(_.pkey eqs sample.pkey).one()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
+
+  if(session.v4orNewer) {
+    it should "serialize a cassandra 2.2 primitives insert query" in {
+      val sample = gen[PrimitiveCassandra22]
+
+      val query = TestDatabase.primitivesCassandra22.insert
+        .p_value(_.pkey, ?)
+        .p_value(_.short, ?)
+        .p_value(_.byte, ?)
+        .prepare()
+
+      val exec = query.bind(
+        sample.pkey,
+        sample.short,
+        sample.byte
+      ).future()
+
+      val chain = for {
+        store <- exec
+        get <- TestDatabase.primitivesCassandra22.select.where(_.pkey eqs sample.pkey).one()
+      } yield get
+
+      whenReady(chain) {
+        res => {
+          res shouldBe defined
+          res.value shouldEqual sample
+        }
+      }
+    }
+  }
 }

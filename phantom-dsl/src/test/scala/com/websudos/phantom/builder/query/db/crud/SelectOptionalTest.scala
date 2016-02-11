@@ -39,6 +39,9 @@ class SelectOptionalTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.optionalPrimitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.optionalPrimitivesCassandra22.insertSchema()
+    }
   }
 
   "Selecting the whole row" should "work fine when optional value defined" in {
@@ -47,6 +50,17 @@ class SelectOptionalTest extends PhantomSuite {
 
   it should "work fine when optional value is empty" in {
     checkRow(OptionalPrimitive.none)
+  }
+
+
+  if(session.v4orNewer) {
+    "Selecting the whole row" should "work fine when cassandra 2.2 optional value defined" in {
+      checkRow(gen[OptionalPrimitiveCassandra22])
+    }
+
+    it should "work fine when optional cassandra 2.2 value is empty" in {
+      checkRow(OptionalPrimitiveCassandra22.none)
+    }
   }
 
   private[this] def checkRow(row: OptionalPrimitive) {
@@ -71,6 +85,21 @@ class SelectOptionalTest extends PhantomSuite {
         r.value.string shouldEqual row.string
         r.value.timeuuid shouldEqual row.timeuuid
         r.value.uuid shouldEqual row.uuid
+      }
+    }
+  }
+
+  private[this] def checkRow(row: OptionalPrimitiveCassandra22) {
+    val rcp = for {
+      store <- TestDatabase.optionalPrimitivesCassandra22.store(row).future()
+      b <- TestDatabase.optionalPrimitivesCassandra22.select.where(_.pkey eqs row.pkey).one
+    } yield b
+
+    rcp successful {
+      r => {
+        r shouldBe defined
+        r.value.short shouldEqual row.short
+        r.value.byte shouldEqual row.byte
       }
     }
   }
