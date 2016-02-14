@@ -29,8 +29,10 @@
  */
 package com.websudos.phantom.tables
 
+import java.net.SocketOption
 import java.util.UUID
 
+import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.db.DatabaseImpl
 
@@ -87,4 +89,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object events extends ConcreteEvents with connector.Connector
 }
 
-object TestDatabase extends TestDatabase(ContactPoint.local.keySpace("phantom"))
+object Connector {
+  val default = ContactPoint.local.noHeartbeat().keySpace("phantom")
+}
+
+object TestDatabase extends TestDatabase(Connector.default)

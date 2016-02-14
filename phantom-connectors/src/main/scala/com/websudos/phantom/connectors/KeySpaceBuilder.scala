@@ -15,6 +15,8 @@
  */
 package com.websudos.phantom.connectors
 
+import com.datastax.driver.core.PoolingOptions
+
 /**
  * A builder for KeySpace instances.
  *
@@ -31,6 +33,18 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
    */
   def withClusterBuilder(builder: ClusterBuilder): KeySpaceBuilder =
     new KeySpaceBuilder(clusterBuilder andThen builder)
+
+  /**
+    * Disables the heartbeat for the current builder.
+    * This is designed for local instantiations of connectors or test environments.
+    * @return A new cluster builder, with the heartbeat interval set to 0(disabled).
+    */
+  def noHeartbeat(): KeySpaceBuilder = {
+    new KeySpaceBuilder(clusterBuilder andThen(_.withPoolingOptions(
+      new PoolingOptions().setHeartbeatIntervalSeconds(0))
+      )
+    )
+  }
 
   /**
    * Create a new keySpace with the specified name.

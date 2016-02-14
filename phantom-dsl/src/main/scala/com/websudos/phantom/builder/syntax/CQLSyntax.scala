@@ -249,8 +249,11 @@ object CQLSyntax {
   }
 
   object CacheStrategies {
+    val Caching = "caching"
     val None = "none"
     val KeysOnly = "keys_only"
+    val RowsOnly = "rows_only"
+    val All = "all"
 
   }
 

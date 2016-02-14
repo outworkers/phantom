@@ -46,11 +46,15 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(Span(10, Seconds))
 
-  implicit val defaultPatience = PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
+  implicit val defaultPatience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(50, Millis))
 }
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
 
   val database = TestDatabase
+}
 
+
+trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+  val database = TestDatabase
 }
