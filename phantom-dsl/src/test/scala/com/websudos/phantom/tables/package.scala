@@ -146,7 +146,8 @@ package object tables {
       PrimitiveCassandra22(
         gen[String],
         gen[Int].toShort,
-        gen[Int].toByte
+        gen[Int].toByte,
+        new DateTime(new DateTime().plus(gen[Int].toLong)).toLocalDate
       )
     }
   }

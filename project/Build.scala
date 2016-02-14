@@ -200,6 +200,7 @@ object Build extends Build {
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+        "com.datastax.cassandra"       %  "cassandra-driver-extras"           % DatastaxDriverVersion,
         "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
         "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",

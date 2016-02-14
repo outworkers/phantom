@@ -30,9 +30,10 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.tables.{PrimitiveCassandra22, Primitive, TestDatabase, Recipe}
-import com.websudos.util.testing._
+import com.websudos.phantom.codec.JodaLocalDateCodec
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe, TestDatabase}
+import com.websudos.util.testing._
 
 class PreparedInsertQueryTest extends PhantomSuite {
 
@@ -40,7 +41,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
     super.beforeAll()
     TestDatabase.recipes.insertSchema()
     TestDatabase.primitives.insertSchema()
-    if(session.v4orNewer) {
+    if (session.v4orNewer) {
       TestDatabase.primitivesCassandra22.insertSchema()
     }
   }
@@ -126,25 +127,32 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
-  if(session.v4orNewer) {
+  if (session.v4orNewer) {
     it should "serialize a cassandra 2.2 primitives insert query" in {
+      session.getCluster.getConfiguration.getCodecRegistry.register(new JodaLocalDateCodec)
       val sample = gen[PrimitiveCassandra22]
 
       val query = TestDatabase.primitivesCassandra22.insert
         .p_value(_.pkey, ?)
         .p_value(_.short, ?)
         .p_value(_.byte, ?)
+        .p_value(_.date, ?)
         .prepare()
 
       val exec = query.bind(
         sample.pkey,
         sample.short,
-        sample.byte
+        sample.byte,
+        sample.localDate
       ).future()
+
+      val selectQuery = TestDatabase.primitivesCassandra22.select
+        .p_where(_.pkey eqs ?)
+        .prepare()
 
       val chain = for {
         store <- exec
-        get <- TestDatabase.primitivesCassandra22.select.where(_.pkey eqs sample.pkey).one()
+        get <- selectQuery.bind(sample.pkey).one()
       } yield get
 
       whenReady(chain) {
