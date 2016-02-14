@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.websudos.phantom.dsl._
@@ -38,14 +37,13 @@ import com.websudos.util.testing._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
-import org.scalatest.time.{Milliseconds, Seconds, Span}
+import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.Await
-import org.scalatest.time.SpanSugar._
 
 class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 
-  override implicit val patienceConfig = PatienceConfig(Span(5, Seconds), Span(300, Milliseconds))
+  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
   it should "correctly consume the entire stream of items published from a Cassandra table" in {
     val counter = new AtomicInteger(0)
@@ -87,8 +85,6 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     eventually {
       counter.get() shouldEqual generatorCount
-    }
-
-
+    } (defaultPatience)
   }
 }

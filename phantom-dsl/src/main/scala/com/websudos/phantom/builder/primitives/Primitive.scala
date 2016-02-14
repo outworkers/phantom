@@ -349,7 +349,7 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Decimal
 
     override def fromRow(column: String, row: Row): Try[BigDecimal] = nullCheck(column, row) {
-      r => r.getDecimal(column)
+      r => BigDecimal(r.getDecimal(column))
     }
 
     override def asCql(value: BigDecimal): String = value.toString()

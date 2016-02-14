@@ -65,39 +65,37 @@ object ScalatraBootstrap {
   )
 }
 
-class ScalatraBootstrap extends LifeCycle with PhantomCassandraConnector {
+class Boot extends EquityConnector.default.Connector {
 
-  override def init(context: ServletContext) {
+  val db = EquityDatabase
+
+  def boot(): Unit = {
 
     // Create cassandra keyspace in startup
     // Create prices tables
-    Await.ready(EquityPrices.create.ifNotExists().future(), 5.seconds)
-    Await.ready(OptionPrices.create.ifNotExists().future(), 5.seconds)
+    Await.result(db.autocreate().future(), 5.seconds)
 
     // Insert prices
-    val insertApplePrices = ScalatraBootstrap.ApplePrices.map(EquityPrices.insertPrice).foldLeft(Batch.unlogged) {
+    val insertApplePrices = ScalatraBootstrap.ApplePrices.map(db.equityPrices.insertPrice).foldLeft(Batch.unlogged) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
 
     val chain = for {
-      truncate <- EquityPrices.truncate.future()
+      truncate <- EquityDatabase.equityPrices.truncate.future()
       batch <- insertApplePrices.future()
     } yield batch
 
-    Await.ready(chain, 3.seconds)
+    Await.result(chain, 5.seconds)
 
-    val insertAppleOptionPrices = ScalatraBootstrap.AppleOptionPrices.map(OptionPrices.insertPrice).foldLeft(Batch.unlogged) {
+    val insertAppleOptionPrices = ScalatraBootstrap.AppleOptionPrices.map(db.optionPrices.insertPrice).foldLeft(Batch.unlogged) {
       (batch, insertQuery) => batch.add(insertQuery)
     }
 
     val chain2 = for {
-      truncate <- OptionPrices.truncate.future()
+      truncate <- db.optionPrices.truncate.future()
       batch <- insertAppleOptionPrices.future()
     } yield batch
 
-    Await.ready(chain2, 3.seconds)
-
-    // Mount prices servlet
-    context mount (new PricesAccess, "/*")
+    Await.result(chain2, 5.seconds)
   }
 }

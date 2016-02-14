@@ -43,13 +43,37 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
   val ArticlesByAuthor = TestDatabase.articlesByAuthor
   val TimeSeriesTable = TestDatabase.timeSeriesTable
 
+  protected[this] val limit = 5
+
   "The select query builder" - {
+
+    "should serialize distinct clauses" - {
+      "should correctly append a * if there is no column selection provided to a distinct clause" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.distinct().where(_.id eqs id).limit(limit).queryString
+
+        qb shouldEqual s"SELECT DISTINCT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5;"
+      }
+
+      "should correctly append a column selection to a distinct clause" in {
+        val id = gen[UUID]
+
+        val qb = TestDatabase.tableWithCompositeKey.select(_.id, _.second_part)
+          .distinct()
+          .where(_.id eqs id)
+          .limit(limit).queryString
+
+        qb shouldEqual s"SELECT DISTINCT id, second_part FROM phantom.tableWithCompositeKey WHERE id = ${id.toString} LIMIT 5;"
+      }
+    }
+
     "should serialize " - {
 
       "serialise an allow filtering clause in the init position" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(5).queryString
+        val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(limit).queryString
 
         qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }
@@ -57,7 +81,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       "serialize an allow filtering clause specified after a limit query" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.select.where(_.id eqs id).limit(5).allowFiltering().queryString
+        val qb = BasicTable.select.where(_.id eqs id).limit(limit).allowFiltering().queryString
 
         qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
       }

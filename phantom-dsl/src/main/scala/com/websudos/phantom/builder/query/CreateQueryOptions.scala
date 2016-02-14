@@ -124,7 +124,9 @@ sealed trait CompactionStrategies {
     extends CompactionProperties[LeveledCompactionStrategy](qb) {
 
     def sstable_size_in_mb(unit: StorageUnit): LeveledCompactionStrategy = {
-      new LeveledCompactionStrategy(QueryBuilder.Create.sstable_size_in_mb(qb, unit.inMegabytes.toString))
+      new LeveledCompactionStrategy(
+        QueryBuilder.Create.sstable_size_in_mb(qb, unit.inMegabytes.toString)
+      )
     }
 
     override protected[this] def instance(qb: CQLQuery): LeveledCompactionStrategy = {
@@ -186,13 +188,23 @@ sealed trait CompressionStrategies {
   case object DeflateCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
 }
 
-sealed class CacheProperty(val qb: CQLQuery)
+sealed abstract class CacheProperty(override val qb: CQLQuery) extends TablePropertyClause(qb)
 
-object CacheStrategies {
+sealed trait CachingStrategies {
+  private[this] def caching(strategy: String) = {
+    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+      .appendSingleQuote(CQLSyntax.CacheStrategies.Caching)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.appendSingleQuote(strategy)
+  }
+
   case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
   case object KeysOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly))
+  case object RowsOnly extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.RowsOnly))
+  case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
 }
 
+object Caching extends CachingStrategies
 
 /**
   * A root implementation trait of a CQL table option.

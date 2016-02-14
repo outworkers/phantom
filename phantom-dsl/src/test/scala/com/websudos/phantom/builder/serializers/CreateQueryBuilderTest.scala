@@ -137,6 +137,11 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
         val qb = BasicTable.create.`with`(caching eqs Cache.KeysOnly).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
       }
+
+      "specify Cache.All as a caching strategy" in {
+        val qb = BasicTable.create.`with`(caching eqs Cache.All).qb.queryString
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'all'"
+      }
     }
 
     "should allow specifying a default_time_to_live" - {

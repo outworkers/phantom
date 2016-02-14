@@ -95,6 +95,10 @@ class AlterQuery[
     new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name), options)
   }
 
+  final def dropIfExists()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
+    new AlterQuery(table, QueryBuilder.Alter.dropTableIfExist(table.tableName, keySpace.name), options)
+  }
+
   /**
    * Creates an ALTER drop query to drop the column from the schema definition.
    * It will produce the following type of queries, with the CQL serialization on the right hand side:

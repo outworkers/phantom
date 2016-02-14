@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/websudos/phantom.svg?branch=develop)](https://travis-ci.org/websudos/phantom) [![Coverage Status](https://coveralls.io/repos/websudos/phantom/badge.svg)](https://coveralls.io/r/websudos/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) [![Download](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) [![Join the chat at https://gitter.im/websudos/phantom](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/websudos/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+phantom [![Build Status](https://travis-ci.org/websudos/phantom.svg?branch=develop)](https://travis-ci.org/websudos/phantom) [![Coverage Status](https://coveralls.io/repos/websudos/phantom/badge.svg)](https://coveralls.io/r/websudos/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/websudos/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ==================================================================================================
 
 Reactive type-safe Scala DSL for Cassandra
@@ -28,8 +28,8 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 Check the badges at the top of this README for the latest version. The badges are automatically updated in realtime, where as this README isn't.
 
-- Latest stable version: 1.21.0 (Maven Central)
-- Bleeding edge: 1.21.4 (Websudos OSS releases on Bintray)
+- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) (Maven Central)
+- Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) (Websudos OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
@@ -101,13 +101,13 @@ Scala/Cassandra users in the world rely on phantom.
 * Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1))
 * Benjamin Edwards ([@benjumanji](https://github.com/benjumanji))
 * Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev))
+* Michal Matloka ([@mmatloka](https://github.com/mmatloka))
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
-* Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
 * Tomasz Perek ([@tperek](https://github.com/tperek))
 * Evan Chan ([@evanfchan](https://github.com/evanfchan))
-
+* Jens Halm ([@jenshalm](https://github.com/jenshalm))
 
 <a id="copyright">Copyright</a>
 ===============================
@@ -115,7 +115,7 @@ Scala/Cassandra users in the world rely on phantom.
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright &copy; 2013 - 2015 websudos.
+Copyright &copy; 2013 - 2016 websudos.
 
 
 Contributing to phantom

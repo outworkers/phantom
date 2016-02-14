@@ -234,7 +234,7 @@ object CreateQuery {
 
 private[phantom] trait CreateImplicits extends TablePropertyClauses {
 
-  val Cache = CacheStrategies
+  val Cache = Caching
 
   implicit def rootCreateQueryToCreateQuery[
   T <: CassandraTable[T, _],

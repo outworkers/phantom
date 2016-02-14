@@ -35,7 +35,11 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.10.8"
+  object Versions {
+    val logback = "1.1.3"
+  }
+
+  val UtilVersion = "0.10.14"
   val DatastaxDriverVersion = "3.0.0"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.5"
@@ -107,10 +111,9 @@ object Build extends Build {
     licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
   )
 
-
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.21.5",
+    version := "1.22.0",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -152,7 +155,7 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
     id = "phantom",
@@ -206,7 +209,8 @@ object Build extends Build {
         "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",
         "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
-        "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided"
+        "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided",
+        "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test, provided"
       )
     ).dependsOn(
       phantomConnectors

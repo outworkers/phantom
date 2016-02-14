@@ -35,6 +35,8 @@ Changelog
     <li><a href="#version-1.21.2">1.21.2 - 20.01.2016</a></li>
     <li><a href="#version-1.21.3">1.21.3 - 28.01.2016</a></li>
     <li><a href="#version-1.21.4">1.21.4 - 06.02.2016</a></li>
+    <li><a href="#version-1.21.5">1.21.5 - 11.02.2016</a></li>
+    <li><a href="#version-1.22.0">1.22.0 - 14.02.2016</a></li>
 </ul>
 
 
@@ -341,3 +343,15 @@ removed `session.newSimpleStatement`.
 - #414 Added ablity to use prepared statements inside of batch statemets.
 - #417 Corrected cql type for LocalDate and Date accessor method.
 - #412 Bumped Datastax Java Driver version to 3.0.0
+
+<a id="version-1.21.5">1.21.5</a>
+================================
+- Added SmallInt and TinyInt support.
+- Added a new contributor to the list.
+
+<a id="version-1.22.0">1.22.0</a>
+================================
+
+- PHANTOM-194: Fixed serialization of ```Table.select.distinct``` queries.
+- Added support for `LocalDate` columns.
+- Added `driver-extras` dependency from the Datastax set.

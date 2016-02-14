@@ -139,6 +139,13 @@ private[phantom] trait AlterQueryBuilder {
       .forcePad.append(QueryBuilder.keyspace(keyspace, table))
   }
 
+  def dropTableIfExist(table: String, keyspace: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Alter.Drop)
+      .forcePad.append(CQLSyntax.table)
+      .forcePad.append(CQLSyntax.ifExists)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, table))
+  }
+
 
   def alter(tableName: String): CQLQuery = {
     CQLQuery(CQLSyntax.alter)
