@@ -157,7 +157,8 @@ package object tables {
       OptionalPrimitiveCassandra22(
         gen[String],
         genOpt[Int].map(_.toShort),
-        genOpt[Int].map(_.toByte)
+        genOpt[Int].map(_.toByte),
+        Some(new DateTime(new DateTime().plus(gen[Int].toLong)).toLocalDate)
       )
     }
   }

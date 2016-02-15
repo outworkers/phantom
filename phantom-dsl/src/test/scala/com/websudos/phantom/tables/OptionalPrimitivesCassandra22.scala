@@ -35,10 +35,11 @@ import com.websudos.phantom.dsl._
 import com.websudos.util.testing._
 
 case class OptionalPrimitiveCassandra22(
-                                         pkey: String,
-                                         short: Option[Short],
-                                         byte: Option[Byte]
-                                       )
+  pkey: String,
+  short: Option[Short],
+  byte: Option[Byte],
+  localDate: Option[LocalDate]
+)
 
 object OptionalPrimitiveCassandra22 {
 
@@ -46,7 +47,8 @@ object OptionalPrimitiveCassandra22 {
     OptionalPrimitiveCassandra22(
       pkey = gen[String],
       short = None,
-      byte = None
+      byte = None,
+      localDate = None
     )
   }
 }
@@ -59,11 +61,14 @@ sealed class OptionalPrimitivesCassandra22 extends CassandraTable[ConcreteOption
 
   object byte extends OptionalTinyIntColumn(this)
 
+  object localDate extends OptionalLocalDateColumn(this)
+
   override def fromRow(r: Row): OptionalPrimitiveCassandra22 = {
     OptionalPrimitiveCassandra22(
       pkey = pkey(r),
       short = short(r),
-      byte = byte(r)
+      byte = byte(r),
+      localDate = localDate(r)
     )
   }
 }
@@ -77,5 +82,6 @@ abstract class ConcreteOptionalPrimitivesCassandra22 extends OptionalPrimitivesC
       .value(_.pkey, row.pkey)
       .value(_.short, row.short)
       .value(_.byte, row.byte)
+      .value(_.localDate, row.localDate)
   }
 }

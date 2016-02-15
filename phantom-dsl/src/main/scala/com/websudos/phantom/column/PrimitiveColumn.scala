@@ -62,36 +62,6 @@ class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Fl
   }
 }
 
-/**
- * A Date Column, used to enforce restrictions on clustering order.
- * @param table The Cassandra Table to which the column belongs to.
- * @tparam Owner The Owner of the Record.
- * @tparam Record The Record type.
- */
-class DateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
-  extends PrimitiveColumn[Owner, Record, Date](table) {
-}
-
-/**
- * A DateTime Column, used to enforce restrictions on clustering order.
- * @param table The Cassandra Table to which the column belongs to.
- * @tparam Owner The Owner of the Record.
- * @tparam Record The Record type.
- */
-class DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
-  extends PrimitiveColumn[Owner, Record, DateTime](table) {
-}
-
-/**
-  * A LocalDate Column.
-  * @param table The Cassandra Table to which the column belongs to.
-  * @tparam Owner The Owner of the Record.
-  * @tparam Record The Record type.
-  */
-class LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
-  extends PrimitiveColumn[Owner, Record, LocalDate](table) {
-}
-
 /*
 class Tuple2Column[Owner <: CassandraTable[Owner, Record], Record, K1 : Primitive, K2 : Primitive](table: Owner)
   extends Column[Owner, Record, (K1, K2)](table) {
