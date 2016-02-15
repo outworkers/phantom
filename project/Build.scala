@@ -126,6 +126,7 @@ object Build extends Build {
     name := "phantom"
   ).aggregate(
     phantomDsl,
+    phantomJdk8,
     phantomExample,
     phantomConnectors,
     phantomReactiveStreams,
@@ -170,6 +171,21 @@ object Build extends Build {
     ).dependsOn(
       phantomConnectors
     )
+
+  lazy val phantomJdk8 = Project(
+    id = "phantom-jdk8",
+    base = file("phantom-jdk8"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-jdk8",
+    testOptions in Test += Tests.Argument("-oF"),
+    logBuffered in Test := false,
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, 4)
+    )
+  ).dependsOn(
+    phantomDsl % "compile->compile;test->test"
+  )
 
   lazy val phantomConnectors = Project(
     id = "phantom-connectors",
