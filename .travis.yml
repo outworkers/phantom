@@ -32,3 +32,5 @@ before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
 script: sbt ++$TRAVIS_SCALA_VERSION clean test
 
+after_success: ./build/publish_develop.sh
+
