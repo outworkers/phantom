@@ -181,6 +181,7 @@ package object tables {
       val id = UUIDs.timeBased()
 
       TimeUUIDRecord(
+        user = gen[UUID],
         id = id,
         name = gen[ShortString].value,
         timestamp = new DateTime(UUIDs.unixTimestamp(id))

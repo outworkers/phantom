@@ -69,8 +69,8 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     val chain = for {
       store <- database.timeuuidTable.store(record).future()
-      timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id))
-        .where(_.id eqs record.id).one()
+      timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id)).where(_.user eqs record.user)
+        .and(_.id eqs record.id).one()
     } yield timestamp
 
     whenReady(chain) {
@@ -88,8 +88,8 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     val chain = for {
       store <- database.timeuuidTable.store(record).future()
-      timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id))
-        .where(_.id eqs record.id).one()
+      timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id)).where(_.user eqs record.user)
+        .and(_.id eqs record.id).one()
     } yield timestamp
 
     whenReady(chain) {

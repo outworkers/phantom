@@ -48,17 +48,20 @@ class TimeSeriesTest extends PhantomSuite {
     TestDatabase.timeSeriesTable.insertSchema()
   }
 
+  protected[this] final val durationOffset = 1000
+
   it should "allow using naturally fetch the records in descending order for a descending clustering order" in {
 
     var i = 0
-    val testUUID = gen[UUID]
-
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset, i)
+        )
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
@@ -88,14 +91,15 @@ class TimeSeriesTest extends PhantomSuite {
 
   it should "allow using naturally fetch the records in descending order for a descending clustering order with Twitter Futures" in {
     var i = 0
-    val testUUID = gen[UUID]
-
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(1000, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset, i)
+        )
       })
 
     val ts = recordList.map(_.timestamp.getSecondOfDay)
@@ -124,13 +128,15 @@ class TimeSeriesTest extends PhantomSuite {
 
   it should "allow fetching the records in ascending order for a descending clustering order using order by clause" in {
     var i = 0
-    val testUUID = gen[UUID]
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset / 2, i)
+        )
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
@@ -162,13 +168,15 @@ class TimeSeriesTest extends PhantomSuite {
 
   it should "allow fetching the records in ascending order for a descending clustering order using order by clause with Twitter Futures" in {
     var i = 0
-    val testUUID = gen[UUID]
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset, i)
+        )
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
@@ -182,7 +190,11 @@ class TimeSeriesTest extends PhantomSuite {
     val chain = for {
       truncate <- TestDatabase.timeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.asc).limit(number).collect()
+      chunks <- TestDatabase.timeSeriesTable
+        .select
+        .where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
+        .orderBy(_.timestamp.asc).limit(number)
+        .collect()
     } yield chunks
 
     chain.successful {
@@ -194,13 +206,15 @@ class TimeSeriesTest extends PhantomSuite {
 
   it should "allow fetching the records in descending order for a descending clustering order using order by clause" in {
     var i = 0
-    val testUUID = gen[UUID]
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset / 2, i)
+        )
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
@@ -213,7 +227,12 @@ class TimeSeriesTest extends PhantomSuite {
     val chain = for {
       truncate <- TestDatabase.timeSeriesTable.truncate.future()
       insert <- batch.future()
-      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.descending).limit(number).fetch()
+      chunks <- TestDatabase.timeSeriesTable
+        .select
+        .where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
+        .orderBy(_.timestamp.descending)
+        .limit(number)
+        .fetch()
     } yield chunks
 
     chain.successful {
@@ -225,13 +244,15 @@ class TimeSeriesTest extends PhantomSuite {
 
   it should "allow fetching the records in descending order for a descending clustering order using order by clause with Twitter Futures" in {
     var i = 0
-    val testUUID = gen[UUID]
     val number = 5
 
     val recordList = genList[TimeSeriesRecord](number).map(
       item => {
         i += 1
-        item.copy(id = TestDatabase.timeSeriesTable.testUUID, timestamp = item.timestamp.withDurationAdded(500, i))
+        item.copy(
+          id = TestDatabase.timeSeriesTable.testUUID,
+          timestamp = item.timestamp.withDurationAdded(durationOffset, i)
+        )
       })
 
     val batch = recordList.foldLeft(Batch.unlogged) {
@@ -244,7 +265,10 @@ class TimeSeriesTest extends PhantomSuite {
     val chain = for {
       truncate <- TestDatabase.timeSeriesTable.truncate.execute()
       insert <- batch.execute()
-      chunks <- TestDatabase.timeSeriesTable.select.where(_.id eqs TestDatabase.timeSeriesTable.testUUID).orderBy(_.timestamp.desc).limit(number).collect()
+      chunks <- TestDatabase.timeSeriesTable.select
+        .where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
+        .orderBy(_.timestamp.desc).limit(number)
+        .collect()
     } yield chunks
 
     chain.successful {

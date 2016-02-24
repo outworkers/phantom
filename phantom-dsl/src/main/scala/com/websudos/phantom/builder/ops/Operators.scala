@@ -32,12 +32,11 @@ package com.websudos.phantom.builder.ops
 import java.util.Date
 
 import com.datastax.driver.core.Session
-import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.SessionAugmenter
+import com.websudos.phantom.builder.query.{CQLQuery, SessionAugmenter}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.{AbstractColumn, TimeUUIDColumn}
 import org.joda.time.DateTime
@@ -91,27 +90,29 @@ sealed class NowCqlFunction extends CqlFunction {
 
 sealed class MaxTimeUUID extends CqlFunction with DefaultPrimitives {
 
-  private[this] val datePrimitive = implicitly[Primitive[Date]]
-  private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
-
   def apply(date: Date): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.maxTimeuuid(UUIDPrimitive.asCql(UUIDs.endOf(date.getTime))))
+    new Condition(
+      QueryBuilder.Select.maxTimeuuid(
+        CQLQuery.escape(new DateTime(date).toString())
+      )
+    )
   }
 
   def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(QueryBuilder.Select.maxTimeuuid(UUIDPrimitive.asCql(UUIDs.endOf(date.getMillis))))
+    new Condition(
+      QueryBuilder.Select.maxTimeuuid(
+        CQLQuery.escape(new DateTime(date).toString())
+      )
+    )
   }
 }
 
 sealed class MinTimeUUID extends CqlFunction with DefaultPrimitives {
 
-  private[this] val datePrimitive = implicitly[Primitive[Date]]
-  private[this] val dateTimePrimitive = implicitly[Primitive[DateTime]]
-
   def apply(date: Date): OperatorClause.Condition = {
     new Condition(
       QueryBuilder.Select.minTimeuuid(
-        UUIDPrimitive.asCql(UUIDs.startOf(date.getTime))
+        CQLQuery.escape(new DateTime(date).toString())
       )
     )
   }
@@ -119,7 +120,7 @@ sealed class MinTimeUUID extends CqlFunction with DefaultPrimitives {
   def apply(date: DateTime): OperatorClause.Condition = {
     new Condition(
       QueryBuilder.Select.minTimeuuid(
-        UUIDPrimitive.asCql(UUIDs.startOf(date.getMillis))
+        CQLQuery.escape(date.toString())
       )
     )
   }
@@ -151,6 +152,7 @@ sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Se
 
   /**
     * An equals comparison clause between token definitions.
+    *
     * @param tk The token constructor to compare against.
     * @tparam VL
     * @return

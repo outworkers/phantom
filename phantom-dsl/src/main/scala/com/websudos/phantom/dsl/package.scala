@@ -31,18 +31,19 @@ package com.websudos.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.util.Date
+import java.util.{Date, Random}
 
+import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{DeleteImplicits, CQLQuery, CreateImplicits, SelectImplicits}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
-import shapeless.{HNil, ::}
+import shapeless.{::, HNil}
 
 import scala.util.Try
 
@@ -246,6 +247,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   /**
     * Augments Cassandra VersionNumber descriptors to support simple comparison of versions.
     * This allows for operations that can differ based on the Cassandra version used by the session.
+    *
     * @param version The Cassandra version number.
     */
   implicit class VersionAugmenter(val version: VersionNumber) extends AnyVal {
@@ -253,4 +255,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
     def > (other: VersionNumber): Boolean = version.compareTo(other) == 1
   }
+
+  implicit class DateTimeAugmenter(val date: DateTime) extends AnyVal {
+    def timeuuid(): UUID = {
+      val random = new Random()
+      new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
+    }
+  }
+
 }
