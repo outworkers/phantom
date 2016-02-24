@@ -41,6 +41,7 @@ case class TimeSeriesRecord(
 )
 
 case class TimeUUIDRecord(
+  user: UUID,
   id: UUID,
   name: String,
   timestamp: DateTime
@@ -65,11 +66,14 @@ sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, Tim
 abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
 
 sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUIDRecord] {
-  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
+
+  object user extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends TimeUUIDColumn(this) with ClusteringOrder[UUID] with Descending
   object name extends StringColumn(this)
 
   def fromRow(row: Row): TimeUUIDRecord = {
     TimeUUIDRecord(
+      user(row),
       id(row),
       name(row),
       new DateTime(UUIDs.unixTimestamp(id(row)))
@@ -81,6 +85,7 @@ abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
 
   def store(rec: TimeUUIDRecord): InsertQuery.Default[ConcreteTimeUUIDTable, TimeUUIDRecord] = {
     insert
+      .value(_.user, rec.user)
       .value(_.id, rec.id)
       .value(_.name, rec.name)
   }

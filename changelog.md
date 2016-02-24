@@ -37,6 +37,7 @@ Changelog
     <li><a href="#version-1.21.4">1.21.4 - 06.02.2016</a></li>
     <li><a href="#version-1.21.5">1.21.5 - 11.02.2016</a></li>
     <li><a href="#version-1.22.0">1.22.0 - 14.02.2016</a></li>
+    <li><a href="#version-1.22.1">1.22.1 - 24.02.2016</a></li>
 </ul>
 
 
@@ -355,3 +356,10 @@ removed `session.newSimpleStatement`.
 - PHANTOM-194: Fixed serialization of ```Table.select.distinct``` queries.
 - Added support for `LocalDate` columns.
 - Added `driver-extras` dependency from the Datastax set.
+
+<a id="version-1.22.1">1.22.1</a>
+================================
+
+- Added a `DateTime` augmenter in the default package capable of producing `TimeUUID` values from a `DateTime`.
+- Fixed serialization of `minTimeuuid` and `maxTimeuuid` clauses to use dates in ISO formats.
+- Added tests to test `timeuuid` based date range selection with `minTimeuuid` and `maxTimeuuid`.

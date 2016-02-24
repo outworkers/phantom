@@ -108,12 +108,12 @@ object Build extends Build {
     bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+    licenses += ("Apache-2.0", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt"))
   )
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.22.0",
+    version := "1.22.1",
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
@@ -155,7 +155,7 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ mavenPublishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
 
   lazy val phantom = Project(
     id = "phantom",
