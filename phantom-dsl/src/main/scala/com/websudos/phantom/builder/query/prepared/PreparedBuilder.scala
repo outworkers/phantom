@@ -122,11 +122,6 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
     def flattenOpt(param: Any): Any = {
       //noinspection ComparingUnrelatedTypes
       param match {
-        case x if x.isInstanceOf[UUID] => {
-          Console.println("This is an instance of UUID")
-          Console.println(x.asInstanceOf[UUID])
-          x
-        }
         case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
         case x if x.isInstanceOf[None.type] => null.asInstanceOf[Any]
         case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
