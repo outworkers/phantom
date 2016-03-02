@@ -5,7 +5,7 @@ Reactive type-safe Scala DSL for Cassandra
 
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@websudos](https://twitter.com/websudos).
 
-If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, 
+If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source,
 but the more adopters our projects have, the more people from our company will actively work to make them better.
 
 
@@ -35,7 +35,7 @@ Check the badges at the top of this README for the latest version. The badges ar
 ======================================================================
 
 For ease of use and far better management of documentation, we have decided to export the `README.md` to a proper
-Wiki page, now available [here](https://github.com/websudos/phantom/wiki/). 
+Wiki page, now available [here](https://github.com/websudos/phantom/wiki/).
 
 The following are the current resources available for learning phantom, outside of tests which are very useful in
 highlighting all the possible features in phantom and how to use them.
@@ -49,12 +49,12 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/websudos/phantom/wiki)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
-- [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://blog.websudos.com/2014/08/16/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality/)
-- [ ] [A series on Cassandra: Indexes and keys](http://blog.websudos.com/2014/08/23/a-series-on-cassandra-part-2-indexes-and-keys/)
-- [ ] [A series on Cassandra: Advanced features](http://blog.websudos.com/2014/10/29/a-series-on-cassandra-part-3-advanced-features/)
-- [ ] [A series on phantom: Getting started with phantom](http://blog.websudos.com/2015/04/04/a-series-on-phantom-part-1-getting-started-with-phantom/)
+- [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://outworkers.com/blog/post/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality)
+- [ ] [A series on Cassandra: Indexes and keys](http://outworkers.com/blog/post/a-series-on-cassandra-part-2-indexes-and-keys)
+- [ ] [A series on Cassandra: Advanced features](http://outworkers.com/blog/post/a-series-on-cassandra-part-3-advanced-features)
+- [ ] [A series on phantom: Getting started with phantom](http://outworkers.com/blog/post/a-series-on-phantom-part-1-getting-started-with-phantom)
 - [ ] [The Play! Phantom Activator template](https://github.com/websudos/phantom-activator-template)
-- [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom) 
+- [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom)
 
 
 
@@ -66,7 +66,7 @@ We love Cassandra to bits and use it in every bit of our stack. phantom makes it
 
 Cassandra is highly scalable and it is by far the most powerful database technology available, open source or otherwise.
 
-Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting. 
+Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting.
 
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions! Please use GitHub for any issues or bug reports.
 
@@ -83,7 +83,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Equens](http://www.equens.com/)
 - [websudos](https://www.websudos.com/)
 - [VictorOps](http://www.victorops.com/)
-- [Socrata](http://www.socrata.com) 
+- [Socrata](http://www.socrata.com)
 - [Sphonic](http://www.sphonic.com/)
 - [Anomaly42](http://www.anomaly42.com/)
 - [Tecsisa](http://www.tecsisa.com/en/)
