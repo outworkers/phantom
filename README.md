@@ -1,4 +1,4 @@
-phantom [![Build Status](https://travis-ci.org/websudos/phantom.svg?branch=develop)](https://travis-ci.org/websudos/phantom) [![Coverage Status](https://coveralls.io/repos/websudos/phantom/badge.svg)](https://coveralls.io/r/websudos/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/websudos/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+phantom [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ==================================================================================================
 
 Reactive type-safe Scala DSL for Cassandra
@@ -35,7 +35,7 @@ Check the badges at the top of this README for the latest version. The badges ar
 ======================================================================
 
 For ease of use and far better management of documentation, we have decided to export the `README.md` to a proper
-Wiki page, now available [here](https://github.com/websudos/phantom/wiki/).
+Wiki page, now available [here](https://github.com/outworkers/phantom/wiki/).
 
 The following are the current resources available for learning phantom, outside of tests which are very useful in
 highlighting all the possible features in phantom and how to use them.
@@ -47,13 +47,13 @@ This is a list of resources to help you learn phantom and Cassandra:
 
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
-- [ ] [The main Wiki](https://github.com/websudos/phantom/wiki)
+- [ ] [The main Wiki](https://github.com/outworkers/phantom/wiki)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
 - [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://outworkers.com/blog/post/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality)
 - [ ] [A series on Cassandra: Indexes and keys](http://outworkers.com/blog/post/a-series-on-cassandra-part-2-indexes-and-keys)
 - [ ] [A series on Cassandra: Advanced features](http://outworkers.com/blog/post/a-series-on-cassandra-part-3-advanced-features)
 - [ ] [A series on phantom: Getting started with phantom](http://outworkers.com/blog/post/a-series-on-phantom-part-1-getting-started-with-phantom)
-- [ ] [The Play! Phantom Activator template](https://github.com/websudos/phantom-activator-template)
+- [ ] [The Play! Phantom Activator template](https://github.com/outworkers/phantom-activator-template)
 - [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom)
 
 
@@ -81,7 +81,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Mobli](https://www.mobli.com/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Equens](http://www.equens.com/)
-- [websudos](https://www.websudos.com/)
+- [outworkers](https://www.outworkers.com/)
 - [VictorOps](http://www.victorops.com/)
 - [Socrata](http://www.socrata.com)
 - [Sphonic](http://www.sphonic.com/)
@@ -94,7 +94,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 =====================================
 <a href="#table-of-contents">back to top</a>
 
-Phantom was developed at websudos as an in-house project. All Cassandra integration at Websudos goes through phantom, and nowadays it's safe to say most
+Phantom was developed at outworkers as an in-house project. All Cassandra integration at outworkers goes through phantom, and nowadays it's safe to say most
 Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
@@ -115,7 +115,7 @@ Scala/Cassandra users in the world rely on phantom.
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright &copy; 2013 - 2016 websudos.
+Copyright &copy; 2013 - 2016 outworkers.
 
 
 Contributing to phantom
