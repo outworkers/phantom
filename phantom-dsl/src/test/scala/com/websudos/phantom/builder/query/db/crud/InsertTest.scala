@@ -271,7 +271,10 @@ class InsertTest extends PhantomSuite {
       get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
-    if (cassandraVersion > Version.`2.2.0`) {
+
+    Console.println("Cassandra version: " + cassandraVersion.toString)
+
+    if (cassandraVersion >= Version.`2.2.0`) {
       whenReady(chain) {
         res => {
           res shouldBe defined
