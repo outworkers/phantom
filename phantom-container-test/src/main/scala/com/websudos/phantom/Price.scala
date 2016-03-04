@@ -30,13 +30,12 @@
 package com.websudos.phantom.server
 
 import java.util.Date
-import org.joda.time.{DateTime, LocalDate}
-
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.testkit.PhantomCassandraConnector
 
 import com.datastax.driver.core.Row
+import com.websudos.phantom.builder.query.InsertQuery
+import com.websudos.phantom.db.DatabaseImpl
 import com.websudos.phantom.dsl._
+import org.joda.time.{DateTime, LocalDate}
 
 sealed trait Price {
   def instrumentId: String
@@ -95,11 +94,11 @@ sealed class OptionPrices extends CassandraTable[OptionPrices, OptionPrice] {
     OptionPrice(instrumentId(r), new LocalDate(tradeDate(r)), exchangeCode(r), t(r), strikePrice(r), value(r))
 }
 
-object EquityPrices extends EquityPrices with PhantomCassandraConnector {
+abstract class ConcreteEquityPrices extends EquityPrices with RootConnector {
   override val tableName: String = "EquityPrices"
 
 
-  def insertPrice(price: EquityPrice) =
+  def insertPrice(price: EquityPrice): InsertQuery.Default[EquityPrices, EquityPrice] =
     insert.
       value(_.instrumentId, price.instrumentId).
       value(_.tradeDate, price.tradeDate.toDate).
@@ -109,7 +108,7 @@ object EquityPrices extends EquityPrices with PhantomCassandraConnector {
 
 }
 
-object OptionPrices extends OptionPrices with PhantomCassandraConnector {
+abstract class ConcreteOptionPrices extends OptionPrices with RootConnector {
   override val tableName: String = "OptionPrices"
 
   def insertPrice(price: OptionPrice): InsertQuery.Default[OptionPrices, OptionPrice] = {
@@ -121,5 +120,16 @@ object OptionPrices extends OptionPrices with PhantomCassandraConnector {
       .value(_.strikePrice, price.strikePrice)
       .value(_.value, price.value)
   }
-
 }
+
+class EquityDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
+  object equityPrices extends ConcreteEquityPrices with connector.Connector
+  object optionPrices extends ConcreteOptionPrices with connector.Connector
+}
+
+object EquityConnector {
+  val default = ContactPoint.local.noHeartbeat().keySpace("equities")
+}
+
+object EquityDatabase extends EquityDatabase(EquityConnector.default)
+

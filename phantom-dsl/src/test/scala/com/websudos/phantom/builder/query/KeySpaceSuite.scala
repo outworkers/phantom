@@ -29,8 +29,10 @@
  */
 package com.websudos.phantom.builder.query
 
+import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
-import org.scalatest.{Matchers, FreeSpec, Suite}
+import com.websudos.phantom.tables.TestDatabase
+import org.scalatest.{FreeSpec, Matchers, Suite}
 
 trait KeySpaceSuite {
 
@@ -39,8 +41,8 @@ trait KeySpaceSuite {
   implicit val keySpace = KeySpace("phantom")
 }
 
-trait SerializationTest extends Matchers with KeySpaceSuite {
+trait SerializationTest extends Matchers with TestDatabase.connector.Connector {
   self: Suite =>
 }
 
-trait QueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite
+trait QueryBuilderTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector

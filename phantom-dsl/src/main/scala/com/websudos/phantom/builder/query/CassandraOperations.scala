@@ -37,9 +37,7 @@ import com.websudos.phantom.connectors.KeySpace
 
 import scala.concurrent.{Future => ScalaFuture, Promise => ScalaPromise}
 
-private[phantom] trait CassandraOperations {
-
-
+private[phantom] trait SessionAugmenter {
   implicit class RichSession(val session: Session) {
     def protocolVersion: ProtocolVersion = {
       session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
@@ -51,13 +49,16 @@ private[phantom] trait CassandraOperations {
 
     def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
   }
+}
+
+private[phantom] trait CassandraOperations extends SessionAugmenter {
 
   protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
   }
 
   protected[this] def scalaQueryStringToPromise(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $st")
+    Manager.logger.debug(s"Executing query: ${st.toString}")
 
     val promise = ScalaPromise[ResultSet]()
 

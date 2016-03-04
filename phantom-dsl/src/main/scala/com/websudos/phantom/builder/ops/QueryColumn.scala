@@ -30,11 +30,10 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, PreparedWhereClause, WhereClause, OperatorClause}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.builder.clauses.OperatorClause
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -145,5 +144,52 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
    */
   final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
     new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
+  }
+}
+
+/**
+  * Class used to provide serialization ability for updating specific keys of a map column.
+  * This CQL syntax allows users to manipulate the content of a Cassandra map column.
+  *
+  * Example: {{{
+  *   Database.table.update.where(_.id eqs id).modify(_.map(key) setTo value).future()
+  * }}}
+  *
+  * @param column The name of the column to update, derived from MapColumn.apply.
+  * @param key The type of the key required, strongly typed.
+  * @tparam K The strong type of the key in the map.
+  * @tparam V The strong type of the value in the map.
+  */
+class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val key: K) {
+
+  def keyName: String = Primitive[K].asCql(key)
+
+  def setTo(v: V): UpdateClause.Condition = {
+    val qb = QueryBuilder.Update.updateMapColumn(
+      column,
+      Primitive[K].asCql(key),
+      Primitive[V].asCql(v)
+    )
+
+    new UpdateClause.Condition(qb)
+  }
+
+  /**
+    * Overloaded variants of setTo that allows using prepared statements for map key updates.
+    * This will only accept the ? global singleton found in [[com.websudos.phantom.dsl]].
+    * When used, the final "bind" to the prepared clause will require an additional V type
+    * in the provided tuple to match the type of the MapColumn being updated.
+    *
+    * @param mark The value of the prepared mark used.
+    * @return A parametric condition on the value type of the map.
+    */
+  final def setTo(mark: PrepareMark): PreparedWhereClause.ParametricCondition[V] = {
+    new PreparedWhereClause.ParametricCondition[V](
+      QueryBuilder.Update.updateMapColumn(
+        column,
+        Primitive[K].asCql(key),
+        mark.symbol
+      )
+    )
   }
 }

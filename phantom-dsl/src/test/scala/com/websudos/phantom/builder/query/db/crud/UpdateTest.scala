@@ -29,25 +29,22 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.websudos.phantom.PhantomSuite
 import org.scalatest.{ Assertions, Matchers }
 import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
 import org.scalatest.time.SpanSugar._
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions with AsyncAssertions {
+class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
-    TestTable.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    TestDatabase.testTable.insertSchema()
   }
-
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(20 seconds)
 
   "Update" should "work fine for primitives columns" in {
     //char is not supported
@@ -57,10 +54,10 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     val updatedRow = gen[Primitive].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      a <- Primitives.select.where(_.pkey eqs row.pkey).one
-      b <- Primitives.select.fetch
-      u <- Primitives.update.where(_.pkey eqs row.pkey)
+      store <- TestDatabase.primitives.store(row).future()
+      a <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      b <- TestDatabase.primitives.select.fetch
+      u <- TestDatabase.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo updatedRow.long)
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -72,8 +69,8 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
         .future()
-      a2 <- Primitives.select.where(_.pkey eqs row.pkey).one
-      b2 <- Primitives.select.fetch
+      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      b2 <- TestDatabase.primitives.select.fetch
     } yield (a, b, a2, b2)
 
     whenReady(chain) {
@@ -88,44 +85,39 @@ class UpdateTest extends PhantomCassandraTestSuite with Matchers with Assertions
     }
   }
 
-  it should "work fine with List, Set, Map" in {
+  it should "successfully store a table with a mixture of collection columns: List, Set, Map" in {
 
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val updatedRow = row.copy(
       list = List("new"),
       setText = Set("newSet"),
       mapTextToText =  Map("n" -> "newVal"),
-      setInt = Set(3,4,7),
+      setInt = Set(3, 4, 7),
       mapIntToText = Map (-1 -> "&&&")
     )
 
     val chain = for {
-      store <- TestTable.store(row).future()
-      a <-TestTable.select.where(_.key eqs row.key).one
-      b <-TestTable.select.fetch
-      u <- TestTable.update
+      store <- TestDatabase.testTable.store(row).future()
+      a <- TestDatabase.testTable.select.where(_.key eqs row.key).one
+      u <- TestDatabase.testTable.update
         .where(_.key eqs row.key)
         .modify(_.list setTo updatedRow.list)
         .and(_.setText setTo updatedRow.setText)
         .and(_.mapTextToText setTo updatedRow.mapTextToText)
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
-      a2 <- TestTable.select.where(_.key eqs row.key).one
-      b2 <- TestTable.select.fetch
+
+      a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
     } yield (
       a.get === row,
-      b.contains(row),
-      a2.get === updatedRow,
-      b2.contains(updatedRow)
+      a2.get === updatedRow
     )
 
     chain successful {
       r => {
         r._1 shouldEqual true
         r._2 shouldEqual true
-        r._3 shouldEqual true
-        r._4 shouldEqual true
       }
     }
   }

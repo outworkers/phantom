@@ -42,7 +42,7 @@ import com.websudos.phantom.dsl._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Recipe] {
+sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -61,8 +61,8 @@ sealed class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Rec
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[CompositeKeyRecipes, Recipe, String](this)
-  object props extends MapColumn[CompositeKeyRecipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[ConcreteCompositeKeyRecipes, Recipe, String](this)
+  object props extends MapColumn[ConcreteCompositeKeyRecipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.
@@ -82,7 +82,7 @@ sealed class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Rec
 }
 
 
-object CompositeKeyRecipes extends CompositeKeyRecipes with ExampleConnector {
+abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with RootConnector {
 
   // now you can use composite keys in the normal way.
   // If you would select only by id,

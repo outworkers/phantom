@@ -51,7 +51,7 @@ class InsertQuery[
   valuePart: ValuePart = ValuePart.empty,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val options: QueryOptions = QueryOptions.empty
 ) extends ExecutableStatement with Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
@@ -60,7 +60,7 @@ class InsertQuery[
       init = QueryBuilder.Insert.json(init, value),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -70,7 +70,7 @@ class InsertQuery[
       init = QueryBuilder.Insert.json(init, value.qb.queryString),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
-      consistencyLevel = consistencyLevel
+      options = options
     )
   }
 
@@ -82,7 +82,7 @@ class InsertQuery[
       valuePart append CQLQuery(col(table).asCql(value)),
       usingPart,
       lightweightPart,
-      consistencyLevel
+      options
     )
   }
 
@@ -94,12 +94,12 @@ class InsertQuery[
       valuePart append value.qb,
       usingPart,
       lightweightPart,
-      consistencyLevel
+      options
     )
   }
 
   def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, consistencyLevel)
+    new PreparedBlock[PS](qb, options)
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
@@ -112,12 +112,12 @@ class InsertQuery[
       valuePart append CQLQuery(insertValue),
       usingPart,
       lightweightPart,
-      consistencyLevel
+      options
     )
   }
 
   override def qb: CQLQuery = {
-    (columnsPart merge valuePart merge usingPart merge lightweightPart) build init
+    (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = {
@@ -128,7 +128,7 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.ttl(seconds.toString),
       lightweightPart,
-      consistencyLevel
+      options
     )
   }
 
@@ -148,7 +148,7 @@ class InsertQuery[
       valuePart,
       usingPart append QueryBuilder.timestamp(value.toString),
       lightweightPart,
-      consistencyLevel
+      options
     )
   }
 
@@ -161,7 +161,7 @@ class InsertQuery[
         valuePart,
         usingPart,
         lightweightPart,
-        Some(level)
+        options.consistencyLevel_=(level)
       )
     } else {
       new InsertQuery(
@@ -171,7 +171,7 @@ class InsertQuery[
         valuePart,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
         lightweightPart,
-        None
+        options
       )
     }
   }
@@ -188,7 +188,7 @@ class InsertQuery[
       valuePart,
       usingPart,
       lightweightPart append CQLQuery(CQLSyntax.ifNotExists),
-      consistencyLevel
+      options
     )
   }
 }
@@ -217,15 +217,15 @@ class InsertJsonQuery[
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val consistencyLevel: Option[ConsistencyLevel] = None
+  override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
 
   def prepare()(implicit session: Session, keySpace: KeySpace): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, consistencyLevel)
+    new PreparedBlock[PS](qb, options)
   }
 
   override val qb: CQLQuery = {
-    (usingPart merge lightweightPart) build init
+    (lightweightPart merge usingPart) build init
   }
 
 }

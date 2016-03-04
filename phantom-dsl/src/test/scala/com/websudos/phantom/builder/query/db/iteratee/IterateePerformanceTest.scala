@@ -30,35 +30,35 @@
 package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicInteger
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.iteratee.Iteratee
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
 
-class IterateePerformanceTest extends PhantomCassandraTestSuite {
+class IterateePerformanceTest extends PhantomSuite {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(2 minutes)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
-    PrimitivesJoda.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    TestDatabase.primitivesJoda.insertSchema()
   }
 
   it should "get retrieve the correct number of results from the database and collect them using an iterator" in {
     val rows = for (i <- 1 to 1000) yield gen[JodaRow]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = PrimitivesJoda.insert
+      val statement = TestDatabase.primitivesJoda.insert
         .value(_.pkey, row.pkey)
         .value(_.intColumn, row.int)
         .value(_.timestamp, row.bi)
       b.add(statement)
     })
 
-    val w = batch.future() map (_ => PrimitivesJoda.select.fetchEnumerator)
+    val w = batch.future() map (_ => TestDatabase.primitivesJoda.select.fetchEnumerator)
     w successful {
       en => {
         val result = en run Iteratee.collect()
@@ -76,11 +76,11 @@ class IterateePerformanceTest extends PhantomCassandraTestSuite {
 
     val rows = for (i <- 1 to 100) yield gen[Primitive]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(Primitives.store(row))
+      b.add(TestDatabase.primitives.store(row))
     })
 
-    val w = Primitives.truncate.future().flatMap {
-      _ => batch.future().map(_ => Primitives.select.fetchEnumerator())
+    val w = TestDatabase.primitives.truncate.future().flatMap {
+      _ => batch.future().map(_ => TestDatabase.primitives.select.fetchEnumerator())
     }
 
     val counter: AtomicInteger = new AtomicInteger(0)

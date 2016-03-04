@@ -90,4 +90,10 @@ class WhereClauseOperatorsSerializationTest extends FlatSpec with Matchers {
     val value = gen[String]
     QueryBuilder.Where.containsKey(column, value).queryString shouldEqual s"$column ${CQLSyntax.Operators.containsKey} $value"
   }
+
+  it should "serialise a Where.containsEntry clause" in {
+    val column = gen[String]
+    val value = gen[String]
+    QueryBuilder.Where.containsEntry(column, "'test'", value).queryString shouldEqual s"$column['test'] ${CQLSyntax.Operators.eqs} $value"
+  }
 }

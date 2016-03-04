@@ -53,6 +53,10 @@ sealed trait CreateOptionsBuilder {
 
 sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
 
+  def enabled(qb: CQLQuery, flag: Boolean): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.enabled, flag.toString)
+  }
+
   def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
     quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size)
   }
@@ -62,11 +66,39 @@ sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
   }
 
   def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
+    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
   }
 
   def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
     simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_threshold, size.toString)
+  }
+
+  def unchecked_tombstone_compaction(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.unchecked_tombstone_compaction, size.toString)
+  }
+
+  def cold_reads_to_omit(qb: CQLQuery, size: Double): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.cold_reads_to_omit, size.toString)
+  }
+
+  def base_time_seconds(qb: CQLQuery, value: Long): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.base_time_seconds, value.toString)
+  }
+
+  def timestamp_resolution(qb: CQLQuery, value: Long): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.timestamp_resolution, value.toString)
+  }
+
+  def max_sstable_age_days(qb: CQLQuery, value: Long): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.max_sstable_age_days, value.toString)
+  }
+
+  def max_threshold(qb: CQLQuery, value: Int): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.max_threshold, value.toString)
+  }
+
+  def min_threshold(qb: CQLQuery, value: Int): CQLQuery = {
+    simpleValue(qb, CQLSyntax.CompactionOptions.min_threshold, value.toString)
   }
 
   def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
@@ -92,62 +124,64 @@ sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
 
 private[builder] class CreateTableBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
 
-  private[this] def tableOption(option: String, value: String): CQLQuery = {
-    Utils.concat(option, CQLSyntax.Symbols.`=`, value)
-  }
-
-  private[this] def tableOption(option: String, value: CQLQuery): CQLQuery = {
-    tableOption(option, value.queryString)
-  }
-
   def read_repair_chance(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.read_repair_chance, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.read_repair_chance, st)
   }
 
   def dclocal_read_repair_chance(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.dclocal_read_repair_chance, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.dclocal_read_repair_chance, st)
   }
 
   def default_time_to_live(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.default_time_to_live, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.default_time_to_live, st)
   }
 
   def gc_grace_seconds(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.gc_grace_seconds, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.gc_grace_seconds, st)
   }
 
   def populate_io_cache_on_flush(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.populate_io_cache_on_flush, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.populate_io_cache_on_flush, st)
   }
 
   def bloom_filter_fp_chance(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.bloom_filter_fp_chance, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.bloom_filter_fp_chance, st)
   }
 
   def replicate_on_write(st: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.replicate_on_write, st)
+    Utils.tableOption(CQLSyntax.CreateOptions.replicate_on_write, st)
   }
 
   def compression(qb: CQLQuery) : CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.compression, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compression, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
   }
 
   def compaction(qb: CQLQuery) : CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.compaction, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compaction, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
   }
 
   def comment(qb: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.comment, CQLQuery.empty.appendSingleQuote(qb))
+    Utils.tableOption(CQLSyntax.CreateOptions.comment, CQLQuery.empty.appendSingleQuote(qb))
   }
 
   def caching(qb: String): CQLQuery = {
-    tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
+    Utils.tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
   }
 
   def `with`(clause: CQLQuery): CQLQuery = {
     CQLQuery(CQLSyntax.`with`).pad.append(clause)
   }
 
+
+  /**
+    * Creates an index on the keys on any column except for a Map column which requires special handling.
+    * By default, mixing an index in a column will result in an index created on the values of the column.
+    *
+    * @param table The name of the table to create the index on.
+    * @param keySpace The keyspace to whom the table belongs to.
+    * @param column The name of the column to create the secondary index on.
+    * @return A CQLQuery containing the valid CQL of creating a secondary index on a Cassandra column.
+    */
   def index(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
       .forcePad.append(CQLSyntax.ifNotExists)
@@ -174,8 +208,25 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
       .wrapn(CQLQuery(CQLSyntax.Keys).wrapn(column))
   }
 
-  def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
+  /**
+    * Creates an index on the entries of a Map column.
+    * By default, mixing an index in a column will result in an index created on the values of the map.
+    * To allow secondary indexing on entries, Cassandra appends a ENTRIES($column) wrapper to the CQL query.
+    *
+    * @param table The name of the table to create the index on.
+    * @param keySpace The keyspace to whom the table belongs to.
+    * @param column The name of the column to create the secondary index on.
+    * @return A CQLQuery containing the valid CQL of creating a secondary index for the entries of a Map column.
+    */
+  def mapEntries(table: String, keySpace: String, column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
+      .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(CQLSyntax.On)
+      .forcePad.append(QueryBuilder.keyspace(keySpace, table))
+      .wrapn(CQLQuery(CQLSyntax.Entries).wrapn(column))
+  }
 
+  def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
     val list = orderings.foldRight(List.empty[String])((item, l) => {
       (item._1 + " " + item._2) :: l
     })

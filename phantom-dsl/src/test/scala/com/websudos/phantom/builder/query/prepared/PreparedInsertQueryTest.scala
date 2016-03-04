@@ -29,23 +29,28 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import com.websudos.phantom.tables.{Recipe, Recipes}
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
-import com.websudos.util.testing._
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.codec.JodaLocalDateCodec
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe, TestDatabase}
+import com.websudos.util.testing._
 
-class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
+class PreparedInsertQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
+    TestDatabase.recipes.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    if (session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
   }
 
   it should "serialize an insert query" in {
 
     val sample = gen[Recipe]
 
-    val query = Recipes.insert
+    val query = TestDatabase.recipes.insert
       .p_value(_.uid, ?)
       .p_value(_.url, ?)
       .p_value(_.servings, ?)
@@ -67,7 +72,7 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
 
     val chain = for {
       store <- exec
-      get <- Recipes.select.where(_.url eqs sample.url).one()
+      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
     whenReady(chain) {
@@ -78,4 +83,84 @@ class PreparedInsertQueryTest extends PhantomCassandraTestSuite {
     }
   }
 
+  it should "serialize a primitives insert query" in {
+    val sample = gen[Primitive]
+
+    val query = TestDatabase.primitives.insert
+      .p_value(_.pkey, ?)
+      .p_value(_.long, ?)
+      .p_value(_.boolean, ?)
+      .p_value(_.bDecimal, ?)
+      .p_value(_.double, ?)
+      .p_value(_.float, ?)
+      .p_value(_.inet, ?)
+      .p_value(_.int, ?)
+      .p_value(_.date, ?)
+      .p_value(_.uuid, ?)
+      .p_value(_.bi, ?)
+      .prepare()
+
+    val exec = query.bind(
+      sample.pkey,
+      sample.long,
+      sample.boolean,
+      sample.bDecimal,
+      sample.double,
+      sample.float,
+      sample.inet,
+      sample.int,
+      sample.date,
+      sample.uuid,
+      sample.bi
+    ).future()
+
+    val chain = for {
+      store <- exec
+      get <- TestDatabase.primitives.select.where(_.pkey eqs sample.pkey).one()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
+
+  if (session.v4orNewer) {
+    it should "serialize a cassandra 2.2 primitives insert query" in {
+      session.getCluster.getConfiguration.getCodecRegistry.register(new JodaLocalDateCodec)
+      val sample = gen[PrimitiveCassandra22]
+
+      val query = TestDatabase.primitivesCassandra22.insert
+        .p_value(_.pkey, ?)
+        .p_value(_.short, ?)
+        .p_value(_.byte, ?)
+        .p_value(_.date, ?)
+        .prepare()
+
+      val exec = query.bind(
+        sample.pkey,
+        sample.short,
+        sample.byte,
+        sample.localDate
+      ).future()
+
+      val selectQuery = TestDatabase.primitivesCassandra22.select
+        .p_where(_.pkey eqs ?)
+        .prepare()
+
+      val chain = for {
+        store <- exec
+        get <- selectQuery.bind(sample.pkey).one()
+      } yield get
+
+      whenReady(chain) {
+        res => {
+          res shouldBe defined
+          res.value shouldEqual sample
+        }
+      }
+    }
+  }
 }

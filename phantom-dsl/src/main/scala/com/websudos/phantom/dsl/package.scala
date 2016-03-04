@@ -31,22 +31,27 @@ package com.websudos.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.util.Date
+import java.util.{Date, Random}
 
+import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{WhereClause, UpdateClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, SelectImplicits}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
-import shapeless.{HNil, ::}
+import shapeless.{::, HNil}
 
 import scala.util.Try
 
-package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPrimitives with SelectImplicits with Operators {
+package object dsl extends ImplicitMechanism with CreateImplicits
+  with DefaultPrimitives
+  with SelectImplicits
+  with Operators
+  with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
 
@@ -72,9 +77,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
   type DateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.DateColumn[Owner, Record]
   type DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.DateTimeColumn[Owner, Record]
+  type LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.LocalDateColumn[Owner, Record]
   type DoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Double]
   type FloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Float]
   type IntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Int]
+  type SmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Short]
+  type TinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Byte]
   type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
   type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Long]
   type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, String]
@@ -91,6 +99,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type OptionalDoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Double]
   type OptionalFloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Float]
   type OptionalIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Int]
+  type OptionalSmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Short]
+  type OptionalTinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Byte]
   type OptionalInetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, InetAddress]
   type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, Long]
   type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
@@ -104,6 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   type PrimaryKey[ValueType] = com.websudos.phantom.keys.PrimaryKey[ValueType]
   type Index[ValueType] = com.websudos.phantom.keys.Index[ValueType]
   type Keys = com.websudos.phantom.keys.Keys
+  type Entries = com.websudos.phantom.keys.Entries
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
   type Database = com.websudos.phantom.db.DatabaseImpl
@@ -236,6 +247,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
   /**
     * Augments Cassandra VersionNumber descriptors to support simple comparison of versions.
     * This allows for operations that can differ based on the Cassandra version used by the session.
+    *
     * @param version The Cassandra version number.
     */
   implicit class VersionAugmenter(val version: VersionNumber) extends AnyVal {
@@ -247,4 +259,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits with DefaultPr
       version.compareTo(other) >= 0
     }
   }
+
+  implicit class DateTimeAugmenter(val date: DateTime) extends AnyVal {
+    def timeuuid(): UUID = {
+      val random = new Random()
+      new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
+    }
+  }
+
 }

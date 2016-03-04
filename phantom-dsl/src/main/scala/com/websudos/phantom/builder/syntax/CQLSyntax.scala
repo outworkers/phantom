@@ -50,6 +50,7 @@ object CQLSyntax {
   }
 
   val Keys = "KEYS"
+  val Entries = "ENTRIES"
 
   val Describe = "DESCRIBE"
   val truncate = "TRUNCATE"
@@ -141,6 +142,7 @@ object CQLSyntax {
 
     val in = "IN"
     val eqs = "="
+    val notEqs = "!="
 
     val contains = "CONTAINS"
     val containsKey = "CONTAINS KEY"
@@ -149,9 +151,11 @@ object CQLSyntax {
   object Selection {
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
+    val UnixTimestampOf = "unixTimestampOf"
     val OrderBy = "ORDER BY"
     val MaxTimeUUID = "maxTimeuuid"
     val MinTimeUUID = "minTimeuuid"
+    val Writetime = "WRITETIME"
   }
 
   object Types {
@@ -160,6 +164,7 @@ object CQLSyntax {
     val Blob = "blob"
     val Boolean = "boolean"
     val Counter = "counter"
+    val Date = "date"
     val Decimal = "decimal"
     val Double = "double"
     val Long = "long"
@@ -169,6 +174,8 @@ object CQLSyntax {
     val List = "list"
     val Map = "map"
     val Set = "set"
+    val SmallInt = "smallint"
+    val TinyInt = "tinyint"
     val Timestamp = "timestamp"
     val Tuple = "tuple"
     val Text = "text"
@@ -207,6 +214,7 @@ object CQLSyntax {
 
   object CompactionOptions {
     val `class` = "class"
+    val enabled = "enabled"
     val max_threshold = "max_threshold"
     val min_threshold = "min_threshold"
     val min_sstable_size = "min_sstable_size"
@@ -215,6 +223,11 @@ object CQLSyntax {
     val tombstone_threshold = "tombstone_threshold"
     val bucket_high = "bucket_high"
     val bucket_low = "bucket_low"
+    val cold_reads_to_omit = "cold_reads_to_omit"
+    val unchecked_tombstone_compaction = "unchecked_tombstone_compaction"
+    val base_time_seconds = "base_time_seconds"
+    val max_sstable_age_days = "max_sstable_age_days"
+    val timestamp_resolution = "timestamp_resolution"
   }
 
   object CompactionStrategies {
@@ -236,8 +249,11 @@ object CQLSyntax {
   }
 
   object CacheStrategies {
+    val Caching = "caching"
     val None = "none"
     val KeysOnly = "keys_only"
+    val RowsOnly = "rows_only"
+    val All = "all"
 
   }
 

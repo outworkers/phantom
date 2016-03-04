@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.clauses
 
+import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.column.AbstractColumn
@@ -113,6 +114,13 @@ object OperatorClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
 
+object TypedClause extends Clause {
+  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb)
+}
+
+object DeleteClause extends Clause {
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+}
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
 

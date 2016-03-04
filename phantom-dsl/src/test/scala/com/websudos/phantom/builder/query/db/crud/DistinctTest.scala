@@ -31,19 +31,16 @@ package com.websudos.phantom.builder.query.db.crud
 
 import java.util.UUID
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
 import org.joda.time.DateTime
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 
-class DistinctTest extends PhantomCassandraTestSuite {
-  implicit val s: PatienceConfiguration.Timeout = timeout(5 seconds)
+class DistinctTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
       super.beforeAll()
-      TableWithCompoundKey.insertSchema()
+      TestDatabase.tableWithCompoundKey.insertSchema()
   }
 
   it should "return distinct primary keys" in {
@@ -56,7 +53,7 @@ class DistinctTest extends PhantomCassandraTestSuite {
 
     val batch = rows.foldLeft(Batch.unlogged)((batch, row) => {
       batch.add(
-        TableWithCompoundKey.insert
+        TestDatabase.tableWithCompoundKey.insert
           .value(_.id, row.id)
           .value(_.second, UUID.nameUUIDFromBytes(row.name.getBytes))
           .value(_.name, row.name)
@@ -64,9 +61,9 @@ class DistinctTest extends PhantomCassandraTestSuite {
     })
 
     val chain = for {
-      truncate <- TableWithCompoundKey.truncate.future()
+      truncate <- TestDatabase.tableWithCompoundKey.truncate.future()
       batch <- batch.future()
-      list <- TableWithCompoundKey.select(_.id).distinct.fetch
+      list <- TestDatabase.tableWithCompoundKey.select(_.id).distinct.fetch
     } yield list
 
     val expectedResult = rows.filter(_.name != "b").map(_.id)

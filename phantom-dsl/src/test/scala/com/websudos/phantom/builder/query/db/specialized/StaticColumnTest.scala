@@ -29,22 +29,18 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
-import com.websudos.phantom.tables.{StaticCollectionRecord, StaticCollectionTableTest, StaticTableTest}
+import com.websudos.phantom.tables.{StaticCollectionRecord, TestDatabase}
 import com.websudos.util.testing._
 
-class StaticColumnTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    StaticTableTest.insertSchema()
-    StaticCollectionTableTest.insertSchema()
+    TestDatabase.staticTable.insertSchema()
+    TestDatabase.staticCollectionTable.insertSchema()
   }
 
   it should "use a static value for a static column" in {
@@ -54,9 +50,9 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
-      insert2 <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id2).execute()
-      select <- StaticTableTest.select.where(_.id eqs id).and(_.clusteringId eqs id2).get()
+      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
+      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).execute()
+      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).get()
     } yield select
 
     chain.successful {
@@ -75,13 +71,13 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
+      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
 
       // The second insert updates the static value
-      insert2 <- StaticTableTest.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).execute()
+      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).execute()
 
       // We query for the first record inserted.
-      select <- StaticTableTest.select.where(_.id eqs id).and(_.clusteringId eqs id).get()
+      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).get()
     } yield select
 
     chain.successful {
@@ -99,14 +95,10 @@ class StaticColumnTest extends PhantomCassandraTestSuite {
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
     val chain = for {
-      store1 <- StaticCollectionTableTest.store(sample).future()
-      store2 <- StaticCollectionTableTest.store(sample2).future()
-      update <- StaticCollectionTableTest.update.where(_.id eqs id)
-        .and(_.clusteringId eqs sample.clustering)
-        .modify(_.staticList append "test")
-        .future()
-
-      get <- StaticCollectionTableTest.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
+      store1 <- TestDatabase.staticCollectionTable.store(sample).future()
+      store2 <- TestDatabase.staticCollectionTable.store(sample2).future()
+      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).modify(_.staticList append "test").future()
+      get <- TestDatabase.staticCollectionTable.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
     } yield get
 
     chain.successful {

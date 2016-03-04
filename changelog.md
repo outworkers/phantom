@@ -24,6 +24,20 @@ Changelog
     <li><a href="#version-1.13.0">1.13.0 - 02.11.2015</a></li>
     <li><a href="#version-1.15.0">1.15.0 - 10.11.2015</a></li>
     <li><a href="#version-1.16.0">1.16.0 - 19.11.2015</a></li>
+    <li><a href="#version-1.17.5">1.17.5 - 8.12.2015</a></li>
+    <li><a href="#version-1.17.7">1.17.7 - 10.12.2015</a></li>
+    <li><a href="#version-1.18.0">1.18.0 - 14.12.2015</a></li>
+    <li><a href="#version-1.18.1">1.18.1 - 17.12.2015</a></li>
+    <li><a href="#version-1.19.0">1.19.1 - 04.01.2016</a></li>
+    <li><a href="#version-1.20.0">1.20.0 - 08.01.2016</a></li>
+    <li><a href="#version-1.21.0">1.21.0 - 18.01.2016</a></li>
+    <li><a href="#version-1.21.1">1.21.1 - 19.01.2016</a></li>
+    <li><a href="#version-1.21.2">1.21.2 - 20.01.2016</a></li>
+    <li><a href="#version-1.21.3">1.21.3 - 28.01.2016</a></li>
+    <li><a href="#version-1.21.4">1.21.4 - 06.02.2016</a></li>
+    <li><a href="#version-1.21.5">1.21.5 - 11.02.2016</a></li>
+    <li><a href="#version-1.22.0">1.22.0 - 14.02.2016</a></li>
+    <li><a href="#version-1.22.1">1.22.1 - 24.02.2016</a></li>
 </ul>
 
 
@@ -236,3 +250,116 @@ and `org.joda.time.DateTime`.
 - Allowing elements to be derived from `Throwable` by adding an `ErrorWrapper` to error propagation in actors.
 - Adding support for binding `scala.Enumeration#Value` in prepared statements.
 - Bumped `xsbt-web-plugin` to `2.0.4`.
+
+<a id="version-1.17.5">1.17.5</a>
+================================
+
+- Fixed support for token operators for multiple tokens.
+- Fixed support for binding single arguments to a prepared statement by adding specialized 1 arg methods.
+- Adding better comments to the basic implementation.
+- Removed unused dead code in operator query columns for multi-column token operators.
+- Deprecated shutdown method on the main `Manager`.
+
+<a id="version-1.17.7">1.17.7</a>
+================================
+
+- Fixed serialization of `InsertQuery` builders that specify a using clause.
+- Fixed serialization of `InsertJsonQuery` builders that specify a using clause.
+- Fixed primitive serialization inside `PreparedStatements`.
+- Added primitive parsing of `BigDecimal` inside prepared statements.
+- Added support for binding lists inside prepared statements.
+- Fixed TTL support in `UpdateClause`.
+- Fixed protocol version comparisons to address non standard greater than 1 results in `compareTo` implementation.
+
+<a id="version-1.18.0">1.18.0</a>
+================================
+
+- Added a query options DSL to fix using `consistencyLevel` settings in `SelectQuery`.
+- Added a `QueryOptions` DSL to replace `Option[ConsistencyLevel]` setting in `ExecutableQuery`.
+- Bumped major version to `1.18.0` to address backwards incompatible change.
+- Fixed serialization issue in defining `LeveledCompactionStrategy`.
+
+<a id="version-1.18.1">1.18.1</a>
+================================
+
+- Adding the ability to use `gt`, `gte`, `lt`, `lte` and `isNot` operators with a conditional update clause.
+- Bumping the version to `1.18.1`.
+
+<a id="version-1.19.0">1.19.0</a>
+================================
+
+- Deprecated and completely removed the `phantom-teskit` module as it is now obsolete.
+- Upgraded the entire set of tests to use the new `Database` API.
+- Added support for updating specific entries in a `MapColumn`.
+- Added support for deleting specific entries from a `MapColumn`.
+- Fixed timeout configuration for ScalaTest based entries.
+- Updated examples to showcase new Database API.
+
+<a id="version-1.19.1">1.19.1</a>
+================================
+
+- Fixed `maxTimeUUID` and `minTimeUUID` implementations to use proper serialization for `TimeUUID` range queries.
+
+<a id="version-1.20.0">1.20.0</a>
+================================
+
+- Renamed all CAS comparison operators to match `is$Op` format.
+- Added `ExecutableCreateStatementsList` to fix index creation issues inside `Database.autocreate`.
+- Added support for Map entry comparisons and the `Entries` mixin trait for map columns with secondary indexes.
+
+<a id="version-1.21.0">1.21.0</a>
+================================
+
+- Added support for preparing `UpdateQuery` via `p_where` -> `p_and` pairs and `p_modify` -> `p_and` pairs.
+- Added more tests for prepared delete queries and update queries.
+- Added the ability to set more options on a statement before executing it.
+- Added ability to prepare map entry update clauses.
+- Bumped util library version to `0.10.8`.
+- Bumped Datastax Java Driver version to `3.0.0-rc1` and using `new SimpleStatement` constructor in favour the now
+removed `session.newSimpleStatement`.
+- Added ability to modify a `statement` directly the execution operation to set options via the Java DSL.
+- Added support for `Table.select.function(t => fn(t.column)`, including `dateOf`, `unixTimestampOf` and `writetime`.
+- Increased default schema synchronisation timeout to 10 seconds inside phantom tests.
+- Added `sbt-sonatype` plugin to re-enable Maven Central syncing.
+
+<a id="version-1.21.1">1.21.1</a>
+================================
+
+- Added ability to merge batch queries.
+- Adding support for `iterator` method on queries.
+
+<a id="version-1.21.1">1.21.2</a>
+================================
+
+- Fixing serialization of Compaction properties in CREATE and ALTER queries.
+
+<a id="version-1.21.3">1.21.3</a>
+================================
+
+- Fixing type evidence required for `p_and` chains in `UpdateQuery`.
+
+<a id="version-1.21.4">1.21.4</a>
+================================
+
+- #414 Added ablity to use prepared statements inside of batch statemets.
+- #417 Corrected cql type for LocalDate and Date accessor method.
+- #412 Bumped Datastax Java Driver version to 3.0.0
+
+<a id="version-1.21.5">1.21.5</a>
+================================
+- Added SmallInt and TinyInt support.
+- Added a new contributor to the list.
+
+<a id="version-1.22.0">1.22.0</a>
+================================
+
+- PHANTOM-194: Fixed serialization of ```Table.select.distinct``` queries.
+- Added support for `LocalDate` columns.
+- Added `driver-extras` dependency from the Datastax set.
+
+<a id="version-1.22.1">1.22.1</a>
+================================
+
+- Added a `DateTime` augmenter in the default package capable of producing `TimeUUID` values from a `DateTime`.
+- Fixed serialization of `minTimeuuid` and `maxTimeuuid` clauses to use dates in ISO formats.
+- Added tests to test `timeuuid` based date range selection with `minTimeuuid` and `maxTimeuuid`.

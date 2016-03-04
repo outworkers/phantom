@@ -27,42 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom
 
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
+import com.websudos.phantom.connectors.RootConnector
+import com.websudos.phantom.tables.TestDatabase
+import com.websudos.util.lift.UUIDSerializer
+import org.scalatest._
+import org.scalatest.concurrent.{Futures, PatienceConfiguration, ScalaFutures}
+import org.scalatest.time._
 
-case class MyTestRow(
-  key: String,
-  optionA: Option[Int],
-  stringlist: List[String]
-)
+trait PhantomBaseSuite extends Suite with Matchers
+  with BeforeAndAfterAll
+  with RootConnector
+  with ScalaFutures
+  with OptionValues {
 
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 
-sealed class MyTest extends CassandraTable[MyTest, MyTestRow] {
-  def fromRow(r: Row): MyTestRow = {
-    MyTestRow(key(r), optionA(r), stringlist(r))
-  }
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(Span(10, Seconds))
 
-  object key extends StringColumn(this) with PartitionKey[String]
-
-  object stringlist extends ListColumn[MyTest, MyTestRow, String](this)
-
-  object optionA extends OptionalIntColumn(this)
-
+  implicit val defaultPatience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(50, Millis))
 }
 
-object MyTest extends MyTest with PhantomCassandraConnector {
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
 
-  override val tableName = "mytest"
-
-  def store(row: MyTestRow): InsertQuery.Default[MyTest, MyTestRow] = {
-    insert().value(_.key, row.key)
-      .value(_.stringlist, row.stringlist)
-      .value(_.optionA, row.optionA)
-  }
-
+  val database = TestDatabase
 }
 
 
+trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+  val database = TestDatabase
+}

@@ -29,6 +29,67 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-class PreparedDeleteQueryTest {
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.tables.{Article, Recipe}
+import com.websudos.phantom.dsl._
+import com.websudos.util.testing._
+
+class PreparedDeleteQueryTest extends PhantomSuite {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.recipes.insertSchema()
+    database.articlesByAuthor.insertSchema()
+  }
+
+  it should "correctly execute a prepared delete query" in {
+    val recipe = gen[Recipe]
+
+    val query = database.recipes.delete.p_where(_.url eqs ?).prepare()
+
+    val chain = for {
+      store <- database.recipes.store(recipe).future()
+      get <- database.recipes.select.where(_.url eqs recipe.url).one()
+      delete <- query.bind(recipe.url).future()
+      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (initial, afterDelete) => {
+        initial shouldBe defined
+        initial.value shouldEqual recipe
+        afterDelete shouldBe empty
+      }
+    }
+  }
+
+  it should "correctly execute a prepared delete query with 2 bound values" in {
+    val sample = database.twoKeysTable
+
+    val author = gen[UUID]
+    val cat = gen[UUID]
+    val article = gen[Article]
+
+    val query = database.articlesByAuthor.delete
+      .p_where(_.category eqs ?)
+      .p_and(_.author_id eqs ?)
+      .prepare()
+
+    val chain = for {
+      store <- database.articlesByAuthor.store(author, cat, article).future()
+      get <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
+      delete <- query.bind(cat, author).future()
+      get2 <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (initial, afterDelete) => {
+        initial shouldBe defined
+        initial.value shouldEqual article
+        afterDelete shouldBe empty
+      }
+    }
+
+  }
 
 }

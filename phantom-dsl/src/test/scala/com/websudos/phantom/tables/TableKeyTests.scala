@@ -30,10 +30,9 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
 case class StubRecord(name: String, id: UUID)
-sealed class TableWithSingleKey extends CassandraTable[TableWithSingleKey, StubRecord] {
+sealed class TableWithSingleKey extends CassandraTable[ConcreteTableWithSingleKey, StubRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
@@ -43,9 +42,9 @@ sealed class TableWithSingleKey extends CassandraTable[TableWithSingleKey, StubR
   }
 }
 
-object TableWithSingleKey extends TableWithSingleKey with PhantomCassandraConnector
+abstract class ConcreteTableWithSingleKey extends TableWithSingleKey with RootConnector
 
-class TableWithCompoundKey extends CassandraTable[TableWithCompoundKey, StubRecord] {
+class TableWithCompoundKey extends CassandraTable[ConcreteTableWithCompoundKey, StubRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object second extends UUIDColumn(this) with PrimaryKey[UUID]
@@ -56,10 +55,10 @@ class TableWithCompoundKey extends CassandraTable[TableWithCompoundKey, StubReco
   }
 }
 
-object TableWithCompoundKey extends TableWithCompoundKey with PhantomCassandraConnector
+abstract class ConcreteTableWithCompoundKey extends TableWithCompoundKey with RootConnector
 
 
-sealed class TableWithCompositeKey extends CassandraTable[TableWithCompositeKey, StubRecord] {
+sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompositeKey, StubRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object second_part extends UUIDColumn(this) with PartitionKey[UUID]
@@ -67,20 +66,26 @@ sealed class TableWithCompositeKey extends CassandraTable[TableWithCompositeKey,
   object name extends StringColumn(this)
 
   def fromRow(r: Row): StubRecord = {
-    StubRecord(name(r), id(r))
+    StubRecord(
+      name = name(r),
+      id = id(r)
+    )
   }
 }
 
-object TableWithCompositeKey extends TableWithCompositeKey with PhantomCassandraConnector
+abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with RootConnector
 
-sealed class TableWithNoKey extends CassandraTable[TableWithNoKey, StubRecord] {
+sealed class TableWithNoKey extends CassandraTable[ConcreteTableWithNoKey, StubRecord] {
 
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
 
   def fromRow(r: Row): StubRecord = {
-    StubRecord(name(r), id(r))
+    StubRecord(
+      name = name(r),
+      id = id(r)
+    )
   }
 }
 
-object TableWithNoKey extends TableWithNoKey with PhantomCassandraConnector
+abstract class ConcreteTableWithNoKey extends TableWithNoKey with RootConnector

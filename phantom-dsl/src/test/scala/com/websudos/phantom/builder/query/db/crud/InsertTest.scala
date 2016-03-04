@@ -29,42 +29,31 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import java.util.UUID
-
-import com.websudos.phantom.DateTimeSerializer
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{MyTest, MyTestRow, Primitive, Primitives, Recipe, Recipes, TestRow, TestTable}
-import com.websudos.phantom.testkit._
-import com.websudos.util.lift.UUIDSerializer
+import com.websudos.phantom.tables._
 import com.websudos.util.testing._
-import net.liftweb.json.JsonAST.{JString, JValue}
 import net.liftweb.json._
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-import com.websudos.phantom.builder.primitives.DefaultPrimitives
 
-import scala.util.control.NonFatal
-
-class InsertTest extends PhantomCassandraTestSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
+class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
-    TestTable.insertSchema()
-    MyTest.insertSchema()
-    Recipes.insertSchema()
+    TestDatabase.listCollectionTable.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
+    TestDatabase.testTable.insertSchema()
+    TestDatabase.recipes.insertSchema()
   }
 
   "Insert" should "work fine for primitives columns" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).future()
-      one <- Primitives.select.where(_.pkey eqs row.pkey).one
+      store <- TestDatabase.primitives.store(row).future()
+      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield one
 
     chain successful {
@@ -72,15 +61,31 @@ class InsertTest extends PhantomCassandraTestSuite {
         res shouldBe defined
       }
     }
+  }
 
+  if(session.v4orNewer) {
+    "Insert" should "work fine for primitives cassandra 2.2 columns" in {
+      val row = gen[PrimitiveCassandra22]
+
+      val chain = for {
+        store <- TestDatabase.primitivesCassandra22.store(row).future()
+        one <- TestDatabase.primitivesCassandra22.select.where(_.pkey eqs row.pkey).one
+      } yield one
+
+      chain successful {
+        res => {
+          res shouldBe defined
+        }
+      }
+    }
   }
 
   "Insert" should "work fine for primitives columns with twitter futures" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- Primitives.store(row).execute()
-      one <- Primitives.select.where(_.pkey eqs row.pkey).get
+      store <- TestDatabase.primitives.store(row).execute()
+      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield one
 
     chain successful {
@@ -91,11 +96,11 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
-      store <- TestTable.store(row).future()
-      one <- TestTable.select.where(_.key eqs row.key).one
+      store <- TestDatabase.testTable.store(row).future()
+      one <- TestDatabase.testTable.select.where(_.key eqs row.key).one
     } yield one
 
     chain successful {
@@ -106,11 +111,11 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "insert strings with single quotes inside them and automatically escape them with Twitter Futures" in {
-    val row = gen[TestRow].copy(key = "test'")
+    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
-      store <- TestTable.store(row).execute()
-      one <- TestTable.select.where(_.key eqs row.key).get
+      store <- TestDatabase.testTable.store(row).execute()
+      one <- TestDatabase.testTable.select.where(_.key eqs row.key).get
     } yield one
 
     chain successful {
@@ -121,11 +126,11 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with List, Set, Map" in {
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
-      store <- TestTable.store(row).future()
-      one <- TestTable.select.where(_.key eqs row.key).one
+      store <- TestDatabase.testTable.store(row).future()
+      one <- TestDatabase.testTable.select.where(_.key eqs row.key).one
     } yield one
 
     chain successful {
@@ -136,11 +141,11 @@ class InsertTest extends PhantomCassandraTestSuite {
   }
 
   it should "work fine with List, Set, Map and Twitter futures" in {
-    val row = gen[TestRow]
+    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
-      store <- TestTable.store(row).execute()
-      one <- TestTable.select.where(_.key eqs row.key).get
+      store <- TestDatabase.testTable.store(row).execute()
+      one <- TestDatabase.testTable.select.where(_.key eqs row.key).get
     } yield one
 
     chain successful {
@@ -154,8 +159,8 @@ class InsertTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- Recipes.store(recipe).future()
-      get <- Recipes.select.where(_.url eqs recipe.url).one
+      store <- TestDatabase.recipes.store(recipe).future()
+      get <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one
     } yield get
 
     chain successful {
@@ -175,8 +180,8 @@ class InsertTest extends PhantomCassandraTestSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- Recipes.store(recipe).execute()
-      get <- Recipes.select.where(_.url eqs recipe.url).get
+      store <- TestDatabase.recipes.store(recipe).execute()
+      get <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get
     } yield get
 
     chain successful {
@@ -196,8 +201,8 @@ class InsertTest extends PhantomCassandraTestSuite {
     val row = gen[MyTestRow].copy(stringlist = List.empty)
 
     val chain = for {
-      store <- MyTest.store(row).future()
-      get <- MyTest.select.where(_.key eqs row.key).one
+      store <- TestDatabase.listCollectionTable.store(row).future()
+      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
     chain successful  {
@@ -212,8 +217,8 @@ class InsertTest extends PhantomCassandraTestSuite {
     val row = gen[MyTestRow].copy(stringlist = List.empty)
 
     val chain = for {
-      store <- MyTest.store(row).execute()
-      get <- MyTest.select.where(_.key eqs row.key).get
+      store <- TestDatabase.listCollectionTable.store(row).execute()
+      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).get
     } yield get
 
     chain successful  {
@@ -228,8 +233,8 @@ class InsertTest extends PhantomCassandraTestSuite {
     val row = gen[MyTestRow]
 
     val chain = for {
-      store <- MyTest.store(row).future()
-      get <- MyTest.select.where(_.key eqs row.key).one
+      store <- TestDatabase.listCollectionTable.store(row).future()
+      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
     chain successful  {
@@ -243,13 +248,14 @@ class InsertTest extends PhantomCassandraTestSuite {
     val row = gen[MyTestRow]
 
     val chain = for {
-      store <- MyTest.store(row).future()
-      get <- MyTest.select.where(_.key eqs row.key).one
+      store <- TestDatabase.listCollectionTable.store(row).future()
+      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
     chain successful  {
       res => {
-        res.value shouldEqual row
+        res.isEmpty shouldEqual false
+        res.get shouldEqual row
       }
     }
   }
@@ -258,11 +264,11 @@ class InsertTest extends PhantomCassandraTestSuite {
   it should "serialize a JSON clause as the insert part" in {
     val sample = gen[Recipe]
 
-    Console.println(pretty(render(Extraction.decompose(sample))))
+    info(pretty(render(Extraction.decompose(sample))))
 
     val chain = for {
-      store <- Recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
-      get <- Recipes.select.where(_.url eqs sample.url).one()
+      store <- TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
+      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
 

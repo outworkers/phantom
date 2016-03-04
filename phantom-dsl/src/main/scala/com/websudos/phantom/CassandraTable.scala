@@ -30,7 +30,7 @@
 package com.websudos.phantom
 
 import com.datastax.driver.core.{Row, Session}
-import com.websudos.phantom.builder.ops.SelectColumn
+import com.websudos.phantom.builder.clauses.DeleteClause
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
@@ -51,10 +51,8 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
-    Await.ready(create.ifNotExists().future(), 3.seconds)
+    Await.result(create.ifNotExists().future(), 10.seconds)
   }
-
-  private[phantom] def self: T = this.asInstanceOf[T]
 
   protected[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 
@@ -85,8 +83,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  final def delete(clause: T => AbstractColumn[_])(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    DeleteQuery[T, R](this.asInstanceOf[T], clause(this.asInstanceOf[T]).name)
+  final def delete(condition: T => DeleteClause.Condition)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    DeleteQuery[T, R](this.asInstanceOf[T], condition(this.asInstanceOf[T]).qb)
   }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])

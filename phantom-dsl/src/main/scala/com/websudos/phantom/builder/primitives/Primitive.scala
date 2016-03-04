@@ -49,6 +49,8 @@ private[phantom] object DateSerializer {
 
   def asCql(date: LocalDate): String = date.getMillisSinceEpoch.toString
 
+  def asCql(date: org.joda.time.LocalDate): String = date.toString
+
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
@@ -120,6 +122,40 @@ trait DefaultPrimitives {
     override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
   }
 
+  implicit object SmallIntPrimitive extends Primitive[Short] {
+
+    override type PrimitiveType = java.lang.Short
+
+    def asCql(value: Short): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.SmallInt
+
+    override def fromString(value: String): Short = value.toShort
+
+    override def fromRow(column: String, row: Row): Try[Short] = nullCheck(column, row) {
+      r => r.getShort(column)
+    }
+
+    override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
+  }
+
+  implicit object TinyIntPrimitive extends Primitive[Byte] {
+
+    override type PrimitiveType = java.lang.Byte
+
+    def asCql(value: Byte): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.TinyInt
+
+    override def fromString(value: String): Byte = value.toByte
+
+    override def fromRow(column: String, row: Row): Try[Byte] = nullCheck(column, row) {
+      r => r.getByte(column)
+    }
+
+    override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
+  }
+
   implicit object DoublePrimitive extends Primitive[Double] {
 
     override type PrimitiveType = java.lang.Double
@@ -147,8 +183,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Long = value.toLong
 
-    override def fromRow(column: String, row: Row): Try[Long] = nullCheck(column, row) {
-      r => r.getLong(column)
+    override def fromRow(column: String, row: Row): Try[Long] = {
+      nullCheck(column, row)(_.getLong(column))
     }
 
     override def clz: Class[java.lang.Long] = classOf[java.lang.Long]
@@ -195,7 +231,7 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Timestamp
 
     def fromRow(row: Row, name: String): Option[Date] =
-      if (row.isNull(name)) None else Try(new Date(row.getDate(name).getMillisSinceEpoch)).toOption
+      if (row.isNull(name)) None else Try(row.getTimestamp(name)).toOption
 
     override def asCql(value: Date): String = {
       DateSerializer.asCql(value)
@@ -212,12 +248,11 @@ trait DefaultPrimitives {
     override def clz: Class[Date] = classOf[Date]
   }
 
-
   implicit object LocalDateIsPrimitive extends Primitive[LocalDate] {
 
     override type PrimitiveType = com.datastax.driver.core.LocalDate
 
-    val cassandraType = CQLSyntax.Types.Timestamp
+    val cassandraType = CQLSyntax.Types.Date
 
     def fromRow(row: Row, name: String): Option[LocalDate] =
       if (row.isNull(name)) None else Try(row.getDate(name)).toOption
@@ -235,6 +270,30 @@ trait DefaultPrimitives {
     }
 
     override def clz: Class[LocalDate] = classOf[LocalDate]
+  }
+
+  implicit object JodaLocalDateIsPrimitive extends Primitive[org.joda.time.LocalDate] {
+
+    override type PrimitiveType = com.datastax.driver.core.LocalDate
+
+    val cassandraType = CQLSyntax.Types.Date
+
+    def fromRow(row: Row, name: String): Option[org.joda.time.LocalDate] =
+      if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch).toLocalDate).toOption
+
+    override def asCql(value: org.joda.time.LocalDate): String = {
+      CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
+    }
+
+    override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
+      r => new DateTime(r.getDate(column).getMillisSinceEpoch).toLocalDate
+    }
+
+    override def fromString(value: String): org.joda.time.LocalDate = {
+      new DateTime(value, DateTimeZone.UTC).toLocalDate
+    }
+
+    override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
   }
 
   implicit object DateTimeIsPrimitive extends Primitive[DateTime] {
@@ -290,7 +349,7 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Decimal
 
     override def fromRow(column: String, row: Row): Try[BigDecimal] = nullCheck(column, row) {
-      r => r.getDecimal(column)
+      r => BigDecimal(r.getDecimal(column))
     }
 
     override def asCql(value: BigDecimal): String = value.toString()

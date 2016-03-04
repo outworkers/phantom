@@ -31,9 +31,9 @@ package com.websudos.phantom.builder.query.db.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 
-import com.websudos.phantom.iteratee.Iteratee
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.PrimitivesJoda
+import com.websudos.phantom.iteratee.Iteratee
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 import org.scalatest.concurrent.ScalaFutures
 
@@ -41,7 +41,7 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
 
   it should "read the correct number of records found in the table" in {
     val counter: AtomicLong = new AtomicLong(0)
-    val result = PrimitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+    val result = TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
       r => counter.incrementAndGet()
     }
 

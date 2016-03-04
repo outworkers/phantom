@@ -29,27 +29,31 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit.suites.PhantomCassandraTestSuite
 import com.websudos.util.testing._
 
-class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
+class PreparedSelectQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Recipes.insertSchema()
-    ArticlesByAuthor.insertSchema()
+    TestDatabase.recipes.insertSchema()
+    TestDatabase.articlesByAuthor.insertSchema()
+    TestDatabase.primitives.insertSchema()
+    if(session.v4orNewer) {
+      TestDatabase.primitivesCassandra22.insertSchema()
+    }
   }
 
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
-    val query = Recipes.select.p_where(_.url eqs ?).prepare()
+    val query = TestDatabase.recipes.select.p_where(_.url eqs ?).prepare()
 
     val operation = for {
-      truncate <- Recipes.truncate.future
-      insertDone <- Recipes.store(recipe).future()
+      truncate <- TestDatabase.recipes.truncate.future
+      insertDone <- TestDatabase.recipes.store(recipe).future()
       select <- query.bind(recipe.url).one()
     } yield select
 
@@ -68,11 +72,11 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
     val category = gen[UUID]
     val category2 = gen[UUID]
 
-    val query = ArticlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
+    val query = TestDatabase.articlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
 
     val op = for {
-      store <- ArticlesByAuthor.store(owner, category, sample).future()
-      store2 <- ArticlesByAuthor.store(owner, category2, sample2).future()
+      store <- TestDatabase.articlesByAuthor.store(owner, category, sample).future()
+      store2 <- TestDatabase.articlesByAuthor.store(owner, category2, sample2).future()
       get <- query.bind(owner, category).one()
       get2 <- query.bind(owner, category2).one()
     } yield (get, get2)
@@ -84,6 +88,46 @@ class PreparedSelectQueryTest extends PhantomCassandraTestSuite {
 
         res2 shouldBe defined
         res2.value shouldEqual sample2
+      }
+    }
+  }
+
+  it should "serialise and execute a primitives prepared select statement with the correct number of arguments" in {
+    val primitive = gen[Primitive]
+
+    val query = TestDatabase.primitives.select.p_where(_.pkey eqs ?).prepare()
+
+    val operation = for {
+      truncate <- TestDatabase.primitives.truncate.future
+      insertDone <- TestDatabase.primitives.store(primitive).future()
+      select <- query.bind(primitive.pkey).one()
+    } yield select
+
+    operation.successful {
+      items => {
+        items shouldBe defined
+        items.value shouldEqual primitive
+      }
+    }
+  }
+
+  if(session.v4orNewer) {
+    it should "serialise and execute a primitives cassandra 2.2 prepared select statement with the correct number of arguments" in {
+      val primitive = gen[PrimitiveCassandra22]
+
+      val query = TestDatabase.primitivesCassandra22.select.p_where(_.pkey eqs ?).prepare()
+
+      val operation = for {
+        truncate <- TestDatabase.primitivesCassandra22.truncate.future
+        insertDone <- TestDatabase.primitivesCassandra22.store(primitive).future()
+        select <- query.bind(primitive.pkey).one()
+      } yield select
+
+      operation.successful {
+        items => {
+          items shouldBe defined
+          items.value shouldEqual primitive
+        }
       }
     }
   }

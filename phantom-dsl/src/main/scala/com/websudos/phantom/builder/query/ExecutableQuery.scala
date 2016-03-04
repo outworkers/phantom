@@ -40,20 +40,20 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 trait ExecutableStatement extends CassandraOperations {
 
-  def consistencyLevel: Option[ConsistencyLevel]
+  def options: QueryOptions
 
   def qb: CQLQuery
 
   def queryString: String = qb.terminate().queryString
 
   def statement()(implicit session: Session): Statement = {
-    session
-      .newSimpleStatement(qb.terminate().queryString)
-      .setConsistencyLevel(consistencyLevel.orNull)
+    new SimpleStatement(qb.terminate().queryString)
+      .setConsistencyLevel(options.consistencyLevel.orNull)
   }
 
   /**
@@ -73,6 +73,25 @@ trait ExecutableStatement extends CassandraOperations {
     */
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
+  }
+
+  /**
+    * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Scala Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * The execution context of the transformation is provided by phantom via
+    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * use [[com.websudos.phantom.dsl.context]] for operations that chain
+    * database calls.
+    *
+    * @param modifyStatement The function allowing to modify underlying [[Statement]]
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @return
+    */
+  def future(modifyStatement : Statement => Statement)(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+    scalaQueryStringExecuteToFuture(modifyStatement(statement))
   }
 
   /**
@@ -118,11 +137,11 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
   }
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
+    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(session.newSimpleStatement(item.terminate().queryString))))
+    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 }
 
@@ -204,6 +223,16 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    */
   def fetch()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
     future() map { resultSet => { directMapper(resultSet.all) } }
+  }
+
+  /**
+   * Returns a parsed iterator of [R]ows
+   * @param session The Cassandra session in use.
+   * @param ec The Execution Context.
+   * @return A Scala future wrapping scala iterator of mapped results.
+   */
+  def iterator()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[Iterator[R]] = {
+    future() map { _.iterator().asScala.map(fromRow) }
   }
 
   /**

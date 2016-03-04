@@ -141,6 +141,27 @@ package object tables {
     }
   }
 
+  implicit object PrimitiveCassandra22Sampler extends Sample[PrimitiveCassandra22] {
+    def sample: PrimitiveCassandra22 = {
+      PrimitiveCassandra22(
+        gen[String],
+        gen[Int].toShort,
+        gen[Int].toByte,
+        new DateTime(new DateTime().plus(gen[Int].toLong)).toLocalDate
+      )
+    }
+  }
+
+  implicit object OptionalPrimitiveCassandra22Sampler extends Sample[OptionalPrimitiveCassandra22] {
+    def sample: OptionalPrimitiveCassandra22 = {
+      OptionalPrimitiveCassandra22(
+        gen[String],
+        genOpt[Int].map(_.toShort),
+        genOpt[Int].map(_.toByte)
+      )
+    }
+  }
+
   implicit object TimeSeriesRSampler extends Sample[TimeSeriesRecord] {
     def sample: TimeSeriesRecord = {
       TimeSeriesRecord(
@@ -153,6 +174,19 @@ package object tables {
 
   implicit object SimpleMapOfStringsClassSampler extends Sample[SimpleMapOfStringsClass] {
     def sample: SimpleMapOfStringsClass = SimpleMapOfStringsClass(genMap[String, Int](5))
+  }
+
+  implicit object TimeUUIDRecordSampler extends Sample[TimeUUIDRecord] {
+    override def sample: TimeUUIDRecord = {
+      val id = UUIDs.timeBased()
+
+      TimeUUIDRecord(
+        user = gen[UUID],
+        id = id,
+        name = gen[ShortString].value,
+        timestamp = new DateTime(UUIDs.unixTimestamp(id))
+      )
+    }
   }
 
   implicit object RecipeSampler extends Sample[Recipe] {
@@ -191,7 +225,8 @@ package object tables {
       genList[String]().toSet,
       genMap[String, String](5),
       genList[Int]().toSet,
-      genMap[Int, String](5)
+      genMap[Int, String](5),
+      genMap[Int, Int](5)
     )
   }
 

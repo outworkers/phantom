@@ -29,8 +29,9 @@
  */
 package com.websudos.phantom.tables
 
+import com.datastax.driver.core.utils.UUIDs
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 import org.joda.time.DateTime
 
 case class TimeSeriesRecord(
@@ -39,7 +40,14 @@ case class TimeSeriesRecord(
   timestamp: DateTime
 )
 
-sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] {
+case class TimeUUIDRecord(
+  user: UUID,
+  id: UUID,
+  name: String,
+  timestamp: DateTime
+)
+
+sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending {
@@ -55,23 +63,30 @@ sealed class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesR
   }
 }
 
-object TimeSeriesTable extends TimeSeriesTable with PhantomCassandraConnector
+abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
 
+sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUIDRecord] {
 
-sealed class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeSeriesRecord] {
-  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
+  object user extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends TimeUUIDColumn(this) with ClusteringOrder[UUID] with Descending
   object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) {
-    override val name = "unixTimestamp"
-  }
 
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
+  def fromRow(row: Row): TimeUUIDRecord = {
+    TimeUUIDRecord(
+      user(row),
       id(row),
       name(row),
-      timestamp(row)
+      new DateTime(UUIDs.unixTimestamp(id(row)))
     )
   }
 }
 
-object TimeUUIDTable extends TimeUUIDTable
+abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
+
+  def store(rec: TimeUUIDRecord): InsertQuery.Default[ConcreteTimeUUIDTable, TimeUUIDRecord] = {
+    insert
+      .value(_.user, rec.user)
+      .value(_.id, rec.id)
+      .value(_.name, rec.name)
+  }
+}

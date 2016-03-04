@@ -121,7 +121,7 @@ private[phantom] trait AlterQueryBuilder {
     qb.pad.append(CQLSyntax.`with`).pad.append(clause)
   }
 
-  def rename(qb: CQLQuery, column: String, newColumn: String) = {
+  def rename(qb: CQLQuery, column: String, newColumn: String): CQLQuery = {
     qb.pad.append(CQLSyntax.Alter.Rename)
       .forcePad.append(column)
       .forcePad.append(newColumn)
@@ -133,14 +133,21 @@ private[phantom] trait AlterQueryBuilder {
   }
 
 
-  def dropTable(table: String, keyspace: String) = {
+  def dropTable(table: String, keyspace: String): CQLQuery = {
     CQLQuery(CQLSyntax.Alter.Drop)
       .forcePad.append(CQLSyntax.table)
       .forcePad.append(QueryBuilder.keyspace(keyspace, table))
   }
 
+  def dropTableIfExist(table: String, keyspace: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Alter.Drop)
+      .forcePad.append(CQLSyntax.table)
+      .forcePad.append(CQLSyntax.ifExists)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, table))
+  }
 
-  def alter(tableName: String) = {
+
+  def alter(tableName: String): CQLQuery = {
     CQLQuery(CQLSyntax.alter)
       .forcePad.append(CQLSyntax.table)
       .forcePad.append(tableName)

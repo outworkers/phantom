@@ -29,19 +29,20 @@
  */
 package com.websudos.phantom.db
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ResultSet, Session}
+import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-import scala.concurrent.blocking
 
 private object Lock
 
-abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
+abstract class DatabaseImpl(val connector: KeySpaceDef) {
 
   private[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
 
@@ -84,12 +85,52 @@ abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
     }
   }
 
-  def autocreate(): ExecutableStatementList = {
+  /**
+   * Returns a list of executable statements that will be parallelized with futures
+   * to create the entire database schema in a single call.
+   *
+   * Every future in the statement list will contain the CQL schema generation query
+   * for a single table. Processing order is not guaranteed however the tables
+   * are generally processed in the order they are written in, even though
+   * ordering is not a guarantee required at this level of an application.
+   *
+   * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
+   *         execute an entire sequence of queries.
+   */
+  def autocreate(): ExecutableCreateStatementsList = {
+    new ExecutableCreateStatementsList(tables)
+  }
+
+  /**
+   * Returns a list of executable statements that will be parallelized with futures
+   * to drop the entire database schema in a single call.
+   *
+   * Every future in the statement list will contain the ALTER DROP drop query
+   * for a single table. Processing order is not guaranteed however the tables
+   * are generally processed in the order they are written in, even though
+   * ordering is not a guarantee required at this level of an application.
+   *
+   * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
+   *         execute an entire sequence of queries.
+   */
+  def autodrop(): ExecutableStatementList = {
     new ExecutableStatementList(_tables.toSeq.map {
-      table => table.create.ifNotExists().qb
+      table => table.alter().drop().qb
     })
   }
 
+  /**
+   * Returns a list of executable statements that will be parallelized with futures
+   * to truncate the entire database schema in a single call.
+   *
+   * Every future in the statement list will contain the CQL truncation query
+   * for a single table. Processing order is not guaranteed however the tables
+   * are generally processed in the order they are written in, even though
+   * ordering is not a guarantee required at this level of an application.
+   *
+   * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
+   *         execute an entire sequence of queries.
+   */
   def autotruncate(): ExecutableStatementList = {
     new ExecutableStatementList(_tables.toSeq.map {
       table => table.truncate().qb
@@ -97,4 +138,14 @@ abstract class DatabaseImpl(protected[this] val connector: KeySpaceDef) {
   }
 }
 
+sealed class ExecutableCreateStatementsList(tables: Set[CassandraTable[_, _]]) {
 
+  def future()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Future[Seq[ResultSet]] = {
+    Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
+  }
+
+  def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
+    TwitterFuture.collect(tables.toSeq.map(_.create.ifNotExists().execute()))
+  }
+
+}

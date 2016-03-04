@@ -97,5 +97,10 @@ private[builder] class UpdateQueryBuilder {
       .forcePad.append(tableName)
   }
 
+  def updateMapColumn(column: String, key: String, value: String): CQLQuery = {
+    qUtils.mapKey(column, key)
+      .forcePad.append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(value)
+  }
 }
 

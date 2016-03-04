@@ -29,31 +29,27 @@
  */
 package com.websudos.phantom.builder.query.db.select
 
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.phantom.testkit._
 import com.websudos.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 
 
-class PartialSelectTest extends PhantomCassandraTestSuite {
-
-  override implicit val patience: PatienceConfiguration.Timeout = timeout(10 seconds)
+class PartialSelectTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Primitives.insertSchema()
+    TestDatabase.primitives.insertSchema()
   }
 
   "Partially selecting 2 fields" should "correctly select the fields" in {
     val row = gen[Primitive]
 
     val chain = for {
-      truncate <- Primitives.truncate.future()
-      insertDone <- Primitives.store(row).future()
-      listSelect <- Primitives.select(_.pkey).fetch
-      oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
+      truncate <- TestDatabase.primitives.truncate.future()
+      insertDone <- TestDatabase.primitives.store(row).future()
+      listSelect <- TestDatabase.primitives.select(_.pkey).fetch
+      oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
     } yield (listSelect, oneSelect)
 
     chain successful {
@@ -68,16 +64,16 @@ class PartialSelectTest extends PhantomCassandraTestSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      truncate <- Primitives.truncate.execute()
-      insertDone <- Primitives.store(row).execute()
-      listSelect <- Primitives.select(_.pkey).collect
-      oneSelect <- Primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
+      truncate <- TestDatabase.primitives.truncate.execute()
+      insertDone <- TestDatabase.primitives.store(row).execute()
+      listSelect <- TestDatabase.primitives.select(_.pkey).collect
+      oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
     } yield (listSelect, oneSelect)
 
     chain successful {
       result => {
-        result._1 shouldEqual List(row.pkey)
-        result._2.value shouldEqual Tuple2(row.long, row.boolean)
+        result._1.toList shouldEqual List(row.pkey)
+        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
       }
     }
   }

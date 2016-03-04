@@ -42,7 +42,7 @@ import com.websudos.phantom.dsl._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Recipe] {
+sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -60,8 +60,8 @@ sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Rec
 
   object description extends StringColumn(this)
 
-  object ingredients extends SetColumn[SecondaryKeyRecipes, Recipe, String](this)
-  object props extends MapColumn[SecondaryKeyRecipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[ConcreteSecondaryKeyRecipes, Recipe, String](this)
+  object props extends MapColumn[ConcreteSecondaryKeyRecipes, Recipe, String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.
@@ -81,7 +81,7 @@ sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Rec
 }
 
 
-object SecondaryKeyRecipes extends SecondaryKeyRecipes with ExampleConnector {
+abstract class ConcreteSecondaryKeyRecipes extends SecondaryKeyRecipes with RootConnector {
 
   // Now say you want to get a Recipe by author.
   // author is a Index, you can now use it in a "where" clause.
@@ -92,7 +92,4 @@ object SecondaryKeyRecipes extends SecondaryKeyRecipes with ExampleConnector {
   def getRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
     select.allowFiltering().where(_.author eqs author).one()
   }
-
-
-
 }

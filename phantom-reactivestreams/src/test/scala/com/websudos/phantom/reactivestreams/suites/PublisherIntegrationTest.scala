@@ -29,22 +29,21 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-import org.reactivestreams.{Subscription, Subscriber}
-import org.scalatest.FlatSpec
-import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
+import com.websudos.util.testing._
+import org.reactivestreams.{Subscriber, Subscription}
+import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 
-  override implicit val patienceConfig = PatienceConfig(Duration(5, TimeUnit.SECONDS), Duration(300, TimeUnit.MILLISECONDS))
+  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
   it should "correctly consume the entire stream of items published from a Cassandra table" in {
     val counter = new AtomicInteger(0)
@@ -52,17 +51,17 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
     val samples = genList[String](generatorCount).map(Opera)
 
     val chain = for {
-      truncate <- OperaTable.truncate().future()
+      truncate <- StreamDatabase.operaTable.truncate().future()
       store <- samples.foldLeft(Batch.unlogged) {
         (acc, item) => {
-          acc.add(OperaTable.store(item))
+          acc.add(StreamDatabase.operaTable.store(item))
         }
       } future()
     } yield store
 
     Await.result(chain, 10.seconds)
 
-    val publisher = OperaTable.publisher
+    val publisher = StreamDatabase.operaTable.publisher
 
     publisher.subscribe(new Subscriber[Opera] {
       override def onError(t: Throwable): Unit = {
@@ -86,8 +85,6 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     eventually {
       counter.get() shouldEqual generatorCount
-    }
-
-
+    } (defaultPatience)
   }
 }

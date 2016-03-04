@@ -31,30 +31,75 @@ package com.websudos.phantom.builder.serializers
 
 import java.util.Date
 
+import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.query.QueryBuilderTest
-import com.websudos.phantom.tables.{ArticlesByAuthor, TimeSeriesTable, BasicTable}
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
 
 class SelectQuerySerialisationTest extends QueryBuilderTest {
 
-  "The select query builder" - {
-    "should serialize " - {
+  val BasicTable = TestDatabase.basicTable
+  val ArticlesByAuthor = TestDatabase.articlesByAuthor
+  val TimeSeriesTable = TestDatabase.timeSeriesTable
 
-      "an allow filtering clause in the init position" in {
+  protected[this] val limit = 5
+
+  "The select query builder" - {
+
+    "should serialize distinct clauses" - {
+      "should correctly append a * if there is no column selection provided to a distinct clause" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(5).queryString
+        val qb = BasicTable.select.distinct().where(_.id eqs id).limit(limit).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT DISTINCT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5;"
       }
 
-      "an allow filtering clause specified after a limit query" in {
+      "should correctly append a column selection to a distinct clause" in {
         val id = gen[UUID]
 
-        val qb = BasicTable.select.where(_.id eqs id).limit(5).allowFiltering().queryString
+        val qb = TestDatabase.tableWithCompositeKey.select(_.id, _.second_part)
+          .distinct()
+          .where(_.id eqs id)
+          .limit(limit).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.BasicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+        qb shouldEqual s"SELECT DISTINCT id, second_part FROM phantom.tableWithCompositeKey WHERE id = ${id.toString} LIMIT 5;"
+      }
+    }
+
+    "should serialize " - {
+
+      "serialise an allow filtering clause in the init position" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).allowFiltering().limit(limit).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+      }
+
+      "serialize an allow filtering clause specified after a limit query" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).limit(limit).allowFiltering().queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} LIMIT 5 ALLOW FILTERING;"
+      }
+
+      "serialize a single ordering clause" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY id2 DESC;"
+      }
+
+      "serialize an ordering by multiple columns" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
       }
 
       "a maxTimeuuid comparison clause" in {
@@ -62,7 +107,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb should startWith (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(")
       }
 
       "a maxTimeuuid comparison clause with a DateTime object" in {
@@ -70,7 +115,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > maxTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > maxTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb should startWith ("SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > maxTimeuuid(")
       }
 
       "a minTimeuuid comparison clause" in {
@@ -78,7 +123,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateIsPrimitive.asCql(date)});"
+        qb should startWith (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(")
       }
 
       "a minTimeuuid comparison clause with a DateTime object" in {
@@ -86,7 +131,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TimeSeriesTable.select.where(_.timestamp > minTimeuuid(date)).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.TimeSeriesTable WHERE unixTimestamp > minTimeuuid(${DateTimeIsPrimitive.asCql(date)});"
+        qb should startWith (s"SELECT * FROM phantom.timeSeriesTable WHERE unixTimestamp > minTimeuuid(")
       }
 
       "a multiple column token clause" in {
@@ -95,11 +140,22 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
       "a single column token clause" in {
         val qb = ArticlesByAuthor.select.where(_.author_id gtToken gen[UUID]).queryString
+        info(qb)
+      }
 
+      "a consistency level setting" in {
+        val qb = ArticlesByAuthor.select.where(_.author_id eqs gen[UUID])
+          .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
+          .queryString
       }
 
       "a single dateOf column apply" in {
-        //val qb = ArticlesByAuthor.select.where(t => dateOf(t))
+        val qb = TestDatabase.timeuuidTable.select
+          .function(t => dateOf(t.id))
+          .where(_.id eqs UUIDs.timeBased())
+          .qb.queryString
+
+        info(qb)
       }
     }
   }

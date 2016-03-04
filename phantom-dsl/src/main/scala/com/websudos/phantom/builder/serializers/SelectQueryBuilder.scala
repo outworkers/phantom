@@ -158,9 +158,11 @@ private[builder] class SelectQueryBuilder {
    * @return
    */
   def distinct(tableName: String, keyspace: String, names: String*): CQLQuery = {
+    val cols = if (names.nonEmpty) CQLQuery(names) else CQLQuery(CQLSyntax.Symbols.`*`)
+
     CQLQuery(CQLSyntax.select)
       .forcePad.append(CQLSyntax.distinct)
-      .pad.append(names)
+      .forcePad.append(cols)
       .forcePad.append(CQLSyntax.from)
       .forcePad.append(QueryBuilder.keyspace(keyspace, tableName))
   }
@@ -179,7 +181,7 @@ private[builder] class SelectQueryBuilder {
    * @param clause The CQL clause to use as the select list value.
    * @return
    */
-  def select(tableName: String, keyspace: String, clause: CQLQuery) = {
+  def select(tableName: String, keyspace: String, clause: CQLQuery): CQLQuery = {
     CQLQuery(CQLSyntax.select)
       .pad.append(clause)
       .pad.append(CQLSyntax.from)
@@ -210,8 +212,16 @@ private[builder] class SelectQueryBuilder {
     CQLQuery(CQLSyntax.Selection.DateOf).wrapn(column)
   }
 
+  def unixTimestampOf(column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.UnixTimestampOf).wrapn(column)
+  }
+
   def now(): CQLQuery = {
     CQLQuery("now()")
+  }
+
+  def writetime(col: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.Writetime).wrapn(col)
   }
 
   def maxTimeuuid(dateString: String): CQLQuery = {

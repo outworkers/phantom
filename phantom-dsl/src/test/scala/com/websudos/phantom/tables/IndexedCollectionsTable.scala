@@ -1,41 +1,72 @@
+/*
+ * Copyright 2013-2015 Websudos, Limited.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.column.{ListColumn, MapColumn, SetColumn}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.testkit._
 
-sealed class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] {
+sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedCollectionsTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[IndexedCollectionsTable, TestRow, String](this)
+  object list extends ListColumn[ConcreteIndexedCollectionsTable, TestRow, String](this)
 
-  object setText extends SetColumn[IndexedCollectionsTable, TestRow, String](this) with Index[Set[String]]
+  object setText extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, String](this) with Index[Set[String]]
 
-  object mapTextToText extends MapColumn[IndexedCollectionsTable, TestRow, String, String](this) with Index[Map[String, String]]
+  object mapTextToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, String, String](this) with Index[Map[String, String]]
 
-  object setInt extends SetColumn[IndexedCollectionsTable, TestRow, Int](this)
+  object setInt extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, Int](this)
 
-  object mapIntToText extends MapColumn[IndexedCollectionsTable, TestRow, Int, String](this) with Index[Map[Int, String]] with Keys
+  object mapIntToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, Int, String](this) with Index[Map[Int, String]] with Keys
+
+  object mapIntToInt extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, Int, Int](this) with Index[Map[Int, Int]] with Entries
 
   def fromRow(r: Row): TestRow = {
     TestRow(
-      key(r),
-      list(r),
-      setText(r),
-      mapTextToText(r),
-      setInt(r),
-      mapIntToText(r)
+      key = key(r),
+      list = list(r),
+      setText = setText(r),
+      mapTextToText = mapTextToText(r),
+      setInt = setInt(r),
+      mapIntToText = mapIntToText(r),
+      mapIntToInt = mapIntToInt(r)
     )
   }
 }
 
-object IndexedCollectionsTable extends IndexedCollectionsTable with PhantomCassandraConnector {
+abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable with RootConnector {
   override val tableName = "indexed_collections"
 
-  def store(row: TestRow): InsertQuery.Default[IndexedCollectionsTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[ConcreteIndexedCollectionsTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)
@@ -43,6 +74,7 @@ object IndexedCollectionsTable extends IndexedCollectionsTable with PhantomCassa
       .value(_.mapTextToText, row.mapTextToText)
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
+      .value(_.mapIntToInt, row.mapIntToInt)
   }
 
 }
