@@ -34,5 +34,6 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate
 
 after_success:
+  - sbt ++$TRAVIS_SCALA_VERSION coveralls
   - ./build/publish_develop.sh
 
