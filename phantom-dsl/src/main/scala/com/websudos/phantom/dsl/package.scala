@@ -254,6 +254,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
     def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
     def > (other: VersionNumber): Boolean = version.compareTo(other) == 1
+
+    def >= (other: VersionNumber): Boolean = {
+      version.compareTo(other) >= 0
+    }
   }
 
   implicit class DateTimeAugmenter(val date: DateTime) extends AnyVal {
