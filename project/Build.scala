@@ -37,9 +37,9 @@ object Build extends Build {
 
   object Versions {
     val logback = "1.1.3"
+    val util = "0.13.0"
   }
 
-  val UtilVersion = "0.10.14"
   val DatastaxDriverVersion = "3.0.0"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.5"
@@ -59,57 +59,14 @@ object Build extends Build {
   val TypesafeConfigVersion = "1.2.1"
   val JettyVersion = "9.1.2.v20140210"
 
-  val mavenPublishSettings : Seq[Def.Setting[_]] = Seq(
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    publishMavenStyle := true,
-    publishTo <<= version.apply {
-      v =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT")) {
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        } else {
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-        }
-    },
-    licenses += ("Websudos license", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt")),
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true },
-    pomExtra :=
-      <url>https://github.com/websudos/phantom</url>
-        <scm>
-          <url>git@github.com:websudos/phantom.git</url>
-          <connection>scm:git:git@github.com:websudos/phantom.git</connection>
-        </scm>
-        <developers>
-          <developer>
-            <id>alexflav</id>
-            <name>Flavian Alexandru</name>
-            <url>http://github.com/alexflav23</url>
-          </developer>
-        </developers>
-  )
-
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
       case "2.10.5" => "3.0-M1"
       case _ => "3.0-M6"
     }
   }
-
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
-
-  val publishSettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
-    bintray.BintrayKeys.bintrayRepository <<= scalaVersion.apply {
-      v => if (v.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases"
-    },
-    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt"))
-  )
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
@@ -155,7 +112,7 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++ VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.mavenTaskSettings
 
   lazy val phantom = Project(
     id = "phantom",
@@ -180,9 +137,7 @@ object Build extends Build {
   lazy val phantomDsl = Project(
     id = "phantom-dsl",
     base = file("phantom-dsl"),
-    settings = Defaults.coreDefaultSettings ++
-      sharedSettings ++
-      publishSettings
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).configs(
       PerformanceTest
     ).settings(
@@ -206,8 +161,8 @@ object Build extends Build {
         "com.datastax.cassandra"       %  "cassandra-driver-extras"           % DatastaxDriverVersion,
         "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
-        "com.websudos"                 %% "util-lift"                         % UtilVersion                     % "test, provided",
-        "com.websudos"                 %% "util-testing"                      % UtilVersion                     % "test, provided",
+        "com.websudos"                 %% "util-lift"                         % Versions.util                   % "test, provided",
+        "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
         "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided",
         "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test, provided"
@@ -224,7 +179,7 @@ object Build extends Build {
     name := "phantom-connectors",
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
+      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
     )
   )
 
@@ -238,7 +193,7 @@ object Build extends Build {
       "-language:experimental.macros"
     ),
     libraryDependencies ++= Seq(
-      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
+      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
     )
   ).dependsOn(
     phantomDsl,
@@ -248,10 +203,7 @@ object Build extends Build {
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
     base = file("phantom-thrift"),
-    settings = Defaults.coreDefaultSettings ++
-      sharedSettings ++
-      publishSettings ++
-      ScroogeSBT.newSettings
+    settings = Defaults.coreDefaultSettings ++ sharedSettings ++ ScroogeSBT.newSettings
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
@@ -259,7 +211,7 @@ object Build extends Build {
       "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
       "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
       "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
-      "com.websudos"                 %% "util-testing"                      % UtilVersion               % "test, provided"
+      "com.websudos"                 %% "util-testing"                      % Versions.util               % "test, provided"
     )
   ).dependsOn(
     phantomDsl
@@ -273,8 +225,8 @@ object Build extends Build {
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
       "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
-      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided",
-      "com.websudos"                 %% "util-zookeeper"                    % UtilVersion            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14")
+      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided",
+      "com.websudos"                 %% "util-zookeeper"                    % Versions.util            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14")
     )
   ).dependsOn(
     phantomConnectors
@@ -291,7 +243,7 @@ object Build extends Build {
       "com.typesafe"        % "config"                % TypesafeConfigVersion,
       "org.reactivestreams" % "reactive-streams"      % ReactiveStreamsVersion,
       "com.typesafe.akka"   %% s"akka-actor"          % AkkaVersion,
-      "com.websudos"        %% "util-testing"         % UtilVersion            % "test, provided",
+      "com.websudos"        %% "util-testing"         % Versions.util          % "test, provided",
       "org.reactivestreams" % "reactive-streams-tck"  % ReactiveStreamsVersion % "test, provided"
     )
   ).dependsOn(
@@ -306,8 +258,8 @@ object Build extends Build {
   ).settings(
     name := "phantom-example",
     libraryDependencies ++= Seq(
-      "com.websudos"                 %% "util-lift"                         % UtilVersion            % "test, provided",
-      "com.websudos"                 %% "util-testing"                      % UtilVersion            % "test, provided"
+      "com.websudos"                 %% "util-lift"                         % Versions.util            % "test, provided",
+      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
     )
   ).dependsOn(
     phantomDsl,
@@ -333,7 +285,7 @@ object Build extends Build {
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
       "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",
       "javax.servlet"             % "javax.servlet-api"               % "3.0.1"                % "provided",
-      "com.websudos"              %% "util-testing"                   % UtilVersion            % "provided"
+      "com.websudos"              %% "util-testing"                   % Versions.util          % "provided"
     )
   ).dependsOn(
     phantomDsl,
