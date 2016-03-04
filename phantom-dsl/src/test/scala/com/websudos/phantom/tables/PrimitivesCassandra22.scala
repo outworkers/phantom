@@ -30,18 +30,18 @@
 package com.websudos.phantom.tables
 
 import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.column.LocalDateColumn
 import com.websudos.phantom.dsl._
 import org.joda.time.LocalDate
 
 case class PrimitiveCassandra22(
-                      pkey: String,
-                      short: Short,
-                      byte: Byte,
-                      localDate: LocalDate
-                    )
+  pkey: String,
+  short: Short,
+  byte: Byte,
+  localDate: LocalDate
+)
 
 sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
+
   object pkey extends StringColumn(this) with PartitionKey[String]
 
   object short extends SmallIntColumn(this)
