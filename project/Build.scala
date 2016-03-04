@@ -114,6 +114,17 @@ object Build extends Build {
     parallelExecution in ThisBuild := false
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.mavenTaskSettings
 
+  lazy val baseProjectList: Seq[ProjectReference] = Seq(
+    phantomDsl,
+    phantomExample,
+    phantomConnectors,
+    phantomReactiveStreams,
+    phantomThrift,
+    phantomUdt,
+    phantomZookeeper)
+
+  lazy val fullProjectList = baseProjectList ++ addOnCondition(isJdk8, phantomJdk8)
+
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
@@ -125,14 +136,7 @@ object Build extends Build {
   ).settings(
     name := "phantom"
   ).aggregate(
-    phantomDsl,
-    phantomJdk8,
-    phantomExample,
-    phantomConnectors,
-    phantomReactiveStreams,
-    phantomThrift,
-    phantomUdt,
-    phantomZookeeper
+    fullProjectList: _*
   )
 
   lazy val phantomDsl = Project(
@@ -308,4 +312,9 @@ object Build extends Build {
     phantomThrift,
     phantomZookeeper
   )
+
+  private def isJdk8 = sys.props("java.specification.version") == "1.8"
+
+  private def addOnCondition(condition: Boolean, projectReference: ProjectReference): Seq[ProjectReference] =
+    if (condition) projectReference :: Nil else Nil
 }
