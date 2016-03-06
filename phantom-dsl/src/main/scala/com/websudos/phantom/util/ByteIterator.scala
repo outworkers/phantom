@@ -25,7 +25,11 @@ object ByteIterator {
     val empty: ByteArrayIterator = apply(emptyArray)
   }
 
-  class ByteArrayIterator private (private var array: Array[Byte], private var from: Int, private var until: Int) extends ByteIterator {
+  class ByteArrayIterator private (
+    private var array: Array[Byte],
+    private var from: Int,
+    private var until: Int
+  ) extends ByteIterator {
     iterator ⇒
 
     @inline final def len: Int = until - from
@@ -111,7 +115,7 @@ object ByteIterator {
       } else Iterator.empty.next
     }
 
-    private def wrappedByteBuffer: ByteBuffer = ByteBuffer.wrap(array, from, len).asReadOnlyBuffer
+    private[this] def wrappedByteBuffer: ByteBuffer = ByteBuffer.wrap(array, from, len).asReadOnlyBuffer
 
     def getShorts(xs: Array[Short], offset: Int, n: Int)(implicit byteOrder: ByteOrder): this.type =
     { wrappedByteBuffer.order(byteOrder).asShortBuffer.get(xs, offset, n); drop(2 * n) }
@@ -173,7 +177,7 @@ object ByteIterator {
     // After normalization:
     // * iterators.isEmpty == false
     // * (!iterator.head.isEmpty || iterators.tail.isEmpty) == true
-    private def normalize(): this.type = {
+    private[this] def normalize(): this.type = {
       @tailrec def norm(xs: LinearSeq[ByteArrayIterator]): LinearSeq[ByteArrayIterator] = {
         if (xs.isEmpty) MultiByteArrayIterator.clearedList
         else if (xs.head.isEmpty) norm(xs.tail)
@@ -184,8 +188,8 @@ object ByteIterator {
     }
     normalize()
 
-    @inline private def current: ByteArrayIterator = iterators.head
-    @inline private def dropCurrent(): Unit = { iterators = iterators.tail }
+    @inline private[this] def current: ByteArrayIterator = iterators.head
+    @inline private[this] def dropCurrent(): Unit = { iterators = iterators.tail }
     @inline def clear(): Unit = { iterators = MultiByteArrayIterator.empty.iterators }
 
     @inline final def hasNext: Boolean = current.hasNext

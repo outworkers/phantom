@@ -75,8 +75,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe expected
+        items shouldBe defined
+        items.value shouldBe expected
       }
     }
   }
@@ -111,8 +111,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe expected
+        items shouldBe defined
+        items.value shouldBe expected
       }
     }
   }
@@ -139,7 +139,6 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
       .value(_.thriftSet, Set(sample))
       .value(_.thriftList, List(sample))
       .value(_.thriftMap, map)
-
       .future()
 
     val operation = for {
@@ -152,8 +151,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe expected
+        items shouldBe defined
+        items.value shouldBe expected
       }
     }
   }
@@ -188,8 +187,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe expected
+        items shouldBe defined
+        items.value shouldBe expected
       }
     }
   }

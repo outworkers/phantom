@@ -11,8 +11,11 @@ then
     echo "Pushing tag to GitHub."
     git push --tags
 
-    echo "Publishing signed artefact"
+    echo "Publishing signed artifact"
     sbt +publishSigned
+
+    git checkout master
+    git merge develop
 
 
 else

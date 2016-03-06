@@ -46,12 +46,13 @@ import com.websudos.util.testing._
 class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
+  private[this] final val iteratorLimit = 10000
 
   it should "retrieve the right amount of results" in {
     TestDatabase.primitivesJoda.insertSchema()
     val fs = for {
       step <- 1 to 100
-      rows = Iterator.fill(10000)(gen[JodaRow])
+      rows = Iterator.fill(iteratorLimit)(gen[JodaRow])
 
       batch = rows.foldLeft(Batch.unlogged)((b, row) => {
         val statement = TestDatabase.primitivesJoda.insert
@@ -61,7 +62,7 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
         b.add(statement)
       })
       w = batch.future()
-      f = w map (_ => println(s"step $step has succeed") )
+      f = w map (_ => info(s"step $step has succeed"))
       r = Await.result(f, 200 seconds)
     } yield f map (_ => r)
 
@@ -80,7 +81,7 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
     (result flatMap (_ => combinedFuture)) successful {
       r => {
-        info(s"done, reading: ${counter.get}")
+        info(s"done, reading: ${counter.addAndGet(0)}")
         counter.get() shouldEqual r
       }
     }

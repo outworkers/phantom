@@ -156,7 +156,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
   def fromRow(r: Row): R
 
   private[this] def singleResult(row: Row): Option[R] = {
-    if (row != null) Some(fromRow(row)) else None
+    if (Option(row).isDefined) Some(fromRow(row)) else None
   }
 
   private[this] def directMapper(results: JavaList[Row]): List[R] = {

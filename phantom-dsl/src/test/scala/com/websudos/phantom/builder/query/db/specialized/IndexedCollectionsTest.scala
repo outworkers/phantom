@@ -50,10 +50,12 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.setText contains record.setText.head).fetch()
+      get <- TestDatabase.indexedCollectionsTable.select
+        .where(_.setText contains record.setText.headOption.value)
+        .fetch()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -71,10 +73,13 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.setText contains record.setText.head).collect()
+      get <- TestDatabase.indexedCollectionsTable
+        .select
+        .where(_.setText contains record.setText.headOption.value)
+        .collect()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -92,10 +97,12 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).fetch()
+      get <- TestDatabase.indexedCollectionsTable.select
+        .where(_.mapTextToText contains record.mapTextToText.headOption.value._2)
+        .fetch()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -112,10 +119,12 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapTextToText contains record.mapTextToText.head._2).collect()
+      get <- TestDatabase.indexedCollectionsTable.select
+        .where(_.mapTextToText contains record.mapTextToText.headOption.value._2)
+        .collect()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -132,10 +141,13 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).fetch()
+      get <- TestDatabase.indexedCollectionsTable
+        .select
+        .where(_.mapIntToText containsKey record.mapIntToText.headOption.value._1)
+        .fetch()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -152,10 +164,13 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToText containsKey record.mapIntToText.head._1).collect()
+      get <- TestDatabase.indexedCollectionsTable
+        .select
+        .where(_.mapIntToText containsKey record.mapIntToText.headOption.value._1)
+        .collect()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true
@@ -175,7 +190,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).collect()
     } yield get
 
-    if (cassandraVersion > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       chain.successful {
         res => {
           res.nonEmpty shouldEqual true

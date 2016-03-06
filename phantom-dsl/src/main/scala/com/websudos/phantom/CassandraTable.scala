@@ -158,10 +158,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val key = if (operand < 0) {
       throw InvalidPrimaryKeyException()
     } else if (operand == 0) {
+
+      val partitionKey = partitions.headOption.map(_.name).orNull
+
       if (primaries.isEmpty) {
-        s"${partitions.head.name}"
+        partitionKey
       } else {
-        s"${partitions.head.name}, $primaryString"
+        s"$partitionKey, $primaryString"
       }
     } else {
       if (primaries.isEmpty) {
