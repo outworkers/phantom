@@ -57,14 +57,22 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
       if symbol.typeSignature <:< ru.typeOf[CassandraTable[_, _]]
     } yield symbol)(collection.breakOut)
 
-    for {
-      symbol <- members
-      table = if (symbol.isModule) {
-        instanceMirror.reflectModule(symbol.asModule).instance
-      } else if (symbol.isTerm && symbol.asTerm.isVal) {
-        instanceMirror.reflectField(symbol.asTerm).get
-      }
-    } yield table.asInstanceOf[CassandraTable[_, _]]
+    members.flatMap {
+      case symbol =>
+        if (symbol.isModule) {
+          val table = instanceMirror.reflectModule(symbol.asModule)
+            .instance
+            .asInstanceOf[CassandraTable[_, _]]
+          Some(table)
+        } else if (symbol.isTerm && symbol.asTerm.isVal) {
+          val field = instanceMirror.reflectField(symbol.asTerm)
+          val table = field.get.asInstanceOf[CassandraTable[_, _]]
+          table._name = field.symbol.name.toTermName.decodedName.toString
+          Some(table)
+        } else {
+          None
+        }
+    }
   }
 
   def shutdown(): Unit = {

@@ -56,8 +56,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   protected[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 
-  protected[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
+  protected[phantom] var _name: String = {
+    val symbol = cm.reflect(this).symbol
+    symbol.name.toTypeName.decodedName.toString
   }
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
