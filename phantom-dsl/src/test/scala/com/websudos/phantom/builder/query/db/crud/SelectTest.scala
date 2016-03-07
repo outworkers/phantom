@@ -56,7 +56,7 @@ class SelectTest extends PhantomSuite {
 
     chain successful {
       res => {
-        res value shouldEqual row
+        res.value shouldEqual row
       }
     }
   }

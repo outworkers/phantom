@@ -208,7 +208,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
     columnMembers.foreach {
       symbol =>
-        val column = instanceMirror.reflectModule(symbol.asModule).instance
+
+        val column = if (symbol.isModule) {
+          instanceMirror.reflectModule(symbol.asModule).instance
+        } else if (symbol.isMethod) {
+          instanceMirror.reflectMethod(symbol.asMethod).symbol
+        }
+
         _columns += column.asInstanceOf[AbstractColumn[_]]
     }
   }

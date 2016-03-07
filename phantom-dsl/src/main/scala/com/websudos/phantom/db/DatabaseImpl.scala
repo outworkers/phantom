@@ -35,46 +35,36 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 private object Lock
 
 abstract class DatabaseImpl(val connector: KeySpaceDef) {
 
-  private[this] lazy val _tables: MutableArrayBuffer[CassandraTable[_, _]] = new MutableArrayBuffer[CassandraTable[_, _]]
-
   implicit val space: KeySpace = new KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
 
-  def tables: Set[CassandraTable[_, _]] = _tables.toSet
-
-  Lock.synchronized {
+  lazy val tables: Set[CassandraTable[_, _]] = Lock.synchronized {
 
     val instanceMirror = cm.reflect(this)
     val selfType = instanceMirror.symbol.toType
 
-    // Collect all column definitions starting from base class
-    val columnMembers = MutableArrayBuffer.empty[Symbol]
-    selfType.baseClasses.reverse.foreach {
-      baseClass =>
-        val baseClassMembers = baseClass.typeSignature.members.sorted
-        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[CassandraTable[_, _]])
-        baseClassColumns.foreach(symbol => if (!columnMembers.contains(symbol)) columnMembers += symbol)
-    }
+    val members: Set[ru.Symbol] = (for {
+      baseClass <- selfType.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< ru.typeOf[CassandraTable[_, _]]
+    } yield symbol)(collection.breakOut)
 
-    columnMembers.foreach {
-      symbol =>
-        val table =  if (symbol.isModule) {
-          instanceMirror.reflectModule(symbol.asModule).instance
-        } else if (symbol.isTerm) {
-          instanceMirror.reflectField(symbol.asTerm).get
-        }
-        _tables += table.asInstanceOf[CassandraTable[_, _]]
-    }
+    for {
+      symbol <- members
+      table = if (symbol.isModule) {
+        instanceMirror.reflectModule(symbol.asModule).instance
+      } else if (symbol.isTerm && symbol.asTerm.isVal) {
+        instanceMirror.reflectField(symbol.asTerm).get
+      }
+    } yield table.asInstanceOf[CassandraTable[_, _]]
   }
 
   def shutdown(): Unit = {
@@ -114,7 +104,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
    *         execute an entire sequence of queries.
    */
   def autodrop(): ExecutableStatementList = {
-    new ExecutableStatementList(_tables.toSeq.map {
+    new ExecutableStatementList(tables.toSeq.map {
       table => table.alter().drop().qb
     })
   }
@@ -132,7 +122,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
    *         execute an entire sequence of queries.
    */
   def autotruncate(): ExecutableStatementList = {
-    new ExecutableStatementList(_tables.toSeq.map {
+    new ExecutableStatementList(tables.toSeq.map {
       table => table.truncate().qb
     })
   }
