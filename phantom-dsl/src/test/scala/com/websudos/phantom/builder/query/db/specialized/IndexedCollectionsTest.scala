@@ -98,7 +98,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).future()
       get <- TestDatabase.indexedCollectionsTable.select
-        .where(_.mapTextToText contains record.mapTextToText.headOption.value._2)
+        .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
         .fetch()
     } yield get
 
@@ -120,7 +120,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val chain = for {
       store <- TestDatabase.indexedCollectionsTable.store(record).execute()
       get <- TestDatabase.indexedCollectionsTable.select
-        .where(_.mapTextToText contains record.mapTextToText.headOption.value._2)
+        .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
         .collect()
     } yield get
 
@@ -143,7 +143,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       store <- TestDatabase.indexedCollectionsTable.store(record).future()
       get <- TestDatabase.indexedCollectionsTable
         .select
-        .where(_.mapIntToText containsKey record.mapIntToText.headOption.value._1)
+        .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
         .fetch()
     } yield get
 
@@ -166,7 +166,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       store <- TestDatabase.indexedCollectionsTable.store(record).execute()
       get <- TestDatabase.indexedCollectionsTable
         .select
-        .where(_.mapIntToText containsKey record.mapIntToText.headOption.value._1)
+        .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
         .collect()
     } yield get
 
