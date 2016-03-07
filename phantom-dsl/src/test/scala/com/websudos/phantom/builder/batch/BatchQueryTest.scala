@@ -192,9 +192,9 @@ class BatchQueryTest extends PhantomSuite {
     } yield (updated, deleted)
 
     w successful {
-      res => {
-        res._1.value shouldEqual row2
-        res._2 shouldNot be (defined)
+      case (updated, deleted) => {
+        updated.value shouldEqual row2
+        deleted shouldNot be (defined)
       }
     }
   }
@@ -263,8 +263,7 @@ class BatchQueryTest extends PhantomSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }
@@ -291,8 +290,7 @@ class BatchQueryTest extends PhantomSuite {
 
     chain.successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }

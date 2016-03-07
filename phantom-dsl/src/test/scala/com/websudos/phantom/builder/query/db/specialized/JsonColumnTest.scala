@@ -84,9 +84,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value.json shouldEqual sample.json
-        res._2.value.json shouldEqual sample2.json
+      case (initial, updated) => {
+        initial.value.json shouldEqual sample.json
+        updated.value.json shouldEqual sample2.json
       }
     }
   }
@@ -103,9 +103,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value.json shouldEqual sample.json
-        res._2.value.json shouldEqual sample2.json
+      case (initial, updated) => {
+        initial.value.json shouldEqual sample.json
+        updated.value.json shouldEqual sample2.json
       }
     }
   }
@@ -122,10 +122,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value shouldEqual sample
-
-        res._2.value.jsonList.headOption.value shouldEqual sample2.json
+      case (initial, updated) => {
+        initial.value shouldEqual sample
+        updated.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -142,9 +141,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value shouldEqual sample
-        res._2.value.jsonList.headOption.value shouldEqual sample2.json
+      case (initial, updated) => {
+        initial.value shouldEqual sample
+        updated.value.jsonList.headOption.value shouldEqual sample2.json
       }
     }
   }
@@ -161,9 +160,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value shouldEqual sample
-        res._2.value.jsonSet should contain (sample2.json)
+      case (initial, updated) => {
+        initial.value shouldEqual sample
+        updated.value.jsonSet should contain (sample2.json)
       }
     }
   }
@@ -180,9 +179,9 @@ class JsonColumnTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        res._1.value shouldEqual sample
-        res._2.value.jsonSet should contain (sample2.json)
+      case (initial, updated) => {
+        initial.value shouldEqual sample
+        updated.value.jsonSet should contain (sample2.json)
       }
     }
   }

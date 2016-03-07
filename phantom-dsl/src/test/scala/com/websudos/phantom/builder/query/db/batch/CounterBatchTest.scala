@@ -111,16 +111,16 @@ class CounterBatchTest extends PhantomSuite {
     } yield (get, get2)
 
     chain.successful {
-      res => {
+      case (initial, updated) => {
         info("The first counter select should return the record")
-        res._1 shouldBe defined
+        initial shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.value shouldEqual 2500
+        initial.value shouldEqual 2500
 
         info("The second counter select should return the record")
-        res._2 shouldBe defined
+        updated shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.value shouldEqual 2500
+        updated.value shouldEqual 2500
       }
     }
   }
@@ -147,18 +147,18 @@ class CounterBatchTest extends PhantomSuite {
     } yield (get, get2)
 
     chain.successful {
-      res => {
+      case (initial, updated) => {
         info("The first counter select should return the record")
-        res._1 shouldBe defined
+        initial shouldBe defined
 
         info("and the counter value should match the sum of the +=s")
-        res._1.value shouldEqual 2500
+        initial.value shouldEqual 2500
 
         info("The second counter select should return the record")
-        res._2 shouldBe defined
+        updated shouldBe defined
 
         info("and the counter value should match the sum of the +=s")
-        res._2.value shouldEqual 2500
+        updated.value shouldEqual 2500
       }
     }
   }
@@ -186,16 +186,16 @@ class CounterBatchTest extends PhantomSuite {
     } yield (get, get2)
 
     chain.successful {
-      res => {
+      case (initial, updated) => {
         info("The first counter select should return the record")
-        res._1 shouldBe defined
+        initial shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.value shouldEqual 500
+        initial.value shouldEqual 500
 
         info("The second counter select should return the record")
-        res._2 shouldBe defined
+        updated shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.value shouldEqual 500
+        updated.value shouldEqual 500
       }
     }
   }
@@ -223,16 +223,16 @@ class CounterBatchTest extends PhantomSuite {
     } yield (get, get2)
 
     chain.successful {
-      res => {
+      case (initial, updated) => {
         info("The first counter select should return the record")
-        res._1 shouldBe defined
+        initial shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._1.value shouldEqual 500
+        initial.value shouldEqual 500
 
         info("The second counter select should return the record")
-        res._2 shouldBe defined
+        updated shouldBe defined
         info("and the counter value should match the sum of the +=s")
-        res._2.value shouldEqual 500
+        updated.value shouldEqual 500
       }
     }
   }
