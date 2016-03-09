@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Websudos, Limited.
  *
  * All rights reserved.
  *
@@ -13,7 +13,11 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner,
+ * Websudos Limited before any redistribution is made. You may not publish any
+ * custom version of phantom, commercial or otherwise, you may not distribute
+ * altered copies of phantom, and you may not distribute any plugins or alterations
+ * to phantom that the copyright owner, Websudos Limited, has not consented to in writing.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE

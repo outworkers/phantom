@@ -40,6 +40,7 @@ case class Recipe(
   description: Option[String],
   ingredients: List[String],
   servings: Option[Int],
+  calories: Long,
   lastCheckedAt: DateTime,
   props: Map[String, String],
   uid: UUID
@@ -55,6 +56,8 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
   object servings extends OptionalIntColumn(this)
 
+  object calories extends LongColumn(this) with PrimaryKey[Long] with ClusteringOrder[Long] with Descending
+
   object lastcheckedat extends DateTimeColumn(this)
 
   object props extends MapColumn[ConcreteRecipes, Recipe, String, String](this)
@@ -68,6 +71,7 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
       description(r),
       ingredients(r),
       servings(r),
+      calories(r),
       lastcheckedat(r),
       props(r),
       uid(r)
@@ -87,6 +91,7 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
       .value(_.props, recipe.props)
       .value(_.uid, recipe.uid)
       .value(_.servings, recipe.servings)
+      .value(_.calories, recipe.calories)
   }
 }
 

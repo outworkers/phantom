@@ -57,5 +57,7 @@ class OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @s
     }
   }
 
-  override def asCql(v: Option[T]): String = v.map(Primitive[T].asCql).getOrElse(null.asInstanceOf[String])
+  override def asCql(v: Option[T]): String = {
+    v.map(Primitive[T].asCql).getOrElse(None.orNull.asInstanceOf[String])
+  }
 }

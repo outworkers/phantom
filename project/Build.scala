@@ -13,7 +13,8 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit written consent must be obtained from the copyright owner,
+ * Websudos Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,6 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.nio.file.Files
+
 import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
@@ -39,6 +42,8 @@ object Build extends Build {
     val logback = "1.1.3"
     val util = "0.13.0"
   }
+
+  val RunningUnderCi = Option(System.getenv("CI")).exists("true" ==)
 
   val DatastaxDriverVersion = "3.0.0"
   val ScalaTestVersion = "2.2.4"
@@ -68,10 +73,37 @@ object Build extends Build {
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
+
+  def defaultCredentials: Seq[Credentials] = {
+    if (!RunningUnderCi) {
+      Seq(
+        Credentials(Path.userHome / ".bintray" / ".credentials"),
+        Credentials(Path.userHome / ".iv2" / ".credentials")
+      )
+    } else {
+      println(s"Bintray publisher username ${System.getenv("bintray_user")}")
+      Seq(
+        Credentials(
+          realm = "Bintray",
+          host = "dl.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        ),
+        Credentials(
+          realm = "Bintray API Realm",
+          host = "api.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        )
+      )
+    }
+  }
+
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
     version := "1.22.1",
     scalaVersion := "2.11.7",
+    credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
@@ -107,12 +139,17 @@ object Build extends Build {
       "-Djava.net.preferIPv4Stack=true",
       "-Dio.netty.resourceLeakDetection"
     ),
+    javaOptions in Test ++= Seq(
+      "-Xmx2G",
+      "-Djava.net.preferIPv4Stack=true",
+      "-Dio.netty.resourceLeakDetection"
+    ),
     testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.mavenTaskSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.bintrayPublishSettings
 
   lazy val phantom = Project(
     id = "phantom",

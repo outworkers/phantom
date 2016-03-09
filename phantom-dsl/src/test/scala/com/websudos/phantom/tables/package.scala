@@ -197,6 +197,7 @@ package object tables {
         genOpt[String],
         genList[String](),
         genOpt[Int],
+        gen[Long],
         gen[DateTime],
         Map.empty[String, String],
         gen[UUID]

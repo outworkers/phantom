@@ -185,6 +185,7 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   def index(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
       .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(s"${table}_${column}_idx")
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
       .wrapn(column)
@@ -203,6 +204,7 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   def mapIndex(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
       .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(s"${table}_${column}_idx")
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
       .wrapn(CQLQuery(CQLSyntax.Keys).wrapn(column))
@@ -221,15 +223,16 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   def mapEntries(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
       .forcePad.append(CQLSyntax.ifNotExists)
+      .forcePad.append(s"${table}_${column}_idx")
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
       .wrapn(CQLQuery(CQLSyntax.Entries).wrapn(column))
   }
 
   def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
-    val list = orderings.foldRight(List.empty[String])((item, l) => {
-      (item._1 + " " + item._2) :: l
-    })
+    val list = orderings.foldRight(List.empty[String]){ case ((key, value), l) =>
+      (key + " " + value) :: l
+    }
 
     CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }

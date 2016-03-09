@@ -74,17 +74,18 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
       .toSet[VersionNumber]
   }
 
-  def cassandraVersion: VersionNumber = {
+  def cassandraVersion: Option[VersionNumber] = {
     val versions = cassandraVersions
 
     if (versions.nonEmpty) {
 
-      val single = versions.head
+      val single = versions.headOption
 
       if (cassandraVersions.size == 1) {
         single
       } else {
-        if (versions.forall(_.compareTo(single) == 0)) {
+
+        if (single.forall(item => versions.forall(item ==))) {
           single
         } else {
           throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
@@ -121,7 +122,7 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
 
     implicit val space: KeySpace = KeySpace(outer.name)
 
-    def cassandraVersion: VersionNumber = outer.cassandraVersion
+    def cassandraVersion: Option[VersionNumber] = outer.cassandraVersion
 
     def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
 

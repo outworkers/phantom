@@ -61,12 +61,12 @@ class TruncateTest extends PhantomSuite {
 
 
     result successful {
-      r => {
-        r._1 should have size 4
-        info (s"inserted exactly ${r._1.size} records")
+      case (init, updated) => {
+        init should have size 4
+        info (s"inserted exactly ${init.size} records")
 
-        r._2 should have size 0
-        info (s"got exactly ${r._2.size} records")
+        updated should have size 0
+        info (s"got exactly ${updated.size} records")
       }
     }
   }
@@ -91,12 +91,12 @@ class TruncateTest extends PhantomSuite {
 
 
     result successful {
-      r => {
-        r._1 should have size 4
-        info (s"inserted exactly ${r._1.size} records")
+      case (init, updated) => {
+        init should have size 4
+        info (s"inserted exactly ${init.size} records")
 
-        r._2 should have size 0
-        info (s"got exactly ${r._2.size} records")
+        updated should have size 0
+        info (s"got exactly ${updated.size} records")
       }
     }
   }
