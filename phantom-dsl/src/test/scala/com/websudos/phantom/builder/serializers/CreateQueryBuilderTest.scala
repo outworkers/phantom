@@ -199,13 +199,13 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
       "specify a secondary index on a non-map column" in {
         val qb = QueryBuilder.Create.index("t", "k", "col").queryString
 
-        qb shouldEqual "CREATE INDEX IF NOT EXISTS ON k.t(col)"
+        qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(col)"
       }
 
       "specify a secondary index on a map column for the keys of a map column" in {
         val qb = QueryBuilder.Create.mapIndex("t", "k", "col").queryString
 
-        qb shouldEqual "CREATE INDEX IF NOT EXISTS ON k.t(KEYS(col))"
+        qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(KEYS(col))"
       }
     }
 
