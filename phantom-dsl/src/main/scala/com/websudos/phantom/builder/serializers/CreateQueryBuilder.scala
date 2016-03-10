@@ -230,9 +230,9 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   }
 
   def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
-    val list = orderings.foldRight(List.empty[String])((item, l) => {
-      (item._1 + " " + item._2) :: l
-    })
+    val list = orderings.foldRight(List.empty[String]){ case ((key, value), l) =>
+      (key + " " + value) :: l
+    }
 
     CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }

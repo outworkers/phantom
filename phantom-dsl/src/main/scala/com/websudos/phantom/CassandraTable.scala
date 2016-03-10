@@ -56,8 +56,10 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   protected[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
 
-  protected[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
+  protected[phantom] lazy val _name: String = {
+    val instanceMirror = cm.reflect(this)
+    val symbol = instanceMirror.symbol
+    symbol.name.toTypeName.decodedName.toString
   }
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
@@ -158,10 +160,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val key = if (operand < 0) {
       throw InvalidPrimaryKeyException()
     } else if (operand == 0) {
+
+      val partitionKey = partitions.headOption.map(_.name).orNull
+
       if (primaries.isEmpty) {
-        s"${partitions.head.name}"
+        partitionKey
       } else {
-        s"${partitions.head.name}, $primaryString"
+        s"$partitionKey, $primaryString"
       }
     } else {
       if (primaries.isEmpty) {
@@ -205,7 +210,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
     columnMembers.foreach {
       symbol =>
-        val column = instanceMirror.reflectModule(symbol.asModule).instance
+
+        val column = if (symbol.isModule) {
+          instanceMirror.reflectModule(symbol.asModule).instance
+        } else if (symbol.isMethod) {
+          instanceMirror.reflectMethod(symbol.asMethod).symbol
+        }
+
         _columns += column.asInstanceOf[AbstractColumn[_]]
     }
   }

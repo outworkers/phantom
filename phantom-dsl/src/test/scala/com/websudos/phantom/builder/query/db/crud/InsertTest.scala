@@ -165,13 +165,13 @@ class InsertTest extends PhantomSuite {
 
     chain successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.url shouldEqual recipe.url
-        res.get.description shouldEqual recipe.description
-        res.get.props shouldEqual recipe.props
-        res.get.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        res.get.ingredients shouldEqual recipe.ingredients
-        res.get.servings shouldEqual recipe.servings
+        res shouldBe defined
+        res.value.url shouldEqual recipe.url
+        res.value.description shouldEqual recipe.description
+        res.value.props shouldEqual recipe.props
+        res.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+        res.value.ingredients shouldEqual recipe.ingredients
+        res.value.servings shouldEqual recipe.servings
       }
     }
   }
@@ -186,13 +186,13 @@ class InsertTest extends PhantomSuite {
 
     chain successful {
       res => {
-        res.isDefined shouldEqual true
-        res.get.url shouldEqual recipe.url
-        res.get.description shouldEqual recipe.description
-        res.get.props shouldEqual recipe.props
-        res.get.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        res.get.ingredients shouldEqual recipe.ingredients
-        res.get.servings shouldEqual recipe.servings
+        res shouldBe defined
+        res.value.url shouldEqual recipe.url
+        res.value.description shouldEqual recipe.description
+        res.value.props shouldEqual recipe.props
+        res.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+        res.value.ingredients shouldEqual recipe.ingredients
+        res.value.servings shouldEqual recipe.servings
       }
     }
   }
@@ -254,8 +254,8 @@ class InsertTest extends PhantomSuite {
 
     chain successful  {
       res => {
-        res.isEmpty shouldEqual false
-        res.get shouldEqual row
+        res shouldBe defined
+        res.value shouldEqual row
       }
     }
   }
@@ -272,9 +272,9 @@ class InsertTest extends PhantomSuite {
     } yield get
 
 
-    Console.println("Cassandra version: " + cassandraVersion.toString)
+    info(s"Cassandra version $cassandraVersion")
 
-    if (cassandraVersion >= Version.`2.2.0`) {
+    if (cassandraVersion.value >= Version.`2.2.0`) {
       whenReady(chain) {
         res => {
           res shouldBe defined

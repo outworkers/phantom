@@ -46,6 +46,7 @@ import com.websudos.phantom.util.ByteString
 import shapeless.{::, HNil}
 
 import scala.util.Try
+import scala.util.control.NoStackTrace
 
 package object dsl extends ImplicitMechanism with CreateImplicits
   with DefaultPrimitives
@@ -162,7 +163,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
       override def fromRow(name: String, row: Row): Try[T#Value] = {
         nullCheck(name, row) {
-          r => enum.withName(r.getString(name))
+          r => enum.values.find(_.toString == r.getString(name)) match {
+            case Some(value) => value
+            case _ => throw new Exception(s"Value $name not found in enumeration") with NoStackTrace
+          }
         }
       }
 
