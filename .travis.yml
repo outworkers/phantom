@@ -1,42 +1,38 @@
-# Travis CI credentials
-
 language: scala
 
 sudo: false
 
 services:
-  - cassandra
+- cassandra
 
 scala:
- - "2.10.5"
- - "2.11.7"
+- 2.10.5
+- 2.11.7
 
 env:
   matrix:
-    
+  - secure: WwLG0fkVV1DS5P6GeLOHjPJ2z+GP9UaLzX27DuHBEXRxNPPw27y7jag0gbbf6E80kYwGB4zfBx9YjcJFVFdGCCcAjDJHMP8kLQirUak1jzuoWZFUEtTkF7ev/OVs0PmMHrOGuysT4W/UaL9MZD/mYO5lO9oavycTQ0kbOwZJwUg=
+  - secure: Qtr5ULJ90s5pfLBaXRKFLMPBcDSYBQfUVz+abgjlG/um8iWE/OJswYn2n3zylAqnI4bSKhPobl6bBYzt8f6k9kzMqpR4t/4gWFV1LJUas0eAsTnrjV1He4nbPvO9RVEkvuQcTCqmus2AgYEnwdKhGWwktok5PAoJ22ycy4HK8C8=
 
-# Emails to notify
 notifications:
   slack:
-    - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
+  - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
-    - dev@websudos.co.uk
+  - dev@websudos.co.uk
 
-# Branches to build.
 branches:
   only:
-    - master
-    - develop
+  - master
+  - develop
 
 jdk:
-  - oraclejdk7
-  - oraclejdk8
+- oraclejdk7
+- oraclejdk8
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate coveralls
+- sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate coveralls
 
 after_success:
-  - ./build/publish_develop.sh
-
+- ./build/publish_develop.sh

@@ -57,7 +57,7 @@ object PublishTasks {
 
   val printedPublishing = settingKey[Option[String]]("printedPublishing")
 
-  val mavenTaskSettingsmavenTaskSettings: Seq[Def.Setting[_]] = Seq(
+  val mavenTaskSettings: Seq[Def.Setting[_]] = Seq(
     mavenPublishSettings := {
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
       publishMavenStyle := true

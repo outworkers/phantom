@@ -41,6 +41,8 @@ object Build extends Build {
     val util = "0.13.0"
   }
 
+  val RunningUnderCi = Option(System.getenv("CI")).exists("true" ==)
+
   val DatastaxDriverVersion = "3.0.0"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.5"
@@ -68,6 +70,10 @@ object Build extends Build {
   }
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
+
+
+
+
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
