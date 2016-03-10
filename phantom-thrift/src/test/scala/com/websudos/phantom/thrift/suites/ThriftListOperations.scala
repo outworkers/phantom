@@ -484,7 +484,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.drop(2).headOption.value shouldEqual sample3
+        items.value should contain (sample3)
       }
     }
   }
@@ -515,7 +515,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     operation.successful {
       items => {
         items shouldBe defined
-        items.drop(2).headOption.value shouldEqual sample3
+        items.value should contain (sample3)
       }
     }
   }

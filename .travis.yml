@@ -11,6 +11,10 @@ scala:
  - "2.10.5"
  - "2.11.7"
 
+env:
+  matrix:
+    
+
 # Emails to notify
 notifications:
   slack:

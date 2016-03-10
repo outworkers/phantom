@@ -59,9 +59,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   protected[phantom] lazy val _name: String = {
     val instanceMirror = cm.reflect(this)
     val symbol = instanceMirror.symbol
-    val name = symbol.name.toTermName.decodedName.toString
-    Console.println(s"Inferred name $name")
-    name
+    symbol.name.toTypeName.decodedName.toString
   }
 
   def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns

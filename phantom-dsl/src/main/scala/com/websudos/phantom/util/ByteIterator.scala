@@ -30,7 +30,7 @@ object ByteIterator {
     private var from: Int,
     private var until: Int
   ) extends ByteIterator {
-    iterator ⇒
+    iterator =>
 
     @inline final def len: Int = until - from
 
@@ -188,7 +188,8 @@ object ByteIterator {
     }
     normalize()
 
-    @inline private[this] def current: ByteArrayIterator = iterators.head
+    @inline private[this] def current: ByteArrayIterator = iterators.headOption.getOrElse(ByteArrayIterator.empty)
+
     @inline private[this] def dropCurrent(): Unit = { iterators = iterators.tail }
     @inline def clear(): Unit = { iterators = MultiByteArrayIterator.empty.iterators }
 
