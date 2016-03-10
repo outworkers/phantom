@@ -66,8 +66,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample2, sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample2, sample)
       }
     }
   }
@@ -95,8 +95,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample2, sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample2, sample)
       }
     }
   }
@@ -106,7 +106,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     val appendable = genList[ThriftTest]()
 
-    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
@@ -118,8 +118,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual prependedValues ::: sample.thriftList
+        items shouldBe defined
+        items.value shouldEqual prependedValues ::: sample.thriftList
       }
     }
   }
@@ -129,7 +129,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     val appendable = genList[ThriftTest]()
 
-    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
@@ -141,8 +141,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual prependedValues ::: sample.thriftList
+        items shouldBe defined
+        items.value shouldEqual prependedValues ::: sample.thriftList
       }
     }
   }
@@ -171,8 +171,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample, sample2)
+        items shouldBe defined
+        items.value shouldEqual List(sample, sample2)
       }
     }
   }
@@ -200,8 +200,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample, sample2)
+        items shouldBe defined
+        items.value shouldEqual List(sample, sample2)
       }
     }
   }
@@ -235,8 +235,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample, sample2, sample3)
+        items shouldBe defined
+        items.value shouldEqual List(sample, sample2, sample3)
       }
     }
   }
@@ -268,8 +268,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample, sample2, sample3)
+        items shouldBe defined
+        items.value shouldEqual List(sample, sample2, sample3)
       }
     }
   }
@@ -299,8 +299,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample)
       }
     }
   }
@@ -328,8 +328,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample)
       }
     }
   }
@@ -355,14 +355,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample)
       }
     }
   }
@@ -392,8 +390,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get shouldEqual List(sample)
+        items shouldBe defined
+        items.value shouldEqual List(sample)
       }
     }
   }
@@ -419,14 +417,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList setIdx(0, sample3)).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get(0) shouldEqual sample3
+        items shouldBe defined
+        items.value.headOption.value shouldEqual sample3
       }
     }
   }
@@ -456,8 +452,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get(0) shouldEqual sample3
+        items shouldBe defined
+        items.value.drop(2).headOption.value shouldEqual sample3
       }
     }
   }
@@ -488,7 +484,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     operation.successful {
       items => {
         items.isDefined shouldEqual true
-        items.get(2) shouldEqual sample3
+        items.value should contain (sample3)
       }
     }
   }
@@ -518,8 +514,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldEqual true
-        items.get(2) shouldEqual sample3
+        items shouldBe defined
+        items.value should contain (sample3)
       }
     }
   }

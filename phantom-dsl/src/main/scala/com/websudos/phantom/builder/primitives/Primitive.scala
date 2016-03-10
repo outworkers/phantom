@@ -40,6 +40,7 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.util.ByteString
 import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.util.control.NoStackTrace
 import scala.util.{Failure, Try}
 
 
@@ -64,7 +65,7 @@ abstract class Primitive[RR] {
 
   protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
-      Failure(new Exception(s"Column $column is null"))
+      Failure(new Exception(s"Column $column is null") with NoStackTrace)
     } else {
       Try(fn(row))
     }

@@ -107,11 +107,10 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
         .and(_.mapTextToText setTo updatedRow.mapTextToText)
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
-
       a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
     } yield (
-      a.get === row,
-      a2.get === updatedRow
+      a.value === row,
+      a2.value === updatedRow
     )
 
     chain successful {

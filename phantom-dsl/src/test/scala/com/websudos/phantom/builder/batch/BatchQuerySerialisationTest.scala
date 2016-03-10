@@ -53,7 +53,9 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
 
     val batch = Batch.logged.add(statement3, statement4).queryString
 
-    batch shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    batch shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}," +
+      s" timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
+      s" WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 
   ignore should "serialize a multiple table batch query chained from adding statements" in {
@@ -70,7 +72,9 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
     val statement4 = TestDatabase.primitivesJoda.delete.where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}," +
+      s" timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
+      s" WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 
 }

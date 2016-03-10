@@ -46,12 +46,12 @@ sealed class CqlFunction extends SessionAugmenter
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[Long], session: Session): TypedClause.Condition[Long] = {
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[Long], session: Session): TypedClause.Condition[Option[Long]] = {
     new TypedClause.Condition(QueryBuilder.Select.unixTimestampOf(pf.name), row => {
       if (session.v3orNewer) {
-        ev.fromRow(s"system.unixtimestampof(${pf.name})", row).get
+        ev.fromRow(s"system.unixtimestampof(${pf.name})", row).toOption
       } else {
-        ev.fromRow(s"unixtimestampof(${pf.name})", row).get
+        ev.fromRow(s"unixtimestampof(${pf.name})", row).toOption
       }
     })
   }
@@ -59,24 +59,24 @@ sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
 sealed class DateOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[DateTime] = {
+  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[Option[DateTime]] = {
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
       if (session.v3orNewer) {
-        ev.fromRow(s"system.dateof(${pf.name})", row).get
+        ev.fromRow(s"system.dateof(${pf.name})", row).toOption
       } else {
-        ev.fromRow(s"dateof(${pf.name})", row).get
+        ev.fromRow(s"dateof(${pf.name})", row).toOption
       }
     })
   }
 
-  def apply(op: OperatorClause.Condition)(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[DateTime] = {
+  def apply(op: OperatorClause.Condition)(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[Option[DateTime]] = {
     val pf = op.qb.queryString
 
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf), row => {
       if (session.v3orNewer) {
-        ev.fromRow(s"system.dateof($pf)", row).get
+        ev.fromRow(s"system.dateof($pf)", row).toOption
       } else {
-        ev.fromRow(s"dateof($pf)", row).get
+        ev.fromRow(s"dateof($pf)", row).toOption
       }
     })
   }

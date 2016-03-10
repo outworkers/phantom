@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.reflect.runtime.universe.Symbol
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 /**
@@ -54,13 +53,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     Await.result(create.ifNotExists().future(), 10.seconds)
   }
 
-  protected[this] lazy val _columns: MutableArrayBuffer[AbstractColumn[_]] = new MutableArrayBuffer[AbstractColumn[_]]
+  private[this] val instanceMirror = cm.reflect(this)
 
-  protected[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
+  protected[phantom] lazy val _name: String = {
+    instanceMirror.symbol.name.toTypeName.decodedName.toString
   }
-
-  def columns: MutableArrayBuffer[AbstractColumn[_]] = _columns
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
@@ -158,10 +155,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     val key = if (operand < 0) {
       throw InvalidPrimaryKeyException()
     } else if (operand == 0) {
+
+      val partitionKey = partitions.headOption.map(_.name).orNull
+
       if (primaries.isEmpty) {
-        s"${partitions.head.name}"
+        partitionKey
       } else {
-        s"${partitions.head.name}, $primaryString"
+        s"$partitionKey, $primaryString"
       }
     } else {
       if (primaries.isEmpty) {
@@ -189,25 +189,24 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     }
   }
 
-  Lock.synchronized {
+  val columns: Seq[AbstractColumn[_]] = Lock.synchronized {
 
-    val instanceMirror = cm.reflect(this)
     val selfType = instanceMirror.symbol.toType
 
-    // Collect all column definitions starting from base class
-    val columnMembers = MutableArrayBuffer.empty[Symbol]
-    selfType.baseClasses.reverse.foreach {
-      baseClass =>
-        val baseClassMembers = baseClass.typeSignature.members.sorted
-        val baseClassColumns = baseClassMembers.filter(_.typeSignature <:< ru.typeOf[AbstractColumn[_]])
-        baseClassColumns.foreach(symbol => if (!columnMembers.contains(symbol)) columnMembers += symbol)
-    }
+    val members: Seq[ru.Symbol] = (for {
+      baseClass <- selfType.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< ru.typeOf[AbstractColumn[_]]
+    } yield symbol)(collection.breakOut)
 
-    columnMembers.foreach {
-      symbol =>
-        val column = instanceMirror.reflectModule(symbol.asModule).instance
-        _columns += column.asInstanceOf[AbstractColumn[_]]
-    }
+    for {
+      symbol <- members.distinct
+      table = if (symbol.isModule) {
+        instanceMirror.reflectModule(symbol.asModule).instance
+      } else if (symbol.isTerm && symbol.asTerm.isVal) {
+        instanceMirror.reflectField(symbol.asTerm).get
+      }
+    } yield table.asInstanceOf[AbstractColumn[_]]
   }
 }
 
