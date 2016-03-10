@@ -27,29 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.db
+package com.websudos.phantom.tables
 
-import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.tables._
+import com.websudos.phantom.builder.query.InsertQuery
+import com.websudos.phantom.dsl._
 
+case class Click(url: String, timestamp: Long)
 
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
+class Clicks extends CassandraTable[ConcreteClicks, Click] {
+
+  object url extends StringColumn(this) with PartitionKey[String]
+
+  object timestamp extends LongColumn(this) with PrimaryKey[Long] with ClusteringOrder[Long] with Descending
+
+  def fromRow(r: Row): Click = Click(url(r), timestamp(r))
 }
 
-class TestDatabase extends DatabaseImpl(DefaultKeyspace.local) {
-  object basicTable extends BasicTable with connector.Connector
-  object enumTable extends EnumTable with connector.Connector
-  object jsonTable extends JsonTable with connector.Connector
-  object recipes extends Recipes with connector.Connector
-  object clicks extends Clicks with connector.Connector
-}
+abstract class ConcreteClicks extends Clicks with RootConnector {
 
-
-class ValueInitDatabase extends DatabaseImpl(DefaultKeyspace.local) {
-  val basicTable = new BasicTable with connector.Connector
-  val enumTable = new EnumTable with connector.Connector
-  val jsonTable = new JsonTable with connector.Connector
-  val recipes = new Recipes with connector.Connector
-  val clicks = new Clicks with connector.Connector
+  def store(click: Click): InsertQuery.Default[ConcreteClicks, Click] = {
+    insert
+      .value(_.url, click.url)
+      .value(_.timestamp, click.timestamp)
+  }
 }
