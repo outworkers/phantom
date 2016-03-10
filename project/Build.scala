@@ -29,6 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.nio.file.Files
+
 import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
@@ -72,13 +74,36 @@ object Build extends Build {
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
 
-
-
+  def defaultCredentials: Seq[Credentials] = {
+    if (!RunningUnderCi) {
+      Seq(
+        Credentials(Path.userHome / ".bintray" / ".credentials"),
+        Credentials(Path.userHome / ".iv2" / ".credentials")
+      )
+    } else {
+      println(s"Bintray publisher username ${System.getenv("bintray_user")}")
+      Seq(
+        Credentials(
+          realm = "Bintray",
+          host = "dl.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        ),
+        Credentials(
+          realm = "Bintray API Realm",
+          host = "api.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        )
+      )
+    }
+  }
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
     version := "1.22.1",
     scalaVersion := "2.11.7",
+    credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
