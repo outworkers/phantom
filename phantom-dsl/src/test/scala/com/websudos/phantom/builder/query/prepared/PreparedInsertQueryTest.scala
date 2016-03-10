@@ -54,6 +54,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.uid, ?)
       .p_value(_.url, ?)
       .p_value(_.servings, ?)
+      .p_value(_.calories, ?)
       .p_value(_.ingredients, ?)
       .p_value(_.description, ?)
       .p_value(_.lastcheckedat, ?)
@@ -64,6 +65,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       sample.uid,
       sample.url,
       sample.servings,
+      sample.calories,
       sample.ingredients,
       sample.description,
       sample.lastCheckedAt,

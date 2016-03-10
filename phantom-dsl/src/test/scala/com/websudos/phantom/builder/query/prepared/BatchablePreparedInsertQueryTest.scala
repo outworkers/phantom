@@ -49,6 +49,7 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.uid, ?)
       .p_value(_.url, ?)
       .p_value(_.servings, ?)
+      .p_value(_.calories, ?)
       .p_value(_.ingredients, ?)
       .p_value(_.description, ?)
       .p_value(_.lastcheckedat, ?)
@@ -59,6 +60,7 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
       recipe.uid,
       recipe.url,
       recipe.servings,
+      recipe.calories,
       recipe.ingredients,
       recipe.description,
       recipe.lastCheckedAt,

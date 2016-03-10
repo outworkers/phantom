@@ -145,6 +145,30 @@ sealed class QueryColumn[RR : Primitive](val col: AbstractColumn[RR]) {
   final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
     new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(col.name, value.symbol))
   }
+
+  final def lt(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.lt(col.name, value.symbol))
+  }
+
+  final def <(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = lt(value)
+
+  final def lte(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.lte(col.name, value.symbol))
+  }
+
+  final def <=(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = lte(value)
+
+  final def gt(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.gt(col.name, value.symbol))
+  }
+
+  final def >(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = gt(value)
+
+  final def gte(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
+    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.gte(col.name, value.symbol))
+  }
+
+  final def >=(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = gte(value)
 }
 
 /**
