@@ -50,5 +50,4 @@ class ValueInitDatabase extends DatabaseImpl(DefaultKeyspace.local) {
   val enumTable = new EnumTable with connector.Connector
   val jsonTable = new JsonTable with connector.Connector
   val recipes = new Recipes with connector.Connector
-  val clicks = new Clicks with connector.Connector
 }
