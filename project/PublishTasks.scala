@@ -30,19 +30,20 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import sbt._
 import sbt.Keys._
+import bintray.BintrayKeys._
 
 object PublishTasks {
 
   val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
-    bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
-    bintray.BintrayKeys.bintrayRepository <<= scalaVersion.apply {
+    bintrayOrganization := Some("websudos"),
+    bintrayRepository <<= scalaVersion.apply {
       v => if (v.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases"
     },
-    bintray.BintrayKeys.bintrayReleaseOnPublish in ThisBuild := true,
+    bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt"))
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   )
 
   lazy val mavenPublishSettings : TaskKey[Unit] = TaskKey[Unit]("mavenPublishSettings")
@@ -56,7 +57,7 @@ object PublishTasks {
 
   val printedPublishing = settingKey[Option[String]]("printedPublishing")
 
-  val mavenTaskSettings: Seq[Def.Setting[_]] = Seq(
+  val mavenTaskSettingsmavenTaskSettings: Seq[Def.Setting[_]] = Seq(
     mavenPublishSettings := {
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
       publishMavenStyle := true
@@ -72,14 +73,14 @@ object PublishTasks {
       externalResolvers <<= resolvers map { rs =>
         Resolver.withDefaultResolvers(rs, mavenCentral = true)
       }
-      licenses += ("Websudos license", url("https://github.com/websudos/phantom/blob/develop/LICENSE.txt"))
+      licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
       publishArtifact in Test := false
       pomIncludeRepository := { _ => true }
       pomExtra :=
-        <url>https://github.com/websudos/phantom</url>
+        <url>https://github.com/outworkers/phantom</url>
           <scm>
-            <url>git@github.com:websudos/phantom.git</url>
-            <connection>scm:git:git@github.com:websudos/phantom.git</connection>
+            <url>git@github.com:outworkers/phantom.git</url>
+            <connection>scm:git:git@github.com:outworkers/phantom.git</connection>
           </scm>
           <developers>
             <developer>
