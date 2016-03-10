@@ -123,7 +123,7 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
       //noinspection ComparingUnrelatedTypes
       param match {
         case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
-        case x if x.isInstanceOf[None.type] => null.asInstanceOf[Any]
+        case x if x.isInstanceOf[None.type] => None.orNull.asInstanceOf[Any]
         case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
         case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
         case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava

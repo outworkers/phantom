@@ -211,7 +211,7 @@ class ListOperatorsTest extends PhantomSuite {
 
     val appendable = List("test", "test2")
 
-    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).future()
@@ -231,7 +231,7 @@ class ListOperatorsTest extends PhantomSuite {
 
     val appendable = List("test", "test2")
 
-    val prependedValues = if (cassandraVersion < Version.`2.0.13`) appendable.reverse else appendable
+    val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).execute()

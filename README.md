@@ -40,9 +40,6 @@ Wiki page, now available [here](https://github.com/outworkers/phantom/wiki/).
 The following are the current resources available for learning phantom, outside of tests which are very useful in
 highlighting all the possible features in phantom and how to use them.
 
-
-
-
 This is a list of resources to help you learn phantom and Cassandra:
 
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
@@ -55,7 +52,6 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [A series on phantom: Getting started with phantom](http://outworkers.com/blog/post/a-series-on-phantom-part-1-getting-started-with-phantom)
 - [ ] [The Play! Phantom Activator template](https://github.com/outworkers/phantom-activator-template)
 - [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom)
-
 
 
 <a id="issues-and-questions">Issues and questions</a>

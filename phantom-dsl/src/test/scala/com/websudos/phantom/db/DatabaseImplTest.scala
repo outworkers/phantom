@@ -49,7 +49,8 @@ class DatabaseImplTest extends PhantomSuite {
     }
   }
 
-  ignore should "instantiate a database object and collect references to value fields" in {
+  it should "instantiate a database object and collect references to value fields" in {
+    db2.tables.foreach(item => info(item.tableName))
     db2.tables.size shouldEqual 4
   }
 

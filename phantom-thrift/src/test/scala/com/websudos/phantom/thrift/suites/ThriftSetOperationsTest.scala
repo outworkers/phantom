@@ -67,8 +67,8 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe Set(sample, sample2)
+        items shouldBe defined
+        items.value shouldBe Set(sample, sample2)
       }
     }
   }
@@ -97,8 +97,8 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe Set(sample, sample2, sample3)
+        items shouldBe defined
+        items.value shouldBe Set(sample, sample2, sample3)
       }
     }
   }
@@ -125,8 +125,8 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe Set(sample, sample2)
+        items shouldBe defined
+        items.value shouldBe Set(sample, sample2)
       }
     }
   }
@@ -155,8 +155,8 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     operation.successful {
       items => {
-        items.isDefined shouldBe true
-        items.get shouldBe Set(sample)
+        items shouldBe defined
+        items.value shouldBe Set(sample)
       }
     }
   }

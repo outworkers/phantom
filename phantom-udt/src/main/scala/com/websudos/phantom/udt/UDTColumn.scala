@@ -62,7 +62,7 @@ sealed abstract class AbstractField[@specialized(Int, Double, Float, Long, Boole
 
   protected[udt] lazy val valueBox = new DynamicVariable[Option[T]](None)
 
-  def value: T = valueBox.value.getOrElse(null.asInstanceOf[T])
+  def value: T = valueBox.value.getOrElse(None.orNull.asInstanceOf[T])
 
   private[udt] def setSerialise(data: UDTValue): UDTValue
 
