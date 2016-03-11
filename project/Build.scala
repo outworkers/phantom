@@ -29,8 +29,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.nio.file.Files
-
 import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
@@ -41,6 +39,7 @@ object Build extends Build {
   object Versions {
     val logback = "1.1.3"
     val util = "0.13.0"
+    val json4s = "3.3.0"
   }
 
   val RunningUnderCi = Option(System.getenv("CI")).exists("true" ==)
@@ -53,7 +52,7 @@ object Build extends Build {
   val ScroogeVersion = "3.17.0"
   val ScalatraVersion = "2.3.0"
   val PlayVersion = "2.4.3"
-  val Json4SVersion = "3.2.11"
+
   val ScalaMeterVersion = "0.6"
   val SparkCassandraVersion = "1.2.0-alpha3"
   val ThriftVersion = "0.5.0"
@@ -261,9 +260,9 @@ object Build extends Build {
   ).settings(
     name := "phantom-zookeeper",
     libraryDependencies ++= Seq(
-      "org.xerial.snappy"            % "snappy-java"                        % "1.1.1.3",
-      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided",
-      "com.websudos"                 %% "util-zookeeper"                    % Versions.util            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14")
+      "org.xerial.snappy"            % "snappy-java"      % "1.1.1.3",
+      "com.websudos"                 %% "util-testing"    % Versions.util            % "test, provided",
+      "com.websudos"                 %% "util-zookeeper"  % Versions.util            % "test, provided" excludeAll ExclusionRule("org.slf4j", "slf4j-jdk14")
     )
   ).dependsOn(
     phantomConnectors
@@ -318,6 +317,7 @@ object Build extends Build {
     )
   ).settings(
     libraryDependencies ++= Seq(
+      "org.json4s"                %% "json4s-native"                  % Versions.json4s,
       "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
       "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",

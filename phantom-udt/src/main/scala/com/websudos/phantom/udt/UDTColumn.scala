@@ -81,7 +81,7 @@ private[udt] abstract class Field[
   Record,
   FieldOwner <: UDTColumn[Owner, Record, _],
   T : Primitive
-](column: FieldOwner) extends AbstractField[T](column) {}
+](column: FieldOwner) extends AbstractField[T](column)
 
 object PrimitiveBoxedManifests {
   val StringManifest = manifest[String]

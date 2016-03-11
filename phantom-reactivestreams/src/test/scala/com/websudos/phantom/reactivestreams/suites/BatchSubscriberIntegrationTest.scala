@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import com.websudos.phantom.batch.BatchType

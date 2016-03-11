@@ -172,7 +172,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
       override def asCql(value: T#Value): String = Primitive[String].asCql(value.toString)
 
-      override def fromString(value: String): T#Value = enum.withName(value)
+      override def fromString(value: String): T#Value = enum.values.find(value == _.toString).getOrElse(None.orNull)
 
       override def clz: Class[String] = classOf[java.lang.String]
     }

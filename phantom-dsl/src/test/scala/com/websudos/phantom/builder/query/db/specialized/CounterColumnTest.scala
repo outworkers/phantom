@@ -59,10 +59,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 0
-
-        result._2.value.count shouldEqual 1
+      case (res1, res2) => {
+        res1.value.count shouldEqual 0
+        res2.value.count shouldEqual 1
       }
     }
   }
@@ -79,9 +78,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 0
-        result._2.value.count shouldEqual 1
+      case (res1, res2) => {
+        res1.value.count shouldEqual 0
+        res2.value.count shouldEqual 1
       }
     }
   }
@@ -99,9 +98,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 500
-        result._2.value shouldEqual 501
+      case (res1, res2) => {
+        res1.value.count shouldEqual 500
+        res2.value shouldEqual 501
       }
     }
   }
@@ -118,9 +117,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 500
-        result._2.value shouldEqual 501
+      case (res1, res2) => {
+        res1.value.count shouldEqual 500
+        res2.value shouldEqual 501
       }
     }
   }
@@ -138,9 +137,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 0
-        result._2.value.count shouldEqual diff
+      case (res, res1) => {
+        res.value.count shouldEqual 0
+        res1.value.count shouldEqual diff
       }
     }
   }
@@ -158,9 +157,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 0
-        result._2.value.count shouldEqual diff
+      case (res, res1) => {
+        res.value.count shouldEqual 0
+        res1.value.count shouldEqual diff
       }
     }
   }
@@ -177,9 +176,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 1
-        result._2.value.count shouldEqual 0
+      case (res, res1) => {
+        res.value.count shouldEqual 1
+        res1.value.count shouldEqual 0
       }
     }
   }
@@ -196,9 +195,9 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._1.value.count shouldEqual 1
-        result._2.value.count shouldEqual 0
+      case (res, res1) => {
+        res.value.count shouldEqual 1
+        res1.value.count shouldEqual 0
       }
     }
   }
@@ -217,8 +216,8 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._2.value.count shouldEqual (initial - diff)
+      case (res1, res2) => {
+        res2.value.count shouldEqual (initial - diff)
       }
     }
   }
@@ -237,8 +236,8 @@ class CounterColumnTest extends PhantomSuite {
 
 
     chain.successful {
-      result => {
-        result._2.value.count shouldEqual (initial - diff)
+      case (res1, res2) => {
+        res2.value.count shouldEqual (initial - diff)
       }
     }
   }
