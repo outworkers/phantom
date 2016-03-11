@@ -42,7 +42,9 @@ object Build extends Build {
     val json4s = "3.3.0"
   }
 
-  val RunningUnderCi = Option(System.getenv("CI")).exists("true" ==)
+  val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+
+  println(s"Running under CI status: ${RunningUnderCi}")
 
   val DatastaxDriverVersion = "3.0.0"
   val ScalaTestVersion = "2.2.4"
@@ -318,6 +320,7 @@ object Build extends Build {
   ).settings(
     libraryDependencies ++= Seq(
       "org.json4s"                %% "json4s-native"                  % Versions.json4s,
+      "org.json4s"                %% "json4s-ext"                     % Versions.json4s,
       "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
       "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",

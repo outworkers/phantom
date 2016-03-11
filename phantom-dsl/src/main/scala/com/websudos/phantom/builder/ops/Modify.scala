@@ -156,7 +156,10 @@ trait CollectionOperators {
     }
 
     def put(value: (A, B)): UpdateClause.Condition = {
-      new UpdateClause.Condition(QueryBuilder.Collections.put(col.name, Tuple2(col.keyAsCql(value._1).toString, col.valueAsCql(value._2))))
+      new UpdateClause.Condition(QueryBuilder.Collections.put(
+        col.name,
+        col.keyAsCql(value._1).toString -> col.valueAsCql(value._2))
+      )
     }
 
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Condition = {

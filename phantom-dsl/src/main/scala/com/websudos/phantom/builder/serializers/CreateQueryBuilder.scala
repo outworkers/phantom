@@ -169,7 +169,7 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
   }
 
   def `with`(clause: CQLQuery): CQLQuery = {
-    CQLQuery(CQLSyntax.`with`).pad.append(clause)
+    CQLQuery(CQLSyntax.With).pad.append(clause)
   }
 
 

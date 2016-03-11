@@ -36,7 +36,7 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 private[builder] class UpdateQueryBuilder {
 
   def onlyIf(clause: CQLQuery): CQLQuery = {
-    CQLQuery(CQLSyntax.`if`).forcePad.append(clause)
+    CQLQuery(CQLSyntax.IF).forcePad.append(clause)
   }
 
   val ifExists: CQLQuery = {
