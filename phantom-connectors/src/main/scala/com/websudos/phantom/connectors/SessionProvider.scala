@@ -15,8 +15,7 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.Cluster
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ Cluster, Session }
 
 /**
  * Responsible for providing Session instances of the

@@ -6,22 +6,29 @@ then
     echo "The current Scala version is ${TRAVIS_SCALA_VERSION}"
 
     CURRENT_VERSION = "$(sbt version)"
-    echo "Bumping release version with a patch increment from ${CURRENT_VERSION}"
+    echo "Bumping release version with a patch increment from $CURRENT_VERSION"
     sbt version-bump-patch
 
     NEW_VERSION = "$(sbt version)"
-    echo "Creating Git tag for version ${NEW_VERSION}"
+    echo "Creating Git tag for version $NEW_VERSION"
 
     echo "Pushing tag to GitHub."
-    git push --tags --quiet "https://${github_token}@${GH_REF}" master:gh-pages > /dev/null 2>&1
+    git push --tags "https://${github_token}@${GH_REF}" > /dev/null 2>&1
 
     echo "Publishing signed artifact"
-    sbt bintray:publish
+
+    if [ "${TRAVIS_SCALA_VERSION}" == "2.11.7" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    then
+        "Publishing $NEW_VERSION to bintray"
+        sbt bintray:publish
+    else
+        echo "Only publishing version for Scala 2.11.7 and Oracle JDK 8 to prevent multiple artifacts"
+    fi
 
     git checkout master
     git merge develop
 
-    git push --all --quiet "https://${github_token}@${GH_REF}" master:gh-pages > /dev/null 2>&1
+    git push --all  "https://${github_token}@${GH_REF}" master > /dev/null 2>&1
 
 
 else

@@ -69,7 +69,7 @@ private[builder] trait Utils {
 
   def map(list: TraversableOnce[(String, String)]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`)
-      .append(list.map(item => {s"${item._1} : ${item._2}"}).mkString(", "))
+      .append(list.map { case (key, value) => s"$key : $value" }.mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
   

@@ -35,7 +35,7 @@ object CQLSyntax {
   val And = "AND"
   val Or = "OR"
   val On = "ON"
-  val `if`= "IF"
+  val IF = "IF"
   val index = "INDEX"
 
   val Update = "UPDATE"
@@ -70,10 +70,10 @@ object CQLSyntax {
   val temporary = "TEMPORARY"
 
   val where = "WHERE"
-  val `with` = "WITH"
+  val With = "WITH"
   val update = "UPDATE"
   val alter = "ALTER"
-  val `type` = "TYPE"
+  val Type = "TYPE"
   val allowFiltering = "ALLOW FILTERING"
   val delete = "DELETE"
   val orderBy = "ORDER BY"

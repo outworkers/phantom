@@ -97,7 +97,7 @@ private[phantom] trait AlterQueryBuilder {
   def alter(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
     qb.pad.append(CQLSyntax.Alter.Alter)
       .forcePad.append(column)
-      .forcePad.append(CQLSyntax.`type`)
+      .forcePad.append(CQLSyntax.Type)
       .forcePad.append(columnType)
   }
 
@@ -118,7 +118,7 @@ private[phantom] trait AlterQueryBuilder {
    * @return A new CQL query, where the underlying query contains an option clause.
    */
   def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.`with`).pad.append(clause)
+    qb.pad.append(CQLSyntax.With).pad.append(clause)
   }
 
   def rename(qb: CQLQuery, column: String, newColumn: String): CQLQuery = {
