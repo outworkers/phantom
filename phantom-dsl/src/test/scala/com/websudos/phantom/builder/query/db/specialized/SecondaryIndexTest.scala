@@ -35,14 +35,11 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class SecondaryIndexTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestDatabase.secondaryIndexTable.create.ifNotExists().future(), 4.seconds)
+    TestDatabase.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
   }
 
   it should "allow fetching a record by its secondary index" in {
@@ -54,10 +51,7 @@ class SecondaryIndexTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        val primary = res._1
-        val secondary = res._2
-
+      case (primary, secondary) => {
         info("Querying by primary key should return the record")
         primary.value shouldEqual sample
 
@@ -77,10 +71,7 @@ class SecondaryIndexTest extends PhantomSuite {
     } yield (select, select2)
 
     chain.successful {
-      res => {
-        val primary = res._1
-        val secondary = res._2
-
+      case (primary, secondary) => {
         info("Querying by primary key should return the record")
         primary.value shouldEqual sample
 
@@ -102,9 +93,7 @@ class SecondaryIndexTest extends PhantomSuite {
     } yield (selected, updated)
 
     chain.successful {
-      res => {
-        val primary = res._1
-        val secondary = res._2
+      case (primary, secondary) => {
 
         info("Querying by primary key should return the record")
         primary.value shouldEqual sample

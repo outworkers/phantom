@@ -30,9 +30,6 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.PhantomSuite
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
@@ -55,9 +52,9 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
-        r._2 shouldBe empty
+      case (r1, r2) => {
+        r1.value shouldEqual row
+        r2 shouldBe empty
       }
     }
   }
@@ -73,9 +70,9 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
-        r._2 shouldBe empty
+      case (r1, r2) => {
+        r1.value shouldEqual row
+        r2 shouldBe empty
       }
     }
   }
@@ -91,9 +88,9 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
-        r._2 shouldBe empty
+      case (r1, r2) => {
+        r1.value shouldEqual row
+        r2 shouldBe empty
       }
     }
   }
@@ -109,9 +106,9 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
-        r._2 shouldBe empty
+      case (r1, r2) => {
+        r1.value shouldEqual row
+        r2 shouldBe empty
       }
     }
   }
@@ -127,11 +124,11 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
+      case (r1, r2) => {
+        r1.value shouldEqual row
 
         info("The row should not have been deleted as the condition was not met")
-        r._2 shouldBe defined
+        r2 shouldBe defined
       }
     }
   }
@@ -147,11 +144,11 @@ class DeleteTest extends PhantomSuite {
     } yield (inserted, deleted)
 
     chain successful {
-      r => {
-        r._1.value shouldEqual row
+      case (r1, r2) => {
+        r1.value shouldEqual row
 
         info("The row should not have been deleted as the condition was not met")
-        r._2 shouldBe defined
+        r2 shouldBe defined
       }
     }
   }

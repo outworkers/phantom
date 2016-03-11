@@ -53,9 +53,9 @@ class PartialSelectTest extends PhantomSuite {
     } yield (listSelect, oneSelect)
 
     chain successful {
-      result => {
-        result._1 shouldEqual List(row.pkey)
-        result._2.value shouldEqual Tuple2(row.long, row.boolean)
+      case (res, res2) => {
+        res shouldEqual List(row.pkey)
+        res2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }
@@ -71,9 +71,9 @@ class PartialSelectTest extends PhantomSuite {
     } yield (listSelect, oneSelect)
 
     chain successful {
-      result => {
-        result._1.toList shouldEqual List(row.pkey)
-        result._2 shouldEqual Some(Tuple2(row.long, row.boolean))
+      case (res, res2) => {
+        res shouldEqual List(row.pkey)
+        res2.value shouldEqual Tuple2(row.long, row.boolean)
       }
     }
   }

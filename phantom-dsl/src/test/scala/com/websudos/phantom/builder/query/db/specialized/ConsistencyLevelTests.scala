@@ -36,8 +36,6 @@ import com.websudos.util.testing._
 
 class ConsistencyLevelTests extends PhantomSuite {
 
-  val protocol = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
-
   it should "set a custom consistency level of ONE" in {
     val row = gen[Primitive]
 
@@ -46,7 +44,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.ONE
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
 
   }
@@ -59,7 +57,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
 
   }
@@ -73,7 +71,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.EACH_QUORUM
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
   }
 
@@ -86,7 +84,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_ONE
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
 
   }
@@ -99,7 +97,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
   }
 
@@ -109,7 +107,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.QUORUM
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
   }
 
@@ -120,7 +118,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     if (session.v3orNewer) {
       st.getConsistencyLevel shouldEqual ConsistencyLevel.LOCAL_QUORUM
     } else {
-      st.getConsistencyLevel shouldEqual null
+      st.getConsistencyLevel shouldEqual None.orNull
     }
   }
 

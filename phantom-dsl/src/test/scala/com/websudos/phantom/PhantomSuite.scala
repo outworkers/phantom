@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom
 
+import java.util.concurrent.TimeUnit
+
 import com.websudos.phantom.connectors.RootConnector
 import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
@@ -43,7 +45,11 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
+  protected[this] val defaultScalaTimeoutSeconds = 10
+
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
+
+  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10.seconds)
 

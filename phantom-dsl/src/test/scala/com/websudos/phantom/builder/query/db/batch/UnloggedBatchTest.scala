@@ -30,13 +30,11 @@
 package com.websudos.phantom.builder.query.db.batch
 
 import com.websudos.phantom.PhantomSuite
-import org.joda.time.DateTime
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
 import com.websudos.util.testing._
+import org.joda.time.DateTime
+import org.scalatest.time.SpanSugar._
 
 class UnloggedBatchTest extends PhantomSuite {
 
@@ -247,10 +245,9 @@ class UnloggedBatchTest extends PhantomSuite {
     } yield (updated, deleted)
 
     w successful {
-      res => {
-        res._1.value shouldEqual row2
-
-        res._2 shouldBe empty
+      case (res1, res2) => {
+        res1.value shouldEqual row2
+        res2 shouldBe empty
       }
     }
   }
@@ -289,10 +286,9 @@ class UnloggedBatchTest extends PhantomSuite {
     } yield (updated, deleted)
 
     w successful {
-      res => {
-        res._1.value shouldEqual row2
-
-        res._2 shouldBe empty
+      case (res1, res2) => {
+        res1.value shouldEqual row2
+        res2 shouldBe empty
       }
     }
   }
@@ -320,7 +316,7 @@ class UnloggedBatchTest extends PhantomSuite {
     chain.successful {
       res => {
         res.isDefined shouldEqual true
-        res.get.int shouldEqual (row.int + 20)
+        res.value.int shouldEqual (row.int + 20)
       }
     }
   }

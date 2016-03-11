@@ -30,13 +30,11 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.PhantomSuite
-import org.scalatest.{ Assertions, Matchers }
-import org.scalatest.concurrent.{ AsyncAssertions, PatienceConfiguration }
-import org.scalatest.time.SpanSugar._
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
+import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.{Assertions, Matchers}
 
 class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions {
 
@@ -56,7 +54,6 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
       a <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-      b <- TestDatabase.primitives.select.fetch
       u <- TestDatabase.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo updatedRow.long)
         .and(_.boolean setTo updatedRow.boolean)
@@ -70,17 +67,12 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
         .and(_.bi setTo updatedRow.bi)
         .future()
       a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-      b2 <- TestDatabase.primitives.select.fetch
-    } yield (a, b, a2, b2)
+    } yield (a, a2)
 
     whenReady(chain) {
-      r => {
-        r._1.value shouldEqual row
-        r._2 should contain (row)
-
-        r._3.value shouldEqual updatedRow
-
-        r._4 should contain (updatedRow)
+      case (res1, res2) => {
+        res1.value shouldEqual row
+        res2.value shouldEqual updatedRow
       }
     }
   }
@@ -108,15 +100,12 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
       a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
-    } yield (
-      a.value === row,
-      a2.value === updatedRow
-    )
+    } yield (a, a2)
 
     chain successful {
-      r => {
-        r._1 shouldEqual true
-        r._2 shouldEqual true
+      case (res1, res2) => {
+        res1.value shouldEqual row
+        res2.value shouldEqual updatedRow
       }
     }
   }
