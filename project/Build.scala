@@ -152,6 +152,17 @@ object Build extends Build {
     parallelExecution in ThisBuild := false
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.bintrayPublishSettings
 
+  lazy val baseProjectList: Seq[ProjectReference] = Seq(
+    phantomDsl,
+    phantomExample,
+    phantomConnectors,
+    phantomReactiveStreams,
+    phantomThrift,
+    phantomUdt,
+    phantomZookeeper)
+
+  lazy val fullProjectList = baseProjectList ++ addOnCondition(isJdk8, phantomJdk8)
+
   lazy val phantom = Project(
     id = "phantom",
     base = file("."),
@@ -163,13 +174,7 @@ object Build extends Build {
   ).settings(
     name := "phantom"
   ).aggregate(
-    phantomDsl,
-    phantomExample,
-    phantomConnectors,
-    phantomReactiveStreams,
-    phantomThrift,
-    phantomUdt,
-    phantomZookeeper
+    fullProjectList: _*
   )
 
   lazy val phantomDsl = Project(
@@ -208,6 +213,21 @@ object Build extends Build {
     ).dependsOn(
       phantomConnectors
     )
+
+  lazy val phantomJdk8 = Project(
+    id = "phantom-jdk8",
+    base = file("phantom-jdk8"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-jdk8",
+    testOptions in Test += Tests.Argument("-oF"),
+    logBuffered in Test := false,
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, 4)
+    )
+  ).dependsOn(
+    phantomDsl % "compile->compile;test->test"
+  )
 
   lazy val phantomConnectors = Project(
     id = "phantom-connectors",
@@ -332,4 +352,9 @@ object Build extends Build {
     phantomThrift,
     phantomZookeeper
   )
+
+  private def isJdk8 = sys.props("java.specification.version") == "1.8"
+
+  private def addOnCondition(condition: Boolean, projectReference: ProjectReference): Seq[ProjectReference] =
+    if (condition) projectReference :: Nil else Nil
 }
