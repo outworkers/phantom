@@ -9,6 +9,7 @@ then
     if [ -e "$HOME/.bintray/.credentials" ]; then
         echo "Bintray redentials file already exists"
     else
+        mkdir -p "$HOME/.bintray/"
         touch "$HOME/.bintray/.credentials"
         echo "realm = Bintray API Realm" >> "$HOME/.bintray/.credentials"
         echo "host = api.bintray.com" >> "$HOME/.bintray/.credentials"
@@ -23,12 +24,11 @@ then
     fi
 
 
-    CURRENT_VERSION = "$(sbt version)"
-    echo "Bumping release version with a patch increment from $CURRENT_VERSION"
+    echo "Bumping release version with a patch increment from $(sbt version)"
     sbt version-bump-patch
 
-    NEW_VERSION = "$(sbt version)"
-    echo "Creating Git tag for version $NEW_VERSION"
+    SET NEW_VERSION = "$(sbt version)"
+    echo "Creating Git tag for version $(sbt version)"
 
     echo "Pushing tag to GitHub."
     git push --tags "https://${github_token}@${GH_REF}" > /dev/null 2>&1
@@ -37,8 +37,8 @@ then
 
     if [ "${TRAVIS_SCALA_VERSION}" == "2.11.7" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
     then
-        "Publishing $NEW_VERSION to bintray"
-        sbt bintray:publish
+        "Publishing $(sbt version) to bintray"
+        sbt +publish
     else
         echo "Only publishing version for Scala 2.11.7 and Oracle JDK 8 to prevent multiple artifacts"
     fi
@@ -46,7 +46,7 @@ then
     git checkout master
     git merge develop
 
-    git push --all  "https://${github_token}@${GH_REF}" master > /dev/null 2>&1
+    git push --all  "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
 
 
 else
