@@ -5,6 +5,24 @@ then
     echo "The current JDK version is ${TRAVIS_JDK_VERSION}"
     echo "The current Scala version is ${TRAVIS_SCALA_VERSION}"
 
+    echo "Creating credentials file"
+    if [ -e "$HOME/.bintray/.credentials" ]; then
+        echo "Bintray redentials file already exists"
+    else
+        touch "$HOME/.bintray/.credentials"
+        echo "realm = Bintray API Realm" >> "$HOME/.bintray/.credentials"
+        echo "host = api.bintray.com" >> "$HOME/.bintray/.credentials"
+        echo "user = $bintray_user" >> "$HOME/.bintray/.credentials"
+        echo "password = $bintray_password" >> "$HOME/.bintray/.credentials"
+    fi
+
+    if [ -e "$HOME/.bintray/.credentials" ]; then
+        echo "Bintray credentials file succesfully created"
+    else
+        echo "Bintray credentials still not found"
+    fi
+
+
     CURRENT_VERSION = "$(sbt version)"
     echo "Bumping release version with a patch increment from $CURRENT_VERSION"
     sbt version-bump-patch
