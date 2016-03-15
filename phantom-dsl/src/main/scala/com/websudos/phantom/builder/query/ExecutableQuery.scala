@@ -112,6 +112,25 @@ trait ExecutableStatement extends CassandraOperations {
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
     twitterQueryStringExecuteToFuture(statement)
   }
+
+  /**
+    * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Scala Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * The execution context of the transformation is provided by phantom via
+    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * use [[com.websudos.phantom.dsl.context]] for operations that chain
+    * database calls.
+    *
+    * @param modifyStatement The function allowing to modify underlying [[Statement]]
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @return
+    */
+  def execute(modifyStatement : Statement => Statement)(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
+    twitterQueryStringExecuteToFuture(modifyStatement(statement))
+  }
 }
 
 private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends CassandraOperations {
@@ -226,6 +245,32 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
   }
 
   /**
+    * Returns a parsed sequence of [R]ows
+    * This is not suitable for big results set
+    * @param session The Cassandra session in use.
+    * @param ec The Execution Context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def fetch(state: PagingState)(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+    future(st => st.setPagingState(state)) map {
+      resultSet => { directMapper(resultSet.all) }
+    }
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows
+    * This is not suitable for big results set
+    * @param session The Cassandra session in use.
+    * @param ec The Execution Context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def fetch(modifyStatement : Statement => Statement)(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+    future(modifyStatement) map {
+      resultSet => { directMapper(resultSet.all) }
+    }
+  }
+
+  /**
    * Returns a parsed iterator of [R]ows
    * @param session The Cassandra session in use.
    * @param ec The Execution Context.
@@ -243,5 +288,25 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    */
   def collect()(implicit session: Session, keySpace: KeySpace): TwitterFuture[List[R]] = {
     execute() map { resultSet => { directMapper(resultSet.all) } }
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows
+    * This is not suitable for big results set
+    * @param session The Cassandra session in use.
+    * @return A Twitter future wrapping a list of mapped results.
+    */
+  def collect(modifyStatement : Statement => Statement)(implicit session: Session, keySpace: KeySpace): TwitterFuture[List[R]] = {
+    execute(modifyStatement) map { resultSet => { directMapper(resultSet.all) } }
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows
+    * This is not suitable for big results set
+    * @param session The Cassandra session in use.
+    * @return A Twitter future wrapping a list of mapped results.
+    */
+  def collect(pagingState: PagingState)(implicit session: Session, keySpace: KeySpace): TwitterFuture[List[R]] = {
+    execute(st => st.setPagingState(pagingState)) map { resultSet => { directMapper(resultSet.all) } }
   }
 }
