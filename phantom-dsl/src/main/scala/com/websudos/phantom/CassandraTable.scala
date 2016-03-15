@@ -34,7 +34,7 @@ import com.websudos.phantom.builder.clauses.DeleteClause
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
+import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
@@ -153,7 +153,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
     val operand = partitions.lengthCompare(1)
     val key = if (operand < 0) {
-      throw InvalidPrimaryKeyException()
+      throw InvalidPrimaryKeyException(tableName)
     } else if (operand == 0) {
 
       val partitionKey = partitions.headOption.map(_.name).orNull
@@ -184,8 +184,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    */
   private[this] def preconditions(): Unit = {
     if (clustered && primaryKeys.diff(clusteringColumns).nonEmpty) {
-      logger.error("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
-      throw new InvalidPrimaryKeyException("When using CLUSTERING ORDER all PrimaryKey definitions must become a ClusteringKey definition and specify order.")
+      logger.error("When using CLUSTERING ORDER all PrimaryKey definitions" +
+        " must become a ClusteringKey definition and specify order.")
+      throw InvalidClusteringKeyException(tableName)
     }
   }
 
