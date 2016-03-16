@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.23.1",
+    version := "1.23.3",
     scalaVersion := "2.11.7",
     credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
