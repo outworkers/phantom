@@ -39,6 +39,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
     TestDatabase.recipes.insertSchema()
     TestDatabase.primitives.insertSchema()
     if (session.v4orNewer) {

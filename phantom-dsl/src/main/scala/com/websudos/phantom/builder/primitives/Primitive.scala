@@ -280,14 +280,14 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Date
 
     def fromRow(row: Row, name: String): Option[org.joda.time.LocalDate] =
-      if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch).toLocalDate).toOption
+      if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate).toOption
 
     override def asCql(value: org.joda.time.LocalDate): String = {
       CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
     }
 
     override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
-      r => new DateTime(r.getDate(column).getMillisSinceEpoch).toLocalDate
+      r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
     }
 
     override def fromString(value: String): org.joda.time.LocalDate = {
@@ -326,7 +326,7 @@ trait DefaultPrimitives {
     val cassandraType = CQLSyntax.Types.Boolean
 
     def fromRow(row: Row, name: String): Option[Boolean] =
-      if (row.isNull(name)) None else  Try(row.getBool(name)).toOption
+      if (row.isNull(name)) None else Try(row.getBool(name)).toOption
 
     override def asCql(value: Boolean): String = value.toString
 
@@ -427,8 +427,9 @@ trait DefaultPrimitives {
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
 
   }
+
 }
 
 object Primitive extends DefaultPrimitives {
-  def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
+  def apply[RR: Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 }

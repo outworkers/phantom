@@ -32,7 +32,7 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.util.{Date, UUID}
 
-import org.joda.time.DateTime
+import org.joda.time.{DateTimeZone, DateTime}
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.util.testing._
 
@@ -147,7 +147,7 @@ package object tables {
         gen[String],
         gen[Int].toShort,
         gen[Int].toByte,
-        new DateTime(new DateTime().plus(gen[Int].toLong)).toLocalDate
+        new DateTime(DateTimeZone.UTC).plus(gen[Int].toLong).toLocalDate
       )
     }
   }
@@ -158,7 +158,7 @@ package object tables {
         gen[String],
         genOpt[Int].map(_.toShort),
         genOpt[Int].map(_.toByte),
-        Some(new DateTime(new DateTime().plus(gen[Int].toLong)).toLocalDate)
+        Some(new DateTime(DateTimeZone.UTC).plus(gen[Int].toLong).toLocalDate)
       )
     }
   }
