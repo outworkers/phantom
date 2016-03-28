@@ -32,12 +32,13 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core._
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.query.options.{Caching, TablePropertyClause}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.{CassandraTable, Manager}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],

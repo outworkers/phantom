@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.query
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.ops.DropColumn
+import com.websudos.phantom.builder.query.options.{TablePropertyClause, WithBound, WithChainned, WithUnchainned}
 import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace

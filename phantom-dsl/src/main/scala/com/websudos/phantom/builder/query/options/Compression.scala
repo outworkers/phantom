@@ -27,43 +27,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.websudos.phantom.builder.query.options
 
-import java.util.concurrent.TimeUnit
+import com.twitter.util.StorageUnit
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.syntax.CQLSyntax
 
-import com.websudos.phantom.connectors.RootConnector
-import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
-import org.scalatest._
-import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
+sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
 
-import scala.concurrent.duration._
+  def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
+    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit.toHuman()))
+  }
 
-trait PhantomBaseSuite extends Suite with Matchers
-  with BeforeAndAfterAll
-  with RootConnector
-  with ScalaFutures
-  with OptionValues {
-
-  protected[this] val defaultScalaTimeoutSeconds = 10
-
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
-
-  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
-
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultScalaTimeoutSeconds.seconds)
-
-  override implicit val patienceConfig = PatienceConfig(
-    timeout = defaultScalaTimeoutSeconds.seconds,
-    interval = 50.millis
-  )
+  def crc_check_chance(size: Double): CompressionStrategy = {
+    new CompressionStrategy(QueryBuilder.Create.crc_check_chance(qb, size))
+  }
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
-  val database = TestDatabase
+private[phantom] trait CompressionStrategies {
+
+  private[this] def strategy(strategy: String) = {
+    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+      .appendSingleQuote(CQLSyntax.CompressionOptions.sstable_compression)
+      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.appendSingleQuote(strategy)
+  }
+
+  case object SnappyCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.SnappyCompressor))
+  case object LZ4Compressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.LZ4Compressor))
+  case object DeflateCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
 }
 
 
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
-  val database = TestDatabase
+
+private[phantom] class CompressionBuilder extends TableProperty {
+  def eqs(clause: CompressionStrategy): TablePropertyClause = {
+    new TablePropertyClause(QueryBuilder.Create.compression(clause.qb))
+  }
 }

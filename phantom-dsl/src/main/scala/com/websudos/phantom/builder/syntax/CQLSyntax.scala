@@ -50,6 +50,8 @@ object CQLSyntax {
   }
 
   val Keys = "KEYS"
+  val Rows = "rows"
+  val RowsPerPartition = "rows_per_partition"
   val Entries = "ENTRIES"
 
   val Describe = "DESCRIBE"

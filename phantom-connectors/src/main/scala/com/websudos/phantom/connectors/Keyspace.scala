@@ -47,6 +47,26 @@ package com.websudos.phantom.connectors
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ProtocolVersion, Session}
 
+trait SessionAugmenter {
+
+  def session: Session
+
+  def protocolVersion: ProtocolVersion = {
+    session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+  }
+
+  def isNewerThan(pv: ProtocolVersion): Boolean = {
+    protocolVersion.compareTo(pv) > 0
+  }
+
+  def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+
+  def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
+}
+
+trait SessionAugmenterImplicits {
+  implicit class RichSession(val session: Session) extends SessionAugmenter
+}
 
 /**
  * Represents a single Cassandra keySpace.
@@ -100,21 +120,7 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
    * Trait that can be mixed into `CassandraTable`
    * instances.
    */
-  trait Connector extends com.websudos.phantom.connectors.Connector {
-
-    implicit class RichSession(val session: Session) {
-      def protocolVersion: ProtocolVersion = {
-        session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
-      }
-
-      def isNewerThan(pv: ProtocolVersion): Boolean = {
-        protocolVersion.compareTo(pv) > 0
-      }
-
-      def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
-
-      def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
-    }
+  trait Connector extends com.websudos.phantom.connectors.Connector with SessionAugmenterImplicits {
 
     lazy val provider = outer.provider
 

@@ -37,7 +37,8 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
-import shapeless.{=:!=, ::, HList, HNil}
+import shapeless.ops.hlist.Reverse
+import shapeless.{::, =:!=, HList, HNil}
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -98,8 +99,13 @@ class InsertQuery[
     )
   }
 
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, options)
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    new PreparedBlock(qb, options)
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {

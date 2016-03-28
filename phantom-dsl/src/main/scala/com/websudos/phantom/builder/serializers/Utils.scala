@@ -72,6 +72,14 @@ private[builder] trait Utils {
       .append(list.map { case (key, value) => s"$key : $value" }.mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
+
+  def curlyWrap(qb: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`{`)
+      .forcePad.append(qb)
+      .forcePad.append(CQLSyntax.Symbols.`}`)
+  }
+
+  def curlyWrap(qb: CQLQuery): CQLQuery = curlyWrap(qb)
   
   /**
     * Serializes the CQL definition of a map key based on a column and a key value.

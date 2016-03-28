@@ -36,13 +36,14 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
-import com.websudos.phantom.builder.query.{CQLQuery, SessionAugmenter}
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.{AbstractColumn, TimeUUIDColumn}
+import com.websudos.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.DateTime
 import shapeless.{=:!=, HList}
 
-sealed class CqlFunction extends SessionAugmenter
+sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 

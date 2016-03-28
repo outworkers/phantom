@@ -37,6 +37,7 @@ import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
@@ -120,7 +121,12 @@ class SelectQuery[
     )
   }
 
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= shapeless.HNil): PreparedSelectBlock[Table, Record, Limit, PS] = {
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedSelectBlock[Table, Record, Limit, Rev] = {
     new PreparedSelectBlock(qb, rowFunc, options)
   }
 

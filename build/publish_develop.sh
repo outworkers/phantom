@@ -27,8 +27,10 @@ then
     echo "Bumping release version with a patch increment from $(sbt version)"
     sbt version-bump-patch
 
-    SET NEW_VERSION = "$(sbt version)"
-    echo "Creating Git tag for version $(sbt version)"
+    set NEW_VERSION = "$(grep 'version :=')"
+    echo "New version published is ${NEW_VERSION}"
+
+    echo "Creating Git tag for version $$NEW_VERSION"
 
     echo "Pushing tag to GitHub."
     git push --tags "https://${github_token}@${GH_REF}" > /dev/null 2>&1
