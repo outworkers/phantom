@@ -32,11 +32,12 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{DeleteClause, CompareAndSetClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{CompareAndSetClause, DeleteClause, PreparedWhereClause, WhereClause}
 import com.websudos.phantom.builder.ops.MapKeyUpdateClause
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
@@ -79,9 +80,13 @@ class DeleteQuery[
     new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
   }
 
-
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, options)
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    new PreparedBlock(qb, options)
   }
 
   /**

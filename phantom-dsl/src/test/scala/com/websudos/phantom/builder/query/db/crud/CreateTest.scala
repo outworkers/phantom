@@ -30,7 +30,6 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.PhantomFreeSuite
-import com.websudos.phantom.builder.query.Caching
 import com.websudos.phantom.tables.TestDatabase
 import com.websudos.phantom.dsl._
 
@@ -61,7 +60,7 @@ class CreateTest extends PhantomFreeSuite {
       "serialize and create a table with Caching.KeysOnly" in {
 
         val query = TestDatabase.timeSeriesTable
-          .create.`with`(caching eqs Caching.KeysOnly)
+          .create.`with`(caching eqs Caching.KeysOnly())
 
         info(query.queryString)
 
@@ -80,7 +79,7 @@ class CreateTest extends PhantomFreeSuite {
       "serialize and create a table with Caching.RowsOnly" in {
 
         val query = TestDatabase.timeSeriesTable
-          .create.`with`(caching eqs Caching.RowsOnly)
+          .create.`with`(caching eqs Caching.RowsOnly())
 
         info(query.queryString)
 

@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
 import com.twitter.conversions.storage._
 import com.twitter.util.{Duration => TwitterDuration}
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.KeySpaceSuite
+import com.websudos.phantom.builder.query.SerializationTest
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
@@ -43,7 +43,7 @@ import org.scalatest.{FreeSpec, Matchers}
 
 import scala.concurrent.duration._
 
-class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
+class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
   val BasicTable = TestDatabase.basicTable
   final val DefaultTtl = 500
@@ -134,12 +134,33 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with KeySpaceSuite {
       }
 
       "specify Cache.KeysOnly as a caching strategy" in {
-        val qb = BasicTable.create.`with`(caching eqs Cache.KeysOnly).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
+        val qb = BasicTable.create.`with`(caching eqs Cache.KeysOnly()).qb.queryString
+
+        if (session.v4orNewer) {
+          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
+            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'keys': 'ALL', 'rows_per_partition': 'NONE' }"
+        } else {
+          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
+            " PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
+        }
       }
+
+      "specify Cache.RowsOnly as a caching strategy" in {
+        val qb = BasicTable.create.`with`(caching eqs Cache.RowsOnly()).qb.queryString
+
+        if (session.v4orNewer) {
+          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
+            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'rows': 'ALL' }"
+        } else {
+          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
+            " PRIMARY KEY (id, id2, id3)) WITH caching = 'rows_only'"
+        }
+      }
+
 
       "specify Cache.All as a caching strategy" in {
         val qb = BasicTable.create.`with`(caching eqs Cache.All).qb.queryString
+        info(qb)
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'all'"
       }
     }

@@ -29,35 +29,27 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.datastax.driver.core.{ProtocolVersion, ResultSet, Session, Statement}
+import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise, Return, Throw}
+import com.twitter.util.{Return, Throw, Future => TwitterFuture, Promise => TwitterPromise}
 import com.websudos.phantom.Manager
-import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 import scala.concurrent.{Future => ScalaFuture, Promise => ScalaPromise}
 
-private[phantom] trait SessionAugmenter {
-  implicit class RichSession(val session: Session) {
-    def protocolVersion: ProtocolVersion = {
-      session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
-    }
+private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
 
-    def isNewerThan(pv: ProtocolVersion): Boolean = {
-      protocolVersion.compareTo(pv) > 0
-    }
-
-    def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
-  }
-}
-
-private[phantom] trait CassandraOperations extends SessionAugmenter {
-
-  protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaFuture[ResultSet] = {
+  protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(
+    implicit session: Session,
+    keyspace: KeySpace
+  ): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
   }
 
-  protected[this] def scalaQueryStringToPromise(st: Statement)(implicit session: Session, keyspace: KeySpace): ScalaPromise[ResultSet] = {
+  protected[this] def scalaQueryStringToPromise(st: Statement)(
+    implicit session: Session,
+    keyspace: KeySpace
+  ): ScalaPromise[ResultSet] = {
     Manager.logger.debug(s"Executing query: ${st.toString}")
 
     val promise = ScalaPromise[ResultSet]()

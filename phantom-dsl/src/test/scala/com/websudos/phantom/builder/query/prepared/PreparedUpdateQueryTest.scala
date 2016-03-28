@@ -55,7 +55,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val chain = for {
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(recipe.url, updated).future()
+      update <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -71,15 +71,15 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         afterUpdate.value.servings shouldEqual recipe.servings
         afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
         afterUpdate.value.uid shouldEqual recipe.uid
-        afterUpdate.value.description shouldEqual recipe.description
+        afterUpdate.value.description shouldEqual updated
       }
     }
   }
 
-  ignore should "execute a prepared update query with a three argument bind" in {
+  it should "execute a prepared update query with a three argument bind" in {
 
     val updated = genOpt[ShortString].map(_.value)
-    val updatedServings = gen[UUID]
+    val updatedUid = gen[UUID]
 
     val query = database.recipes.update
       .p_where(_.url eqs ?)
@@ -92,7 +92,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val chain = for {
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(recipe.url, updated, updatedServings).future()
+      update <- query.bind(updated, updatedUid, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -105,10 +105,10 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         afterUpdate.value.url shouldEqual recipe.url
         afterUpdate.value.props shouldEqual recipe.props
         afterUpdate.value.ingredients shouldEqual recipe.ingredients
-        afterUpdate.value.servings shouldEqual updatedServings
+        afterUpdate.value.servings shouldEqual recipe.servings
         afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        afterUpdate.value.uid shouldEqual recipe.uid
-        afterUpdate.value.description shouldEqual recipe.description
+        afterUpdate.value.uid shouldEqual updatedUid
+        afterUpdate.value.description shouldEqual updated
       }
     }
   }

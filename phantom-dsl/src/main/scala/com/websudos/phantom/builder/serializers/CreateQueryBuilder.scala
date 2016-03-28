@@ -37,10 +37,16 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 sealed trait CreateOptionsBuilder {
   
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
-    qb.append(CQLSyntax.comma)
-      .forcePad.appendSingleQuote(option)
-      .forcePad.append(CQLSyntax.Symbols.`:`)
-      .forcePad.appendSingleQuote(value)
+    if (qb.nonEmpty) {
+      qb.append(CQLSyntax.comma)
+        .forcePad.appendSingleQuote(option)
+        .forcePad.append(CQLSyntax.Symbols.`:`)
+        .forcePad.appendSingleQuote(value)
+    } else {
+      qb.forcePad.appendSingleQuote(option)
+        .forcePad.append(CQLSyntax.Symbols.`:`)
+        .forcePad.appendSingleQuote(value)
+    }
   }
 
   protected[this] def simpleValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
@@ -121,8 +127,26 @@ sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
   }
 }
 
+sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
+  def keys(qb: CQLQuery, value: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.Keys, value)
+  }
 
-private[builder] class CreateTableBuilder extends CompactionQueryBuilder with CompressionQueryBuilder {
+  def rows(qb: CQLQuery, value: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.Rows, value)
+  }
+
+  def rowsPerPartition(qb: CQLQuery, value: String): CQLQuery = {
+    quotedValue(qb, CQLSyntax.RowsPerPartition, value)
+  }
+}
+
+
+private[builder] class CreateTableBuilder extends
+  CompactionQueryBuilder
+  with CompressionQueryBuilder {
+
+  object Caching extends CachingQueryBuilder
 
   def read_repair_chance(st: String): CQLQuery = {
     Utils.tableOption(CQLSyntax.CreateOptions.read_repair_chance, st)
@@ -164,8 +188,22 @@ private[builder] class CreateTableBuilder extends CompactionQueryBuilder with Co
     Utils.tableOption(CQLSyntax.CreateOptions.comment, CQLQuery.empty.appendSingleQuote(qb))
   }
 
-  def caching(qb: String): CQLQuery = {
-    Utils.tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.appendSingleQuote(qb))
+  def caching(qb: String, wrapped: Boolean): CQLQuery = {
+    if (wrapped) {
+      Utils.tableOption(
+        CQLSyntax.CreateOptions.caching,
+        CQLQuery.empty.append(Utils.curlyWrap(qb))
+      )
+    } else {
+      Utils.tableOption(
+        CQLSyntax.CreateOptions.caching,
+        CQLQuery.empty.appendSingleQuote(qb)
+      )
+    }
+  }
+
+  def caching(qb: CQLQuery): CQLQuery = {
+    Utils.tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.append(qb))
   }
 
   def `with`(clause: CQLQuery): CQLQuery = {

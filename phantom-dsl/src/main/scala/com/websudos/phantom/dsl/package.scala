@@ -134,6 +134,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   val Version = com.websudos.phantom.connectors.DefaultVersions
 
+  type ListResult[R] = com.websudos.phantom.builder.query.ListResult[R]
+  type IteratorResult[R] = com.websudos.phantom.builder.query.IteratorResult[R]
+  type RecordResult[R] = com.websudos.phantom.builder.query.RecordResult[R]
+
   case object Batch extends Batcher
 
   object ConsistencyLevel {

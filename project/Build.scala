@@ -38,32 +38,32 @@ object Build extends Build {
 
   object Versions {
     val logback = "1.1.3"
-    val util = "0.13.0"
+    val util = "0.15.0"
     val json4s = "3.3.0"
+    val datastax = "3.0.0"
+    val scalatest = "2.2.4"
+    val shapeless = "2.2.5"
+    val finagle = "6.34.0"
+    val twitterUtil = "6.33.0"
+    val scrooge = "3.17.0"
+    val scalatra = "2.3.0"
+    val play = "2.4.3"
+    val scalameter = "0.6"
+    val spark = "1.2.0-alpha3"
+    val thrift = "0.5.0"
+    val diesel = "0.2.4"
+    val slf4j = "1.7.12"
+    val reactivestreams = "1.0.0"
+    val akka = "2.3.14"
+    val typesafeConfig = "1.2.1"
+    val jetty = "9.1.2.v20140210"
+    val dispatch = "0.11.0"
   }
 
   val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+  final val defaultConcurrency = 4
 
   println(s"Running under CI status: ${RunningUnderCi}")
-
-  val DatastaxDriverVersion = "3.0.0"
-  val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.5"
-  val FinagleVersion = "6.28.0"
-  val TwitterUtilVersion = "6.27.0"
-  val ScroogeVersion = "3.17.0"
-  val ScalatraVersion = "2.3.0"
-  val PlayVersion = "2.4.3"
-
-  val ScalaMeterVersion = "0.6"
-  val SparkCassandraVersion = "1.2.0-alpha3"
-  val ThriftVersion = "0.5.0"
-  val DieselEngineVersion = "0.2.4"
-  val Slf4jVersion = "1.7.12"
-  val ReactiveStreamsVersion = "1.0.0"
-  val AkkaVersion = "2.3.14"
-  val TypesafeConfigVersion = "1.2.1"
-  val JettyVersion = "9.1.2.v20140210"
 
   def liftVersion(scalaVersion: String): String = {
     scalaVersion match {
@@ -102,19 +102,19 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.23.3",
+    version := "1.25.0",
     scalaVersion := "2.11.7",
     credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
-      "Sonatype repo"                    at "https://oss.sonatype.org/content/groups/scala-tools/",
-      "Sonatype releases"                at "https://oss.sonatype.org/content/repositories/releases",
-      "Sonatype snapshots"               at "https://oss.sonatype.org/content/repositories/snapshots",
-      "Sonatype staging"                 at "http://oss.sonatype.org/content/repositories/staging",
-      "Java.net Maven2 Repository"       at "http://download.java.net/maven/2/",
-      "Twitter Repository"               at "http://maven.twttr.com",
+      "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
+      "Sonatype releases" at "https://oss.sonatype.org/content/repositories/releases",
+      "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "Sonatype staging" at "http://oss.sonatype.org/content/repositories/staging",
+      "Java.net Maven2 Repository" at "http://download.java.net/maven/2/",
+      "Twitter Repository" at "http://maven.twttr.com",
       Resolver.bintrayRepo("websudos", "oss-releases")
     ),
     scalacOptions ++= Seq(
@@ -155,8 +155,12 @@ object Build extends Build {
 
   private[this] def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 
-  private[this] def addOnCondition(condition: Boolean, projectReference: ProjectReference): Seq[ProjectReference] =
+  private[this] def addOnCondition(
+    condition: Boolean,
+    projectReference: ProjectReference
+    ): Seq[ProjectReference] = {
     if (condition) projectReference :: Nil else Nil
+  }
 
   lazy val baseProjectList: Seq[ProjectReference] = Seq(
     phantomDsl,
@@ -197,24 +201,24 @@ object Build extends Build {
       testOptions in Test += Tests.Argument("-oF"),
       logBuffered in Test := false,
       concurrentRestrictions in Test := Seq(
-        Tags.limit(Tags.ForkedTestGroup, 4)
+        Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
       ),
       libraryDependencies ++= Seq(
         "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
-        "com.websudos"                 %% "diesel-engine"                     % DieselEngineVersion,
-        "com.chuusai"                  %% "shapeless"                         % ShapelessVersion,
-        "com.twitter"                  %% "util-core"                         % TwitterUtilVersion,
+        "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
+        "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
+        "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
         "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1" exclude ("com.typesafe", "config"),
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
-        "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
-        "com.datastax.cassandra"       %  "cassandra-driver-extras"           % DatastaxDriverVersion,
-        "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12",
+        "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
+        "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
+        "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
         "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
         "com.websudos"                 %% "util-lift"                         % Versions.util                   % "test, provided",
         "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided",
         "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
-        "com.storm-enroute"            %% "scalameter"                        % ScalaMeterVersion               % "test, provided",
+        "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test, provided",
         "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test, provided"
       )
     ).dependsOn(
@@ -230,7 +234,7 @@ object Build extends Build {
     testOptions in Test += Tests.Argument("-oF"),
     logBuffered in Test := false,
     concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, 4)
+      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
@@ -243,7 +247,7 @@ object Build extends Build {
   ).configs(PerformanceTest).settings(
     name := "phantom-connectors",
     libraryDependencies ++= Seq(
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % DatastaxDriverVersion,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
     )
   )
@@ -272,10 +276,10 @@ object Build extends Build {
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.slf4j"                    % "slf4j-log4j12"                      % Slf4jVersion % "test, provided",
-      "org.apache.thrift"            % "libthrift"                          % ThriftVersion,
-      "com.twitter"                  %% "scrooge-core"                      % ScroogeVersion,
-      "com.twitter"                  %% "scrooge-serializer"                % ScroogeVersion,
+      "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % "test, provided",
+      "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
+      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
+      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
       "com.websudos"                 %% "util-testing"                      % Versions.util               % "test, provided"
     )
   ).dependsOn(
@@ -304,12 +308,12 @@ object Build extends Build {
   ).settings(
     name := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-streams-experimental" % PlayVersion exclude("com.typesafe", "config"),
-      "com.typesafe"        % "config"                % TypesafeConfigVersion,
-      "org.reactivestreams" % "reactive-streams"      % ReactiveStreamsVersion,
-      "com.typesafe.akka"   %% s"akka-actor"          % AkkaVersion,
-      "com.websudos"        %% "util-testing"         % Versions.util          % "test, provided",
-      "org.reactivestreams" % "reactive-streams-tck"  % ReactiveStreamsVersion % "test, provided"
+      "com.typesafe.play"   %% "play-streams-experimental" % Versions.play exclude("com.typesafe", "config"),
+      "com.typesafe"        % "config"                % Versions.typesafeConfig,
+      "org.reactivestreams" % "reactive-streams"      % Versions.reactivestreams,
+      "com.typesafe.akka"   %% s"akka-actor"          % Versions.akka,
+      "com.websudos"        %% "util-testing"         % Versions.util            % "test, provided",
+      "org.reactivestreams" % "reactive-streams-tck"  % Versions.reactivestreams % "test, provided"
     )
   ).dependsOn(
     phantomConnectors,
@@ -342,7 +346,7 @@ object Build extends Build {
     logBuffered in Test := false,
     testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
     concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, 4)
+      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
   ).settings(
     libraryDependencies ++= Seq(
@@ -350,7 +354,7 @@ object Build extends Build {
       "org.json4s"                %% "json4s-ext"                     % Versions.json4s,
       "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
-      "net.databinder.dispatch"   %% "dispatch-core"                  % "0.11.0"               % "test",
+      "net.databinder.dispatch"   %% "dispatch-core"                  % Versions.dispatch      % "test",
       "javax.servlet"             % "javax.servlet-api"               % "3.0.1"                % "provided",
       "com.websudos"              %% "util-testing"                   % Versions.util          % "provided"
     )

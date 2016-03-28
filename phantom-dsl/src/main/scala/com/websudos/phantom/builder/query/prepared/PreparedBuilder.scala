@@ -29,20 +29,19 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import java.util.UUID
-
-import com.datastax.driver.core.{ QueryOptions => _ , _ }
-import com.twitter.util.{ Future => TwitterFuture }
+import com.datastax.driver.core.{QueryOptions => _, _}
+import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.builder.query._
+import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{Generic, HList}
 
+import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
-import scala.concurrent.{Future => ScalaFuture, ExecutionContext, blocking}
+import scala.concurrent.{ExecutionContext, blocking, Future => ScalaFuture}
 
 private[phantom] trait PrepareMark {
 
@@ -80,6 +79,7 @@ class ExecutablePreparedSelectQuery[
 
   /**
     * Returns the first row from the select ignoring everything else
+    *
     * @param session The Cassandra session in use.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
@@ -89,6 +89,7 @@ class ExecutablePreparedSelectQuery[
 
   /**
     * Get the result of an operation as a Twitter Future.
+    *
     * @param session The Datastax Cassandra session.
     * @return A Twitter future wrapping the result.
     */
@@ -105,6 +106,22 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
     blocking(session.prepare(qb.queryString))
   }
 
+  def flattenOpt(param: Any): Any = {
+    //noinspection ComparingUnrelatedTypes
+    param match {
+      case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
+      case x if x.isInstanceOf[None.type] => None.orNull.asInstanceOf[Any]
+      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
+      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
+      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
+      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
+      case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
+      case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
+      case x if x.isInstanceOf[BigInt] => x.asInstanceOf[BigInt].bigInteger
+      case x => x
+    }
+  }
+
   /**
     * Cleans up the series of parameters passed to the bind query to match
     * the codec registry collection that the Java Driver has internally.
@@ -118,24 +135,7 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
     * @return A clansed set of parameters.
     */
   protected[this] def flattenOpt(parameters: Seq[Any]): Seq[AnyRef] = {
-
-    def flattenOpt(param: Any): Any = {
-      //noinspection ComparingUnrelatedTypes
-      param match {
-        case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
-        case x if x.isInstanceOf[None.type] => None.orNull.asInstanceOf[Any]
-        case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
-        case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
-        case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
-        case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
-        case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
-        case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
-        case x if x.isInstanceOf[BigInt] => x.asInstanceOf[BigInt].bigInteger
-        case x => x
-      }
-    }
-
-    parameters map flattenOpt map(_.asInstanceOf[AnyRef])
+    parameters map flattenOpt map (_.asInstanceOf[AnyRef])
   }
 }
 
@@ -144,26 +144,26 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
+    *
     * @param v1 The argument used for the assertion, inferred as a tuple by the compiler.
-    * @param rev The Shapeless HList type reversal operation.
     * @param gen The Shapeless Generic implicit builder to cast the autotupled arguments to an HList.
     * @param ev The equality parameter to check that the types provided in the tuple match the prepared query.
     * @tparam V1 The argument tuple type, auto-tupled by the compiler from varargs.
     * @tparam VL1 The type argument used to cast the Generic.
-    * @tparam Reversed The Type used to cast the inner HList type of the prepared query to the result of the reverse.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
-    implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1],
-    ev: VL1 =:= Reversed
+  def bind[V1 <: Product, VL1 <: HList](v1: V1)(
+    implicit gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= PS
   ): ExecutablePreparedQuery = {
+
     val params = flattenOpt(v1.productIterator.toSeq)
     new ExecutablePreparedQuery(query.bind(params: _*), options)
   }
 
   /**
     * Method used to bind a single argument to a prepared statement.
+    *
     * @param v A single argument that will be interpreted as a sequence of 1 for binding.
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
@@ -184,19 +184,17 @@ class PreparedSelectBlock[
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
+    *
     * @param v1 The argument used for the assertion, inferred as a tuple by the compiler.
-    * @param rev The Shapeless HList type reversal operation.
     * @param gen The Shapeless Generic implicit builder to cast the autotupled arguments to an HList.
     * @param ev The equality parameter to check that the types provided in the tuple match the prepared query.
     * @tparam V1 The argument tuple type, auto-tupled by the compiler from varargs.
     * @tparam VL1 The type argument used to cast the Generic.
-    * @tparam Reversed The Type used to cast the inner HList type of the prepared query to the result of the reverse.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V1 <: Product, VL1 <: HList, Reversed <: HList](v1: V1)(
-    implicit rev: Reverse.Aux[PS, Reversed],
-    gen: Generic.Aux[V1, VL1],
-    ev: VL1 =:= Reversed
+  def bind[V1 <: Product, VL1 <: HList](v1: V1)(
+    implicit gen: Generic.Aux[V1, VL1],
+    ev: VL1 =:= PS
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     val params = flattenOpt(v1.productIterator.toSeq)
     new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, options)
@@ -204,6 +202,7 @@ class PreparedSelectBlock[
 
   /**
     * Method used to bind a single argument to a prepared statement.
+    *
     * @param v A single argument that will be interpreted as a sequence of 1 for binding.
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
