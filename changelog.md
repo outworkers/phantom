@@ -38,6 +38,7 @@ Changelog
     <li><a href="#version-1.21.5">1.21.5 - 11.02.2016</a></li>
     <li><a href="#version-1.22.0">1.22.0 - 14.02.2016</a></li>
     <li><a href="#version-1.22.1">1.22.1 - 24.02.2016</a></li>
+    <li><a href="#version-1.25.0">1.25.0 - 29.03.2016</a></li>
 </ul>
 
 
@@ -363,3 +364,12 @@ removed `session.newSimpleStatement`.
 - Added a `DateTime` augmenter in the default package capable of producing `TimeUUID` values from a `DateTime`.
 - Fixed serialization of `minTimeuuid` and `maxTimeuuid` clauses to use dates in ISO formats.
 - Added tests to test `timeuuid` based date range selection with `minTimeuuid` and `maxTimeuuid`.
+
+<a id="version-1.25.0">1.25.0</a>
+================================
+
+- Changed `caching` property serialization in `QueryBuilder` to adjust to protocol version changes.
+- Fixed bug in prepared statements which prevented multiple prepared SET clauses from being used.
+- Changed serialization order in an `UpdateQuery` to always provide the SET clause arguments first. This is done to 
+address the internal bind serialization issue, since the bind won't attempt to do any type matching, order of the
+arguments is the only element that dictates serialization.

@@ -329,13 +329,15 @@ sealed class AssignmentsQuery[
   }
 
   def prepare[
+    Rev <: HList,
     Reversed <: HList
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend[Reversed, PS]
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend[Reversed, Rev]
   ): PreparedBlock[prepend.Out] = {
     new PreparedBlock(qb, options)
   }
@@ -483,11 +485,13 @@ sealed class ConditionalQuery[
     ttl(duration.inSeconds)
   }
 
-  def prepare()(
+  def prepare[Rev <: HList, Rev2 <: HList]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    prepend: Prepend[ModifyPrepared, PS]
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Rev2],
+    prepend: Prepend[Rev2, Rev]
   ): PreparedBlock[prepend.Out] = {
     new PreparedBlock(qb, options)
   }
