@@ -32,23 +32,21 @@ package com.websudos.phantom.builder.query.db.crud
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{TestDatabase, Primitive}
+import com.websudos.phantom.tables.{Primitive, TestDatabase}
 import com.websudos.util.testing._
 import org.scalatest.concurrent.Eventually
-import org.scalatest.time.{Milliseconds, Seconds, Span}
+
 import scala.concurrent.duration._
 
 class TTLTest extends PhantomSuite with Eventually {
-
-  override implicit val patienceConfig = PatienceConfig(Span(7, Seconds), Span(200, Milliseconds))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
   }
 
-  private val ttl = 2 seconds
-  private val granularity = 1 second
+  private[this] val ttl = 2 seconds
+  private[this] val granularity = 5 seconds
 
   it should "expire inserted records after TTL" in {
     val row = gen[Primitive]

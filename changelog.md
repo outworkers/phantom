@@ -39,6 +39,7 @@ Changelog
     <li><a href="#version-1.22.0">1.22.0 - 14.02.2016</a></li>
     <li><a href="#version-1.22.1">1.22.1 - 24.02.2016</a></li>
     <li><a href="#version-1.25.0">1.25.0 - 29.03.2016</a></li>
+    <li><a href="#version-1.26.0">1.25.0 - 29.03.2016</a></li>
 </ul>
 
 
@@ -373,3 +374,9 @@ removed `session.newSimpleStatement`.
 - Changed serialization order in an `UpdateQuery` to always provide the SET clause arguments first. This is done to 
 address the internal bind serialization issue, since the bind won't attempt to do any type matching, order of the
 arguments is the only element that dictates serialization.
+
+<a id="version-1.26.0">1.25.0</a>
+================================
+
+- Fixed README to reflect up to date licensing clauses and remove open source wording.
+- Using `Tupler` instead of `Generic` and reverting type cast from HList -> Tuple for some compile time clarity.
