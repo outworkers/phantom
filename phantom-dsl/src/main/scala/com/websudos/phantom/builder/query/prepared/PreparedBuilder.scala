@@ -36,8 +36,8 @@ import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
+import shapeless.HList
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, blocking, Future => ScalaFuture}

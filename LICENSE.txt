@@ -13,24 +13,10 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner,
- * Websudos Limited before any redistribution is made.
- * You may not publish any custom version of phantom, commercial or otherwise,
- * you may not distribute altered copies of phantom, and you may not distribute
- * any plugins or alterations to phantom that the copyright owner, Websudos Limited
- * has not consented to in writing.
+ * - Redistributions of source code for the purpose of contribution to the source
+ * are wholly permitted via all available channels.
  *
- * - You may not publish any tutorials or educational material on phantom, any blog posts or any
- * written published content on phantom without our explicit written consent. You may not use phantom
- * to promote your skills in a relevant field or any other kind of advertising without our explicit written
- * consent.
- *
- * - Websudos Limited, the copyright owner, retains the right to apply
- * any further updates to this license but obliges to update the license
- * publicly and as such, any new clause provided by future updates of this license
- * will apply to all existing versions of phantom irrespective of any timeframe.
- * You must comply with any future updates to this license for any existing version
- * of phantom you may be using.
+ * - By contributing to our source, you are agreeing to our licensing terms.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
