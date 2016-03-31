@@ -6,7 +6,7 @@ Reactive type-safe Scala DSL for Cassandra
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers_uk](https://twitter.com/outworkers_uk).
 
 If you use phantom, please consider adding your company to our list of adopters.
-phantom is and will always be completely free(*not* open source), but the more adopters our projects have, the more people from our company will actively work to make them better.
+phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware), but the more adopters our projects have, the more people from our company will actively work to make them better.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
@@ -91,22 +91,17 @@ License and copyright
 
 Phantom is [freeware software](https://en.wikipedia.org/wiki/Freeware) and uses a proprietary license that in plain English says the following:
 
-- Phantom is the sole intellectual property of `Outworkers`, it is not provided under an OSS license and cannot be modified, or copied.
+- Phantom is the intellectual property of `Outworkers`, it is not provided under an OSS license.
 
 - You can use phantom in commercial products or otherwise, so long as you use one of the official versions available on Bintray or Maven Central.
 
-- You are not allowed to produce copies of phantom or distribute altered copies of phantom.
+- You are not allowed to distribute altered copies of phantom in binary form.
 
 - You cannot offer paid for training on phantom unless you are a direct partner to `Outworkers` and you have a written intellectual property agreement in place with us.
 
-- If you simply have a `Build.scala` or `build.sbt` dependency on phantom, you shouldn't really be concerned with anything.
+- If you simply have a `Build.scala` or `build.sbt` dependency on phantom, you have nothing to worry about.
 
 - All paid for features are published and sold separately as `phantom-pro`, everything that is currently available for free will remain so forever.
-
-- You can't publish tutorials on phantom unless we approve them first. This is because we have so far had a non optimal experience with community content. The rapid
-pace of development means it's hard to keep up for anyone not directly vested in `phantom` as we are. We try our best to always improve documentation
-as well, to aid the community and produce an ever increasing resource base of docs, and we always monitor for new content on the web and have helped improving and updating
-tens of tutorial published by other teams and companies using phantom.
 
 If you would like our help with any new content or initiatives, we'd love to hear about it!
 
