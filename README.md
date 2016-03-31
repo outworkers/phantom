@@ -6,7 +6,7 @@ Reactive type-safe Scala DSL for Cassandra
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers_uk](https://twitter.com/outworkers_uk).
 
 If you use phantom, please consider adding your company to our list of adopters.
-phantom is and will always be completely free(*not* open source), but the more adopters our projects have, the more people from our company will actively work to make them better.
+phantom is and will always be completely free of charge (*not* [free/libre and open source software](http://www.gnu.org/philosophy/free-sw.en.html)), but the more adopters our projects have, the more people from our company will actively work to make them better.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
