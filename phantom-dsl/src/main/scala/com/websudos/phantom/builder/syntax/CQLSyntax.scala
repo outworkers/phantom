@@ -49,7 +49,7 @@ object CQLSyntax {
     val Drop = "DROP"
   }
 
-  val Keys = "KEYS"
+  val Keys = "keys"
   val Rows = "rows"
   val RowsPerPartition = "rows_per_partition"
   val Entries = "ENTRIES"

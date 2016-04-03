@@ -226,7 +226,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       "specify a secondary index on a map column for the keys of a map column" in {
         val qb = QueryBuilder.Create.mapIndex("t", "k", "col").queryString
 
-        qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(KEYS(col))"
+        qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(keys(col))"
       }
     }
 

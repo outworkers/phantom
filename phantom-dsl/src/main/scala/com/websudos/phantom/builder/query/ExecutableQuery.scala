@@ -146,7 +146,7 @@ trait ExecutableStatement extends CassandraOperations {
   }
 }
 
-private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends CassandraOperations {
+private[phantom] class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOperations {
 
   /**
    * Secondary constructor to allow passing in Sets instead of Sequences.
@@ -160,20 +160,20 @@ private[phantom] class ExecutableStatementList(val list: Seq[CQLQuery]) extends 
    */
   def this(queries: Set[CQLQuery]) = this(queries.toSeq)
 
-  def ++(appendable: Seq[CQLQuery]): ExecutableStatementList = {
-    new ExecutableStatementList(list ++ appendable)
+  def add(appendable: Seq[CQLQuery]): ExecutableStatementList = {
+    new ExecutableStatementList(queries ++ appendable)
   }
 
-  def ++(st: ExecutableStatementList): ExecutableStatementList = {
-    ++(st.list)
-  }
+  def ++(appendable: Seq[CQLQuery]): ExecutableStatementList = add(appendable)
+
+  def ++(st: ExecutableStatementList): ExecutableStatementList = add(st.queries)
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(list.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    ScalaFuture.sequence(queries.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(list.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    TwitterFuture.collect(queries.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
   }
 }
 
@@ -272,7 +272,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetch(state: PagingState)(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
-    future(st => st.setPagingState(state)) map {
+    future(_.setPagingState(state)) map {
       resultSet => directMapper(resultSet.all)
     }
   }

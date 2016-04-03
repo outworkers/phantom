@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom
 
-import com.websudos.phantom.exceptions.InvalidPrimaryKeyException
+import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import com.websudos.phantom.tables._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
@@ -54,7 +54,7 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
   }
 
   it should "throw an error if the table uses a ClusteringColumn with PrimaryKeys" in {
-    intercept[InvalidPrimaryKeyException] {
+    intercept[InvalidClusteringKeyException] {
       TestDatabase.brokenClusteringTable.defineTableKey()
     }
   }
