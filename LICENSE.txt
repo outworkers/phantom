@@ -3,7 +3,7 @@
  *
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in source forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright notice,
@@ -16,7 +16,8 @@
  * - Redistributions of source code for the purpose of contribution to the source
  * are wholly permitted via all available channels.
  *
- * - By contributing to our source, you are agreeing to our licensing terms.
+ * - Redistributions in binary form to sources other than the official ones
+ * are only permitted with our explicit written consent.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE

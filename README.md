@@ -120,7 +120,6 @@ Scala/Cassandra users in the world rely on phantom.
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
-* Tomasz Perek ([@tperek](https://github.com/tperek))
 * Evan Chan ([@evanfchan](https://github.com/evanfchan))
 * Jens Halm ([@jenshalm](https://github.com/jenshalm))
 

@@ -59,7 +59,7 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
   with StreamDatabase.connector.Connector {
   self: Suite =>
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     Await.result(StreamDatabase.autocreate().future(), 5.seconds)
   }

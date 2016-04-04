@@ -89,7 +89,7 @@ class SelectOptionalTest extends PhantomSuite {
     }
   }
 
-  private[this] def checkRow(row: OptionalPrimitiveCassandra22) {
+  private[this] def checkRow(row: OptionalPrimitiveCassandra22): Unit = {
     val rcp = for {
       store <- TestDatabase.optionalPrimitivesCassandra22.store(row).future()
       b <- TestDatabase.optionalPrimitivesCassandra22.select.where(_.pkey eqs row.pkey).one

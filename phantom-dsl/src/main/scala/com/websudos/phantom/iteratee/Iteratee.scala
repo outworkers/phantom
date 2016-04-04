@@ -46,13 +46,12 @@ object Iteratee {
   }
 
   /**
-   *
-   * @param f
-   * @param ec
+   * Counts the number of items found in the iteratee.
+   * @param ec The execution context in which to perform the computation
    * @tparam E
    * @return
    */
-  def count[E](f: E => Long)(implicit ec: ExecutionContext): PIteratee[E, Long] = {
+  def count[E](implicit ec: ExecutionContext): PIteratee[E, Long] = {
     PIteratee.fold(0L)((acc, _) => acc + 1)
   }
 
