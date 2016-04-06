@@ -26,17 +26,10 @@ then
             echo "Bintray credentials still not found"
         fi
 
-
-        echo "Bumping release version with a patch increment from $(sbt version)"
-        sbt version-bump-patch exit
-
-        set NEW_VERSION = "$(grep 'version :=')"
-        echo "New version published is ${NEW_VERSION}"
-
-        echo "Creating Git tag for version $$NEW_VERSION"
+        sbt version-bump-patch git-tag
 
         echo "Pushing tag to GitHub."
-        git push --tags "https://${github_token}@${GH_REF}" > /dev/null 2>&1
+        git push --tags "https://${github_token}@${GH_REF}"
 
         echo "Publishing Bintray artifact"
 

@@ -248,11 +248,12 @@ class ListOperatorsTest extends PhantomSuite {
 
   it should "remove an item from a list" in {
     val list = genList[String]()
+    val droppable = list(0)
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -265,12 +266,12 @@ class ListOperatorsTest extends PhantomSuite {
 
   it should "remove an item from a list with Twitter Futures" in {
     val list = genList[String]()
-
+    val droppable = list(0)
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.head).execute
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).execute
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 

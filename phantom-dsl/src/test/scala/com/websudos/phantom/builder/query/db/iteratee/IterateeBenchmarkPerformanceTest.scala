@@ -42,9 +42,12 @@ class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark wi
 
   TestDatabase.primitivesJoda.insertSchema()
 
+  val limit = 10000
+  val sampleGenLimit = 30000
+
   val fs = for {
     step <- 1 to 3
-    rows = Iterator.fill(10000)(gen[JodaRow])
+    rows = Iterator.fill(limit)(gen[JodaRow])
 
     batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = TestDatabase.primitivesJoda.insert
@@ -54,13 +57,13 @@ class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark wi
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ => println(s"step $step was completed successfully") )
+    f = w map (_ => println(s"step $step was completed successfully"))
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 
   Await.ready(Future.sequence(fs), 20 seconds)
 
-  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
+  val sizes: MeterGen[Int] = MeterGen.range("size")(limit, sampleGenLimit, limit)
 
   performance of "Enumerator" in {
     measure method "enumerator" in {

@@ -53,7 +53,7 @@ class SelectOptionalTest extends PhantomSuite {
   }
 
 
-  if(session.v4orNewer) {
+  if (session.v4orNewer) {
     "Selecting the whole row" should "work fine when cassandra 2.2 optional value defined" in {
       checkRow(gen[OptionalPrimitiveCassandra22])
     }
@@ -63,7 +63,7 @@ class SelectOptionalTest extends PhantomSuite {
     }
   }
 
-  private[this] def checkRow(row: OptionalPrimitive) {
+  private[this] def checkRow(row: OptionalPrimitive): Unit = {
     val rcp = for {
       store <- TestDatabase.optionalPrimitives.store(row).future()
       b <- TestDatabase.optionalPrimitives.select.where(_.pkey eqs row.pkey).one

@@ -64,12 +64,10 @@ sealed class OrderingModifier {
    * @param clauses A sequence of ordering clauses to include in the query.
    * @return A final ORDER BY clause, with all the relevant query parts appended.
    */
-  def orderBy(clauses: CQLQuery*): CQLQuery = {
-
-    clauses.size match {
-      case 1 => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clauses.head.queryString)
-      case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
-    }
+  def orderBy(clauses: CQLQuery*): CQLQuery = clauses match {
+    case head :: tail if tail.isEmpty =>
+      CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(head.queryString)
+    case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
   }
 
   def orderBy(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
@@ -95,7 +93,7 @@ private[builder] class SelectQueryBuilder {
    */
   def select(tableName: String, keyspace: String): CQLQuery = {
     CQLQuery(CQLSyntax.select)
-      .pad.append("*").forcePad
+      .pad.append(CQLSyntax.Symbols.`*`).forcePad
       .append(CQLSyntax.from)
       .forcePad.append(QueryBuilder.keyspace(keyspace, tableName))
   }

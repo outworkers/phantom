@@ -42,7 +42,6 @@ import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.util.ByteString
 import shapeless.{::, HNil}
 
 import scala.util.Try
@@ -72,7 +71,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type JsonListColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.JsonListColumn[Owner, Record, T]
   type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigDecimal]
 
-  type ByteStringColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteString]
   type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ByteBuffer]
   type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, BigInt]
   type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
