@@ -29,43 +29,85 @@
  */
 package com.websudos.phantom.iteratee
 
-import play.api.libs.iteratee.{Enumerator => PlayEnum, Iteratee => PIteratee}
+import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+
+case class Wrapper[R](iterator: Iterator[R], limit: Int) {
+  def add(itt: Iterator[R], offset: Int): Wrapper[R] = {
+    Wrapper(iterator ++ itt, limit + offset)
+  }
+}
+
+object Wrapper {
+  def empty[R]: Wrapper[R] = Wrapper(Iterator[R](), 0)
+}
 
 /**
  * Helper object to some common use cases for iterators.
  * This is a wrapper around play Iteratee class.
  */
 object Iteratee {
-  def collect[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] =
-    PIteratee.fold(List.empty[R])((acc, e: R)=> e :: acc)
+  def collect[R]()(implicit ec: ExecutionContext): PlayIteratee[R, List[R]] =
+    PlayIteratee.fold(List.empty[R])((acc, e: R)=> e :: acc)
 
-  def chunks[R]()(implicit ec: ExecutionContext): PIteratee[R, List[R]] = {
-    PIteratee.getChunks
+  def chunks[R]()(implicit ec: ExecutionContext): PlayIteratee[R, List[R]] = {
+    PlayIteratee.getChunks
   }
 
   /**
-   * Counts the number of items found in the iteratee.
-   * @param ec The execution context in which to perform the computation
+   * Counts the number of elements inside the iteratee using a fold traversal.
+   * @param f
+   * @param ec
    * @tparam E
    * @return
    */
-  def count[E](implicit ec: ExecutionContext): PIteratee[E, Long] = {
-    PIteratee.fold(0L)((acc, _) => acc + 1)
+  def count[E](f: E => Long)(implicit ec: ExecutionContext): PlayIteratee[E, Long] = {
+    PlayIteratee.fold(0L)((acc, _) => acc + 1)
   }
 
-  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PIteratee[E, Unit] = PIteratee.foreach(f: E => Unit)
+  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PlayIteratee[E, Unit] = PlayIteratee.foreach(f: E => Unit)
 
-  def drop[R](num: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
-    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.drop(num))
+  def drop[R](num: Int)(implicit ex: ExecutionContext): PlayIteratee[R, Iterator[R]] = {
+    PlayIteratee.fold2(Wrapper.empty[R])((wrapper: Wrapper[R], el: R) =>
+      if (wrapper.limit >= num) {
+        Future.successful(Tuple2(wrapper add (Iterator(el), 1), false))
+      } else {
+        Future.successful(Tuple2(wrapper, true))
+      }
+    ) map (_.iterator)
   }
 
-  def slice[R](start: Int, limit: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
-    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.slice(start, start + limit))
+  /**
+    * Slices the iteratee from a given index to as many elements as the limit, effectively returns all elements from
+    * (start) to (start + limit).
+    *
+    * @param start The index at which to start.
+    * @param limit The number of elements to include in the slice.
+    * @param ex The execution context in which to perform the computation.
+    * @tparam R The type of the result to return in the iterator, usually the record type of a table.
+    * @return A Play iteratee that can be consumed.
+    */
+  def slice[R](start: Int, limit: Int)(implicit ex: ExecutionContext): PlayIteratee[R, Iterator[R]] = {
+    PlayIteratee.fold2(Wrapper.empty[R])((wrapper: Wrapper[R], el: R) =>
+      // If we are in the target (start -> (start + limit)) interval add elements to the accumulator.
+      if (wrapper.limit >= start && wrapper.limit < start + limit) {
+        Future.successful(Tuple2(wrapper add (Iterator(el), 1), false))
+      } else if (wrapper.limit >= (start + limit)) {
+        Future.successful(Tuple2(wrapper, true))
+      } else {
+        Future.successful(Tuple2(wrapper, false))
+      }
+    ) map (_.iterator)
   }
 
-  def take[R](limit: Int)(implicit ex: ExecutionContext): PIteratee[R, Iterator[R]] = {
-    PIteratee.fold(Iterator[R]())((acc: Iterator[R], e: R) => acc ++ Iterator(e) ) map (_.take(limit))
+  def take[R](limit: Int)(implicit ex: ExecutionContext): PlayIteratee[R, Iterator[R]] = {
+    PlayIteratee.fold2(Wrapper.empty[R])((wrapper: Wrapper[R], el: R) =>
+      if (wrapper.limit < limit) {
+        Future.successful(Tuple2(wrapper add (Iterator(el), 1), false))
+      } else {
+        Future.successful(Tuple2(wrapper, true))
+      }
+    ) map (_.iterator)
   }
 }

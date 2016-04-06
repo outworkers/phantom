@@ -150,7 +150,10 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ VersionManagement.newSettings ++ PublishTasks.bintrayPublishSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+      VersionManagement.newSettings ++
+      GitProject.gitSettings ++
+      PublishTasks.bintrayPublishSettings
 
 
   private[this] def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"

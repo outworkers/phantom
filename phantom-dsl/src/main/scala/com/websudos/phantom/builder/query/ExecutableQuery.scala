@@ -214,9 +214,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    */
   def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): PlayEnumerator[R] = {
     val eventualEnum = future() map {
-      resultSet => {
-          Enumerator.enumerator(resultSet) through Enumeratee.map(r => fromRow(r))
-      }
+      resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(fromRow)
     }
     PlayEnumerator.flatten(eventualEnum)
   }
