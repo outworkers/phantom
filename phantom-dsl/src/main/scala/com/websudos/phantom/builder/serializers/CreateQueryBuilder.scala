@@ -35,7 +35,6 @@ import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
 sealed trait CreateOptionsBuilder {
-  
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     if (qb.nonEmpty) {
       qb.append(CQLSyntax.comma)

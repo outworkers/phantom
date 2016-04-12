@@ -71,7 +71,7 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
   }
-  
+
   def name: String = _name
 
   def qb: CQLQuery = {

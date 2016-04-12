@@ -35,7 +35,7 @@ import com.websudos.phantom.dsl._
 case class SecondaryIndexRecord(primary: UUID, secondary: UUID, name: String)
 
 sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTable, SecondaryIndexRecord] {
-  
+
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object secondary extends UUIDColumn(this) with Index[UUID]
   object name extends StringColumn(this)

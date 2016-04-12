@@ -39,7 +39,7 @@ class CounterBatchTest extends PhantomSuite {
 
   val x = TestDatabase.counterTableTest
   val y = TestDatabase.secondaryCounterTable
-  
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.counterTableTest.insertSchema()

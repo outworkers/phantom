@@ -94,7 +94,7 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
 sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
-  
+
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object map extends MapColumn[ConcreteEvents, SampleEvent, Long, DateTime](this)
