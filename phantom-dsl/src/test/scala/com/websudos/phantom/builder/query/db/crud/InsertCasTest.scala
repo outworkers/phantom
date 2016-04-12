@@ -35,8 +35,6 @@ import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 
 class InsertCasTest extends PhantomSuite {
 
@@ -69,21 +67,21 @@ class InsertCasTest extends PhantomSuite {
     } yield (one, count, multi)
 
     chain successful {
-      res => {
+      case (res1, res2, res3) => {
         info("The one query should return a record")
-        res._1 shouldBe defined
+        res1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.value shouldEqual row
+        res1.value shouldEqual row
 
         info("And the count should be present")
-        res._2 shouldBe defined
+        res2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.value shouldEqual 1L
+        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3 should have size 1
+        res3 should have size 1
       }
     }
   }
@@ -111,21 +109,21 @@ class InsertCasTest extends PhantomSuite {
     } yield (one, count, multi)
 
     chain successful {
-      res => {
+      case (res1, res2, res3) => {
         info("The one query should return a record")
-        res._1 shouldBe defined
+        res1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.value shouldEqual row
+        res1.value shouldEqual row
 
         info("And the count should be present")
-        res._2 shouldBe defined
+        res2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.value shouldEqual 1L
+        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3 should have size 1
+        res3 should have size 1
       }
     }
   }
@@ -155,21 +153,21 @@ class InsertCasTest extends PhantomSuite {
     } yield (one, count, multi)
 
     chain successful {
-      res => {
+      case (res1, res2, res3) => {
         info("The one query should return a record")
-        res._1 shouldBe defined
+        res1 shouldBe defined
 
         info("And the record should equal the inserted record")
-        res._1.value shouldEqual row
+        res1.value shouldEqual row
 
         info("And the count should be present")
-        res._2 shouldBe defined
+        res2 shouldBe defined
 
         info("And it should be one after a single insertion.")
-        res._2.value shouldEqual 1L
+        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
-        res._3 should have size 1
+        res3 should have size 1
       }
     }
   }

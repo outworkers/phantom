@@ -235,10 +235,9 @@ class BatchTest extends PhantomSuite {
     } yield (updated, deleted)
 
     w successful {
-      res => {
-        res._1.value shouldEqual row2
-
-        res._2 shouldBe empty
+      case (res1, res2) => {
+        res1.value shouldEqual row2
+        res2 shouldBe empty
       }
     }
   }
@@ -277,9 +276,9 @@ class BatchTest extends PhantomSuite {
     } yield (updated, deleted)
 
     w successful {
-      res => {
-        res._1.value shouldEqual row2
-        res._2 shouldBe empty
+      case (res1, res2) => {
+        res1.value shouldEqual row2
+        res2 shouldBe empty
       }
     }
   }

@@ -20,10 +20,8 @@ import com.websudos.phantom.connectors.KeySpaceBuilder
 import com.twitter.finagle.exp.zookeeper.ZooKeeper
 import com.twitter.finagle.exp.zookeeper.client.ZkClient
 import com.twitter.conversions.time._
-import com.twitter.util.Future
-import com.twitter.util.Try
-import com.twitter.util.Await
-import com.twitter.util.Duration
+import com.twitter.util._
+
 import scala.collection.JavaConverters._
 import java.net.InetSocketAddress
 
@@ -33,16 +31,18 @@ import java.net.InetSocketAddress
  * `Cluster.Builder => Cluster.Builder` so that it can
  * be easily plugged into a `KeySpaceBuilder`.
  */
-class ZkContactPointLookup (host: String,
-                            port: Int,
-                            path: String = "/cassandra",
-                            timeout: Duration = 5.seconds) extends (Cluster.Builder => Cluster.Builder) {
+class ZkContactPointLookup(
+  host: String,
+  port: Int,
+  path: String = "/cassandra",
+  timeout: Duration = 5.seconds) extends (Cluster.Builder => Cluster.Builder) {
 
   def apply(builder: Cluster.Builder): Cluster.Builder = {
     val ports = Await.result(retrieveContactPoints, timeout)
     builder.addContactPointsWithPorts(ports.asJava)
   }
 
+  case class LookupException(msg: String) extends RuntimeException(msg) with NoStacktrace
 
   /**
    * Exposes the instance of the Finagle
@@ -72,9 +72,11 @@ class ZkContactPointLookup (host: String,
    * implementation expects a comma
    * separated list of host/port pairs separated by a colon.
    */
+  @throws[LookupException]
   protected[this] def parseContactPoints(data: String): Seq[InetSocketAddress] = {
     data.split("\\s*,\\s*").map(_.split(":")).map {
       case Array(hostname, portDef) => new InetSocketAddress(hostname, portDef.toInt)
+      case _ => throw LookupException(s"Could not parse contact points from $data")
     }.toSeq
   }
 

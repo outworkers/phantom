@@ -116,7 +116,7 @@ object CQLSyntax {
     val `[` = "["
     val `]` = "]"
 
-    val `.` = "."
+    val dot = "."
     val `:` = ":"
     val `;` = ";"
     val `(` = "("

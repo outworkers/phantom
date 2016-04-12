@@ -5,6 +5,12 @@ then
     if [ "${TRAVIS_SCALA_VERSION}" == "2.11.7" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
     then
 
+        echo "Setting git user email to ci@outworkers.com"
+        git config user.email "ci@outworkers.com"
+
+        echo "Setting git user name to Travis CI"
+        git config user.name "Travis CI"
+
         echo "The current JDK version is ${TRAVIS_JDK_VERSION}"
         echo "The current Scala version is ${TRAVIS_SCALA_VERSION}"
 
@@ -32,14 +38,17 @@ then
         git push --tags "https://${github_token}@${GH_REF}"
 
         echo "Publishing Bintray artifact"
+        git add .
+        git commit -m "TravisCI: Bumping version"
+        git push "https://${github_token}@${GH_REF}" develop
 
-        "Publishing $(sbt version) to bintray"
+        "Publishing new version to bintray"
         sbt +publish
 
         git checkout master
         git merge develop
 
-        git push --all  "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
+        git push "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
 
     else
         echo "Only publishing version for Scala 2.11.7 and Oracle JDK 8 to prevent multiple artifacts"

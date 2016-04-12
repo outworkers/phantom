@@ -80,7 +80,7 @@ private[builder] trait Utils {
   }
 
   def curlyWrap(qb: CQLQuery): CQLQuery = curlyWrap(qb)
-  
+
   /**
     * Serializes the CQL definition of a map key based on a column and a key value.
     * When this method is called, the key should be already serialized using the Primitive API.

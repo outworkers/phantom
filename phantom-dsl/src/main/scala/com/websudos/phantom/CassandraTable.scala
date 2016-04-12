@@ -37,7 +37,6 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable.{ArrayBuffer => MutableArrayBuffer}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
