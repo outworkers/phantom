@@ -79,7 +79,7 @@ object Build extends Build {
     if (!RunningUnderCi) {
       Seq(
         Credentials(Path.userHome / ".bintray" / ".credentials"),
-        Credentials(Path.userHome / ".iv2" / ".credentials")
+        Credentials(Path.userHome / ".ivy2" / ".credentials")
       )
     } else {
       println(s"Bintray publisher username ${System.getenv("bintray_user")}")
@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.25.3",
+    version := "1.25.4",
     scalaVersion := "2.11.7",
     credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
@@ -153,7 +153,7 @@ object Build extends Build {
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++
       VersionManagement.newSettings ++
       GitProject.gitSettings ++
-      PublishTasks.bintrayPublishSettings
+      PublishTasks.mavenPublishingSettings
 
 
   private[this] def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"

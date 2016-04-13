@@ -157,7 +157,7 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
 
   def serialize(col: Map[String, String] ): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
-      .append(CQLQuery(col.map(item => s"${item._1} : ${item._2}")))
+      .append(CQLQuery(col.map { case (key, value) => s"$key : $value" }))
       .forcePad.append(CQLSyntax.Symbols.`}`)
   }
 

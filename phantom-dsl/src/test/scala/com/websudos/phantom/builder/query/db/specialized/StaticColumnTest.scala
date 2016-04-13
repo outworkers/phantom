@@ -57,7 +57,7 @@ class StaticColumnTest extends PhantomSuite {
 
     chain.successful {
       res => {
-        res.value._3 shouldEqual static
+        res.value.static shouldEqual static
       }
     }
   }
@@ -83,7 +83,7 @@ class StaticColumnTest extends PhantomSuite {
     chain.successful {
       res => {
         // The first record should hold the updated value.
-        res.value._3 shouldEqual static2
+        res.value.static shouldEqual static2
       }
     }
   }
@@ -97,8 +97,16 @@ class StaticColumnTest extends PhantomSuite {
     val chain = for {
       store1 <- TestDatabase.staticCollectionTable.store(sample).future()
       store2 <- TestDatabase.staticCollectionTable.store(sample2).future()
-      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).modify(_.staticList append "test").future()
-      get <- TestDatabase.staticCollectionTable.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
+      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id)
+        .and(_.clusteringId eqs sample.clustering)
+        .modify(_.staticList append "test")
+        .future()
+
+      get <- TestDatabase.staticCollectionTable
+        .select
+        .where(_.id eqs id)
+        .and(_.clusteringId eqs sample.clustering)
+        .one()
     } yield get
 
     chain.successful {

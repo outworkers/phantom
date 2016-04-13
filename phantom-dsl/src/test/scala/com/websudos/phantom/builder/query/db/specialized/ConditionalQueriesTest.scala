@@ -88,9 +88,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -122,10 +120,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -156,10 +151,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -190,10 +182,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -225,10 +214,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -259,9 +245,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -293,9 +277,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -329,9 +311,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -364,10 +344,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -400,9 +377,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -437,9 +412,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -473,9 +446,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined
@@ -509,10 +480,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -546,10 +514,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
-
+      case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
 
@@ -584,9 +549,7 @@ class ConditionalQueriesTest extends PhantomSuite {
     } yield (select1, select2)
 
     chain.successful {
-      res => {
-        val initial = res._1
-        val second = res._2
+      case (initial, second) => {
 
         info("The first record should not be empty")
         initial shouldBe defined

@@ -64,8 +64,9 @@ private[phantom] object Enumerator {
 
         if (!rs.isExhausted) {
           // prefetch if we are running low on results.
-          if (available < 100 && !resultSet.isFullyFetched)
+          if (available < 100 && !resultSet.isFullyFetched) {
             rs.fetchMoreResults
+          }
           // if we have less than one result available non-blocking
           // we send the next invocation of the iterator to the thread
           // pool as blocking
