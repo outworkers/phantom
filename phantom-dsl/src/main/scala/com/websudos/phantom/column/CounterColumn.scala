@@ -49,7 +49,7 @@ class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: Cassa
 
   override val isCounterColumn = true
 
-  def optional(r: Row): Try[Long] = primitive.fromRow(name, r)
+  def parse(r: Row): Try[Long] = primitive.fromRow(name, r)
 
   override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 

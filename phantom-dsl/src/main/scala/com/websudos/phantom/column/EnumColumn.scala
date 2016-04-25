@@ -41,7 +41,7 @@ class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enu
 
   def cassandraType: String = CQLSyntax.Types.Text
 
-  def optional(r: Row): Try[EnumType#Value] = {
+  def parse(r: Row): Try[EnumType#Value] = {
     val enumConstant = r.getString(name)
 
     enum.values.find(_.toString == enumConstant) match {

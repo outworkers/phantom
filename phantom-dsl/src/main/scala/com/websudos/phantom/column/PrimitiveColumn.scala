@@ -49,7 +49,7 @@ class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Fl
 
   def asCql(v: RR): String = Primitive[RR].asCql(v)
 
-  def optional(r: Row): Try[RR] = implicitly[Primitive[RR]].fromRow(name, r)
+  def parse(r: Row): Try[RR] = implicitly[Primitive[RR]].fromRow(name, r)
 
   override def qb: CQLQuery = {
     val root = CQLQuery(name).forcePad.append(cassandraType)

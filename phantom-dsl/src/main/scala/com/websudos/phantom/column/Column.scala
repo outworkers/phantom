@@ -37,14 +37,13 @@ import scala.util.{Failure, Success, Try}
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
-  def optional(r: Row): Try[T]
+  def parse(r: Row): Try[T]
 
-  def apply(r: Row): T = optional(r) match {
+  def apply(r: Row): T = parse(r) match {
     case Success(value) => value
-    case Failure(ex) => {
-      table.logger.error(ex.getMessage)
+    case Failure(ex) =>
+      table.logger.error(s"Unable to parse value for column $name from row", ex)
       throw ex
-    }
   }
 
 }

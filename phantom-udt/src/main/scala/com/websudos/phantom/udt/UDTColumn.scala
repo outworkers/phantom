@@ -198,7 +198,7 @@ abstract class UDTColumn[
     instance
   }
 
-  override def optional(r: Row): Try[UDTColumn[Owner, Record, T]] = {
+  override def parse(r: Row): Try[UDTColumn[Owner, Record, T]] = {
     Try {
       val instance = clone().asInstanceOf[UDTColumn[Owner, Record, T]]
       val data = r.getUDTValue(name)

@@ -47,7 +47,7 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
   override def asCql(v: List[RR]): String = Utils.collection(v.map(valueAsCql)).queryString
 
   override def apply(r: Row): List[RR] = {
-    optional(r).getOrElse(Nil)
+    parse(r).getOrElse(Nil)
   }
 }
 
@@ -65,7 +65,7 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive]
 
   override def fromString(value: String): RR = valuePrimitive.fromString(value)
 
-  override def optional(r: Row): Try[List[RR]] = {
+  override def parse(r: Row): Try[List[RR]] = {
     if (r.isNull(name)) {
       Success(Nil)
     } else {
