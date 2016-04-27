@@ -55,10 +55,13 @@ case class CustomRecord(name: String, mp: Map[String, String])
 
 trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   object rec extends StringColumn(this) with PartitionKey[String]
-  object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
+  object sampleLongTextColumnDefinition extends MapColumn[String, String](this)
 
   override def fromRow(r: Row): CustomRecord = {
-    CustomRecord(rec(r), sampleLongTextColumnDefinition(r))
+    CustomRecord(
+      rec(r),
+      sampleLongTextColumnDefinition(r)
+    )
   }
 }
 

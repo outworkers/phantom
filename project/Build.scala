@@ -102,7 +102,7 @@ object Build extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.25.4",
+    version := "1.26.0",
     scalaVersion := "2.11.7",
     credentials ++= defaultCredentials,
     crossScalaVersions := Seq("2.10.5", "2.11.7"),
@@ -264,6 +264,8 @@ object Build extends Build {
       "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided",
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test, provided"
     )
+  ).dependsOn(
+    phantomDsl % "compile->compile;test->test"
   )
 
   lazy val phantomUdt = Project(
@@ -332,8 +334,7 @@ object Build extends Build {
       "com.storm-enroute"   %% "scalameter"           % Versions.scalameter      % "test, provided"
     )
   ).dependsOn(
-    phantomConnectors,
-    phantomDsl
+    phantomDsl % "compile->compile;test->test"
   )
 
   lazy val phantomExample = Project(

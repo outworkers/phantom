@@ -64,7 +64,7 @@ sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticColl
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticList extends ListColumn[ConcreteStaticCollectionTableTest, StaticCollectionRecord, String](this) with StaticColumn[List[String]]
+  object staticList extends ListColumn[String](this) with StaticColumn[List[String]]
 
   def fromRow(row: Row): StaticCollectionRecord = {
     StaticCollectionRecord(

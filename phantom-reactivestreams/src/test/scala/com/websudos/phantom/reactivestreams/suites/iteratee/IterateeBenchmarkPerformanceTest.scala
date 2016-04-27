@@ -30,7 +30,7 @@
 package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.reactivestreams.iteratee.Iteratee
+import com.websudos.phantom.reactivestreams._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
 import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
