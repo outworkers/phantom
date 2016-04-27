@@ -31,7 +31,7 @@ package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import java.util.concurrent.atomic.AtomicInteger
 import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.reactivestreams.iteratee.Iteratee
+import com.websudos.phantom.reactivestreams._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.dsl._

@@ -261,7 +261,8 @@ object Build extends Build {
     name := "phantom-finagle",
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
-      "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided"
+      "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided",
+      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test, provided"
     )
   )
 
@@ -327,7 +328,8 @@ object Build extends Build {
       "org.reactivestreams" % "reactive-streams"      % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"          % Versions.akka,
       "com.websudos"        %% "util-testing"         % Versions.util            % "test, provided",
-      "org.reactivestreams" % "reactive-streams-tck"  % Versions.reactivestreams % "test, provided"
+      "org.reactivestreams" % "reactive-streams-tck"  % Versions.reactivestreams % "test, provided",
+      "com.storm-enroute"   %% "scalameter"           % Versions.scalameter      % "test, provided"
     )
   ).dependsOn(
     phantomConnectors,
@@ -346,6 +348,7 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomDsl,
+    phantomReactiveStreams,
     phantomThrift,
     phantomZookeeper
   )

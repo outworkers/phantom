@@ -27,56 +27,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.websudos.phantom.reactivestreams.suites.iteratee
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import com.websudos.phantom.reactivestreams.suites.{Opera, OperaData}
+import org.reactivestreams.{Publisher, Subscriber, Subscription}
 
-import com.websudos.phantom.batch.BatchType
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
-import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
-import org.scalatest.FlatSpec
-import org.scalatest.concurrent.ScalaFutures
+object OperaPublisher extends Publisher[Opera] {
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
+    var remaining = OperaData.operas
 
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+    s.onSubscribe(new Subscription {
+      override def cancel(): Unit = ()
 
-  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
+      override def request(l: Long): Unit = {
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
-  }
+        remaining.take(l.toInt).foreach(s.onNext)
 
-  it should "persist all data" in {
-    val completionLatch = new CountDownLatch(1)
+        remaining = remaining.drop(l.toInt)
 
-    val subscriber = StreamDatabase.operaTable.subscriber(
-      2,
-      2,
-      BatchType.Unlogged,
-      None,
-      () => completionLatch.countDown()
-    )
-
-    OperaPublisher.subscribe(subscriber)
-
-    completionLatch.await(5, TimeUnit.SECONDS)
-
-    val chain = for {
-      count <- StreamDatabase.operaTable.select.count().one()
-    } yield count
-
-
-    whenReady(chain) {
-      res => {
-        res.value shouldEqual OperaData.operas.length
+        if (remaining.isEmpty) {
+          s.onComplete()
+        }
       }
-    }
-
+    })
   }
 
 }
-
