@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.iteratee
+package com.websudos.phantom.reactivestreams.iteratee
 
 import play.api.libs.iteratee.{ Iteratee => PlayIteratee }
 
@@ -57,17 +57,33 @@ object Iteratee {
 
   /**
    * Counts the number of elements inside the iteratee using a fold traversal.
-   * @param f
-   * @param ec
-   * @tparam E
-   * @return
+   * @param f The function to use for counting the records, takes a record as input.
+   * @param ec The execution context in which to execute the operation.
+   * @tparam E The type of the Record, dictated by the Cassandra table.
+   * @return A new iteratee, where the result of the operation is a long with the count.
    */
   def count[E](f: E => Long)(implicit ec: ExecutionContext): PlayIteratee[E, Long] = {
     PlayIteratee.fold(0L)((acc, _) => acc + 1)
   }
 
-  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PlayIteratee[E, Unit] = PlayIteratee.foreach(f: E => Unit)
+  /**
+    * Executes a function for every single element in the iteratee.
+    * @param f The function to execute.
+    * @param ec The execution context to execute the operation in.
+    * @tparam E The type of the underlying record, dictated by the Cassandra table.
+    * @return A new iteratee, with the result type Unit.
+    */
+  def forEach[E](f: E => Unit)(implicit ec: ExecutionContext): PlayIteratee[E, Unit] = {
+    PlayIteratee.foreach(f: E => Unit)
+  }
 
+  /**
+    * A drop method called directly on the iteratee, will asynchronously processs the drop using the Play Iteratee API.
+    * @param num The number of records to drop from the "left hand side" of the iteratee.
+    * @param ex The execution context in which to execute the operation.
+    * @tparam R The type of the Record being selected from the Cassandra table.
+    * @return A new iteratee, where the first num records have been dropped.
+    */
   def drop[R](num: Int)(implicit ex: ExecutionContext): PlayIteratee[R, Iterator[R]] = {
     PlayIteratee.fold2(Wrapper.empty[R])((wrapper: Wrapper[R], el: R) =>
       if (wrapper.limit >= num) {

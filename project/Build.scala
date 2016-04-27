@@ -47,7 +47,7 @@ object Build extends Build {
     val twitterUtil = "6.33.0"
     val scrooge = "3.17.0"
     val scalatra = "2.3.0"
-    val play = "2.4.3"
+    val play = "2.6.0"
     val scalameter = "0.6"
     val spark = "1.2.0-alpha3"
     val thrift = "0.5.0"
@@ -210,8 +210,6 @@ object Build extends Build {
         "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
         "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
         "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
-        "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
-        "com.typesafe.play"            %% "play-iteratees"                    % "2.4.0-M1" exclude ("com.typesafe", "config"),
         "joda-time"                    %  "joda-time"                         % "2.3",
         "org.joda"                     %  "joda-convert"                      % "1.6",
         "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
@@ -252,6 +250,18 @@ object Build extends Build {
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
+    )
+  )
+
+  lazy val phantomFinagle = Project(
+    id = "phantom-finagle",
+    base = file("phantom-finagle"),
+    settings = sharedSettings
+  ).configs(PerformanceTest).settings(
+    name := "phantom-finagle",
+    libraryDependencies ++= Seq(
+      "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
+      "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided"
     )
   )
 
@@ -311,7 +321,8 @@ object Build extends Build {
   ).settings(
     name := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-streams-experimental" % Versions.play exclude("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees"       % "2.6.0" exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-streams-experimental" % "2.4.6" exclude("com.typesafe", "config"),
       "com.typesafe"        % "config"                % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"      % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"          % Versions.akka,

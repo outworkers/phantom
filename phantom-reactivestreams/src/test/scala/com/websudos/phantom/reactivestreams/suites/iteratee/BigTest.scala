@@ -27,36 +27,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.reactivestreams.suites.iteratee
 
-import java.util.concurrent.atomic.AtomicInteger
+import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.connectors.ContactPoint
 
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitive, TestDatabase}
-import com.websudos.util.testing._
-import org.scalatest.concurrent.ScalaFutures
+trait BigTest extends PhantomSuite {
 
-import scala.concurrent.Future
+  val connectionTimeoutMillis = 1000
 
-class IteratorTest extends BigTest with ScalaFutures {
-
-  it should "correctly retrieve the right number of records using scala iterator" in {
-    val rows = for (i <- 1 to 100) yield gen[Primitive]
-
-    val setUpFuture = TestDatabase.primitives.truncate.future().flatMap {
-      _ => Future.sequence(rows.map(row => TestDatabase.primitives.store(row).future()))
-    }
-
-    val counter: AtomicInteger = new AtomicInteger(0)
-    val iterationResultFuture = setUpFuture.flatMap(_ => TestDatabase.primitives.select.iterator()).map {
-      _.foreach(x => {
-        counter.incrementAndGet()
-        assert(rows.contains(x))
-      })
-    }
-
-    iterationResultFuture successful {
-      _ => assert(counter.intValue() === rows.size)
-    }
+  override implicit lazy val session: Session = {
+    ContactPoint.local.withClusterBuilder(
+      _.withSocketOptions(new SocketOptions()
+        .setReadTimeoutMillis(connectionTimeoutMillis)
+        .setConnectTimeoutMillis(connectionTimeoutMillis)
+      ).withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
+    ).keySpace(keySpace).session
   }
 }

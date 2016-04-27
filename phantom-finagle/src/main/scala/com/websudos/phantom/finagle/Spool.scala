@@ -1,3 +1,5 @@
+package com.websudos.phantom.finagle
+
 /*
  * Copyright 2013-2015 Websudos, Limited.
  *
@@ -27,17 +29,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.iteratee
-
 import com.datastax.driver.core.{ResultSet, Row}
 import com.twitter.concurrent.Spool
-import com.twitter.util.{Future => TFuture, FuturePool}
+import com.twitter.util.{Future, FuturePool, Future => TFuture}
 
 import scala.collection.JavaConversions._
 
 /**
- * Wrapper for creating Spools of Rows
- */
+  * Wrapper for creating Spools of Rows
+  */
 private[phantom] object ResultSpool {
   lazy val pool = FuturePool.unboundedPool
 
@@ -63,19 +63,20 @@ private[phantom] object ResultSpool {
   }
 
   /**
-   * Create a Spool of Rows.
-   *
-   * Things to make sure:
-   *   1) We don't block!
-   *   2) If we don't have anything else to do we submit to the thread pool and
-   *      wait to get called back and chain onto that.
-   */
+    * Create a Spool of Rows.
+    *
+    * Things to make sure:
+    *   1) We don't block!
+    *   2) If we don't have anything else to do we submit to the thread pool and
+    *      wait to get called back and chain onto that.
+    */
   def spool(rs: ResultSet): TFuture[Spool[Row]] = {
     val it = rs.iterator
-    if (!rs.isExhausted)
+    if (!rs.isExhausted) {
       pool(it.next).map(x => loop(x, it, rs))
-    else
+    } else {
       TFuture.value(Spool.empty)
+    }
   }
 }
 

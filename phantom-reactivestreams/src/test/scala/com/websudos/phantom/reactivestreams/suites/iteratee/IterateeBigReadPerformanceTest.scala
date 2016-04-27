@@ -27,48 +27,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.reactivestreams.suites.iteratee
+
+import java.util.concurrent.atomic.AtomicLong
 
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.iteratee.Iteratee
-import com.websudos.phantom.tables.{JodaRow, TestDatabase}
+import com.websudos.phantom.reactivestreams.iteratee.Iteratee
+import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.testing._
-import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import org.scalatest.time.SpanSugar._
+import org.scalatest.concurrent.ScalaFutures
 
-import scala.concurrent.{Await, Future}
+class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
 
-class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
+  it should "read the correct number of records found in the table" in {
+    val counter: AtomicLong = new AtomicLong(0)
+    val result = TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+      r => counter.incrementAndGet()
+    }
 
-  TestDatabase.primitivesJoda.insertSchema()
-
-  val limit = 10000
-  val sampleGenLimit = 30000
-
-  val fs = for {
-    step <- 1 to 3
-    rows = Iterator.fill(limit)(gen[JodaRow])
-
-    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = TestDatabase.primitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.int)
-        .value(_.timestamp, row.bi)
-      b.add(statement)
-    })
-    w = batch.future()
-    f = w map (_ => println(s"step $step was completed successfully"))
-    r = Await.result(f, 200 seconds)
-  } yield f map (_ => r)
-
-  Await.ready(Future.sequence(fs), 20 seconds)
-
-  val sizes: MeterGen[Int] = MeterGen.range("size")(limit, sampleGenLimit, limit)
-
-  performance of "Enumerator" in {
-    measure method "enumerator" in {
-      using(sizes) in {
-        size => Await.ready(TestDatabase.primitivesJoda.select.limit(size).fetchEnumerator run Iteratee.forEach { r => }, 10 seconds)
+    result.successful {
+      query => {
+        info(s"done, reading: ${counter.get}")
+        counter.get() shouldEqual 2000000
       }
     }
   }

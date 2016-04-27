@@ -30,11 +30,18 @@
 package com.websudos.phantom
 
 import akka.actor.ActorSystem
+import com.datastax.driver.core.Session
 import com.websudos.phantom.batch.BatchType
-import com.websudos.phantom.dsl._
+import com.websudos.phantom.builder.LimitBound
+import com.websudos.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
+import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.dsl.{context => _, _}
+import com.websudos.phantom.reactivestreams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import org.reactivestreams.Publisher
-import play.api.libs.iteratee.Enumerator
+import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams
+
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 /**
@@ -125,12 +132,12 @@ package object reactivestreams {
       * @param keySpace The target keyspace.
       * @return A publisher of records, publishing one record at a time.
       */
-    def publisher()(implicit session: Session, keySpace: KeySpace): Publisher[T] = {
+    def publisher()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): Publisher[T] = {
       Streams.enumeratorToPublisher(ct.select.all().fetchEnumerator())
     }
   }
 
-  implicit class PublisherConverter[T](val enumerator: Enumerator[T]) extends AnyVal {
+  implicit class PublisherConverter[T](val enumerator: PlayEnumerator[T]) extends AnyVal {
 
     def publisher: Publisher[T] = {
       Streams.enumeratorToPublisher(enumerator)
@@ -157,6 +164,53 @@ package object reactivestreams {
       }
     }
     r
+  }
+
+  final val Iteratee = PhantomIteratee
+
+  implicit class RootSelectBlockEnumerator[
+    T <: CassandraTable[T, _],
+    R
+  ](val block: RootSelectBlock[T, R]) extends AnyVal {
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param keySpace The keyspace object in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): PlayEnumerator[R] = {
+      val eventualEnum = block.all().future() map {
+        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.fromRow)
+      }
+      PlayEnumerator.flatten(eventualEnum)
+    }
+  }
+
+  // trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
+  implicit class ExecutableQueryStreamsAugmenter[
+    T <: CassandraTable[T, _],
+    R,
+    Limit <: LimitBound
+  ](val query: ExecutableQuery[T, R, Limit]) extends AnyVal {
+
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param keySpace The keyspace object in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): PlayEnumerator[R] = {
+      val eventualEnum = query.future() map {
+        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(query.fromRow)
+      }
+      PlayEnumerator.flatten(eventualEnum)
+    }
   }
 
 }

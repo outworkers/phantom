@@ -32,13 +32,10 @@ package com.websudos.phantom.builder.query
 import java.util.{List => JavaList}
 
 import com.datastax.driver.core._
-import com.twitter.concurrent.Spool
 import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.iteratee.{Enumerator, ResultSpool}
-import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
@@ -202,35 +199,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
 
   private[phantom] def singleCollect()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Option[R]] = {
     execute() map { res => singleResult(res.one) }
-  }
-
-  /**
-   * Produces an Enumerator for [R]ows
-   * This enumerator can be consumed afterwards with an Iteratee
- *
-   * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
-   * @return
-   */
-  def fetchEnumerator()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace): PlayEnumerator[R] = {
-    val eventualEnum = future() map {
-      resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(fromRow)
-    }
-    PlayEnumerator.flatten(eventualEnum)
-  }
-
-  /**
-   * Produces a [[com.twitter.concurrent.Spool]] of [R]ows
-   * A spool is both lazily constructed and consumed, suitable for large
-   * collections when using twitter futures.
- *
-   * @param session The cassandra session in use.
-   * @return A Spool of R.
-   */
-  def fetchSpool()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Spool[R]] = {
-    execute() flatMap {
-      resultSet => ResultSpool.spool(resultSet).map(spool => spool map fromRow)
-    }
   }
 
   /**

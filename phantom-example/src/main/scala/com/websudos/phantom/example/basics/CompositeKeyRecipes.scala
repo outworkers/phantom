@@ -61,8 +61,8 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[ConcreteCompositeKeyRecipes, Recipe, String](this)
-  object props extends MapColumn[ConcreteCompositeKeyRecipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[String](this)
+  object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.

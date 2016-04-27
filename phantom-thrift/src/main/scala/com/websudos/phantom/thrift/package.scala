@@ -42,7 +42,6 @@ package object thrift {
   type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.websudos.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 
   type ThriftPrimitive[T <: ThriftStruct] = RootThriftPrimitive[T]
-
 }
 
 

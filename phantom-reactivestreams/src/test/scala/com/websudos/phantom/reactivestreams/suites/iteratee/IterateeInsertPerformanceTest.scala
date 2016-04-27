@@ -27,10 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
-import com.websudos.phantom.iteratee.Iteratee
+import com.websudos.phantom.reactivestreams.iteratee.Iteratee
 
 import scala.concurrent.{ Await, Future }
 

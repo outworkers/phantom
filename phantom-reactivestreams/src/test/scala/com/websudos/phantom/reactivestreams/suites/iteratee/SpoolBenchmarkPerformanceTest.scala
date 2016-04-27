@@ -27,22 +27,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.iteratee
+package com.websudos.phantom.reactivestreams.suites.iteratee
 
-import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
-import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.connectors.ContactPoint
+import com.twitter.util.{Await => TwitterAwait}
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, TestDatabase}
+import com.websudos.util.testing._
+import org.scalameter.api.{Gen => MeterGen, gen => _, _}
+import org.scalatest.time.SpanSugar._
 
-trait BigTest extends PhantomSuite {
+import scala.concurrent.{Await, Future}
 
-  val connectionTimeoutMillis = 1000
 
-  override implicit lazy val session: Session = {
-    ContactPoint.local.withClusterBuilder(
-      _.withSocketOptions(new SocketOptions()
-        .setReadTimeoutMillis(connectionTimeoutMillis)
-        .setConnectTimeoutMillis(connectionTimeoutMillis)
-      ).withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-    ).keySpace(keySpace).session
+class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
+
+  TestDatabase.primitivesJoda.insertSchema()
+
+  val fs = for {
+    step <- 1 to 3
+    rows = Iterator.fill(10000)(gen[JodaRow])
+
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+      val statement = TestDatabase.primitivesJoda.insert
+        .value(_.pkey, row.pkey)
+        .value(_.intColumn, row.int)
+        .value(_.timestamp, row.bi)
+      b.add(statement)
+    })
+    w = batch.future()
+    f = w map (_ => println(s"step $step has succeed") )
+    r = Await.result(f, 200 seconds)
+  } yield f map (_ => r)
+
+  Await.ready(Future.sequence(fs), 20 seconds)
+
+  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
+
+  performance of "ResultSpool" in {
+    measure method "fetchSpool" in {
+      using(sizes) in {
+        size => TwitterAwait.ready {
+          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
+        }
+      }
+    }
   }
 }
+

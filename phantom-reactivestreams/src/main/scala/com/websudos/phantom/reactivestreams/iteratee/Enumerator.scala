@@ -27,14 +27,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.iteratee
+package com.websudos.phantom.reactivestreams.iteratee
 
 import com.datastax.driver.core.{ResultSet, Row}
 import play.api.libs.iteratee.Execution.{defaultExecutionContext => dec}
 import play.api.libs.iteratee.{Cont, Done, Enumerator => PlayEnum, Error, Input, Iteratee => PlayIter, Step}
 
 import scala.concurrent.Future
-
 
 private[phantom] object Enumerator {
 
