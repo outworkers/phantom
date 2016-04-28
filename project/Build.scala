@@ -33,6 +33,7 @@ import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
 import sbt._
+import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 object Build extends Build {
 
@@ -150,7 +151,7 @@ object Build extends Build {
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+  ) ++ graphSettings ++
       VersionManagement.newSettings ++
       GitProject.gitSettings ++
       PublishTasks.mavenPublishingSettings
