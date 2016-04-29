@@ -334,7 +334,7 @@ class SelectQuery[
 private[phantom] class RootSelectBlock[
   T <: CassandraTable[T, _],
   R
-](table: T, rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
+](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {

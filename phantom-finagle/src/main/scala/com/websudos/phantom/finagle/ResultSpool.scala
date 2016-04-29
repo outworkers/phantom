@@ -1,5 +1,3 @@
-package com.websudos.phantom.finagle
-
 /*
  * Copyright 2013-2015 Websudos, Limited.
  *
@@ -29,9 +27,11 @@ package com.websudos.phantom.finagle
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package com.websudos.phantom.finagle
+
 import com.datastax.driver.core.{ResultSet, Row}
 import com.twitter.concurrent.Spool
-import com.twitter.util.{Future, FuturePool, Future => TFuture}
+import com.twitter.util.{FuturePool, Future => TFuture}
 
 import scala.collection.JavaConversions._
 
@@ -43,20 +43,22 @@ private[phantom] object ResultSpool {
 
   def loop(head: Row, it: Iterator[Row], rs: ResultSet): Spool[Row] = {
     lazy val tail =
-      if (rs.isExhausted)
+      if (rs.isExhausted) {
         TFuture.value(Spool.empty)
-      else {
+      } else {
         val a = rs.getAvailableWithoutFetching
 
         // 100 is somewhat arbitrary. In practice it might not matter that much
         // but it should be tested.
-        if (a < 100 && !rs.isFullyFetched)
+        if (a < 100 && !rs.isFullyFetched) {
           rs.fetchMoreResults
+        }
 
-        if (a > 0)
+        if (a > 0) {
           TFuture.value(loop(it.next(), it, rs))
-        else
+        } else {
           pool(it.next()).map(x => loop(x, it, rs))
+        }
       }
 
     head *:: tail

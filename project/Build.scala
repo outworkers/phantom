@@ -29,8 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.twitter.sbt._
-import com.twitter.scrooge.ScroogeSBT
+//import com.twitter.sbt._
 import sbt.Keys._
 import sbt._
 import net.virtualvoid.sbt.graph.Plugin.graphSettings
@@ -152,8 +151,8 @@ object Build extends Build {
     fork in PerformanceTest := false,
     parallelExecution in ThisBuild := false
   ) ++ graphSettings ++
-      VersionManagement.newSettings ++
-      GitProject.gitSettings ++
+      //VersionManagement.newSettings ++
+      //GitProject.gitSettings ++
       PublishTasks.mavenPublishingSettings
 
 
@@ -170,6 +169,7 @@ object Build extends Build {
     phantomDsl,
     phantomExample,
     phantomConnectors,
+    phantomFinagle,
     phantomReactiveStreams,
     phantomThrift,
     phantomUdt,
@@ -289,7 +289,7 @@ object Build extends Build {
   lazy val phantomThrift = Project(
     id = "phantom-thrift",
     base = file("phantom-thrift"),
-    settings = Defaults.coreDefaultSettings ++ sharedSettings ++ ScroogeSBT.newSettings
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
     name := "phantom-thrift",
     libraryDependencies ++= Seq(
@@ -341,7 +341,7 @@ object Build extends Build {
   lazy val phantomExample = Project(
     id = "phantom-example",
     base = file("phantom-example"),
-    settings = sharedSettings ++ ScroogeSBT.newSettings
+    settings = sharedSettings
   ).settings(
     name := "phantom-example",
     libraryDependencies ++= Seq(
