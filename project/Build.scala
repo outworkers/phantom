@@ -158,7 +158,6 @@ object Build extends Build {
 
 
   private[this] def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
-  private[this] val isScala211 = getClass.getPackage.getImplementationTitle.contains("2.11")
 
   private[this] def addOnCondition(
     condition: Boolean,
@@ -173,6 +172,7 @@ object Build extends Build {
     phantomConnectors,
     phantomFinagle,
     phantomReactiveStreams,
+    phantomSbtPlugin,
     phantomThrift,
     phantomUdt,
     phantomZookeeper
@@ -189,15 +189,8 @@ object Build extends Build {
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
-    name := "phantom",
-    aggregate <++= (scalaVersion in ThisBuild).map {
-      value => if (value.contains("2.11")) {
-        fullProjectList
-      } else {
-        fullProjectList ++ Seq(phantomSbtPlugin)
-      }
-    }
-  )
+    name := "phantom"
+  ).aggregate(fullProjectList: _*)
 
   lazy val phantomDsl = Project(
     id = "phantom-dsl",
@@ -312,11 +305,25 @@ object Build extends Build {
 
   lazy val phantomSbtPlugin = Project(
     id = "phantom-sbt",
-    base = file("."),
+    base = file("phantom-sbt"),
     settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
     name := "phantom-sbt",
     scalaVersion := "2.10.5",
+    publish := {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
+        case Some((2, scalaMajor)) if scalaMajor >= 11 => false
+        case _ => true
+      }
+    },
+    excludeFilter := {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
+        case Some((2, scalaMajor)) if scalaMajor >= 11 => NothingFilter
+        case _ => AllPassFilter
+      }
+    },
     sbtPlugin := true,
     resolvers ++= Seq(
       Resolver.bintrayRepo("websudos", "oss-releases")
@@ -325,7 +332,7 @@ object Build extends Build {
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
-        )
+      )
     )
   )
 
