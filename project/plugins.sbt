@@ -28,12 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 resolvers ++= Seq(
-    "Sonatype snapshots"                                 at "http://oss.sonatype.org/content/repositories/snapshots/",
-    "jgit-repo"                                          at "http://download.eclipse.org/jgit/maven",
-    "Twitter Repo"                                       at "http://maven.twttr.com/",
-    "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
-    Resolver.bintrayRepo("websudos", "oss-releases"),
-    Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
+  "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+  "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
+  "jgit-repo" at "http://download.eclipse.org/jgit/maven",
+  "Twitter Repo" at "http://maven.twttr.com/",
+  Resolver.bintrayRepo("websudos", "oss-releases"),
+  Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns),
+  Resolver.url( "bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))( Resolver.ivyStylePatterns)
 )
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
@@ -55,3 +56,5 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
+
+addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.2.0")
