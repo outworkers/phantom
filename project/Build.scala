@@ -45,7 +45,7 @@ object Build extends Build {
     val shapeless = "2.2.5"
     val finagle = "6.34.0"
     val twitterUtil = "6.33.0"
-    val scrooge = "3.17.0"
+    val scrooge = "4.6.0"
     val scalatra = "2.3.0"
     val play = "2.6.0"
     val scalameter = "0.6"
@@ -58,6 +58,7 @@ object Build extends Build {
     val typesafeConfig = "1.2.1"
     val jetty = "9.1.2.v20140210"
     val dispatch = "0.11.0"
+    val cassandraUnit = "2.2.2.1"
   }
 
   val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
@@ -157,6 +158,7 @@ object Build extends Build {
 
 
   private[this] def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
+  private[this] val isScala211 = getClass.getPackage.getImplementationTitle.contains("2.11")
 
   private[this] def addOnCondition(
     condition: Boolean,
@@ -187,9 +189,14 @@ object Build extends Build {
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
-    name := "phantom"
-  ).aggregate(
-    fullProjectList: _*
+    name := "phantom",
+    aggregate <++= (scalaVersion in ThisBuild).map {
+      value => if (value.contains("2.11")) {
+        fullProjectList
+      } else {
+        fullProjectList ++ Seq(phantomSbtPlugin)
+      }
+    }
   )
 
   lazy val phantomDsl = Project(
@@ -301,6 +308,25 @@ object Build extends Build {
     )
   ).dependsOn(
     phantomDsl
+  )
+
+  lazy val phantomSbtPlugin = Project(
+    id = "phantom-sbt",
+    base = file("."),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    name := "phantom-sbt",
+    scalaVersion := "2.10.5",
+    sbtPlugin := true,
+    resolvers ++= Seq(
+      Resolver.bintrayRepo("websudos", "oss-releases")
+    ),
+    libraryDependencies ++= Seq(
+      "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
+        ExclusionRule("org.slf4j", "slf4j-log4j12"),
+        ExclusionRule("org.slf4j", "slf4j-jdk14")
+        )
+    )
   )
 
   lazy val phantomZookeeper = Project(

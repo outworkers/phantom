@@ -79,7 +79,7 @@ trait ExecutableStatement extends CassandraOperations {
     *
     * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @return
+    * @return An asynchronous Scala future wrapping the Datastax result set.
     */
   def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
@@ -98,7 +98,7 @@ trait ExecutableStatement extends CassandraOperations {
     * @param modifyStatement The function allowing to modify underlying [[Statement]]
     * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @return
+    * @return An asynchronous Scala future wrapping the Datastax result set.
     */
   def future(modifyStatement : Modifier)(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(modifyStatement(statement))
@@ -166,11 +166,15 @@ private[phantom] class ExecutableStatementList(val queries: Seq[CQLQuery]) exten
   def ++(st: ExecutableStatementList): ExecutableStatementList = add(st.queries)
 
   def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(queries.map(item => scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    ScalaFuture.sequence(queries.map(item => {
+      scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
+    }))
   }
 
   def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(queries.map(item => twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))))
+    TwitterFuture.collect(queries.map(item => {
+      twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
+    }))
   }
 }
 
@@ -207,7 +211,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
    * @param session The Cassandra session in use.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
    */
-  def one()(implicit session: Session,  ec: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[R]]
+  def one()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[R]]
 
   /**
    * Get the result of an operation as a Twitter Future.
@@ -237,7 +241,11 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     * @param ec The Execution Context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch(state: PagingState)(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+  def fetch(state: PagingState)(
+    implicit session: Session,
+    ec: ExecutionContext,
+    keySpace: KeySpace
+  ): ScalaFuture[List[R]] = {
     future(_.setPagingState(state)) map {
       resultSet => directMapper(resultSet.all)
     }
@@ -251,7 +259,11 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     * @param ec The Execution Context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch(modifyStatement : Modifier)(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+  def fetch(modifyStatement : Modifier)(
+    implicit session: Session,
+    ec: ExecutionContext,
+    keySpace: KeySpace
+  ): ScalaFuture[List[R]] = {
     future(modifyStatement) map {
       resultSet => directMapper(resultSet.all)
     }
@@ -265,8 +277,12 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     * @param ec The Execution Context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetchRecord()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[ListResult[R]] = {
-    future() map { resultSet => ListResult(directMapper(resultSet.all), resultSet) }
+  def fetchRecord()(
+    implicit session: Session,
+    ec: ExecutionContext,
+    keySpace: KeySpace
+  ): ScalaFuture[ListResult[R]] = {
+    future() map (resultSet => ListResult(directMapper(resultSet.all), resultSet))
   }
 
   /**
@@ -285,6 +301,18 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     future(st => st.setPagingState(state)) map {
       set => ListResult(directMapper(set.all), set)
     }
+  }
+
+  def fetchRecord(state: Option[PagingState])(
+    implicit session: Session,
+    ec: ExecutionContext,
+    keySpace: KeySpace
+  ): ScalaFuture[ListResult[R]] = {
+    state.fold(future().map {
+      set => ListResult(directMapper(set.all), set)
+    }) (state => future(_.setPagingState(state)) map {
+      set => ListResult(directMapper(set.all), set)
+    })
   }
 
   /**
@@ -400,5 +428,26 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound] extends
     execute(st => st.setPagingState(pagingState)) map { resultSet =>
       ListResult(directMapper(resultSet.all), resultSet)
     }
+  }
+
+
+  /**
+    * Returns a parsed sequence of [R]ows together with a result set.
+    * A convenience method that exists solely to allow passing in an optional paging state.
+    * This is not suitable for big results set
+    * @param state An optional paging state that will be added only if the state is defined.
+    * @param session The Cassandra session in use.
+    * @param keySpace The implicit keyspace wrapper object where the table is hosted.
+    * @return A Twitter future wrapping a list of mapped results.
+    */
+  def collectRecord(state: Option[PagingState])(
+    implicit session: Session,
+    keySpace: KeySpace
+  ): TwitterFuture[ListResult[R]] = {
+    state.fold(execute().map {
+      set => ListResult(directMapper(set.all), set)
+    }) (state => execute(_.setPagingState(state)) map {
+      set => ListResult(directMapper(set.all), set)
+    })
   }
 }
