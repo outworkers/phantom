@@ -34,7 +34,8 @@ resolvers ++= Seq(
   "Twitter Repo" at "http://maven.twttr.com/",
   Resolver.bintrayRepo("websudos", "oss-releases"),
   Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns),
-  Resolver.url( "bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))( Resolver.ivyStylePatterns)
+  Resolver.url("bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.mavenStylePatterns),
+  Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
@@ -57,4 +58,4 @@ addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.2.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")

@@ -33,22 +33,22 @@ import sbt._
 import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val Versions = new {
-  val logback = "1.1.3"
+  val logback = "1.1.7"
   val util = "0.16.0"
   val json4s = "3.3.0"
   val datastax = "3.0.1"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
-  val finagle = "6.34.0"
+  val finagle = "6.35.0"
   val twitterUtil = "6.33.0"
-  val scrooge = "4.6.0"
+  val scrooge = "4.7.0"
   val scalatra = "2.3.0"
   val play = "2.6.0"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val thrift = "0.5.0"
   val diesel = "0.2.4"
-  val slf4j = "1.7.12"
+  val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
   val akka = "2.3.14"
   val typesafeConfig = "1.2.1"
@@ -128,8 +128,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-unchecked"
   ),
   libraryDependencies ++= Seq(
-    "ch.qos.logback"               % "logback-classic"                    % "1.1.3",
-    "org.slf4j"                    % "log4j-over-slf4j"                   % "1.7.12"
+    "ch.qos.logback"               % "logback-classic"                    % Versions.logback,
+    "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j
   ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
   fork in Test := false,
@@ -205,8 +205,8 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
-    "joda-time"                    %  "joda-time"                         % "2.3",
-    "org.joda"                     %  "joda-convert"                      % "1.6",
+    "joda-time"                    %  "joda-time"                         % "2.8.1",
+    "org.joda"                     %  "joda-convert"                      % "1.8.1",
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
@@ -286,7 +286,6 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % "test, provided",
-      "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
       "com.websudos"                 %% "util-testing"                      % Versions.util               % "test, provided"
