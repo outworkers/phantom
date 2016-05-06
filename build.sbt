@@ -30,6 +30,7 @@
  */
 import sbt.Keys._
 import sbt._
+import com.twitter.sbt._
 import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val Versions = new {
@@ -149,9 +150,9 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ graphSettings ++
-  //VersionManagement.newSettings ++
-  //GitProject.gitSettings ++
-  PublishTasks.mavenPublishingSettings
+  VersionManagement.newSettings ++
+  GitProject.gitSettings ++
+  PublishTasks.bintrayPublishSettings
 
 
 lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
