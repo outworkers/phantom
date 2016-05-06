@@ -62,12 +62,12 @@ sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
     simpleValue(qb, CQLSyntax.CompactionOptions.enabled, flag.toString)
   }
 
-  def min_sstable_size(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size)
+  def min_sstable_size[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size.toString)
   }
 
-  def sstable_size_in_mb(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.sstable_size_in_mb, size)
+  def sstable_size_in_mb[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
+    quotedValue(qb, CQLSyntax.CompactionOptions.sstable_size_in_mb, size.toString)
   }
 
   def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {

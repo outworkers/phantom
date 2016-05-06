@@ -76,7 +76,7 @@ private[phantom] trait CompactionStrategies {
       new SizeTieredCompactionStrategy(
         QueryBuilder.Create.min_sstable_size(
           qb,
-          unit + "MB"
+          unit
         )
       )
     }
@@ -111,7 +111,7 @@ private[phantom] trait CompactionStrategies {
 
     def sstable_size_in_mb(unit: Int): LeveledCompactionStrategy = {
       new LeveledCompactionStrategy(
-        QueryBuilder.Create.sstable_size_in_mb(qb, unit + "MB")
+        QueryBuilder.Create.sstable_size_in_mb(qb, unit)
       )
     }
 
