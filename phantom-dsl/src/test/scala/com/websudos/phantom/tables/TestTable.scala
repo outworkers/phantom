@@ -46,15 +46,15 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[ConcreteTestTable, TestRow, String](this)
+  object list extends ListColumn[String](this)
 
-  object setText extends SetColumn[ConcreteTestTable, TestRow, String](this)
+  object setText extends SetColumn[String](this)
 
-  object mapTextToText extends MapColumn[ConcreteTestTable, TestRow, String, String](this)
+  object mapTextToText extends MapColumn[String, String](this)
 
-  object setInt extends SetColumn[ConcreteTestTable, TestRow, Int](this)
+  object setInt extends SetColumn[Int](this)
 
-  object mapIntToText extends MapColumn[ConcreteTestTable, TestRow, Int, String](this)
+  object mapIntToText extends MapColumn[Int, String](this)
 
   def fromRow(r: Row): TestRow = {
     TestRow(

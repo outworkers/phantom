@@ -29,18 +29,19 @@
  */
 package com.websudos.phantom.builder.serializers
 
-import com.websudos.phantom.builder.QueryBuilder.Utils
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-private[builder] trait CollectionModifiers extends BaseModifiers {
+private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
   def tupled(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).wrap(Utils.join(tuples))
+    CQLQuery(name).wrap(queryBuilder.Utils.join(tuples))
   }
 
   def tuple(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.tuple).wrap(Utils.join(tuples))
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.tuple)
+      .wrap(queryBuilder.Utils.join(tuples))
       .append(CQLSyntax.Symbols.`>`)
   }
 
@@ -71,31 +72,42 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
 
   def prepend(column: String, values: String*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(Utils.collection(values).queryString, CQLSyntax.Symbols.+, column)
+      collectionModifier(
+        queryBuilder.Utils.collection(values).queryString,
+        CQLSyntax.Symbols.plus,
+        column
+      )
     )
   }
 
   def prepend(column: String, valueDef: String): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(valueDef, CQLSyntax.Symbols.+, column)
+      collectionModifier(valueDef, CQLSyntax.Symbols.plus, column)
     )
   }
 
   def append(column: String, values: String*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.+, Utils.collection(values).queryString)
+      collectionModifier(
+        column, CQLSyntax.Symbols.plus,
+        queryBuilder.Utils.collection(values).queryString
+      )
     )
   }
 
   def append(column: String, valueDef: String): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.+, valueDef)
+      collectionModifier(column, CQLSyntax.Symbols.plus, valueDef)
     )
   }
 
   def discard(column: String, values: String*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.-, Utils.collection(values).queryString)
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        queryBuilder.Utils.collection(values).queryString
+      )
     )
   }
 
@@ -107,7 +119,11 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
 
   def add(column: String, values: Set[String]): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.+, Utils.set(values))
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        queryBuilder.Utils.set(values)
+      )
     )
   }
 
@@ -125,7 +141,11 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
    */
   def remove(column: String, values: Set[String]): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.-, Utils.set(values))
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        queryBuilder.Utils.set(values)
+      )
     )
   }
 
@@ -145,7 +165,11 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
 
   def put(column: String, pairs: (String, String)*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.+, Utils.map(pairs))
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        queryBuilder.Utils.map(pairs)
+      )
     )
   }
 
@@ -157,7 +181,7 @@ private[builder] trait CollectionModifiers extends BaseModifiers {
 
   def serialize(col: Map[String, String] ): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
-      .append(CQLQuery(col.map(item => s"${item._1} : ${item._2}")))
+      .append(CQLQuery(col.map { case (key, value) => s"$key : $value" }))
       .forcePad.append(CQLSyntax.Symbols.`}`)
   }
 

@@ -72,8 +72,8 @@ case class NamedEnumRecord(
 
 abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
-  object enum extends EnumColumn[ConcreteEnumTable, EnumRecord, Records.type](this, Records)
-  object optEnum extends OptionalEnumColumn[ConcreteEnumTable, EnumRecord, Records.type](this, Records)
+  object enum extends EnumColumn[Records.type](this, Records)
+  object optEnum extends OptionalEnumColumn[Records.type](this, Records)
 
   def fromRow(row: Row): EnumRecord = {
     EnumRecord(
@@ -96,8 +96,8 @@ abstract class ConcreteEnumTable extends EnumTable with RootConnector {
 
 sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn(this) with PartitionKey[String]
-  object enum extends EnumColumn[ConcreteNamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
-  object optEnum extends OptionalEnumColumn[ConcreteNamedEnumTable, NamedEnumRecord, NamedRecords.type](this, NamedRecords)
+  object enum extends EnumColumn[NamedRecords.type](this, NamedRecords)
+  object optEnum extends OptionalEnumColumn[NamedRecords.type](this, NamedRecords)
 
   def fromRow(row: Row): NamedEnumRecord = {
     NamedEnumRecord(

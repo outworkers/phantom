@@ -27,7 +27,7 @@ then
         fi
 
         if [ -e "$HOME/.bintray/.credentials" ]; then
-            echo "Bintray credentials file succesfully created"
+            echo "Bintray credentials file successfully created"
         else
             echo "Bintray credentials still not found"
         fi

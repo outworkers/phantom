@@ -54,7 +54,7 @@ private[phantom] abstract class AbstractMapColumn[Owner <: CassandraTable[Owner,
   }).queryString
 
   override def apply(r: Row): Map[K, V] = {
-    optional(r) match {
+    parse(r) match {
       case Success(map) => map
 
       // Note null rows will not result in a failure, we return an empty map for those.
@@ -86,7 +86,7 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
 
   override def fromString(c: String): V = valuePrimitive.fromString(c)
 
-  override def optional(r: Row): Try[Map[K, V]] = {
+  override def parse(r: Row): Try[Map[K, V]] = {
     if (r.isNull(name)) {
       Success(Map.empty[K, V])
     } else {

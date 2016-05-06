@@ -60,8 +60,8 @@ sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyReci
 
   object description extends StringColumn(this)
 
-  object ingredients extends SetColumn[ConcreteSecondaryKeyRecipes, Recipe, String](this)
-  object props extends MapColumn[ConcreteSecondaryKeyRecipes, Recipe, String, String](this)
+  object ingredients extends SetColumn[String](this)
+  object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.

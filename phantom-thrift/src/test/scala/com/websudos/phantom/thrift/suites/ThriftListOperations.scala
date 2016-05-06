@@ -30,6 +30,7 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.finagle._
 import com.websudos.phantom.tables.{Output, ThriftDatabase}
 import com.websudos.util.testing._
 import org.scalatest.FlatSpec

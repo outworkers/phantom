@@ -35,7 +35,7 @@ import com.websudos.phantom.dsl._
 class TwoKeys extends CassandraTable[ConcreteTwoKeys, Option[TwoKeys]] {
 
   object pkey extends StringColumn(this) with PartitionKey[String]
-  object intColumn1 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn1 extends IntColumn(this) with PrimaryKey[Int] with Index[Int]
   object intColumn2 extends IntColumn(this) with PrimaryKey[Int]
   object intColumn3 extends IntColumn(this) with PrimaryKey[Int]
   object intColumn4 extends IntColumn(this) with PrimaryKey[Int]

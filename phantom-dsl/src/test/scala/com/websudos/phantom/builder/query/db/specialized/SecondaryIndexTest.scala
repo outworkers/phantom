@@ -61,26 +61,6 @@ class SecondaryIndexTest extends PhantomSuite {
     }
   }
 
-  it should "allow fetching a record by its secondary index with Twitter Futures" in {
-    val sample = gen[SecondaryIndexRecord]
-
-    val chain = for {
-      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
-      select <- TestDatabase.secondaryIndexTable.select.where(_.id eqs sample.primary).get
-      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().get()
-    } yield (select, select2)
-
-    chain.successful {
-      case (primary, secondary) => {
-        info("Querying by primary key should return the record")
-        primary.value shouldEqual sample
-
-        info("Querying by the secondary index key should also return the record")
-        secondary.value shouldEqual sample
-      }
-    }
-  }
-
   it should "allow updating the value of a secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val updated = gen[UUID]
@@ -118,20 +98,6 @@ class SecondaryIndexTest extends PhantomSuite {
     }
   }
 
-  it should "not throw an error if filtering is not enabled when querying by secondary keys with Twitter Futures" in {
-    val sample = gen[SecondaryIndexRecord]
-    val chain = for {
-      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
-      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-    } yield select2
-
-    chain.successful {
-      res => {
-        res.value shouldEqual sample
-      }
-    }
-  }
-
   it should "throw an error when updating a record by its secondary key" in {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
@@ -145,20 +111,6 @@ class SecondaryIndexTest extends PhantomSuite {
     chain.failing[InvalidQueryException]
   }
 
-  it should "throw an error when updating a record by its secondary key with Twitter Futures" in {
-    val sample = gen[SecondaryIndexRecord]
-    val updatedName = gen[String]
-    val chain = for {
-      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
-      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-      update <- TestDatabase.secondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).execute()
-      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-    } yield (select2, select3)
-
-
-    chain.failing[InvalidQueryException]
-  }
-
   it should "throw an error when deleting a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
@@ -166,18 +118,6 @@ class SecondaryIndexTest extends PhantomSuite {
       select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
       delete <- TestDatabase.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
       select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
-    } yield (select2, select3)
-
-    chain.failing[InvalidQueryException]
-  }
-
-  it should "throw an error when deleting a record by its secondary index with Twitter Futures" in {
-    val sample = gen[SecondaryIndexRecord]
-    val chain = for {
-      insert <- TestDatabase.secondaryIndexTable.store(sample).execute()
-      select2 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
-      delete <- TestDatabase.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).execute()
-      select3 <- TestDatabase.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).get()
     } yield (select2, select3)
 
     chain.failing[InvalidQueryException]

@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.builder.query.options
 
-import com.twitter.util.StorageUnit
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -73,11 +72,11 @@ private[phantom] trait CompactionStrategies {
   sealed class SizeTieredCompactionStrategy(override val qb: CQLQuery)
     extends CompactionProperties[SizeTieredCompactionStrategy](qb) {
 
-    def min_sstable_size(unit: StorageUnit): SizeTieredCompactionStrategy = {
+    def min_sstable_size(unit: Int): SizeTieredCompactionStrategy = {
       new SizeTieredCompactionStrategy(
         QueryBuilder.Create.min_sstable_size(
           qb,
-          unit.inMegabytes.toString
+          unit
         )
       )
     }
@@ -110,9 +109,9 @@ private[phantom] trait CompactionStrategies {
   sealed class LeveledCompactionStrategy(override val qb: CQLQuery)
     extends CompactionProperties[LeveledCompactionStrategy](qb) {
 
-    def sstable_size_in_mb(unit: StorageUnit): LeveledCompactionStrategy = {
+    def sstable_size_in_mb(unit: Int): LeveledCompactionStrategy = {
       new LeveledCompactionStrategy(
-        QueryBuilder.Create.sstable_size_in_mb(qb, unit.inMegabytes.toString)
+        QueryBuilder.Create.sstable_size_in_mb(qb, unit)
       )
     }
 

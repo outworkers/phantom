@@ -39,7 +39,7 @@ sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTa
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object secondary extends UUIDColumn(this) with Index[UUID]
   object name extends StringColumn(this)
-  
+
   def fromRow(r: Row): SecondaryIndexRecord = {
     SecondaryIndexRecord(
       primary = id(r),

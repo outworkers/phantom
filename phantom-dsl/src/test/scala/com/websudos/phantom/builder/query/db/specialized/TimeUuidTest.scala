@@ -105,17 +105,19 @@ class TimeUuidTest extends PhantomSuite {
         res should not contain record2
 
         info("Should contain all elements if we expand the selection window by 1 minute")
-        res2 should contain (record)
-        res2 should contain (record1)
-        res2 should contain (record2)
+        res2.find(_.id == record.id) shouldBe defined
+        res2.find(_.id == record1.id) shouldBe defined
+        res2.find(_.id == record2.id) shouldBe defined
       }
     }
   }
 
   ignore should "not retrieve anything for a mismatched selection time window" in {
 
-    val start = new dsl.DateTime().plusMinutes(-60)
-    val end = new dsl.DateTime().plusMinutes(60)
+    val intervalOffset = 60
+
+    val start = new DateTime().plusMinutes(intervalOffset * -1)
+    val end = new DateTime().plusMinutes(intervalOffset)
 
     val id = UUIDs.timeBased()
     val user = UUIDs.random()

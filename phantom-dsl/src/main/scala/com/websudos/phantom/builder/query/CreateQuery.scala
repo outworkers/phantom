@@ -30,9 +30,8 @@
 package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core._
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.query.options.{Caching, TablePropertyClause}
+import com.websudos.phantom.builder.query.options.TablePropertyClause
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.{CassandraTable, Manager}
@@ -95,7 +94,7 @@ class CreateQuery[
   Record,
   Status <: ConsistencyBound
 ](
-  table: Table,
+  val table: Table,
   val init: CQLQuery,
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
@@ -176,7 +175,7 @@ class CreateQuery[
     (withClause merge WithPart.empty) build init
   }
 
-  private[this] def indexList(name: String): ExecutableStatementList = {
+  private[phantom] def indexList(name: String): ExecutableStatementList = {
     new ExecutableStatementList(table.secondaryKeys map {
       key => {
         if (key.isMapKeyIndex) {
@@ -210,23 +209,6 @@ class CreateQuery[
     }
   }
 
-  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-
-    if (table.secondaryKeys.isEmpty) {
-      twitterQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
-    } else {
-      super.execute() flatMap {
-        res => {
-          indexList(keySpace.name).execute() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
-          }
-        }
-      }
-    }
-  }
 }
 
 object CreateQuery {

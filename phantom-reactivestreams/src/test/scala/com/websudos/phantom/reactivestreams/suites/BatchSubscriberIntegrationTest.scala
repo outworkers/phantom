@@ -29,15 +29,15 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
-import org.reactivestreams.{Publisher, Subscriber, Subscription}
+import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.ScalaFutures
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -80,25 +80,3 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
 
 }
 
-object OperaPublisher extends Publisher[Opera] {
-
-  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
-    var remaining = OperaData.operas
-
-    s.onSubscribe(new Subscription {
-      override def cancel(): Unit = ()
-
-      override def request(l: Long): Unit = {
-
-        remaining.take(l.toInt).foreach(s.onNext)
-
-        remaining = remaining.drop(l.toInt)
-
-        if (remaining.isEmpty) {
-          s.onComplete()
-        }
-      }
-    })
-  }
-
-}

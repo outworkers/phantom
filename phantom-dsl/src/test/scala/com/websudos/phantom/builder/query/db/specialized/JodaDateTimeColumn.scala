@@ -30,9 +30,6 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.websudos.phantom.PhantomSuite
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
@@ -50,19 +47,6 @@ class JodaDateTimeColumn extends PhantomSuite {
     val chain = for {
       store <- TestDatabase.primitivesJoda.store(row).future()
       select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
-    } yield select
-
-    chain successful {
-      res => res.value shouldEqual row
-    }
-  }
-
-  it should "correctly insert and extract a JodaTime date with Twitter Futures" in {
-    val row = gen[JodaRow]
-
-    val chain = for {
-      store <- TestDatabase.primitivesJoda.store(row).execute()
-      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).get()
     } yield select
 
     chain successful {

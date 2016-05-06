@@ -61,23 +61,6 @@ class MapOperationsTest extends PhantomSuite {
     }
   }
 
-  it should "support a single item map put operation with Twitter futures" in {
-    val recipe = gen[Recipe]
-    val item = gen[String, String]
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).execute()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props + item
-      }
-    }
-  }
-
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
     val mapItems = genMap[String, String](5)
@@ -86,23 +69,6 @@ class MapOperationsTest extends PhantomSuite {
       insertDone <- TestDatabase.recipes.store(recipe).future()
       update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
       select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props ++ mapItems
-      }
-    }
-  }
-
-  it should "support a multiple item map put operation with Twitter futures" in {
-    val recipe = gen[Recipe]
-    val mapItems = genMap[String, String](5)
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).execute()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {

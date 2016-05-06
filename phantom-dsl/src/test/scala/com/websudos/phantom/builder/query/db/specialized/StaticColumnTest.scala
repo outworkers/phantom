@@ -50,14 +50,14 @@ class StaticColumnTest extends PhantomSuite {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
-      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).execute()
-      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).get()
+      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
+      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).future()
+      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
     } yield select
 
-    chain.successful {
+    whenReady(chain) {
       res => {
-        res.value._3 shouldEqual static
+        res.value.static shouldEqual static
       }
     }
   }
@@ -71,19 +71,19 @@ class StaticColumnTest extends PhantomSuite {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).execute()
+      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
 
       // The second insert updates the static value
-      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).execute()
+      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).future()
 
       // We query for the first record inserted.
-      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).get()
+      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
     } yield select
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         // The first record should hold the updated value.
-        res.value._3 shouldEqual static2
+        res.value.static shouldEqual static2
       }
     }
   }
@@ -97,11 +97,19 @@ class StaticColumnTest extends PhantomSuite {
     val chain = for {
       store1 <- TestDatabase.staticCollectionTable.store(sample).future()
       store2 <- TestDatabase.staticCollectionTable.store(sample2).future()
-      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).modify(_.staticList append "test").future()
-      get <- TestDatabase.staticCollectionTable.select.where(_.id eqs id).and(_.clusteringId eqs sample.clustering).one()
-    } yield get
+      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id)
+        .and(_.clusteringId eqs sample.clustering)
+        .modify(_.staticList append "test")
+        .future()
 
-    chain.successful {
+      rec <- TestDatabase.staticCollectionTable
+        .select
+        .where(_.id eqs id)
+        .and(_.clusteringId eqs sample.clustering)
+        .one()
+    } yield rec
+
+    whenReady(chain) {
       res => {
         res.value.list shouldEqual sample.list ::: List("test")
       }

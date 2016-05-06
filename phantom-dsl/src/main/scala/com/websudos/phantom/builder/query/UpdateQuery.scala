@@ -324,10 +324,6 @@ sealed class AssignmentsQuery[
     ttl(duration.toSeconds)
   }
 
-  def ttl(duration: com.twitter.util.Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    ttl(duration.inSeconds)
-  }
-
   def prepare[
     Rev <: HList,
     Reversed <: HList
@@ -479,10 +475,6 @@ sealed class ConditionalQuery[
 
   def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
-  }
-
-  def ttl(duration: com.twitter.util.Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    ttl(duration.inSeconds)
   }
 
   def prepare[Rev <: HList, Rev2 <: HList]()(

@@ -142,10 +142,6 @@ class InsertQuery[
     ttl(seconds.toSeconds)
   }
 
-  def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
-    ttl(duration.inSeconds)
-  }
-
   final def timestamp(value: Long): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
@@ -210,8 +206,6 @@ object InsertQuery {
     )
   }
 }
-
-
 
 class InsertJsonQuery[
   Table <: CassandraTable[Table, _],

@@ -68,26 +68,6 @@ class TTLTest extends PhantomSuite with Eventually {
     }
   }
 
-  it should "expire inserted records after TTL with Twitter Futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).ttl(ttl).execute()
-      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain.successful { record =>
-      record shouldEqual Some(row)
-    }
-
-    eventually(timeout(ttl + granularity)) {
-      val futureRecord = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-      futureRecord.successful { record =>
-        record shouldBe empty
-      }
-    }
-  }
-
   it should "expire inserted records after TTL with prepared statement" in {
     val row = gen[Primitive]
 

@@ -48,6 +48,15 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
+  type ListColumn[RR] = com.websudos.phantom.column.ListColumn[T, R, RR]
+  type SetColumn[RR] =  com.websudos.phantom.column.SetColumn[T, R, RR]
+  type MapColumn[KK, VV] =  com.websudos.phantom.column.MapColumn[T, R, KK, VV]
+  type JsonColumn[RR] = com.websudos.phantom.column.JsonColumn[T, R, RR]
+  type EnumColumn[RR <: Enumeration] = com.websudos.phantom.column.EnumColumn[T, R, RR]
+  type OptionalEnumColumn[RR <: Enumeration] = com.websudos.phantom.column.OptionalEnumColumn[T, R, RR]
+  type JsonSetColumn[RR] = com.websudos.phantom.column.JsonSetColumn[T, R, RR]
+  type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
+
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.result(create.ifNotExists().future(), 10.seconds)
   }

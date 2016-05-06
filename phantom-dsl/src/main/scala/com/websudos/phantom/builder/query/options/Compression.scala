@@ -29,15 +29,14 @@
  */
 package com.websudos.phantom.builder.query.options
 
-import com.twitter.util.StorageUnit
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
 sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
 
-  def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit.toHuman()))
+  def chunk_length_kb(unit: Int): CompressionStrategy = {
+    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit + "KB"))
   }
 
   def crc_check_chance(size: Double): CompressionStrategy = {

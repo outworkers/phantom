@@ -32,15 +32,21 @@ package com.websudos.phantom.tables
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, (UUID, UUID, String)] {
+case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
+
+sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, StaticCollectionSingle] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
   object staticTest extends StringColumn(this) with StaticColumn[String]
 
-  def fromRow(row: Row): (UUID, UUID, String) = {
-    (id(row), clusteringId(row), staticTest(row))
+  def fromRow(row: Row): StaticCollectionSingle = {
+    StaticCollectionSingle(
+      id(row),
+      clusteringId(row),
+      staticTest(row)
+    )
   }
 }
 
@@ -58,7 +64,7 @@ sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticColl
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
   object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticList extends ListColumn[ConcreteStaticCollectionTableTest, StaticCollectionRecord, String](this) with StaticColumn[List[String]]
+  object staticList extends ListColumn[String](this) with StaticColumn[List[String]]
 
   def fromRow(row: Row): StaticCollectionRecord = {
     StaticCollectionRecord(

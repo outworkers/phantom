@@ -30,29 +30,29 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.utils.UUIDs
-import com.twitter.conversions.time._
-import com.twitter.util.Await
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class EnumColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(TestDatabase.enumTable.create.ifNotExists().execute(), 5.seconds)
-    Await.result(TestDatabase.namedEnumTable.create.ifNotExists().execute(), 5.seconds)
+    Await.result(TestDatabase.enumTable.create.ifNotExists().future(), 5.seconds)
+    Await.result(TestDatabase.namedEnumTable.create.ifNotExists().future(), 5.seconds)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, None)
 
     val chain = for {
-      insert <- TestDatabase.enumTable.store(sample).execute()
-      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).get()
+      insert <- TestDatabase.enumTable.store(sample).future()
+      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value.enum shouldEqual sample.enum
         res.value.optEnum shouldBe empty
@@ -64,11 +64,11 @@ class EnumColumnTest extends PhantomSuite {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, Some(Records.TypeTwo))
 
     val chain = for {
-      insert <- TestDatabase.enumTable.store(sample).execute()
-      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).get()
+      insert <- TestDatabase.enumTable.store(sample).future()
+      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value.enum shouldEqual sample.enum
         res.value.optEnum shouldBe defined
@@ -81,11 +81,11 @@ class EnumColumnTest extends PhantomSuite {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, None)
 
     val chain = for {
-      insert <- TestDatabase.namedEnumTable.store(sample).execute()
-      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).get()
+      insert <- TestDatabase.namedEnumTable.store(sample).future()
+      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value.enum shouldEqual sample.enum
         res.value.optEnum shouldBe empty
@@ -97,11 +97,11 @@ class EnumColumnTest extends PhantomSuite {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, Some(NamedRecords.Two))
 
     val chain = for {
-      insert <- TestDatabase.namedEnumTable.store(sample).execute()
-      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).get()
+      insert <- TestDatabase.namedEnumTable.store(sample).future()
+      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value.enum shouldEqual sample.enum
         res.value.optEnum shouldBe defined
