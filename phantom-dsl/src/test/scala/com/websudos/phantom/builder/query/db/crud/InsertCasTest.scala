@@ -63,22 +63,15 @@ class InsertCasTest extends PhantomSuite {
       store <- insertion.future()
       one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
       multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- TestDatabase.primitives.select.count.one()
-    } yield (one, count, multi)
+    } yield (one, multi)
 
     whenReady(chain) {
-      case (res1, res2, res3) => {
+      case (res1, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
 
         info("And the record should equal the inserted record")
         res1.value shouldEqual row
-
-        info("And the count should be present")
-        res2 shouldBe defined
-
-        info("And it should be one after a single insertion.")
-        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
         res3 should have size 1
@@ -105,22 +98,15 @@ class InsertCasTest extends PhantomSuite {
       store <- insertion.future()
       one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
       multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- TestDatabase.primitives.select.count.one()
-    } yield (one, count, multi)
+    } yield (one, multi)
 
     whenReady(chain) {
-      case (res1, res2, res3) => {
+      case (res1, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
 
         info("And the record should equal the inserted record")
         res1.value shouldEqual row
-
-        info("And the count should be present")
-        res2 shouldBe defined
-
-        info("And it should be one after a single insertion.")
-        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
         res3 should have size 1
