@@ -184,12 +184,7 @@ abstract class Query[
   def ttl(duration: scala.concurrent.duration.FiniteDuration): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
     ttl(duration.toSeconds)
   }
-
-  def ttl(duration: com.twitter.util.Duration): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    ttl(duration.inSeconds)
-  }
 }
-
 
 private[phantom] trait Batchable {
   self: ExecutableStatement =>

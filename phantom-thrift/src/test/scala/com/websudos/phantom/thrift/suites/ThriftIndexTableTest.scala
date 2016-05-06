@@ -31,6 +31,7 @@ package com.websudos.phantom.thrift.suites
 
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.finagle._
 import com.websudos.phantom.tables.{Output, ThriftDatabase}
 import com.websudos.phantom.thrift._
 import com.websudos.util.testing._

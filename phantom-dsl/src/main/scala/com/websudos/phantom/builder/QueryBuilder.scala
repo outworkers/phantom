@@ -113,7 +113,7 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     if (table.startsWith(keySpace + ".")) {
       tableDef(table)
     }  else {
-      CQLQuery(table).prepend(s"$keySpace.")
+      tableDef(table).prepend(s"$keySpace.")
     }
   }
 

@@ -57,21 +57,6 @@ class JsonColumnTest extends PhantomSuite {
     }
   }
 
-  it should "allow storing a JSON record with Twitter Futures" in {
-    val sample = gen[JsonClass]
-
-    val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).execute()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
-    } yield select
-
-    chain.successful {
-      res => {
-        res.value shouldEqual sample
-      }
-    }
-  }
-
   it should "allow updating a JSON record" in {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
@@ -81,25 +66,6 @@ class JsonColumnTest extends PhantomSuite {
       select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
       update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
       select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
-    } yield (select, select2)
-
-    chain.successful {
-      case (initial, updated) => {
-        initial.value.json shouldEqual sample.json
-        updated.value.json shouldEqual sample2.json
-      }
-    }
-  }
-
-  it should "allow updating a JSON record with Twitter Futures" in {
-    val sample = gen[JsonClass]
-    val sample2 = gen[JsonClass]
-
-    val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).execute()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).execute()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {
@@ -129,25 +95,6 @@ class JsonColumnTest extends PhantomSuite {
     }
   }
 
-  it should "allow updating a JSON record in a List of JSON records with Twitter Futures" in {
-    val sample = gen[JsonClass]
-    val sample2 = gen[JsonClass]
-
-    val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).execute()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).execute()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
-    } yield (select, select2)
-
-    chain.successful {
-      case (initial, updated) => {
-        initial.value shouldEqual sample
-        updated.value.jsonList.headOption.value shouldEqual sample2.json
-      }
-    }
-  }
-
   it should "allow updating a JSON record in a Set of JSON records" in {
     val sample = gen[JsonClass]
     val sample2 = gen[JsonClass]
@@ -157,25 +104,6 @@ class JsonColumnTest extends PhantomSuite {
       select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
       update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
       select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
-    } yield (select, select2)
-
-    chain.successful {
-      case (initial, updated) => {
-        initial.value shouldEqual sample
-        updated.value.jsonSet should contain (sample2.json)
-      }
-    }
-  }
-
-  it should "allow updating a JSON record in a Set of JSON records with Twitter Futures" in {
-    val sample = gen[JsonClass]
-    val sample2 = gen[JsonClass]
-
-    val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).execute()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).execute()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
     chain.successful {

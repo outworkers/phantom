@@ -39,22 +39,22 @@ lazy val Versions = new {
   val datastax = "3.0.1"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
+  val thrift = "0.8.0"
   val finagle = "6.35.0"
   val twitterUtil = "6.33.0"
   val scrooge = "4.7.0"
   val scalatra = "2.3.0"
-  val play = "2.6.0"
+  val play = "2.4.6"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
-  val thrift = "0.5.0"
-  val diesel = "0.2.4"
+  val diesel = "0.3.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
   val akka = "2.3.14"
   val typesafeConfig = "1.2.1"
   val jetty = "9.1.2.v20140210"
   val dispatch = "0.11.0"
-  val cassandraUnit = "2.2.2.1"
+  val cassandraUnit = "3.0.0.1"
 }
 
 val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
@@ -167,7 +167,6 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomReactiveStreams,
   phantomSbtPlugin,
   phantomThrift,
-  phantomUdt,
   phantomZookeeper
 )
 
@@ -210,12 +209,12 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
-    "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test, provided",
-    "com.websudos"                 %% "util-lift"                         % Versions.util                   % "test, provided",
-    "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test, provided",
-    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test, provided",
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test, provided",
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test, provided"
+    "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test",
+    "com.websudos"                 %% "util-lift"                         % Versions.util                   % "test",
+    "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test",
+    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test",
+    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test",
+    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test"
   )
 ).dependsOn(
   phantomConnectors
@@ -263,29 +262,13 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     phantomDsl % "compile->compile;test->test"
   )
 
-lazy val phantomUdt = (project in file("phantom-udt"))
-  .settings(
-    name := "phantom-udt",
-    moduleName := "phantom-udt",
-    scalacOptions ++= Seq(
-      "-language:experimental.macros"
-    ),
-    libraryDependencies ++= Seq(
-      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test, provided"
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl,
-    phantomZookeeper
-  )
-
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % "test, provided",
+      "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
       "com.websudos"                 %% "util-testing"                      % Versions.util               % "test, provided"
@@ -293,7 +276,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).settings(
     sharedSettings: _*
   ).dependsOn(
-    phantomDsl
+    phantomDsl,
+    phantomFinagle
   )
 
 lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
@@ -343,8 +327,8 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"       % "2.6.0" exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams-experimental" % "2.4.6" exclude("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees"       % Versions.play exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-streams-experimental" % Versions.play exclude("com.typesafe", "config"),
       "com.typesafe"        % "config"                % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"      % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"          % Versions.akka,
@@ -379,9 +363,8 @@ lazy val phantomContainerTests = (project in file("phantom-container-test"))
   .settings(
     name := "phantom-container-test",
     moduleName := "phantom-container-test",
-    fork := false,
-    logBuffered in Test := false,
-    testOptions in Test := Seq(Tests.Filter(s => s.indexOf("IterateeBig") == -1)),
+    fork := true,
+    logBuffered in Test := true,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),

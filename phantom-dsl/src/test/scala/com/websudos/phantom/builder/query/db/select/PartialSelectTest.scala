@@ -59,22 +59,4 @@ class PartialSelectTest extends PhantomSuite {
       }
     }
   }
-
-  "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      truncate <- TestDatabase.primitives.truncate.execute()
-      insertDone <- TestDatabase.primitives.store(row).execute()
-      listSelect <- TestDatabase.primitives.select(_.pkey).collect
-      oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
-    } yield (listSelect, oneSelect)
-
-    chain successful {
-      case (res, res2) => {
-        res shouldEqual List(row.pkey)
-        res2.value shouldEqual Tuple2(row.long, row.boolean)
-      }
-    }
-  }
 }

@@ -30,7 +30,6 @@
 package com.websudos.phantom.batch
 
 import com.datastax.driver.core.{ QueryOptions => _, _ }
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
@@ -58,10 +57,6 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(makeBatch())
-  }
-
-  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(makeBatch())
   }
 
   def initBatch(): BatchStatement = batchType match {

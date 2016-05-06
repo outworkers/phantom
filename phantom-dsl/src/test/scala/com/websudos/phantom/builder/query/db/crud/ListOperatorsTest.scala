@@ -57,41 +57,8 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
-  it should "store items in a list in the same order with Twitter Futures" in {
-    val recipe = gen[Recipe]
-
-    val operation = for {
-      truncate <- TestDatabase.recipes.truncate.execute
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients
-      }
-    }
-  }
-
   it should "store the same list size in Cassandra as it does in Scala" in {
     val recipe = gen[Recipe]
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients
-        items.value should have size recipe.ingredients.size
-      }
-    }
-  }
-
-  it should "store the same list size in Cassandra as it does in Scala with Twitter Futures" in {
-    val recipe = gen[Recipe]
-    val limit = 5
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).future()
@@ -122,22 +89,6 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
-  it should "append an item to a list with Twitter futures" in {
-    val recipe = gen[Recipe]
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients ::: List("test")
-      }
-    }
-  }
-
   it should "append several items to a list" in {
     val recipe = gen[Recipe]
 
@@ -156,24 +107,6 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
-  it should "append several items to a list with Twitter futures" in {
-    val recipe = gen[Recipe]
-
-    val appendable = List("test", "test2")
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients ::: appendable
-      }
-    }
-  }
-
   it should "prepend an item to a list" in {
     val recipe = gen[Recipe]
 
@@ -181,22 +114,6 @@ class ListOperatorsTest extends PhantomSuite {
       insertDone <- TestDatabase.recipes.store(recipe).future()
       update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual List("test") :::  recipe.ingredients
-      }
-    }
-  }
-
-  it should "prepend an item to a list with Twitter Futures" in {
-    val recipe = gen[Recipe]
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -226,26 +143,6 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
-  it should "prepend several items to a list with Twitter futures" in {
-    val recipe = gen[Recipe]
-
-    val appendable = List("test", "test2")
-
-    val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual prependedValues ::: recipe.ingredients
-      }
-    }
-  }
-
   it should "remove an item from a list" in {
     val list = genList[String]()
     val droppable = list(0)
@@ -255,24 +152,6 @@ class ListOperatorsTest extends PhantomSuite {
       insertDone <- TestDatabase.recipes.store(recipe).future()
       update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual list.tail
-      }
-    }
-  }
-
-  it should "remove an item from a list with Twitter Futures" in {
-    val list = genList[String]()
-    val droppable = list(0)
-    val recipe = gen[Recipe].copy(ingredients = list)
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).execute
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -299,23 +178,6 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
-  it should "remove multiple items from a list with Twitter futures" in {
-    val list = genList[String]()
-    val recipe = gen[Recipe].copy(ingredients = list)
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value shouldEqual List(list.head)
-      }
-    }
-  }
-
   it should "set a 0 index inside a List" in {
     val list = genList[String]()
     val recipe = gen[Recipe].copy(ingredients = list)
@@ -324,25 +186,6 @@ class ListOperatorsTest extends PhantomSuite {
       insertDone <- TestDatabase.recipes.store(recipe).future()
       update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
-    } yield select
-
-    operation.successful {
-      items => {
-        items.value.headOption.value shouldEqual "updated"
-      }
-    }
-  }
-
-  it should "set an index inside a List with Twitter futures" in {
-
-    val list = genList[String]()
-
-    val recipe = gen[Recipe].copy(ingredients = list)
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
     } yield select
 
     operation.successful {
@@ -365,25 +208,6 @@ class ListOperatorsTest extends PhantomSuite {
       items => {
         items shouldBe defined
         items.value(3) shouldEqual "updated"
-      }
-    }
-  }
-
-  it should "set the third index inside a List with Twitter Futures" in {
-    val recipe = gen[Recipe]
-    val updated = gen[String]
-
-
-    val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).execute()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updated)).execute()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).get
-    } yield select
-
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value(3) shouldEqual updated
       }
     }
   }

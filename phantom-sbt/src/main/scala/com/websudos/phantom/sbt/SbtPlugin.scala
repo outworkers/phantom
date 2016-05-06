@@ -29,12 +29,15 @@
  */
 package com.websudos.phantom.sbt
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
 import scala.concurrent.blocking
+import scala.util.Try
 import scala.util.control.NonFatal
 
 /**
@@ -75,7 +78,6 @@ object PhantomSbtPlugin extends AutoPlugin {
 
     val phantomStartEmbeddedCassandra = taskKey[Unit]("Starts embedded Cassandra")
     val phantomCleanupEmbeddedCassandra = taskKey[Unit]("Clean up embedded Cassandra by dropping all of its keyspaces")
-
     val phantomCassandraConfig = settingKey[Option[File]]("YAML file for Cassandra configuration")
   }
 
@@ -99,7 +101,7 @@ object PhantomSbtPlugin extends AutoPlugin {
   */
 object EmbeddedCassandra {
 
-  private[this] var started: Boolean = false
+  private[this] val started: AtomicBoolean = new AtomicBoolean(false)
 
   /**
     * Starts Cassandra in embedded mode if it has not been
@@ -108,16 +110,17 @@ object EmbeddedCassandra {
   def start (config: Option[File], logger: Logger): Unit = {
     logger.info("Initialising EmbeddedCassandra singleton.")
     this.synchronized {
-      if (!started) {
+      if (started.compareAndSet(false, true)) {
         blocking {
           val configFile = config.map(_.toURI.toString) getOrElse EmbeddedCassandraServerHelper.DEFAULT_CASSANDRA_YML_FILE
           System.setProperty("cassandra.config", configFile)
-          try {
+          Try {
             EmbeddedCassandraServerHelper.mkdirs()
-          } catch {
+          } recover {
             case NonFatal(e) =>
               logger.error(s"Error creating Embedded cassandra directories: ${e.getMessage}")
           }
+
           config match {
             case Some(file) =>
               logger.info(s"Starting Cassandra in embedded mode with configuration from $file.")
@@ -128,7 +131,6 @@ object EmbeddedCassandra {
               EmbeddedCassandraServerHelper.startEmbeddedCassandra()
           }
         }
-        started = true
       }
       else {
         logger.info("Embedded Cassandra has already been started")
@@ -138,7 +140,7 @@ object EmbeddedCassandra {
 
   def cleanup(logger: Logger): Unit = {
     this.synchronized {
-      if (started) {
+      if (started.get()) {
         logger.info("Cleaning up embedded Cassandra")
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
       } else {

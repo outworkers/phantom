@@ -39,13 +39,10 @@ import com.websudos.util.testing._
 
 class CounterColumnTest extends PhantomSuite {
 
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
-
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.counterTableTest.insertSchema()
   }
-
 
   it should "+= counter values by 1" in {
     val sample = gen[CounterRecord]
@@ -66,26 +63,6 @@ class CounterColumnTest extends PhantomSuite {
     }
   }
 
-  it should "+= counter values by 1 with Twitter Futures" in {
-    val sample = gen[CounterRecord]
-
-    val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-    } yield (select, select2)
-
-
-    chain.successful {
-      case (res1, res2) => {
-        res1.value.count shouldEqual 0
-        res2.value.count shouldEqual 1
-      }
-    }
-  }
-
-
   it should "allow selecting a counter" in {
     val sample = gen[CounterRecord]
 
@@ -94,25 +71,6 @@ class CounterColumnTest extends PhantomSuite {
       select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
       incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select2 <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
-    } yield (select, select2)
-
-
-    chain.successful {
-      case (res1, res2) => {
-        res1.value.count shouldEqual 500
-        res2.value shouldEqual 501
-      }
-    }
-  }
-
-  it should "allow selecting a counter with Twitter Futures" in {
-    val sample = gen[CounterRecord]
-
-    val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).execute()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select2 <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).get
     } yield (select, select2)
 
 
@@ -144,26 +102,6 @@ class CounterColumnTest extends PhantomSuite {
     }
   }
 
-  it should "+= counter values by a given value with Twitter Futures" in {
-    val sample = gen[CounterRecord]
-    val diff = 200
-
-    val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).execute()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).execute()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-    } yield (select, select2)
-
-
-    chain.successful {
-      case (res, res1) => {
-        res.value.count shouldEqual 0
-        res1.value.count shouldEqual diff
-      }
-    }
-  }
-
   it should "-= counter values by 1" in {
     val sample = gen[CounterRecord]
 
@@ -172,25 +110,6 @@ class CounterColumnTest extends PhantomSuite {
       select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
       incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
       select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
-    } yield (select, select2)
-
-
-    chain.successful {
-      case (res, res1) => {
-        res.value.count shouldEqual 1
-        res1.value.count shouldEqual 0
-      }
-    }
-  }
-
-  it should "-= counter values by 1 with Twitter Futures" in {
-    val sample = gen[CounterRecord]
-
-    val chain = for {
-      incr1 <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).execute()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get()
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).execute()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get()
     } yield (select, select2)
 
 
@@ -212,26 +131,6 @@ class CounterColumnTest extends PhantomSuite {
       select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
       incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
       select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
-    } yield (select, select2)
-
-
-    chain.successful {
-      case (res1, res2) => {
-        res2.value.count shouldEqual (initial - diff)
-      }
-    }
-  }
-
-  it should "-= counter values by a given value with Twitter Futures" in {
-    val sample = gen[CounterRecord]
-    val diff = 200
-    val initial = 500
-
-    val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).execute()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).execute()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).get
     } yield (select, select2)
 
 

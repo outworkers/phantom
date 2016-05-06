@@ -30,7 +30,6 @@
 package com.websudos.phantom.builder.query.prepared
 
 import com.datastax.driver.core.{QueryOptions => _, _}
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
@@ -72,9 +71,6 @@ class ExecutablePreparedSelectQuery[
     scalaQueryStringExecuteToFuture(st)
   }
 
-  override def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[ResultSet] = {
-    twitterQueryStringExecuteToFuture(st)
-  }
 
   /**
     * Returns the first row from the select ignoring everything else
@@ -84,16 +80,6 @@ class ExecutablePreparedSelectQuery[
     */
   override def one()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): ScalaFuture[Option[R]] = {
     singleFetch()
-  }
-
-  /**
-    * Get the result of an operation as a Twitter Future.
-    *
-    * @param session The Datastax Cassandra session.
-    * @return A Twitter future wrapping the result.
-    */
-  override def get()(implicit session: Session, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): TwitterFuture[Option[R]] = {
-    singleCollect()
   }
 
   override def qb: CQLQuery = CQLQuery.empty

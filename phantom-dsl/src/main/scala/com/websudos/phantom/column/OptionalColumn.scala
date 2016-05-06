@@ -31,7 +31,6 @@ package com.websudos.phantom.column
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
-import org.scalameter.Events.Success
 
 import scala.util.Try
 
