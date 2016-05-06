@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -34,19 +34,16 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.batch.BatchQuery
 import com.websudos.phantom.builder.Unspecified
+import com.websudos.phantom.builder.query.db.ordering.TimeSeriesTest._
 import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
-import scala.concurrent.duration._
+
 import scala.concurrent.{Future => ScalaFuture}
-import TimeSeriesTest._
 
 class TimeSeriesTest extends PhantomSuite {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -63,21 +60,6 @@ class TimeSeriesTest extends PhantomSuite {
       truncate <- TestDatabase.timeSeriesTable.truncate.future()
       insert <- addRecordsToBatch(records).future()
       chunks <- TestDatabase.timeSeriesTable.select.limit(limit).fetch()
-    } yield chunks
-
-    verifyResults(chain, records.reverse.take(limit))
-  }
-
-  it should "fetch records in natural order for a descending clustering order with Twitter Futures" in {
-    val number = 10
-    val limit = 5
-
-    val records = genSequentialRecords(number)
-
-    val chain = for {
-      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
-      insert <- addRecordsToBatch(records).execute()
-      chunks <- TestDatabase.timeSeriesTable.select.limit(limit).collect()
     } yield chunks
 
     verifyResults(chain, records.reverse.take(limit))
@@ -124,25 +106,6 @@ class TimeSeriesTest extends PhantomSuite {
     verifyResults(chain, records.take(limit))
   }
 
-  it should "fetch records in ascending order for a descending clustering order using order by clause with Twitter Futures" in {
-    val number = 10
-    val limit = 5
-
-    val records = genSequentialRecords(number)
-
-    val chain = for {
-      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
-      insert <- addRecordsToBatch(records).execute()
-      chunks <- TestDatabase.timeSeriesTable.select
-        .where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
-        .orderBy(_.timestamp.asc)
-        .limit(limit)
-        .collect()
-    } yield chunks
-
-    verifyResults(chain, records.take(limit))
-  }
-
   it should "fetch records in ascending order for a descending clustering order using prepared statements" in {
     val number = 10
     val limit = 5
@@ -183,25 +146,6 @@ class TimeSeriesTest extends PhantomSuite {
     verifyResults(chain, records.reverse.take(limit))
   }
 
-  it should "fetch records in descending order for a descending clustering order using order by clause with Twitter Futures" in {
-    val number = 10
-    val limit = 5
-
-    val records = genSequentialRecords(number)
-
-    val chain = for {
-      truncate <- TestDatabase.timeSeriesTable.truncate.execute()
-      insert <- addRecordsToBatch(records).execute()
-      chunks <- TestDatabase.timeSeriesTable.select
-        .where(_.id eqs TestDatabase.timeSeriesTable.testUUID)
-        .orderBy(_.timestamp.desc)
-        .limit(limit)
-        .collect()
-    } yield chunks
-
-    verifyResults(chain, records.reverse.take(limit))
-  }
-
   def verifyResults(futureResults: ScalaFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
     futureResults.successful { results =>
       results shouldEqual expected
@@ -228,9 +172,11 @@ object TimeSeriesTest {
   }
 
   def addRecordsToBatch(
-      records: Seq[TimeSeriesRecord])(
-      implicit space: KeySpace,
-      session: Session): BatchQuery[Unspecified] = {
+    records: Seq[TimeSeriesRecord]
+  )(
+    implicit space: KeySpace,
+    session: Session
+  ): BatchQuery[Unspecified] = {
 
     records.foldLeft(Batch.unlogged) {
       (b, record) => {

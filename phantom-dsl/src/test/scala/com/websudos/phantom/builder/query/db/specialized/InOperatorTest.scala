@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -56,42 +56,12 @@ class InOperatorTest extends PhantomSuite {
     }
   }
 
-  it should "find a record with a in operator if the record exists with Twitter Futures" in {
-    val recipe = gen[Recipe]
-
-    val chain = for {
-      done <- TestDatabase.recipes.store(recipe).execute()
-      select <- TestDatabase.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).get()
-    } yield select
-
-    chain.successful {
-      res => {
-        res.value.url shouldEqual recipe.url
-      }
-    }
-  }
-
   it should "not find a record with a in operator if the record doesn't exists" in {
     val recipe = gen[Recipe]
 
     val chain = for {
       done <- TestDatabase.recipes.store(recipe).future()
       select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
-    } yield select
-
-    chain.successful {
-      res => {
-        res shouldBe empty
-      }
-    }
-  }
-
-  it should "not find a record with a in operator if the record doesn't exists with Twitter Futures" in {
-    val recipe = gen[Recipe]
-
-    val chain = for {
-      done <- TestDatabase.recipes.store(recipe).execute()
-      select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).get()
     } yield select
 
     chain.successful {

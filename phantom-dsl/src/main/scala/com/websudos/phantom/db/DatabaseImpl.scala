@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -30,42 +30,22 @@
 package com.websudos.phantom.db
 
 import com.datastax.driver.core.{ResultSet, Session}
-import com.twitter.util.{Future => TwitterFuture}
+import com.websudos.diesel.engine.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 private object Lock
 
-abstract class DatabaseImpl(val connector: KeySpaceDef) {
+abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[CassandraTable[_, _]] {
 
   implicit val space: KeySpace = new KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
 
-  lazy val tables: Set[CassandraTable[_, _]] = Lock.synchronized {
-
-    val instanceMirror = cm.reflect(this)
-    val selfType = instanceMirror.symbol.toType
-
-    val members: Set[ru.Symbol] = (for {
-      baseClass <- selfType.baseClasses.reverse
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< ru.typeOf[CassandraTable[_, _]]
-    } yield symbol)(collection.breakOut)
-
-    for {
-      symbol <- members
-      table = if (symbol.isModule) {
-        instanceMirror.reflectModule(symbol.asModule).instance
-      } else if (symbol.isTerm && symbol.asTerm.isVal) {
-        instanceMirror.reflectField(symbol.asTerm).get
-      }
-    } yield table.asInstanceOf[CassandraTable[_, _]]
-  }
+  lazy val tables: Set[CassandraTable[_, _]] = initialize().toSet
 
   def shutdown(): Unit = {
     blocking {
@@ -128,14 +108,10 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) {
   }
 }
 
-sealed class ExecutableCreateStatementsList(tables: Set[CassandraTable[_, _]]) {
+sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
   def future()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Future[Seq[ResultSet]] = {
     Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
-  }
-
-  def execute()(implicit session: Session, keySpace: KeySpace): TwitterFuture[Seq[ResultSet]] = {
-    TwitterFuture.collect(tables.toSeq.map(_.create.ifNotExists().execute()))
   }
 
 }

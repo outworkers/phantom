@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -109,7 +109,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
-        val qb = BasicTable.alter.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50.megabytes)).qb.queryString
+        val qb = BasicTable.alter.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
 
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = { 'class' " +
           ": 'LeveledCompactionStrategy', 'sstable_size_in_mb' : '50' }"
@@ -118,7 +118,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
 
         val qb = BasicTable.alter
-          .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50.megabytes))
+          .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
           .qb.queryString
 
@@ -155,11 +155,6 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "allow specifying larger custom units as gc_grace_seconds" in {
         val qb = BasicTable.alter.`with`(gc_grace_seconds eqs 1.day).qb.queryString
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
-      }
-
-      "allow specifying larger custom units as gc_grace_seconds using the Twitter conversions API" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs TwitterDuration.fromSeconds(OneDay)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
       }
 
@@ -200,11 +195,6 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
         val qb = BasicTable.alter.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
-      }
-
-      "specify a default time to live using a com.twitter.util.Duration value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs com.twitter.util.Duration.fromSeconds(DefaultTtl)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
     }

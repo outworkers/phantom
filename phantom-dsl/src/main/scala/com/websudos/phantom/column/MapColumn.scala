@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -54,7 +54,7 @@ private[phantom] abstract class AbstractMapColumn[Owner <: CassandraTable[Owner,
   }).queryString
 
   override def apply(r: Row): Map[K, V] = {
-    optional(r) match {
+    parse(r) match {
       case Success(map) => map
 
       // Note null rows will not result in a failure, we return an empty map for those.
@@ -86,7 +86,7 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
 
   override def fromString(c: String): V = valuePrimitive.fromString(c)
 
-  override def optional(r: Row): Try[Map[K, V]] = {
+  override def parse(r: Row): Try[Map[K, V]] = {
     if (r.isNull(name)) {
       Success(Map.empty[K, V])
     } else {

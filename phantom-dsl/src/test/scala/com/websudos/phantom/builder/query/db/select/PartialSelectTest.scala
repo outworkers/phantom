@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -50,24 +50,6 @@ class PartialSelectTest extends PhantomSuite {
       insertDone <- TestDatabase.primitives.store(row).future()
       listSelect <- TestDatabase.primitives.select(_.pkey).fetch
       oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
-    } yield (listSelect, oneSelect)
-
-    chain successful {
-      case (res, res2) => {
-        res shouldEqual List(row.pkey)
-        res2.value shouldEqual Tuple2(row.long, row.boolean)
-      }
-    }
-  }
-
-  "Partially selecting 2 fields" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      truncate <- TestDatabase.primitives.truncate.execute()
-      insertDone <- TestDatabase.primitives.store(row).execute()
-      listSelect <- TestDatabase.primitives.select(_.pkey).collect
-      oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).get
     } yield (listSelect, oneSelect)
 
     chain successful {

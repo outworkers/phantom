@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -47,6 +47,15 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
  * @tparam R Type of record.
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
+
+  type ListColumn[RR] = com.websudos.phantom.column.ListColumn[T, R, RR]
+  type SetColumn[RR] =  com.websudos.phantom.column.SetColumn[T, R, RR]
+  type MapColumn[KK, VV] =  com.websudos.phantom.column.MapColumn[T, R, KK, VV]
+  type JsonColumn[RR] = com.websudos.phantom.column.JsonColumn[T, R, RR]
+  type EnumColumn[RR <: Enumeration] = com.websudos.phantom.column.EnumColumn[T, R, RR]
+  type OptionalEnumColumn[RR <: Enumeration] = com.websudos.phantom.column.OptionalEnumColumn[T, R, RR]
+  type JsonSetColumn[RR] = com.websudos.phantom.column.JsonSetColumn[T, R, RR]
+  type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
 
   private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
     Await.result(create.ifNotExists().future(), 10.seconds)

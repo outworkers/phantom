@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -37,14 +37,13 @@ import scala.util.{Failure, Success, Try}
 
 abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
-  def optional(r: Row): Try[T]
+  def parse(r: Row): Try[T]
 
-  def apply(r: Row): T = optional(r) match {
+  def apply(r: Row): T = parse(r) match {
     case Success(value) => value
-    case Failure(ex) => {
-      table.logger.error(ex.getMessage)
+    case Failure(ex) =>
+      table.logger.error(s"Unable to parse value for column $name from row", ex)
       throw ex
-    }
   }
 
 }

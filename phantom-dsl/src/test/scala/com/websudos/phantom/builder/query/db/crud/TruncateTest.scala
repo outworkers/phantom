@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -57,36 +57,6 @@ class TruncateTest extends PhantomSuite {
       records <- TestDatabase.articles.select.fetch
       truncate <- TestDatabase.articles.truncate.future()
       records1 <- TestDatabase.articles.select.fetch
-    } yield (records, records1)
-
-
-    result successful {
-      case (init, updated) => {
-        init should have size 4
-        info (s"inserted exactly ${init.size} records")
-
-        updated should have size 0
-        info (s"got exactly ${updated.size} records")
-      }
-    }
-  }
-
-  it should "truncate all records in a table with Twitter Futures" in {
-    val article1 = gen[Article]
-    val article2 = gen[Article]
-    val article3 = gen[Article]
-    val article4 = gen[Article]
-
-    val result = for {
-      truncateBefore <- TestDatabase.articles.truncate.execute()
-      i1 <- TestDatabase.articles.store(article1).execute()
-      i2 <- TestDatabase.articles.store(article2).execute()
-      i3 <- TestDatabase.articles.store(article3).execute()
-      i4 <- TestDatabase.articles.store(article4).execute()
-
-      records <- TestDatabase.articles.select.collect()
-      truncate <- TestDatabase.articles.truncate.execute()
-      records1 <- TestDatabase.articles.select.collect()
     } yield (records, records1)
 
 

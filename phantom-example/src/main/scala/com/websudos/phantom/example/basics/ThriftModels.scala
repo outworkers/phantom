@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,6 +32,7 @@ package com.websudos.phantom.example.basics
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.thrift._
+import com.websudos.phantom.thrift.columns.ThriftColumn
 
 // Sample model here comes from the Thrift struct definition.
 // The IDL is available in phantom-example/src/main/thrift.
@@ -44,7 +45,7 @@ case class SampleRecord(
 sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object stuff extends StringColumn(this)
-  object someList extends ListColumn[ConcreteThriftTable, SampleRecord, String](this)
+  object someList extends ListColumn[String](this)
 
 
   // As you can see, com.websudos.phantom will use a compact Thrift serializer.

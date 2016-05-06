@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
@@ -41,6 +40,7 @@ class InsertCasTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
+    TestDatabase.primitives.truncate().future().block(defaultScalaTimeout)
     TestDatabase.testTable.insertSchema()
     TestDatabase.recipes.insertSchema()
   }
@@ -63,22 +63,15 @@ class InsertCasTest extends PhantomSuite {
       store <- insertion.future()
       one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
       multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- TestDatabase.primitives.select.count.one()
-    } yield (one, count, multi)
+    } yield (one, multi)
 
-    chain successful {
-      case (res1, res2, res3) => {
+    whenReady(chain) {
+      case (res1, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
 
         info("And the record should equal the inserted record")
         res1.value shouldEqual row
-
-        info("And the count should be present")
-        res2 shouldBe defined
-
-        info("And it should be one after a single insertion.")
-        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
         res3 should have size 1
@@ -105,66 +98,15 @@ class InsertCasTest extends PhantomSuite {
       store <- insertion.future()
       one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
       multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
-      count <- TestDatabase.primitives.select.count.one()
-    } yield (one, count, multi)
+    } yield (one, multi)
 
-    chain successful {
-      case (res1, res2, res3) => {
+    whenReady(chain) {
+      case (res1, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
 
         info("And the record should equal the inserted record")
         res1.value shouldEqual row
-
-        info("And the count should be present")
-        res2 shouldBe defined
-
-        info("And it should be one after a single insertion.")
-        res2.value shouldEqual 1L
-
-        info("And only one record should be retrieved from a range fetch")
-        res3 should have size 1
-      }
-    }
-  }
-
-  "Conditional inserts" should "not create duplicate database entries with Twitter Futures" in {
-    //char is not supported
-    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
-    val row = gen[Primitive]
-
-
-    val insertion = new ExecutableStatementList(
-      List(
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb
-      )
-    )
-
-    val chain = for {
-      truncate <- TestDatabase.primitives.truncate.execute()
-      store <- insertion.execute()
-      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
-      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).collect()
-      count <- TestDatabase.primitives.select.count.get()
-    } yield (one, count, multi)
-
-    chain successful {
-      case (res1, res2, res3) => {
-        info("The one query should return a record")
-        res1 shouldBe defined
-
-        info("And the record should equal the inserted record")
-        res1.value shouldEqual row
-
-        info("And the count should be present")
-        res2 shouldBe defined
-
-        info("And it should be one after a single insertion.")
-        res2.value shouldEqual 1L
 
         info("And only one record should be retrieved from a range fetch")
         res3 should have size 1

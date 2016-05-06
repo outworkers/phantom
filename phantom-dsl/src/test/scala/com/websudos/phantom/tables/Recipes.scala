@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -51,13 +51,13 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
   object description extends OptionalStringColumn(this)
 
-  object ingredients extends ListColumn[ConcreteRecipes, Recipe, String](this)
+  object ingredients extends ListColumn[String](this)
 
   object servings extends OptionalIntColumn(this)
 
   object lastcheckedat extends DateTimeColumn(this)
 
-  object props extends MapColumn[ConcreteRecipes, Recipe, String, String](this)
+  object props extends MapColumn[String, String](this)
 
   object uid extends UUIDColumn(this)
 
@@ -97,7 +97,7 @@ sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
 
-  object map extends MapColumn[ConcreteEvents, SampleEvent, Long, DateTime](this)
+  object map extends MapColumn[Long, DateTime](this)
 
   def fromRow(row: Row): SampleEvent = {
     SampleEvent(

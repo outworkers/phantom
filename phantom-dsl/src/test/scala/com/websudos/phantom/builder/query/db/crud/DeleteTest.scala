@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -59,24 +59,6 @@ class DeleteTest extends PhantomSuite {
     }
   }
 
-  "A delete query" should "delete a row by its single primary key using Twitter futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).execute()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
-    } yield (inserted, deleted)
-
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
-      }
-    }
-  }
-
   "A delete query" should "delete a row by its single primary key if a single condition is met" in {
     val row = gen[Primitive]
 
@@ -95,24 +77,6 @@ class DeleteTest extends PhantomSuite {
     }
   }
 
-  "A delete query" should "delete a row by its single primary key if a single condition is met with Twitter futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).execute()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
-    } yield (inserted, deleted)
-
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
-      }
-    }
-  }
-
   "A delete query" should "not delete a row by its single primary key if a single condition is not met" in {
     val row = gen[Primitive]
 
@@ -121,26 +85,6 @@ class DeleteTest extends PhantomSuite {
       inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
       delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
       deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted)
-
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-
-        info("The row should not have been deleted as the condition was not met")
-        r2 shouldBe defined
-      }
-    }
-  }
-
-  "A delete query" should "not delete a row by its single primary key if a single condition is not met with Twitter Futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).execute()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
     } yield (inserted, deleted)
 
     chain successful {

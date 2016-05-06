@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -42,7 +42,7 @@ class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestDatabase.indexedCollectionsTable.create.ifNotExists().future(), 4.seconds)
+    Await.ready(TestDatabase.indexedCollectionsTable.create.ifNotExists().future(), defaultScalaTimeout)
   }
 
   it should "store a record and retrieve it with a CONTAINS query on the SET" in {
@@ -56,7 +56,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     } yield get
 
     if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
+      whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
           res should contain (record)
@@ -66,30 +66,6 @@ class IndexedCollectionsTest extends PhantomSuite {
       chain.failing[SyntaxError]
     }
 
-  }
-
-  it should "store a record and retrieve it with a CONTAINS query on the SET with TWitter Futures" in {
-    val record = gen[TestRow]
-
-    val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable
-        .select
-        .where(_.setText contains record.setText.headOption.value)
-        .collect()
-    } yield get
-
-    if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
-        res => {
-          res.nonEmpty shouldEqual true
-
-          res should contain (record)
-        }
-      }
-    } else {
-      chain.failing[SyntaxError]
-    }
   }
 
   it should "store a record and retrieve it with a CONTAINS query on the MAP" in {
@@ -103,29 +79,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     } yield get
 
     if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
-      }
-    } else {
-      chain.failing[SyntaxError]
-    }
-  }
-
-  it should "store a record and retrieve it with a CONTAINS query on the MAP with Twitter Futures" in {
-    val record = gen[TestRow]
-
-    val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable.select
-        .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
-        .collect()
-    } yield get
-
-    if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
+      whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
           res should contain (record)
@@ -148,30 +102,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     } yield get
 
     if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
-      }
-    } else {
-      chain.failing[SyntaxError]
-    }
-  }
-
-  it should "store a record and retrieve it with a CONTAINS KEY query on the MAP with Twitter Futures" in {
-    val record = gen[TestRow]
-
-    val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable
-        .select
-        .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
-        .collect()
-    } yield get
-
-    if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
+      whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
           res should contain (record)
@@ -186,12 +117,12 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
 
     val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).execute()
-      get <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).collect()
-    } yield get
+      store <- TestDatabase.indexedCollectionsTable.store(record).future()
+      result <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
+    } yield result
 
     if (cassandraVersion.value > Version.`2.1.0`) {
-      chain.successful {
+      whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
           res should contain (record)

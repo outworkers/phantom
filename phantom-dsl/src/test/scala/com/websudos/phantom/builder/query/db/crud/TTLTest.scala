@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -62,26 +62,6 @@ class TTLTest extends PhantomSuite with Eventually {
 
     eventually(timeout(ttl + granularity)) {
       val futureRecord = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
-      futureRecord.successful { record =>
-        record shouldBe empty
-      }
-    }
-  }
-
-  it should "expire inserted records after TTL with Twitter Futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).ttl(ttl).execute()
-      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain.successful { record =>
-      record shouldEqual Some(row)
-    }
-
-    eventually(timeout(ttl + granularity)) {
-      val futureRecord = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get()
       futureRecord.successful { record =>
         record shouldBe empty
       }

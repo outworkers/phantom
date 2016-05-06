@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -56,6 +56,7 @@ trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
   /**
    * This converts a value to the appropiate Cassandra type.
    * All Thrift structs are serialized to strings.
+ *
    * @param v The Thrift struct to convert.
    * @return A string containing the compact Thrift serialization.
    */
@@ -79,7 +80,7 @@ abstract class ThriftColumn[T <: CassandraTable[T, R], R, ValueType <: ThriftStr
 
   val cassandraType = CQLSyntax.Types.Text
 
-  def optional(r: Row): Try[ValueType] = {
+  def parse(r: Row): Try[ValueType] = {
     Try(serializer.fromString(r.getString(name)))
   }
 }
@@ -107,7 +108,7 @@ abstract class ThriftSetColumn[T <: CassandraTable[T, R], R, ValueType <: Thrift
 
   override def asCql(v: Set[ValueType]): String = Utils.set(v.map(valueAsCql)).queryString
 
-  override def optional(r: Row): Try[Set[ValueType]] = {
+  override def parse(r: Row): Try[Set[ValueType]] = {
     if (r.isNull(name)) {
       Success(Set.empty[ValueType])
     } else {
@@ -125,7 +126,7 @@ abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: Thrif
   override def asCql(v: List[ValueType]): String = Utils.collection(v.map(valueAsCql)).queryString
 
 
-  override def optional(r: Row): Try[List[ValueType]] = {
+  override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {
       Success(Nil)
     } else {
@@ -146,7 +147,7 @@ abstract class ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType : Primitive
 
   override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
 
-  override def optional(r: Row): Try[Map[KeyType, ValueType]] = {
+  override def parse(r: Row): Try[Map[KeyType, ValueType]] = {
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, ValueType])
     } else {

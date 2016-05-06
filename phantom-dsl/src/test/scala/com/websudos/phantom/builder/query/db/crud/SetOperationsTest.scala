@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -58,23 +58,6 @@ class SetOperationsTest extends PhantomSuite {
     }
   }
 
-  it should "append an item to a set column with Twitter Futures" in {
-    val item = gen[TestRow]
-    val someItem = "test5"
-
-    val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).execute()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText add someItem).execute()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).get()
-    } yield db
-
-    chain.successful {
-      items => {
-        items.value shouldBe item.setText + someItem
-      }
-    }
-  }
-
   it should "append several items to a set column" in {
     val item = gen[TestRow]
     val someItems = Set("test5", "test6")
@@ -83,23 +66,6 @@ class SetOperationsTest extends PhantomSuite {
       insertDone <- TestDatabase.testTable.store(item).future()
       update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).future()
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
-    } yield db
-
-    chain.successful {
-      items => {
-        items.value shouldBe item.setText ++ someItems
-      }
-    }
-  }
-
-  it should "append several items to a set column with Twitter Futures" in {
-    val item = gen[TestRow]
-    val someItems = Set("test5", "test6")
-
-    val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).execute()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).execute()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db
 
     chain.successful {
@@ -127,24 +93,6 @@ class SetOperationsTest extends PhantomSuite {
     }
   }
 
-  it should "remove an item from a set column with Twitter Futures" in {
-    val someItems = Set("test3", "test4", "test5", "test6")
-    val item = gen[TestRow].copy(setText = someItems)
-    val removal = "test6"
-
-    val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).execute()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText remove removal).execute()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).get()
-    } yield db
-
-    chain.successful {
-      items => {
-        items.value shouldBe someItems.diff(Set(removal))
-      }
-    }
-  }
-
   it should "remove several items from a set column" in {
     val someItems = Set("test3", "test4", "test5", "test6")
     val item = gen[TestRow].copy(setText = someItems)
@@ -154,24 +102,6 @@ class SetOperationsTest extends PhantomSuite {
       insertDone <- TestDatabase.testTable.store(item).future()
       update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).future()
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
-    } yield db
-
-    chain.successful {
-      items => {
-        items.value shouldBe someItems.diff(removal)
-      }
-    }
-  }
-
-  it should "remove several items from a set column with Twitter Futures" in {
-    val someItems = Set("test3", "test4", "test5", "test6")
-    val item = gen[TestRow].copy(setText = someItems)
-    val removal = Set("test5", "test6")
-
-    val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).execute()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).execute()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).get()
     } yield db
 
     chain.successful {

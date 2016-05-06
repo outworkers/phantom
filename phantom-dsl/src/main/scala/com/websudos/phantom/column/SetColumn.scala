@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -46,7 +46,7 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
   def valuesToCType(values: Iterable[RR]): Set[String] = values.map(valueAsCql).toSet
 
   override def apply(r: Row): Set[RR] = {
-    optional(r) match {
+    parse(r) match {
       case Success(set) => set
 
       // Note null sets are considered successful, we simply return an empty set instead of null.
@@ -75,7 +75,7 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](
 
   override def fromString(c: String): RR = Primitive[RR].fromString(c)
 
-  override def optional(r: Row): Try[Set[RR]] = {
+  override def parse(r: Row): Try[Set[RR]] = {
     if (r.isNull(name)) {
       Success(Set.empty[RR])
     } else {

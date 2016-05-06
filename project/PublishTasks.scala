@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -46,6 +46,39 @@ object PublishTasks {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   )
 
+  val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
+    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+    publishMavenStyle := true,
+    publishTo <<= version.apply {
+      v =>
+        val nexus = "https://oss.sonatype.org/"
+        if (v.trim.endsWith("SNAPSHOT")) {
+          Some("snapshots" at nexus + "content/repositories/snapshots")
+        } else {
+          Some("releases" at nexus + "service/local/staging/deploy/maven2")
+        }
+    },
+    externalResolvers <<= resolvers map { rs =>
+      Resolver.withDefaultResolvers(rs, mavenCentral = true)
+    },
+    licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => true },
+    pomExtra :=
+      <url>https://github.com/outworkers/phantom</url>
+        <scm>
+          <url>git@github.com:outworkers/phantom.git</url>
+          <connection>scm:git:git@github.com:outworkers/phantom.git</connection>
+        </scm>
+        <developers>
+          <developer>
+            <id>alexflav</id>
+            <name>Flavian Alexandru</name>
+            <url>http://github.com/alexflav23</url>
+          </developer>
+        </developers>
+  )
+
   lazy val mavenPublishSettings : TaskKey[Unit] = TaskKey[Unit]("mavenPublishSettings")
 
   lazy val mavenPublishConfiguration = TaskKey[PublishConfiguration](
@@ -58,38 +91,7 @@ object PublishTasks {
   val printedPublishing = settingKey[Option[String]]("printedPublishing")
 
   val mavenTaskSettings: Seq[Def.Setting[_]] = Seq(
-    mavenPublishSettings := {
-      credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-      publishMavenStyle := true
-      publishTo <<= version.apply {
-        v =>
-          val nexus = "https://oss.sonatype.org/"
-          if (v.trim.endsWith("SNAPSHOT")) {
-            Some("snapshots" at nexus + "content/repositories/snapshots")
-          } else {
-            Some("releases" at nexus + "service/local/staging/deploy/maven2")
-          }
-      }
-      externalResolvers <<= resolvers map { rs =>
-        Resolver.withDefaultResolvers(rs, mavenCentral = true)
-      }
-      licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-      publishArtifact in Test := false
-      pomIncludeRepository := { _ => true }
-      pomExtra :=
-        <url>https://github.com/outworkers/phantom</url>
-          <scm>
-            <url>git@github.com:outworkers/phantom.git</url>
-            <connection>scm:git:git@github.com:outworkers/phantom.git</connection>
-          </scm>
-          <developers>
-            <developer>
-              <id>alexflav</id>
-              <name>Flavian Alexandru</name>
-              <url>http://github.com/alexflav23</url>
-            </developer>
-          </developers>
-    },
+    mavenPublishSettings := mavenPublishingSettings,
     mavenPublishConfiguration <<= (
       mavenPublishSettings,
       signedArtifacts,

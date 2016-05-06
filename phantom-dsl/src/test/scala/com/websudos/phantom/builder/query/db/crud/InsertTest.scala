@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -63,7 +63,7 @@ class InsertTest extends PhantomSuite {
     }
   }
 
-  if(session.v4orNewer) {
+  if (session.v4orNewer) {
     "Insert" should "work fine for primitives cassandra 2.2 columns" in {
       val row = gen[PrimitiveCassandra22]
 
@@ -80,42 +80,12 @@ class InsertTest extends PhantomSuite {
     }
   }
 
-  "Insert" should "work fine for primitives columns with twitter futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
-    } yield one
-
-    chain successful {
-      res => {
-        res shouldBe defined
-      }
-    }
-  }
-
   it should "insert strings with single quotes inside them and automatically escape them" in {
     val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
       store <- TestDatabase.testTable.store(row).future()
       one <- TestDatabase.testTable.select.where(_.key eqs row.key).one
-    } yield one
-
-    chain successful {
-      res => {
-        res.value shouldEqual row
-      }
-    }
-  }
-
-  it should "insert strings with single quotes inside them and automatically escape them with Twitter Futures" in {
-    val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
-
-    val chain = for {
-      store <- TestDatabase.testTable.store(row).execute()
-      one <- TestDatabase.testTable.select.where(_.key eqs row.key).get
     } yield one
 
     chain successful {
@@ -140,48 +110,12 @@ class InsertTest extends PhantomSuite {
     }
   }
 
-  it should "work fine with List, Set, Map and Twitter futures" in {
-    val row = gen[TestRow].copy(mapIntToInt = Map.empty)
-
-    val chain = for {
-      store <- TestDatabase.testTable.store(row).execute()
-      one <- TestDatabase.testTable.select.where(_.key eqs row.key).get
-    } yield one
-
-    chain successful {
-      res => {
-        res.value shouldEqual row
-      }
-    }
-  }
-
   it should "work fine with a mix of collection types in the table definition" in {
     val recipe = gen[Recipe]
 
     val chain = for {
       store <- TestDatabase.recipes.store(recipe).future()
       get <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one
-    } yield get
-
-    chain successful {
-      res => {
-        res shouldBe defined
-        res.value.url shouldEqual recipe.url
-        res.value.description shouldEqual recipe.description
-        res.value.props shouldEqual recipe.props
-        res.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        res.value.ingredients shouldEqual recipe.ingredients
-        res.value.servings shouldEqual recipe.servings
-      }
-    }
-  }
-
-  it should "work fine with a mix of collection types in the table definition and Twitter futures" in {
-    val recipe = gen[Recipe]
-
-    val chain = for {
-      store <- TestDatabase.recipes.store(recipe).execute()
-      get <- TestDatabase.recipes.select.where(_.url eqs recipe.url).get
     } yield get
 
     chain successful {
@@ -213,22 +147,6 @@ class InsertTest extends PhantomSuite {
     }
   }
 
-  it should "support serializing/de-serializing empty lists with Twitter futures" in {
-    val row = gen[MyTestRow].copy(stringlist = List.empty)
-
-    val chain = for {
-      store <- TestDatabase.listCollectionTable.store(row).execute()
-      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).get
-    } yield get
-
-    chain successful  {
-      res => {
-        res.value shouldEqual row
-        res.value.stringlist.isEmpty shouldEqual true
-      }
-    }
-  }
-
   it should "support serializing/de-serializing to List " in {
     val row = gen[MyTestRow]
 
@@ -243,23 +161,6 @@ class InsertTest extends PhantomSuite {
       }
     }
   }
-
-  it should "support serializing/de-serializing to List with Twitter futures" in {
-    val row = gen[MyTestRow]
-
-    val chain = for {
-      store <- TestDatabase.listCollectionTable.store(row).future()
-      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
-    } yield get
-
-    chain successful  {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual row
-      }
-    }
-  }
-
 
   it should "serialize a JSON clause as the insert part" in {
     val sample = gen[Recipe]

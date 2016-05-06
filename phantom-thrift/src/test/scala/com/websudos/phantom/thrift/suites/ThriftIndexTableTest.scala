@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,6 +31,7 @@ package com.websudos.phantom.thrift.suites
 
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.finagle._
 import com.websudos.phantom.tables.{Output, ThriftDatabase}
 import com.websudos.phantom.thrift._
 import com.websudos.util.testing._

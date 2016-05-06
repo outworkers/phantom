@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -33,7 +33,13 @@ import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.serializers._
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-private[phantom] object QueryBuilder {
+case class QueryBuilderConfig(caseSensitiveTables: Boolean)
+
+object QueryBuilderConfig {
+  final val Default = new QueryBuilderConfig(false)
+}
+
+abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.Default) {
 
   case object Create extends CreateTableBuilder
 
@@ -41,7 +47,7 @@ private[phantom] object QueryBuilder {
 
   case object Update extends UpdateQueryBuilder
 
-  case object Collections extends CollectionModifiers
+  case object Collections extends CollectionModifiers(this)
 
   case object Where extends IndexModifiers
   
@@ -91,19 +97,23 @@ private[phantom] object QueryBuilder {
     CQLQuery(CQLSyntax.consistency).forcePad.append(level)
   }
 
-  def keyspace(keySpace: String, tableQuery: CQLQuery): CQLQuery = {
-    if (tableQuery.queryString.startsWith(keySpace + ".")) {
-      tableQuery
-    }  else {
-      tableQuery.prepend(s"$keySpace.")
+  def tableDef(tableName: String): CQLQuery = {
+    if (config.caseSensitiveTables) {
+      CQLQuery(CQLQuery.escape(tableName))
+    } else {
+      CQLQuery(tableName)
     }
+  }
+
+  def keyspace(space: String, tableQuery: CQLQuery): CQLQuery = {
+    keyspace(space, tableQuery.queryString)
   }
 
   def keyspace(keySpace: String, table: String): CQLQuery = {
     if (table.startsWith(keySpace + ".")) {
-      CQLQuery(table)
+      tableDef(table)
     }  else {
-      CQLQuery(table).prepend(s"$keySpace.")
+      tableDef(table).prepend(s"$keySpace.")
     }
   }
 
@@ -116,6 +126,6 @@ private[phantom] object QueryBuilder {
     qb.pad.append(CQLSyntax.limit)
       .forcePad.append(value.toString)
   }
-
-
 }
+
+private[phantom] object QueryBuilder extends QueryBuilder(QueryBuilderConfig.Default)

@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -30,7 +30,6 @@
 package com.websudos.phantom.example.basics
 
 import java.util.UUID
-import com.websudos.phantom.iteratee.Iteratee
 
 import scala.concurrent.{ Future => ScalaFuture }
 
@@ -39,6 +38,7 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ ResultSet, Row }
 
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.reactivestreams._
 
 import com.twitter.conversions.time._
 
@@ -80,9 +80,9 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[Recipes, Recipe, String](this)
+  object ingredients extends SetColumn[String](this)
 
-  object props extends MapColumn[Recipes, Recipe, String, String](this)
+  object props extends MapColumn[String, String](this)
 
   object timestamp extends DateTimeColumn(this)
 

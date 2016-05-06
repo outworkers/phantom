@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,17 +28,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 resolvers ++= Seq(
-    "Sonatype snapshots"                                 at "http://oss.sonatype.org/content/repositories/snapshots/",
-    "jgit-repo"                                          at "http://download.eclipse.org/jgit/maven",
-    "Twitter Repo"                                       at "http://maven.twttr.com/",
-    "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
-    Resolver.bintrayRepo("websudos", "oss-releases"),
-    Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
+  "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+  "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
+  "jgit-repo" at "http://download.eclipse.org/jgit/maven",
+  "Twitter Repo" at "http://maven.twttr.com/",
+  Resolver.bintrayRepo("websudos", "oss-releases"),
+  Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns),
+  Resolver.url("bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.mavenStylePatterns),
+  Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
-
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.15.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.3")
 
@@ -52,8 +52,10 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 
-addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
+//addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
+
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")

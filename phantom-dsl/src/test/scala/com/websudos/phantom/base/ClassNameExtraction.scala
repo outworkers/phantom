@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -55,10 +55,13 @@ case class CustomRecord(name: String, mp: Map[String, String])
 
 trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
   object rec extends StringColumn(this) with PartitionKey[String]
-  object sampleLongTextColumnDefinition extends MapColumn[TestTableNames, CustomRecord, String, String](this)
+  object sampleLongTextColumnDefinition extends MapColumn[String, String](this)
 
   override def fromRow(r: Row): CustomRecord = {
-    CustomRecord(rec(r), sampleLongTextColumnDefinition(r))
+    CustomRecord(
+      rec(r),
+      sampleLongTextColumnDefinition(r)
+    )
   }
 }
 

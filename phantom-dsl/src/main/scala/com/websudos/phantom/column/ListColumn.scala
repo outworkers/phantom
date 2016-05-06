@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -47,7 +47,7 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
   override def asCql(v: List[RR]): String = Utils.collection(v.map(valueAsCql)).queryString
 
   override def apply(r: Row): List[RR] = {
-    optional(r).getOrElse(Nil)
+    parse(r).getOrElse(Nil)
   }
 }
 
@@ -65,7 +65,7 @@ class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive]
 
   override def fromString(value: String): RR = valuePrimitive.fromString(value)
 
-  override def optional(r: Row): Try[List[RR]] = {
+  override def parse(r: Row): Try[List[RR]] = {
     if (r.isNull(name)) {
       Success(Nil)
     } else {

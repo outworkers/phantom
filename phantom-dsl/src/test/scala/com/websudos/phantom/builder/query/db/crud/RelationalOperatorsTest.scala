@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -73,19 +73,6 @@ class RelationalOperatorsTest extends PhantomSuite {
     verifyResults(futureResults, expected)
   }
 
-  it should "fetch records using less than operator with Twitter Futures" in {
-    val maxIndex = 50
-    val maxTimestamp = records(maxIndex).timestamp
-
-    val futureResults = TestDatabase.timeSeriesTable.select
-      .where(_.timestamp < maxTimestamp)
-      .allowFiltering()
-      .collect()
-
-    val expected = records.filter(_.timestamp.isBefore(maxTimestamp))
-    verifyResults(futureResults, expected)
-  }
-
   it should "fetch records using less than operator with prepared statement" in {
     val maxIndex = 50
     val maxTimestamp = records(maxIndex).timestamp
@@ -108,19 +95,6 @@ class RelationalOperatorsTest extends PhantomSuite {
       .where(_.timestamp <= maxTimestamp)
       .allowFiltering()
       .fetch()
-
-    val expected = records.filter(!_.timestamp.isAfter(maxTimestamp))
-    verifyResults(futureResults, expected)
-  }
-
-  it should "fetch records using less than or equal operator with Twitter Futures" in {
-    val maxIndex = 40
-    val maxTimestamp = records(maxIndex).timestamp
-
-    val futureResults = TestDatabase.timeSeriesTable.select
-      .where(_.timestamp <= maxTimestamp)
-      .allowFiltering()
-      .collect()
 
     val expected = records.filter(!_.timestamp.isAfter(maxTimestamp))
     verifyResults(futureResults, expected)
@@ -153,19 +127,6 @@ class RelationalOperatorsTest extends PhantomSuite {
     verifyResults(futureResults, expected)
   }
 
-  it should "fetch records using greater than operator with Twitter Futures" in {
-    val minIndex = 60
-    val minTimestamp = records(minIndex).timestamp
-
-    val futureResults = TestDatabase.timeSeriesTable.select
-      .where(_.timestamp > minTimestamp)
-      .allowFiltering()
-      .collect()
-
-    val expected = records.filter(_.timestamp.isAfter(minTimestamp))
-    verifyResults(futureResults, expected)
-  }
-
   it should "fetch records using greater than operator with prepared statement" in {
     val minIndex = 60
     val minTimestamp = records(minIndex).timestamp
@@ -188,19 +149,6 @@ class RelationalOperatorsTest extends PhantomSuite {
       .where(_.timestamp >= minTimestamp)
       .allowFiltering()
       .fetch()
-
-    val expected = records.filter(!_.timestamp.isBefore(minTimestamp))
-    verifyResults(futureResults, expected)
-  }
-
-  it should "fetch records using greater than or equal operator with Twitter Futures" in {
-    val minIndex = 75
-    val minTimestamp = records(minIndex).timestamp
-
-    val futureResults = TestDatabase.timeSeriesTable.select
-      .where(_.timestamp >= minTimestamp)
-      .allowFiltering()
-      .collect()
 
     val expected = records.filter(!_.timestamp.isBefore(minTimestamp))
     verifyResults(futureResults, expected)
@@ -231,22 +179,6 @@ class RelationalOperatorsTest extends PhantomSuite {
       .and(_.timestamp < maxTimestamp)
       .allowFiltering()
       .fetch()
-
-    val expected =  records.filter(r => r.timestamp.isAfter(minTimestamp) && r.timestamp.isBefore(maxTimestamp))
-    verifyResults(futureResults, expected)
-  }
-
-  it should "fetch records using less than and greater than operators with Twitter Futures" in {
-    val minIndex = 10
-    val maxIndex = 40
-    val minTimestamp = records(minIndex).timestamp
-    val maxTimestamp = records(maxIndex).timestamp
-
-    val futureResults = TestDatabase.timeSeriesTable.select
-      .where(_.timestamp > minTimestamp)
-      .and(_.timestamp < maxTimestamp)
-      .allowFiltering()
-      .collect()
 
     val expected =  records.filter(r => r.timestamp.isAfter(minTimestamp) && r.timestamp.isBefore(maxTimestamp))
     verifyResults(futureResults, expected)

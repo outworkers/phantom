@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -63,8 +63,6 @@ private[phantom] class TimeToLiveBuilder extends TableProperty {
   def eqs(duration: Seconds): TablePropertyClause = eqs(duration.getSeconds.toLong)
 
   def eqs(duration: FiniteDuration): TablePropertyClause = eqs(duration.toSeconds)
-
-  def eqs(duration: com.twitter.util.Duration): TablePropertyClause = eqs(duration.inLongSeconds)
 }
 
 private[phantom] class GcGraceSecondsBuilder extends TableProperty {
@@ -74,10 +72,6 @@ private[phantom] class GcGraceSecondsBuilder extends TableProperty {
 
   def eqs(duration: FiniteDuration): TablePropertyClause = {
     new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(duration.toSeconds.toString))
-  }
-
-  def eqs(duration: com.twitter.util.Duration): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(duration.inSeconds.toString))
   }
 }
 

@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -30,9 +30,6 @@
 package com.websudos.phantom.builder.query.db.crud
 
 import com.websudos.phantom.PhantomSuite
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.websudos.util.testing._
@@ -61,21 +58,6 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting the whole row" should "work fine with Twitter futures" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).get
-    } yield b
-
-    chain successful {
-      res => {
-        res.value shouldEqual row
-      }
-    }
-  }
-
   "Selecting 2 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
@@ -88,22 +70,6 @@ class SelectTest extends PhantomSuite {
     chain successful {
       res => {
         res.value shouldEqual expected
-      }
-    }
-  }
-
-  "Selecting 2 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldEqual expected
       }
     }
   }
@@ -125,22 +91,6 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 3 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
   "Selecting 4 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
@@ -157,23 +107,6 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 4 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
-
   "Selecting 5 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
@@ -181,22 +114,6 @@ class SelectTest extends PhantomSuite {
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
       get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
-  "Selecting 5 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
@@ -222,22 +139,6 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 6 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).get()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
   "Selecting 7 columns" should "work fine" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
@@ -245,22 +146,6 @@ class SelectTest extends PhantomSuite {
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
       get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
-  "Selecting 7 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {
@@ -278,23 +163,6 @@ class SelectTest extends PhantomSuite {
       store <- TestDatabase.primitives.store(row).future()
       get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .where(_.pkey eqs row.pkey).one()
-    } yield get
-
-    chain successful {
-      r => {
-        r.value shouldBe expected
-      }
-    }
-  }
-
-  "Selecting 8 columns" should "work fine with Twitter Futures" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).execute()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
-        .where(_.pkey eqs row.pkey).get()
     } yield get
 
     chain successful {

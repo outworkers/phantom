@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -52,7 +52,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
 
   object name extends StringColumn(this)
 
-  object json extends JsonColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
+  object json extends JsonColumn[JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -62,7 +62,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
     }
   }
 
-  object jsonList extends JsonListColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
+  object jsonList extends JsonListColumn[JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -72,7 +72,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
     }
   }
 
-  object jsonSet extends JsonSetColumn[ConcreteJsonTable, JsonClass, JsonTest](this) {
+  object jsonSet extends JsonSetColumn[JsonTest](this) {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }

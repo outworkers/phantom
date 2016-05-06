@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,9 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses._
@@ -44,7 +42,6 @@ import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
 import scala.util.Try
 
-
 class SelectQuery[
   Table <: CassandraTable[Table, _],
   Record,
@@ -54,18 +51,22 @@ class SelectQuery[
   Chain <: WhereBound,
   PS <: HList
 ](
-  table: Table,
-  rowFunc: Row => Record,
+  protected[phantom] val table: Table,
+  protected[phantom] val rowFunc: Row => Record,
   val init: CQLQuery,
-  wherePart: WherePart = WherePart.empty,
-  orderPart: OrderPart = OrderPart.empty,
-  limitedPart: LimitedPart = LimitedPart.empty,
-  filteringPart: FilteringPart = FilteringPart.empty,
-  usingPart: UsingPart = UsingPart.empty,
-  count: Boolean = false,
+  protected[phantom] val wherePart: WherePart = WherePart.empty,
+  protected[phantom] val orderPart: OrderPart = OrderPart.empty,
+  protected[phantom] val limitedPart: LimitedPart = LimitedPart.empty,
+  protected[phantom] val filteringPart: FilteringPart = FilteringPart.empty,
+  protected[phantom] val usingPart: UsingPart = UsingPart.empty,
+  protected[phantom] val count: Boolean = false,
   override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, qb = init, rowFunc, usingPart, options) with ExecutableQuery[Table,
-  Record, Limit] {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS](
+  table, qb = init,
+  rowFunc,
+  usingPart,
+  options
+) with ExecutableQuery[Table, Record, Limit] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
@@ -305,36 +306,12 @@ class SelectQuery[
     ).singleFetch()
 
   }
-
-  /**
-   * Returns the first row from the select ignoring everything else
-   * This will always use a LIMIT 1 in the Cassandra query.
-   * @param session The Cassandra session in use.
-   * @return
-   */
-  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): TwitterFuture[Option[Record]] = {
-    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
-
-    new SelectQuery(
-      table = table,
-      rowFunc = rowFunc,
-      init = init,
-      wherePart = wherePart,
-      orderPart = orderPart,
-      limitedPart = enforceLimit,
-      filteringPart = filteringPart,
-      usingPart = usingPart,
-      count = count,
-      options = options
-    ).singleCollect()
-  }
 }
 
 private[phantom] class RootSelectBlock[
   T <: CassandraTable[T, _],
   R
-](table: T, rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
+](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {

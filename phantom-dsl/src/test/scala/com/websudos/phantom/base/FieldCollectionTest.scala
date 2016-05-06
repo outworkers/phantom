@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -35,9 +35,11 @@ import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecution with GeneratorDrivenPropertyChecks {
 
+  val testSamplesCount = 300
+
   it should "correctly initialise objects in the order they are written in" in {
-    forAll(minSuccessful(300)) { (d: String) =>
-      whenever (d.length > 0) {
+    forAll(minSuccessful(testSamplesCount)) { (d: String) =>
+      whenever (d.nonEmpty) {
         val collected = TestDatabase.articles.columns.map(_.name).mkString(" ")
         val expected = s"${TestDatabase.articles.id.name} ${TestDatabase.articles.name.name} ${TestDatabase.articles.orderId.name}"
         collected shouldEqual expected

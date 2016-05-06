@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,9 +31,8 @@ package com.websudos.phantom.builder.query.db.batch
 
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.PhantomSuite
-import com.websudos.util.testing._
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{TestDatabase}
+import com.websudos.phantom.tables.TestDatabase
 
 class CounterBatchTest extends PhantomSuite {
 
@@ -60,29 +59,7 @@ class CounterBatchTest extends PhantomSuite {
       get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
     } yield get
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 2500
-      }
-    }
-  }
-
-  it should "create a batch query to perform several updates in a single table with Twitter Futures" in {
-    val id = UUIDs.timeBased()
-    val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .execute()
-
-    val chain = for {
-      batched <- ft
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).get()
-    } yield get
-
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value shouldEqual 2500
       }
@@ -110,7 +87,7 @@ class CounterBatchTest extends PhantomSuite {
       get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
     } yield (get, get2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, updated) => {
         info("The first counter select should return the record")
         initial shouldBe defined
@@ -119,44 +96,6 @@ class CounterBatchTest extends PhantomSuite {
 
         info("The second counter select should return the record")
         updated shouldBe defined
-        info("and the counter value should match the sum of the +=s")
-        updated.value shouldEqual 2500
-      }
-    }
-  }
-
-  it should "create a batch query to update counters in several tables with Twitter Futures" in {
-    val id = UUIDs.timeBased()
-    val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .execute()
-
-    val chain = for {
-      batched <- ft
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).get()
-      get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).get()
-    } yield (get, get2)
-
-    chain.successful {
-      case (initial, updated) => {
-        info("The first counter select should return the record")
-        initial shouldBe defined
-
-        info("and the counter value should match the sum of the +=s")
-        initial.value shouldEqual 2500
-
-        info("The second counter select should return the record")
-        updated shouldBe defined
-
         info("and the counter value should match the sum of the +=s")
         updated.value shouldEqual 2500
       }
@@ -185,44 +124,7 @@ class CounterBatchTest extends PhantomSuite {
       get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
     } yield (get, get2)
 
-    chain.successful {
-      case (initial, updated) => {
-        info("The first counter select should return the record")
-        initial shouldBe defined
-        info("and the counter value should match the sum of the +=s")
-        initial.value shouldEqual 500
-
-        info("The second counter select should return the record")
-        updated shouldBe defined
-        info("and the counter value should match the sum of the +=s")
-        updated.value shouldEqual 500
-      }
-    }
-  }
-
-  it should "create a batch query to counters in several tables while alternating between += and -= with Twitter futures" in {
-    val id = UUIDs.timeBased()
-    val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .future()
-
-    val chain = for {
-      batched <- ft
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
-      get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
-    } yield (get, get2)
-
-    chain.successful {
+    whenReady(chain) {
       case (initial, updated) => {
         info("The first counter select should return the record")
         initial shouldBe defined

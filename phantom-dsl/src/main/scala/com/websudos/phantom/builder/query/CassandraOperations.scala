@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,7 +31,6 @@ package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.twitter.util.{Return, Throw, Future => TwitterFuture, Promise => TwitterPromise}
 import com.websudos.phantom.Manager
 import com.websudos.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
@@ -64,27 +63,6 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
       def onFailure(err: Throwable): Unit = {
         Manager.logger.error(err.getMessage)
         promise failure err
-      }
-    }
-    Futures.addCallback(future, callback, Manager.executor)
-    promise
-  }
-
-
-  protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(implicit session: Session, keyspace: KeySpace): TwitterFuture[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $str")
-
-    val promise = TwitterPromise[ResultSet]()
-    val future = session.executeAsync(str)
-
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise update Return(result)
-      }
-
-      def onFailure(err: Throwable): Unit = {
-        Manager.logger.error(err.getMessage)
-        promise update Throw(err)
       }
     }
     Futures.addCallback(future, callback, Manager.executor)

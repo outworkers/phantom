@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -41,7 +41,7 @@ class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enu
 
   def cassandraType: String = CQLSyntax.Types.Text
 
-  def optional(r: Row): Try[EnumType#Value] = {
+  def parse(r: Row): Try[EnumType#Value] = {
     val enumConstant = r.getString(name)
 
     enum.values.find(_.toString == enumConstant) match {

@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -46,15 +46,15 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[ConcreteTestTable, TestRow, String](this)
+  object list extends ListColumn[String](this)
 
-  object setText extends SetColumn[ConcreteTestTable, TestRow, String](this)
+  object setText extends SetColumn[String](this)
 
-  object mapTextToText extends MapColumn[ConcreteTestTable, TestRow, String, String](this)
+  object mapTextToText extends MapColumn[String, String](this)
 
-  object setInt extends SetColumn[ConcreteTestTable, TestRow, Int](this)
+  object setInt extends SetColumn[Int](this)
 
-  object mapIntToText extends MapColumn[ConcreteTestTable, TestRow, Int, String](this)
+  object mapIntToText extends MapColumn[Int, String](this)
 
   def fromRow(r: Row): TestRow = {
     TestRow(

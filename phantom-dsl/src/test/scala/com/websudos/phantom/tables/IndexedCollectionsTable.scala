@@ -13,7 +13,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Explicit consent must be obtained from the copyright owner, Websudos Limited before any redistribution is made.
+ * - Explicit consent must be obtained from the copyright owner, Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -38,17 +38,17 @@ sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedColle
 
   object key extends StringColumn(this) with PartitionKey[String]
 
-  object list extends ListColumn[ConcreteIndexedCollectionsTable, TestRow, String](this)
+  object list extends ListColumn[String](this)
 
-  object setText extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, String](this) with Index[Set[String]]
+  object setText extends SetColumn[String](this) with Index[Set[String]]
 
-  object mapTextToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, String, String](this) with Index[Map[String, String]]
+  object mapTextToText extends MapColumn[String, String](this) with Index[Map[String, String]]
 
-  object setInt extends SetColumn[ConcreteIndexedCollectionsTable, TestRow, Int](this)
+  object setInt extends SetColumn[Int](this)
 
-  object mapIntToText extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, Int, String](this) with Index[Map[Int, String]] with Keys
+  object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
 
-  object mapIntToInt extends MapColumn[ConcreteIndexedCollectionsTable, TestRow, Int, Int](this) with Index[Map[Int, Int]] with Entries
+  object mapIntToInt extends MapColumn[Int, Int](this) with Index[Map[Int, Int]] with Entries
 
   def fromRow(r: Row): TestRow = {
     TestRow(
