@@ -14,7 +14,7 @@
  * documentation and/or other materials provided with the distribution.
  *
  * - Explicit written consent must be obtained from the copyright owner,
- * Websudos Limited before any redistribution is made.
+ * Outworkers Limited before any redistribution is made.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
