@@ -48,6 +48,7 @@ class IteratorTest extends BigTest with ScalaFutures {
     }
 
     val counter: AtomicInteger = new AtomicInteger(0)
+
     val iterationResultFuture = setUpFuture.flatMap(_ => TestDatabase.primitives.select.iterator()).map {
       _.foreach(x => {
         counter.incrementAndGet()
@@ -55,7 +56,7 @@ class IteratorTest extends BigTest with ScalaFutures {
       })
     }
 
-    iterationResultFuture successful {
+    whenReady(iterationResultFuture) {
       _ => assert(counter.intValue() === rows.size)
     }
   }

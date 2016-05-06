@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
-import com.twitter.util.{Future => TwitterFuture}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
@@ -41,6 +40,7 @@ class InsertCasTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
+    TestDatabase.primitives.truncate().future().block(defaultScalaTimeout)
     TestDatabase.testTable.insertSchema()
     TestDatabase.recipes.insertSchema()
   }
@@ -66,7 +66,7 @@ class InsertCasTest extends PhantomSuite {
       count <- TestDatabase.primitives.select.count.one()
     } yield (one, count, multi)
 
-    chain successful {
+    whenReady(chain) {
       case (res1, res2, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
@@ -108,7 +108,7 @@ class InsertCasTest extends PhantomSuite {
       count <- TestDatabase.primitives.select.count.one()
     } yield (one, count, multi)
 
-    chain successful {
+    whenReady(chain) {
       case (res1, res2, res3) => {
         info("The one query should return a record")
         res1 shouldBe defined
