@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom
 
+import java.util.concurrent.Executor
 import java.util.{ List => JavaList }
 
 import com.datastax.driver.core._
@@ -53,7 +54,8 @@ package object finagle {
 
   protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(
     implicit session: Session,
-    keyspace: KeySpace
+    keyspace: KeySpace,
+    executor: Executor
   ): Future[ResultSet] = {
     Manager.logger.debug(s"Executing query: $str")
 
@@ -70,7 +72,7 @@ package object finagle {
         promise update Throw(err)
       }
     }
-    Futures.addCallback(future, callback, Manager.executor)
+    Futures.addCallback(future, callback, executor)
     promise
   }
 
@@ -82,11 +84,12 @@ package object finagle {
       * Produces a Twitter Spool of [R]ows
       * This enumerator can be consumed afterwards with an Iteratee
       *
-      * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return
       */
-    def fetchSpool()(implicit session: Session, keySpace: KeySpace): Future[Spool[R]] = {
+    def fetchSpool()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Spool[R]] = {
       block.all().execute() flatMap {
         resultSet => ResultSpool.spool(resultSet).map(spool => spool map block.all.fromRow)
       }
@@ -107,9 +110,10 @@ package object finagle {
       *
       * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
       * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return
       */
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(query.statement())
     }
 
@@ -126,9 +130,14 @@ package object finagle {
       * @param modifyStatement The function allowing to modify underlying [[Statement]]
       * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
       * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return
       */
-    def execute(modifyStatement: Modifier)(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def execute(modifyStatement: Modifier)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: Executor
+    ): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(modifyStatement(query.statement()))
     }
   }
@@ -147,7 +156,11 @@ package object finagle {
       List.tabulate(results.size())(index => query.fromRow(results.get(index)))
     }
 
-    private[phantom] def singleCollect()(implicit session: Session, keySpace: KeySpace): Future[Option[R]] = {
+    private[phantom] def singleCollect()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: Executor
+    ): Future[Option[R]] = {
       query.execute() map { res => singleResult(res.one) }
     }
 
@@ -156,10 +169,12 @@ package object finagle {
       * A spool is both lazily constructed and consumed, suitable for large
       * collections when using twitter futures.
       *
-      * @param session The cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Spool of R.
       */
-    def fetchSpool()(implicit session: Session, keySpace: KeySpace): Future[Spool[R]] = {
+    def fetchSpool()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Spool[R]] = {
       query.execute() flatMap {
         resultSet => ResultSpool.spool(resultSet).map(spool => spool map query.fromRow)
       }
@@ -170,10 +185,12 @@ package object finagle {
       * Returns a parsed sequence of [R]ows
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collect()(implicit session: Session, keySpace: KeySpace): Future[List[R]] = {
+    def collect()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[List[R]] = {
       query.execute() map { resultSet => directMapper(resultSet.all) }
     }
 
@@ -181,10 +198,16 @@ package object finagle {
       * Returns a parsed sequence of rows after the generated statement is modified by the modifier function.
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collect(modifyStatement: Modifier)(implicit session: Session, keySpace: KeySpace): Future[List[R]] = {
+    def collect(modifyStatement: Modifier)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: Executor
+    ): Future[List[R]] = {
       query.execute(modifyStatement) map { resultSet => directMapper(resultSet.all) }
     }
 
@@ -192,10 +215,16 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collect(pagingState: PagingState)(implicit session: Session, keySpace: KeySpace): Future[List[R]] = {
+    def collect(pagingState: PagingState)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: Executor
+    ): Future[List[R]] = {
       query.execute(st => st.setPagingState(pagingState)) map { resultSet => directMapper(resultSet.all) }
     }
 
@@ -203,10 +232,12 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collectRecord()(implicit session: Session, keySpace: KeySpace): Future[ListResult[R]] = {
+    def collectRecord()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ListResult[R]] = {
       query.execute() map { resultSet => ListResult(directMapper(resultSet.all), resultSet) }
     }
 
@@ -214,12 +245,15 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
     def collectRecord(modifyStatement: Modifier)(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      executor: Executor
     ): Future[ListResult[R]] = {
       query.execute(modifyStatement) map { resultSet => ListResult(directMapper(resultSet.all), resultSet) }
     }
@@ -228,12 +262,15 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
     def collectRecord(pagingState: PagingState)(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      executor: Executor
     ): Future[ListResult[R]] = {
       query.execute(st => st.setPagingState(pagingState)) map { resultSet =>
         ListResult(directMapper(resultSet.all), resultSet)
@@ -246,13 +283,15 @@ package object finagle {
       * This is not suitable for big results set
       *
       * @param state An optional paging state that will be added only if the state is defined.
-      * @param session The Cassandra session in use.
-      * @param keySpace The implicit keyspace wrapper object where the table is hosted.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
     def collectRecord(state: Option[PagingState])(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      executor: Executor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
         set => ListResult(directMapper(set.all), set)
@@ -263,13 +302,13 @@ package object finagle {
 }
 
   implicit class BatchQueryAugmenter[ST <: ConsistencyBound](val batch: BatchQuery[ST]) extends AnyVal {
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(batch.makeBatch())
     }
   }
 
   implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList) extends AnyVal {
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
         twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
       }))
@@ -284,7 +323,7 @@ package object finagle {
     Status <: ConsistencyBound
   ](val query: CreateQuery[Table, Record, Status]) extends AnyVal {
 
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
       if (query.table.secondaryKeys.isEmpty) {
         twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate().queryString))
       } else {
@@ -303,7 +342,7 @@ package object finagle {
   }
 
   implicit class ExecutableCreateStatementsListAugmenter(val list: ExecutableCreateStatementsList) extends AnyVal {
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[Seq[ResultSet]] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Seq[ResultSet]] = {
       Future.collect(list.tables.toSeq.map(_.create.ifNotExists().execute()))
     }
   }
@@ -330,11 +369,19 @@ package object finagle {
     /**
       * Returns the first row from the select ignoring everything else
       * This will always use a LIMIT 1 in the Cassandra query.
-      * @param session The Cassandra session in use.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param ev The implicit limit for the query.
+      * @param executor The implicit Java executor.
       * @return
       */
     @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-    def get()(implicit session: Session, keySpace: KeySpace, ev: Limit =:= Unlimited): Future[Option[Record]] = {
+    def get()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ev: Limit =:= Unlimited,
+      executor: Executor
+    ): Future[Option[Record]] = {
       val enforceLimit = if (select.count) LimitedPart.empty else select.limitedPart append QueryBuilder.limit(1)
 
       new SelectQuery(
@@ -422,14 +469,22 @@ package object finagle {
     /**
       * Get the result of an operation as a Twitter Future.
       *
-      * @param session The Datastax Cassandra session.
+      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param ev The implicit limit for the query.
+      * @param executor The implicit Java executor.
       * @return A Twitter future wrapping the result.
       */
-    def get()(implicit session: Session, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): Future[Option[Record]] = {
+    def get()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ev: =:=[Limit, Unlimited],
+      executor: Executor
+    ): Future[Option[Record]] = {
       block.singleCollect()
     }
 
-    def execute()(implicit session: Session, keySpace: KeySpace): Future[ResultSet] = {
+    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(block.st)
     }
   }

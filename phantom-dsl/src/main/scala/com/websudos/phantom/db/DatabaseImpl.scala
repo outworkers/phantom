@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.db
 
+import java.util.concurrent.Executor
+
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.diesel.engine.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
@@ -110,8 +112,12 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
 
 sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
-  def future()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Future[Seq[ResultSet]] = {
+  def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
+  ): Future[Seq[ResultSet]] = {
     Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
   }
-
 }

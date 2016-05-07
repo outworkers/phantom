@@ -84,6 +84,7 @@ This is a list of companies that have embraced phantom as part of their technolo
 - [Tecsisa](http://www.tecsisa.com/en/)
 - [Tuplejump](http://www.tuplejump.com/)
 - [FiloDB](http://www.github.com/tuplejump/FiloDB) - the fast analytics database built on Cassandra and Spark
+- [Chartboost](https://www.chartboost.com)
 
 
 License and copyright
@@ -122,6 +123,7 @@ Scala/Cassandra users in the world rely on phantom.
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
 * Evan Chan ([@evanfchan](https://github.com/evanfchan))
 * Jens Halm ([@jenshalm](https://github.com/jenshalm))
+* Donovan Levinson ([@levinson](https://github.com/levinson))
 
 <a id="copyright">Copyright</a>
 ===============================

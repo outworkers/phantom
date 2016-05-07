@@ -38,8 +38,6 @@ import scala.concurrent.ExecutionContext
 
 object Manager {
 
-  lazy val cores = Runtime.getRuntime.availableProcessors()
-
   lazy val taskExecutor = Executors.newCachedThreadPool()
 
   implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
