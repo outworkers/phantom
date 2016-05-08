@@ -101,7 +101,6 @@ lazy val defaultCredentials: Seq[Credentials] = {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
-  version := "1.26.0",
   scalaVersion := "2.11.7",
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.5", "2.11.7"),
@@ -133,7 +132,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j
   ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
-  fork in Test := false,
+  fork in Test := true,
   javaOptions in ThisBuild ++= Seq(
     "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
@@ -152,7 +151,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ graphSettings ++
   VersionManagement.newSettings ++
   GitProject.gitSettings ++
-  PublishTasks.bintrayPublishSettings
+  PublishTasks.effectivePublishingSettings
 
 
 lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
@@ -258,7 +257,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test, provided"
     )
   ).settings(
-    sharedSettings: _*
+    inConfig(PerformanceTest)(Defaults.testTasks) ++ sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
   )
@@ -283,6 +282,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
 
 lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   .settings(
+    sharedSettings: _*
+  ).settings(
   name := "phantom-sbt",
   moduleName := "phantom-sbt",
   scalaVersion := "2.10.5",
