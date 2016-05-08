@@ -34,6 +34,10 @@ import bintray.BintrayKeys._
 
 object PublishTasks {
 
+  val defaultPublishingSettings = Seq(
+    version := "1.26.1"
+  )
+
   val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("websudos"),
@@ -44,7 +48,7 @@ object PublishTasks {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
+  ) ++ defaultPublishingSettings
 
   val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -77,7 +81,7 @@ object PublishTasks {
             <url>http://github.com/alexflav23</url>
           </developer>
         </developers>
-  )
+  ) ++ defaultPublishingSettings
 
   lazy val mavenPublishSettings : TaskKey[Unit] = TaskKey[Unit]("mavenPublishSettings")
 
@@ -112,4 +116,8 @@ object PublishTasks {
     publishToMavenCentral <<= Classpaths.publishTask(mavenPublishConfiguration, deliver)
       .dependsOn(mavenPublishConfiguration)
   )
+
+  val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+
+  lazy val effectivePublishingSettings = if (RunningUnderCi) bintrayPublishSettings else mavenPublishingSettings
 }

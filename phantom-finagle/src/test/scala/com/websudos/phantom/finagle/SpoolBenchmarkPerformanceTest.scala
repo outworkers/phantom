@@ -30,7 +30,7 @@
 package com.websudos.phantom.finagle
 
 import com.twitter.util.{Await => TwitterAwait}
-import com.websudos.phantom.dsl.{Batch, _}
+import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
 import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
