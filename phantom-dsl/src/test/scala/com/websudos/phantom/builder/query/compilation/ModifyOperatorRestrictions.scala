@@ -42,7 +42,6 @@ class ModifyOperatorRestrictions extends FlatSpec with Matchers with ParallelTes
   val TimeSeriesTable = TestDatabase.timeSeriesTable
   val CounterTableTest = TestDatabase.counterTableTest
   val TwoKeys = TestDatabase.twoKeysTable
-  val c = context
   val update = gen[String]
 
   it should "not allow using the setTo operator on a Counter column" in {

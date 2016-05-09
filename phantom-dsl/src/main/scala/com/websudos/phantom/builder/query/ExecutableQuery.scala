@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
+import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
 import com.datastax.driver.core._
@@ -78,9 +79,16 @@ trait ExecutableStatement extends CassandraOperations {
     *
     * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return An asynchronous Scala future wrapping the Datastax result set.
     */
-  def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+  def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
+  ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(statement)
   }
 
@@ -97,9 +105,14 @@ trait ExecutableStatement extends CassandraOperations {
     * @param modifyStatement The function allowing to modify underlying [[Statement]]
     * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
     * @return An asynchronous Scala future wrapping the Datastax result set.
     */
-  def future(modifyStatement : Modifier)(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+  def future(modifyStatement: Modifier)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor
+  ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(modifyStatement(statement))
   }
 }
@@ -126,7 +139,12 @@ private[phantom] class ExecutableStatementList(val queries: Seq[CQLQuery]) exten
 
   def ++(st: ExecutableStatementList): ExecutableStatementList = add(st.queries)
 
-  def future()(implicit session: Session, keySpace: KeySpace, ex: ExecutionContext): ScalaFuture[Seq[ResultSet]] = {
+  def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
+  ): ScalaFuture[Seq[ResultSet]] = {
     ScalaFuture.sequence(queries.map(item => {
       scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
     }))
@@ -158,27 +176,49 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
 
   def fromRow(r: Row): R
 
-  private[phantom] def singleFetch()(implicit session: Session, context: ExecutionContext, keySpace: KeySpace): ScalaFuture[Option[R]] = {
+  private[phantom] def singleFetch()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
+  ): ScalaFuture[Option[R]] = {
     future() map { res => singleResult(res.one) }
   }
 
   /**
    * Returns the first row from the select ignoring everything else
    *
-   * @param session The Cassandra session in use.
+   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param ev The implicit limit for the query.
+   * @param executor The implicit Java executor.
+   * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
    */
-  def one()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[R]]
+  def one()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: Limit =:= Unlimited,
+    executor: Executor,
+    ec: ExecutionContext
+  ): ScalaFuture[Option[R]]
 
   /**
    * Returns a parsed sequence of [R]ows
    * This is not suitable for big results set
    *
-   * @param session The Cassandra session in use.
-   * @param ec The Execution Context.
+   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param executor The implicit Java executor.
+   * @param ec The implicit Scala execution context.
    * @return A Scala future wrapping a list of mapped results.
    */
-  def fetch()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace): ScalaFuture[List[R]] = {
+  def fetch()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
+  ): ScalaFuture[List[R]] = {
     future() map { resultSet => directMapper(resultSet.all) }
   }
 
@@ -186,14 +226,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The Cassandra session in use.
-    * @param ec The Execution Context.
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetch(state: PagingState)(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[List[R]] = {
     future(_.setPagingState(state)) map {
       resultSet => directMapper(resultSet.all)
@@ -204,14 +247,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The Cassandra session in use.
-    * @param ec The Execution Context.
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetch(modifyStatement : Modifier)(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[List[R]] = {
     future(modifyStatement) map {
       resultSet => directMapper(resultSet.all)
@@ -222,14 +268,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The Cassandra session in use.
-    * @param ec The Execution Context.
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetchRecord()(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[ListResult[R]] = {
     future() map (resultSet => ListResult(directMapper(resultSet.all), resultSet))
   }
@@ -238,14 +287,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The Cassandra session in use.
-    * @param ec The Execution Context.
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetchRecord(state: PagingState)(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[ListResult[R]] = {
     future(st => st.setPagingState(state)) map {
       set => ListResult(directMapper(set.all), set)
@@ -254,8 +306,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
 
   def fetchRecord(state: Option[PagingState])(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[ListResult[R]] = {
     state.fold(future().map {
       set => ListResult(directMapper(set.all), set)
@@ -268,14 +321,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The Cassandra session in use.
-    * @param ec The Execution Context.
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param executor The implicit Java executor.
+    * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
   def fetchRecord(modifyStatement: Modifier)(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[ListResult[R]] = {
     future(modifyStatement) map {
       set => ListResult(directMapper(set.all), set)
@@ -285,22 +341,26 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   /**
    * Returns a parsed iterator of [R]ows
    *
-   * @param session The Cassandra session in use.
-   * @param ec The Execution Context.
+   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param executor The implicit Java executor.
+   * @param ec The implicit Scala execution context.
    * @return A Scala future wrapping scala iterator of mapped results.
    */
   def iterator()(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[Iterator[R]] = {
     future() map { _.iterator().asScala.map(fromRow) }
   }
 
   def iteratorRecord()(
     implicit session: Session,
-    ec: ExecutionContext,
-    keySpace: KeySpace
+    keySpace: KeySpace,
+    executor: Executor,
+    ec: ExecutionContext
   ): ScalaFuture[IteratorResult[R]] = {
     future() map { result => IteratorResult(result.iterator().asScala.map(fromRow), result) }
   }

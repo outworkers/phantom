@@ -31,6 +31,7 @@ package com.websudos.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.util.concurrent.Executor
 import java.util.{Date, Random}
 
 import com.datastax.driver.core.utils.UUIDs
@@ -44,6 +45,7 @@ import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImpl
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import shapeless.{::, HNil}
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.control.NoStackTrace
 
@@ -179,7 +181,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     new TokenConstructor(Seq(Primitive[RR].asCql(value)))
   }
 
-  implicit lazy val context = Manager.scalaExecutor
+  implicit lazy val context: ExecutionContext = Manager.scalaExecutor
+
+  implicit lazy val executor: Executor = Manager.executor
 
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
