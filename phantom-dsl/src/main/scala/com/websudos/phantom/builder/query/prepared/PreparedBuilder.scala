@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
-import java.util.concurrent.Executor
-
 import com.datastax.driver.core.{QueryOptions => _, _}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query._
@@ -41,7 +39,7 @@ import shapeless.HList
 import shapeless.ops.hlist.Tupler
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, blocking, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
 private[phantom] trait PrepareMark {
 

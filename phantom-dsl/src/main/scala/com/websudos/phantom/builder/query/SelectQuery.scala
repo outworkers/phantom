@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom.builder.query
 
-import java.util.concurrent.Executor
-
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
@@ -41,7 +39,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 import scala.util.Try
 
 class SelectQuery[
@@ -289,7 +287,6 @@ class SelectQuery[
    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
-   * @param executor The implicit Java executor.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
    */
