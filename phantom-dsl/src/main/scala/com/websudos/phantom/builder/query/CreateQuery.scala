@@ -37,7 +37,7 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.{CassandraTable, Manager}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
@@ -189,10 +189,11 @@ class CreateQuery[
     })
   }
 
-  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
-
-    implicit val ex: ExecutionContext = Manager.scalaExecutor
-
+  override def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[ResultSet] = {
     if (table.secondaryKeys.isEmpty) {
       scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
     } else {
@@ -208,7 +209,6 @@ class CreateQuery[
       }
     }
   }
-
 }
 
 object CreateQuery {

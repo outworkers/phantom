@@ -35,7 +35,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{ExecutionContextExecutor, Future, blocking}
 
 private object Lock
 
@@ -110,8 +110,11 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
 
 sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
-  def future()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Future[Seq[ResultSet]] = {
+  def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): Future[Seq[ResultSet]] = {
     Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
   }
-
 }

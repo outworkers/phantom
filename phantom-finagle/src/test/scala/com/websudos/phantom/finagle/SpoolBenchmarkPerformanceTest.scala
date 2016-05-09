@@ -35,7 +35,6 @@ import com.websudos.phantom.tables.{JodaRow, TestDatabase}
 import com.websudos.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
-
 import scala.concurrent.{Await, Future}
 
 

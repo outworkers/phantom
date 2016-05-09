@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
+import java.util.concurrent.Executor
+
 import com.datastax.driver.core.{QueryOptions => _, _}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query._
@@ -39,7 +41,7 @@ import shapeless.HList
 import shapeless.ops.hlist.Tupler
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, blocking, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
 private[phantom] trait PrepareMark {
 
@@ -67,18 +69,29 @@ class ExecutablePreparedSelectQuery[
 
   override def fromRow(r: Row): R = fn(r)
 
-  override def future()(implicit session: Session, keySpace: KeySpace): ScalaFuture[ResultSet] = {
+  override def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(st)
   }
 
 
   /**
-    * Returns the first row from the select ignoring everything else
-    *
-    * @param session The Cassandra session in use.
-    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
-    */
-  override def one()(implicit session: Session, ec: ExecutionContext, keySpace: KeySpace, ev: =:=[Limit, Unlimited]): ScalaFuture[Option[R]] = {
+   * Returns the first row from the select ignoring everything else
+   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param ev The implicit limit for the query.
+   * @param ec The implicit Scala execution context.
+   * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+   */
+  override def one()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: =:=[Limit, Unlimited],
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[Option[R]] = {
     singleFetch()
   }
 

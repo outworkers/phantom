@@ -29,6 +29,8 @@
  */
 package com.websudos.phantom.builder.query
 
+import java.util.concurrent.Executor
+
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
@@ -39,7 +41,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future => ScalaFuture}
 import scala.util.Try
 
 class SelectQuery[
@@ -284,12 +286,20 @@ class SelectQuery[
 
   /**
    * Returns the first row from the select ignoring everything else
-   * @param session The Cassandra session in use.
-   * @param ctx The Execution Context.
-   * @return
+   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param ev The implicit limit for the query.
+   * @param executor The implicit Java executor.
+   * @param ec The implicit Scala execution context.
+   * @return A Scala future guaranteed to contain a single result wrapped as an Option.
    */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def one()(implicit session: Session, ctx: ExecutionContext, keySpace: KeySpace, ev: Limit =:= Unlimited): ScalaFuture[Option[Record]] = {
+  def one()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: Limit =:= Unlimited,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[Option[Record]] = {
     val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 
     new SelectQuery(

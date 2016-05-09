@@ -37,8 +37,8 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 /**
@@ -57,7 +57,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   type JsonSetColumn[RR] = com.websudos.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
 
-  private[phantom] def insertSchema()(implicit session: Session, keySpace: KeySpace): Unit = {
+  private[phantom] def insertSchema()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): Unit = {
     Await.result(create.ifNotExists().future(), 10.seconds)
   }
 

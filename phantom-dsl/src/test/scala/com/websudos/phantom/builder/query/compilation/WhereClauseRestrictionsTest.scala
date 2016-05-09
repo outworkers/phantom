@@ -39,7 +39,6 @@ class WhereClauseRestrictionsTest extends FlatSpec with Matchers with KeySpaceSu
 
   val s = gen[String]
   val Primitives = TestDatabase.primitives
-  val c = context
 
   it should "allow using a Select.Where clause" in {
     "Primitives.select.where(_.pkey eqs gen[String])" should compile

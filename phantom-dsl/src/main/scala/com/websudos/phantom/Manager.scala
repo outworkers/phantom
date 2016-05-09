@@ -31,20 +31,15 @@ package com.websudos.phantom
 
 import java.util.concurrent.Executors
 
-import com.google.common.util.concurrent.MoreExecutors
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object Manager {
 
-  lazy val cores = Runtime.getRuntime.availableProcessors()
+  private[this] lazy val taskExecutor = Executors.newCachedThreadPool()
 
-  lazy val taskExecutor = Executors.newCachedThreadPool()
-
-  implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
-
-  lazy val executor = MoreExecutors.listeningDecorator(taskExecutor)
+  implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
 
   lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
 
@@ -55,6 +50,5 @@ object Manager {
   def shutdown(): Unit = {
     logger.info("Shutting down executors")
     taskExecutor.shutdown()
-    executor.shutdown()
   }
 }

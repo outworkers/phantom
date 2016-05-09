@@ -41,7 +41,7 @@ import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.FiniteDuration
 
 /**
@@ -132,7 +132,11 @@ package object reactivestreams {
       * @param keySpace The target keyspace.
       * @return A publisher of records, publishing one record at a time.
       */
-    def publisher()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): Publisher[T] = {
+    def publisher()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): Publisher[T] = {
       Streams.enumeratorToPublisher(ct.select.all().fetchEnumerator())
     }
   }
@@ -181,7 +185,11 @@ package object reactivestreams {
       * @param ctx The Execution Context.
       * @return
       */
-    def fetchEnumerator()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): PlayEnumerator[R] = {
+    def fetchEnumerator()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
       val eventualEnum = block.all().future() map {
         resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.fromRow)
       }
@@ -205,7 +213,11 @@ package object reactivestreams {
       * @param ctx The Execution Context.
       * @return
       */
-    def fetchEnumerator()(implicit session: Session, keySpace: KeySpace, ctx: ExecutionContext): PlayEnumerator[R] = {
+    def fetchEnumerator()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
       val eventualEnum = query.future() map {
         resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(query.fromRow)
       }

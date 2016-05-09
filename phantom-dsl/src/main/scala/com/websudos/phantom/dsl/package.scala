@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, Random}
 
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{ConsistencyLevel => CLevel, VersionNumber}
+import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
@@ -44,6 +44,7 @@ import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImpl
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import shapeless.{::, HNil}
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
 import scala.util.control.NoStackTrace
 
@@ -179,7 +180,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     new TokenConstructor(Seq(Primitive[RR].asCql(value)))
   }
 
-  implicit lazy val context = Manager.scalaExecutor
+  implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
