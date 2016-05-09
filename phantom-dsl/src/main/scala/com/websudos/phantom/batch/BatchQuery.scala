@@ -29,16 +29,14 @@
  */
 package com.websudos.phantom.batch
 
-import java.util.concurrent.Executor
-
-import com.datastax.driver.core.{ QueryOptions => _, _ }
+import com.datastax.driver.core.{QueryOptions => _, _}
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.websudos.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 class BatchType(val batch: String)
 
@@ -60,8 +58,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
   override def future()(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: Executor,
-    ec: ExecutionContext
+    ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(makeBatch())
   }

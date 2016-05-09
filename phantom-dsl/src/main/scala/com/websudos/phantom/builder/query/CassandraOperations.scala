@@ -29,21 +29,19 @@
  */
 package com.websudos.phantom.builder.query
 
-import java.util.concurrent.Executor
-
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.websudos.phantom.Manager
 import com.websudos.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
-import scala.concurrent.{Future => ScalaFuture, Promise => ScalaPromise}
+import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture, Promise => ScalaPromise}
 
 private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
 
   protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(
     implicit session: Session,
     keyspace: KeySpace,
-    executor: Executor
+    executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
   }
@@ -51,7 +49,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
   protected[this] def scalaQueryStringToPromise(st: Statement)(
     implicit session: Session,
     keyspace: KeySpace,
-    executor: Executor
+    executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {
     Manager.logger.debug(s"Executing query: ${st.toString}")
 
@@ -69,6 +67,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
         promise failure err
       }
     }
+
     Futures.addCallback(future, callback, executor)
     promise
   }

@@ -41,7 +41,7 @@ import shapeless.HList
 import shapeless.ops.hlist.Tupler
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, blocking, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
 private[phantom] trait PrepareMark {
 
@@ -69,7 +69,11 @@ class ExecutablePreparedSelectQuery[
 
   override def fromRow(r: Row): R = fn(r)
 
-  override def future()(implicit session: Session, keySpace: KeySpace, executor: Executor, ec: ExecutionContext): ScalaFuture[ResultSet] = {
+  override def future()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(st)
   }
 
@@ -79,7 +83,6 @@ class ExecutablePreparedSelectQuery[
    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
-   * @param executor The implicit Java executor.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
    */
@@ -87,8 +90,7 @@ class ExecutablePreparedSelectQuery[
     implicit session: Session,
     keySpace: KeySpace,
     ev: =:=[Limit, Unlimited],
-    executor: Executor,
-    ec: ExecutionContext
+    ec: ExecutionContextExecutor
   ): ScalaFuture[Option[R]] = {
     singleFetch()
   }

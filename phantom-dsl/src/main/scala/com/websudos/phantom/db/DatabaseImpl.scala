@@ -29,15 +29,13 @@
  */
 package com.websudos.phantom.db
 
-import java.util.concurrent.Executor
-
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.diesel.engine.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{ExecutionContextExecutor, Future, blocking}
 
 private object Lock
 
@@ -115,8 +113,7 @@ sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: Executor,
-    ec: ExecutionContext
+    ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
     Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
   }

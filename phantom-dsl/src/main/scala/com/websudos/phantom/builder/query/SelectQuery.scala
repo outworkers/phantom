@@ -41,7 +41,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContext, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future => ScalaFuture}
 import scala.util.Try
 
 class SelectQuery[
@@ -298,8 +298,7 @@ class SelectQuery[
     implicit session: Session,
     keySpace: KeySpace,
     ev: Limit =:= Unlimited,
-    executor: Executor,
-    ec: ExecutionContext
+    ec: ExecutionContextExecutor
   ): ScalaFuture[Option[Record]] = {
     val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
 

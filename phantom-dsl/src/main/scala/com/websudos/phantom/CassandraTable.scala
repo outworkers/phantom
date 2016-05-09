@@ -29,8 +29,6 @@
  */
 package com.websudos.phantom
 
-import java.util.concurrent.Executor
-
 import com.datastax.driver.core.{Row, Session}
 import com.websudos.phantom.builder.clauses.DeleteClause
 import com.websudos.phantom.builder.query._
@@ -39,8 +37,8 @@ import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 /**
@@ -62,8 +60,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   private[phantom] def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: Executor,
-    ec: ExecutionContext
+    ec: ExecutionContextExecutor
   ): Unit = {
     Await.result(create.ifNotExists().future(), 10.seconds)
   }
