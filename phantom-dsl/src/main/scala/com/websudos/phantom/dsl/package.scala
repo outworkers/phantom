@@ -183,7 +183,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   implicit lazy val context: ExecutionContext = Manager.scalaExecutor
 
-  implicit lazy val executor: Executor = Manager.taskExecutor
+  implicit lazy val executor: Executor = Manager.executor
 
   implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
 
