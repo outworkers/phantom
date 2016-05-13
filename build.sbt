@@ -293,6 +293,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
       case _ => true
     }
   },
+  publishMavenStyle := false,
   excludeFilter := {
     CrossVersion.partialVersion(scalaVersion.value) match {
       // if scala 2.11+ is used, quasiquotes are merged into scala-reflect

@@ -25,9 +25,9 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 ### Latest versions
 
-Check the badges at the top of this README for the latest version. The badges are automatically updated in realtime, where as this README isn't.
+The latest versions are available here. Sometimes cache issues prevent the Maven badge from auto-updating itself.
 
-- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom_2.10) (Maven Central)
+- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) (Maven Central)
 - Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) (Websudos OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
@@ -45,6 +45,7 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/outworkers/phantom/wiki)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
+- [ ] Anything tagged phantom on our blog is a phantom tutorial: [phantom tutorials](http://outworkers.com/blog/tag/phantom)
 - [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://outworkers.com/blog/post/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality)
 - [ ] [A series on Cassandra: Indexes and keys](http://outworkers.com/blog/post/a-series-on-cassandra-part-2-indexes-and-keys)
 - [ ] [A series on Cassandra: Advanced features](http://outworkers.com/blog/post/a-series-on-cassandra-part-3-advanced-features)
@@ -139,14 +140,3 @@ Contributing to phantom
 <a href="#table-of-contents">back to top</a>
 
 Contributions are most welcome! Use GitHub for issues and pull requests and we will happily help out in any way we can!
-
-YourKit Java Profiler
-==================
-
-![yourkit](https://s3-eu-west-1.amazonaws.com/websudos/oss/yklogo.png "YourKit Java Profiler")
-
-We are very grateful to have the license support of YourKit, the most advanced Java profiler.
-
-YourKit is the very core of our performance bottleneck testing, and without it phantom would still be a painfully slow tool.
-
-[YourKit Java profiler](https://www.yourkit.com/java/profiler/index.jsp)
