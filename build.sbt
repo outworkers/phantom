@@ -62,8 +62,17 @@ val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.gete
 val defaultConcurrency = 4
 
 val liftVersion: String => String = {
-  case "2.10.5" => "3.0-M1"
-  case _ => "3.0-M6"
+  s => CrossVersion.partialVersion(s) match {
+    case Some((major, minor)) if minor >= 11 => "3.0-M6"
+    case _ => "3.0-M1"
+  }
+}
+
+val scalaMacroDependencies: String => Seq[ModuleID] = {
+  s => CrossVersion.partialVersion(s) match {
+    case Some((major, minor)) if minor >= 11 => Seq.empty
+    case _ => Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
+  }
 }
 
 val PerformanceTest = config("perf").extend(Test)
@@ -103,7 +112,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
   scalaVersion := "2.11.7",
   credentials ++= defaultCredentials,
-  crossScalaVersions := Seq("2.10.5", "2.11.7"),
+  crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
     "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -130,8 +139,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   libraryDependencies ++= Seq(
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j
-  ),
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
+  ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
   javaOptions in ThisBuild ++= Seq(
     "-Xmx2G",
@@ -286,7 +294,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
   name := "phantom-sbt",
   moduleName := "phantom-sbt",
-  scalaVersion := "2.10.5",
+  scalaVersion := "2.10.6",
   publish := {
     CrossVersion.partialVersion(scalaVersion.value).map {
       case (2, scalaMajor) if scalaMajor >= 11 => false

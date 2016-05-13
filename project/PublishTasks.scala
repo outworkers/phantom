@@ -35,7 +35,7 @@ import bintray.BintrayKeys._
 object PublishTasks {
 
   val defaultPublishingSettings = Seq(
-    version := "1.26.1"
+    version := "1.26.2"
   )
 
   val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
