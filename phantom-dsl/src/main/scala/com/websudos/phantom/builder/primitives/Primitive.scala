@@ -409,6 +409,7 @@ trait DefaultPrimitives {
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
+
 }
 
 object Primitive extends DefaultPrimitives {
