@@ -27,10 +27,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import com.typesafe.sbt.pgp.PgpKeys._
-import sbt._
-import sbt.Keys._
 import bintray.BintrayKeys._
+import sbt.Keys._
+import sbt._
 
 object PublishTasks {
 
@@ -83,41 +82,28 @@ object PublishTasks {
         </developers>
   ) ++ defaultPublishingSettings
 
-  lazy val mavenPublishSettings : TaskKey[Unit] = TaskKey[Unit]("mavenPublishSettings")
-
-  lazy val mavenPublishConfiguration = TaskKey[PublishConfiguration](
-    "mavenPublishConfiguration",
-    "Changed the configuration to a Sonatype publishing one"
-  )
-
-  lazy val publishToMavenCentral = taskKey[Unit]("publishToMavenCentral")
-
-  val printedPublishing = settingKey[Option[String]]("printedPublishing")
-
-  val mavenTaskSettings: Seq[Def.Setting[_]] = Seq(
-    mavenPublishSettings := mavenPublishingSettings,
-    mavenPublishConfiguration <<= (
-      mavenPublishSettings,
-      signedArtifacts,
-      publishTo,
-      deliver,
-      checksums in publish,
-      ivyLoggingLevel
-      ) map { (_, arts, publishTo, ivyFile, checks, level) => {}
-      Classpaths.publishConfig(
-        arts,
-        None,
-        resolverName = Classpaths.getPublishTo(publishTo).name,
-        checksums = checks,
-        logging = level,
-        overwrite = false
-      )
-    },
-    publishToMavenCentral <<= Classpaths.publishTask(mavenPublishConfiguration, deliver)
-      .dependsOn(mavenPublishConfiguration)
-  )
-
   val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+
+  def mavenPublishingCommand: Command = Command.command("publishToMaven") { state =>
+    val extracted: Extracted = Project.extract(state)
+    Project.runTask(
+      publish in Compile,
+      extracted.append(mavenPublishingSettings, state),
+      checkCycles = true
+    )
+    state
+  }
+
+  def bintrayPublishingCommand: Command = Command.command("publishToBintray") { state =>
+    val extracted: Extracted = Project.extract(state)
+    Project.runTask(
+      publish in Compile,
+      extracted.append(bintrayPublishSettings, state),
+      checkCycles = true
+    )
+    state
+  }
+
 
   //lazy val effectivePublishingSettings = if (RunningUnderCi) bintrayPublishSettings else mavenPublishingSettings
   lazy val effectivePublishingSettings = mavenPublishingSettings

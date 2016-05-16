@@ -113,6 +113,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   scalaVersion := "2.11.7",
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
+  commands in ThisBuild ++= Seq(PublishTasks.mavenPublishingCommand, PublishTasks.bintrayPublishingCommand),
   resolvers ++= Seq(
     "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
