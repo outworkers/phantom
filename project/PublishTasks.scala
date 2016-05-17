@@ -104,7 +104,6 @@ object PublishTasks {
     state
   }
 
-
-  //lazy val effectivePublishingSettings = if (RunningUnderCi) bintrayPublishSettings else mavenPublishingSettings
-  lazy val effectivePublishingSettings = mavenPublishingSettings
+  lazy val effectivePublishingSettings = if (RunningUnderCi) bintrayPublishSettings else mavenPublishingSettings
+  //lazy val effectivePublishingSettings = mavenPublishingSettings
 }
