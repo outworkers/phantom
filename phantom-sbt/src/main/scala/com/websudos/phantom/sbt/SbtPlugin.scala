@@ -79,17 +79,20 @@ object PhantomSbtPlugin extends AutoPlugin {
     val phantomStartEmbeddedCassandra = taskKey[Unit]("Starts embedded Cassandra")
     val phantomCleanupEmbeddedCassandra = taskKey[Unit]("Clean up embedded Cassandra by dropping all of its keyspaces")
     val phantomCassandraConfig = settingKey[Option[File]]("YAML file for Cassandra configuration")
+    val phantomCassandraTimeout = settingKey[Option[Int]]("Timeout in milliseconds for embedded Cassandra to start")
   }
 
   import autoImport._
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     phantomCassandraConfig := None,
-    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(phantomCassandraConfig.value, streams.value.log),
+    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(streams.value.log, phantomCassandraConfig.value),
     phantomCleanupEmbeddedCassandra := EmbeddedCassandra.cleanup(streams.value.log),
     test in Test <<= (test in Test).dependsOn(phantomStartEmbeddedCassandra),
     testQuick in Test <<= (testQuick in Test).dependsOn(phantomStartEmbeddedCassandra),
     testOnly in Test <<= (testOnly in Test).dependsOn(phantomStartEmbeddedCassandra),
+    phantomCassandraTimeout := None,
+    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(streams.value.log, phantomCassandraConfig.value, phantomCassandraTimeout.value),
     fork := true
   )
 }
@@ -107,26 +110,39 @@ object EmbeddedCassandra {
     * Starts Cassandra in embedded mode if it has not been
     * started yet.
     */
-  def start (config: Option[File], logger: Logger): Unit = {
-    logger.info("Initialising EmbeddedCassandra singleton.")
+  def start (config: Option[File], timeout: Option[Int], logger: Logger): Unit = {
     this.synchronized {
       if (started.compareAndSet(false, true)) {
         blocking {
           val configFile = config.map(_.toURI.toString) getOrElse EmbeddedCassandraServerHelper.DEFAULT_CASSANDRA_YML_FILE
           System.setProperty("cassandra.config", configFile)
-          Try {
+          try {
             EmbeddedCassandraServerHelper.mkdirs()
-          } recover {
+          } catch {
             case NonFatal(e) =>
               logger.error(s"Error creating Embedded cassandra directories: ${e.getMessage}")
           }
 
-          config match {
-            case Some(file) =>
+          (config, timeout) match {
+            case (Some(file), None) =>
               logger.info(s"Starting Cassandra in embedded mode with configuration from $file.")
-              EmbeddedCassandraServerHelper.startEmbeddedCassandra(file,
-                EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT)
-            case None =>
+              EmbeddedCassandraServerHelper.startEmbeddedCassandra(
+                file,
+                EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR,
+                EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT
+              )
+            case (Some(file), Some(time)) =>
+              logger.info(s"Starting Cassandra in embedded mode with configuration from $file and timeout set to $timeout ms.")
+              EmbeddedCassandraServerHelper.startEmbeddedCassandra(
+                file,
+                EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR,
+                time
+              )
+
+            case (None, Some(time)) =>
+              logger.info(s"Starting Cassandra in embedded mode with default configuration and timeout set to $timeout ms.")
+              EmbeddedCassandraServerHelper.startEmbeddedCassandra(time)
+            case (None, None) =>
               logger.info("Starting Cassandra in embedded mode with default configuration.")
               EmbeddedCassandraServerHelper.startEmbeddedCassandra()
           }
@@ -137,6 +153,7 @@ object EmbeddedCassandra {
       }
     }
   }
+
 
   def cleanup(logger: Logger): Unit = {
     this.synchronized {
