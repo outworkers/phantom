@@ -34,7 +34,7 @@ import sbt._
 object PublishTasks {
 
   val defaultPublishingSettings = Seq(
-    version := "1.26.2"
+    version := "1.26.3"
   )
 
   val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(

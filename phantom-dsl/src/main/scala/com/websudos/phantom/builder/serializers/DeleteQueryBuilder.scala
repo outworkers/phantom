@@ -46,6 +46,13 @@ private[builder] class DeleteQueryBuilder {
       .forcePad.append(table)
   }
 
+  def delete(table: String, conds: Seq[CQLQuery]): CQLQuery = {
+    CQLQuery(CQLSyntax.delete)
+      .forcePad.append(conds.map(_.queryString))
+      .forcePad.append(CQLSyntax.from)
+      .forcePad.append(table)
+  }
+
   def deleteColumn(table: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.delete)
       .forcePad.append(column)

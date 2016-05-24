@@ -76,13 +76,22 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
         qb shouldEqual s"DELETE placeholder FROM $keySpace.${BasicTable.tableName} WHERE id = ${id.toString} IF placeholder = 'test'"
       }
 
-
       "should serialize a delete map column query" in {
         val url = gen[String]
 
         val qb = TestDatabase.recipes.delete(_.props("test")).where(_.url eqs url).queryString
 
         qb shouldEqual s"DELETE props['test'] FROM phantom.recipes WHERE url = '$url';"
+      }
+
+      "should serialize a delete query for multiple map properties" in {
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes
+          .delete(_.props("test"), _.props("test2"))
+          .where(_.url eqs url).queryString
+
+        qb shouldEqual s"DELETE props['test'], props['test2'] FROM phantom.recipes WHERE url = '$url';"
       }
 
     }
