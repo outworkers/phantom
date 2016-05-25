@@ -92,8 +92,12 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
 
-  final def delete(condition: T => DeleteClause.Condition)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    DeleteQuery[T, R](this.asInstanceOf[T], condition(this.asInstanceOf[T]).qb)
+  final def delete(conditions: (T => DeleteClause.Condition)*)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    val tb = this.asInstanceOf[T]
+
+    val queries = conditions.map(_(tb).qb)
+
+    DeleteQuery[T, R](tb, queries: _*)
   }
 
   final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
