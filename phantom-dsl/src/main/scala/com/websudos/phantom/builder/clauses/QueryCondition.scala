@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.clauses
 import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 
 sealed trait Clause {
@@ -105,6 +106,9 @@ object CompareAndSetClause extends Clause {
 object OrderingClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
 }
+object UsingClause extends Clause {
+  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+}
 
 object UpdateClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
@@ -128,4 +132,8 @@ private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
   def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
   def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
   def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+}
+
+trait UsingClauseOperations {
+  object ignoreNulls extends UsingClause.Condition(CQLQuery(CQLSyntax.ignoreNulls))
 }

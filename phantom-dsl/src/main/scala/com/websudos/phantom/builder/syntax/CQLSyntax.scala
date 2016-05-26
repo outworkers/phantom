@@ -38,6 +38,8 @@ object CQLSyntax {
   val IF = "IF"
   val index = "INDEX"
 
+  val ignoreNulls = "IGNORE_NULLS"
+
   val Update = "UPDATE"
   val Insert = "INSERT"
   val Delete = "DELETE"

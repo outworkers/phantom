@@ -68,6 +68,16 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
     }
 
+    "should allow serialising USING clause syntax" - {
+
+      "should allow specifying USING IGNORE NULLS" in {
+        val id = gen[UUID]
+        val qb = BasicTable.select.where(_.id eqs id).using(ignoreNulls).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} USING IGNORE_NULLS;"
+      }
+    }
+
     "should serialize " - {
 
       "serialise an allow filtering clause in the init position" in {

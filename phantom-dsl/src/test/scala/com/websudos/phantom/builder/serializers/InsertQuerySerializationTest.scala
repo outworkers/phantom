@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.serializers
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.tables.{Recipe, TestDatabase}
 import com.websudos.util.testing._
+import com.websudos.phantom.dsl._
 import net.liftweb.json.{ compactRender, Extraction }
 
 class InsertQuerySerializationTest extends QueryBuilderTest {
@@ -84,6 +85,8 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         val sample = gen[Recipe]
         val query = TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
 
+        Console.println(query)
+
       }
 
       "should append USING clause after lightweight part " in {
@@ -91,7 +94,12 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         query shouldEqual "INSERT INTO phantom.recipes (url) VALUES('test') IF NOT EXISTS USING TTL 1000;"
       }
 
-}
+      "should allow specifying an IGNORE_NULLS clause as part of the using block" in {
+        val query = TestDatabase.recipes.insert.value(_.url, "test").using(ignoreNulls).queryString
+        query shouldEqual "INSERT INTO phantom.recipes (url) VALUES('test') USING IGNORE_NULLS;"
+      }
+
+    }
   }
 
 }

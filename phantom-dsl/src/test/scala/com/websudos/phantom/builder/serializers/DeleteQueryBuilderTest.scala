@@ -33,6 +33,7 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.QueryBuilderTest
 
 class DeleteQueryBuilderTest extends QueryBuilderTest {
+
   "The DELETE query builder" - {
 
     "should allow specifying column delete queries" - {

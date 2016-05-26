@@ -34,21 +34,31 @@ import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Primitive, TestDatabase}
 import com.websudos.util.testing._
+import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
+import org.scalatest.tagobjects.Retryable
 
 import scala.concurrent.duration._
 
-class TTLTest extends PhantomSuite with Eventually {
+class TTLTest extends PhantomSuite with Eventually with Retries {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
   }
 
+  override def withFixture(test: NoArgTest): Outcome = {
+    if (isRetryable(test)) {
+      withRetry(super.withFixture(test))
+    } else {
+      super.withFixture(test)
+    }
+  }
+
   private[this] val ttl = 2 seconds
   private[this] val granularity = 5 seconds
 
-  it should "expire inserted records after TTL" in {
+  it should "expire inserted records after TTL" taggedAs (Retryable) in {
     val row = gen[Primitive]
 
     val chain = for {
@@ -68,7 +78,7 @@ class TTLTest extends PhantomSuite with Eventually {
     }
   }
 
-  it should "expire inserted records after TTL with prepared statement" in {
+  it should "expire inserted records after TTL with prepared statement" taggedAs Retryable in {
     val row = gen[Primitive]
 
     val fetchQuery = TestDatabase.primitives.select

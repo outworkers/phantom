@@ -35,6 +35,10 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 
 private[builder] trait Utils {
 
+  def ignoreNulls(): CQLQuery = {
+    CQLQuery(CQLSyntax.ignoreNulls)
+  }
+
   def concat(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.forcePad.append(clause)
   }
