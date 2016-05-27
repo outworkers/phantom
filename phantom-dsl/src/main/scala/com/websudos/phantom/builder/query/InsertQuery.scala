@@ -32,6 +32,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.clauses.UsingClause
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
@@ -140,6 +141,18 @@ class InsertQuery[
 
   def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status, PS] = {
     ttl(seconds.toSeconds)
+  }
+
+  def using(clause: UsingClause.Condition): InsertQuery[Table, Record, Status, PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart,
+      valuePart,
+      usingPart append clause.qb,
+      lightweightPart,
+      options
+    )
   }
 
   final def timestamp(value: Long): InsertQuery[Table, Record, Status, PS] = {

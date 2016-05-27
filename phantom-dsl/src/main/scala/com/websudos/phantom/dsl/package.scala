@@ -37,7 +37,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
@@ -52,6 +52,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DefaultPrimitives
   with SelectImplicits
   with Operators
+  with UsingClauseOperations
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]

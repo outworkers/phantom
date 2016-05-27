@@ -3,8 +3,8 @@ sudo: false
 services:
 - cassandra
 scala:
-- 2.10.5
-- 2.11.7
+- 2.10.6
+- 2.11.8
 env:
   global:
   - GH_REF: github.com/outworkers/phantom.git
