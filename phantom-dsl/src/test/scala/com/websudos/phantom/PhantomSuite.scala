@@ -36,8 +36,7 @@ import com.websudos.phantom.tables.TestDatabase
 import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
-
-import scala.concurrent.duration._
+import org.scalatest.time.{Millis, Seconds, Span}
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
@@ -47,15 +46,19 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   protected[this] val defaultScalaTimeoutSeconds = 10
 
+  private[this] val defaultScalaInterval = 50L
+
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 
   implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultScalaTimeoutSeconds.seconds)
+  private[this] val defaultTimeoutSpan = Span(defaultScalaTimeoutSeconds, Seconds)
+
+  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
 
   override implicit val patienceConfig = PatienceConfig(
-    timeout = defaultScalaTimeoutSeconds.seconds,
-    interval = 50.millis
+    timeout = defaultTimeoutSpan,
+    interval = Span(defaultScalaInterval, Millis)
   )
 }
 

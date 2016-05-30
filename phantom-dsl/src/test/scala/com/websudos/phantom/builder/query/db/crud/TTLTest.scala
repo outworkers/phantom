@@ -58,7 +58,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
   private[this] val ttl = 2 seconds
   private[this] val granularity = 5 seconds
 
-  it should "expire inserted records after TTL" taggedAs (Retryable) in {
+  it should "expire inserted records after TTL" taggedAs Retryable in {
     val row = gen[Primitive]
 
     val chain = for {

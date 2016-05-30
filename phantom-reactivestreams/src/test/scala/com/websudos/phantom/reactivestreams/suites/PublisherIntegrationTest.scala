@@ -37,6 +37,7 @@ import com.websudos.util.testing._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
+import org.scalatest.tagobjects.Retryable
 import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.Await
@@ -45,7 +46,7 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
   implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
-  it should "correctly consume the entire stream of items published from a Cassandra table" in {
+  it should "correctly consume the entire stream of items published from a Cassandra table" taggedAs Retryable in {
     val counter = new AtomicInteger(0)
     val generatorCount = 100
     val samples = genList[String](generatorCount).map(Opera)

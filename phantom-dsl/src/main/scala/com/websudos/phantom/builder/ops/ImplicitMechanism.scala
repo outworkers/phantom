@@ -165,7 +165,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   @implicitNotFound(msg = "Index columns and counters cannot be dropped!")
   implicit final def columnToDropColumn[T](col: AbstractColumn[T])(implicit ev: col.type <:!< Undroppable): DropColumn[T] = new DropColumn[T](col)
 
-  implicit def indexedToQueryColumn[T : Primitive](col: AbstractColumn[T] with Indexed): QueryColumn[T] = new QueryColumn(col)
+  implicit def indexedToQueryColumn[T : Primitive](col: AbstractColumn[T] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
+
+  implicit def optionalIndexToQueryColumn[T : Primitive](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
 
   implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey[RR]): OrderingColumn[RR] = new OrderingColumn[RR](col)
 
@@ -182,7 +184,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     */
   implicit def mapColumnDefinitionToEntriesQueryColumn[
     K : Primitive,
-    V: Primitive
+    V : Primitive
   ](cond: MapKeyUpdateClause[K, V]): MapEntriesConditionals[K, V] = {
     new MapEntriesConditionals[K, V](cond)
   }

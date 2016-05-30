@@ -56,8 +56,17 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
   with OptionValues
   with Matchers
   with TestImplicits
+  with Retries
   with StreamDatabase.connector.Connector {
   self: Suite =>
+
+  override def withFixture(test: NoArgTest): Outcome = {
+    if (isRetryable(test)) {
+      withRetry(super.withFixture(test))
+    } else {
+      super.withFixture(test)
+    }
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()

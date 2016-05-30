@@ -35,8 +35,8 @@ import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet,
 import org.reactivestreams.tck.{SubscriberWhiteboxVerification, TestEnvironment}
 import org.reactivestreams.{Subscriber, Subscription}
 
-class BatchSubscriberWhiteboxTest
-  extends SubscriberWhiteboxVerification[Opera](new TestEnvironment()) with StreamDatabase.connector.Connector with TestImplicits {
+class BatchSubscriberWhiteboxTest extends SubscriberWhiteboxVerification[Opera](new TestEnvironment())
+  with StreamDatabase.connector.Connector with TestImplicits {
 
   override def createSubscriber(probe: WhiteboxSubscriberProbe[Opera]): Subscriber[Opera] = {
     new BatchSubscriber[ConcreteOperaTable, Opera](
