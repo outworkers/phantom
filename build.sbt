@@ -163,13 +163,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ graphSettings ++
   VersionManagement.newSettings ++
   GitProject.gitSettings ++ {
-    if (RunningUnderCi) {
       println("Using Bintray publishing.")
       PublishTasks.bintrayPublishSettings
-    } else {
-      println("Using Maven publishing settings.")
-      PublishTasks.mavenPublishingSettings
-    }
   }
 
 
