@@ -83,26 +83,6 @@ object PublishTasks {
         </developers>
   ) ++ defaultPublishingSettings
 
-  val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+  lazy val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
 
-  def mavenPublishingCommand: Command = Command.command("publishToMaven") { state =>
-    val extracted: Extracted = Project.extract(state)
-    Project.runTask(
-      publish in Compile,
-      extracted.append(mavenPublishingSettings, state),
-      checkCycles = true
-    )
-    state
-  }
-
-  def bintrayPublishingCommand: Command = Command.command("publishToBintray") { state =>
-    val extracted: Extracted = Project.extract(state)
-    Project.runTask(
-      publish in Compile,
-      extracted.append(bintrayPublishSettings, state),
-      checkCycles = true
-    )
-    state
-  }
-  //lazy val effectivePublishingSettings = mavenPublishingSettings
 }
