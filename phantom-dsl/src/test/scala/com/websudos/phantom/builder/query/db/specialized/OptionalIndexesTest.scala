@@ -27,58 +27,58 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.websudos.phantom.builder.query.db.specialized
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
-
-import com.websudos.phantom.batch.BatchType
+import com.datastax.driver.core.exceptions.InvalidQueryException
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.tables.OptionalSecondaryRecord
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
-import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
-import org.scalatest.FlatSpec
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.tagobjects.Retryable
+import com.websudos.util.testing._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
-
-  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
+class OptionalIndexesTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
+    database.optionalIndexesTable.insertSchema()
   }
 
-
-  it should "persist all data" taggedAs Retryable in {
-    val completionLatch = new CountDownLatch(1)
-
-    val subscriber = StreamDatabase.operaTable.subscriber(
-      2,
-      2,
-      BatchType.Unlogged,
-      None,
-      () => completionLatch.countDown()
+  it should "store a record and then retrieve it using an optional index" in {
+    val sample = OptionalSecondaryRecord(
+      gen[UUID],
+      genOpt[Int]
     )
 
-    OperaPublisher.subscribe(subscriber)
-
-    completionLatch.await(5, TimeUnit.SECONDS)
-
     val chain = for {
-      count <- StreamDatabase.operaTable.select.count().one()
-    } yield count
-
+      store <- database.optionalIndexesTable.store(sample)
+      get <- database.optionalIndexesTable.findById(sample.id)
+      get2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+    } yield (get, get2)
 
     whenReady(chain) {
-      res => {
-        res.value shouldEqual OperaData.operas.length
+      case (byId, byIndex) => {
+        byId shouldBe defined
+        byId.value shouldEqual sample
+
+        byIndex shouldBe defined
+        byIndex.value shouldEqual sample
       }
     }
+  }
 
+  it should "not be able to delete records by their secondary index" in {
+    val sample = OptionalSecondaryRecord(
+      gen[UUID],
+      genOpt[Int]
+    )
+
+    val chain = for {
+      store <- database.optionalIndexesTable.store(sample)
+      get <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+      delete <- database.optionalIndexesTable.delete.where(_.secondary eqs sample.secondary.value).future()
+      get2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+    } yield (get, get2)
+
+    chain.failing[InvalidQueryException]
   }
 
 }
-

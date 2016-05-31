@@ -27,58 +27,49 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.websudos.phantom.tables
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.UUID
 
-import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
-import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
-import org.scalatest.FlatSpec
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.tagobjects.Retryable
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+case class OptionalSecondaryRecord(
+  id: UUID,
+  secondary: Option[Int]
+)
 
-  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
+sealed class OptionalSecondaryIndexTable extends
+  CassandraTable[ConcreteOptionalSecondaryIndexTable, OptionalSecondaryRecord] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object secondary extends OptionalIntColumn(this) with Index[Option[Int]]
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
+  def fromRow(row: Row): OptionalSecondaryRecord = {
+    OptionalSecondaryRecord(
+      id(row),
+      secondary(row)
+    )
+  }
+}
+
+abstract class ConcreteOptionalSecondaryIndexTable
+  extends OptionalSecondaryIndexTable with RootConnector {
+
+  def store(rec: OptionalSecondaryRecord): Future[ResultSet] = {
+    insert.value(_.id, rec.id)
+      .value(_.secondary, rec.secondary)
+      .future()
   }
 
+  def findById(id: UUID): Future[Option[OptionalSecondaryRecord]] = {
+    select.where(_.id eqs id).one()
+  }
 
-  it should "persist all data" taggedAs Retryable in {
-    val completionLatch = new CountDownLatch(1)
-
-    val subscriber = StreamDatabase.operaTable.subscriber(
-      2,
-      2,
-      BatchType.Unlogged,
-      None,
-      () => completionLatch.countDown()
-    )
-
-    OperaPublisher.subscribe(subscriber)
-
-    completionLatch.await(5, TimeUnit.SECONDS)
-
-    val chain = for {
-      count <- StreamDatabase.operaTable.select.count().one()
-    } yield count
-
-
-    whenReady(chain) {
-      res => {
-        res.value shouldEqual OperaData.operas.length
-      }
-    }
-
+  def findByOptionalSecondary(sec: Int): Future[Option[OptionalSecondaryRecord]] = {
+    select.where(_.secondary eqs sec).one()
   }
 
 }
+
 

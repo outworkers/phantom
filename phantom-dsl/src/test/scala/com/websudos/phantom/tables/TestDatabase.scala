@@ -85,6 +85,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object timeuuidTable extends ConcreteTimeUUIDTable with connector.Connector
 
   object events extends ConcreteEvents with connector.Connector
+
+  object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
 }
 
 object Connector {
