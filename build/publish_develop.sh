@@ -43,7 +43,7 @@ then
         git push "https://${github_token}@${GH_REF}" develop
 
         "Publishing new version to bintray"
-        sbt +publish
+        sbt +bintray:publish
 
         git checkout master
         git merge develop
