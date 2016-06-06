@@ -172,13 +172,18 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying cache strategies " - {
       "specify Cache.None as a cache strategy" in {
-        val qb = BasicTable.alter.`with`(caching eqs Cache.None).qb.queryString
+        val qb = BasicTable.alter.`with`(caching eqs Cache.None()).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'none'"
       }
 
       "specify Cache.KeysOnly as a caching strategy" in {
         val qb = BasicTable.alter.`with`(caching eqs Cache.KeysOnly()).qb.queryString
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'keys_only'"
+
+        if (session.v4orNewer) {
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'ALL', 'rows_per_partition': 'NONE'} "
+        } else {
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'keys_only'"
+        }
       }
     }
 

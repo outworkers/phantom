@@ -210,6 +210,10 @@ private[builder] class SelectQueryBuilder {
     CQLQuery(CQLSyntax.Selection.DateOf).wrapn(column)
   }
 
+  def ttl(column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Selection.TTL).wrapn(column)
+  }
+
   def unixTimestampOf(column: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.UnixTimestampOf).wrapn(column)
   }

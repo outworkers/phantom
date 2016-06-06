@@ -30,15 +30,16 @@
 import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
+import com.typesafe.sbt.pgp.PgpKeys._
 
 object PublishTasks {
 
 
   val defaultPublishingSettings = Seq(
-    version := "1.26.4"
+    version := "1.26.6"
   )
 
-  val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
+  lazy val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("websudos"),
     bintrayRepository <<= scalaVersion.apply {
@@ -50,9 +51,22 @@ object PublishTasks {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
 
-  val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
+  lazy val pgpPass = Option(System.getenv("maven_password"))
+
+  lazy val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
+    pgpPassphrase := {
+      if (RunningUnderCi && pgpPass.isDefined) {
+        println("Running under CI and PGP password specified under settings.")
+        pgpPass.map(_.toCharArray)
+      } else {
+        println("Could not find settings for a PGP passphrase.")
+        println(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
+        println(s"Running under CI: $RunningUnderCi")
+        None
+      }
+    },
     publishTo <<= version.apply {
       v =>
         val nexus = "https://oss.sonatype.org/"

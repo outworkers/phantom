@@ -78,9 +78,11 @@ trait SessionAugmenterImplicits {
  * @param name the name of the keySpace
  * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
+class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
 
   val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder)
+
+  val self = this
 
   /**
    * The Session associated with this keySpace.
@@ -122,16 +124,15 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
    */
   trait Connector extends com.websudos.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = outer.provider
+    lazy val provider = self.provider
 
-    lazy val keySpace = outer.name
+    lazy val keySpace = self.name
 
-    implicit val space: KeySpace = KeySpace(outer.name)
+    implicit val space: KeySpace = KeySpace(self.name)
 
-    def cassandraVersion: Option[VersionNumber] = outer.cassandraVersion
+    def cassandraVersion: Option[VersionNumber] = self.cassandraVersion
 
-    def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
-
+    def cassandraVersions: Set[VersionNumber] = self.cassandraVersions
   }
 
 }
