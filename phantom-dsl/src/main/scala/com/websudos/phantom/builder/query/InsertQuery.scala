@@ -127,7 +127,7 @@ class InsertQuery[
     (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
-  def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = {
+  def ttl(seconds: Int): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -138,6 +138,8 @@ class InsertQuery[
       options
     )
   }
+
+  def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = ttl(seconds.toInt)
 
   def ttl(seconds: scala.concurrent.duration.FiniteDuration): InsertQuery[Table, Record, Status, PS] = {
     ttl(seconds.toSeconds)

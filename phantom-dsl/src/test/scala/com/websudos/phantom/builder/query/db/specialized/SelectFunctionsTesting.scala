@@ -101,4 +101,26 @@ class SelectFunctionsTesting extends PhantomSuite {
       }
     }
   }
+
+  it should "retrieve the TTL of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
+    val timeToLive = 20
+
+    val chain = for {
+      store <- database.timeuuidTable.store(record).ttl(timeToLive).future()
+      timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
+        .where(_.user eqs record.user)
+        .and(_.id eqs record.id).one()
+    } yield timestamp
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+          res.value.value shouldEqual timeToLive
+        }
+      }
+    }
+  }
 }

@@ -124,7 +124,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
     "should allow specifying cache strategies " - {
       "specify Cache.None as a cache strategy" in {
-        val qb = BasicTable.create.`with`(caching eqs Cache.None).qb.queryString
+        val qb = BasicTable.create.`with`(caching eqs Cache.None()).qb.queryString
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'none'"
       }
 
@@ -154,7 +154,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
 
       "specify Cache.All as a caching strategy" in {
-        val qb = BasicTable.create.`with`(caching eqs Cache.All).qb.queryString
+        val qb = BasicTable.create.`with`(caching eqs Cache.All()).qb.queryString
         info(qb)
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH caching = 'all'"
       }

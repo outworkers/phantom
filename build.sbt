@@ -100,6 +100,12 @@ lazy val defaultCredentials: Seq[Credentials] = {
         passwd = System.getenv("bintray_password")
       ),
       Credentials(
+        realm = "Sonatype OSS Repository Manager",
+        host = "oss.sonatype.org",
+        userName = System.getenv("maven_user"),
+        passwd = System.getenv("maven_password")
+      ),
+      Credentials(
         realm = "Bintray API Realm",
         host = "api.bintray.com",
         userName = System.getenv("bintray_user"),
@@ -111,7 +117,7 @@ lazy val defaultCredentials: Seq[Credentials] = {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.10.6",
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
@@ -137,9 +143,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-feature",
     "-unchecked"
   ),
-  logLevel in ThisBuild := {
-    if(PublishTasks.RunningUnderCi) Level.Error else Level.Warn
-  },
+  logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j
@@ -163,13 +167,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ graphSettings ++
   VersionManagement.newSettings ++
   GitProject.gitSettings ++ {
-    if (RunningUnderCi) {
-      println("Using Bintray publishing.")
-      PublishTasks.bintrayPublishSettings
-    } else {
-      println("Using Maven publishing settings.")
+      println("Using Maven publishing.")
       PublishTasks.mavenPublishingSettings
-    }
   }
 
 
@@ -218,7 +217,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   name := "phantom-dsl",
   moduleName := "phantom-dsl",
   testOptions in Test += Tests.Argument("-oF"),
-  logBuffered in Test := false,
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
@@ -247,7 +245,6 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
-    logBuffered in Test := false,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
@@ -390,7 +387,6 @@ lazy val phantomContainerTests = (project in file("phantom-container-test"))
     name := "phantom-container-test",
     moduleName := "phantom-container-test",
     fork := true,
-    logBuffered in Test := true,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),

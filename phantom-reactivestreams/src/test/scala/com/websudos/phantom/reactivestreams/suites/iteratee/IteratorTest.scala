@@ -40,6 +40,11 @@ import scala.concurrent.Future
 
 class IteratorTest extends BigTest with ScalaFutures {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.primitives.insertSchema()
+  }
+
   it should "correctly retrieve the right number of records using scala iterator" in {
     val rows = for (i <- 1 to 100) yield gen[Primitive]
 

@@ -45,7 +45,10 @@ trait TestImplicits {
 
   implicit object OperaRequestBuilder extends RequestBuilder[ConcreteOperaTable, Opera] {
 
-    override def request(ct: ConcreteOperaTable, t: Opera)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable = {
+    override def request(ct: ConcreteOperaTable, t: Opera)(
+      implicit session: Session,
+      keySpace: KeySpace
+    ): ExecutableStatement with Batchable = {
       ct.insert.value(_.name, t.name)
     }
   }
