@@ -167,8 +167,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ graphSettings ++
   VersionManagement.newSettings ++
   GitProject.gitSettings ++ {
-      println("Using Maven publishing.")
-      PublishTasks.mavenPublishingSettings
+      println("Using Bintray publishing.")
+      PublishTasks.bintrayPublishSettings
   }
 
 
