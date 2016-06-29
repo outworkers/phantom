@@ -35,7 +35,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class SelectQuerySerialisationTest extends QueryBuilderTest {
 

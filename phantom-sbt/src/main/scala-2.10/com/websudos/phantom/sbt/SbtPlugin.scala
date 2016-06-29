@@ -34,10 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import sbt.Keys._
 import sbt._
-import sbt.plugins.JvmPlugin
 
 import scala.concurrent.blocking
-import scala.util.Try
 import scala.util.control.NonFatal
 
 /**
@@ -86,13 +84,16 @@ object PhantomSbtPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     phantomCassandraConfig := None,
-    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(streams.value.log, phantomCassandraConfig.value),
     phantomCleanupEmbeddedCassandra := EmbeddedCassandra.cleanup(streams.value.log),
     test in Test <<= (test in Test).dependsOn(phantomStartEmbeddedCassandra),
     testQuick in Test <<= (testQuick in Test).dependsOn(phantomStartEmbeddedCassandra),
     testOnly in Test <<= (testOnly in Test).dependsOn(phantomStartEmbeddedCassandra),
     phantomCassandraTimeout := None,
-    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(streams.value.log, phantomCassandraConfig.value, phantomCassandraTimeout.value),
+    phantomStartEmbeddedCassandra := EmbeddedCassandra.start(
+      streams.value.log,
+      phantomCassandraConfig.value,
+      phantomCassandraTimeout.value
+    ),
     fork := true
   )
 }
@@ -110,7 +111,7 @@ object EmbeddedCassandra {
     * Starts Cassandra in embedded mode if it has not been
     * started yet.
     */
-  def start (config: Option[File], timeout: Option[Int], logger: Logger): Unit = {
+  def start(logger: Logger, config: Option[File] = None, timeout: Option[Int] = None): Unit = {
     this.synchronized {
       if (started.compareAndSet(false, true)) {
         blocking {

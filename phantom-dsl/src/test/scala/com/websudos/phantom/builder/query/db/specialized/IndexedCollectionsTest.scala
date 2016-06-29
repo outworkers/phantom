@@ -33,7 +33,7 @@ import com.datastax.driver.core.exceptions.SyntaxError
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, TestRow}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

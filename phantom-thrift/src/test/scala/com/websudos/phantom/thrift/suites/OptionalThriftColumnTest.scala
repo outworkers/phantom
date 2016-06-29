@@ -32,7 +32,7 @@ package com.websudos.phantom.thrift.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.ThriftDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.{Matchers, OptionValues, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._

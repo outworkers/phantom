@@ -33,7 +33,7 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.ExecutableStatementList
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class InsertCasTest extends PhantomSuite {
 

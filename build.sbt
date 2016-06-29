@@ -35,7 +35,7 @@ import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.16.0"
+  val util = "0.18.2"
   val json4s = "3.3.0"
   val datastax = "3.0.2"
   val scalatest = "2.2.4"
@@ -49,6 +49,7 @@ lazy val Versions = new {
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
+  val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
   val akka = "2.3.14"
@@ -56,6 +57,7 @@ lazy val Versions = new {
   val jetty = "9.1.2.v20140210"
   val dispatch = "0.11.0"
   val cassandraUnit = "3.0.0.1"
+  val javaxServlet = "3.0.1"
 }
 
 val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
@@ -64,7 +66,7 @@ val defaultConcurrency = 4
 
 val liftVersion: String => String = {
   s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => "3.0-M6"
+    case Some((major, minor)) if minor >= 11 => "3.0-RC3"
     case _ => "3.0-M1"
   }
 }
@@ -121,14 +123,10 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
-    "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
-    "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
-    "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
-    "Sonatype releases" at "https://oss.sonatype.org/content/repositories/releases",
-    "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-    "Sonatype staging" at "http://oss.sonatype.org/content/repositories/staging",
-    "Java.net Maven2 Repository" at "http://download.java.net/maven/2/",
     "Twitter Repository" at "http://maven.twttr.com",
+    Resolver.typesafeRepo("releases"),
+    Resolver.sonatypeRepo("releases"),
+    Resolver.jcenterRepo,
     Resolver.bintrayRepo("websudos", "oss-releases")
   ),
   scalacOptions ++= Seq(
@@ -145,8 +143,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback,
-    "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j
+    "ch.qos.logback" % "logback-classic" % Versions.logback,
+    "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
   javaOptions in ThisBuild ++= Seq(
@@ -167,8 +165,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ graphSettings ++
   VersionManagement.newSettings ++
   GitProject.gitSettings ++ {
-      println("Using Maven publishing.")
-      PublishTasks.mavenPublishingSettings
+      println("Using Bintray publishing.")
+      PublishTasks.bintrayPublishSettings
   }
 
 
@@ -185,8 +183,7 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomConnectors,
   phantomFinagle,
   phantomReactiveStreams,
-  phantomThrift,
-  phantomZookeeper
+  phantomThrift
 )
 
 lazy val fullProjectList = baseProjectList ++
@@ -229,12 +226,12 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
-    "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % "test",
-    "com.websudos"                 %% "util-lift"                         % Versions.util                   % "test",
-    "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test",
-    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % "test",
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test",
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % "test"
+    "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
+    "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
+    "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
+    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % Test,
+    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
+    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
   )
 ).dependsOn(
   phantomConnectors
@@ -262,7 +259,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     name := "phantom-connectors",
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test"
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   )
 
@@ -272,8 +269,8 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     moduleName := "phantom-finagle",
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
-      "com.websudos"                 %% "util-testing"                      % Versions.util                   % "test",
-      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % "test"
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     )
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks) ++ sharedSettings: _*
@@ -286,11 +283,11 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
-      "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % "test",
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
-      "com.websudos"                 %% "util-testing"                      % Versions.util % "test"
+      "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % Test,
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).settings(
     sharedSettings: _*
@@ -306,6 +303,13 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   name := "phantom-sbt",
   moduleName := "phantom-sbt",
   scalaVersion := "2.10.6",
+  unmanagedSourceDirectories in Compile ++= Seq(
+    (sourceDirectory in Compile).value / ("scala-2." + {
+      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
+        case Some((major, minor)) if minor >= 11 => "11"
+        case _ => "10"
+      }
+  })),
   publish := {
     CrossVersion.partialVersion(scalaVersion.value).map {
       case (2, scalaMajor) if scalaMajor >= 11 => false
@@ -313,12 +317,6 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     }
   },
   publishMavenStyle := false,
-  excludeFilter := {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, scalaMajor)) if scalaMajor >= 11 => NothingFilter
-      case _ => AllPassFilter
-    }
-  },
   sbtPlugin := true,
   libraryDependencies ++= Seq(
     "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
@@ -327,23 +325,6 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     )
   )
 )
-
-lazy val phantomZookeeper = (project in file("phantom-zookeeper"))
-  .settings(
-    name := "phantom-zookeeper",
-    moduleName := "phantom-zookeeper",
-    libraryDependencies ++= Seq(
-      "org.xerial.snappy"            % "snappy-java"      % "1.1.1.3",
-      "com.websudos"                 %% "util-testing"    % Versions.util % "test",
-      "com.websudos"                 %% "util-zookeeper"  % Versions.util excludeAll {
-        ExclusionRule("org.slf4j", "slf4j-jdk14")
-      }
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomConnectors
-  )
 
 lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
   .settings(
@@ -355,9 +336,9 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
       "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
-      "com.websudos"        %% "util-testing"               % Versions.util            % "test",
-      "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % "test",
-      "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % "test"
+      "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
+      "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
+      "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
     )
   ).settings(
     sharedSettings: _*
@@ -370,16 +351,15 @@ lazy val phantomExample = (project in file("phantom-example"))
     name := "phantom-example",
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
-      "com.websudos"                 %% "util-lift"                         % Versions.util            % "test",
-      "com.websudos"                 %% "util-testing"                      % Versions.util            % "test"
+      "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).settings(
     sharedSettings: _*
   ).dependsOn(
     phantomDsl,
     phantomReactiveStreams,
-    phantomThrift,
-    phantomZookeeper
+    phantomThrift
   )
 
 lazy val phantomContainerTests = (project in file("phantom-container-test"))
@@ -396,13 +376,12 @@ lazy val phantomContainerTests = (project in file("phantom-container-test"))
       "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
       "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
       "net.databinder.dispatch"   %% "dispatch-core"                  % Versions.dispatch,
-      "javax.servlet"             % "javax.servlet-api"               % "3.0.1",
-      "com.websudos"              %% "util-testing"                   % Versions.util
+      "javax.servlet"             % "javax.servlet-api"               % Versions.javaxServlet,
+      "com.outworkers"            %% "util-testing"                   % Versions.util
     )
   ).settings(
     sharedSettings: _*
   ).dependsOn(
     phantomDsl,
-    phantomThrift,
-    phantomZookeeper
+    phantomThrift
   )

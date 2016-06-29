@@ -18,6 +18,8 @@ package com.websudos.phantom.connectors
 import com.datastax.driver.core.{Cluster, Session}
 
 import scala.concurrent.blocking
+import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 /**
  * The default SessionProvider implementation, which should be sufficient
@@ -25,7 +27,11 @@ import scala.concurrent.blocking
  *
  * This implementation caches `Session` instances per keySpace.
  */
-class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
+class DefaultSessionProvider(
+  val space: KeySpace,
+  builder: ClusterBuilder,
+  errorHandler: Throwable => Throwable = identity
+) extends SessionProvider {
 
   val cluster: Cluster = {
     builder(Cluster.builder).withoutJMXReporting().withoutMetrics().build
@@ -47,8 +53,16 @@ class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) exten
    * Creates a new Session for the specified keySpace.
    */
   protected[this] def createSession(keySpace: String): Session = {
-    val session = cluster.connect
-    initKeySpace(session, keySpace)
+    Try {
+        val session = blocking {
+          cluster.connect
+        }
+
+        initKeySpace(session, keySpace)
+    } match {
+      case Success(value) => value
+      case Failure(NonFatal(err)) => throw errorHandler(err);
+    }
   }
 
   val session = createSession(space.name)

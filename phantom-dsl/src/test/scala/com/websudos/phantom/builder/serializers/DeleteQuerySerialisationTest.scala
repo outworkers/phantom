@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.serializers
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class DeleteQuerySerialisationTest extends QueryBuilderTest {
 

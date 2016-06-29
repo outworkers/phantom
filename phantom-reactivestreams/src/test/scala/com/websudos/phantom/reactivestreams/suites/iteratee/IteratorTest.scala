@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Primitive, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.Future

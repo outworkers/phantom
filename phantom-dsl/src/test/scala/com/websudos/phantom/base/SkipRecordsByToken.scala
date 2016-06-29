@@ -32,7 +32,7 @@ package com.websudos.phantom.base
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Article, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 import scala.concurrent.{Future, blocking}
 

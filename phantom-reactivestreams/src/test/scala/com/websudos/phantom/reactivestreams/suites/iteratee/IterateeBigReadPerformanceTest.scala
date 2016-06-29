@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.concurrent.ScalaFutures
 
 class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {

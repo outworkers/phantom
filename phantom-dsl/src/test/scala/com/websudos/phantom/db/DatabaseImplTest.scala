@@ -31,7 +31,7 @@ package com.websudos.phantom.db
 
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class DatabaseImplTest extends PhantomSuite {
   val db = new TestDatabase
