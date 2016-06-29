@@ -49,6 +49,7 @@ lazy val Versions = new {
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
+  val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
   val akka = "2.3.14"
@@ -225,7 +226,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
-    "org.scalacheck"               %% "scalacheck"                        % "1.11.5"                        % Test,
+    "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
     "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % Test,
