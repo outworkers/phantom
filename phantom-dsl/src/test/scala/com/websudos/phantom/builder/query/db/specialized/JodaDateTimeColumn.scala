@@ -36,6 +36,8 @@ import com.outworkers.util.testing._
 
 import scala.concurrent.Future
 
+import scala.concurrent.Future
+
 class JodaDateTimeColumn extends PhantomSuite {
 
   override def beforeAll(): Unit = {
