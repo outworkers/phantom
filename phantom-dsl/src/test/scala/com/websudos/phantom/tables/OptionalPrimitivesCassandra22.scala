@@ -32,7 +32,7 @@ package com.websudos.phantom.tables
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 case class OptionalPrimitiveCassandra22(
   pkey: String,

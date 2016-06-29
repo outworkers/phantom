@@ -39,7 +39,7 @@ import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 import scala.concurrent.{Future => ScalaFuture}
 

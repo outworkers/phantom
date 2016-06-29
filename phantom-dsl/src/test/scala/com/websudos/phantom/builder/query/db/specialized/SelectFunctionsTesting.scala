@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.db.specialized
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.{TimeUUIDRecord, Recipe}
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {

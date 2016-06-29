@@ -30,7 +30,7 @@
 package com.websudos.phantom.thrift.suites
 
 import com.websudos.phantom.tables.ThriftDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 import scala.concurrent.duration._
 import org.scalatest.{OptionValues, Matchers, BeforeAndAfterAll, Suite}

@@ -44,8 +44,9 @@ class InsertQueryBuilderTest extends QueryBuilderTest {
         query shouldEqual "VALUES(a, b)"
       }
 
-      "should serialize a sequence of value additions" in {
-
+      "should serialize a sequence of column definitions" in {
+        val query = QueryBuilder.Insert.columns(List(CQLQuery("a"), CQLQuery("b"))).queryString
+        query shouldEqual "(a, b)"
       }
 
     }

@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.prepared
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.Recipe
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class PreparedUpdateQueryTest extends PhantomSuite {
 

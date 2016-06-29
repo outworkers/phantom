@@ -47,6 +47,8 @@ package com.websudos.phantom.connectors
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ProtocolVersion, Session}
 
+import scala.util.control.NoStackTrace
+
 trait SessionAugmenter {
 
   def session: Session
@@ -89,7 +91,6 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
    */
   lazy val session: Session = provider.session
 
-
   def cassandraVersions: Set[VersionNumber] = {
     session.getCluster.getMetadata.getAllHosts
       .asScala.map(_.getCassandraVersion)
@@ -110,11 +111,14 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
         if (single.forall(item => versions.forall(item ==))) {
           single
         } else {
-          throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
+          throw new RuntimeException(
+            s"Illegal single version comparison. You are connected to clusters of different versions." +
+              s"Available versions are: ${versions.mkString(", ")}"
+          ) with NoStackTrace
         }
       }
     } else {
-      throw new Exception("Could not extract any versions from the cluster.")
+      throw new RuntimeException("Could not extract any versions from the cluster, versions were empty")
     }
   }
 
@@ -136,6 +140,5 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
   }
 
 }
-
 
 case class KeySpace(name: String)

@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.db.batch
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.joda.time.DateTime
 import org.scalatest.time.SpanSugar._
 

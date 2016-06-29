@@ -34,7 +34,7 @@ import java.util.{Date, UUID}
 
 import org.joda.time.{DateTimeZone, DateTime}
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 package object tables {
 
