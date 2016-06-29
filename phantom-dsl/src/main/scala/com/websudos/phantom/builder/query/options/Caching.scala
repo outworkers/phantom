@@ -46,8 +46,6 @@ private[phantom] trait CachingStrategies {
       .forcePad.appendSingleQuote(strategy)
   }
 
-  case object None extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.None))
-
   abstract class SpecificCacheProperty[
   QType <: SpecificCacheProperty[QType]
   ](override val qb: CQLQuery) extends CacheProperty(qb) {
@@ -66,6 +64,13 @@ private[phantom] trait CachingStrategies {
     }
   }
 
+  sealed class NoneCache(
+    override val qb: CQLQuery,
+    override val escaped: Boolean
+  )(implicit session: Session) extends SpecificCacheProperty[NoneCache](qb) {
+    override def instance(qb: CQLQuery): NoneCache = new NoneCache(qb, escaped)
+  }
+
   sealed class KeysOnly(
     override val qb: CQLQuery,
     override val escaped: Boolean
@@ -78,6 +83,25 @@ private[phantom] trait CachingStrategies {
     override val escaped: Boolean
   )(implicit session: Session) extends SpecificCacheProperty[RowsOnly](qb) {
     override def instance(qb: CQLQuery): RowsOnly = new RowsOnly(qb, escaped)
+  }
+
+  sealed class AllCache(
+    override val qb: CQLQuery,
+    override val escaped: Boolean
+  )(implicit session: Session) extends SpecificCacheProperty[AllCache](qb) {
+    override def instance(qb: CQLQuery): AllCache = new AllCache(qb, escaped)
+  }
+
+  object None extends SessionAugmenterImplicits {
+    def apply()(implicit session: Session): NoneCache = {
+      if (session.v4orNewer) {
+        new NoneCache(CQLQuery.empty, true)
+          .keys(CQLSyntax.CacheStrategies.None)
+          .rows(CQLSyntax.CacheStrategies.None)
+      } else {
+        new NoneCache(CQLQuery(CQLSyntax.CacheStrategies.None), false)
+      }
+    }
   }
 
   object KeysOnly extends SessionAugmenterImplicits {
@@ -100,7 +124,17 @@ private[phantom] trait CachingStrategies {
     }
   }
 
-  case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
+  object All extends SessionAugmenterImplicits {
+    def apply()(implicit session: Session): AllCache = {
+      if (session.v4orNewer) {
+        new AllCache(CQLQuery.empty, true).rows()
+      } else {
+        new AllCache(CQLQuery(CQLSyntax.CacheStrategies.All), false)
+      }
+    }
+  }
+
+  //case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
 }
 
 object Caching extends CachingStrategies

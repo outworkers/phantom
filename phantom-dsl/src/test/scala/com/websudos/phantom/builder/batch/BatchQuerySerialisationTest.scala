@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.batch
 import com.websudos.phantom.builder.query.SerializationTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{JodaRow, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.FlatSpec
 
 class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {

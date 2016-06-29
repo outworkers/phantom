@@ -155,6 +155,7 @@ object CQLSyntax {
   object Selection {
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
+    val TTL = "TTL"
     val UnixTimestampOf = "unixTimestampOf"
     val OrderBy = "ORDER BY"
     val MaxTimeUUID = "maxTimeuuid"

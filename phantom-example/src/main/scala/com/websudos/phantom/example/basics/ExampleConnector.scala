@@ -29,9 +29,7 @@
  */
 package com.websudos.phantom.example.basics
 
-import com.datastax.driver.core.Session
 import com.websudos.phantom.connectors._
-import com.websudos.phantom.zookeeper.ZkContactPointLookup
 
 trait KeyspaceDefinition {
   implicit val space = KeySpace("phantom_example")
@@ -52,23 +50,6 @@ object Defaults extends KeyspaceDefinition {
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
  */
 trait ExampleConnector extends Defaults.connector.Connector
-
-/**
- * Now you might ask yourself how to use service discovery with phantom. The Datastax Java Driver can automatically connect to multiple clusters.
- * Using some underlying magic, phantom can also help you painlessly connect to a series of nodes in a Cassandra cluster via ZooKeeper.
- *
- * Once again, all you need to tell phantom is what your keyspace is. Phantom will make a series of assumptions about which path you are using in ZooKeeper.
- * By default, it will try to connect to localhost:2181, fetch the "/cassandra" path and parse ports found in a "host:port, host1:port1,
- * .." sequence. All these settings are trivial to override in the below connector and you can adjust all the settings to fit your environment.
- */
-object ZkDefaults extends KeyspaceDefinition {
-  val connector = ZkContactPointLookup.local.keySpace(space.name)
-}
-
-trait DefaultZookeeperConnector extends RootConnector {
-  override implicit lazy val session: Session = ZkDefaults.connector.session
-}
-
 
 /**
  * This is an example of how to connect to a custom set of hosts and ports.

@@ -82,14 +82,11 @@ private[builder] class UpdateQueryBuilder {
     CQLQuery.empty.append(clauses.map(_.queryString).mkString(", "))
   }
 
-  def clauses(op: String, clauses: List[CQLQuery]): CQLQuery = {
-    CQLQuery(op)
-      .forcePad
-      .append(clauses.map(_.queryString).mkString(" "))
-  }
-
   def usingPart(queries: List[CQLQuery]): CQLQuery = {
-    clauses(CQLSyntax.using, queries)
+    CQLQuery(CQLSyntax.using)
+      .forcePad
+      .append(clauses(queries, " " + CQLSyntax.And + " "))
+
   }
 
   def update(tableName: String): CQLQuery = {

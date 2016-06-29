@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.tables.{Recipe, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.websudos.phantom.dsl._
 import net.liftweb.json.{ compactRender, Extraction }
 
@@ -52,6 +52,44 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         val query = TestDatabase.recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).queryString
 
         query shouldEqual "INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']);"
+      }
+    }
+
+    "should allow specifying using clause options" - {
+
+      "should allow specifying a TTL clause for an insert" in {
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .ttl(5)
+          .queryString
+
+        query shouldEqual "INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TTL 5;"
+      }
+
+      "should allow specifying a timestamp clause" in {
+        val time = new DateTime
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .timestamp(time)
+          .queryString
+
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis};"
+      }
+
+      "should allow specifying a combined TTL and timestamp clause" in {
+        val time = new DateTime
+        val ttl = 5
+
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .timestamp(time)
+          .ttl(ttl)
+          .queryString
+
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis} AND TTL $ttl;"
       }
     }
 
@@ -84,8 +122,6 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should serialize a JSON clause as the insert part" in {
         val sample = gen[Recipe]
         val query = TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
-
-        Console.println(query)
 
       }
 

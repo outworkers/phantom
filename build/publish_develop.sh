@@ -16,7 +16,7 @@
 
         echo "Creating credentials file"
         if [ -e "$HOME/.bintray/.credentials" ]; then
-            echo "Bintray redentials file already exists"
+            echo "Bintray credentials file already exists"
         else
             mkdir -p "$HOME/.bintray/"
             touch "$HOME/.bintray/.credentials"
@@ -32,12 +32,35 @@
             echo "Bintray credentials still not found"
         fi
 
+        if [ -e "$HOME/.ivy2/.credentials" ]; then
+            echo "Maven credentials file already exists"
+        else
+        mkdir -p "$HOME/.ivy2/"
+            touch "$HOME/.ivy2/.credentials"
+            echo "realm = Sonatype Nexus Repository Manager" >> "$HOME/.ivy2/.credentials"
+            echo "host = oss.sonatype.org" >> "$HOME/.ivy2/.credentials"
+            echo "user = $maven_user" >> "$HOME/.ivy2/.credentials"
+            echo "password = $maven_password" >> "$HOME/.ivy2/.credentials"
+        fi
+
+        if [ -e "$HOME/.ivy2/.credentials" ]; then
+            echo "Maven credentials file successfully created"
+        else
+            echo "Maven credentials still not found"
+        fi
+
+        if [ -e "$HOME/.bintray/.credentials" ]; then
+            echo "Bintray credentials file successfully created"
+        else
+            echo "Bintray credentials still not found"
+        fi
+
         sbt version-bump-patch git-tag
 
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"
 
-        echo "Publishing Bintray artifact"
+        echo "Publishing Maven artifact"
         git add .
         git commit -m "TravisCI: Bumping version [ci skip]"
         git push "https://${github_token}@${GH_REF}" develop

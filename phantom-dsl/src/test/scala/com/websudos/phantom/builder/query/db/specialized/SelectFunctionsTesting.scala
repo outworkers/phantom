@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.db.specialized
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.{TimeUUIDRecord, Recipe}
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {
@@ -97,6 +97,28 @@ class SelectFunctionsTesting extends PhantomSuite {
         res shouldBe defined
         shouldNotThrow {
           info(res.value.toString)
+        }
+      }
+    }
+  }
+
+  it should "retrieve the TTL of a field from Cassandra" in {
+    val record = gen[TimeUUIDRecord]
+    val timeToLive = 20
+
+    val chain = for {
+      store <- database.timeuuidTable.store(record).ttl(timeToLive).future()
+      timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
+        .where(_.user eqs record.user)
+        .and(_.id eqs record.id).one()
+    } yield timestamp
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        shouldNotThrow {
+          info(res.value.toString)
+          res.value.value shouldEqual timeToLive
         }
       }
     }

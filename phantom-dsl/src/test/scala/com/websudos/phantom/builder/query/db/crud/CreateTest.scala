@@ -41,7 +41,7 @@ class CreateTest extends PhantomFreeSuite {
       "serialize and create a table with Caching.None" in {
 
         val query = TestDatabase.timeSeriesTable
-          .create.`with`(caching eqs Caching.None)
+          .create.`with`(caching eqs Caching.None())
 
         info(query.queryString)
 
@@ -97,7 +97,7 @@ class CreateTest extends PhantomFreeSuite {
 
       "serialize and create a table with Caching.All" in {
         val query = TestDatabase.timeSeriesTable
-          .create.`with`(caching eqs Caching.All)
+          .create.`with`(caching eqs Caching.All())
 
         info(query.queryString)
 

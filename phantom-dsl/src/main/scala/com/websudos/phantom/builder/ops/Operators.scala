@@ -38,7 +38,7 @@ import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereC
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.column.{AbstractColumn, TimeUUIDColumn}
+import com.websudos.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
 import com.websudos.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.DateTime
 import shapeless.{=:!=, HList}
@@ -58,11 +58,20 @@ sealed class UnixTimestampOfCqlFunction extends CqlFunction {
   }
 }
 
+sealed class TTLOfFunction extends CqlFunction {
+  def apply(pf: Column[_, _, _])(implicit ev: Primitive[Int]): TypedClause.Condition[Option[Int]] = {
+    new TypedClause.Condition(QueryBuilder.Select.ttl(pf.name), row => {
+      ev.fromRow(s"ttl(${pf.name})", row).toOption
+    })
+  }
+}
+
 sealed class DateOfCqlFunction extends CqlFunction {
 
   def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[Option[DateTime]] = {
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
       if (session.v3orNewer) {
+
         ev.fromRow(s"system.dateof(${pf.name})", row).toOption
       } else {
         ev.fromRow(s"dateof(${pf.name})", row).toOption
@@ -190,5 +199,6 @@ trait Operators {
   object token extends TokenCqlFunction
   object now extends NowCqlFunction
   object writetime extends WritetimeCqlFunction
+  object ttl extends TTLOfFunction
 }
 

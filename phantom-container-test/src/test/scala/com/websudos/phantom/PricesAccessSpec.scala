@@ -40,7 +40,7 @@ import org.joda.time.format.DateTimeFormat
 import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.concurrent.PatienceConfiguration
 
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.websudos.phantom.server.ScalatraBootstrap.{AAPL, AAPLOption, AppleOptionPrices, ApplePrices}
 import com.websudos.phantom.server._
 import dispatch.{Http, as, url}

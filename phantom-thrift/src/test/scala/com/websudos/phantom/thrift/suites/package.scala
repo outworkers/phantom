@@ -32,7 +32,7 @@ package com.websudos.phantom.thrift
 import java.util.UUID
 
 import com.websudos.phantom.tables.Output
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 package object suites {
 

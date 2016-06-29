@@ -30,7 +30,7 @@
 package com.websudos.phantom.builder.query
 
 import org.scalatest.{Matchers, FlatSpec}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class CQLQueryTest extends FlatSpec with Matchers {
 

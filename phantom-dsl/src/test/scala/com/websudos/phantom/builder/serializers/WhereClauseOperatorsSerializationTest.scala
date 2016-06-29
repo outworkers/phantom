@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class WhereClauseOperatorsSerializationTest extends FlatSpec with Matchers {

@@ -31,7 +31,7 @@ package com.websudos.phantom.jdk8
 
 import java.time.{LocalDate, OffsetDateTime, ZoneOffset, ZonedDateTime}
 
-import com.websudos.util.testing.{Sample, _}
+import com.outworkers.util.testing.{Sample, _}
 
 package object tables {
 

@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 import com.websudos.phantom.connectors.RootConnector
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
+import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}

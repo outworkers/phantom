@@ -47,6 +47,8 @@ package com.websudos.phantom.connectors
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ProtocolVersion, Session}
 
+import scala.util.control.NoStackTrace
+
 trait SessionAugmenter {
 
   def session: Session
@@ -78,15 +80,16 @@ trait SessionAugmenterImplicits {
  * @param name the name of the keySpace
  * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
+class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
 
   val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder)
+
+  val self = this
 
   /**
    * The Session associated with this keySpace.
    */
   lazy val session: Session = provider.session
-
 
   def cassandraVersions: Set[VersionNumber] = {
     session.getCluster.getMetadata.getAllHosts
@@ -108,11 +111,14 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
         if (single.forall(item => versions.forall(item ==))) {
           single
         } else {
-          throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
+          throw new RuntimeException(
+            s"Illegal single version comparison. You are connected to clusters of different versions." +
+              s"Available versions are: ${versions.mkString(", ")}"
+          ) with NoStackTrace
         }
       }
     } else {
-      throw new Exception("Could not extract any versions from the cluster.")
+      throw new RuntimeException("Could not extract any versions from the cluster, versions were empty")
     }
   }
 
@@ -122,19 +128,17 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) { outer =>
    */
   trait Connector extends com.websudos.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = outer.provider
+    lazy val provider = self.provider
 
-    lazy val keySpace = outer.name
+    lazy val keySpace = self.name
 
-    implicit val space: KeySpace = KeySpace(outer.name)
+    implicit val space: KeySpace = KeySpace(self.name)
 
-    def cassandraVersion: Option[VersionNumber] = outer.cassandraVersion
+    def cassandraVersion: Option[VersionNumber] = self.cassandraVersion
 
-    def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
-
+    def cassandraVersions: Set[VersionNumber] = self.cassandraVersions
   }
 
 }
-
 
 case class KeySpace(name: String)

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually

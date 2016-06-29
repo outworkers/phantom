@@ -35,7 +35,7 @@ import com.websudos.phantom.builder.query.db.ordering.TimeSeriesTest
 import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.slf4j.LoggerFactory
 import scala.concurrent.{Future => ScalaFuture}
 
