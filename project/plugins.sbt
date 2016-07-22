@@ -56,6 +56,6 @@ addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
+//addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
