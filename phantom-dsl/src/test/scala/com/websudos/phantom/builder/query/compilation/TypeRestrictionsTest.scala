@@ -30,12 +30,16 @@
 package com.websudos.phantom.builder.query.compilation
 
 import com.websudos.phantom.builder.query.SerializationTest
+import com.websudos.phantom.dsl.UUID
 import com.websudos.phantom.tables.TestDatabase
 import org.scalatest.FlatSpec
+import com.outworkers.util.testing._
 
 class TypeRestrictionsTest extends FlatSpec with SerializationTest {
 
   val Primitives = TestDatabase.primitives
+  val tsTable = TestDatabase.timeSeriesTable
+
 
   it should "allow using a correct type for a value method" in {
     "Primitives.insert.value(_.boolean, true)" should compile
@@ -47,5 +51,9 @@ class TypeRestrictionsTest extends FlatSpec with SerializationTest {
 
   it should "not allow chaining 2 limit clauses on the same query" in {
     "Primitives.select.all().limit(5).limit(5)" shouldNot compile
+  }
+
+  it should "not allow chaining multiple order by clauses on teh same query" in {
+    """tsTable.select.where(_.id eqs user).orderBy(_.timestamp.desc).orderBy(_.timestamp.desc)""" shouldNot compile
   }
 }

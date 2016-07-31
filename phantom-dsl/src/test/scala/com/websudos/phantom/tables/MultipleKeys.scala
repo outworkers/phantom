@@ -27,38 +27,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.db
+package com.websudos.phantom.tables
 
-import com.websudos.phantom.PhantomSuite
+import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.outworkers.util.testing._
 
-class DatabaseImplTest extends PhantomSuite {
-  val db = new TestDatabase
-  val db2 = new ValueInitDatabase
+class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleKeys]] {
 
-  it should "instantiate a database and collect references to the tables" in {
-    db.tables.size shouldEqual 4
-  }
+  object pkey extends StringColumn(this) with PartitionKey[String]
+  object intColumn1 extends IntColumn(this) with PrimaryKey[Int] with Index[Int]
+  object intColumn2 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn3 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn4 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn5 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn6 extends IntColumn(this) with PrimaryKey[Int]
+  object intColumn7 extends IntColumn(this) with PrimaryKey[Int]
+  object timestamp8 extends DateTimeColumn(this)
 
-  it should "automatically generate the CQL schema and initialise tables " in {
-    db.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
-    }
-  }
+  def fromRow(r: Row): Option[MultipleKeys] = None
+}
 
-  ignore should "instantiate a database object and collect references to value fields" in {
-    db2.tables.foreach(item => info(item.tableName))
-    db2.tables.size shouldEqual 4
-  }
-
-  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
-    db2.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
-    }
-  }
+abstract class ConcreteMultipleKeys extends MultipleKeys with RootConnector {
+  override val tableName = "AJ"
 }

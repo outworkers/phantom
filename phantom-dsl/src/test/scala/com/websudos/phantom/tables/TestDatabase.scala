@@ -34,7 +34,7 @@ import java.util.UUID
 
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
 
 class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
   object articles extends ConcreteArticles with connector.Connector
@@ -81,7 +81,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   }
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
-  object twoKeysTable extends ConcreteTwoKeys with connector.Connector
+  object multipleKeysTable$ extends ConcreteMultipleKeys with connector.Connector
   object timeuuidTable extends ConcreteTimeUUIDTable with connector.Connector
 
   object events extends ConcreteEvents with connector.Connector

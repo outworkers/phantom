@@ -39,6 +39,7 @@ import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
+import scala.concurrent.duration.{ FiniteDuration => ScalaDuration}
 
 class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -320,7 +321,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 
@@ -473,7 +474,7 @@ sealed class ConditionalQuery[
     )
   }
 
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 

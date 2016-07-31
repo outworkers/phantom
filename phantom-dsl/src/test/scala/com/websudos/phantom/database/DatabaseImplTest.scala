@@ -27,27 +27,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.db
+package com.websudos.phantom.database
 
-import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.tables._
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.dsl._
+import com.outworkers.util.testing._
 
+class DatabaseImplTest extends PhantomSuite {
+  val db = new TestDatabase
+  val db2 = new ValueInitDatabase
 
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
-}
+  it should "instantiate a database and collect references to the tables" in {
+    db.tables.size shouldEqual 4
+  }
 
-class TestDatabase extends DatabaseImpl(DefaultKeyspace.local) {
-  object basicTable extends BasicTable with connector.Connector
-  object enumTable extends EnumTable with connector.Connector
-  object jsonTable extends JsonTable with connector.Connector
-  object recipes extends Recipes with connector.Connector
-}
+  it should "automatically generate the CQL schema and initialise tables " in {
+    db.autocreate().future().successful {
+      res => {
+        res.nonEmpty shouldEqual true
+      }
+    }
+  }
 
+  ignore should "instantiate a database object and collect references to value fields" in {
+    db2.tables.foreach(item => info(item.tableName))
+    db2.tables.size shouldEqual 4
+  }
 
-class ValueInitDatabase extends DatabaseImpl(DefaultKeyspace.local) {
-  val basicTable = new BasicTable with connector.Connector
-  val enumTable = new EnumTable with connector.Connector
-  val jsonTable = new JsonTable with connector.Connector
-  val recipes = new Recipes with connector.Connector
+  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
+    db2.autocreate().future().successful {
+      res => {
+        res.nonEmpty shouldEqual true
+      }
+    }
+  }
 }

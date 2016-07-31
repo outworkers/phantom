@@ -42,7 +42,7 @@ import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.websudos.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.db.ExecutableCreateStatementsList
+import com.websudos.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
 

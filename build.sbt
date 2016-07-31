@@ -151,22 +151,14 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
-  javaOptions in Test ++= Seq(
-    "-Xmx2G",
-    "-Djava.net.preferIPv4Stack=true",
-    "-Dio.netty.resourceLeakDetection"
-  ),
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
   testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++ {
-      println("Using Bintray publishing.")
-      PublishTasks.bintrayPublishSettings
-  }
-
+  GitProject.gitSettings ++
+  PublishTasks.bintrayPublishSettings
 
 lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 

@@ -27,26 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom.database
 
-import com.datastax.driver.core.Row
-import com.websudos.phantom.dsl._
+import com.websudos.phantom.connectors.ContactPoint
+import com.websudos.phantom.tables._
 
-class TwoKeys extends CassandraTable[ConcreteTwoKeys, Option[TwoKeys]] {
 
-  object pkey extends StringColumn(this) with PartitionKey[String]
-  object intColumn1 extends IntColumn(this) with PrimaryKey[Int] with Index[Int]
-  object intColumn2 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn3 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn4 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn5 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn6 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn7 extends IntColumn(this) with PrimaryKey[Int]
-  object timestamp8 extends DateTimeColumn(this)
-
-  def fromRow(r: Row): Option[TwoKeys] = None
+private[this] object DefaultKeyspace {
+  lazy val local = ContactPoint.local.keySpace("phantom")
 }
 
-abstract class ConcreteTwoKeys extends TwoKeys with RootConnector {
-  override val tableName = "AJ"
+class TestDatabase extends DatabaseImpl(DefaultKeyspace.local) {
+  object basicTable extends BasicTable with connector.Connector
+  object enumTable extends EnumTable with connector.Connector
+  object jsonTable extends JsonTable with connector.Connector
+  object recipes extends Recipes with connector.Connector
+}
+
+
+class ValueInitDatabase extends DatabaseImpl(DefaultKeyspace.local) {
+  val basicTable = new BasicTable with connector.Connector
+  val enumTable = new EnumTable with connector.Connector
+  val jsonTable = new JsonTable with connector.Connector
+  val recipes = new Recipes with connector.Connector
 }

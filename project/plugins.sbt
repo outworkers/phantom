@@ -38,8 +38,6 @@ resolvers ++= Seq(
   Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
-
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.3")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.0.3")
@@ -57,7 +55,5 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
-
-//addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
