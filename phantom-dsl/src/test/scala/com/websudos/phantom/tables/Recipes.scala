@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.builder.query.{SelectQuery, InsertQuery}
+import com.websudos.phantom.builder.query.{CreateQuery, InsertQuery, SelectQuery}
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
 
@@ -74,9 +74,14 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
     )
   }
 
+  override def autocreate()(implicit space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
+    create.ifNotExists().`with`(comment eqs "This is a test string")
+  }
+
 }
 
 abstract class ConcreteRecipes extends Recipes with RootConnector {
+
 
   def store(recipe: Recipe): InsertQuery.Default[ConcreteRecipes, Recipe] = {
     insert

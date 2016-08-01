@@ -31,7 +31,7 @@ package com.websudos.phantom
 
 import com.datastax.driver.core.{Row, Session}
 import com.websudos.phantom.builder.clauses.DeleteClause
-import com.websudos.phantom.builder.query._
+import com.websudos.phantom.builder.query.{RootCreateQuery, _}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
@@ -83,6 +83,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    * @return A root create block, with full support for all CQL Create query options.
    */
   final def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
+
+  def autocreate()(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()
 
   final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
 

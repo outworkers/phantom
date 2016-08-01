@@ -76,7 +76,10 @@ class InsertQuery[
     )
   }
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: OperatorClause.Condition) : InsertQuery[Table, Record, Status, PS] = {
+  final def valueOp[RR](
+    col: Table => AbstractColumn[RR],
+    value: OperatorClause.Condition
+  ): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -88,7 +91,7 @@ class InsertQuery[
     )
   }
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
+  final def value[RR](col: Table => AbstractColumn[RR], value: RR): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,

@@ -80,9 +80,14 @@ trait SessionAugmenterImplicits {
  * @param name the name of the keySpace
  * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
+class KeySpaceDef(
+  val name: String,
+  clusterBuilder: ClusterBuilder,
+  autoinit: Boolean,
+  keyspaceFn: Option[(Session, KeySpace) => String] = None
+) {
 
-  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder)
+  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn)
 
   val self = this
 

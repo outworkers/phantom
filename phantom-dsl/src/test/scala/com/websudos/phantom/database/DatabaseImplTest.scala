@@ -61,4 +61,8 @@ class DatabaseImplTest extends PhantomSuite {
       }
     }
   }
+
+  it should "respect any auto-creation options specified for the particular table" in {
+
+  }
 }

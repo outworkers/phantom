@@ -32,7 +32,7 @@ package com.websudos.phantom.database
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.diesel.engine.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.ExecutableStatementList
+import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.concurrent.duration._
@@ -179,11 +179,15 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
 
 sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
+  private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
+    tables.toSeq.map(_.autocreate.qb)
+  }
+
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
-    Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
+    Future.sequence(tables.toSeq.map(_.autocreate.future()))
   }
 }

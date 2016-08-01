@@ -49,7 +49,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   /**
    * Create a new keySpace with the specified name.
    */
-  def keySpace(name: String): KeySpaceDef =
-    new KeySpaceDef(name, clusterBuilder)
+  def keySpace(name: String, autoinit: Boolean = true): KeySpaceDef =
+    new KeySpaceDef(name, clusterBuilder, autoinit)
 
 }
