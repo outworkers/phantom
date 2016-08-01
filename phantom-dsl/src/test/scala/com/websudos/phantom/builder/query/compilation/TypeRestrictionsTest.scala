@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.query.compilation
 
+import com.datastax.driver.core.ConsistencyLevel
 import com.websudos.phantom.builder.query.SerializationTest
 import com.websudos.phantom.dsl.UUID
 import com.websudos.phantom.tables.TestDatabase
@@ -53,7 +54,18 @@ class TypeRestrictionsTest extends FlatSpec with SerializationTest {
     "Primitives.select.all().limit(5).limit(5)" shouldNot compile
   }
 
-  it should "not allow chaining multiple order by clauses on teh same query" in {
+  it should "not allow chaining multiple order by clauses on the same query" in {
+    val user = gen[UUID]
     """tsTable.select.where(_.id eqs user).orderBy(_.timestamp.desc).orderBy(_.timestamp.desc)""" shouldNot compile
+  }
+
+  it should "not allow chaining where clauses on the same query, it should only allow where .. and constructs" in {
+    val user = gen[UUID]
+    """tsTable.select.where(_.id eqs user).where(_.id eqs user)""" shouldNot compile
+  }
+
+  it should "not allow specifying multiple consistency bounds on the same query" in {
+    val user = gen[UUID]
+    """tsTable.select.where(_.id eqs user).consistencyLevel_=(ConsistencyLevel.ONE).consistencyLevel_=(ConsistencyLevel.ONE)""" shouldNot compile
   }
 }
