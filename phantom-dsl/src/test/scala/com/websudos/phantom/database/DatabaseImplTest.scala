@@ -63,6 +63,10 @@ class DatabaseImplTest extends PhantomSuite {
   }
 
   it should "respect any auto-creation options specified for the particular table" in {
+    val queries = db.autocreate().queries()
 
+    val target = db.recipes.autocreate().qb
+
+    queries should contain (target)
   }
 }

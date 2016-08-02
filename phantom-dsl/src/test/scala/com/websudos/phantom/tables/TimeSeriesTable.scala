@@ -91,4 +91,12 @@ abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
       .value(_.id, rec.id)
       .value(_.name, rec.name)
   }
+
+  def retrieve(user: UUID): Future[List[TimeUUIDRecord]] = {
+    select.where(_.user eqs user).orderBy(_.id ascending).fetch()
+  }
+
+  def retrieveDescending(user: UUID): Future[List[TimeUUIDRecord]] = {
+    select.where(_.user eqs user).orderBy(_.id descending).fetch()
+  }
 }
