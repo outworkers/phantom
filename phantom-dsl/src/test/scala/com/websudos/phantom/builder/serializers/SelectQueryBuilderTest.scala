@@ -94,7 +94,7 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
 
         val qb = QueryBuilder.Select.Ordering.orderBy(orderings: _*).queryString
 
-        qb shouldEqual "ORDER BY (test ASC, test_2 ASC, test_3 DESC)"
+        qb shouldEqual "ORDER BY test ASC, test_2 ASC, test_3 DESC"
       }
     }
 
