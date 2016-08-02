@@ -109,7 +109,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY id2 DESC, id3 ASC;"
       }
 
       "a maxTimeuuid comparison clause" in {

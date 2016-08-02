@@ -67,7 +67,8 @@ sealed class OrderingModifier {
   def orderBy(clauses: CQLQuery*): CQLQuery = clauses match {
     case head :: tail if tail.isEmpty =>
       CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(head.queryString)
-    case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
+    case _ =>
+      CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clauses.map(_.queryString))
   }
 
   def orderBy(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
