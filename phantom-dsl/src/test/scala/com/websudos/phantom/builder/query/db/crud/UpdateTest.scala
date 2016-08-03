@@ -42,6 +42,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
     TestDatabase.testTable.insertSchema()
+    TestDatabase.optionalPrimitives.insertSchema()
   }
 
   "Update" should "work fine for primitives columns" in {
@@ -106,6 +107,50 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
       case (res1, res2) => {
         res1.value shouldEqual row
         res2.value shouldEqual updatedRow
+      }
+    }
+  }
+
+  it should "store an OptionalPrimitive in an optional table if none of the columns specified are null" in {
+    val sample = OptionalPrimitive.empty
+    val updated = gen[OptionalPrimitive].copy(pkey = sample.pkey)
+
+    val chain = for {
+      store <- database.optionalPrimitives.store(sample).future()
+      get <- database.optionalPrimitives.get(sample.pkey)
+      update <- database.optionalPrimitives.updateColumns(updated)
+      get2 <- database.optionalPrimitives.get(sample.pkey)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeRecord, afterRecord) => {
+        beforeRecord shouldBe defined
+        beforeRecord.value shouldEqual sample
+
+        afterRecord shouldBe defined
+        afterRecord.value shouldBe updated
+      }
+    }
+  }
+
+  it should "store an OptionalPrimitive in an optional table if some of the columns specified are null" in {
+    val sample = OptionalPrimitive.empty
+    val updated = gen[OptionalPrimitive].copy(pkey = sample.pkey, double = None, float = None)
+
+    val chain = for {
+      store <- database.optionalPrimitives.store(sample).future()
+      get <- database.optionalPrimitives.get(sample.pkey)
+      update <- database.optionalPrimitives.updateColumns(updated)
+      get2 <- database.optionalPrimitives.get(sample.pkey)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeRecord, afterRecord) => {
+        beforeRecord shouldBe defined
+        beforeRecord.value shouldEqual sample
+
+        afterRecord shouldBe defined
+        afterRecord.value shouldBe updated
       }
     }
   }

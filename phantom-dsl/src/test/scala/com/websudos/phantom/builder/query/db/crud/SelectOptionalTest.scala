@@ -49,7 +49,7 @@ class SelectOptionalTest extends PhantomSuite {
   }
 
   it should "work fine when optional value is empty" in {
-    checkRow(OptionalPrimitive.none)
+    checkRow(OptionalPrimitive.empty)
   }
 
 

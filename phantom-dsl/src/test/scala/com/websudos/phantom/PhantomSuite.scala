@@ -44,7 +44,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
-  protected[this] val defaultScalaTimeoutSeconds = 10
+  protected[this] val defaultScalaTimeoutSeconds = 25
 
   private[this] val defaultScalaInterval = 50L
 
