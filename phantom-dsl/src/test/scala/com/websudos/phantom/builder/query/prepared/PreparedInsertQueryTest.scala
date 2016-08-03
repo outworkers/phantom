@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.builder.query.prepared
 
+import com.datastax.driver.core.{BoundStatement, PreparedStatement}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.codec.JodaLocalDateCodec
 import com.websudos.phantom.dsl._
@@ -40,10 +41,10 @@ class PreparedInsertQueryTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
-    TestDatabase.recipes.insertSchema()
-    TestDatabase.primitives.insertSchema()
+    database.recipes.insertSchema()
+    database.primitives.insertSchema()
     if (session.v4orNewer) {
-      TestDatabase.primitivesCassandra22.insertSchema()
+      database.primitivesCassandra22.insertSchema()
     }
   }
 
@@ -51,7 +52,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
     val sample = gen[Recipe]
 
-    val query = TestDatabase.recipes.insert
+    val query = database.recipes.insert
       .p_value(_.uid, ?)
       .p_value(_.url, ?)
       .p_value(_.servings, ?)
@@ -73,7 +74,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
     val chain = for {
       store <- exec
-      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
+      get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
     whenReady(chain) {
@@ -87,7 +88,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
   it should "serialize a primitives insert query" in {
     val sample = gen[Primitive]
 
-    val query = TestDatabase.primitives.insert
+    val query = database.primitives.insert
       .p_value(_.pkey, ?)
       .p_value(_.long, ?)
       .p_value(_.boolean, ?)
@@ -117,7 +118,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
     val chain = for {
       store <- exec
-      get <- TestDatabase.primitives.select.where(_.pkey eqs sample.pkey).one()
+      get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -133,7 +134,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       session.getCluster.getConfiguration.getCodecRegistry.register(new JodaLocalDateCodec)
       val sample = gen[PrimitiveCassandra22]
 
-      val query = TestDatabase.primitivesCassandra22.insert
+      val query = database.primitivesCassandra22.insert
         .p_value(_.pkey, ?)
         .p_value(_.short, ?)
         .p_value(_.byte, ?)
@@ -147,7 +148,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         sample.localDate
       ).future()
 
-      val selectQuery = TestDatabase.primitivesCassandra22.select
+      val selectQuery = database.primitivesCassandra22.select
         .p_where(_.pkey eqs ?)
         .prepare()
 
@@ -161,6 +162,48 @@ class PreparedInsertQueryTest extends PhantomSuite {
           res shouldBe defined
           res.value shouldEqual sample
         }
+      }
+    }
+  }
+
+  it should "excute a prepared insert with a bound TTL variable in the using clause" in {
+    val usedTtl = 10
+
+    val sample = gen[Recipe]
+
+    val query = database.recipes.insert
+      .p_value(_.uid, ?)
+      .p_value(_.url, ?)
+      .p_value(_.servings, ?)
+      .p_value(_.ingredients, ?)
+      .p_value(_.description, ?)
+      .p_value(_.lastcheckedat, ?)
+      .p_value(_.props, ?)
+      .ttl(?)
+      .prepare()
+
+    val exec = query.bind(
+      sample.uid,
+      sample.url,
+      sample.servings,
+      sample.ingredients,
+      sample.description,
+      sample.lastCheckedAt,
+      sample.props,
+      usedTtl
+    )
+
+    info(exec.statement.asInstanceOf[BoundStatement].preparedStatement().getQueryString)
+
+    val chain = for {
+      store <- exec.future()
+      get <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
       }
     }
   }

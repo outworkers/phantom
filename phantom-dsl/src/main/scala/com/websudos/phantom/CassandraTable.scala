@@ -62,7 +62,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Unit = {
-    Await.result(create.ifNotExists().future(), 10.seconds)
+    Await.result(autocreate(keySpace).future(), 10.seconds)
   }
 
   private[this] val instanceMirror = cm.reflect(this)
@@ -84,7 +84,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    */
   final def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
 
-  def autocreate()(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()
+  def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
   final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
 

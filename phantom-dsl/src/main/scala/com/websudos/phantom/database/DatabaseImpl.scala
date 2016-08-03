@@ -180,7 +180,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
 sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
   private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
-    tables.toSeq.map(_.autocreate.qb)
+    tables.toSeq.map(_.autocreate(keySpace).qb)
   }
 
   def future()(
@@ -188,6 +188,6 @@ sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
-    Future.sequence(tables.toSeq.map(_.autocreate.future()))
+    Future.sequence(tables.toSeq.map(_.autocreate(keySpace).future()))
   }
 }

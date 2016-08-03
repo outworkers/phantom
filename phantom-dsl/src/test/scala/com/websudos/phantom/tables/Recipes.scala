@@ -73,11 +73,6 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
       uid(r)
     )
   }
-
-  override def autocreate()(implicit space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
-    create.ifNotExists().`with`(comment eqs "This is a test string")
-  }
-
 }
 
 abstract class ConcreteRecipes extends Recipes with RootConnector {

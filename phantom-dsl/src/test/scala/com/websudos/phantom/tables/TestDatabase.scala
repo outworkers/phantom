@@ -33,8 +33,10 @@ import java.net.SocketOption
 import java.util.UUID
 
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
+import com.websudos.phantom.builder.query.CreateQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.dsl._
 
 class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
   object articles extends ConcreteArticles with connector.Connector
@@ -64,7 +66,11 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object primitivesCassandra22 extends ConcretePrimitivesCassandra22 with connector.Connector
   object optionalPrimitivesCassandra22 extends ConcreteOptionalPrimitivesCassandra22 with connector.Connector
 
-  object recipes extends ConcreteRecipes with connector.Connector
+  object recipes extends ConcreteRecipes with connector.Connector {
+    override def autocreate(space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
+      create.ifNotExists()(space).`with`(comment eqs "This is a test string")
+    }
+  }
 
   object secondaryIndexTable extends ConcreteSecondaryIndexTable with connector.Connector
   object staticTable extends ConcreteStaticTableTest with connector.Connector
