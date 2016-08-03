@@ -41,6 +41,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.primitives.insertSchema()
+    database.optionalPrimitives.insertSchema()
     database.testTable.insertSchema()
   }
 
