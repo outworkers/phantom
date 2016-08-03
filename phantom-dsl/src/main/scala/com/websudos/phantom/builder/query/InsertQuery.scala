@@ -142,6 +142,18 @@ class InsertQuery[
     (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
+  final def ttl(value: PrepareMark): InsertQuery[Table, Record, Status, Int :: PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart,
+      valuePart,
+      usingPart append QueryBuilder.ttl(value.qb.queryString),
+      lightweightPart,
+      options
+    )
+  }
+
   def ttl(seconds: Int): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,

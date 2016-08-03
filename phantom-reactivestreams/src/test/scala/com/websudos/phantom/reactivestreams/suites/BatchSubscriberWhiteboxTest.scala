@@ -41,9 +41,9 @@ class BatchSubscriberWhiteboxTest extends SubscriberWhiteboxVerification[Opera](
   override def createSubscriber(probe: WhiteboxSubscriberProbe[Opera]): Subscriber[Opera] = {
     new BatchSubscriber[ConcreteOperaTable, Opera](
       StreamDatabase.operaTable,
-      OperaRequestBuilder,
-      5,
-      2,
+      builder = OperaRequestBuilder,
+      batchSize = 5,
+      concurrentRequests = 2,
       batchType = BatchType.Unlogged,
       flushInterval = None,
       completionFn = () => (),

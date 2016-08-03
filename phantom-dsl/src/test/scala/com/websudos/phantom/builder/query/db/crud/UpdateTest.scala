@@ -40,8 +40,8 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
-    TestDatabase.testTable.insertSchema()
+    database.primitives.insertSchema()
+    database.testTable.insertSchema()
   }
 
   "Update" should "work fine for primitives columns" in {
@@ -52,9 +52,9 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     val updatedRow = gen[Primitive].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      a <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- TestDatabase.primitives.update.where(_.pkey eqs row.pkey)
+      store <- database.primitives.store(row).future()
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo updatedRow.long)
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -90,16 +90,16 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     )
 
     val chain = for {
-      store <- TestDatabase.testTable.store(row).future()
-      a <- TestDatabase.testTable.select.where(_.key eqs row.key).one
-      u <- TestDatabase.testTable.update
+      store <- database.testTable.store(row).future()
+      a <- database.testTable.select.where(_.key eqs row.key).one
+      u <- database.testTable.update
         .where(_.key eqs row.key)
         .modify(_.list setTo updatedRow.list)
         .and(_.setText setTo updatedRow.setText)
         .and(_.mapTextToText setTo updatedRow.mapTextToText)
         .and(_.setInt setTo updatedRow.setInt)
         .and(_.mapIntToText setTo updatedRow.mapIntToText).future()
-      a2 <- TestDatabase.testTable.select.where(_.key eqs row.key).one
+      a2 <- database.testTable.select.where(_.key eqs row.key).one
     } yield (a, a2)
 
     chain successful {

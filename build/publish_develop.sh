@@ -68,10 +68,10 @@ then
         echo "Publishing new version to bintray"
         sbt +bintray:publish
 
-        git checkout master
-        git merge develop
+        #git checkout master
+        #git merge develop
 
-        git push "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
+        #git push "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
 
     else
         echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"
