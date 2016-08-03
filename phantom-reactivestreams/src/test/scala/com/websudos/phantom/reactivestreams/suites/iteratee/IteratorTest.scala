@@ -40,7 +40,7 @@ class IteratorTest extends BigTest with ScalaFutures {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeuuidTable.insertSchema()
+    database.timeSeriesTable.insertSchema()
   }
 
   it should "correctly retrieve the right number of records using scala iterator" in {
