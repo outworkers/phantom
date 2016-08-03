@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.UsingClause
+import com.websudos.phantom.builder.clauses.{OperatorClause, UsingClause}
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
@@ -47,12 +47,12 @@ class InsertQuery[
   Status <: ConsistencyBound,
   PS <: HList
 ](
-  table: Table,
-  val init: CQLQuery,
-  columnsPart: ColumnsPart = ColumnsPart.empty,
-  valuePart: ValuePart = ValuePart.empty,
-  usingPart: UsingPart = UsingPart.empty,
-  lightweightPart: LightweightPart = LightweightPart.empty,
+  private[this] val table: Table,
+  private[this] val init: CQLQuery,
+  private[this] val columnsPart: ColumnsPart = ColumnsPart.empty,
+  private[this] val valuePart: ValuePart = ValuePart.empty,
+  private[this] val usingPart: UsingPart = UsingPart.empty,
+  private[this] val lightweightPart: LightweightPart = LightweightPart.empty,
   override val options: QueryOptions = QueryOptions.empty
 ) extends ExecutableStatement with Batchable {
 
@@ -76,7 +76,22 @@ class InsertQuery[
     )
   }
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
+  final def valueOp[RR](
+    col: Table => AbstractColumn[RR],
+    value: OperatorClause.Condition
+  ): InsertQuery[Table, Record, Status, PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart append CQLQuery(col(table).name),
+      valuePart append value.qb,
+      usingPart,
+      lightweightPart,
+      options
+    )
+  }
+
+  final def value[RR](col: Table => AbstractColumn[RR], value: RR): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,

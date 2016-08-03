@@ -115,7 +115,7 @@ trait ExecutableStatement extends CassandraOperations {
   }
 }
 
-private[phantom] class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOperations {
+class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOperations {
 
   /**
    * Secondary constructor to allow passing in Sets instead of Sequences.

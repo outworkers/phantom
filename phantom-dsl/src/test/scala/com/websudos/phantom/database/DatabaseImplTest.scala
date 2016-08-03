@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.db
+package com.websudos.phantom.database
 
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
@@ -60,5 +60,13 @@ class DatabaseImplTest extends PhantomSuite {
         res.nonEmpty shouldEqual true
       }
     }
+  }
+
+  it should "respect any auto-creation options specified for the particular table" in {
+    val queries = db.autocreate().queries()
+
+    val target = db.recipes.autocreate().qb
+
+    queries should contain (target)
   }
 }

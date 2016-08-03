@@ -64,7 +64,7 @@ class PreparedDeleteQueryTest extends PhantomSuite {
   }
 
   it should "correctly execute a prepared delete query with 2 bound values" in {
-    val sample = database.twoKeysTable
+    val sample = database.multipleKeysTable$
 
     val author = gen[UUID]
     val cat = gen[UUID]

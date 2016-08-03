@@ -27,12 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.db
+package com.websudos.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.diesel.engine.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.ExecutableStatementList
+import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 
 import scala.concurrent.duration._
@@ -77,8 +77,9 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * A blocking method that will create all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.db.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
   def create(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -88,6 +89,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * An asynchronous method that will create all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
   def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
@@ -115,6 +117,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * An async method that will drop all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
   def dropAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
@@ -124,8 +127,9 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * A blocking method that will drop all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.db.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
   def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -153,8 +157,9 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * A blocking method that will truncate all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.db.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
   def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -164,6 +169,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   /**
     * An async method that will truncate all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
+ *
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
   def truncateAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
@@ -173,11 +179,15 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
 
 sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
 
+  private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
+    tables.toSeq.map(_.autocreate.qb)
+  }
+
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
-    Future.sequence(tables.toSeq.map(_.create.ifNotExists().future()))
+    Future.sequence(tables.toSeq.map(_.autocreate.future()))
   }
 }

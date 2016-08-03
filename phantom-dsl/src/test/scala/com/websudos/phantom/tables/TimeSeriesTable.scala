@@ -34,6 +34,8 @@ import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
 
+import scala.concurrent.Future
+
 case class TimeSeriesRecord(
   id: UUID,
   name: String,
@@ -88,5 +90,13 @@ abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
       .value(_.user, rec.user)
       .value(_.id, rec.id)
       .value(_.name, rec.name)
+  }
+
+  def retrieve(user: UUID): Future[List[TimeUUIDRecord]] = {
+    select.where(_.user eqs user).orderBy(_.id ascending).fetch()
+  }
+
+  def retrieveDescending(user: UUID): Future[List[TimeUUIDRecord]] = {
+    select.where(_.user eqs user).orderBy(_.id descending).fetch()
   }
 }

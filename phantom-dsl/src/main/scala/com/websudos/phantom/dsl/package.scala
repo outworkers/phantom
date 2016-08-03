@@ -110,7 +110,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Entries = com.websudos.phantom.keys.Entries
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
-  type Database = com.websudos.phantom.db.DatabaseImpl
+  type Database = com.websudos.phantom.database.DatabaseImpl
 
   type DateTime = org.joda.time.DateTime
   type LocalDate = org.joda.time.LocalDate
