@@ -117,9 +117,9 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
     val chain = for {
       store <- database.optionalPrimitives.store(sample).future()
-      get <- database.optionalPrimitives.get(sample.pkey)
+      get <- database.optionalPrimitives.findByKey(sample.pkey)
       update <- database.optionalPrimitives.updateColumns(updated)
-      get2 <- database.optionalPrimitives.get(sample.pkey)
+      get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
     whenReady(chain) {
@@ -139,9 +139,9 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
     val chain = for {
       store <- database.optionalPrimitives.store(sample).future()
-      get <- database.optionalPrimitives.get(sample.pkey)
+      get <- database.optionalPrimitives.findByKey(sample.pkey)
       update <- database.optionalPrimitives.updateColumns(updated)
-      get2 <- database.optionalPrimitives.get(sample.pkey)
+      get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
     whenReady(chain) {

@@ -122,7 +122,7 @@ abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootCo
 
   override val tableName = "OptionalPrimitives"
 
-  def get(pkey: String): Future[Option[OptionalPrimitive]] = {
+  def findByKey(pkey: String): Future[Option[OptionalPrimitive]] = {
     select.where(_.pkey eqs pkey).one()
   }
 
