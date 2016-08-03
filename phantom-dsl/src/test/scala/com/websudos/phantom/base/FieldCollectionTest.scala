@@ -45,7 +45,6 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
      TestDatabase.primitives.pkey.table shouldEqual TestDatabase.primitives
   }
 
-
   it should "initialise fields by default" in {
     TestDatabase.articles.columns.length shouldEqual 3
   }

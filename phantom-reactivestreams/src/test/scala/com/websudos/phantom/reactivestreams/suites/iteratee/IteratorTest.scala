@@ -49,9 +49,8 @@ class IteratorTest extends BigTest with ScalaFutures {
     val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user))
 
     val chain = for {
-      truncate <- TestDatabase.timeSeriesTable.truncate.future()
       store <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
-      iterator <- TestDatabase.primitives.select.iterator()
+      iterator <- TestDatabase.timeuuidTable.select.where(_.user eqs user).iterator()
     } yield iterator
 
     whenReady(chain) {
