@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{OperatorClause, UsingClause}
+import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, UsingClause}
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
@@ -91,7 +91,35 @@ class InsertQuery[
     )
   }
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: RR): InsertQuery[Table, Record, Status, PS] = {
+  /**
+    * Insert function adding the ability to specify operator values as the value of an insert.
+    * This is useful when we want to use functions to generate the CQL, such as using
+    * the "now()" operator when inserting the value of a date.
+    * @param col The function that selects a specific column from the table.
+    * @param value The value to insert in the column, based on the output of the operator.
+    * @tparam RR The type of the value held in the column.
+    * @tparam V The type of the value returned by the operator.
+    * @return A new instance of insert query, with the clause added.
+    */
+  def opValue[RR, V](
+    col: Table => AbstractColumn[RR],
+    value: TypedClause.Condition[V]
+  ): InsertQuery[Table, Record, Status, PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart append CQLQuery(col(table).name),
+      valuePart append value.qb,
+      usingPart,
+      lightweightPart,
+      options
+    )
+  }
+
+  def value[RR](
+    col: Table => AbstractColumn[RR],
+    value: RR
+  ): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -103,7 +131,10 @@ class InsertQuery[
     )
   }
 
-  final def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, RR :: PS] = {
+  final def p_value[RR](
+    col: Table => AbstractColumn[RR],
+    value: PrepareMark
+  ): InsertQuery[Table, Record, Status, RR :: PS] = {
     new InsertQuery(
       table,
       init,
