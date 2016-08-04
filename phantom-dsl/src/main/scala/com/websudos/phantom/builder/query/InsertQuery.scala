@@ -266,9 +266,7 @@ class InsertJsonQuery[
     new PreparedBlock[PS](qb, options)
   }
 
-  override val qb: CQLQuery = {
-    (lightweightPart merge usingPart) build init
-  }
+  override val qb: CQLQuery = (lightweightPart merge usingPart) build init
 
 }
 
