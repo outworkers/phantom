@@ -135,6 +135,14 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         query shouldEqual "INSERT INTO phantom.recipes (url) VALUES('test') USING IGNORE_NULLS;"
       }
 
+      "should allow using operator values as parts of the insert statements" in {
+        val query = TestDatabase.timeSeriesTable.insert
+          .opValue(_.id, now())
+          .queryString
+
+        query shouldEqual "INSERT INTO phantom.timeSeriesTable (id) VALUES(now());"
+      }
+
     }
   }
 

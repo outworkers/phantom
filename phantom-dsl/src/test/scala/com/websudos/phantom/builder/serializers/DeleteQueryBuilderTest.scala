@@ -45,5 +45,6 @@ class DeleteQueryBuilderTest extends QueryBuilderTest {
       val qb = QueryBuilder.Delete.delete("table").queryString
       qb shouldEqual "DELETE FROM table"
     }
+
   }
 }

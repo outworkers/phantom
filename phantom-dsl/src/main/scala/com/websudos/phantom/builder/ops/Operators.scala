@@ -93,8 +93,17 @@ sealed class DateOfCqlFunction extends CqlFunction {
 }
 
 sealed class NowCqlFunction extends CqlFunction {
-  def apply(): OperatorClause.Condition = {
+  def apply()(implicit ev: Primitive[Long], session: Session): OperatorClause.Condition = {
     new OperatorClause.Condition(QueryBuilder.Select.now())
+
+    /*
+    new TypedClause.Condition(QueryBuilder.Select.now(), row => {
+      if (session.v3orNewer) {
+        ev.fromRow(s"system.timestamp", row).toOption
+      } else {
+        ev.fromRow(s"timestamp", row).toOption
+      }
+    })*/
   }
 }
 

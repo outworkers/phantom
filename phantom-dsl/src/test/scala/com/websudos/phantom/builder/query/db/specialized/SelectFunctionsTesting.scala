@@ -110,7 +110,8 @@ class SelectFunctionsTesting extends PhantomSuite {
       store <- database.timeuuidTable.store(record).ttl(timeToLive).future()
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
-        .and(_.id eqs record.id).one()
+        .and(_.id eqs record.id)
+        .one()
     } yield timestamp
 
     whenReady(chain) {
