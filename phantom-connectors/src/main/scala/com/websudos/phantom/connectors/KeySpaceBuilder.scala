@@ -61,4 +61,19 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     new KeySpaceDef(name, clusterBuilder, autoinit, query)
   }
 
+  /**
+    * Creates and can initialise a keyspace with the given name.
+    * @param name The name of the keyspace, case sensititve by default.
+    * @param autoinit Whether or not to automatically initialise the keyspace before the session is created.
+    * @param query The builder to use when producing the keyspace query.
+    * @return
+    */
+  def keySpace(
+    name: String,
+    autoinit: Boolean = true,
+    query: (Session, KeySpace) => String
+  ): KeySpaceDef = {
+    new KeySpaceDef(name, clusterBuilder, autoinit, Some(query))
+  }
+
 }
