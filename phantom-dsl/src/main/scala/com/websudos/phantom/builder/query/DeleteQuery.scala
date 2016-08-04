@@ -37,6 +37,7 @@ import com.websudos.phantom.builder.ops.MapKeyUpdateClause
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
@@ -89,6 +90,21 @@ class DeleteQuery[
     new PreparedBlock(qb, options)
   }
 
+  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    new DeleteQuery(
+      table = table,
+      init = init,
+      wherePart = wherePart,
+      casPart = casPart,
+      usingPart = usingPart append QueryBuilder.timestamp(time.toString),
+      options = options
+    )
+  }
+
+  def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    timestamp(time.getMillis)
+  }
+
   /**
    * The where method of a select query.
    * @param condition A where clause condition restricted by path dependant types.
@@ -102,6 +118,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       casPart = casPart,
+      usingPart = usingPart,
       options = options
     )
   }
@@ -120,6 +137,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       casPart = casPart,
+      usingPart = usingPart,
       options = options
     )
   }
@@ -138,6 +156,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart append query,
       casPart = casPart,
+      usingPart = usingPart,
       options = options
     )
   }
@@ -183,6 +202,7 @@ class DeleteQuery[
     }
   }
 
+
   /**
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
@@ -190,18 +210,21 @@ class DeleteQuery[
    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def onlyIf(
+    clause: Table => CompareAndSetClause.Condition
+    ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalDeleteQuery(
       table = table,
       init = init,
       wherePart = wherePart,
       casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      usingPart = usingPart,
       options = options
     )
   }
 
   override val qb: CQLQuery = {
-    (wherePart merge casPart) build init
+    (wherePart merge usingPart merge casPart) build init
   }
 
 }
@@ -242,11 +265,12 @@ sealed class ConditionalDeleteQuery[
   val init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
+  usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions
  ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
-    (wherePart merge casPart) build init
+    (wherePart merge usingPart merge casPart) build init
   }
 
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
@@ -255,6 +279,7 @@ sealed class ConditionalDeleteQuery[
       init,
       wherePart,
       casPart append QueryBuilder.Update.and(clause(table).qb),
+      usingPart,
       options
     )
   }
