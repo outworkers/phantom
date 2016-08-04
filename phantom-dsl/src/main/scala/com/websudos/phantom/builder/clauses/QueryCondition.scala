@@ -111,7 +111,7 @@ object UsingClause extends Clause {
 }
 
 object UpdateClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition(qb)
+  class Condition(override val qb: CQLQuery, val skipped: Boolean = false) extends QueryCondition(qb)
 }
 
 object OperatorClause extends Clause {

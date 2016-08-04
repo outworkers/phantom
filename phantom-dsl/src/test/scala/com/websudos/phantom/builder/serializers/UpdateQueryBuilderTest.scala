@@ -53,7 +53,6 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
         val c2 = QueryBuilder.Update.setTo("c", "d")
 
         QueryBuilder.Update.chain(List(c1, c2)).queryString shouldEqual "a = b, c = d"
-
       }
     }
 

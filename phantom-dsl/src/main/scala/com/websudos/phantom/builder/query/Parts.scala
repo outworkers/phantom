@@ -102,6 +102,15 @@ object FilteringPart {
 }
 
 sealed class SetPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[SetPart](list) {
+
+  def appendConditionally(qb: CQLQuery, flag: Boolean): SetPart = {
+    if (flag) {
+      append(qb)
+    } else {
+      this
+    }
+  }
+
   override def qb: CQLQuery = QueryBuilder.Update.chain(list)
 
   override def instance(l: List[CQLQuery]): SetPart = new SetPart(l)

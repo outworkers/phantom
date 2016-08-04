@@ -52,9 +52,9 @@ class UpdateQuery[
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
-  wherePart : WherePart = WherePart.empty,
-  setPart : SetPart = SetPart.empty,
-  casPart : CompareAndSetPart = CompareAndSetPart.empty,
+  wherePart: WherePart = WherePart.empty,
+  private[phantom] val setPart: SetPart = SetPart.empty,
+  casPart: CompareAndSetPart = CompareAndSetPart.empty,
   override val options: QueryOptions = QueryOptions.empty
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
 
@@ -109,7 +109,8 @@ class UpdateQuery[
 
   /**
    * The where method of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
+    *
+    * @param condition A where clause condition restricted by path dependant types.
    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
    * @return
    */
@@ -130,7 +131,8 @@ class UpdateQuery[
   /**
    * And clauses require overriding for count queries for the same purpose.
    * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-   * @param condition The Query condition to execute, based on index operators.
+    *
+    * @param condition The Query condition to execute, based on index operators.
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
@@ -149,6 +151,7 @@ class UpdateQuery[
 
   /**
     * The where method of a select query that takes parametric predicate as an argument.
+    *
     * @param condition A where clause condition restricted by path dependant types.
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
@@ -170,6 +173,7 @@ class UpdateQuery[
 
   /**
     * The where method of a select query that takes parametric predicate as an argument.
+    *
     * @param condition A where clause condition restricted by path dependant types.
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
@@ -195,7 +199,7 @@ class UpdateQuery[
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart append QueryBuilder.Update.set(clause(table).qb),
+      setPart = setPart appendConditionally (QueryBuilder.Update.set(clause(table).qb), !clause(table).skipped),
       casPart = casPart,
       options = options
     )
@@ -219,8 +223,7 @@ class UpdateQuery[
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
    *
-   *
-   * @param clause The Compare-And-Set clause to append to the builder.
+    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
@@ -249,7 +252,7 @@ sealed class AssignmentsQuery[
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
-  setPart : SetPart = SetPart.empty,
+  private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
@@ -264,7 +267,7 @@ sealed class AssignmentsQuery[
       init,
       usingPart,
       wherePart,
-      setPart append clause(table).qb,
+      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
       casPart,
       options
     )
@@ -343,8 +346,7 @@ sealed class AssignmentsQuery[
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
    *
-   *
-   * @param clause The Compare-And-Set clause to append to the builder.
+    * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
@@ -411,7 +413,7 @@ sealed class ConditionalQuery[
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
-  setPart : SetPart = SetPart.empty,
+  private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
@@ -423,15 +425,13 @@ sealed class ConditionalQuery[
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    val query = QueryBuilder.Update.and(clause(table).qb)
-
     new ConditionalQuery(
       table,
       init,
       usingPart,
       wherePart,
       setPart,
-      casPart append query,
+      casPart append QueryBuilder.Update.and(clause(table).qb),
       options
     )
   }
