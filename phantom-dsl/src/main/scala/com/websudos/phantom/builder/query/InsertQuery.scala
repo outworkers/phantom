@@ -98,12 +98,11 @@ class InsertQuery[
     * @param col The function that selects a specific column from the table.
     * @param value The value to insert in the column, based on the output of the operator.
     * @tparam RR The type of the value held in the column.
-    * @tparam V The type of the value returned by the operator.
     * @return A new instance of insert query, with the clause added.
     */
-  def opValue[RR, V](
+  def opValue[RR](
     col: Table => AbstractColumn[RR],
-    value: TypedClause.Condition[V]
+    value: OperatorClause.Condition
   ): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
