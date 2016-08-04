@@ -33,6 +33,7 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
+import com.websudos.phantom.builder.QueryBuilder
 import org.scalatest.concurrent.AsyncAssertions
 import org.scalatest.{Assertions, Matchers}
 
@@ -151,6 +152,96 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
         afterRecord shouldBe defined
         afterRecord.value shouldBe updated
+      }
+    }
+  }
+
+  it should "store an OptionalPrimitive in an optional table with a single column being set to Some(_)" in {
+    val sample = OptionalPrimitive.empty
+
+    val chain = for {
+      store <- database.optionalPrimitives.store(sample).future()
+      get <- database.optionalPrimitives.findByKey(sample.pkey)
+      update <- database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
+          .modify(_.boolean setIfDefined Some(false))
+          .future()
+      get2 <- database.optionalPrimitives.findByKey(sample.pkey)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeRecord, afterRecord) => {
+        beforeRecord shouldBe defined
+        beforeRecord.value shouldEqual sample
+
+        afterRecord shouldBe defined
+        afterRecord.value shouldBe sample.copy(boolean = Some(false))
+      }
+    }
+  }
+
+  it should "store an OptionalPrimitive in an optional table using $setIfDefined and skip the update if None" in {
+    val sample = gen[OptionalPrimitive]
+    val updatedBool = false
+
+    val query = database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
+      .modify(_.boolean setIfDefined Some(updatedBool))
+      .and(_.date setIfDefined None)
+
+    query.setPart.list.size shouldEqual 1
+    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
+      database.optionalPrimitives.boolean.name,
+      updatedBool.toString
+    ))
+
+    val chain = for {
+      store <- database.optionalPrimitives.store(sample).future()
+      get <- database.optionalPrimitives.findByKey(sample.pkey)
+      update <- query.future()
+      get2 <- database.optionalPrimitives.findByKey(sample.pkey)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeRecord, afterRecord) => {
+        beforeRecord shouldBe defined
+        beforeRecord.value shouldEqual sample
+
+        afterRecord shouldBe defined
+        afterRecord.value shouldBe sample.copy(boolean = Some(false))
+      }
+    }
+  }
+
+  it should "store an OptionalPrimitive in an optional table using $setIfDefined and skip multiple updated" in {
+    val sample = gen[OptionalPrimitive]
+    val updatedBool = false
+
+    val query = database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
+      .modify(_.boolean setIfDefined Some(updatedBool))
+      .and(_.date setIfDefined None)
+      .and(_.double setIfDefined None)
+      .and(_.inet setIfDefined None)
+
+
+    query.setPart.list.size shouldEqual 1
+    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
+      database.optionalPrimitives.boolean.name,
+      updatedBool.toString
+    ))
+
+    val chain = for {
+      store <- database.optionalPrimitives.store(sample).future()
+      get <- database.optionalPrimitives.findByKey(sample.pkey)
+      update <- query.future()
+      get2 <- database.optionalPrimitives.findByKey(sample.pkey)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeRecord, afterRecord) => {
+        beforeRecord shouldBe defined
+        beforeRecord.value shouldEqual sample
+
+        afterRecord shouldBe defined
+        afterRecord.value shouldBe sample.copy(boolean = Some(false))
       }
     }
   }

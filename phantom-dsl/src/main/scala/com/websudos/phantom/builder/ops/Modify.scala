@@ -33,6 +33,7 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{PreparedWhereClause, UpdateClause}
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.column._
 import com.websudos.phantom.keys._
@@ -78,8 +79,28 @@ private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]
 
 sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col)
 
-sealed class ModifyColumnOptional[Owner <: CassandraTable[Owner, Record], Record, RR](col: OptionalColumn[Owner, Record, RR])
-  extends AbstractModifyColumn[Option[RR]](col)
+sealed class ModifyColumnOptional[RR](col: OptionalColumn[_, _, RR])
+  extends AbstractModifyColumn[Option[RR]](col) {
+
+  /**
+    * Default setTo clause for all update queries except for map columns.
+    * All setTo operations from the DSL will be serialized through a modify column
+    * through an implicit conversion at the DSL level.
+    *
+    * Map columns have a different implicits that take precedence over ModifyColumn
+    * to allow for better support of map updates.
+    *
+    * @param value The typed value to set the column to.
+    * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
+    */
+  def setIfDefined(value: Option[RR]): UpdateClause.Condition = {
+    value match {
+      case Some(existing) => new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, col.asCql(value)))
+      case None => new UpdateClause.Condition(qb = CQLQuery.empty, skipped = true)
+    }
+  }
+
+}
 
 abstract class SelectColumn[T](val col: AbstractColumn[_]) {
   def apply(r: Row): T
@@ -175,10 +196,27 @@ sealed class ModifiableColumn[T]
 
 private[ops] trait ModifyMechanism extends CollectionOperators with ColumnModifiers {
 
-  @implicitNotFound(msg = "This type of column can not be modified. Indexes are fixed, counters can only be incremented and decremented.")
-  implicit def columnToModifyColumn[RR](col: AbstractColumn[RR])
-                                       (implicit ev: col.type <:!< Unmodifiable,
-                                         ev2: col.type <:!< CollectionValueDefinition[RR]): ModifyColumn[RR] = new ModifyColumn(col)
+  @implicitNotFound(msg = "This type of column can not be modified." +
+    "Indexes are fixed, counters can only be incremented and decremented.")
+  implicit def columnToModifyColumn[
+    RR
+  ](col: AbstractColumn[RR])(
+    implicit ev: col.type <:!< Unmodifiable,
+    ev2: col.type <:!< CollectionValueDefinition[RR]
+  ): ModifyColumn[RR] = new ModifyColumn(col)
+
+  @implicitNotFound(msg = "This type of column can not be modified." +
+    "Indexes are fixed, counters can only be incremented and decremented.")
+  implicit def optionalColumnToModifyColumn[
+    Table <: CassandraTable[Table, Rec],
+    Rec,
+    RR
+  ](
+    col: OptionalColumn[Table, Rec, RR]
+  )(implicit ev: col.type <:!< Unmodifiable,
+      ev2: col.type <:!< CollectionValueDefinition[RR]
+  ): ModifyColumnOptional[RR] = new ModifyColumnOptional(col)
+
 
 
 }
