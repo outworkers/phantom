@@ -60,9 +60,12 @@ then
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"
 
-        echo "Publishing Maven artifact"
+        echo "Publishing version bump information to GitHub"
         git add .
-        git commit -m "TravisCI: Bumping version [ci skip]"
+        git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
+        git checkout -b version_branch
+        git checkout -B develop version_branch
+
         git push "https://${github_token}@${GH_REF}" develop
 
         echo "Publishing new version to bintray"
