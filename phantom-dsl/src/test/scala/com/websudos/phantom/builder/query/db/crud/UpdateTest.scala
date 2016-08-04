@@ -186,10 +186,9 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     val query = database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
       .modify(_.boolean setIfDefined Some(updatedBool))
       .and(_.date setIfDefined None)
-      .setPart
 
-    query.list.size shouldEqual 1
-    query.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
+    query.setPart.list.size shouldEqual 1
+    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
       database.optionalPrimitives.boolean.name,
       updatedBool.toString
     ))
@@ -197,10 +196,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     val chain = for {
       store <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
-        .modify(_.boolean setIfDefined Some(false))
-        .and(_.date setIfDefined None)
-        .future()
+      update <- query.future()
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
@@ -224,10 +220,10 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
       .and(_.date setIfDefined None)
       .and(_.double setIfDefined None)
       .and(_.inet setIfDefined None)
-      .setPart
 
-    query.list.size shouldEqual 1
-    query.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
+
+    query.setPart.list.size shouldEqual 1
+    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
       database.optionalPrimitives.boolean.name,
       updatedBool.toString
     ))
@@ -235,10 +231,7 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
     val chain = for {
       store <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
-        .modify(_.boolean setIfDefined Some(false))
-        .and(_.date setIfDefined None)
-        .future()
+      update <- query.future()
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
