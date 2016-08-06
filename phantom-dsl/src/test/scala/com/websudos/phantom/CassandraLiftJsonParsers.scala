@@ -29,45 +29,39 @@
  */
 package com.websudos.phantom
 
-import java.util.concurrent.TimeUnit
+import net.liftweb.json.JsonAST.{JInt, JString, JValue}
+import net.liftweb.json.{Formats, MappingException, Serializer, TypeInfo}
 
-import com.websudos.phantom.connectors.RootConnector
-import com.websudos.phantom.tables.TestDatabase
-import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
-import org.scalatest._
-import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
-import org.scalatest.time.{Millis, Seconds, Span}
+import scala.util.control.NonFatal
 
-trait PhantomBaseSuite extends Suite with Matchers
-  with BeforeAndAfterAll
-  with RootConnector
-  with ScalaFutures
-  with OptionValues
-  with CassandraLiftJsonParsers {
+trait CassandraLiftJsonParsers {
 
-  protected[this] val defaultScalaTimeoutSeconds = 25
+  class BigDecimalJsonFormat extends Serializer[BigDecimal] {
+    private[this] val Class = classOf[Int]
 
-  private[this] val defaultScalaInterval = 50L
+    def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), BigDecimal] = {
+      case (TypeInfo(Class, _), json) => {
 
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer + new BigDecimalJsonFormat
+        Console.println(json)
 
-  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
+        json match {
+          case JInt(value) => try {
+            BigDecimal(value)
+          }  catch {
+            case NonFatal(err) => {
+              val exception = new MappingException(s"Couldn't extract a BigDecimal from $value")
+              exception.initCause(err)
+              throw exception
+            }
+          }
+          case x => throw new MappingException("Can't convert " + x + " to BigDecimal")
+        }
+      }
+    }
 
-  private[this] val defaultTimeoutSpan = Span(defaultScalaTimeoutSeconds, Seconds)
+    def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+      case x: java.math.BigDecimal => JString(x.toString)
+    }
+  }
 
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
-
-  override implicit val patienceConfig = PatienceConfig(
-    timeout = defaultTimeoutSpan,
-    interval = Span(defaultScalaInterval, Millis)
-  )
-}
-
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
-  val database = TestDatabase
-}
-
-
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
-  val database = TestDatabase
 }
