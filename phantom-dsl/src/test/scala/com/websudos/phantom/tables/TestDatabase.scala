@@ -56,6 +56,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with connector.Connector
 
   object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with connector.Connector
+  object indexedEntriesTable extends ConcreteIndexedEntriesTable with connector.Connector
   object jsonTable extends ConcreteJsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with connector.Connector
   object optionalPrimitives extends ConcreteOptionalPrimitives with connector.Connector

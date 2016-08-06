@@ -48,7 +48,7 @@ sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedColle
 
   object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
 
-  object mapIntToInt extends MapColumn[Int, Int](this) with Index[Map[Int, Int]] with Entries
+  object mapIntToInt extends MapColumn[Int, Int](this)
 
   def fromRow(r: Row): TestRow = {
     TestRow(
@@ -78,5 +78,52 @@ abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable w
   }
 
 }
+
+
+sealed class IndexedEntriesTable extends CassandraTable[ConcreteIndexedEntriesTable, TestRow] {
+
+  object key extends StringColumn(this) with PartitionKey[String]
+
+  object list extends ListColumn[String](this)
+
+  object setText extends SetColumn[String](this) with Index[Set[String]]
+
+  object mapTextToText extends MapColumn[String, String](this) with Index[Map[String, String]]
+
+  object setInt extends SetColumn[Int](this)
+
+  object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
+
+  object mapIntToInt extends MapColumn[Int, Int](this) with Index[Map[Int, Int]] with Entries
+
+  def fromRow(r: Row): TestRow = {
+    TestRow(
+      key = key(r),
+      list = list(r),
+      setText = setText(r),
+      mapTextToText = mapTextToText(r),
+      setInt = setInt(r),
+      mapIntToText = mapIntToText(r),
+      mapIntToInt = mapIntToInt(r)
+    )
+  }
+}
+
+abstract class ConcreteIndexedEntriesTable extends IndexedEntriesTable with RootConnector {
+  override val tableName = "indexed_collections"
+
+  def store(row: TestRow): InsertQuery.Default[ConcreteIndexedEntriesTable, TestRow] = {
+    insert
+      .value(_.key, row.key)
+      .value(_.list, row.list)
+      .value(_.setText, row.setText)
+      .value(_.mapTextToText, row.mapTextToText)
+      .value(_.setInt, row.setInt)
+      .value(_.mapIntToText, row.mapIntToText)
+      .value(_.mapIntToInt, row.mapIntToInt)
+  }
+
+}
+
 
 
