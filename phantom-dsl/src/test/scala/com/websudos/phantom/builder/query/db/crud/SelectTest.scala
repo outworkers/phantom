@@ -44,8 +44,6 @@ class SelectTest extends PhantomSuite {
   "Selecting the whole row" should "work fine" in {
     val row = gen[Primitive]
 
-    TestDatabase.primitives.select.distinct()
-
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
       b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
@@ -56,7 +54,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 2 columns" should "work fine" in {
+  "Partial selects" should "select 2 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
 
@@ -70,7 +68,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 3 columns" should "work fine" in {
+  "Partial selects" should "select 3 columns" in {
 
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
@@ -85,7 +83,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 4 columns" should "work fine" in {
+  "Partial selects" should "select 4 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
@@ -99,7 +97,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 5 columns" should "work fine" in {
+  "Partial selects" should "select 5 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
@@ -113,7 +111,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 6 columns" should "work fine" in {
+  "Partial selects" should "select 6 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
@@ -127,7 +125,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 7 columns" should "work fine" in {
+  "Partial selects" should "select 7 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
@@ -141,7 +139,35 @@ class SelectTest extends PhantomSuite {
     }
   }
 
-  "Selecting 8 columns" should "work fine" in {
+  "Partial selects" should "select 8 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
+
+    val chain = for {
+      store <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+        .where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain successful {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "A JSON selection clause" should "select an entire row as JSON" in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- TestDatabase.primitives.store(row).future()
+      b <- TestDatabase.primitives.select.json().where(_.pkey eqs row.pkey).one
+    } yield b
+
+    chain successful {
+      res => info(res.value)
+    }
+  }
+
+  "A JSON selection clause" should "8 columns as JSON" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 

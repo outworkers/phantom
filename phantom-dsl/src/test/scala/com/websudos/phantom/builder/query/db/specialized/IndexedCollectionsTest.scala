@@ -42,7 +42,7 @@ class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestDatabase.indexedCollectionsTable.create.ifNotExists().future(), defaultScalaTimeout)
+    database.indexedCollectionsTable.insertSchema()
   }
 
   it should "store a record and retrieve it with a CONTAINS query on the SET" in {

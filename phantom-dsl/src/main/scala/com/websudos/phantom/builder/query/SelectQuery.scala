@@ -381,7 +381,7 @@ private[phantom] class RootSelectBlock[
   def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
 
     val jsonParser: (Row) => String = row => {
-      Console.println(row)
+      Console.println(row.getColumnDefinitions)
       row.getString("json")
     }
 
