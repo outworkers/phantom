@@ -91,7 +91,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
     val pf = op.qb.queryString
 
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf), row => {
-      if (row.getColumnDefinitions.contains("system.dateof(${pf.name})")) {
+      if (row.getColumnDefinitions.contains(s"system.dateof(${pf})")) {
         ev.fromRow(s"system.dateof($pf)", row).toOption
       } else {
         ev.fromRow(s"dateof($pf)", row).toOption

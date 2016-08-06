@@ -42,13 +42,14 @@ trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
   with RootConnector
   with ScalaFutures
-  with OptionValues {
+  with OptionValues
+  with CassandraLiftJsonParsers {
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 
   private[this] val defaultScalaInterval = 50L
 
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
+  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer + new BigDecimalJsonFormat
 
   implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
 

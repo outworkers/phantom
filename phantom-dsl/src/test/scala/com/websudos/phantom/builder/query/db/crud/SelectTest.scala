@@ -33,6 +33,8 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
+import net.liftweb.http.js.JsObj
+import net.liftweb.json.JsonParser
 
 class SelectTest extends PhantomSuite {
 
@@ -140,34 +142,6 @@ class SelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 8 columns" in {
-    val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
-        .where(_.pkey eqs row.pkey).one()
-    } yield get
-
-    chain successful {
-      r => r.value shouldBe expected
-    }
-  }
-
-  "A JSON selection clause" should "select an entire row as JSON" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      b <- TestDatabase.primitives.select.json().where(_.pkey eqs row.pkey).one
-    } yield b
-
-    chain successful {
-      res => info(res.value)
-    }
-  }
-
-  "A JSON selection clause" should "8 columns as JSON" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
