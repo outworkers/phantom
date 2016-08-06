@@ -34,6 +34,7 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
@@ -381,8 +382,7 @@ private[phantom] class RootSelectBlock[
   def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
 
     val jsonParser: (Row) => String = row => {
-      Console.println(row.getColumnDefinitions)
-      row.getString("json")
+      row.getString(CQLSyntax.JSON_EXTRACTOR)
     }
 
     clause match {
