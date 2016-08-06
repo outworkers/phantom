@@ -29,7 +29,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 The latest versions are available here. The badges automatically update when a new version is released.
 
 - Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) (Maven Central)
-- Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom/_latestVersion) (Websudos OSS releases on Bintray)
+- Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================

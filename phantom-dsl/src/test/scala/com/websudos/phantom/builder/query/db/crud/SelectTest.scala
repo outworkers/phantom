@@ -52,9 +52,7 @@ class SelectTest extends PhantomSuite {
     } yield b
 
     chain successful {
-      res => {
-        res.value shouldEqual row
-      }
+      res => res.value shouldEqual row
     }
   }
 
@@ -68,9 +66,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      res => {
-        res.value shouldEqual expected
-      }
+      res => res.value shouldEqual expected
     }
   }
 
@@ -85,9 +81,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldEqual expected
-      }
+      r => r.value shouldEqual expected
     }
   }
 
@@ -101,9 +95,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
@@ -117,9 +109,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
@@ -133,9 +123,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
@@ -149,9 +137,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
@@ -166,9 +152,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 }

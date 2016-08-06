@@ -38,6 +38,7 @@ import org.joda.time.DateTime
 import shapeless.HList
 import shapeless.ops.hlist.Tupler
 
+import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
@@ -148,6 +149,7 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     * @tparam Out The type argument used to cast the HList to a Tuple.
     * @return An final form prepared select query that can be asynchronously executed.
     */
+  @implicitNotFound(s"Could not prove that the input tuple ${V1}")
   def bind[V1 <: Product, Out <: Product](v1: V1)(
     implicit tp: Tupler.Aux[PS, Out],
     ev: V1 =:= Out

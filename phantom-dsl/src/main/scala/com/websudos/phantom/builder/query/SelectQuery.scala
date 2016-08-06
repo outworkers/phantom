@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
 import com.websudos.phantom.connectors.KeySpace
@@ -345,8 +345,7 @@ private[phantom] class RootSelectBlock[
 ](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
-
+  def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     clause match {
       case Some(opt) => {
         new SelectQuery(
@@ -377,6 +376,31 @@ private[phantom] class RootSelectBlock[
 
   private[this] def extractWritetime(r: Row): Long = {
     Try(r.getLong("writetime")).getOrElse(0L)
+  }
+
+  def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
+
+    val jsonParser: (Row) => String = row => {
+      Console.println(row)
+      row.getString("json")
+    }
+
+    clause match {
+      case Some(opt) => {
+        new SelectQuery(
+          table,
+          jsonParser,
+          QueryBuilder.Select.selectJson(table.tableName, keySpace.name)
+        )
+      }
+      case None => {
+        new SelectQuery(
+          table,
+          jsonParser,
+          QueryBuilder.Select.selectJson(table.tableName, keySpace.name, columns: _*)
+        )
+      }
+    }
   }
 
   def function[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {

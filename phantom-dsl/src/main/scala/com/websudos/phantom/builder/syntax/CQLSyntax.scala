@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.syntax
 
 object CQLSyntax {
   val Select = "SELECT"
+  val json = "JSON"
   val Where = "WHERE"
   val And = "AND"
   val Or = "OR"
