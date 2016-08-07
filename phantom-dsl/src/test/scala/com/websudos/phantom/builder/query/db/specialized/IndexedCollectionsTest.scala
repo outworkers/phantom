@@ -35,18 +35,15 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, TestRow}
 import com.outworkers.util.testing._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value >= Version.`2.1.0`) {
       database.indexedCollectionsTable.insertSchema()
     }
 
-    if (cassandraVersion.value > Version.`2.2.0`) {
+    if (cassandraVersion.value >= Version.`2.2.0`) {
       database.indexedEntriesTable.insertSchema()
     }
   }
