@@ -60,7 +60,7 @@ class SelectJsonTest extends PhantomSuite {
         }
       }
     } else {
-      chain failing[SyntaxError]
+      chain.failing[SyntaxError]
     }
 
   }
@@ -85,7 +85,7 @@ class SelectJsonTest extends PhantomSuite {
         }
       }
     } else {
-      chain failing[SyntaxError]
+      chain.failing[SyntaxError]
     }
   }
 }
