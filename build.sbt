@@ -118,7 +118,7 @@ lazy val defaultCredentials: Seq[Credentials] = {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
-  scalaVersion := "2.10.6",
+  scalaVersion := "2.11.8",
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(

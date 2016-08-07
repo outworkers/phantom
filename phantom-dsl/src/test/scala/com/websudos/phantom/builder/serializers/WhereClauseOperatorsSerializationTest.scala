@@ -47,7 +47,7 @@ class WhereClauseOperatorsSerializationTest extends FlatSpec with Matchers {
 
     val column = gen[String]
     val value = gen[String]
-    QueryBuilder.Where.==(column, value).queryString shouldEqual s"$column = $value"
+    QueryBuilder.Where.eqs(column, value).queryString shouldEqual s"$column = $value"
   }
 
   "The Where.Builder" should "serialise a Where.lt clause" in {

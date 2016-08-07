@@ -38,6 +38,7 @@ import org.joda.time.DateTime
 import shapeless.HList
 import shapeless.ops.hlist.Tupler
 
+import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
