@@ -112,7 +112,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
