@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.exceptions.SyntaxError
+import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, TestRow}
@@ -42,7 +42,7 @@ class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (cassandraVersion.value > Version.`2.1.5`) {
+    if (cassandraVersion.value > Version.`2.1.0`) {
       database.indexedCollectionsTable.insertSchema()
     }
 
@@ -135,7 +135,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
