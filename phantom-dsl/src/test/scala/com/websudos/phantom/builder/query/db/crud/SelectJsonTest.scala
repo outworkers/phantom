@@ -29,11 +29,11 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.datastax.driver.core.exceptions.SyntaxError
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
-import net.liftweb.http.js.JsObj
 import net.liftweb.json.JsonParser
 
 class SelectJsonTest extends PhantomSuite {
@@ -50,13 +50,19 @@ class SelectJsonTest extends PhantomSuite {
       b <- TestDatabase.primitives.select.json().where(_.pkey eqs row.pkey).one
     } yield b
 
-    chain successful {
-      res => {
-        res shouldBe defined
-        val parsed = JsonParser.parse(res.value)
-        parsed.children.size shouldEqual row.productArity
+
+    if (cassandraVersion.value >= Version.`2.2.0`) {
+      chain successful {
+        res => {
+          res shouldBe defined
+          val parsed = JsonParser.parse(res.value)
+          parsed.children.size shouldEqual row.productArity
+        }
       }
+    } else {
+      chain failing[SyntaxError]
     }
+
   }
 
   "A JSON selection clause" should "8 columns as JSON" in {
@@ -70,12 +76,16 @@ class SelectJsonTest extends PhantomSuite {
         .where(_.pkey eqs row.pkey).one()
     } yield get
 
-    chain successful {
-      res => {
-        res shouldBe defined
-        val parsed = JsonParser.parse(res.value)
-        parsed.children.size shouldEqual expected.productArity
+    if (cassandraVersion.value >= Version.`2.2.0`) {
+      chain successful {
+        res => {
+          res shouldBe defined
+          val parsed = JsonParser.parse(res.value)
+          parsed.children.size shouldEqual expected.productArity
+        }
       }
+    } else {
+      chain failing[SyntaxError]
     }
   }
 }

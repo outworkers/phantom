@@ -183,7 +183,11 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
           .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
           .queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
+        if (session.v3orNewer) {
+          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
+        } else {
+          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id) USING CONSISTENCY EACH_QUORUM;"
+        }
       }
 
       "a single dateOf column apply" in {

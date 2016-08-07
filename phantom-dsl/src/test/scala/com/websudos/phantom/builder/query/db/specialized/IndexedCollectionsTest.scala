@@ -66,7 +66,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
 
   }
@@ -89,7 +89,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
