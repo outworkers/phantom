@@ -154,7 +154,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     new BatchQuery(
       iterator,
       batchType,
-      usingPart append QueryBuilder.timestamp(stamp.toString),
+      usingPart append QueryBuilder.timestamp(stamp),
       added,
       options
     )

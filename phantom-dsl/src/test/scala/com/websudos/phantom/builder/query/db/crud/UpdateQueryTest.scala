@@ -34,6 +34,7 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
 import com.websudos.phantom.builder.QueryBuilder
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.AsyncAssertions
 import org.scalatest.{Assertions, Matchers}
 
@@ -250,7 +251,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
     val row = gen[Primitive]
 
     val sample = gen[Primitive].copy(pkey = row.pkey)
-    val timestamp = 5L
+    val timestamp = DateTime.now(DateTimeZone.UTC).plusMinutes(3)
 
     val chain = for {
       store <- database.primitives.store(row).future()
@@ -267,74 +268,6 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
         .and(_.uuid setTo sample.uuid)
         .and(_.bi setTo sample.bi)
         .timestamp(timestamp)
-        .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, a2)
-
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual sample
-      }
-    }
-  }
-
-  ignore should "allow using a timestamp clause with a conditional assignments query" in {
-    val row = gen[Primitive]
-
-    val sample = gen[Primitive].copy(pkey = row.pkey)
-    val timestamp = 5L
-
-    val chain = for {
-      store <- database.primitives.store(row).future()
-      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
-        .modify(_.long setTo sample.long)
-        .and(_.boolean setTo sample.boolean)
-        .and(_.bDecimal setTo sample.bDecimal)
-        .and(_.double setTo sample.double)
-        .and(_.float setTo sample.float)
-        .and(_.inet setTo sample.inet)
-        .and(_.int setTo sample.int)
-        .and(_.date setTo sample.date)
-        .and(_.uuid setTo sample.uuid)
-        .and(_.bi setTo sample.bi)
-        .onlyIf(_.uuid is row.uuid)
-        .timestamp(5L)
-        .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, a2)
-
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual sample
-      }
-    }
-  }
-
-  ignore should "allow using a timestamp clause with a conditional assignments query if the timestamp is pre-apended" in {
-    val row = gen[Primitive]
-
-    val sample = gen[Primitive].copy(pkey = row.pkey)
-    val timestamp = 5L
-
-    val chain = for {
-      store <- database.primitives.store(row).future()
-      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
-        .modify(_.long setTo sample.long)
-        .and(_.boolean setTo sample.boolean)
-        .and(_.bDecimal setTo sample.bDecimal)
-        .and(_.double setTo sample.double)
-        .and(_.float setTo sample.float)
-        .and(_.inet setTo sample.inet)
-        .and(_.int setTo sample.int)
-        .and(_.date setTo sample.date)
-        .and(_.uuid setTo sample.uuid)
-        .and(_.bi setTo sample.bi)
-        .timestamp(5L)
-        .onlyIf(_.uuid is row.uuid)
         .future()
       a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
