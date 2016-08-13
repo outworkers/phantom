@@ -36,9 +36,9 @@ import com.outworkers.util.testing._
 import com.websudos.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.AsyncAssertions
-import org.scalatest.{Assertions, Matchers}
+import org.scalatest.{Assertions, Inside, Matchers}
 
-class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions {
+class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions with Inside {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -251,10 +251,11 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
     val row = gen[Primitive]
 
     val sample = gen[Primitive].copy(pkey = row.pkey)
-    val timestamp = DateTime.now(DateTimeZone.UTC).plusMinutes(3)
+    val t1 = DateTime.now(DateTimeZone.UTC)
+    val t2 = DateTime.now(DateTimeZone.UTC).plusMinutes(1)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      store <- database.primitives.store(row).timestamp(t1).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
       u <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo sample.long)
@@ -267,7 +268,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
         .and(_.date setTo sample.date)
         .and(_.uuid setTo sample.uuid)
         .and(_.bi setTo sample.bi)
-        .timestamp(timestamp)
+        .timestamp(t2)
         .future()
       a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
@@ -275,7 +276,16 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
     whenReady(chain) {
       case (res1, res2) => {
         res1.value shouldEqual row
-        res2.value shouldEqual sample
+        res2.value.long shouldEqual sample.long
+        res2.value.bi shouldEqual sample.bi
+        res2.value.uuid shouldEqual sample.uuid
+        res2.value.float shouldEqual sample.float
+        res2.value.inet shouldEqual sample.inet
+        res2.value.date shouldEqual sample.date
+        res2.value.int shouldEqual sample.int
+        res2.value.boolean shouldEqual sample.boolean
+        res2.value.bDecimal shouldEqual sample.bDecimal
+        res2.value.double shouldEqual sample.double
       }
     }
   }

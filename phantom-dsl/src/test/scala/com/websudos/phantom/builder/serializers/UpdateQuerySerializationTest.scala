@@ -33,8 +33,9 @@ import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
 import com.outworkers.util.testing._
-import scala.concurrent.duration._
+import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.concurrent.duration._
 import org.scalatest.FreeSpec
 
 class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
@@ -195,7 +196,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
 
       "update a single entry inside a map column using an int column" in {
         val id = gen[UUID]
-        val dt = new DateTime
+        val dt = DateTime.now(DateTimeZone.UTC)
         val key = gen[Long]
 
         val query = TestDatabase.events.update
