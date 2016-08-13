@@ -103,6 +103,7 @@ sealed class ModifyColumnOptional[RR](col: OptionalColumn[_, _, RR])
 }
 
 abstract class SelectColumn[T](val col: AbstractColumn[_]) {
+  type Out = T
   def apply(r: Row): T
 }
 

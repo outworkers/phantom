@@ -36,7 +36,7 @@ object PublishTasks {
 
 
   val defaultPublishingSettings = Seq(
-    version := "1.28.6"
+    version := "1.28.7"
   )
 
   lazy val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(

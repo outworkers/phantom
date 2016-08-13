@@ -34,10 +34,11 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
 import com.websudos.phantom.builder.QueryBuilder
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.AsyncAssertions
-import org.scalatest.{Assertions, Matchers}
+import org.scalatest.{Assertions, Inside, Matchers}
 
-class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions {
+class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions with Inside {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -242,6 +243,49 @@ class UpdateTest extends PhantomSuite with Matchers with Assertions with AsyncAs
 
         afterRecord shouldBe defined
         afterRecord.value shouldBe sample.copy(boolean = Some(false))
+      }
+    }
+  }
+
+  it should "allow using a timestamp clause with a normal assignments query" in {
+    val row = gen[Primitive]
+
+    val sample = gen[Primitive].copy(pkey = row.pkey)
+    val t1 = DateTime.now(DateTimeZone.UTC)
+    val t2 = DateTime.now(DateTimeZone.UTC).plusMinutes(1)
+
+    val chain = for {
+      store <- database.primitives.store(row).timestamp(t1).future()
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setTo sample.long)
+        .and(_.boolean setTo sample.boolean)
+        .and(_.bDecimal setTo sample.bDecimal)
+        .and(_.double setTo sample.double)
+        .and(_.float setTo sample.float)
+        .and(_.inet setTo sample.inet)
+        .and(_.int setTo sample.int)
+        .and(_.date setTo sample.date)
+        .and(_.uuid setTo sample.uuid)
+        .and(_.bi setTo sample.bi)
+        .timestamp(t2)
+        .future()
+      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, a2)
+
+    whenReady(chain) {
+      case (res1, res2) => {
+        res1.value shouldEqual row
+        res2.value.long shouldEqual sample.long
+        res2.value.bi shouldEqual sample.bi
+        res2.value.uuid shouldEqual sample.uuid
+        res2.value.float shouldEqual sample.float
+        res2.value.inet shouldEqual sample.inet
+        res2.value.date shouldEqual sample.date
+        res2.value.int shouldEqual sample.int
+        res2.value.boolean shouldEqual sample.boolean
+        res2.value.bDecimal shouldEqual sample.bDecimal
+        res2.value.double shouldEqual sample.double
       }
     }
   }

@@ -60,7 +60,7 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
     "should allow specifying USING clause options" - {
       "should allow specifying a timestamp clause" in {
         val str = gen[Long]
-        QueryBuilder.timestamp(str.toString).queryString shouldEqual s"TIMESTAMP $str"
+        QueryBuilder.timestamp(str).queryString shouldEqual s"TIMESTAMP $str"
       }
     }
 

@@ -33,8 +33,9 @@ import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
 import com.outworkers.util.testing._
-import scala.concurrent.duration._
+import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.concurrent.duration._
 import org.scalatest.FreeSpec
 
 class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
@@ -88,15 +89,15 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url';"
       }
 
-      "a timestamp setting on an conditional assignments query" in {
+      "a timestamp setting on an conditional assignments query specified before the onlyIf clause" in {
         val url = gen[String]
         val uid = gen[UUID]
         val timestamp = gen[Long]
 
         val query = TestDatabase.recipes.update.where(_.url eqs url)
           .modify(_.uid setTo uid)
-          .onlyIf(_.description is Some("test"))
           .timestamp(timestamp)
+          .onlyIf(_.description is Some("test"))
           .queryString
 
         query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url' IF description = 'test';"
@@ -195,7 +196,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
 
       "update a single entry inside a map column using an int column" in {
         val id = gen[UUID]
-        val dt = new DateTime
+        val dt = DateTime.now(DateTimeZone.UTC)
         val key = gen[Long]
 
         val query = TestDatabase.events.update

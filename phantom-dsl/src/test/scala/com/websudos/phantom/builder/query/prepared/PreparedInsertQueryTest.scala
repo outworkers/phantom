@@ -207,4 +207,34 @@ class PreparedInsertQueryTest extends PhantomSuite {
       }
     }
   }
+
+  it should "be able to bind a custom Scala BigDecimal" in {
+    val sample = gen[Primitive]
+
+    val query = database.primitives.insert
+      .p_value(_.pkey, ?)
+      .p_value(_.long, ?)
+      .p_value(_.boolean, ?)
+      .p_value(_.bDecimal, ?)
+      .p_value(_.double, ?)
+      .p_value(_.float, ?)
+      .p_value(_.inet, ?)
+      .p_value(_.int, ?)
+      .p_value(_.date, ?)
+      .p_value(_.uuid, ?)
+      .p_value(_.bi, ?)
+      .prepare()
+
+    val chain = for {
+      store <- query.bind(sample).future()
+      get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
+    } yield get
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
 }
