@@ -38,8 +38,8 @@ class MapOperationsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.insertSchema()
-    TestDatabase.events.insertSchema()
+    database.recipes.insertSchema()
+    database.events.insertSchema()
   }
 
   it should "support a single item map put operation" in {
@@ -47,9 +47,9 @@ class MapOperationsTest extends PhantomSuite {
     val item = gen[String, String]
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
       select
     }
@@ -63,18 +63,17 @@ class MapOperationsTest extends PhantomSuite {
 
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
-    val mapItems = genMap[String, String](5)
+    val mapSize = 5
+    val mapItems = genMap[String, String](mapSize)
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props ++ mapItems
-      }
+    whenReady(operation) {
+      items => items.value shouldEqual recipe.props ++ mapItems
     }
   }
 
@@ -82,14 +81,12 @@ class MapOperationsTest extends PhantomSuite {
     val event = gen[SampleEvent]
 
     val chain = for {
-      store <- TestDatabase.events.store(event).future()
-      get <- TestDatabase.events.getById(event.id).one()
+      store <- database.events.store(event).future()
+      get <- database.events.getById(event.id)
     } yield get
 
-    chain.successful {
-      res => {
-        res.value shouldEqual event
-      }
+    whenReady(chain) {
+      res => res.value shouldEqual event
     }
 
   }
