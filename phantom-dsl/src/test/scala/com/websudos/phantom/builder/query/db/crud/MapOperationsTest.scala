@@ -111,4 +111,36 @@ class MapOperationsTest extends PhantomSuite {
       res => res.value shouldEqual sample
     }
   }
+
+  it should "allow updating maps that use Scala primitive types" in {
+
+    val updateKey = DateTime.now()
+    val updatedValue = 20
+
+    val sample = ScalaPrimitiveMapRecord(
+      gen[UUID],
+      Map(
+        updateKey -> BigDecimal(5),
+        DateTime.now().plusMinutes(2) -> BigDecimal(10),
+        DateTime.now().plusMinutes(2) -> BigDecimal(15)
+      )
+    )
+
+    val chain = for {
+      store <- database.scalaPrimitivesTable.store(sample).future()
+      get <- database.scalaPrimitivesTable.findById(sample.id)
+      update <- database.scalaPrimitivesTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.map(updateKey) setTo BigDecimal(updatedValue))
+        .future()
+      get2 <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeUpdate, afterUpdate) => {
+        beforeUpdate.value shouldEqual sample
+        afterUpdate.value shouldEqual sample.copy(map = sample.map + (updateKey -> BigDecimal(updatedValue)))
+      }
+    }
+  }
 }
