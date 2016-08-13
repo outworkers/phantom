@@ -279,7 +279,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
     }
   }
 
-  it should "allow using a timestamp clause with a conditional assignments query" in {
+  ignore should "allow using a timestamp clause with a conditional assignments query" in {
     val row = gen[Primitive]
 
     val sample = gen[Primitive].copy(pkey = row.pkey)
@@ -313,7 +313,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
     }
   }
 
-  it should "allow using a timestamp clause with a conditional assignments query if the timestamp is pre-apended" in {
+  ignore should "allow using a timestamp clause with a conditional assignments query if the timestamp is pre-apended" in {
     val row = gen[Primitive]
 
     val sample = gen[Primitive].copy(pkey = row.pkey)
