@@ -96,9 +96,9 @@ class MapOperationsTest extends PhantomSuite {
     val sample = ScalaPrimitiveMapRecord(
       gen[UUID],
       Map(
-        DateTime.now() -> BigDecimal(5),
-        DateTime.now().plusMinutes(2) -> BigDecimal(10),
-        DateTime.now().plusMinutes(2) -> BigDecimal(15)
+        gen[DateTime] -> BigDecimal(5),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(10),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(15)
       )
     )
 
@@ -114,15 +114,15 @@ class MapOperationsTest extends PhantomSuite {
 
   it should "allow updating maps that use Scala primitive types" in {
 
-    val updateKey = DateTime.now()
+    val updateKey = gen[DateTime]
     val updatedValue = 20
 
     val sample = ScalaPrimitiveMapRecord(
       gen[UUID],
       Map(
         updateKey -> BigDecimal(5),
-        DateTime.now().plusMinutes(2) -> BigDecimal(10),
-        DateTime.now().plusMinutes(2) -> BigDecimal(15)
+        gen[DateTime].plusMinutes(2) -> BigDecimal(10),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(15)
       )
     )
 
