@@ -93,6 +93,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
 
   object events extends ConcreteEvents with connector.Connector
 
+  object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with connector.Connector
   object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
 }
 

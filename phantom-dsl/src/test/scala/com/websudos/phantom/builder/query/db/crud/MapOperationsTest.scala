@@ -29,17 +29,19 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.outworkers.util.testing._
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Recipe, SampleEvent, TestDatabase}
-import com.outworkers.util.testing._
+import com.websudos.phantom.tables.{Recipe, SampleEvent, ScalaPrimitiveMapRecord}
+import org.joda.time.DateTime
 
 class MapOperationsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.insertSchema()
-    TestDatabase.events.insertSchema()
+    database.recipes.insertSchema()
+    database.events.insertSchema()
+    database.scalaPrimitivesTable.insertSchema()
   }
 
   it should "support a single item map put operation" in {
@@ -47,9 +49,9 @@ class MapOperationsTest extends PhantomSuite {
     val item = gen[String, String]
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield {
       select
     }
@@ -63,18 +65,17 @@ class MapOperationsTest extends PhantomSuite {
 
   it should "support a multiple item map put operation" in {
     val recipe = gen[Recipe]
-    val mapItems = genMap[String, String](5)
+    val mapSize = 5
+    val mapItems = genMap[String, String](mapSize)
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
-      select <- TestDatabase.recipes.select(_.props).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props ++ mapItems
-      }
+    whenReady(operation) {
+      items => items.value shouldEqual recipe.props ++ mapItems
     }
   }
 
@@ -82,15 +83,64 @@ class MapOperationsTest extends PhantomSuite {
     val event = gen[SampleEvent]
 
     val chain = for {
-      store <- TestDatabase.events.store(event).future()
-      get <- TestDatabase.events.getById(event.id).one()
+      store <- database.events.store(event).future()
+      get <- database.events.getById(event.id)
     } yield get
 
-    chain.successful {
-      res => {
-        res.value shouldEqual event
+    whenReady(chain) {
+      res => res.value shouldEqual event
+    }
+  }
+
+  it should "allow storing maps that use Scala primitives who do not have a TypeCodec" in {
+    val sample = ScalaPrimitiveMapRecord(
+      gen[UUID],
+      Map(
+        gen[DateTime] -> BigDecimal(5),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(10),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(15)
+      )
+    )
+
+    val chain = for {
+      store <- database.scalaPrimitivesTable.store(sample).future()
+      get <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield get
+
+    whenReady(chain) {
+      res => res.value shouldEqual sample
+    }
+  }
+
+  it should "allow updating maps that use Scala primitive types" in {
+
+    val updateKey = gen[DateTime]
+    val updatedValue = 20
+
+    val sample = ScalaPrimitiveMapRecord(
+      gen[UUID],
+      Map(
+        updateKey -> BigDecimal(5),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(10),
+        gen[DateTime].plusMinutes(2) -> BigDecimal(15)
+      )
+    )
+
+    val chain = for {
+      store <- database.scalaPrimitivesTable.store(sample).future()
+      get <- database.scalaPrimitivesTable.findById(sample.id)
+      update <- database.scalaPrimitivesTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.map(updateKey) setTo BigDecimal(updatedValue))
+        .future()
+      get2 <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield (get, get2)
+
+    whenReady(chain) {
+      case (beforeUpdate, afterUpdate) => {
+        beforeUpdate.value shouldEqual sample
+        afterUpdate.value shouldEqual sample.copy(map = sample.map + (updateKey -> BigDecimal(updatedValue)))
       }
     }
-
   }
 }
