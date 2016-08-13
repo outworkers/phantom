@@ -29,10 +29,11 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.outworkers.util.testing._
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Recipe, SampleEvent, TestDatabase}
-import com.outworkers.util.testing._
+import com.websudos.phantom.tables.{Recipe, SampleEvent, ScalaPrimitiveMapRecord}
+import org.joda.time.DateTime
 
 class MapOperationsTest extends PhantomSuite {
 
@@ -40,6 +41,7 @@ class MapOperationsTest extends PhantomSuite {
     super.beforeAll()
     database.recipes.insertSchema()
     database.events.insertSchema()
+    database.scalaPrimitivesTable.insertSchema()
   }
 
   it should "support a single item map put operation" in {
@@ -88,6 +90,25 @@ class MapOperationsTest extends PhantomSuite {
     whenReady(chain) {
       res => res.value shouldEqual event
     }
+  }
 
+  it should "allow storing maps that use Scala primitives who do not have a TypeCodec" in {
+    val sample = ScalaPrimitiveMapRecord(
+      gen[UUID],
+      Map(
+        DateTime.now() -> BigDecimal(5),
+        DateTime.now().plusMinutes(2) -> BigDecimal(10),
+        DateTime.now().plusMinutes(2) -> BigDecimal(15)
+      )
+    )
+
+    val chain = for {
+      store <- database.scalaPrimitivesTable.store(sample).future()
+      get <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield get
+
+    whenReady(chain) {
+      res => res.value shouldEqual sample
+    }
   }
 }
