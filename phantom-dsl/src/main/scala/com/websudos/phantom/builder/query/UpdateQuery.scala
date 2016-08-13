@@ -291,7 +291,7 @@ sealed class AssignmentsQuery[
     new AssignmentsQuery(
       table = table,
       init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(init, value.toString),
+      usingPart = usingPart append QueryBuilder.timestamp(value.toString),
       wherePart = wherePart,
       setPart = setPart,
       casPart = casPart,

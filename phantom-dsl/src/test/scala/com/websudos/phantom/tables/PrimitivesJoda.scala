@@ -29,9 +29,12 @@
  */
 package com.websudos.phantom.tables
 
+import com.datastax.driver.core.PagingState
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
+
+import scala.concurrent.Future
 
 case class JodaRow(
   pkey: String,
@@ -59,6 +62,10 @@ abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector 
     insert.value(_.pkey, primitive.pkey)
       .value(_.intColumn, primitive.int)
       .value(_.timestamp, primitive.bi)
+  }
+
+  def getPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
+    select.limit(limit).fetchRecord(paging)
   }
 
   override val tableName = "PrimitivesJoda"
