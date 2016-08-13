@@ -62,7 +62,6 @@ class SelectJsonTest extends PhantomSuite {
     } else {
       chain.failing[SyntaxError]
     }
-
   }
 
   "A JSON selection clause" should "8 columns as JSON" in {

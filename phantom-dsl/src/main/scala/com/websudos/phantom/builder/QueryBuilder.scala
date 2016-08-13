@@ -81,10 +81,6 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     CQLQuery(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
   }
 
-  def timestamp(qb: CQLQuery, seconds: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.timestamp).forcePad.append(seconds)
-  }
-
   def timestamp(seconds: String): CQLQuery = {
     CQLQuery(CQLSyntax.timestamp).forcePad.append(seconds)
   }
