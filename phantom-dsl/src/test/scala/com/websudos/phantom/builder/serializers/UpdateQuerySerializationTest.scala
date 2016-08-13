@@ -42,7 +42,10 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
   val comparisonValue = 5
 
   "An Update query should" - {
-    "allow specifying consistency levels" - {
+
+
+    "allow specifying USONG clause options" - {
+
       "specify a consistency level of ALL in an AssignmentsQuery" in {
 
         val url = gen[String]
@@ -71,6 +74,36 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
 
         query shouldEqual s"UPDATE phantom.recipes USING TTL 5 SET uid = $uid WHERE url = '$url';"
       }
+
+      "a timestamp setting on an assignments query" in {
+        val url = gen[String]
+        val uid = gen[UUID]
+        val timestamp = gen[Long]
+
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
+          .modify(_.uid setTo uid)
+          .timestamp(timestamp)
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url';"
+      }
+
+      "a timestamp setting on an conditional assignments query" in {
+        val url = gen[String]
+        val uid = gen[UUID]
+        val timestamp = gen[Long]
+
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
+          .modify(_.uid setTo uid)
+          .onlyIf(_.description is Some("test"))
+          .timestamp(timestamp)
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url' IF description = 'test';"
+      }
+    }
+
+    "allow specifying conditional update clauses" - {
 
       "specify a consistency level in a ConditionUpdateQuery" in {
         val url = gen[String]
@@ -163,15 +196,15 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
       "update a single entry inside a map column using an int column" in {
         val id = gen[UUID]
         val dt = new DateTime
+        val key = gen[Long]
 
         val query = TestDatabase.events.update
           .where(_.id eqs id)
-          .modify(_.map(5L) setTo dt)
+          .modify(_.map(key) setTo dt)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.events SET map[5] = ${DateTimeIsPrimitive.asCql(dt)} WHERE id = $id;"
+        query shouldEqual s"UPDATE phantom.events SET map[$key] = ${dt.asCql()} WHERE id = $id;"
       }
-
     }
   }
 

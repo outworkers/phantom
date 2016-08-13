@@ -32,7 +32,7 @@ package com.websudos.phantom
 import java.util.concurrent.TimeUnit
 
 import com.websudos.phantom.connectors.{RootConnector, VersionNumber}
-import com.websudos.phantom.tables.TestDatabase
+import com.websudos.phantom.tables.{Primitive, TestDatabase}
 import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -60,6 +60,12 @@ trait PhantomBaseSuite extends Suite with Matchers
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )
+
+  implicit class CqlConverter[T](val obj: T) {
+    def asCql()(implicit primitive: com.websudos.phantom.builder.primitives.Primitive[T]): String = {
+      primitive.asCql(obj)
+    }
+  }
 }
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {

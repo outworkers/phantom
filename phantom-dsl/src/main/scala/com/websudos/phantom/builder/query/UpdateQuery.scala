@@ -462,6 +462,18 @@ sealed class ConditionalQuery[
     }
   }
 
+  final def timestamp(value: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+    new ConditionalQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.timestamp(value.toString),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      options = options
+    )
+  }
+
   def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     new ConditionalQuery(
       table,
@@ -474,7 +486,7 @@ sealed class ConditionalQuery[
     )
   }
 
-  final def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: ScalaDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 
