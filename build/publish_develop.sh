@@ -71,10 +71,15 @@ then
         echo "Publishing new version to bintray"
         sbt +bintray:publish
 
-        #git checkout master
-        #git merge develop
+        echo "Creating GPG deploy key"
+        openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-        #git push "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
+        echo "importing GPG key to local GBP repo"
+        gpg --fast-import build/deploy.asc
+
+        echo "Setting MAVEN_PUBLISH mode to true"
+        export MAVEN_PUBLISH="true"
+        sbt +publishSigned sonatypeReleaseAll
 
     else
         echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"

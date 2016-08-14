@@ -157,8 +157,13 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++
-  PublishTasks.bintrayPublishSettings
+  GitProject.gitSettings ++ {
+  if (PublishTasks.publishToMaven) {
+    PublishTasks.mavenPublishingSettings
+  } else {
+    PublishTasks.bintrayPublishSettings
+  }
+}
 
 lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 

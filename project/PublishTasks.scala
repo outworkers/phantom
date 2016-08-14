@@ -39,6 +39,16 @@ object PublishTasks {
     version := "1.28.7"
   )
 
+  val publishToMaven = {
+    if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
+      println("Maven publishing mode enabled")
+      true
+    } else {
+      println("Maven publishing mode disabled, publishing to Bintray instead")
+      false
+    }
+  }
+
   lazy val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("websudos"),
