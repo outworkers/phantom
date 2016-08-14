@@ -84,7 +84,7 @@ class MapOperationsTest extends PhantomSuite {
 
     val chain = for {
       store <- database.events.store(event).future()
-      get <- database.events.getById(event.id)
+      get <- database.events.findById(event.id)
     } yield get
 
     whenReady(chain) {

@@ -114,7 +114,7 @@ abstract class ConcreteEvents extends Events with RootConnector {
       .value(_.map, event.map)
   }
 
-  def getById(id: UUID): Future[Option[SampleEvent]] = {
+  def findById(id: UUID): Future[Option[SampleEvent]] = {
     select.where(_.id eqs id).one()
   }
 }

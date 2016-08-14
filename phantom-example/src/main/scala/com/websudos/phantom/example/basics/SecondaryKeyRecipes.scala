@@ -89,7 +89,7 @@ abstract class ConcreteSecondaryKeyRecipes extends SecondaryKeyRecipes with Root
   // Note this is not the best practice.
   // In a real world environment, you create a RecipesByTitle mapping table.
   // Check out the example.
-  def getRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
+  def findRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
     select.allowFiltering().where(_.author eqs author).one()
   }
 }

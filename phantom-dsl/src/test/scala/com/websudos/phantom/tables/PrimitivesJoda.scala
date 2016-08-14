@@ -64,7 +64,7 @@ abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector 
       .value(_.timestamp, primitive.bi)
   }
 
-  def getPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
+  def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
     select.limit(limit).fetchRecord(paging)
   }
 
