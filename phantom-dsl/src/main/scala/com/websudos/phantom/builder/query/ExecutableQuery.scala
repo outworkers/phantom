@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.builder.query
 
-import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
 import com.datastax.driver.core._
@@ -103,13 +102,13 @@ trait ExecutableStatement extends CassandraOperations {
     * @param modifyStatement The function allowing to modify underlying [[Statement]]
     * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param executor The implicit Scala executor.
+    * @param ec The implicit Scala execution context.
     * @return An asynchronous Scala future wrapping the Datastax result set.
     */
   def future(modifyStatement: Modifier)(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: ExecutionContextExecutor
+    ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(modifyStatement(statement))
   }
@@ -140,7 +139,6 @@ class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOpera
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: Executor,
     ec: ExecutionContextExecutor
   ): ScalaFuture[Seq[ResultSet]] = {
     ScalaFuture.sequence(queries.map(item => {
@@ -243,7 +241,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch(modifyStatement : Modifier)(
+  def fetch(modifyStatement: Modifier)(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor

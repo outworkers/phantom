@@ -41,7 +41,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
   protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(
     implicit session: Session,
     keyspace: KeySpace,
-    executor: ExecutionContextExecutor
+    ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
   }
@@ -49,7 +49,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
   protected[this] def scalaQueryStringToPromise(st: Statement)(
     implicit session: Session,
     keyspace: KeySpace,
-    executor: ExecutionContextExecutor
+    ec: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {
     Manager.logger.debug(s"Executing query: ${st.toString}")
 
@@ -68,7 +68,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
       }
     }
 
-    Futures.addCallback(future, callback, executor)
+    Futures.addCallback(future, callback, ec)
     promise
   }
 }
