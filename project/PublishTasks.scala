@@ -32,6 +32,8 @@ import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
 
+import scala.util.Properties
+
 object PublishTasks {
 
 
@@ -61,7 +63,7 @@ object PublishTasks {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
 
-  lazy val pgpPass = Option(System.getenv("maven_password"))
+  lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -70,7 +72,7 @@ object PublishTasks {
       if (RunningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
         println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
-        pgpPass.map(_.toCharArray)
+        pgpPass
       } else {
         println("Could not find settings for a PGP passphrase.")
         println(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
