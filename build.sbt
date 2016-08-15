@@ -194,7 +194,8 @@ lazy val phantom = (project in file("."))
     sharedSettings ++ noPublishSettings
   ).settings(
     name := "phantom",
-    moduleName := "phantom"
+    moduleName := "phantom",
+    pgpPassphrase := PublishTasks.pgpPass
   ).aggregate(
     fullProjectList: _*
   )
