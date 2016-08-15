@@ -58,8 +58,9 @@ addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+
 if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
-  addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
   addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 } else {
   addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
