@@ -96,7 +96,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart,
       casPart = casPart,
-      usingPart = usingPart append QueryBuilder.timestamp(time.toString),
+      usingPart = usingPart append QueryBuilder.timestamp(time),
       options = options
     )
   }
@@ -179,8 +179,9 @@ class DeleteQuery[
     )
   }
 
-  override def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  override def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified, session: Session
+  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.v3orNewer) {
       new DeleteQuery(
         table = table,
