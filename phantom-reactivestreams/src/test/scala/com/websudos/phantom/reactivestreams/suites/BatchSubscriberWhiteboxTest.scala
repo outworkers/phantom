@@ -34,6 +34,7 @@ import com.websudos.phantom.reactivestreams._
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}
 import org.reactivestreams.tck.{SubscriberWhiteboxVerification, TestEnvironment}
 import org.reactivestreams.{Subscriber, Subscription}
+import com.outworkers.util.testing._
 
 class BatchSubscriberWhiteboxTest extends SubscriberWhiteboxVerification[Opera](new TestEnvironment())
   with StreamDatabase.connector.Connector with TestImplicits {
@@ -82,5 +83,5 @@ class BatchSubscriberWhiteboxTest extends SubscriberWhiteboxVerification[Opera](
     }
   }
 
-  override def createElement(element: Int): Opera = OperaData.operas(element)
+  override def createElement(element: Int): Opera = Opera(gen[String])
 }
