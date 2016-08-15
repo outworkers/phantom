@@ -35,14 +35,14 @@ import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Retries}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.tagobjects.Retryable
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures with Retries {
 
   implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
@@ -69,7 +69,6 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
     val chain = for {
       count <- StreamDatabase.operaTable.select.count().one()
     } yield count
-
 
     whenReady(chain) {
       res => res.value shouldEqual OperaData.operas.length

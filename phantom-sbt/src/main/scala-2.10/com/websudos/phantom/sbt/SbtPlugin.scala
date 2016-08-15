@@ -36,6 +36,7 @@ import sbt.Keys._
 import sbt._
 
 import scala.concurrent.blocking
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 /**
@@ -117,10 +118,11 @@ object EmbeddedCassandra {
         blocking {
           val configFile = config.map(_.toURI.toString) getOrElse EmbeddedCassandraServerHelper.DEFAULT_CASSANDRA_YML_FILE
           System.setProperty("cassandra.config", configFile)
-          try {
+          Try {
             EmbeddedCassandraServerHelper.mkdirs()
-          } catch {
-            case NonFatal(e) =>
+          } match {
+            case Success(value) => logger.info("Successfully created directories for embedded Cassandra.")
+            case Failure(NonFatal(e)) =>
               logger.error(s"Error creating Embedded cassandra directories: ${e.getMessage}")
           }
 

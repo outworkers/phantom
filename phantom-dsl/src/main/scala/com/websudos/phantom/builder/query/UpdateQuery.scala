@@ -35,11 +35,12 @@ import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, UpdateClause, WhereClause}
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.duration.{ FiniteDuration => ScalaDuration}
+import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -291,7 +292,19 @@ sealed class AssignmentsQuery[
     new AssignmentsQuery(
       table = table,
       init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(init, value.toString),
+      usingPart = usingPart append QueryBuilder.timestamp(value),
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart,
+      options = options
+    )
+  }
+
+  final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+    new AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart append QueryBuilder.timestamp(value.getMillis),
       wherePart = wherePart,
       setPart = setPart,
       casPart = casPart,
@@ -474,7 +487,7 @@ sealed class ConditionalQuery[
     )
   }
 
-  final def ttl(duration: scala.concurrent.duration.FiniteDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: ScalaDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 

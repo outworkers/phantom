@@ -81,12 +81,13 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     CQLQuery(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
   }
 
-  def timestamp(qb: CQLQuery, seconds: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.timestamp).forcePad.append(seconds)
-  }
-
-  def timestamp(seconds: String): CQLQuery = {
-    CQLQuery(CQLSyntax.timestamp).forcePad.append(seconds)
+  /**
+    * Produces a timestamp clause that should be appended to a UsingPart.
+    * @param unixTimestamp The milliseconds since EPOCH long value of a timestamp.
+    * @return A CQLQuery wrapping the USING clause.
+    */
+  def timestamp(unixTimestamp: Long): CQLQuery = {
+    CQLQuery(CQLSyntax.timestamp).forcePad.append(unixTimestamp.toString)
   }
 
   def consistencyLevel(qb: CQLQuery, level: String): CQLQuery = {

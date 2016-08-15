@@ -96,7 +96,7 @@ class DeleteQuery[
       init = init,
       wherePart = wherePart,
       casPart = casPart,
-      usingPart = usingPart append QueryBuilder.timestamp(time.toString),
+      usingPart = usingPart append QueryBuilder.timestamp(time),
       options = options
     )
   }
