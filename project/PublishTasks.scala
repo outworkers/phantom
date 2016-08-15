@@ -38,7 +38,7 @@ object PublishTasks {
 
 
   val defaultPublishingSettings = Seq(
-    version := "1.28.10"
+    version := "1.28.11"
   )
 
   val publishToMaven = {
