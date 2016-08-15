@@ -66,9 +66,10 @@ object PublishTasks {
   lazy val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
-    pgpPassphrase := {
+    pgpPassphrase in ThisBuild := {
       if (RunningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
+        println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
         pgpPass.map(_.toCharArray)
       } else {
         println("Could not find settings for a PGP passphrase.")
