@@ -100,7 +100,7 @@ abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnecto
 
   // Like in the real world, you have now planned your queries ahead.
   // You know what you can do and what you can't based on the schema limitations.
-  def getById(id: UUID): ScalaFuture[Option[Recipe]] = {
+  def findById(id: UUID): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).one()
   }
 }

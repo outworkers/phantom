@@ -130,13 +130,13 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   // It will always have a LIMIT 1 in the query sent to Cassandra.
   // select.where(_.id eqs UUID.randomUUID()).one() translates to
   // SELECT * FROM my_custom_table WHERE id = the_id_value LIMIT 1;
-  def getRecipeById(id: UUID): ScalaFuture[Option[Recipe]] = {
+  def findRecipeById(id: UUID): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).one()
   }
 
   // com.websudos.phantom allows partial selects from any query.
   // this is currently limited to 22 fields.
-  def getRecipeIngredients(id: UUID): ScalaFuture[Option[Set[String]]] = {
+  def findRecipeIngredients(id: UUID): ScalaFuture[Option[Set[String]]] = {
     select(_.ingredients).where(_.id eqs id).one()
   }
 
@@ -145,7 +145,7 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   // That's it, a really cool one liner.
   // The fetch method will collect an asynchronous lazy iterator into a Seq.
   // It's a good way to avoid boilerplate when retrieving a small number of items.
-  def getRecipesPage(start: UUID, limit: Int): ScalaFuture[Seq[Recipe]] = {
+  def findRecipesPage(start: UUID, limit: Int): ScalaFuture[Seq[Recipe]] = {
     select.where(_.id gtToken start).limit(limit).fetch()
   }
 
@@ -154,15 +154,17 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   // Phantom will collect them into an asynchronous, lazy iterator with very low memory foot print.
   // Enumerators, iterators and iteratees are based on Play iteratees.
   // You can keep the async behaviour or collect through the Iteratee.
-  def getEntireTable: ScalaFuture[Seq[Recipe]] = {
+  def retrieveEntireTable: ScalaFuture[List[Recipe]] = {
     select.fetchEnumerator() run Iteratee.collect()
   }
 
 
-  // com.websudos.phantom supports a few more Iteratee methods.
+  // phantom supports a few more Iteratee methods.
   // However, if you are looking to guarantee ordering and paginate "the old way"
   // You need an OrderPreservingPartitioner.
-  def getRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {
+  // You can also use automated Cassandra pagination and fetchRecord
+  // to use native PagingState objects for this.
+  def fetchRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {
     select.fetchEnumerator() run Iteratee.slice(start, limit)
   }
 

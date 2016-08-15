@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,45 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.advanced
+package com.websudos.phantom.tables
 
-import java.util.UUID
-
-import com.datastax.driver.core.{ResultSet, Row}
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-import scala.concurrent.{Future => ScalaFuture}
+import scala.concurrent.Future
 
+case class ScalaPrimitiveMapRecord(
+  id: UUID,
+  map: Map[DateTime, BigDecimal]
+)
 
-// Now you want to enable querying Recipes by author.
-// Because of the massive performance overhead of filtering,
-// you can't really use a SecondaryKey for multi-billion record databases.
+class ScalaTypesMapTable extends CassandraTable[ConcreteScalaTypesMapTable, ScalaPrimitiveMapRecord] {
 
-// Instead, you create mapping tables and ensure consistency from the application level.
-// This will illustrate just how easy it is to do that with com.websudos.phantom.
-sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object map extends MapColumn[DateTime, BigDecimal](this)
 
-  // In this table, the author will be PrimaryKey and PartitionKey.
-  object title extends StringColumn(this) with PartitionKey[String]
-
-  // The id is just another normal field.
-  object id extends UUIDColumn(this)
-
-  def fromRow(row: Row): (String, UUID) = {
-    Tuple2(title(row), id(row))
+  override def fromRow(row: Row): ScalaPrimitiveMapRecord = {
+    ScalaPrimitiveMapRecord(
+      id(row),
+      map(row)
+    )
   }
 }
 
-abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
-  override lazy val tableName = "recipes_by_title"
-
-  def insertRecipe(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
-    insert.value(_.title, recipe._1).value(_.id, recipe._2).future()
+abstract class ConcreteScalaTypesMapTable extends ScalaTypesMapTable with RootConnector {
+  def store(
+    rec: ScalaPrimitiveMapRecord
+  ): InsertQuery.Default[ConcreteScalaTypesMapTable, ScalaPrimitiveMapRecord] = {
+    insert
+      .value(_.id, rec.id)
+      .value(_.map, rec.map)
   }
 
-  // now you can have the tile in a where clause
-  // without the performance impact of a secondary index.
-  def findRecipeByTitle(title: String): ScalaFuture[Option[(String, UUID)]] = {
-    select.where(_.title eqs title).one()
+  def findById(id: UUID): Future[Option[ScalaPrimitiveMapRecord]] = {
+    select.where(_.id eqs id).one()
   }
 }

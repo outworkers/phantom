@@ -88,7 +88,7 @@ abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with Root
   // If you would select only by id,
   // Cassandra will tell you a part of the primary is missing from the where clause.
   // Querying by composite keys is trivial using the "and" operator.
-  def getRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
+  def findRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).and(_.name eqs name).one()
   }
 

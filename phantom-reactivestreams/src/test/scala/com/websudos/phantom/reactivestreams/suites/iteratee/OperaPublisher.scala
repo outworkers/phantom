@@ -29,24 +29,26 @@
  */
 package com.websudos.phantom.reactivestreams.suites.iteratee
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.websudos.phantom.reactivestreams.suites.{Opera, OperaData}
 import org.reactivestreams.{Publisher, Subscriber, Subscription}
 
 object OperaPublisher extends Publisher[Opera] {
 
-  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
-    var remaining = OperaData.operas
+  val counter = new AtomicInteger(0)
 
+  override def subscribe(s: Subscriber[_ >: Opera]): Unit = {
     s.onSubscribe(new Subscription {
       override def cancel(): Unit = ()
 
       override def request(l: Long): Unit = {
+        val start = counter.getAndIncrement() * l.toInt
+        val end = start + l.toInt
 
-        remaining.take(l.toInt).foreach(s.onNext)
-
-        remaining = remaining.drop(l.toInt)
-
-        if (remaining.isEmpty) {
+        if (start < OperaData.operas.size) {
+          OperaData.operas.slice(start, end).foreach(s.onNext)
+        } else {
           s.onComplete()
         }
       }

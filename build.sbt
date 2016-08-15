@@ -118,7 +118,7 @@ lazy val defaultCredentials: Seq[Credentials] = {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
-  scalaVersion := "2.10.6",
+  scalaVersion := "2.11.8",
   credentials ++= defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
@@ -146,8 +146,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
-  javaOptions in ThisBuild ++= Seq(
-    "-Xmx2G",
+  javaOptions ++= Seq(
+    "-Xmx1G",
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
@@ -157,8 +157,13 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++
-  PublishTasks.bintrayPublishSettings
+  GitProject.gitSettings ++ {
+  if (PublishTasks.publishToMaven) {
+    PublishTasks.mavenPublishingSettings
+  } else {
+    PublishTasks.bintrayPublishSettings
+  }
+}
 
 lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 
@@ -189,7 +194,8 @@ lazy val phantom = (project in file("."))
     sharedSettings ++ noPublishSettings
   ).settings(
     name := "phantom",
-    moduleName := "phantom"
+    moduleName := "phantom",
+    pgpPassphrase := PublishTasks.pgpPass
   ).aggregate(
     fullProjectList: _*
   )

@@ -357,6 +357,8 @@ trait DefaultPrimitives {
     override def fromString(value: String): BigDecimal = BigDecimal(value)
 
     override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
+
+    override def fromPrimitive(obj: java.math.BigDecimal): BigDecimal = BigDecimal(obj)
   }
 
   implicit object InetAddressPrimitive extends Primitive[InetAddress] {

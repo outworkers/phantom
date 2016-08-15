@@ -105,7 +105,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .timestamp(value)
           .queryString
 
-        qb shouldEqual s"DELETE FROM phantom.recipes WHERE url = '$url' USING TIMESTAMP $value;"
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP $value WHERE url = '$url';"
       }
 
       "should allow using a DateTime instance value as a timestamp" in {
@@ -117,7 +117,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .timestamp(value)
           .queryString
 
-        qb shouldEqual s"DELETE FROM phantom.recipes WHERE url = '$url' USING TIMESTAMP ${value.getMillis};"
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url';"
       }
 
       "should allow mixing a timestamp clause with a conditional clause" in {
@@ -130,7 +130,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .onlyIf(_.lastcheckedat is value)
           .queryString
 
-        qb shouldEqual s"DELETE FROM phantom.recipes WHERE url = '$url' USING TIMESTAMP ${value.getMillis} IF lastcheckedat = ${value.getMillis};"
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url' IF lastcheckedat = ${value.getMillis};"
       }
     }
   }

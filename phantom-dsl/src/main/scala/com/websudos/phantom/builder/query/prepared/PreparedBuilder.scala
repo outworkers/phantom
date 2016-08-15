@@ -35,9 +35,10 @@ import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.{LimitBound, Unlimited}
 import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
-import shapeless.HList
+import shapeless.{Generic, HList}
 import shapeless.ops.hlist.Tupler
 
+import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
@@ -142,15 +143,15 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
     *
     * @param v1 The argument used for the assertion, inferred as a tuple by the compiler.
-    * @param tp The Shapeless Tupler implicit builder to cast HList to a Tuple.
+    * @param gen The Shapeless Tupler implicit builder to cast HList to a Tuple.
     * @param ev The equality parameter to check that the types provided in the tuple match the prepared query.
     * @tparam V1 The argument tuple type, auto-tupled by the compiler from varargs.
     * @tparam Out The type argument used to cast the HList to a Tuple.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V1 <: Product, Out <: Product](v1: V1)(
-    implicit tp: Tupler.Aux[PS, Out],
-    ev: V1 =:= Out
+  def bind[V1 <: Product, Out <: HList](v1: V1)(
+    implicit gen: Generic.Aux[V1, Out],
+    ev: Out =:= PS
   ): ExecutablePreparedQuery = {
     val params = flattenOpt(v1.productIterator.toSeq)
     new ExecutablePreparedQuery(query.bind(params: _*), options)

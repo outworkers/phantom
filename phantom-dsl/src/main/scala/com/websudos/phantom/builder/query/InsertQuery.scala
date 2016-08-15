@@ -220,7 +220,7 @@ class InsertQuery[
       init,
       columnsPart,
       valuePart,
-      usingPart append QueryBuilder.timestamp(value.toString),
+      usingPart append QueryBuilder.timestamp(value),
       lightweightPart,
       options
     )

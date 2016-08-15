@@ -224,7 +224,7 @@ class DeleteQuery[
   }
 
   override val qb: CQLQuery = {
-    (wherePart merge usingPart merge casPart) build init
+    (usingPart merge wherePart merge casPart) build init
   }
 
 }
@@ -270,7 +270,7 @@ sealed class ConditionalDeleteQuery[
  ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
-    (wherePart merge usingPart merge casPart) build init
+    (usingPart merge wherePart merge casPart) build init
   }
 
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {

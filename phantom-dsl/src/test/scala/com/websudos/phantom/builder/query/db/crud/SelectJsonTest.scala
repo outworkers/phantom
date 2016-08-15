@@ -29,72 +29,62 @@
  */
 package com.websudos.phantom.builder.query.db.crud
 
+import com.datastax.driver.core.exceptions.SyntaxError
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
+import net.liftweb.json.JsonParser
 
-class DeleteTest extends PhantomSuite {
-
+class SelectJsonTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     TestDatabase.primitives.insertSchema()
   }
 
-  "A delete query" should "delete a row by its single primary key" in {
+  "A JSON selection clause" should "select an entire row as JSON" in {
     val row = gen[Primitive]
 
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).future()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted)
+      b <- TestDatabase.primitives.select.json().where(_.pkey eqs row.pkey).one
+    } yield b
 
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
+
+    if (cassandraVersion.value >= Version.`2.2.0`) {
+      chain successful {
+        res => {
+          res shouldBe defined
+          val parsed = JsonParser.parse(res.value)
+          parsed.children.size shouldEqual row.productArity
+        }
       }
+    } else {
+      chain.failing[SyntaxError]
     }
   }
 
-  "A delete query" should "delete a row by its single primary key if a single condition is met" in {
+  "A JSON selection clause" should "8 columns as JSON" in {
     val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted)
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+        .json()
+        .where(_.pkey eqs row.pkey).one()
+    } yield get
 
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
+    if (cassandraVersion.value >= Version.`2.2.0`) {
+      chain successful {
+        res => {
+          res shouldBe defined
+          val parsed = JsonParser.parse(res.value)
+          parsed.children.size shouldEqual expected.productArity
+        }
       }
+    } else {
+      chain.failing[SyntaxError]
     }
   }
-
-  "A delete query" should "not delete a row by its single primary key if a single condition is not met" in {
-    val row = gen[Primitive]
-
-    val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      inserted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- TestDatabase.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
-      deleted <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted)
-
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-
-        info("The row should not have been deleted as the condition was not met")
-        r2 shouldBe defined
-      }
-    }
-  }
-
 }

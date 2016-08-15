@@ -32,12 +32,24 @@ import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
 
+import scala.util.Properties
+
 object PublishTasks {
 
 
   val defaultPublishingSettings = Seq(
-    version := "1.28.3"
+    version := "1.28.11"
   )
+
+  val publishToMaven = {
+    if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
+      println("Maven publishing mode enabled")
+      true
+    } else {
+      println("Maven publishing mode disabled, publishing to Bintray instead")
+      false
+    }
+  }
 
   lazy val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
@@ -51,15 +63,16 @@ object PublishTasks {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
 
-  lazy val pgpPass = Option(System.getenv("maven_password"))
+  lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
-    pgpPassphrase := {
+    pgpPassphrase in ThisBuild := {
       if (RunningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
-        pgpPass.map(_.toCharArray)
+        println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
+        pgpPass
       } else {
         println("Could not find settings for a PGP passphrase.")
         println(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")

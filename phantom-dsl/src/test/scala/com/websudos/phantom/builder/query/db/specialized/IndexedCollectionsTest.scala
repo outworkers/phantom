@@ -29,20 +29,23 @@
  */
 package com.websudos.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.exceptions.SyntaxError
+import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{TestDatabase, TestRow}
 import com.outworkers.util.testing._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(TestDatabase.indexedCollectionsTable.create.ifNotExists().future(), defaultScalaTimeout)
+    if (cassandraVersion.value >= Version.`2.1.0`) {
+      database.indexedCollectionsTable.insertSchema()
+    }
+
+    if (cassandraVersion.value >= Version.`2.2.0`) {
+      database.indexedEntriesTable.insertSchema()
+    }
   }
 
   it should "store a record and retrieve it with a CONTAINS query on the SET" in {
@@ -63,7 +66,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
 
   }
@@ -86,7 +89,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -109,7 +112,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
@@ -117,11 +120,11 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
 
     val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      result <- TestDatabase.indexedCollectionsTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
+      store <- TestDatabase.indexedEntriesTable.store(record).future()
+      result <- TestDatabase.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
     } yield result
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.2.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -129,7 +132,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         }
       }
     } else {
-      chain.failing[SyntaxError]
+      chain.failing[InvalidQueryException]
     }
   }
 
