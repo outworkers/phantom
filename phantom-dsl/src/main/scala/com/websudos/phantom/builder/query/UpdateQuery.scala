@@ -386,9 +386,11 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
-    if (session.v3orNewer) {
+  def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified,
+    session: Session
+  ): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
+    if (session.protocolConsistency) {
       new AssignmentsQuery(
         table,
         init,
@@ -452,7 +454,7 @@ sealed class ConditionalQuery[
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new ConditionalQuery(
         table = table,
         init = init,

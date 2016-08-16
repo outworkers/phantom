@@ -63,6 +63,8 @@ trait SessionAugmenter {
 
   def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
 
+  def protocolConsistency: Boolean = isNewerThan(ProtocolVersion.V1)
+
   def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
 }
 

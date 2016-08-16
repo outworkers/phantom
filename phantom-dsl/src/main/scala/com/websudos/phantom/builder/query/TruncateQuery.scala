@@ -41,7 +41,7 @@ class TruncateQuery[
 ](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new TruncateQuery(table, qb, options.consistencyLevel_=(level))
     } else {
       new TruncateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), options)

@@ -58,7 +58,7 @@ abstract class RootQuery[
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
   def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       create(table, qb, options.consistencyLevel_=(level))
     } else {
       create(table, QueryBuilder.consistencyLevel(qb, level.toString), options)
@@ -106,7 +106,7 @@ abstract class Query[
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   def consistencyLevel_=(level: ConsistencyLevel)
     (implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       create[Table, Record, Limit, Order, Specified, Chain, PS](
         table,
         CQLQuery.empty,
