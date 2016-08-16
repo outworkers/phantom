@@ -102,7 +102,7 @@ class CreateQuery[
 ) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new CreateQuery(
         table,
         qb,

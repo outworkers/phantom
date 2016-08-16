@@ -183,7 +183,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
           .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
           .queryString
 
-        if (session.v3orNewer) {
+        if (session.protocolConsistency) {
           qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
         } else {
           qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id) USING CONSISTENCY EACH_QUORUM;"

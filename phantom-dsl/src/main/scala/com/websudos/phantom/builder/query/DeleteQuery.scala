@@ -112,7 +112,9 @@ class DeleteQuery[
    * @return
    */
   @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  override def where(condition: Table => WhereClause.Condition)(
+    implicit ev: Chain =:= Unchainned
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new DeleteQuery(
       table = table,
       init = init,
@@ -149,7 +151,9 @@ class DeleteQuery[
    * @return A SelectCountWhere.
    */
   @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  override def and(condition: Table => WhereClause.Condition)(
+    implicit ev: Chain =:= Chainned
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     val query = QueryBuilder.Update.and(condition(table).qb)
     new DeleteQuery(
       table = table,
@@ -168,8 +172,9 @@ class DeleteQuery[
    * @return
    */
   @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-      (implicit ev: Chain =:= Chainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])(
+    implicit ev: Chain =:= Chainned
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
     new DeleteQuery(
       table = table,
       init = init,
@@ -179,9 +184,10 @@ class DeleteQuery[
     )
   }
 
-  override def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.v3orNewer) {
+  override def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified, session: Session
+  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+    if (session.protocolConsistency) {
       new DeleteQuery(
         table = table,
         init = init,
@@ -224,7 +230,7 @@ class DeleteQuery[
   }
 
   override val qb: CQLQuery = {
-    (wherePart merge usingPart merge casPart) build init
+    (usingPart merge wherePart merge casPart) build init
   }
 
 }
@@ -270,7 +276,7 @@ sealed class ConditionalDeleteQuery[
  ) extends ExecutableStatement with Batchable {
 
   override val qb: CQLQuery = {
-    (wherePart merge usingPart merge casPart) build init
+    (usingPart merge wherePart merge casPart) build init
   }
 
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {

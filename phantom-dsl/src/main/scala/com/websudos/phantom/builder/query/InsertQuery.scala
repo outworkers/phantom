@@ -227,7 +227,7 @@ class InsertQuery[
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new InsertQuery(
         table,
         init,

@@ -240,7 +240,7 @@ class SelectQuery[
     implicit ev: Status =:= Unspecified,
     session: Session
   ): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new SelectQuery(
         table = table,
         rowFunc = rowFunc,
