@@ -116,7 +116,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (session.v3orNewer) {
+        if (session.protocolConsistency) {
           query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test';"
         } else {
           query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
