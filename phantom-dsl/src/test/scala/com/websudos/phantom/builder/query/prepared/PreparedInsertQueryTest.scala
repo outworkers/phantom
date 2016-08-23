@@ -149,7 +149,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       ).future()
 
       val selectQuery = database.primitivesCassandra22.select
-        .p_where(_.pkey eqs ?)
+        .where(_.pkey eqs ?)
         .prepare()
 
       val chain = for {

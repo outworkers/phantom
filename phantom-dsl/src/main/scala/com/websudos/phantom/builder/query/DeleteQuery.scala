@@ -32,13 +32,13 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, DeleteClause, PreparedWhereClause, WhereClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.ops.MapKeyUpdateClause
 import com.websudos.phantom.builder.query.prepared.PreparedBlock
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl.DateTime
-import shapeless.ops.hlist.Reverse
+import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
@@ -106,34 +106,19 @@ class DeleteQuery[
   }
 
   /**
-   * The where method of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)(
-    implicit ev: Chain =:= Unchainned
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new DeleteQuery(
-      table = table,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-      casPart = casPart,
-      usingPart = usingPart,
-      options = options
-    )
-  }
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
 
-  /**
-   * The where method of a select query that takes parametric predicate as an argument.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-      (implicit ev: Chain =:= Unchainned): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+  override def where[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: Table => QueryCondition[HL])(implicit
+    ev: Chain =:= Unchainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new DeleteQuery(
       table = table,
       init = init,
@@ -142,7 +127,7 @@ class DeleteQuery[
       usingPart = usingPart,
       options = options
     )
-  }
+  } */
 
   /**
    * And clauses require overriding for count queries for the same purpose.

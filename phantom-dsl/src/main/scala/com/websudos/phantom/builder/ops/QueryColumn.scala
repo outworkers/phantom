@@ -30,10 +30,10 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{UpdateClause, PreparedWhereClause, WhereClause, OperatorClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.prepared.PrepareMark
-import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.builder.query.prepared.{PrepareMark, ProjectMark}
+import shapeless.{HNil, ::}
 
 /**
  * A class enforcing columns used in where clauses to be indexed.

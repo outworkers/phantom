@@ -42,7 +42,7 @@ private object Lock
 
 abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[CassandraTable[_, _]] {
 
-  implicit val space: KeySpace = new KeySpace(connector.name)
+  implicit val space: KeySpace = KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
 

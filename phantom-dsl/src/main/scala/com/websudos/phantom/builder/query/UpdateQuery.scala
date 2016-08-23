@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl.DateTime
@@ -108,16 +108,21 @@ class UpdateQuery[
     )
   }
 
+  /*
   /**
-   * The where method of a select query.
-    *
+    * The where method of a select query.
     * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def where[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: Table => QueryCondition[HL])(implicit
+    ev: Chain =:= Unchainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
     new UpdateQuery(
       table,
       init,
@@ -127,7 +132,7 @@ class UpdateQuery[
       casPart,
       options
     )
-  }
+  }*/
 
   /**
    * And clauses require overriding for count queries for the same purpose.
