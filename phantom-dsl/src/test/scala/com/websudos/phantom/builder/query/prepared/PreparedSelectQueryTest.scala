@@ -96,7 +96,10 @@ class PreparedSelectQueryTest extends PhantomSuite {
     val category = gen[UUID]
     val category2 = gen[UUID]
 
-    val query = TestDatabase.articlesByAuthor.select.where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
+    val query = TestDatabase.articlesByAuthor.select
+      .where(_.author_id eqs ?)
+      .and(_.category eqs ?)
+      .prepare()
 
     val op = for {
       store <- TestDatabase.articlesByAuthor.store(owner, category, sample).future()

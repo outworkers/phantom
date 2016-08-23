@@ -192,7 +192,7 @@ class RelationalOperatorsTest extends PhantomSuite {
 
     val query = database.timeSeriesTable.select
       .where(_.timestamp > ?)
-      .p_and(_.timestamp < ?)
+      .and(_.timestamp < ?)
       .allowFiltering()
       .prepare()
 

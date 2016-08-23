@@ -36,7 +36,7 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import shapeless.{HList, HNil, ::}
 
-private[phantom] abstract class QueryCondition[T <: HList](val qb: CQLQuery)
+abstract class QueryCondition[T <: HList](val qb: CQLQuery)
 
 sealed trait Clause {
   /**

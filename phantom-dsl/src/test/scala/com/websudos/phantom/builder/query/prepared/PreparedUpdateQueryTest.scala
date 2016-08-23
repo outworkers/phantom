@@ -46,7 +46,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val updated = genOpt[ShortString].map(_.value)
 
     val query = database.recipes.update
-      .p_where(_.url eqs ?)
+      .where(_.url eqs ?)
       .p_modify(_.description setTo ?)
       .prepare()
 
@@ -82,7 +82,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val updatedUid = gen[UUID]
 
     val query = database.recipes.update
-      .p_where(_.url eqs ?)
+      .where(_.url eqs ?)
       .p_modify(_.description setTo ?)
       .p_and(_.uid setTo ?)
       .prepare()

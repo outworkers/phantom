@@ -72,7 +72,7 @@ class PreparedDeleteQueryTest extends PhantomSuite {
 
     val query = database.articlesByAuthor.delete
       .where(_.category eqs ?)
-      .p_and(_.author_id eqs ?)
+      .and(_.author_id eqs ?)
       .prepare()
 
     val chain = for {

@@ -108,7 +108,6 @@ class UpdateQuery[
     )
   }
 
-  /*
   /**
     * The where method of a select query.
     * @param condition A where clause condition restricted by path dependant types.
@@ -122,49 +121,7 @@ class UpdateQuery[
   ](condition: Table => QueryCondition[HL])(implicit
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.where(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
-  }*/
-
-  /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-    *
-    * @param condition The Query condition to execute, based on index operators.
-   * @return A SelectCountWhere.
-   */
-  @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)
-    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.and(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
-  }
-
-  /**
-    * The where method of a select query that takes parametric predicate as an argument.
-    *
-    * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-    * @return
-    */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new UpdateQuery(
       table,
       init,
@@ -176,28 +133,30 @@ class UpdateQuery[
     )
   }
 
-
   /**
-    * The where method of a select query that takes parametric predicate as an argument.
-    *
+    * The where method of a select query.
     * @param condition A where clause condition restricted by path dependant types.
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+  override def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: Table => QueryCondition[HL])(implicit
+    ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new UpdateQuery(
       table,
       init,
       usingPart,
-      wherePart append QueryBuilder.Update.and(condition(table).qb),
+      wherePart append QueryBuilder.Update.where(condition(table).qb),
       setPart,
       casPart,
       options
     )
   }
-
 
   final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
     new AssignmentsQuery(

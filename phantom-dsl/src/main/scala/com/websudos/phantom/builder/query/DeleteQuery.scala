@@ -39,9 +39,7 @@ import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
-import shapeless.{::, =:!=, HList, HNil}
-
-import scala.annotation.implicitNotFound
+import shapeless.{=:!=, HList, HNil}
 
 class DeleteQuery[
   Table <: CassandraTable[Table, _],
@@ -105,20 +103,22 @@ class DeleteQuery[
     timestamp(time.getMillis)
   }
 
+
   /**
     * The where method of a select query.
+    *
     * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
-
+    */
   override def where[
     RR,
     HL <: HList,
     Out <: HList
-  ](condition: Table => QueryCondition[HL])(implicit
-    ev: Chain =:= Unchainned,
+  ](condition: (Table) => QueryCondition[HL])(
+    implicit ev: =:=[Chain, Unchainned],
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new DeleteQuery(
       table = table,
       init = init,
@@ -127,44 +127,29 @@ class DeleteQuery[
       usingPart = usingPart,
       options = options
     )
-  } */
-
-  /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-   * @param condition The Query condition to execute, based on index operators.
-   * @return A SelectCountWhere.
-   */
-  @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)(
-    implicit ev: Chain =:= Chainned
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    val query = QueryBuilder.Update.and(condition(table).qb)
-    new DeleteQuery(
-      table = table,
-      init = init,
-      wherePart = wherePart append query,
-      casPart = casPart,
-      usingPart = usingPart,
-      options = options
-    )
   }
 
   /**
-   * The and operator that adds parametric condition to the where predicates.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])(
-    implicit ev: Chain =:= Chainned
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    * The where method of a select query.
+    *
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: (Table) => QueryCondition[HL])(
+    implicit ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new DeleteQuery(
       table = table,
       init = init,
       wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       casPart = casPart,
+      usingPart = usingPart,
       options = options
     )
   }
@@ -203,7 +188,7 @@ class DeleteQuery[
    */
   def onlyIf(
     clause: Table => CompareAndSetClause.Condition
-    ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalDeleteQuery(
       table = table,
       init = init,
@@ -217,7 +202,6 @@ class DeleteQuery[
   override val qb: CQLQuery = {
     (usingPart merge wherePart merge casPart) build init
   }
-
 }
 
 

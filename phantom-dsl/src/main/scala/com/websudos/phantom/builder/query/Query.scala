@@ -152,40 +152,32 @@ abstract class Query[
   )(implicit
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    create[Table, Record, Limit, Order, Status, Chainned, Out](
-      table,
-      QueryBuilder.Where.where(qb, condition(table).qb),
-      row,
-      usingPart,
-      options
-    )
-  }
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
 
   /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-   * @param condition The Query condition to execute, based on index operators.
-   * @return A SelectCountWhere.
-   */
-  @implicitNotFound("You have to use an where clause before using an AND clause")
-  def and(condition: Table => WhereClause.Condition)(implicit ev: Chain =:= Chainned): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    create[Table, Record, Limit, Order, Status, Chainned, PS](
-      table,
-      QueryBuilder.Where.and(qb, condition(table).qb),
-      row,
-      usingPart,
-      options
-    )
-  }
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](
+    condition: Table => QueryCondition[HL]
+  )(implicit
+    ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
 
 
   def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
     create[Table, Record, Limit, Order, Status, Chain, PS](
       table,
-      QueryBuilder.ttl(qb, seconds.toString),
+      qb,
       row,
-      usingPart,
+      usingPart append QueryBuilder.ttl(seconds.toString),
       options
     )
   }

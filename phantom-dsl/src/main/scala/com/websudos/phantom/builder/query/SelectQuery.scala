@@ -162,33 +162,22 @@ class SelectQuery[
     )
   }
 
-  override def and(condition: Table => WhereClause.Condition)(
-    implicit ev: Chain =:= Chainned
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new SelectQuery(
-      table = table,
-      rowFunc = rowFunc,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
-      orderPart = orderPart,
-      limitedPart = limitedPart,
-      filteringPart = filteringPart,
-      usingPart = usingPart,
-      count = count,
-      options = options
-    )
-  }
-
   /**
-   * The and operator that adds parametric condition to the where predicates.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])(
-    implicit ev: Chain =:= Chainned
-  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](
+    condition: Table => QueryCondition[HL]
+  )(implicit
+    ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
