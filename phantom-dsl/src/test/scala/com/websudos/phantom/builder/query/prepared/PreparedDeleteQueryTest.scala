@@ -45,7 +45,7 @@ class PreparedDeleteQueryTest extends PhantomSuite {
   it should "correctly execute a prepared delete query" in {
     val recipe = gen[Recipe]
 
-    val query = database.recipes.delete.p_where(_.url eqs ?).prepare()
+    val query = database.recipes.delete.where(_.url eqs ?).prepare()
 
     val chain = for {
       store <- database.recipes.store(recipe).future()
@@ -71,8 +71,8 @@ class PreparedDeleteQueryTest extends PhantomSuite {
     val article = gen[Article]
 
     val query = database.articlesByAuthor.delete
-      .p_where(_.category eqs ?)
-      .p_and(_.author_id eqs ?)
+      .where(_.category eqs ?)
+      .and(_.author_id eqs ?)
       .prepare()
 
     val chain = for {

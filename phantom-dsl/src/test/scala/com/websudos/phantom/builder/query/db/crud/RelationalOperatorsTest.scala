@@ -78,7 +78,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxTimestamp = records(maxIndex).timestamp
 
     val query = database.timeSeriesTable.select
-      .p_where(_.timestamp < ?)
+      .where(_.timestamp < ?)
       .allowFiltering()
       .prepare()
 
@@ -105,7 +105,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxTimestamp = records(maxIndex).timestamp
 
     val query = database.timeSeriesTable.select
-      .p_where(_.timestamp <= ?)
+      .where(_.timestamp <= ?)
       .allowFiltering()
       .prepare()
 
@@ -132,7 +132,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minTimestamp = records(minIndex).timestamp
 
     val query = database.timeSeriesTable.select
-      .p_where(_.timestamp > ?)
+      .where(_.timestamp > ?)
       .allowFiltering()
       .prepare()
 
@@ -159,7 +159,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minTimestamp = records(minIndex).timestamp
 
     val query = database.timeSeriesTable.select
-      .p_where(_.timestamp >= ?)
+      .where(_.timestamp >= ?)
       .allowFiltering()
       .prepare()
 
@@ -191,8 +191,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxTimestamp = records(maxIndex).timestamp
 
     val query = database.timeSeriesTable.select
-      .p_where(_.timestamp > ?)
-      .p_and(_.timestamp < ?)
+      .where(_.timestamp > ?)
+      .and(_.timestamp < ?)
       .allowFiltering()
       .prepare()
 

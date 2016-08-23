@@ -82,7 +82,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
     val row = gen[Primitive]
 
     val fetchQuery = TestDatabase.primitives.select
-      .p_where(_.pkey eqs ?)
+      .where(_.pkey eqs ?)
       .prepare()
 
     val insertQuery = TestDatabase.primitives.insert

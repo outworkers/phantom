@@ -32,14 +32,13 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{CompareAndSetClause, PreparedWhereClause, UpdateClause, WhereClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.annotation.implicitNotFound
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 class UpdateQuery[
@@ -109,15 +108,19 @@ class UpdateQuery[
   }
 
   /**
-   * The where method of a select query.
-    *
+    * The where method of a select query.
     * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  override def where(condition: Table => WhereClause.Condition)
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def where[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: Table => QueryCondition[HL])(implicit
+    ev: Chain =:= Unchainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new UpdateQuery(
       table,
       init,
@@ -130,15 +133,19 @@ class UpdateQuery[
   }
 
   /**
-   * And clauses require overriding for count queries for the same purpose.
-   * Without this override, the CQL query executed to fetch the count would still have a "LIMIT 1".
-    *
-    * @param condition The Query condition to execute, based on index operators.
-   * @return A SelectCountWhere.
-   */
-  @implicitNotFound("You have to use an where clause before using an AND clause")
-  override def and(condition: Table => WhereClause.Condition)
-    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](condition: Table => QueryCondition[HL])(implicit
+    ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new UpdateQuery(
       table,
       init,
@@ -150,71 +157,18 @@ class UpdateQuery[
     )
   }
 
-  /**
-    * The where method of a select query that takes parametric predicate as an argument.
-    *
-    * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-    * @return
-    */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-    (implicit ev: Chain =:= Unchainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.where(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
-  }
-
-
-  /**
-    * The where method of a select query that takes parametric predicate as an argument.
-    *
-    * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-    * @return
-    */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])
-    (implicit ev: Chain =:= Chainned): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.and(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
-  }
-
-
-  final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
+  final def modify[
+    HL <: HList,
+    Out <: HList
+  ](clause: Table => UpdateClause.Condition[HL])(
+    implicit prepend: Prepend.Aux[HL, HNil, Out]
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
     new AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
       setPart = setPart appendConditionally (QueryBuilder.Update.set(clause(table).qb), !clause(table).skipped),
-      casPart = casPart,
-      options = options
-    )
-  }
-
-  final def p_modify[RR](
-    clause: Table => PreparedWhereClause.ParametricCondition[RR]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, RR :: HNil] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart = setPart append QueryBuilder.Update.set(clause(table).qb),
       casPart = casPart,
       options = options
     )
@@ -262,27 +216,18 @@ sealed class AssignmentsQuery[
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
-  final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
-      casPart,
-      options
-    )
-  }
-
-  final def p_and[RR](
-    clause: Table => PreparedWhereClause.ParametricCondition[RR]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, RR :: ModifyPrepared] = {
+  final def and[
+    HL <: HList,
+    Out <: HList
+  ](clause: Table => UpdateClause.Condition[HL])(
+    implicit prepend: Prepend.Aux[HL, ModifyPrepared, Out]
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
     new AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart append clause(table).qb,
+      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
       casPart = casPart,
       options = options
     )

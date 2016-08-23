@@ -70,7 +70,7 @@ class TimeSeriesTest extends PhantomSuite {
     val records = genSequentialRecords(number)
 
     val query = database.timeSeriesTable.select
-      .p_where(_.id eqs ?)
+      .where(_.id eqs ?)
       .limit(limit)
       .prepare()
 
@@ -111,7 +111,7 @@ class TimeSeriesTest extends PhantomSuite {
     val records = genSequentialRecords(number)
 
     val query = database.timeSeriesTable.select
-      .p_where(_.id eqs ?)
+      .where(_.id eqs ?)
       .orderBy(_.timestamp.asc)
       .limit(limit)
       .prepare()

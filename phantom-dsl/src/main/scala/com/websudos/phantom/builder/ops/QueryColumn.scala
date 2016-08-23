@@ -30,10 +30,9 @@
 package com.websudos.phantom.builder.ops
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.clauses.{UpdateClause, PreparedWhereClause, WhereClause, OperatorClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.prepared.PrepareMark
-import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.builder.query.prepared.{PrepareMark}
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -188,7 +187,7 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
 
   def keyName: String = Primitive[K].asCql(key)
 
-  def setTo(v: V): UpdateClause.Condition = {
+  def setTo(v: V): UpdateClause.Default = {
     val qb = QueryBuilder.Update.updateMapColumn(
       column,
       Primitive[K].asCql(key),
