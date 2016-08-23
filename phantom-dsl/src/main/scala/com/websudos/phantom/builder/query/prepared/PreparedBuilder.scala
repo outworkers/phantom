@@ -49,17 +49,6 @@ private[phantom] trait PrepareMark {
   def qb: CQLQuery = CQLQuery("?")
 }
 
-object ? extends PrepareMark
-
-private[phantom] trait ProjectMark {
-
-  def symbol: String = "?"
-
-  def qb: CQLQuery = CQLQuery("?")
-}
-
-object ?!? extends PrepareMark
-
 class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 

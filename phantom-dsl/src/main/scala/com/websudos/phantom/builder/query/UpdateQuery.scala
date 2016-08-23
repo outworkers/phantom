@@ -39,7 +39,6 @@ import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.annotation.implicitNotFound
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 class UpdateQuery[
@@ -151,34 +150,25 @@ class UpdateQuery[
       table,
       init,
       usingPart,
-      wherePart append QueryBuilder.Update.where(condition(table).qb),
+      wherePart append QueryBuilder.Update.and(condition(table).qb),
       setPart,
       casPart,
       options
     )
   }
 
-  final def modify(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
+  final def modify[
+    HL <: HList,
+    Out <: HList
+  ](clause: Table => UpdateClause.Condition[HL])(
+    implicit prepend: Prepend.Aux[HL, HNil, Out]
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
     new AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
       setPart = setPart appendConditionally (QueryBuilder.Update.set(clause(table).qb), !clause(table).skipped),
-      casPart = casPart,
-      options = options
-    )
-  }
-
-  final def p_modify[RR](
-    clause: Table => PreparedWhereClause.ParametricCondition[RR]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, RR :: HNil] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart = setPart append QueryBuilder.Update.set(clause(table).qb),
       casPart = casPart,
       options = options
     )
@@ -226,27 +216,18 @@ sealed class AssignmentsQuery[
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
-  final def and(clause: Table => UpdateClause.Condition): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
-      casPart,
-      options
-    )
-  }
-
-  final def p_and[RR](
-    clause: Table => PreparedWhereClause.ParametricCondition[RR]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, RR :: ModifyPrepared] = {
+  final def and[
+    HL <: HList,
+    Out <: HList
+  ](clause: Table => UpdateClause.Condition[HL])(
+    implicit prepend: Prepend.Aux[HL, ModifyPrepared, Out]
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
     new AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart append clause(table).qb,
+      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
       casPart = casPart,
       options = options
     )

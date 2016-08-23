@@ -113,7 +113,11 @@ object UsingClause extends Clause {
 }
 
 object UpdateClause extends Clause {
-  class Condition(override val qb: CQLQuery, val skipped: Boolean = false) extends QueryCondition[HNil](qb)
+  class Condition[HL <: HList](override val qb: CQLQuery, val skipped: Boolean = false) extends QueryCondition[HL](qb)
+
+  type Default = Condition[HNil]
+
+  type Prepared[RR] = Condition[RR :: HNil]
 }
 
 object OperatorClause extends Clause {

@@ -40,6 +40,7 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
@@ -130,6 +131,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type IteratorResult[R] = com.websudos.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.websudos.phantom.builder.query.RecordResult[R]
 
+
+  object ? extends PrepareMark
   case object Batch extends Batcher
 
   object ConsistencyLevel {
@@ -233,17 +236,17 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
-    final def +=[T : Numeric](value: T): UpdateClause.Condition = {
+    final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
 
-    final def increment[T : Numeric](value: T): UpdateClause.Condition = +=(value)
+    final def increment[T : Numeric](value: T): UpdateClause.Default = +=(value)
 
-    final def -=[T : Numeric](value: T): UpdateClause.Condition = {
+    final def -=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
     }
 
-    final def decrement[T : Numeric](value: T): UpdateClause.Condition = -=(value)
+    final def decrement[T : Numeric](value: T): UpdateClause.Default = -=(value)
   }
 
   /**
