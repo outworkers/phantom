@@ -28,9 +28,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.websudos.phantom.column.extractors
+import scala.reflect.runtime.universe.{TypeTag, typeOf, MethodSymbol}
 
 private[phantom] object Helper {
-  import scala.reflect.runtime.universe._
 
   def classAccessors[T : TypeTag]: List[String] = typeOf[T].members.collect {
     case m: MethodSymbol if m.isCaseAccessor => m.name.decodedName.toString

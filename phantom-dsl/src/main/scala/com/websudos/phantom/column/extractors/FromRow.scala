@@ -32,15 +32,13 @@ package com.websudos.phantom.column.extractors
 import com.datastax.driver.core.Row
 import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.primitives.Primitive
-import shapeless._
-
+import shapeless.{HList, HNil, Generic}
+import shapeless.{:: => #:}
 import scala.util.{Failure, Success, Try}
 
 trait FromRow[L <: HList] { def apply(row: List[(String, Row)]): Try[L] }
 
 object FromRow {
-
-  import HList.ListCompat._
 
   def apply[L <: HList](implicit fromRow: FromRow[L]): FromRow[L] = fromRow
 
@@ -48,17 +46,17 @@ object FromRow {
     def apply(row: List[(String, Row)]) = f(row)
   }
 
-  implicit val hnilFromRow: FromRow[HNil] = fromFunc {
+  implicit val hnilExtractor: FromRow[HNil] = fromFunc {
     case Nil => Success(HNil)
     case _ => Failure(new RuntimeException("No more rows expected"))
   }
 
-  implicit def hconsFromRow[H : Primitive, T <: HList : FromRow]: FromRow[H :: T] =
+  implicit def hconsExtractor[H : Primitive, T <: HList : FromRow]: FromRow[H #: T] =
     fromFunc {
-      case h :: t => for {
-        hv <- Primitive[H].fromRow(h._1, h._2)
+      case (field, row) :: t => for {
+        hv <- Primitive[H].fromRow(field, row)
         tv <- FromRow[T].apply(t)
-      } yield hv :: tv
+      } yield hv +: tv
       case Nil => Failure(new RuntimeException("Expected more cells"))
     }
 

@@ -45,38 +45,6 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
 
   def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](this.asInstanceOf[T], Nil, fromRow)
 
-  object selectPoly extends Poly1 {
-    implicit def caseBool[TB] = at[TB => SelectColumn[Boolean]](col => true)
-    implicit def caseString[TB] = at[TB => SelectColumn[String]](col => "")
-    implicit def caseInt[TB] = at[TB => SelectColumn[Int]](col => 5)
-  }
-
-  object applyPoly extends Poly1 {
-    implicit def caseGeneric[TB] = at[(SelectColumn[TB], Row)] {
-      case (col, row) => col(row)
-    }
-  }
-
-  object namePoly extends Poly1 {
-    implicit def caseGeneric[T] = at[SelectColumn[T]](_.col.name)
-  }
-
-  /*
-  def select[V1 <: Product, HL <: HList, MP <: HList, Selector, RowList <: HList](tp: V1)(
-    implicit gen: Generic.Aux[V1, HL],
-    mp: Mapper.Aux[selectPoly.type, HL, MP],
-    revGen: Generic.Aux[MP, Selector],
-    lift: FromTraversable[RowList]
-  ): RootSelectBlock[T, Selector] = {
-    val t = this.asInstanceOf[T]
-
-    val rowFn: Row => Selector = row => {
-      val rows = lift(List.tabulate(tp.productIterator.size)(_ => row))
-    }
-
-    RootSelectBlock[T, Selector](t, Nil, rowFn)
-  }*/
-
   def select[A](f1: T => SelectColumn[A]): RootSelectBlock[T, A] = {
     val t = this.asInstanceOf[T]
     val c = f1(t)
