@@ -77,7 +77,6 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
 abstract class ConcreteRecipes extends Recipes with RootConnector {
 
-
   def store(recipe: Recipe): InsertQuery.Default[ConcreteRecipes, Recipe] = {
     insert
       .value(_.url, recipe.url)

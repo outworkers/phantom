@@ -44,20 +44,15 @@ sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def fromRow(row: Row): Article = {
-    Article(
-      name = name(row),
-      id = id(row),
-      order_id = orderId(row)
-    )
-  }
+  override def fromRow(row: Row): Article = extract[Article].apply(row)
 }
 
 abstract class ConcreteArticles extends Articles with RootConnector {
   override def tableName: String = "articles"
 
   def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
-    insert.value(_.id, article.id)
+    insert
+      .value(_.id, article.id)
       .value(_.name, article.name)
       .value(_.orderId, article.order_id)
   }

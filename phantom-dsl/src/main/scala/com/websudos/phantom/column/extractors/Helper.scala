@@ -27,41 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.tables
+package com.websudos.phantom.column.extractors
 
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.dsl._
-import org.joda.time.LocalDate
+private[phantom] object Helper {
+  import scala.reflect.runtime.universe._
 
-case class PrimitiveCassandra22(
-  pkey: String,
-  short: Short,
-  byte: Byte,
-  localDate: LocalDate
-)
+  def classAccessors[T : TypeTag]: List[String] = typeOf[T].members.collect {
+    case m: MethodSymbol if m.isCaseAccessor => m.name.decodedName.toString
+  }.toList.reverse
 
-sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
-
-  object pkey extends StringColumn(this) with PartitionKey[String]
-
-  object short extends SmallIntColumn(this)
-
-  object byte extends TinyIntColumn(this)
-
-  object date extends LocalDateColumn(this)
-
-  override def fromRow(r: Row): PrimitiveCassandra22 = extract[PrimitiveCassandra22](r)
 }
 
-abstract class ConcretePrimitivesCassandra22 extends PrimitivesCassandra22 with RootConnector {
-
-  override val tableName = "PrimitivesCassandra22"
-
-  def store(row: PrimitiveCassandra22): InsertQuery.Default[ConcretePrimitivesCassandra22, PrimitiveCassandra22] = {
-    insert
-      .value(_.pkey, row.pkey)
-      .value(_.short, row.short)
-      .value(_.byte, row.byte)
-      .value(_.date, row.localDate)
-  }
-}

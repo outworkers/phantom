@@ -69,21 +69,7 @@ sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
 
   object bi extends BigIntColumn(this)
 
-  override def fromRow(r: Row): Primitive = {
-    Primitive(
-      pkey = pkey(r),
-      long = long(r),
-      boolean = boolean(r),
-      bDecimal = bDecimal(r),
-      double = double(r),
-      float = float(r),
-      inet = inet(r),
-      int = int(r),
-      date = date(r),
-      uuid = uuid(r),
-      bi = bi(r)
-    )
-  }
+  override def fromRow(r: Row): Primitive = extract[Primitive](r)
 }
 
 abstract class ConcretePrimitives extends Primitives with RootConnector {

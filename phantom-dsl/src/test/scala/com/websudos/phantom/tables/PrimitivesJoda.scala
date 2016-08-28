@@ -47,13 +47,7 @@ sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaR
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  override def fromRow(r: Row): JodaRow = {
-    JodaRow(
-      pkey = pkey(r),
-      int = intColumn(r),
-      bi = timestamp(r)
-    )
-  }
+  override def fromRow(r: Row): JodaRow = extract[JodaRow](r)
 }
 
 abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {
