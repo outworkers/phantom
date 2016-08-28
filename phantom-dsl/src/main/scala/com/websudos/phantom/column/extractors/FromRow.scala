@@ -32,8 +32,7 @@ package com.websudos.phantom.column.extractors
 import com.datastax.driver.core.Row
 import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.primitives.Primitive
-import shapeless.{HList, HNil, Generic}
-import shapeless.{:: => #:}
+import shapeless.{HList, HNil, Generic, :: => #:}
 import scala.util.{Failure, Success, Try}
 
 trait FromRow[L <: HList] { def apply(row: List[(String, Row)]): Try[L] }
