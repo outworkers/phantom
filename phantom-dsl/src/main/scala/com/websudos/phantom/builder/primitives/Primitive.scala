@@ -54,10 +54,6 @@ private[phantom] object DateSerializer {
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
-sealed trait ValueTypeDef {
-  type ValueType <: AnyRef
-}
-
 abstract class Primitive[RR] {
 
   type PrimitiveType

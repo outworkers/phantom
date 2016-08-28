@@ -32,6 +32,7 @@ package com.websudos.phantom.builder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.serializers._
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.connectors.KeySpace
 
 case class QueryBuilderConfig(caseSensitiveTables: Boolean)
 
@@ -127,6 +128,11 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     qb.pad.append(CQLSyntax.limit)
       .forcePad.append(value.toString)
   }
+
+  def keyspace(space: String): RootSerializer = KeySpaceSerializer(space)
+
+  def keyspace(space: KeySpace): RootSerializer = KeySpaceSerializer(space)
+
 }
 
 private[phantom] object QueryBuilder extends QueryBuilder(QueryBuilderConfig.Default)
