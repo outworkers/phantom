@@ -56,7 +56,7 @@ object FromRow {
         hv <- Primitive[H].fromRow(field, row)
         tv <- FromRow[T].apply(t)
       } yield hv +: tv
-      case Nil => Failure(new RuntimeException("Expected more cells"))
+      case Nil => Failure(new RuntimeException("Expected more columns to extract"))
     }
 
 
