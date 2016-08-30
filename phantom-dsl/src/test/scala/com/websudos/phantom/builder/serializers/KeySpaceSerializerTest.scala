@@ -30,6 +30,7 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.dsl._
 
 class KeySpaceSerializerTest extends QuerySerializationTest {
 
@@ -44,4 +45,5 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
 
     query shouldEqual expected
   }
+
 }

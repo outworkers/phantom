@@ -38,11 +38,10 @@ import shapeless.{HList, HNil, ::}
 
 abstract class QueryCondition[T <: HList](val qb: CQLQuery)
 
-sealed trait Clause {
-  /**
-   * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
-   */
-}
+/**
+  * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
+  */
+sealed trait Clause
 
 class WhereClause extends Clause {
 

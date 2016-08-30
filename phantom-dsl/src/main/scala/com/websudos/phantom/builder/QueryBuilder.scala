@@ -51,7 +51,7 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
   case object Collections extends CollectionModifiers(this)
 
   case object Where extends IndexModifiers
-  
+
   case object Select extends SelectQueryBuilder
 
   case object Batch extends BatchQueryBuilder
