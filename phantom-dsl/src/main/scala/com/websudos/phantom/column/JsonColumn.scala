@@ -93,3 +93,27 @@ abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](table: Cas
     }
   }
 }
+
+abstract class JsonMapColumn[Owner <: CassandraTable[Owner, Record], Record, K: Primitive, ValueType](table: CassandraTable[Owner, Record])
+  extends AbstractMapColumn[Owner, Record, K, ValueType](table) with JsonDefinition[ValueType] {
+
+  val keyPrimitive = Primitive[K]
+
+  override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
+
+  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, Primitive[String].cassandraType).queryString
+
+  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+
+  override def keyFromCql(c: String): K = keyPrimitive.fromString(c)
+
+  override def parse(r: Row): Try[Map[K,ValueType]] = {
+    if (r.isNull(name)) {
+      Success(Map.empty[K,ValueType])
+    } else {
+      Success(r.getMap(name, keyPrimitive.clz, Primitive[String].clz).asScala.toMap.map {
+        case (k, v) => (keyPrimitive.fromPrimitive(k), fromString(v.asInstanceOf[String]))
+      })
+    }
+  }
+}
