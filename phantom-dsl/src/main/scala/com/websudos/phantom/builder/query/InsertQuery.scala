@@ -32,13 +32,14 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, UsingClause}
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.dsl.?
 import org.joda.time.DateTime
-import shapeless.ops.hlist.Reverse
+import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 class InsertQuery[
@@ -76,21 +77,6 @@ class InsertQuery[
     )
   }
 
-  final def valueOp[RR](
-    col: Table => AbstractColumn[RR],
-    value: OperatorClause.Condition
-  ): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append value.qb,
-      usingPart,
-      lightweightPart,
-      options
-    )
-  }
-
   /**
     * Insert function adding the ability to specify operator values as the value of an insert.
     * This is useful when we want to use functions to generate the CQL, such as using
@@ -118,7 +104,7 @@ class InsertQuery[
   def value[RR](
     col: Table => AbstractColumn[RR],
     value: RR
-  ): InsertQuery[Table, Record, Status, PS] = {
+  )(): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,

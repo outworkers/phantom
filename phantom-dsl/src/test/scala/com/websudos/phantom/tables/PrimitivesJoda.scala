@@ -59,7 +59,8 @@ sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaR
 abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {
 
   def store(primitive: JodaRow): InsertQuery.Default[ConcretePrimitivesJoda, JodaRow] = {
-    insert.value(_.pkey, primitive.pkey)
+    insert
+      .value(_.pkey, primitive.pkey)
       .value(_.intColumn, primitive.int)
       .value(_.timestamp, primitive.bi)
   }
