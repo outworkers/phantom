@@ -56,6 +56,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   type OptionalEnumColumn[RR <: Enumeration] = com.websudos.phantom.column.OptionalEnumColumn[T, R, RR]
   type JsonSetColumn[RR] = com.websudos.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
+  type JsonMapColumn[KK,VV] = com.websudos.phantom.column.JsonMapColumn[T, R, KK, VV]
 
   private[phantom] def insertSchema()(
     implicit session: Session,
