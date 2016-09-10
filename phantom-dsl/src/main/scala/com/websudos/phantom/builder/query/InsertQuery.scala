@@ -76,32 +76,16 @@ class InsertQuery[
     )
   }
 
-  final def valueOp[RR](
-    col: Table => AbstractColumn[RR],
-    value: OperatorClause.Condition
-  ): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append value.qb,
-      usingPart,
-      lightweightPart,
-      options
-    )
-  }
-
   /**
     * Insert function adding the ability to specify operator values as the value of an insert.
     * This is useful when we want to use functions to generate the CQL, such as using
     * the "now()" operator when inserting the value of a date.
     * @param col The function that selects a specific column from the table.
     * @param value The value to insert in the column, based on the output of the operator.
-    * @tparam RR The type of the value held in the column.
     * @return A new instance of insert query, with the clause added.
     */
-  def opValue[RR](
-    col: Table => AbstractColumn[RR],
+  def valueOp(
+    col: Table => AbstractColumn[_],
     value: OperatorClause.Condition
   ): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
