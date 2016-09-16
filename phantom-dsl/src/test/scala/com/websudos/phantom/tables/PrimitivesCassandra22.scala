@@ -37,7 +37,7 @@ case class PrimitiveCassandra22(
   pkey: String,
   short: Short,
   byte: Byte,
-  localDate: LocalDate
+  date: LocalDate
 )
 
 sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
@@ -62,6 +62,6 @@ abstract class ConcretePrimitivesCassandra22 extends PrimitivesCassandra22 with 
       .value(_.pkey, row.pkey)
       .value(_.short, row.short)
       .value(_.byte, row.byte)
-      .value(_.date, row.localDate)
+      .value(_.date, row.date)
   }
 }

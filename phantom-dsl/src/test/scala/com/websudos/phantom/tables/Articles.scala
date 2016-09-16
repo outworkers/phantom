@@ -35,7 +35,7 @@ import com.websudos.phantom.dsl._
 case class Article(
   name: String,
   id: UUID,
-  order_id: Long
+  orderId: Long
 )
 
 sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
@@ -54,7 +54,7 @@ abstract class ConcreteArticles extends Articles with RootConnector {
     insert
       .value(_.id, article.id)
       .value(_.name, article.name)
-      .value(_.orderId, article.order_id)
+      .value(_.orderId, article.orderId)
   }
 }
 
@@ -72,7 +72,7 @@ sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, A
     Article(
       name = name(row),
       id = id(row),
-      order_id = orderId(row)
+      orderId = orderId(row)
     )
   }
 }
@@ -85,6 +85,6 @@ abstract class ConcreteArticlesByAuthor extends ArticlesByAuthor with RootConnec
       .value(_.category, category)
       .value(_.id, article.id)
       .value(_.name, article.name)
-      .value(_.orderId, article.order_id)
+      .value(_.orderId, article.orderId)
   }
 }
