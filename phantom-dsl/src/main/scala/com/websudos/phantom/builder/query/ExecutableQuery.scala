@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.builder.query
 
-import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
 import com.datastax.driver.core._
@@ -140,7 +139,6 @@ class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOpera
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
-    executor: Executor,
     ec: ExecutionContextExecutor
   ): ScalaFuture[Seq[ResultSet]] = {
     ScalaFuture.sequence(queries.map(item => {

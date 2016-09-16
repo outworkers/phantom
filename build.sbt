@@ -35,15 +35,13 @@ import com.twitter.sbt._
 lazy val Versions = new {
   val logback = "1.1.7"
   val util = "0.18.2"
-  val json4s = "3.3.0"
-  val datastax = "3.0.2"
+  val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
   val thrift = "0.8.0"
-  val finagle = "6.35.0"
-  val twitterUtil = "6.33.0"
+  val finagle = "6.37.0"
+  val twitterUtil = "6.35.0"
   val scrooge = "4.7.0"
-  val scalatra = "2.3.0"
   val play = "2.4.6"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
@@ -54,7 +52,6 @@ lazy val Versions = new {
   val akka = "2.3.14"
   val typesafeConfig = "1.2.1"
   val jetty = "9.1.2.v20140210"
-  val dispatch = "0.11.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
 }
@@ -355,29 +352,5 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).dependsOn(
     phantomDsl,
     phantomReactiveStreams,
-    phantomThrift
-  )
-
-lazy val phantomContainerTests = (project in file("phantom-container-test"))
-  .settings(
-    name := "phantom-container-test",
-    moduleName := "phantom-container-test",
-    fork := true,
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
-    ),
-    libraryDependencies ++= Seq(
-      "org.json4s"                %% "json4s-native"                  % Versions.json4s,
-      "org.json4s"                %% "json4s-ext"                     % Versions.json4s,
-      "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
-      "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
-      "net.databinder.dispatch"   %% "dispatch-core"                  % Versions.dispatch,
-      "javax.servlet"             % "javax.servlet-api"               % Versions.javaxServlet,
-      "com.outworkers"            %% "util-testing"                   % Versions.util
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl,
     phantomThrift
   )
