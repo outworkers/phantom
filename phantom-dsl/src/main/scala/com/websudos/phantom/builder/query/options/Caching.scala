@@ -47,7 +47,7 @@ private[phantom] trait CachingStrategies {
   }
 
   abstract class SpecificCacheProperty[
-  QType <: SpecificCacheProperty[QType]
+    QType <: SpecificCacheProperty[QType]
   ](override val qb: CQLQuery) extends CacheProperty(qb) {
     def instance(qb: CQLQuery): QType
 
@@ -56,7 +56,7 @@ private[phantom] trait CachingStrategies {
     }
 
     def rows(value: String = "ALL"): QType = {
-      instance(QueryBuilder.Create.Caching.keys(qb, value))
+      instance(QueryBuilder.Create.Caching.rows(qb, value))
     }
 
     def rows_per_partition(value: String = "NONE"): QType = {
