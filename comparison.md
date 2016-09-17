@@ -51,7 +51,11 @@ Libraries such as phantom and quill are designed to abstract away many of the in
 
 #### Phantom
 
-Phantom is designed to be a one stop destination. It is built exclusively to cater to the app level integration of Scala and Cassandra, meaning it is a lot more than a simple driver. It is built on top of the Datastax Java driver, and uses all the default connection strategies and so on under the hood, without exposing any of the Java-esque APIs, but at the same time offering a multitude of features that are not available in the Java driver or in any other driver.
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+Phantom is designed to be a one stop destination. It is built exclusively to cater to the app level integration of Scala and Cassandra, meaning it is a lot more than a simple driver.
+
+It is built on top of the Datastax Java driver, and uses all the default connection strategies and so on under the hood, without exposing any of the Java-esque APIs, but at the same time offering a multitude of features that are not available in the Java driver or in any other driver.
 
 - A type safe Schema DSL that means you never have to deal with raw CQL again.
 - A very advanced compile time mechanism that offers a fully type safe variant of CQL.
