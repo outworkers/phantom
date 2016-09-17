@@ -84,11 +84,8 @@ sealed class ModifyColumnOptional[RR](col: OptionalColumn[_, _, RR])
 
   /**
     * Default setTo clause for all update queries except for map columns.
-    * All setTo operations from the DSL will be serialized through a modify column
-    * through an implicit conversion at the DSL level.
-    *
-    * Map columns have a different implicits that take precedence over ModifyColumn
-    * to allow for better support of map updates.
+    * This differs from the standard setTo in that it will only create a set clause
+    * if the option provided as an argument is not empty.
     *
     * @param value The typed value to set the column to.
     * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
