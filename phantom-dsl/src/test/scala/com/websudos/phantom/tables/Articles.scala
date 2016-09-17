@@ -35,7 +35,7 @@ import com.websudos.phantom.dsl._
 case class Article(
   name: String,
   id: UUID,
-  order_id: Long
+  orderId: Long
 )
 
 sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
@@ -44,22 +44,17 @@ sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def fromRow(row: Row): Article = {
-    Article(
-      name = name(row),
-      id = id(row),
-      order_id = orderId(row)
-    )
-  }
+  override def fromRow(row: Row): Article = extract[Article].apply(row)
 }
 
 abstract class ConcreteArticles extends Articles with RootConnector {
   override def tableName: String = "articles"
 
   def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
-    insert.value(_.id, article.id)
+    insert
+      .value(_.id, article.id)
       .value(_.name, article.name)
-      .value(_.orderId, article.order_id)
+      .value(_.orderId, article.orderId)
   }
 }
 
@@ -77,7 +72,7 @@ sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, A
     Article(
       name = name(row),
       id = id(row),
-      order_id = orderId(row)
+      orderId = orderId(row)
     )
   }
 }
@@ -90,6 +85,6 @@ abstract class ConcreteArticlesByAuthor extends ArticlesByAuthor with RootConnec
       .value(_.category, category)
       .value(_.id, article.id)
       .value(_.name, article.name)
-      .value(_.orderId, article.order_id)
+      .value(_.orderId, article.orderId)
   }
 }

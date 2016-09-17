@@ -27,33 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.websudos.phantom.column.extractors
+import scala.reflect.runtime.universe.{TypeTag, typeOf, MethodSymbol}
 
-import org.joda.time.{DateTime, LocalDate}
-import com.outworkers.util.testing._
+private[phantom] object Helper {
 
-package object server {
+  def classAccessors[T : TypeTag]: List[String] = typeOf[T].members.collect {
+    case m: MethodSymbol if m.isCaseAccessor => m.name.decodedName.toString
+  }.toList.reverse
 
-  implicit object EquityPriceSampler extends Sample[EquityPrice] {
-    def sample: EquityPrice = {
-      EquityPrice(
-        gen[String],
-        new LocalDate(),
-        gen[String],
-        new DateTime(),
-        BigDecimal(gen[Int])
-      )
-    }
-  }
-
-  implicit object OptionPriceSampler extends Sample[OptionPrice] {
-    def sample: OptionPrice = OptionPrice(
-      gen[String],
-      new LocalDate(),
-      gen[String],
-      new DateTime(),
-      BigDecimal(gen[Int]),
-      BigDecimal(gen[Int])
-    )
-  }
 }
+

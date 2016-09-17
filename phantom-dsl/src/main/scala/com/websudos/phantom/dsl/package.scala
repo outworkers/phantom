@@ -44,11 +44,13 @@ import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.column.extractors.FromRow.RowParser
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
 import scala.util.control.NoStackTrace
+import scala.reflect.runtime.universe.TypeTag
 
 package object dsl extends ImplicitMechanism with CreateImplicits
   with DefaultPrimitives
@@ -271,5 +273,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
       new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
     }
   }
+
+  def extract[R]: RowParser[R] = new RowParser[R] {}
 
 }

@@ -79,7 +79,7 @@ private[builder] trait Utils {
 
   def curlyWrap(qb: String): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`)
-      .forcePad.append(qb)
+      .pad.append(qb)
       .forcePad.append(CQLSyntax.Symbols.`}`)
   }
 

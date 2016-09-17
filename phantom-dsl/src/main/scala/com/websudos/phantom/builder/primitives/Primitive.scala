@@ -97,9 +97,7 @@ trait DefaultPrimitives {
     override def fromString(value: String): String = value
 
     override def fromRow(column: String, row: Row): Try[String] = {
-      nullCheck(column, row) {
-        r => r.getString(column)
-      }
+      nullCheck(column, row)(_.getString(column))
     }
 
     override def clz: Class[String] = classOf[String]
@@ -115,8 +113,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Int = value.toInt
 
-    override def fromRow(column: String, row: Row): Try[Int] = nullCheck(column, row) {
-      r => r.getInt(column)
+    override def fromRow(column: String, row: Row): Try[Int] = {
+      nullCheck(column, row)(_.getInt(column))
     }
 
     override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
@@ -132,8 +130,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Short = value.toShort
 
-    override def fromRow(column: String, row: Row): Try[Short] = nullCheck(column, row) {
-      r => r.getShort(column)
+    override def fromRow(column: String, row: Row): Try[Short] = {
+      nullCheck(column, row)(_.getShort(column))
     }
 
     override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
@@ -149,8 +147,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Byte = value.toByte
 
-    override def fromRow(column: String, row: Row): Try[Byte] = nullCheck(column, row) {
-      r => r.getByte(column)
+    override def fromRow(column: String, row: Row): Try[Byte] = {
+      nullCheck(column, row)(_.getByte(column))
     }
 
     override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
@@ -166,8 +164,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Double = value.toDouble
 
-    override def fromRow(column: String, row: Row): Try[Double] = nullCheck(column, row) {
-      r => r.getDouble(column)
+    override def fromRow(column: String, row: Row): Try[Double] = {
+      nullCheck(column, row)(_.getDouble(column))
     }
 
     override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
@@ -200,8 +198,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Float = value.toFloat
 
-    override def fromRow(column: String, row: Row): Try[Float] = nullCheck(column, row) {
-      r => r.getFloat(column)
+    override def fromRow(column: String, row: Row): Try[Float] = {
+      nullCheck(column, row)(_.getFloat(column))
     }
 
     override def clz: Class[java.lang.Float] = classOf[java.lang.Float]
@@ -217,8 +215,8 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): UUID = UUID.fromString(value)
 
-    override def fromRow(column: String, row: Row): Try[UUID] = nullCheck(column, row) {
-      r => r.getUUID(column)
+    override def fromRow(column: String, row: Row): Try[UUID] = {
+      nullCheck(column, row)(_.getUUID(column))
     }
 
     override def clz: Class[UUID] = classOf[UUID]
@@ -237,8 +235,8 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[Date] = nullCheck(column, row) {
-      r => r.getTimestamp(column)
+    override def fromRow(column: String, row: Row): Try[Date] = {
+      nullCheck(column, row)(_.getTimestamp(column))
     }
 
     override def fromString(value: String): Date = {
@@ -261,8 +259,8 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[LocalDate] = nullCheck(column, row) {
-      r => r.getDate(column)
+    override def fromRow(column: String, row: Row): Try[LocalDate] = {
+      nullCheck(column, row)(_.getDate(column))
     }
 
     override def fromString(value: String): LocalDate = {
@@ -306,8 +304,8 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[DateTime] = nullCheck(column, row) {
-      r => new DateTime(r.getTimestamp(column))
+    override def fromRow(column: String, row: Row): Try[DateTime] = {
+      nullCheck(column, row)(r => new DateTime(r.getTimestamp(column)))
     }
 
     override def fromString(value: String): DateTime = new DateTime(value)
@@ -329,8 +327,8 @@ trait DefaultPrimitives {
 
     override def asCql(value: Boolean): String = value.toString
 
-    override def fromRow(column: String, row: Row): Try[Boolean] = nullCheck(column, row) {
-      r => r.getBool(column)
+    override def fromRow(column: String, row: Row): Try[Boolean] = {
+      nullCheck(column, row)(_.getBool(column))
     }
 
     override def fromString(value: String): Boolean = value match {
@@ -367,8 +365,8 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Inet
 
-    override def fromRow(column: String, row: Row): Try[InetAddress] = nullCheck(column, row) {
-      r => r.getInet(column)
+    override def fromRow(column: String, row: Row): Try[InetAddress] = {
+      nullCheck(column, row)(_.getInet(column))
     }
 
     override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
@@ -384,8 +382,8 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Varint
 
-    override def fromRow(column: String, row: Row): Try[BigInt] = nullCheck(column, row) {
-      r => r.getVarint(column)
+    override def fromRow(column: String, row: Row): Try[BigInt] = {
+      nullCheck(column, row)(_.getVarint(column))
     }
 
     override def asCql(value: BigInt): String = value.toString()
@@ -401,8 +399,8 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Blob
 
-    override def fromRow(column: String, row: Row): Try[ByteBuffer] = nullCheck(column, row) {
-      r => r.getBytes(column)
+    override def fromRow(column: String, row: Row): Try[ByteBuffer] = {
+      nullCheck(column, row)(_.getBytes(column))
     }
 
     override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
@@ -417,7 +415,6 @@ trait DefaultPrimitives {
 object Primitive extends DefaultPrimitives {
   def apply[RR: Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 
-
   def apply[T <: Enumeration](enum: T): Primitive[T#Value] = {
     new Primitive[T#Value] {
 
@@ -429,7 +426,7 @@ object Primitive extends DefaultPrimitives {
         nullCheck(name, row) {
           r => enum.values.find(_.toString == r.getString(name)) match {
             case Some(value) => value
-            case _ => throw new Exception(s"Value $name not found in enumeration") with NoStackTrace
+            case _ => throw new Exception(s"Value $name not found in enumeration $enum") with NoStackTrace
           }
         }
       }

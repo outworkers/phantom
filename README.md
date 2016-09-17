@@ -4,7 +4,7 @@ phantom
 
 Reactive type-safe Scala DSL for Cassandra
 
-To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers_uk](https://twitter.com/outworkers_uk).
+To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers](https://twitter.com/outworkers_uk).
 
 If you use phantom, please consider adding your company to our list of adopters.
 phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware), but the more adopters our projects have, the more people from our company will actively work to make them better.
@@ -70,10 +70,11 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
+Some of the companies using phantom:
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
+- [UBS](https://www.ubs.com/global/en.html)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Paddy Power](http://www.paddypower.com/)
 - [Mobli](https://www.mobli.com/)
@@ -126,7 +127,7 @@ Scala/Cassandra users in the world rely on phantom.
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
-* Evan Chan ([@evanfchan](https://github.com/evanfchan))
+* Evan Chan ([@evanfchan](https://github.com/velvia))
 * Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Donovan Levinson ([@levinson](https://github.com/levinson))
 

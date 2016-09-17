@@ -141,12 +141,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .p_value(_.date, ?)
         .prepare()
 
-      val exec = query.bind(
-        sample.pkey,
-        sample.short,
-        sample.byte,
-        sample.localDate
-      ).future()
+      val exec = query.bind(sample).future()
 
       val selectQuery = database.primitivesCassandra22.select
         .where(_.pkey eqs ?)
