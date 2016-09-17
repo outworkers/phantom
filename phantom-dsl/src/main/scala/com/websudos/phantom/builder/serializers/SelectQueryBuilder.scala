@@ -247,7 +247,7 @@ private[builder] class SelectQueryBuilder {
    * Example output:
    *
    * {{{
-   *   dateOf(column)
+   *   dateOf("columnName")
    * }}}
    *
    * @param column The name of the column to apply the operation to.
@@ -265,9 +265,7 @@ private[builder] class SelectQueryBuilder {
     CQLQuery(CQLSyntax.Selection.UnixTimestampOf).wrapn(column)
   }
 
-  def now(): CQLQuery = {
-    CQLQuery("now()")
-  }
+  def now(): CQLQuery = CQLQuery("now()")
 
   def writetime(col: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.Writetime).wrapn(col)
