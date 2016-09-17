@@ -25,13 +25,16 @@ and how up to date they are.
 | Spark Connector | Scala | yes | yes | yes | no | EDSL | 3.0 | High | 2014 |
 | Quill | Scala | no | yes | no | yes | QDSL | 3.8.0 | 2015 |
 
+
+### An overview of the various drivers and using them from Scala
+
 #### Datastax Java Driver
 
 Created by Datastax, the commercial company behind Cassandra, this is the underlying engine of all other drivers. Phantom, Quill and the Spark connector all use it underneath the hood to connect and execute queries. Phantom and Quill add a Scala friendly face to the driver, while the Spark connector does what it says on the tin, namely to focus on Cassandra - Spark integration.
 
 So why not just use the Datastax driver for Scala? We would like to start by saying it's a really really good tool and some seriously good engineering lies behind it, but by sole virtue of being aimed at a Java audience, it does miss out a lot on some of the really powerful things you can do with the Scala compiler.
 
-##### Cons of using the Java driver from Scala
+#### Cons of using the Java driver from Scala
 
 - Writing queries is not type-safe, and the `QueryBuilder` is mutable.
 - There is no DSL to define the tables, so dealing with them is still very much manual and string based. 
@@ -46,7 +49,7 @@ Overall, if you wanted to, you could naturally use the Java driver inside a Scal
 Libraries such as phantom and quill are designed to abstract away many of the internals of the Java driver and make it more appealing to a Scala audience, and phantom goes very very far to mask away all the underlying complexities and provide very advanced support for using Cassandra as a database layer.
 
 
-##### Phantom
+#### Phantom
 
 Phantom is designed to be a one stop destination. It is built exclusively to cater to the app level integration of Scala and Cassandra, meaning it is a lot more than a simple driver. It is built on top of the Datastax Java driver, and uses all the default connection strategies and so on under the hood, without exposing any of the Java-esque APIs, but at the same time offering a multitude of features that are not available in the Java driver or in any other driver.
 
