@@ -35,11 +35,11 @@ import com.websudos.phantom.builder.query.{RootCreateQuery, _}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
+import com.websudos.phantom.macros.FieldsLister
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
-import scala.reflect.runtime.{currentMirror => cm, universe => ru}
 
 /**
  * Main representation of a Cassandra table.
@@ -47,6 +47,26 @@ import scala.reflect.runtime.{currentMirror => cm, universe => ru}
  * @tparam R Type of record.
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
+
+  def columns()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = lister.fields
+
+  def secondaryKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+    columns.filter(_.isSecondaryKey)
+  }
+
+  def primaryKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+    columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
+  }
+
+  def partitionKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+    columns.filter(_.isPartitionKey)
+  }
+
+  def clusteringColumns()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+    columns.filter(_.isClusteringKey)
+  }
+
+  protected[this] def instance: T = this.asInstanceOf[T]
 
   type ListColumn[RR] = com.websudos.phantom.column.ListColumn[T, R, RR]
   type SetColumn[RR] =  com.websudos.phantom.column.SetColumn[T, R, RR]
@@ -66,52 +86,41 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
     Await.result(autocreate(keySpace).future(), 10.seconds)
   }
 
-  private[this] val instanceMirror = cm.reflect(this)
-
-  protected[phantom] lazy val _name: String = {
-    instanceMirror.symbol.name.toTypeName.decodedName.toString
-  }
-
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def tableName: String = _name
+  def tableName: String = macro TableMacro.tableName[T]
 
-  def fromRow(r: Row): R
+  def fromRow(r: Row): R = macro TableMacro.fromRowMacroImpl[T, R]
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.
    * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
    * @return A root create block, with full support for all CQL Create query options.
    */
-  final def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
+  final def create: RootCreateQuery[T, R] = new RootCreateQuery(instance)
 
   def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
-  final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
+  final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(instance)
 
-  final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(this.asInstanceOf[T])
+  final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 
-  final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(this.asInstanceOf[T])
+  final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](this.asInstanceOf[T])
+  final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
-  final def delete(conditions: (T => DeleteClause.Condition)*)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    val tb = this.asInstanceOf[T]
-
-    val queries = conditions.map(_(tb).qb)
-
-    DeleteQuery[T, R](tb, queries: _*)
+  final def delete(
+    conditions: (T => DeleteClause.Condition)*
+  )(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+    DeleteQuery[T, R](
+      instance,
+      conditions.map(_(instance).qb): _*
+    )
   }
 
-  final def truncate()(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = TruncateQuery[T, R](this.asInstanceOf[T])
-
-  def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
-
-  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
-
-  def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
-
-  def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
+  final def truncate()(
+    implicit keySpace: KeySpace
+  ): TruncateQuery.Default[T, R] = TruncateQuery[T, R](instance)
 
   def clustered: Boolean = clusteringColumns.nonEmpty
 
@@ -208,26 +217,4 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
       throw InvalidClusteringKeyException(tableName)
     }
   }
-
-  val columns: Seq[AbstractColumn[_]] = Lock.synchronized {
-
-    val selfType = instanceMirror.symbol.toType
-
-    val members: Seq[ru.Symbol] = (for {
-      baseClass <- selfType.baseClasses.reverse
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< ru.typeOf[AbstractColumn[_]]
-    } yield symbol)(collection.breakOut)
-
-    for {
-      symbol <- members.distinct
-      table = if (symbol.isModule) {
-        instanceMirror.reflectModule(symbol.asModule).instance
-      } else if (symbol.isTerm && symbol.asTerm.isVal) {
-        instanceMirror.reflectField(symbol.asTerm).get
-      }
-    } yield table.asInstanceOf[AbstractColumn[_]]
-  }
 }
-
-private[phantom] case object Lock

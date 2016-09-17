@@ -126,6 +126,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.bintrayRepo("websudos", "oss-releases")
   ),
   scalacOptions ++= Seq(
+    "-language:experimental.macros",
     "-language:postfixOps",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
