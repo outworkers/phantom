@@ -11,7 +11,9 @@ The available offering:
 - [Phantom](https://github.com/outworkers/phantom)
 - [Spark Cassandra Connector](https://github.com/datastax/spark-cassandra-connector)
 - [Quill](https://github.com/getquill/quill)
-- 
+
+### Feature comparison table
+
 Let's first compare the basic qualities of these available drivers, looking
 at a wider range of features and verticals, from how deeply integrated they
 are with Cassandra and the support they offer, to their level of activity
