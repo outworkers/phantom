@@ -21,10 +21,10 @@ are with Cassandra and the support they offer, to their level of activity
 and how up to date they are.
 
 
-| Driver | Language |Commercial | Type-safe | Spark Support |Streams | DSL | Cassandra | Latest | Activity | Created |
+| Driver | Language |Commercial | Type-safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
 | ------ | -------- | ----- | ------------------ | --------- | ------------- | ---------------- | --- | -------- | ---- | ----- | ----- |
 | Datastax Java Driver | Java | yes | no | no | no | EDSL | latest | 3.1.0 | High | 2012 |
-| Phantom | Scala | yes | 2013 | yes | yes | no | EDSL | latest | 3.1.0 | High | 2013 |
+| Phantom | Scala | yes | yes | no | yes | EDSL | latest | 3.1.0 | High | 2013 |
 
 
 #### Using phantom versus using the Datastax Java Driver
