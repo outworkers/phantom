@@ -32,7 +32,7 @@ package com.websudos.phantom.jdk8
 import java.time._
 import java.util.Date
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{GettableData, Row}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
@@ -52,7 +52,7 @@ trait DefaultJava8Primitives {
       value.toInstant.toEpochMilli.toString
     }
 
-    override def fromRow(column: String, row: Row): Try[OffsetDateTime] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableData): Try[OffsetDateTime] = nullCheck(column, row) {
       r => OffsetDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
     }
 
@@ -71,7 +71,7 @@ trait DefaultJava8Primitives {
       value.toInstant.toEpochMilli.toString
     }
 
-    override def fromRow(column: String, row: Row): Try[ZonedDateTime] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableData): Try[ZonedDateTime] = nullCheck(column, row) {
       r => ZonedDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
     }
 
@@ -90,7 +90,7 @@ trait DefaultJava8Primitives {
       CQLQuery.empty.singleQuote(value.toString)
     }
 
-    override def fromRow(column: String, row: Row): Try[JdkLocalDate] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableData): Try[JdkLocalDate] = nullCheck(column, row) {
       r => LocalDate.ofEpochDay(r.getDate(column).getDaysSinceEpoch)
     }
 

@@ -49,11 +49,14 @@ private[phantom] trait PrepareMark {
   def qb: CQLQuery = CQLQuery("?")
 }
 
-class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
+class ExecutablePreparedQuery(
+  val st: Statement,
+  val options: QueryOptions
+) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
-    statement
+    st
       .setConsistencyLevel(options.consistencyLevel.orNull)
   }
 }
@@ -74,7 +77,6 @@ class ExecutablePreparedSelectQuery[
     scalaQueryStringExecuteToFuture(st)
   }
 
-
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
@@ -88,14 +90,22 @@ class ExecutablePreparedSelectQuery[
     keySpace: KeySpace,
     ev: =:=[Limit, Unlimited],
     ec: ExecutionContextExecutor
-  ): ScalaFuture[Option[R]] = {
-    singleFetch()
-  }
+  ): ScalaFuture[Option[R]] = singleFetch()
 
   override def qb: CQLQuery = CQLQuery.empty
 }
 
-abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) {
+abstract class PreparedFlattener[
+  T <: CassandraTable[T, _],
+  R
+](qb: CQLQuery)(
+  implicit session: Session,
+  keySpace: KeySpace
+) extends ExecutableStatement {
+
+  protected[this] def asyncQuery()(implicit ec: ExecutionContextExecutor): ScalaFuture[PreparedStatement] = {
+    preparedStatementToPromise(qb.queryString).future
+  }
 
   protected[this] val query: PreparedStatement = {
     blocking(session.prepare(qb.queryString))
@@ -134,8 +144,13 @@ abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpa
   }
 }
 
-class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
+case class PreparedBlock[PS <: HList](
+  qb: CQLQuery,
+  options: QueryOptions
+)(
+  implicit session: Session,
+  keySpace: KeySpace
+) extends PreparedFlattener(qb) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
@@ -168,13 +183,15 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
   }
 }
 
-class PreparedSelectBlock[
+case class PreparedSelectBlock[
   T <: CassandraTable[T, _],
   R,
   Limit <: LimitBound,
   PS <: HList
-](qb: CQLQuery, fn: Row => R, options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
+](qb: CQLQuery, fn: Row => R, options: QueryOptions)(
+  implicit session: Session,
+  keySpace: KeySpace
+) extends PreparedFlattener(qb) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.

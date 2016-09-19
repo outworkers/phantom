@@ -188,7 +188,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       usedTtl
     )
 
-    info(exec.statement.asInstanceOf[BoundStatement].preparedStatement().getQueryString)
+    info(exec.st.asInstanceOf[BoundStatement].preparedStatement().getQueryString)
 
     val chain = for {
       store <- exec.future()

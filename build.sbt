@@ -41,8 +41,8 @@ lazy val Versions = new {
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
-  val scrooge = "4.7.0"
-  val play = "2.4.6"
+  val scrooge = "4.10.0"
+  val play = "2.5.8"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
@@ -326,7 +326,7 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees"             % Versions.play exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams-experimental"  % Versions.play exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-streams"               % Versions.play exclude ("com.typesafe", "config"),
       "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,

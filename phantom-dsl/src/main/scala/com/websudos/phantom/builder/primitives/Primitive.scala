@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
-import com.datastax.driver.core.{LocalDate, Row}
+import com.datastax.driver.core.{GettableData, LocalDate, Row}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
@@ -62,7 +62,7 @@ abstract class Primitive[RR] {
 
   type PrimitiveType
 
-  protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
+  protected[this] def nullCheck[T](column: String, row: GettableData)(fn: GettableData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null") with NoStackTrace)
     } else {
@@ -74,7 +74,7 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(column: String, row: Row): Try[RR]
+  def fromRow(column: String, row: GettableData): Try[RR]
 
   def fromString(value: String): RR
 
@@ -96,7 +96,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): String = value
 
-    override def fromRow(column: String, row: Row): Try[String] = {
+    override def fromRow(column: String, row: GettableData): Try[String] = {
       nullCheck(column, row)(_.getString(column))
     }
 
@@ -113,7 +113,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Int = value.toInt
 
-    override def fromRow(column: String, row: Row): Try[Int] = {
+    override def fromRow(column: String, row: GettableData): Try[Int] = {
       nullCheck(column, row)(_.getInt(column))
     }
 
@@ -130,7 +130,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Short = value.toShort
 
-    override def fromRow(column: String, row: Row): Try[Short] = {
+    override def fromRow(column: String, row: GettableData): Try[Short] = {
       nullCheck(column, row)(_.getShort(column))
     }
 
@@ -147,7 +147,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Byte = value.toByte
 
-    override def fromRow(column: String, row: Row): Try[Byte] = {
+    override def fromRow(column: String, row: GettableData): Try[Byte] = {
       nullCheck(column, row)(_.getByte(column))
     }
 
@@ -164,7 +164,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Double = value.toDouble
 
-    override def fromRow(column: String, row: Row): Try[Double] = {
+    override def fromRow(column: String, row: GettableData): Try[Double] = {
       nullCheck(column, row)(_.getDouble(column))
     }
 
@@ -181,7 +181,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Long = value.toLong
 
-    override def fromRow(column: String, row: Row): Try[Long] = {
+    override def fromRow(column: String, row: GettableData): Try[Long] = {
       nullCheck(column, row)(_.getLong(column))
     }
 
@@ -198,7 +198,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): Float = value.toFloat
 
-    override def fromRow(column: String, row: Row): Try[Float] = {
+    override def fromRow(column: String, row: GettableData): Try[Float] = {
       nullCheck(column, row)(_.getFloat(column))
     }
 
@@ -215,7 +215,7 @@ trait DefaultPrimitives {
 
     override def fromString(value: String): UUID = UUID.fromString(value)
 
-    override def fromRow(column: String, row: Row): Try[UUID] = {
+    override def fromRow(column: String, row: GettableData): Try[UUID] = {
       nullCheck(column, row)(_.getUUID(column))
     }
 
@@ -235,7 +235,7 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[Date] = {
+    override def fromRow(column: String, row: GettableData): Try[Date] = {
       nullCheck(column, row)(_.getTimestamp(column))
     }
 
@@ -259,7 +259,7 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[LocalDate] = {
+    override def fromRow(column: String, row: GettableData): Try[LocalDate] = {
       nullCheck(column, row)(_.getDate(column))
     }
 
@@ -283,7 +283,7 @@ trait DefaultPrimitives {
       CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
     }
 
-    override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableData): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
       r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
     }
 
@@ -304,7 +304,7 @@ trait DefaultPrimitives {
       DateSerializer.asCql(value)
     }
 
-    override def fromRow(column: String, row: Row): Try[DateTime] = {
+    override def fromRow(column: String, row: GettableData): Try[DateTime] = {
       nullCheck(column, row)(r => new DateTime(r.getTimestamp(column)))
     }
 
@@ -327,7 +327,7 @@ trait DefaultPrimitives {
 
     override def asCql(value: Boolean): String = value.toString
 
-    override def fromRow(column: String, row: Row): Try[Boolean] = {
+    override def fromRow(column: String, row: GettableData): Try[Boolean] = {
       nullCheck(column, row)(_.getBool(column))
     }
 
@@ -346,7 +346,7 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Decimal
 
-    override def fromRow(column: String, row: Row): Try[BigDecimal] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableData): Try[BigDecimal] = nullCheck(column, row) {
       r => BigDecimal(r.getDecimal(column))
     }
 
@@ -365,7 +365,7 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Inet
 
-    override def fromRow(column: String, row: Row): Try[InetAddress] = {
+    override def fromRow(column: String, row: GettableData): Try[InetAddress] = {
       nullCheck(column, row)(_.getInet(column))
     }
 
@@ -382,7 +382,7 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Varint
 
-    override def fromRow(column: String, row: Row): Try[BigInt] = {
+    override def fromRow(column: String, row: GettableData): Try[BigInt] = {
       nullCheck(column, row)(_.getVarint(column))
     }
 
@@ -399,7 +399,7 @@ trait DefaultPrimitives {
 
     val cassandraType = CQLSyntax.Types.Blob
 
-    override def fromRow(column: String, row: Row): Try[ByteBuffer] = {
+    override def fromRow(column: String, row: GettableData): Try[ByteBuffer] = {
       nullCheck(column, row)(_.getBytes(column))
     }
 
@@ -422,7 +422,7 @@ object Primitive extends DefaultPrimitives {
 
       override def cassandraType: String = Primitive[String].cassandraType
 
-      override def fromRow(name: String, row: Row): Try[T#Value] = {
+      override def fromRow(name: String, row: GettableData): Try[T#Value] = {
         nullCheck(name, row) {
           r => enum.values.find(_.toString == r.getString(name)) match {
             case Some(value) => value

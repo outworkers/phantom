@@ -65,5 +65,153 @@ It is built on top of the Datastax Java driver, and uses all the default connect
 - Automated schema generation, automated table migrations, automated database generation and more, meaning you will never ever have to manually initialise CQL tables from scripts ever again.
 - Native support of Scala concurrency primitives, from `scala.concurrent.Future` to more advanced access patterns such as reactive streams or even iteratees, available via separate dependencies.
 
+#### Quill
 
+Quill is a compile time macro based DSL that is capable of generating queries directly from a case class. It differs from phantom in several ways,
+in the sense that Quill aims to build a leaking abstraction style QDSL, meaning a one size fits all driver for a number of different databases.
+
+In the abstract sense it's the most like for like tool and probably the only one worth comparing to phantom, since the other variant
+is pure Java and the Spark connector is obviously for, well, Spark. There are other drivers out there, but all discontinued or Thrift based,
+some of which include Cassie from Twitter, Cascal, Astyanax from Netflix, and so on.
+
+We would be the first to credit the engineering virtue behind it, it's an excellently designed tool and a very very powerful example of
+just how far meta-programming can take you. Now that being said, there are a great number of items that make Quill less of suitable tool for application
+layer Cassandra.
+
+##### It introduces new terminology
+
+One of the great perks of phantom is the fact that you don't really need to learn a new syntax. If you are familiar with Scala
+and you are familiar wth SQL and CQl, you will feel right at home from the very first go, which means close to instant productivity.
+
+It is true that phantom introduces other application level abstractions, such as the `Database` and the modelling DSL, all
+of which you need to be aware, but there will never be a time where you read a phantom query and you wonder what the final result looks like.
+
+##### It doesn't account for the CQL schema
+
+Probably one of the most powerful features of phantom is the ability to be schema aware at compile time and the fact that you never
+have to deal with manual CQL or to manually initialise schemas and various other bits. Gone are the days where you are
+copy pasting CQL from one place to another in your build scripts or loading up schemas from `*.cql` files in `cqlsh`.
+
+Phantom has a powerful mechanism to perform what we call schema auto-generation, which means with a single method call
+it is capable of automatically initialising all the tables in your database on the fly against any keyspace of your choosing. It
+can also account for more advanced indexing scenarios, user defined types and more, all on the fly.
+
+Let's have a look at a basic example, for the basic `Recipe` case class, in this instance indexed by `url`.
+
+```scala
+
+import com.websudos.phantom.dsl._
+
+case class Recipe(
+  url: String,
+  description: Option[String],
+  ingredients: List[String],
+  servings: Option[Int],
+  lastCheckedAt: DateTime,
+  props: Map[String, String],
+  uid: UUID
+)
+
+class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+
+  object url extends StringColumn(this) with PartitionKey[String]
+
+  object description extends OptionalStringColumn(this)
+
+  object ingredients extends ListColumn[String](this)
+
+  object servings extends OptionalIntColumn(this)
+
+  object lastcheckedat extends DateTimeColumn(this)
+
+  object props extends MapColumn[String, String](this)
+
+  object uid extends UUIDColumn(this)
+
+
+  override def fromRow(r: Row): Recipe = {
+    Recipe(
+      url(r),
+      description(r),
+      ingredients(r),
+      servings(r),
+      lastcheckedat(r),
+      props(r),
+      uid(r)
+    )
+  }
+}
+```
+
+As of version 2.0.0, phantom is capable of auto-generating the `fromRow` method, so the mapping DSL is reduced to:
+
+```
+class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+
+  object url extends StringColumn(this) with PartitionKey[String]
+
+  object description extends OptionalStringColumn(this)
+
+  object ingredients extends ListColumn[String](this)
+
+  object servings extends OptionalIntColumn(this)
+
+  object lastcheckedat extends DateTimeColumn(this)
+
+  object props extends MapColumn[String, String](this)
+
+  object uid extends UUIDColumn(this)
+}
+```
+
+It's definitely more boilerplate than Quill, there's no doubt about that, however, this simple DSL can help us to great
+things:
+
+- Control the name we want to use for our columns. Not the most interest feature,
+but it helps avoid collissions with known Cassandra types. Currently this would be impossible in Quill.
+
+- Generate the CQL schema on the fly. Every phantom table has a `.create` method, that will yield a `CreateQuery`,
+where you can set the creation properties in minute details. The schema is then inferred from the DSL.
+
+- Generate the entire database on the fly. By nesting tables in a `Database` object, we are able to implement
+`autocreate`, `createAsync` and other convenience methods for automatically creating, truncating or dropping
+an entire database in a single method call. Look ma', no manual CQL.
+
+- Phantom is schema aware. Using an advanced implicit mechanism powered by the Shapeless library, phantom is
+capable of "knowing" what queries are possible and what queries aren't. Let's take for example the `Recipes` above:
+
+The following query is invalid, because we have not defined any index for the `uid` column.
+
+```scala
+database.recipes.select.where(_.uid eqs someid)
+```
+
+Quill will however happily compile and generate the query:
+
+
+##### It doesn't account for protocol version/Cassandra version dependent behaviour
+
+Numerous features or bugs are version dependent in Cassandra and the only way to provide the user with a consistent experience
+across the numerous features is to be version aware, so in certain contexts the final query is only generated when the protocol
+version of a give cluster is known.
+
+Naturally this "knowing" can only happen at runtime, and it deals with very simple things such as set the consistency level of query. For
+older protocol versions, the `CONSISTENCY LEVEL` part of a query was part of the `USING` clause, however in more recent
+versions of the protocol the consistency level has to be specified per session. This is an optimisation to allow the nodes
+to perform the necessary coordination to achieve the desired `CONSISTENCY LEVEL` without having to first parse
+the query.
+
+So CQL went from:
+
+```sql
+UPDATE keyspace.table WHERE ID = 'some_id' SET a = 'b' USING CONSISTENCY QUOROM;
+
+// to
+
+session.use(ConsistencyLevel.QUORUM)
+UPDATE keyspace.table WHERE ID = 'some_id' SET a = 'b';
+```
+
+And any client library will need to transparently handle the change in CQL protocol details. Hoewever, this would
+be impossible without knowing the version in advance, which means a cluster query which implies runtime.
 
