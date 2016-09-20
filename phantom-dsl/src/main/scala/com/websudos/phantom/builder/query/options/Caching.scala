@@ -127,7 +127,7 @@ private[phantom] trait CachingStrategies {
   object All extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): AllCache = {
       if (session.v4orNewer) {
-        new AllCache(CQLQuery.empty, true).rows()
+        new AllCache(CQLQuery.empty, true).keys().rows()
       } else {
         new AllCache(CQLQuery(CQLSyntax.CacheStrategies.All), false)
       }
