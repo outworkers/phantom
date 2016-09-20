@@ -40,7 +40,7 @@ private[phantom] trait CompactionStrategies {
   private[this] def strategy(strategy: String) = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
-      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.`:`)
       .forcePad.appendSingleQuote(strategy)
   }
 

@@ -44,8 +44,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
 
   "An Update query should" - {
 
-
-    "allow specifying USONG clause options" - {
+    "allow specifying USING clause options" - {
 
       "specify a consistency level of ALL in an AssignmentsQuery" in {
 

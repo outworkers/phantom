@@ -56,7 +56,7 @@ private[phantom] trait CachingStrategies {
     }
 
     def rows(value: String = "ALL"): QType = {
-      instance(QueryBuilder.Create.Caching.keys(qb, value))
+      instance(QueryBuilder.Create.Caching.rows(qb, value))
     }
 
     def rows_per_partition(value: String = "NONE"): QType = {
@@ -133,8 +133,6 @@ private[phantom] trait CachingStrategies {
       }
     }
   }
-
-  //case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
 }
 
 object Caching extends CachingStrategies

@@ -39,11 +39,11 @@ sealed trait CreateOptionsBuilder {
     if (qb.nonEmpty) {
       qb.append(CQLSyntax.comma)
         .forcePad.appendSingleQuote(option)
-        .forcePad.append(CQLSyntax.Symbols.`:`)
+        .append(CQLSyntax.Symbols.`:`)
         .forcePad.appendSingleQuote(value)
     } else {
-      qb.forcePad.appendSingleQuote(option)
-        .forcePad.append(CQLSyntax.Symbols.`:`)
+      qb.appendSingleQuote(option)
+        .append(CQLSyntax.Symbols.`:`)
         .forcePad.appendSingleQuote(value)
     }
   }
@@ -51,7 +51,7 @@ sealed trait CreateOptionsBuilder {
   protected[this] def simpleValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     qb.append(CQLSyntax.comma)
       .forcePad.appendSingleQuote(option)
-      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.`:`)
       .forcePad.append(value)
   }
 }

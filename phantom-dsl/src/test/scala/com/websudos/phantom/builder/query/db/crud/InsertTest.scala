@@ -155,25 +155,18 @@ class InsertTest extends PhantomSuite {
       get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
-    chain successful  {
-      res => {
-        res.value shouldEqual row
-      }
+    chain successful {
+      res => res.value shouldEqual row
     }
   }
 
   it should "serialize a JSON clause as the insert part" in {
     val sample = gen[Recipe]
 
-    info(pretty(render(Extraction.decompose(sample))))
-
     val chain = for {
       store <- TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
       get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
-
-
-    info(s"Cassandra version $cassandraVersion")
 
     if (cassandraVersion.value >= Version.`2.2.0`) {
       whenReady(chain) {
