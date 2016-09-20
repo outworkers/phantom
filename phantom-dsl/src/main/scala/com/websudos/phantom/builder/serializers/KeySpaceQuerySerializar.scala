@@ -35,11 +35,11 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 
 private object Strategies {
-  final val NetworkTopologyStrategy = "NetworkTopologyStrategy"
-  final val SimpleStrategy = "SimpleStrategy"
-  final val ReplicationFactor = "replication_factor"
-  final val Replication = "REPLICATION"
-  final val DurableWrites = "DURABLE_WRITES"
+  final val networkTopologyStrategy = "NetworkTopologyStrategy"
+  final val simpleStrategy = "SimpleStrategy"
+  final val replicationFactor = "replication_factor"
+  final val replication = "REPLICATION"
+  final val durableWrites = "DURABLE_WRITES"
 }
 
 sealed class BuilderClause(val qb: CQLQuery)
@@ -66,7 +66,7 @@ sealed trait TopologyStrategies {
       .append(CQLSyntax.Symbols.`}`)
   }
 
-  sealed class NetworkTopologyStrategy(override val qb: CQLQuery = strategy(Strategies.NetworkTopologyStrategy)) extends
+  sealed class NetworkTopologyStrategy(override val qb: CQLQuery = strategy(Strategies.networkTopologyStrategy)) extends
     ReplicationStrategy(qb) {
 
     /**
@@ -100,19 +100,19 @@ sealed trait TopologyStrategies {
     def replication_factor(factor: Int): SimpleStrategy = {
       new SimpleStrategy(
         CQLQuery(qb.queryString.dropRight(1))
-          .append(option(Strategies.ReplicationFactor, factor))
+          .append(option(Strategies.replicationFactor, factor))
           .append(CQLSyntax.Symbols.`}`)
       )
     }
   }
 
-  case object SimpleStrategy extends SimpleStrategy(strategy(Strategies.SimpleStrategy))
-  case object NetworkTopologyStrategy extends NetworkTopologyStrategy(strategy(Strategies.NetworkTopologyStrategy))
+  case object SimpleStrategy extends SimpleStrategy(strategy(Strategies.simpleStrategy))
+  case object NetworkTopologyStrategy extends NetworkTopologyStrategy(strategy(Strategies.networkTopologyStrategy))
 
   object replication {
     def eqs(strategy: ReplicationStrategy): BuilderClause = {
       new BuilderClause(
-        CQLQuery(Strategies.Replication)
+        CQLQuery(Strategies.replication)
           .forcePad.append(CQLSyntax.eqs)
           .forcePad.append(strategy.qb)
       )
@@ -121,7 +121,7 @@ sealed trait TopologyStrategies {
 
   object durable_writes {
     def eqs(clause: Boolean): BuilderClause = {
-      new BuilderClause(CQLQuery(Strategies.DurableWrites + " = " + clause.toString))
+      new BuilderClause(CQLQuery(Strategies.durableWrites + " = " + clause.toString))
     }
   }
 }
