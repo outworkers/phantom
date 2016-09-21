@@ -51,9 +51,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
@@ -70,9 +68,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
@@ -89,9 +85,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
@@ -107,13 +101,10 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
     }
-
   }
 
 }
