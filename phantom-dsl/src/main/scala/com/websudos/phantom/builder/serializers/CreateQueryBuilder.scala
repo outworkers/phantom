@@ -33,6 +33,7 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.connectors.KeySpace
 
 sealed trait CreateOptionsBuilder {
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
@@ -273,5 +274,37 @@ private[builder] class CreateTableBuilder extends
 
     CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }
+
+  def defaultCreateQuery(
+    keyspace: String,
+    table: String,
+    tableKey: String,
+    columns: Seq[CQLQuery]
+  ): CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, table)).forcePad
+      .append(CQLSyntax.Symbols.`(`)
+      .append(QueryBuilder.Utils.join(columns: _*))
+      .append(CQLSyntax.Symbols.`,`)
+      .forcePad.append(tableKey)
+      .append(CQLSyntax.Symbols.`)`)
+  }
+
+  def createIfNotExists(
+    keyspace: String,
+    table: String,
+    tableKey: String,
+    columns: Seq[CQLQuery]
+  ): CQLQuery = {
+      CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+        .forcePad.append(CQLSyntax.ifNotExists)
+        .forcePad.append(QueryBuilder.keyspace(keyspace, table))
+        .forcePad.append(CQLSyntax.Symbols.`(`)
+        .append(QueryBuilder.Utils.join(columns: _*))
+        .append(CQLSyntax.Symbols.`,`)
+        .forcePad.append(tableKey)
+        .append(CQLSyntax.Symbols.`)`)
+  }
+
 
 }
