@@ -42,7 +42,6 @@ import org.joda.time.{DateTime, DateTimeZone}
 import scala.util.control.NoStackTrace
 import scala.util.{Failure, Try}
 
-
 private[phantom] object DateSerializer {
 
   def asCql(date: Date): String = date.getTime.toString
@@ -52,10 +51,6 @@ private[phantom] object DateSerializer {
   def asCql(date: org.joda.time.LocalDate): String = date.toString
 
   def asCql(date: DateTime): String = date.getMillis.toString
-}
-
-sealed trait ValueTypeDef {
-  type ValueType <: AnyRef
 }
 
 abstract class Primitive[RR] {
@@ -80,7 +75,7 @@ abstract class Primitive[RR] {
 
   def clz: Class[PrimitiveType]
 
-  def fromPrimitive(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
+  def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
 
 }
 
@@ -314,7 +309,7 @@ trait DefaultPrimitives {
 
     override def clz: Class[Date] = classOf[Date]
 
-    override def fromPrimitive(obj: PrimitiveType): DateTime = new DateTime(obj)
+    override def extract(obj: PrimitiveType): DateTime = new DateTime(obj)
   }
 
 
@@ -358,7 +353,7 @@ trait DefaultPrimitives {
 
     override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
 
-    override def fromPrimitive(obj: java.math.BigDecimal): BigDecimal = BigDecimal(obj)
+    override def extract(obj: java.math.BigDecimal): BigDecimal = BigDecimal(obj)
   }
 
   implicit object InetAddressPrimitive extends Primitive[InetAddress] {

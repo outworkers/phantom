@@ -27,8 +27,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.clauses
+package com.websudos.phantom.builder.serializers
 
-import com.websudos.phantom.builder.query.CQLQuery
-import shapeless.ops.hlist.Prepend
-import shapeless.{::, Generic, HList, HNil}
+import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.dsl._
+
+class KeySpaceSerializerTest extends QuerySerializationTest {
+
+  it should "create a simple keyspace creation query" in {
+    val query = QueryBuilder.keyspace("test").ifNotExists()
+      .`with`(replication eqs NetworkTopologyStrategy)
+      .and(durable_writes eqs true)
+      .qb.queryString
+
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
+      " AND DURABLE_WRITES = true"
+
+    query shouldEqual expected
+  }
+
+}

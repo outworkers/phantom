@@ -42,6 +42,7 @@ import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
+import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import shapeless.{::, HNil}
@@ -55,6 +56,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with UsingClauseOperations
+  with KeySpaceConstruction
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]

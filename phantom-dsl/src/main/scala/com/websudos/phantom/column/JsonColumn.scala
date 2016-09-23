@@ -112,7 +112,7 @@ abstract class JsonMapColumn[Owner <: CassandraTable[Owner, Record], Record, K: 
       Success(Map.empty[K,ValueType])
     } else {
       Success(r.getMap(name, keyPrimitive.clz, Primitive[String].clz).asScala.toMap.map {
-        case (k, v) => (keyPrimitive.fromPrimitive(k), fromString(v.asInstanceOf[String]))
+        case (k, v) => (keyPrimitive.extract(k), fromString(v.asInstanceOf[String]))
       })
     }
   }
