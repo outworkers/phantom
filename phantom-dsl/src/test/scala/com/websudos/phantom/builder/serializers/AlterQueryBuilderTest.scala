@@ -173,7 +173,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
         val qb = BasicTable.alter.`with`(caching eqs Cache.None()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'none', 'rows': 'none' }"
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'none', 'rows_per_partition': 'none' }"
         } else {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'none'"
         }
@@ -183,7 +183,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
         val qb = BasicTable.alter.`with`(caching eqs Cache.KeysOnly()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'ALL', 'rows_per_partition': 'NONE' }"
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'all', 'rows_per_partition': 'none' }"
         } else {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'keys_only'"
         }

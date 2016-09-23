@@ -128,7 +128,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
 
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'none', 'rows': 'none' }"
+          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'none', 'rows_per_partition': 'none' }"
         } else {
           qb shouldEqual s"$baseQuery WITH caching = 'none'"
         }
@@ -139,7 +139,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         if (session.v4orNewer) {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'keys': 'ALL', 'rows_per_partition': 'NONE' }"
+            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'keys': 'all', 'rows_per_partition': 'none' }"
         } else {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
             " PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
@@ -151,7 +151,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         if (session.v4orNewer) {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'rows': 'ALL' }"
+            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'rows_per_partition': 'all' }"
         } else {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
             " PRIMARY KEY (id, id2, id3)) WITH caching = 'rows_only'"
@@ -163,7 +163,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
 
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'ALL', 'rows': 'ALL' }"
+          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'all', 'rows_per_partition': 'all' }"
         } else {
           qb shouldEqual s"$baseQuery WITH caching = 'all'"
         }
