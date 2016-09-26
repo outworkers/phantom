@@ -31,11 +31,12 @@ package com.websudos.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder._
+import com.websudos.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.PreparedSelectBlock
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
-import shapeless.ops.hlist.Reverse
+import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
@@ -132,14 +133,21 @@ class SelectQuery[
   }
 
   /**
-   * The where method of a select query.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  override def where(condition: Table => WhereClause.Condition)(
-    implicit ev: Chain =:= Unchainned
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def where[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](
+    condition: Table => QueryCondition[HL]
+  )(implicit
+    ev: Chain =:= Unchainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -154,58 +162,22 @@ class SelectQuery[
     )
   }
 
-  override def and(condition: Table => WhereClause.Condition)(
-    implicit ev: Chain =:= Chainned
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new SelectQuery(
-      table = table,
-      rowFunc = rowFunc,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
-      orderPart = orderPart,
-      limitedPart = limitedPart,
-      filteringPart = filteringPart,
-      usingPart = usingPart,
-      count = count,
-      options = options
-    )
-  }
-
   /**
-   * The where method of a select query that takes parametric predicate as an argument.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot use multiple where clauses in the same builder")
-  def p_where[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])(
-    implicit ev: Chain =:= Unchainned
-  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
-    new SelectQuery(
-       table = table,
-       rowFunc = rowFunc,
-       init = init,
-       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-       orderPart = orderPart,
-       limitedPart = limitedPart,
-       filteringPart = filteringPart,
-       usingPart = usingPart,
-       count = count,
-       options = options
-     )
-  }
-
-
-  /**
-   * The and operator that adds parametric condition to the where predicates.
-   * @param condition A where clause condition restricted by path dependant types.
-   * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-   * @return
-   */
-  @implicitNotFound("You cannot add condition in this place of the query")
-  def p_and[RR](condition: Table => PreparedWhereClause.ParametricCondition[RR])(
-    implicit ev: Chain =:= Chainned
-  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, RR :: PS] = {
+    * The where method of a select query.
+    * @param condition A where clause condition restricted by path dependant types.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @return
+    */
+  override def and[
+    RR,
+    HL <: HList,
+    Out <: HList
+  ](
+    condition: Table => QueryCondition[HL]
+  )(implicit
+    ev: Chain =:= Chainned,
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
       table = table,
       rowFunc = rowFunc,
@@ -239,7 +211,7 @@ class SelectQuery[
     implicit ev: Status =:= Unspecified,
     session: Session
   ): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new SelectQuery(
         table = table,
         rowFunc = rowFunc,
@@ -345,8 +317,7 @@ private[phantom] class RootSelectBlock[
 ](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  private[phantom] def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
-
+  def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     clause match {
       case Some(opt) => {
         new SelectQuery(
@@ -377,6 +348,30 @@ private[phantom] class RootSelectBlock[
 
   private[this] def extractWritetime(r: Row): Long = {
     Try(r.getLong("writetime")).getOrElse(0L)
+  }
+
+  def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
+
+    val jsonParser: (Row) => String = row => {
+      row.getString(CQLSyntax.JSON_EXTRACTOR)
+    }
+
+    clause match {
+      case Some(opt) => {
+        new SelectQuery(
+          table,
+          jsonParser,
+          QueryBuilder.Select.selectJson(table.tableName, keySpace.name)
+        )
+      }
+      case None => {
+        new SelectQuery(
+          table,
+          jsonParser,
+          QueryBuilder.Select.selectJson(table.tableName, keySpace.name, columns: _*)
+        )
+      }
+    }
   }
 
   def function[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {

@@ -36,7 +36,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class IterateePerformanceTest extends PhantomSuite {
 
@@ -44,8 +44,8 @@ class IterateePerformanceTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
-    TestDatabase.primitivesJoda.insertSchema()
+    database.primitives.insertSchema()
+    database.primitivesJoda.insertSchema()
   }
 
   it should "get retrieve the correct number of results from the database and collect them using an iterator" in {

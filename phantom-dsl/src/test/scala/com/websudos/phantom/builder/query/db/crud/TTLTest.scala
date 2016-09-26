@@ -33,7 +33,7 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Primitive, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.tagobjects.Retryable
@@ -82,7 +82,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
     val row = gen[Primitive]
 
     val fetchQuery = TestDatabase.primitives.select
-      .p_where(_.pkey eqs ?)
+      .where(_.pkey eqs ?)
       .prepare()
 
     val insertQuery = TestDatabase.primitives.insert

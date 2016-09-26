@@ -30,7 +30,7 @@
 package com.websudos.phantom
 
 import org.joda.time.{DateTime, LocalDate}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 package object server {
 

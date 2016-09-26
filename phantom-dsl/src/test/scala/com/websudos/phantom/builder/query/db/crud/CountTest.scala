@@ -33,7 +33,7 @@ package com.websudos.phantom.builder.query.db.crud
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl.Batch
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -33,6 +33,9 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.ops.SelectColumn
 import com.websudos.phantom.builder.query.RootSelectBlock
+import shapeless.ops.hlist.Mapper
+import shapeless.ops.tuple.ToList
+import shapeless.{Generic, HList, LUBConstraint, Poly1}
 
 import scala.util.Try
 
@@ -62,8 +65,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     RootSelectBlock[T, (A, B, C)](t, List(c1.col.name, c2.col.name, c3.col.name), r => (c1(r), c2(r), c3(r)))
   }
 
-  def select[A, B, C, D](
-    f1: T =>SelectColumn[A],
+  def select[A, B, C, D](f1: T =>SelectColumn[A],
    f2: T => SelectColumn[B],
    f3: T => SelectColumn[C],
    f4: T => SelectColumn[D]): RootSelectBlock[T, (A, B, C, D)] = {
@@ -89,7 +91,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
   }
 
   def select[A, B, C, D, E, F](
-    f1: T =>SelectColumn[A],
+    f1: T => SelectColumn[A],
     f2: T => SelectColumn[B],
     f3: T => SelectColumn[C],
     f4: T => SelectColumn[D],

@@ -45,7 +45,7 @@ object Manager {
 
   /**
     * Shuts down the default task executors for Guava ListenableFutures and for Scala Futures.
-    * @deprecated("Call shutdown on a [[com.websudos.phantom.db.DatabaseImpl]] instead", "1.15.0")
+    * @deprecated ("Call shutdown on a [[com.websudos.phantom.database.DatabaseImpl]] instead", "1.15.0")
     */
   def shutdown(): Unit = {
     logger.info("Shutting down executors")

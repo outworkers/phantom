@@ -30,22 +30,9 @@
 package com.websudos.phantom.base
 
 import com.websudos.phantom.tables.TestDatabase
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecution with GeneratorDrivenPropertyChecks {
-
-  val testSamplesCount = 300
-
-  it should "correctly initialise objects in the order they are written in" in {
-    forAll(minSuccessful(testSamplesCount)) { (d: String) =>
-      whenever (d.nonEmpty) {
-        val collected = TestDatabase.articles.columns.map(_.name).mkString(" ")
-        val expected = s"${TestDatabase.articles.id.name} ${TestDatabase.articles.name.name} ${TestDatabase.articles.orderId.name}"
-        collected shouldEqual expected
-      }
-    }
-  }
+class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecution {
 
   it should "collect objects in the same order they are written" in {
     val collected = TestDatabase.articles.columns.map(_.name).mkString(" ")
@@ -57,7 +44,6 @@ class FieldCollectionTest extends FlatSpec with Matchers with ParallelTestExecut
   it should "correctly reference the same table" in {
      TestDatabase.primitives.pkey.table shouldEqual TestDatabase.primitives
   }
-
 
   it should "initialise fields by default" in {
     TestDatabase.articles.columns.length shouldEqual 3

@@ -15,7 +15,7 @@
  */
 package com.websudos.phantom.connectors
 
-import com.datastax.driver.core.PoolingOptions
+import com.datastax.driver.core.{PoolingOptions, Session}
 
 /**
  * A builder for KeySpace instances.
@@ -47,9 +47,33 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   }
 
   /**
-   * Create a new keySpace with the specified name.
-   */
-  def keySpace(name: String): KeySpaceDef =
-    new KeySpaceDef(name, clusterBuilder)
+    * Creates and can initialise a keyspace with the given name.
+    * @param name The name of the keyspace, case sensititve by default.
+    * @param autoinit Whether or not to automatically initialise the keyspace before the session is created.
+    * @param query The builder to use when producing the keyspace query.
+    * @return
+    */
+  def keySpace(
+    name: String,
+    autoinit: Boolean = true,
+    query: Option[(Session, KeySpace) => String] = None
+  ): KeySpaceDef = {
+    new KeySpaceDef(name, clusterBuilder, autoinit, query)
+  }
+
+  /**
+    * Creates and can initialise a keyspace with the given name.
+    * This will automatically initialise the keyspace by default, as we consider
+    * passing a specific keyspace query indicates clear intent you want this to happen.
+    * @param name The name of the keyspace, case sensititve by default.
+    * @param query The builder to use when producing the keyspace query.
+    * @return
+    */
+  def keySpace(
+    name: String,
+    query: (Session, KeySpace) => String
+  ): KeySpaceDef = {
+    new KeySpaceDef(name, clusterBuilder, true, Some(query))
+  }
 
 }

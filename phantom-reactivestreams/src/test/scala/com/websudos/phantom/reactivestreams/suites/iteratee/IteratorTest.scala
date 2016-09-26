@@ -29,11 +29,9 @@
  */
 package com.websudos.phantom.reactivestreams.suites.iteratee
 
-import java.util.concurrent.atomic.AtomicInteger
-
+import com.outworkers.util.testing._
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{Primitive, TestDatabase}
-import com.websudos.util.testing._
+import com.websudos.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.Future
@@ -42,27 +40,24 @@ class IteratorTest extends BigTest with ScalaFutures {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
+    database.timeuuidTable.insertSchema()
   }
 
   it should "correctly retrieve the right number of records using scala iterator" in {
-    val rows = for (i <- 1 to 100) yield gen[Primitive]
+    val generationSize = 100
+    val user = gen[UUID]
+    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user))
 
-    val setUpFuture = TestDatabase.primitives.truncate.future().flatMap {
-      _ => Future.sequence(rows.map(row => TestDatabase.primitives.store(row).future()))
-    }
+    val chain = for {
+      store <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
+      iterator <- TestDatabase.timeuuidTable.select.where(_.user eqs user).iterator()
+    } yield iterator
 
-    val counter: AtomicInteger = new AtomicInteger(0)
-
-    val iterationResultFuture = setUpFuture.flatMap(_ => TestDatabase.primitives.select.iterator()).map {
-      _.foreach(x => {
-        counter.incrementAndGet()
-        assert(rows.contains(x))
-      })
-    }
-
-    whenReady(iterationResultFuture) {
-      _ => assert(counter.intValue() === rows.size)
+    whenReady(chain) {
+      res => {
+        res.size shouldEqual generationSize
+        res.foreach(x => rows should contain (x))
+      }
     }
   }
 }

@@ -68,6 +68,8 @@ class OptionalEnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumTyp
     }
   }
 
-  override def asCql(v: Option[EnumType#Value]) = v.map(item => CQLQuery.empty.singleQuote(item.toString)).orNull
+  override def asCql(v: Option[EnumType#Value]): String = {
+    v.map(item => CQLQuery.empty.singleQuote(item.toString)).orNull
+  }
 
 }

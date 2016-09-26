@@ -31,7 +31,7 @@ package com.websudos.phantom
 
 import com.datastax.driver.core.{Row, Session}
 import com.websudos.phantom.builder.clauses.DeleteClause
-import com.websudos.phantom.builder.query._
+import com.websudos.phantom.builder.query.{RootCreateQuery, _}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
@@ -56,13 +56,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
   type OptionalEnumColumn[RR <: Enumeration] = com.websudos.phantom.column.OptionalEnumColumn[T, R, RR]
   type JsonSetColumn[RR] = com.websudos.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
+  type JsonMapColumn[KK,VV] = com.websudos.phantom.column.JsonMapColumn[T, R, KK, VV]
 
   private[phantom] def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Unit = {
-    Await.result(create.ifNotExists().future(), 10.seconds)
+    Await.result(autocreate(keySpace).future(), 10.seconds)
   }
 
   private[this] val instanceMirror = cm.reflect(this)
@@ -83,6 +84,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
    * @return A root create block, with full support for all CQL Create query options.
    */
   final def create: RootCreateQuery[T, R] = new RootCreateQuery(this.asInstanceOf[T])
+
+  def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
   final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(this.asInstanceOf[T])
 

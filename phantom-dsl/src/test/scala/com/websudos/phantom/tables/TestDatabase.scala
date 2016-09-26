@@ -33,8 +33,10 @@ import java.net.SocketOption
 import java.util.UUID
 
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
+import com.websudos.phantom.builder.query.CreateQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.dsl._
 
 class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
   object articles extends ConcreteArticles with connector.Connector
@@ -54,6 +56,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with connector.Connector
 
   object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with connector.Connector
+  object indexedEntriesTable extends ConcreteIndexedEntriesTable with connector.Connector
   object jsonTable extends ConcreteJsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with connector.Connector
   object optionalPrimitives extends ConcreteOptionalPrimitives with connector.Connector
@@ -64,7 +67,11 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object primitivesCassandra22 extends ConcretePrimitivesCassandra22 with connector.Connector
   object optionalPrimitivesCassandra22 extends ConcreteOptionalPrimitivesCassandra22 with connector.Connector
 
-  object recipes extends ConcreteRecipes with connector.Connector
+  object recipes extends ConcreteRecipes with connector.Connector {
+    override def autocreate(space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
+      create.ifNotExists()(space).`with`(comment eqs "This is a test string")
+    }
+  }
 
   object secondaryIndexTable extends ConcreteSecondaryIndexTable with connector.Connector
   object staticTable extends ConcreteStaticTableTest with connector.Connector
@@ -81,11 +88,12 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   }
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
-  object twoKeysTable extends ConcreteTwoKeys with connector.Connector
+  object multipleKeysTable$ extends ConcreteMultipleKeys with connector.Connector
   object timeuuidTable extends ConcreteTimeUUIDTable with connector.Connector
 
   object events extends ConcreteEvents with connector.Connector
 
+  object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with connector.Connector
   object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
 }
 

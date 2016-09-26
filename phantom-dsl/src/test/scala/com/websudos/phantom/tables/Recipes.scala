@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.builder.query.{SelectQuery, InsertQuery}
+import com.websudos.phantom.builder.query.{CreateQuery, InsertQuery, SelectQuery}
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
 
@@ -73,10 +73,10 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
       uid(r)
     )
   }
-
 }
 
 abstract class ConcreteRecipes extends Recipes with RootConnector {
+
 
   def store(recipe: Recipe): InsertQuery.Default[ConcreteRecipes, Recipe] = {
     insert
@@ -114,7 +114,7 @@ abstract class ConcreteEvents extends Events with RootConnector {
       .value(_.map, event.map)
   }
 
-  def getById(id: UUID) = {
-    select.where(_.id eqs id)
+  def findById(id: UUID): Future[Option[SampleEvent]] = {
+    select.where(_.id eqs id).one()
   }
 }

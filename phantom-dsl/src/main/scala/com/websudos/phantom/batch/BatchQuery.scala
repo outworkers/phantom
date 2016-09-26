@@ -86,7 +86,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): BatchQuery[Specified] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new BatchQuery[Specified](
         iterator,
         batchType,
@@ -154,7 +154,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     new BatchQuery(
       iterator,
       batchType,
-      usingPart append QueryBuilder.timestamp(stamp.toString),
+      usingPart append QueryBuilder.timestamp(stamp),
       added,
       options
     )

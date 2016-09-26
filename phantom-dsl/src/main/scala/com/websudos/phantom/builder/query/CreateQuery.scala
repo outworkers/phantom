@@ -45,29 +45,25 @@ class RootCreateQuery[
 ](val table: Table) {
 
   private[phantom] def default()(implicit keySpace: KeySpace): CQLQuery = {
-    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
-      .forcePad.append(QueryBuilder.keyspace(keySpace.name, table.tableName)).forcePad
-      .append(CQLSyntax.Symbols.`(`)
-      .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
-      .append(CQLSyntax.Symbols.`,`)
-      .forcePad.append(table.defineTableKey())
-      .append(CQLSyntax.Symbols.`)`)
+    QueryBuilder.Create.defaultCreateQuery(
+      keySpace.name,
+      table.tableName,
+      table.defineTableKey(),
+      table.columns.map(_.qb)
+    )
   }
 
   private[phantom] def toQuery()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
-    new CreateQuery[Table, Record, Unspecified](table, default, WithPart.empty)
+    new CreateQuery[Table, Record, Unspecified](table, default, WithPart.empty, UsingPart.empty)
   }
 
-
   private[this] def lightweight()(implicit keySpace: KeySpace): CQLQuery = {
-    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
-      .forcePad.append(CQLSyntax.ifNotExists)
-      .forcePad.append(QueryBuilder.keyspace(keySpace.name, table.tableName))
-      .forcePad.append(CQLSyntax.Symbols.`(`)
-      .append(QueryBuilder.Utils.join(table.columns.map(_.qb): _*))
-      .append(CQLSyntax.Symbols.`,`)
-      .forcePad.append(table.defineTableKey())
-      .append(CQLSyntax.Symbols.`)`)
+    QueryBuilder.Create.createIfNotExists(
+      keySpace.name,
+      table.tableName,
+      table.defineTableKey(),
+      table.columns.map(_.qb)
+    )
   }
 
   /**
@@ -102,7 +98,7 @@ class CreateQuery[
 ) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new CreateQuery(
         table,
         qb,
@@ -171,9 +167,7 @@ class CreateQuery[
     `with`(clause)
   }
 
-  override def qb: CQLQuery = {
-    (withClause merge WithPart.empty) build init
-  }
+  override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
   private[phantom] def indexList(name: String): ExecutableStatementList = {
     new ExecutableStatementList(table.secondaryKeys map {
@@ -220,9 +214,9 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
   val Cache = Caching
 
   implicit def rootCreateQueryToCreateQuery[
-  T <: CassandraTable[T, _],
-  R]
-  (root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = {
+    T <: CassandraTable[T, _],
+    R
+  ](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = {
 
     if (root.table.clusteringColumns.nonEmpty) {
       new CreateQuery(root.table, root.default, WithPart.empty).withClustering()

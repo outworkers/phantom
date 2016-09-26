@@ -32,9 +32,10 @@ package com.websudos.phantom.builder.serializers
 import com.websudos.phantom.PhantomBaseSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
-import scala.concurrent.duration._
+import com.outworkers.util.testing._
+import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.concurrent.duration._
 import org.scalatest.FreeSpec
 
 class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
@@ -42,7 +43,9 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
   val comparisonValue = 5
 
   "An Update query should" - {
-    "allow specifying consistency levels" - {
+
+    "allow specifying USING clause options" - {
+
       "specify a consistency level of ALL in an AssignmentsQuery" in {
 
         val url = gen[String]
@@ -53,7 +56,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (session.v3orNewer) {
+        if (session.protocolConsistency) {
           query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url';"
         } else {
           query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url';"
@@ -72,6 +75,36 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
         query shouldEqual s"UPDATE phantom.recipes USING TTL 5 SET uid = $uid WHERE url = '$url';"
       }
 
+      "a timestamp setting on an assignments query" in {
+        val url = gen[String]
+        val uid = gen[UUID]
+        val timestamp = gen[Long]
+
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
+          .modify(_.uid setTo uid)
+          .timestamp(timestamp)
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url';"
+      }
+
+      "a timestamp setting on an conditional assignments query specified before the onlyIf clause" in {
+        val url = gen[String]
+        val uid = gen[UUID]
+        val timestamp = gen[Long]
+
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
+          .modify(_.uid setTo uid)
+          .timestamp(timestamp)
+          .onlyIf(_.description is Some("test"))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url' IF description = 'test';"
+      }
+    }
+
+    "allow specifying conditional update clauses" - {
+
       "specify a consistency level in a ConditionUpdateQuery" in {
         val url = gen[String]
 
@@ -82,7 +115,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .consistencyLevel_=(ConsistencyLevel.ALL)
           .queryString
 
-        if (session.v3orNewer) {
+        if (session.protocolConsistency) {
           query shouldEqual s"UPDATE phantom.recipes SET servings = 5 WHERE url = '$url' IF description = 'test';"
         } else {
           query shouldEqual s"UPDATE phantom.recipes USING CONSISTENCY ALL SET servings = 5 WHERE url = '$url' IF description = 'test';"
@@ -162,16 +195,16 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
 
       "update a single entry inside a map column using an int column" in {
         val id = gen[UUID]
-        val dt = new DateTime
+        val dt = DateTime.now(DateTimeZone.UTC)
+        val key = gen[Long]
 
         val query = TestDatabase.events.update
           .where(_.id eqs id)
-          .modify(_.map(5L) setTo dt)
+          .modify(_.map(key) setTo dt)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.events SET map[5] = ${DateTimeIsPrimitive.asCql(dt)} WHERE id = $id;"
+        query shouldEqual s"UPDATE phantom.events SET map[$key] = ${dt.asCql()} WHERE id = $id;"
       }
-
     }
   }
 

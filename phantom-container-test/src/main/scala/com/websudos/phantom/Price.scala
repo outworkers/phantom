@@ -33,7 +33,7 @@ import java.util.Date
 
 import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
 import com.websudos.phantom.dsl._
 import org.joda.time.{DateTime, LocalDate}
 

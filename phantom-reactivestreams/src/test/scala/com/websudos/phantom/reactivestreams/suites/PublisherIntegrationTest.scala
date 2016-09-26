@@ -33,18 +33,18 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
 import org.scalatest.tagobjects.Retryable
 import org.scalatest.time.SpanSugar._
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 
 class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 
-  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
+  implicit val defaultPatience = PatienceConfig(timeout = 30.seconds, interval = 200.millis)
 
   it should "correctly consume the entire stream of items published from a Cassandra table" taggedAs Retryable in {
     val counter = new AtomicInteger(0)
@@ -53,14 +53,10 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     val chain = for {
       truncate <- StreamDatabase.operaTable.truncate().future()
-      store <- samples.foldLeft(Batch.unlogged) {
-        (acc, item) => {
-          acc.add(StreamDatabase.operaTable.store(item))
-        }
-      } future()
+      store <- Future.sequence(samples.map(StreamDatabase.operaTable.store(_).future()))
     } yield store
 
-    Await.result(chain, 10.seconds)
+    Await.result(chain, 30.seconds)
 
     val publisher = StreamDatabase.operaTable.publisher
 

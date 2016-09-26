@@ -32,13 +32,14 @@ package com.websudos.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.clauses.UsingClause
+import com.websudos.phantom.builder.clauses._
 import com.websudos.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
+import com.websudos.phantom.dsl.?
 import org.joda.time.DateTime
-import shapeless.ops.hlist.Reverse
+import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 class InsertQuery[
@@ -47,12 +48,12 @@ class InsertQuery[
   Status <: ConsistencyBound,
   PS <: HList
 ](
-  table: Table,
-  val init: CQLQuery,
-  columnsPart: ColumnsPart = ColumnsPart.empty,
-  valuePart: ValuePart = ValuePart.empty,
-  usingPart: UsingPart = UsingPart.empty,
-  lightweightPart: LightweightPart = LightweightPart.empty,
+  private[this] val table: Table,
+  private[this] val init: CQLQuery,
+  private[this] val columnsPart: ColumnsPart = ColumnsPart.empty,
+  private[this] val valuePart: ValuePart = ValuePart.empty,
+  private[this] val usingPart: UsingPart = UsingPart.empty,
+  private[this] val lightweightPart: LightweightPart = LightweightPart.empty,
   override val options: QueryOptions = QueryOptions.empty
 ) extends ExecutableStatement with Batchable {
 
@@ -76,7 +77,34 @@ class InsertQuery[
     )
   }
 
-  final def value[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
+  /**
+    * Insert function adding the ability to specify operator values as the value of an insert.
+    * This is useful when we want to use functions to generate the CQL, such as using
+    * the "now()" operator when inserting the value of a date.
+    * @param col The function that selects a specific column from the table.
+    * @param value The value to insert in the column, based on the output of the operator.
+    * @tparam RR The type of the value held in the column.
+    * @return A new instance of insert query, with the clause added.
+    */
+  def opValue[RR](
+    col: Table => AbstractColumn[RR],
+    value: OperatorClause.Condition
+  ): InsertQuery[Table, Record, Status, PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart append CQLQuery(col(table).name),
+      valuePart append value.qb,
+      usingPart,
+      lightweightPart,
+      options
+    )
+  }
+
+  def value[RR](
+    col: Table => AbstractColumn[RR],
+    value: RR
+  )(): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
       init,
@@ -88,7 +116,10 @@ class InsertQuery[
     )
   }
 
-  final def p_value[RR](col: Table => AbstractColumn[RR], value: PrepareMark) : InsertQuery[Table, Record, Status, RR :: PS] = {
+  final def p_value[RR](
+    col: Table => AbstractColumn[RR],
+    value: PrepareMark
+  ): InsertQuery[Table, Record, Status, RR :: PS] = {
     new InsertQuery(
       table,
       init,
@@ -127,6 +158,18 @@ class InsertQuery[
     (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
   }
 
+  final def ttl(value: PrepareMark): InsertQuery[Table, Record, Status, Int :: PS] = {
+    new InsertQuery(
+      table,
+      init,
+      columnsPart,
+      valuePart,
+      usingPart append QueryBuilder.ttl(value.qb.queryString),
+      lightweightPart,
+      options
+    )
+  }
+
   def ttl(seconds: Int): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(
       table,
@@ -163,14 +206,14 @@ class InsertQuery[
       init,
       columnsPart,
       valuePart,
-      usingPart append QueryBuilder.timestamp(value.toString),
+      usingPart append QueryBuilder.timestamp(value),
       lightweightPart,
       options
     )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
-    if (session.v3orNewer) {
+    if (session.protocolConsistency) {
       new InsertQuery(
         table,
         init,
@@ -239,9 +282,7 @@ class InsertJsonQuery[
     new PreparedBlock[PS](qb, options)
   }
 
-  override val qb: CQLQuery = {
-    (lightweightPart merge usingPart) build init
-  }
+  override val qb: CQLQuery = (lightweightPart merge usingPart) build init
 
 }
 

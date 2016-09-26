@@ -33,7 +33,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{StaticCollectionRecord, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class StaticColumnTest extends PhantomSuite {
 
@@ -93,6 +93,13 @@ class StaticColumnTest extends PhantomSuite {
 
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
+
+    val qb = TestDatabase.staticCollectionTable.update.where(_.id eqs id)
+      .and(_.clusteringId eqs sample.clustering)
+      .modify(_.staticList append "test")
+      .queryString
+
+    Console.println(qb)
 
     val chain = for {
       store1 <- TestDatabase.staticCollectionTable.store(sample).future()

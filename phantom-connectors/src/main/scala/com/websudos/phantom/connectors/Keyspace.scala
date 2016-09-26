@@ -47,6 +47,8 @@ package com.websudos.phantom.connectors
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ProtocolVersion, Session}
 
+import scala.util.control.NoStackTrace
+
 trait SessionAugmenter {
 
   def session: Session
@@ -60,6 +62,8 @@ trait SessionAugmenter {
   }
 
   def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+
+  def protocolConsistency: Boolean = isNewerThan(ProtocolVersion.V1)
 
   def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
 }
@@ -78,9 +82,14 @@ trait SessionAugmenterImplicits {
  * @param name the name of the keySpace
  * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
+class KeySpaceDef(
+  val name: String,
+  clusterBuilder: ClusterBuilder,
+  autoinit: Boolean,
+  keyspaceFn: Option[(Session, KeySpace) => String] = None
+) {
 
-  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder)
+  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn)
 
   val self = this
 
@@ -88,7 +97,6 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
    * The Session associated with this keySpace.
    */
   lazy val session: Session = provider.session
-
 
   def cassandraVersions: Set[VersionNumber] = {
     session.getCluster.getMetadata.getAllHosts
@@ -110,11 +118,14 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
         if (single.forall(item => versions.forall(item ==))) {
           single
         } else {
-          throw new Exception("Illegal single version comparison. You are connected to clusters of different versions")
+          throw new RuntimeException(
+            s"Illegal single version comparison. You are connected to clusters of different versions." +
+              s"Available versions are: ${versions.mkString(", ")}"
+          ) with NoStackTrace
         }
       }
     } else {
-      throw new Exception("Could not extract any versions from the cluster.")
+      throw new RuntimeException("Could not extract any versions from the cluster, versions were empty")
     }
   }
 
@@ -136,6 +147,5 @@ class KeySpaceDef(val name: String, clusterBuilder: ClusterBuilder) {
   }
 
 }
-
 
 case class KeySpace(name: String)

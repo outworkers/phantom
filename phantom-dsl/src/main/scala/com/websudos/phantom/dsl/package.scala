@@ -40,8 +40,11 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.websudos.phantom.builder.ops._
 import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
+import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.column.AbstractColumn
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -53,6 +56,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with UsingClauseOperations
+  with KeySpaceConstruction
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
@@ -110,7 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Entries = com.websudos.phantom.keys.Entries
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
-  type Database = com.websudos.phantom.db.DatabaseImpl
+  type Database = com.websudos.phantom.database.DatabaseImpl
 
   type DateTime = org.joda.time.DateTime
   type LocalDate = org.joda.time.LocalDate
@@ -129,6 +133,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type IteratorResult[R] = com.websudos.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.websudos.phantom.builder.query.RecordResult[R]
 
+
+  object ? extends PrepareMark
   case object Batch extends Batcher
 
   object ConsistencyLevel {
@@ -183,66 +189,66 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
-  implicit class PartitionTokenHelper[T](val p: Column[_, _, T] with PartitionKey[T]) extends AnyVal {
+  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
 
-    def ltToken (value: T): WhereClause.Condition = {
+    def ltToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.lt(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
         )
       )
     }
 
-    def lteToken (value: T): WhereClause.Condition = {
+    def lteToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.lte(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
         )
       )
     }
 
-    def gtToken (value: T): WhereClause.Condition = {
+    def gtToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.gt(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
         )
       )
     }
 
-    def gteToken (value: T): WhereClause.Condition = {
+    def gteToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.gte(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
         )
       )
     }
 
-    def eqsToken (value: T): WhereClause.Condition = {
+    def eqsToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.eqs(
-          QueryBuilder.Where.token(p.name).queryString,
-          QueryBuilder.Where.fcall(CQLSyntax.token, p.asCql(value)).queryString
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
         )
       )
     }
   }
 
   implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
-    final def +=[T : Numeric](value: T): UpdateClause.Condition = {
+    final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
 
-    final def increment[T : Numeric](value: T): UpdateClause.Condition = +=(value)
+    final def increment[T : Numeric](value: T): UpdateClause.Default = +=(value)
 
-    final def -=[T : Numeric](value: T): UpdateClause.Condition = {
+    final def -=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
     }
 
-    final def decrement[T : Numeric](value: T): UpdateClause.Condition = -=(value)
+    final def decrement[T : Numeric](value: T): UpdateClause.Default = -=(value)
   }
 
   /**

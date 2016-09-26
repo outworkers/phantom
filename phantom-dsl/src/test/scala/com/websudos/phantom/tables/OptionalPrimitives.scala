@@ -29,9 +29,11 @@
  */
 package com.websudos.phantom.tables
 
-import com.websudos.phantom.builder.query.InsertQuery
+import com.websudos.phantom.builder.query.{InsertQuery, UpdateQuery}
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
+
+import scala.concurrent.Future
 
 case class OptionalPrimitive(
   pkey: String,
@@ -51,7 +53,7 @@ case class OptionalPrimitive(
 
 object OptionalPrimitive {
 
-  def none: OptionalPrimitive = {
+  def empty: OptionalPrimitive = {
     OptionalPrimitive(
       pkey = gen[String],
       string = None,
@@ -120,6 +122,10 @@ abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootCo
 
   override val tableName = "OptionalPrimitives"
 
+  def findByKey(pkey: String): Future[Option[OptionalPrimitive]] = {
+    select.where(_.pkey eqs pkey).one()
+  }
+
   def store(row: OptionalPrimitive): InsertQuery.Default[ConcreteOptionalPrimitives, OptionalPrimitive] = {
     insert
       .value(_.pkey, row.pkey)
@@ -135,5 +141,22 @@ abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootCo
       .value(_.bi, row.bi)
       .value(_.string, row.string)
       .value(_.timeuuid, row.timeuuid)
+  }
+
+  def updateColumns(row: OptionalPrimitive): Future[ResultSet] = {
+    update.where(_.pkey eqs row.pkey)
+      .modify(_.long setTo row.long)
+      .and(_.bDecimal setTo row.bDecimal)
+      .and(_.boolean setTo row.boolean)
+      .and(_.double setTo row.double)
+      .and(_.float setTo row.float)
+      .and(_.inet setTo row.inet)
+      .and(_.int setTo row.int)
+      .and(_.date setTo row.date)
+      .and(_.uuid setTo row.uuid)
+      .and(_.bi setTo row.bi)
+      .and(_.string setTo row.string)
+      .and(_.timeuuid setTo row.timeuuid)
+      .future()
   }
 }

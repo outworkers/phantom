@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.serializers
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
@@ -93,7 +93,45 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
         qb shouldEqual s"DELETE props['test'], props['test2'] FROM phantom.recipes WHERE url = '$url';"
       }
+    }
 
+    "should allow specifying a custom timestamp for deletes" - {
+      "should allow using a milliseconds Long value as a timestamp" in {
+        val value = gen[Long]
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes
+          .delete.where(_.url eqs url)
+          .timestamp(value)
+          .queryString
+
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP $value WHERE url = '$url';"
+      }
+
+      "should allow using a DateTime instance value as a timestamp" in {
+        val value = gen[DateTime]
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes
+          .delete.where(_.url eqs url)
+          .timestamp(value)
+          .queryString
+
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url';"
+      }
+
+      "should allow mixing a timestamp clause with a conditional clause" in {
+        val value = gen[DateTime]
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes
+          .delete.where(_.url eqs url)
+          .timestamp(value)
+          .onlyIf(_.lastcheckedat is value)
+          .queryString
+
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url' IF lastcheckedat = ${value.getMillis};"
+      }
     }
   }
 }

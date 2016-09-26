@@ -47,9 +47,12 @@ sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[Long], session: Session): TypedClause.Condition[Option[Long]] = {
+  def apply(pf: TimeUUIDColumn[_, _])(
+    implicit ev: Primitive[Long],
+    session: Session
+  ): TypedClause.Condition[Option[Long]] = {
     new TypedClause.Condition(QueryBuilder.Select.unixTimestampOf(pf.name), row => {
-      if (session.v3orNewer) {
+      if (row.getColumnDefinitions.contains(s"system.unixtimestampof(${pf.name})")) {
         ev.fromRow(s"system.unixtimestampof(${pf.name})", row).toOption
       } else {
         ev.fromRow(s"unixtimestampof(${pf.name})", row).toOption
@@ -68,10 +71,12 @@ sealed class TTLOfFunction extends CqlFunction {
 
 sealed class DateOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[Option[DateTime]] = {
+  def apply(pf: TimeUUIDColumn[_, _])(
+    implicit ev: Primitive[DateTime],
+    session: Session
+  ): TypedClause.Condition[Option[DateTime]] = {
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
-      if (session.v3orNewer) {
-
+      if (row.getColumnDefinitions.contains(s"system.dateof(${pf.name})")) {
         ev.fromRow(s"system.dateof(${pf.name})", row).toOption
       } else {
         ev.fromRow(s"dateof(${pf.name})", row).toOption
@@ -79,11 +84,14 @@ sealed class DateOfCqlFunction extends CqlFunction {
     })
   }
 
-  def apply(op: OperatorClause.Condition)(implicit ev: Primitive[DateTime], session: Session): TypedClause.Condition[Option[DateTime]] = {
+  def apply(op: OperatorClause.Condition)(
+    implicit ev: Primitive[DateTime],
+    session: Session
+  ): TypedClause.Condition[Option[DateTime]] = {
     val pf = op.qb.queryString
 
     new TypedClause.Condition(QueryBuilder.Select.dateOf(pf), row => {
-      if (session.v3orNewer) {
+      if (row.getColumnDefinitions.contains(s"system.dateof(${pf})")) {
         ev.fromRow(s"system.dateof($pf)", row).toOption
       } else {
         ev.fromRow(s"dateof($pf)", row).toOption
@@ -93,7 +101,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
 }
 
 sealed class NowCqlFunction extends CqlFunction {
-  def apply(): OperatorClause.Condition = {
+  def apply()(implicit ev: Primitive[Long], session: Session): OperatorClause.Condition = {
     new OperatorClause.Condition(QueryBuilder.Select.now())
   }
 }

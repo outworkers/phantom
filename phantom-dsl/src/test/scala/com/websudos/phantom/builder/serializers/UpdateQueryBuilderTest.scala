@@ -31,6 +31,7 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.QueryBuilderTest
+import com.outworkers.util.testing._
 
 class UpdateQueryBuilderTest extends QueryBuilderTest {
 
@@ -53,11 +54,14 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
         val c2 = QueryBuilder.Update.setTo("c", "d")
 
         QueryBuilder.Update.chain(List(c1, c2)).queryString shouldEqual "a = b, c = d"
-
       }
     }
 
-    "should allow specifying WHERE options" - {
+    "should allow specifying USING clause options" - {
+      "should allow specifying a timestamp clause" in {
+        val str = gen[Long]
+        QueryBuilder.timestamp(str).queryString shouldEqual s"TIMESTAMP $str"
+      }
     }
 
     "should allow specifying CAS options" - {

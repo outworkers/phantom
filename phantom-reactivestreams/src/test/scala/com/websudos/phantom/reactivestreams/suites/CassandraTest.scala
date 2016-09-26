@@ -31,10 +31,10 @@ package com.websudos.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
 import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams.RequestBuilder
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest._
 
 import scala.concurrent.Await

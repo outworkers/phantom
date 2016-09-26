@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.prepared
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.{Article, Recipe}
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class PreparedDeleteQueryTest extends PhantomSuite {
 
@@ -45,7 +45,7 @@ class PreparedDeleteQueryTest extends PhantomSuite {
   it should "correctly execute a prepared delete query" in {
     val recipe = gen[Recipe]
 
-    val query = database.recipes.delete.p_where(_.url eqs ?).prepare()
+    val query = database.recipes.delete.where(_.url eqs ?).prepare()
 
     val chain = for {
       store <- database.recipes.store(recipe).future()
@@ -64,15 +64,15 @@ class PreparedDeleteQueryTest extends PhantomSuite {
   }
 
   it should "correctly execute a prepared delete query with 2 bound values" in {
-    val sample = database.twoKeysTable
+    val sample = database.multipleKeysTable$
 
     val author = gen[UUID]
     val cat = gen[UUID]
     val article = gen[Article]
 
     val query = database.articlesByAuthor.delete
-      .p_where(_.category eqs ?)
-      .p_and(_.author_id eqs ?)
+      .where(_.category eqs ?)
+      .and(_.author_id eqs ?)
       .prepare()
 
     val chain = for {

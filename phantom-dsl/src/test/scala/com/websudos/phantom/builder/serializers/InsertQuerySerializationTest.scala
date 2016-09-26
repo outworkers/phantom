@@ -31,7 +31,7 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.tables.{Recipe, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.websudos.phantom.dsl._
 import net.liftweb.json.{ compactRender, Extraction }
 
@@ -52,6 +52,44 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         val query = TestDatabase.recipes.insert.value(_.url, "test").value(_.ingredients, List("test")).queryString
 
         query shouldEqual "INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']);"
+      }
+    }
+
+    "should allow specifying using clause options" - {
+
+      "should allow specifying a TTL clause for an insert" in {
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .ttl(5)
+          .queryString
+
+        query shouldEqual "INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TTL 5;"
+      }
+
+      "should allow specifying a timestamp clause" in {
+        val time = new DateTime
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .timestamp(time)
+          .queryString
+
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis};"
+      }
+
+      "should allow specifying a combined TTL and timestamp clause" in {
+        val time = new DateTime
+        val ttl = 5
+
+        val query = TestDatabase.recipes.insert
+          .value(_.url, "test")
+          .value(_.ingredients, List("test"))
+          .timestamp(time)
+          .ttl(ttl)
+          .queryString
+
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis} AND TTL $ttl;"
       }
     }
 
@@ -85,8 +123,6 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         val sample = gen[Recipe]
         val query = TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
 
-        Console.println(query)
-
       }
 
       "should append USING clause after lightweight part " in {
@@ -97,6 +133,14 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       "should allow specifying an IGNORE_NULLS clause as part of the using block" in {
         val query = TestDatabase.recipes.insert.value(_.url, "test").using(ignoreNulls).queryString
         query shouldEqual "INSERT INTO phantom.recipes (url) VALUES('test') USING IGNORE_NULLS;"
+      }
+
+      "should allow using operator values as parts of the insert statements" in {
+        val query = TestDatabase.timeSeriesTable.insert
+          .opValue(_.id, now())
+          .queryString
+
+        query shouldEqual "INSERT INTO phantom.timeSeriesTable (id) VALUES(now());"
       }
 
     }

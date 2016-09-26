@@ -67,7 +67,8 @@ sealed class OrderingModifier {
   def orderBy(clauses: CQLQuery*): CQLQuery = clauses match {
     case head :: tail if tail.isEmpty =>
       CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(head.queryString)
-    case _ => CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.wrap(clauses.map(_.queryString))
+    case _ =>
+      CQLQuery(CQLSyntax.Selection.OrderBy).forcePad.append(clauses.map(_.queryString))
   }
 
   def orderBy(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
@@ -186,6 +187,52 @@ private[builder] class SelectQueryBuilder {
       .pad.append(QueryBuilder.keyspace(keyspace, tableName))
   }
 
+  /**
+    * Creates a select JSON query builder from a table name, a keyspace, and an arbitrary clause.
+    * This is used to serialise SELECT functions, such as WRITETIME or other valid expressions.
+    * Will return a query in the following format:
+    *
+    * {{{
+    *   SELECT JSON $clause FROM $keyspace.$tableName
+    * }}}
+    * @param tableName The name of the table.
+    * @param keyspace The name of the keyspace.
+    * @param clause The CQL clause to use as the select list value.
+    * @return
+    */
+  def selectJson(tableName: String, keyspace: String, clause: CQLQuery): CQLQuery = {
+    CQLQuery(CQLSyntax.select)
+      .forcePad.append(CQLSyntax.json)
+      .pad.append(clause)
+      .pad.append(CQLSyntax.from)
+      .pad.append(QueryBuilder.keyspace(keyspace, tableName))
+  }
+
+  /**
+    * Selects an arbitrary number of columns given a table name and a keyspace.
+    * Return all the columns as JSON.
+    * Will return a query in the following format:
+    *
+    * {{{
+    *   SELECT JSON ($name1, $name2, ..) FROM $keyspace.$tableName
+    * }}}
+    *
+    * @param tableName The name of the table.
+    * @param keyspace The name of the keyspace.
+    * @param names The names of the columns to include in the select.
+    * @return A CQLQuery matching the described pattern.
+    */
+  def selectJson(tableName: String, keyspace: String, names: String*): CQLQuery = {
+    val cols = if (names.nonEmpty) CQLQuery(names) else CQLQuery(CQLSyntax.Symbols.`*`)
+
+    CQLQuery(CQLSyntax.select)
+      .forcePad.append(CQLSyntax.json)
+      .pad.append(cols)
+      .forcePad.append(CQLSyntax.from)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, tableName))
+  }
+
+
   def allowFiltering(): CQLQuery = {
     CQLQuery(CQLSyntax.allowFiltering)
   }
@@ -241,6 +288,4 @@ private[builder] class SelectQueryBuilder {
   def blobAsText(column: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.BlobAsText).wrapn(column)
   }
-
-
 }

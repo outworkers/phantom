@@ -35,7 +35,9 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.query.QueryBuilderTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
+
+import scala.collection.SeqLike
 
 class SelectQuerySerialisationTest extends QueryBuilderTest {
 
@@ -68,6 +70,24 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
     }
 
+    "should allow serialising JSON selection clauses" - {
+      "should allow a SELECT JSON * syntax" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select.json().where(_.id eqs id).queryString
+
+        qb shouldEqual s"SELECT JSON * FROM phantom.basicTable WHERE id = ${id.toString};"
+      }
+
+      "should allow a SELECT JSON col1, col2, .. syntax" in {
+        val id = gen[UUID]
+
+        val qb = BasicTable.select(_.id, _.id2).json().where(_.id eqs id).queryString
+
+        qb shouldEqual s"SELECT JSON id, id2 FROM phantom.basicTable WHERE id = ${id.toString};"
+      }
+    }
+
     "should allow serialising USING clause syntax" - {
 
       "should allow specifying USING IGNORE NULLS" in {
@@ -78,7 +98,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
     }
 
-    "should serialize " - {
+    "should serialize combinations of limits and allow filtering clauses " - {
 
       "serialise an allow filtering clause in the init position" in {
         val id = gen[UUID]
@@ -109,7 +129,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = BasicTable.select.where(_.id eqs id).orderBy(_.id2.desc, _.id3.asc).queryString
 
-        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY (id2 DESC, id3 ASC);"
+        qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} ORDER BY id2 DESC, id3 ASC;"
       }
 
       "a maxTimeuuid comparison clause" in {
@@ -145,7 +165,10 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a multiple column token clause" in {
-        val qb = ArticlesByAuthor.select.where(t => { token(gen[UUID], gen[UUID]) > token(t.author_id, t.category) }).queryString
+        val qb = ArticlesByAuthor.select.where(t => {
+          token(gen[UUID], gen[UUID]) > token(t.author_id, t.category)
+        }).queryString
+        info(qb)
       }
 
       "a single column token clause" in {
@@ -154,20 +177,28 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a consistency level setting" in {
-        val qb = ArticlesByAuthor.select.where(_.author_id eqs gen[UUID])
+        val id = gen[UUID]
+
+        val qb = ArticlesByAuthor.select.where(_.author_id gtToken id)
           .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
           .queryString
+
+        if (session.protocolConsistency) {
+          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
+        } else {
+          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id) USING CONSISTENCY EACH_QUORUM;"
+        }
       }
 
       "a single dateOf column apply" in {
+        val id = UUIDs.timeBased()
         val qb = TestDatabase.timeuuidTable.select
           .function(t => dateOf(t.id))
-          .where(_.id eqs UUIDs.timeBased())
+          .where(_.id eqs id)
           .qb.queryString
 
-        info(qb)
+        qb shouldEqual s"SELECT dateOf(id) FROM phantom.timeuuidTable WHERE id = $id"
       }
     }
   }
-
 }

@@ -93,6 +93,7 @@ sealed trait TopologyStrategies {
     }
   }
 
+
   sealed class SimpleStrategy(override val qb: CQLQuery) extends
     ReplicationStrategy(qb) {
 

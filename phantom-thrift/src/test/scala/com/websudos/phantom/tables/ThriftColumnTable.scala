@@ -35,7 +35,7 @@ import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.thrift._
 

@@ -30,7 +30,7 @@
 package com.websudos.phantom.jdk8.tables
 
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.db.DatabaseImpl
+import com.websudos.phantom.database.DatabaseImpl
 
 
 class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {

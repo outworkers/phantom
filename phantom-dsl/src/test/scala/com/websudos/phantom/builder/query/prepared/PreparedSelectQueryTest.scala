@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.prepared
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class PreparedSelectQueryTest extends PhantomSuite {
 
@@ -47,10 +47,33 @@ class PreparedSelectQueryTest extends PhantomSuite {
     }
   }
 
+  it should "serialise and execute a prepared select with the same clause as a normal one" in {
+    val recipe = gen[Recipe]
+
+    val query = TestDatabase.recipes.select.where(_.url eqs ?).prepare()
+
+    val operation = for {
+      truncate <- TestDatabase.recipes.truncate.future
+      insertDone <- TestDatabase.recipes.store(recipe).future()
+      select <- query.bind(recipe.url).one()
+      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (select, select2)
+
+    operation.successful {
+      case (items, items2) => {
+        items shouldBe defined
+        items.value shouldEqual recipe
+
+        items2 shouldBe defined
+        items2.value shouldEqual recipe
+      }
+    }
+  }
+
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
-    val query = TestDatabase.recipes.select.p_where(_.url eqs ?).prepare()
+    val query = TestDatabase.recipes.select.where(_.url eqs ?).prepare()
 
     val operation = for {
       truncate <- TestDatabase.recipes.truncate.future
@@ -73,7 +96,10 @@ class PreparedSelectQueryTest extends PhantomSuite {
     val category = gen[UUID]
     val category2 = gen[UUID]
 
-    val query = TestDatabase.articlesByAuthor.select.p_where(_.author_id eqs ?).p_and(_.category eqs ?).prepare()
+    val query = TestDatabase.articlesByAuthor.select
+      .where(_.author_id eqs ?)
+      .and(_.category eqs ?)
+      .prepare()
 
     val op = for {
       store <- TestDatabase.articlesByAuthor.store(owner, category, sample).future()
@@ -96,7 +122,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
   it should "serialise and execute a primitives prepared select statement with the correct number of arguments" in {
     val primitive = gen[Primitive]
 
-    val query = TestDatabase.primitives.select.p_where(_.pkey eqs ?).prepare()
+    val query = TestDatabase.primitives.select.where(_.pkey eqs ?).prepare()
 
     val operation = for {
       truncate <- TestDatabase.primitives.truncate.future
@@ -116,7 +142,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
     it should "serialise and execute a primitives cassandra 2.2 prepared select statement with the correct number of arguments" in {
       val primitive = gen[PrimitiveCassandra22]
 
-      val query = TestDatabase.primitivesCassandra22.select.p_where(_.pkey eqs ?).prepare()
+      val query = TestDatabase.primitivesCassandra22.select.where(_.pkey eqs ?).prepare()
 
       val operation = for {
         truncate <- TestDatabase.primitivesCassandra22.truncate.future

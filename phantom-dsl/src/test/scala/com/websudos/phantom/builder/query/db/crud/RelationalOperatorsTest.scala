@@ -35,7 +35,7 @@ import com.websudos.phantom.builder.query.db.ordering.TimeSeriesTest
 import com.websudos.phantom.builder.query.prepared._
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.slf4j.LoggerFactory
 import scala.concurrent.{Future => ScalaFuture}
 
@@ -48,14 +48,14 @@ class RelationalOperatorsTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    TestDatabase.timeSeriesTable.insertSchema()
+    database.timeSeriesTable.insertSchema()
 
     val chain = for {
-      truncate <- TestDatabase.timeSeriesTable.truncate.future()
-      inserts <- TimeSeriesTest.addRecordsToBatch(records).future()
+      truncate <- database.timeSeriesTable.truncate.future()
+      inserts <- TimeSeriesTest.storeRecords(records)
     } yield inserts
 
-    chain.successful { inserts =>
+    whenReady(chain) { inserts =>
       logger.debug(s"Initialized table with $numRecords records")
     }
   }
@@ -64,7 +64,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxIndex = 50
     val maxTimestamp = records(maxIndex).timestamp
 
-    val futureResults = TestDatabase.timeSeriesTable.select
+    val futureResults = database.timeSeriesTable.select
       .where(_.timestamp < maxTimestamp)
       .allowFiltering()
       .fetch()
@@ -77,8 +77,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxIndex = 50
     val maxTimestamp = records(maxIndex).timestamp
 
-    val query = TestDatabase.timeSeriesTable.select
-      .p_where(_.timestamp < ?)
+    val query = database.timeSeriesTable.select
+      .where(_.timestamp < ?)
       .allowFiltering()
       .prepare()
 
@@ -91,7 +91,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxIndex = 40
     val maxTimestamp = records(maxIndex).timestamp
 
-    val futureResults = TestDatabase.timeSeriesTable.select
+    val futureResults = database.timeSeriesTable.select
       .where(_.timestamp <= maxTimestamp)
       .allowFiltering()
       .fetch()
@@ -104,8 +104,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     val maxIndex = 40
     val maxTimestamp = records(maxIndex).timestamp
 
-    val query = TestDatabase.timeSeriesTable.select
-      .p_where(_.timestamp <= ?)
+    val query = database.timeSeriesTable.select
+      .where(_.timestamp <= ?)
       .allowFiltering()
       .prepare()
 
@@ -118,7 +118,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minIndex = 60
     val minTimestamp = records(minIndex).timestamp
 
-    val futureResults = TestDatabase.timeSeriesTable.select
+    val futureResults = database.timeSeriesTable.select
       .where(_.timestamp > minTimestamp)
       .allowFiltering()
       .fetch()
@@ -131,8 +131,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minIndex = 60
     val minTimestamp = records(minIndex).timestamp
 
-    val query = TestDatabase.timeSeriesTable.select
-      .p_where(_.timestamp > ?)
+    val query = database.timeSeriesTable.select
+      .where(_.timestamp > ?)
       .allowFiltering()
       .prepare()
 
@@ -145,7 +145,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minIndex = 75
     val minTimestamp = records(minIndex).timestamp
 
-    val futureResults = TestDatabase.timeSeriesTable.select
+    val futureResults = database.timeSeriesTable.select
       .where(_.timestamp >= minTimestamp)
       .allowFiltering()
       .fetch()
@@ -158,8 +158,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minIndex = 75
     val minTimestamp = records(minIndex).timestamp
 
-    val query = TestDatabase.timeSeriesTable.select
-      .p_where(_.timestamp >= ?)
+    val query = database.timeSeriesTable.select
+      .where(_.timestamp >= ?)
       .allowFiltering()
       .prepare()
 
@@ -174,7 +174,7 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minTimestamp = records(minIndex).timestamp
     val maxTimestamp = records(maxIndex).timestamp
 
-    val futureResults = TestDatabase.timeSeriesTable.select
+    val futureResults = database.timeSeriesTable.select
       .where(_.timestamp > minTimestamp)
       .and(_.timestamp < maxTimestamp)
       .allowFiltering()
@@ -190,9 +190,9 @@ class RelationalOperatorsTest extends PhantomSuite {
     val minTimestamp = records(minIndex).timestamp
     val maxTimestamp = records(maxIndex).timestamp
 
-    val query = TestDatabase.timeSeriesTable.select
-      .p_where(_.timestamp > ?)
-      .p_and(_.timestamp < ?)
+    val query = database.timeSeriesTable.select
+      .where(_.timestamp > ?)
+      .and(_.timestamp < ?)
       .allowFiltering()
       .prepare()
 

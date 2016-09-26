@@ -32,7 +32,9 @@ package com.websudos.phantom.builder.query.db.crud
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
+import net.liftweb.http.js.JsObj
+import net.liftweb.json.JsonParser
 
 class SelectTest extends PhantomSuite {
 
@@ -44,21 +46,17 @@ class SelectTest extends PhantomSuite {
   "Selecting the whole row" should "work fine" in {
     val row = gen[Primitive]
 
-    TestDatabase.primitives.select.distinct()
-
     val chain = for {
       store <- TestDatabase.primitives.store(row).future()
       b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
     chain successful {
-      res => {
-        res.value shouldEqual row
-      }
+      res => res.value shouldEqual row
     }
   }
 
-  "Selecting 2 columns" should "work fine" in {
+  "Partial selects" should "select 2 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long)
 
@@ -68,13 +66,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      res => {
-        res.value shouldEqual expected
-      }
+      res => res.value shouldEqual expected
     }
   }
 
-  "Selecting 3 columns" should "work fine" in {
+  "Partial selects" should "select 3 columns" in {
 
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean)
@@ -85,13 +81,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldEqual expected
-      }
+      r => r.value shouldEqual expected
     }
   }
 
-  "Selecting 4 columns" should "work fine" in {
+  "Partial selects" should "select 4 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
@@ -101,13 +95,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
-  "Selecting 5 columns" should "work fine" in {
+  "Partial selects" should "select 5 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
@@ -117,13 +109,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
-  "Selecting 6 columns" should "work fine" in {
+  "Partial selects" should "select 6 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
@@ -133,13 +123,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
-  "Selecting 7 columns" should "work fine" in {
+  "Partial selects" should "select 7 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
@@ -149,13 +137,11 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 
-  "Selecting 8 columns" should "work fine" in {
+  "Partial selects" should "select 8 columns" in {
     val row = gen[Primitive]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
@@ -166,9 +152,7 @@ class SelectTest extends PhantomSuite {
     } yield get
 
     chain successful {
-      r => {
-        r.value shouldBe expected
-      }
+      r => r.value shouldBe expected
     }
   }
 }

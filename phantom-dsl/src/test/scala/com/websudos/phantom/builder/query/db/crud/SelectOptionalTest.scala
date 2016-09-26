@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.db.crud
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class SelectOptionalTest extends PhantomSuite {
 
@@ -49,7 +49,7 @@ class SelectOptionalTest extends PhantomSuite {
   }
 
   it should "work fine when optional value is empty" in {
-    checkRow(OptionalPrimitive.none)
+    checkRow(OptionalPrimitive.empty)
   }
 
 

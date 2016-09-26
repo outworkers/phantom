@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.db.specialized
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.{TimeUUIDRecord, Recipe}
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {
@@ -110,7 +110,8 @@ class SelectFunctionsTesting extends PhantomSuite {
       store <- database.timeuuidTable.store(record).ttl(timeToLive).future()
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
-        .and(_.id eqs record.id).one()
+        .and(_.id eqs record.id)
+        .one()
     } yield timestamp
 
     whenReady(chain) {

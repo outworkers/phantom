@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.prepared
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.tables.Recipe
 import com.websudos.phantom.dsl._
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 
 class PreparedUpdateQueryTest extends PhantomSuite {
 
@@ -46,8 +46,8 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val updated = genOpt[ShortString].map(_.value)
 
     val query = database.recipes.update
-      .p_where(_.url eqs ?)
-      .p_modify(_.description setTo ?)
+      .where(_.url eqs ?)
+      .modify(_.description setTo ?)
       .prepare()
 
     val recipe = gen[Recipe]
@@ -82,9 +82,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val updatedUid = gen[UUID]
 
     val query = database.recipes.update
-      .p_where(_.url eqs ?)
-      .p_modify(_.description setTo ?)
-      .p_and(_.uid setTo ?)
+      .where(_.url eqs ?)
+      .modify(_.description setTo ?)
+      .and(_.uid setTo ?)
       .prepare()
 
     val recipe = gen[Recipe]

@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.compilation
 import com.websudos.phantom.builder.query.KeySpaceSuite
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.scalatest.{FlatSpec, Matchers}
 
 class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpaceSuite {

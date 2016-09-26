@@ -60,19 +60,27 @@
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"
 
-        echo "Publishing Maven artifact"
+        echo "Publishing version bump information to GitHub"
         git add .
-        git commit -m "TravisCI: Bumping version [ci skip]"
+        git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
+        git checkout -b version_branch
+        git checkout -B develop version_branch
+
         git push "https://${github_token}@${GH_REF}" develop
 
-        echo "Publishing new version to Maven"
-        sbt +publishSigned
-        sbt sonatypeReleaseAll
+        echo "Publishing new version to bintray"
+        sbt +bintray:publish
 
-        git checkout master
-        git merge develop
+        echo "Creating GPG deploy key"
+        openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-        git push "https://${github_token}@${GH_REF}" develop:master > /dev/null 2>&1
+        echo "importing GPG key to local GBP repo"
+        gpg --fast-import build/deploy.asc
+
+        echo "Setting MAVEN_PUBLISH mode to true"
+        export MAVEN_PUBLISH="true"
+        export pgp_passphrase=${maven_password}
+        sbt +publishSigned sonatypeReleaseAll
 
     #else
      #   echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"

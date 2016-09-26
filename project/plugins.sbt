@@ -27,6 +27,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+
+def outworkersPattern: Patterns = {
+  val pList = List(
+    "[organisation]/[module](_[scalaVersion])(_[sbtVersion])/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+  )
+
+  Patterns(
+    pList,
+    pList,
+    isMavenCompatible = true
+  )
+}
+
 resolvers ++= Seq(
   "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
   "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
@@ -38,24 +52,26 @@ resolvers ++= Seq(
   Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.5")
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.3")
-
-addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.0.3")
+addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
+
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+
+if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
+  addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
+} else {
+  addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+}
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
-
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
-
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")

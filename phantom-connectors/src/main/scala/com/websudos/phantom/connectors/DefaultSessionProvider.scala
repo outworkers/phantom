@@ -16,8 +16,11 @@
 package com.websudos.phantom.connectors
 
 import com.datastax.driver.core.{Cluster, Session}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.blocking
+import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 /**
  * The default SessionProvider implementation, which should be sufficient
@@ -25,21 +28,32 @@ import scala.concurrent.blocking
  *
  * This implementation caches `Session` instances per keySpace.
  */
-class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) extends SessionProvider {
+class DefaultSessionProvider(
+  val space: KeySpace,
+  builder: ClusterBuilder,
+  autoinit: Boolean = true,
+  keyspaceQuery: Option[(Session, KeySpace) => String] = None,
+  errorHandler: Throwable => Throwable = identity
+) extends SessionProvider {
 
-  val cluster: Cluster = {
-    builder(Cluster.builder).withoutJMXReporting().withoutMetrics().build
+  val logger = LoggerFactory.getLogger(this.getClass)
+
+  val cluster: Cluster = builder(Cluster.builder).build
+
+  def defaultKeyspaceCreationQuery(session: Session, keySpace: String): String = {
+    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
   }
 
   /**
    * Initializes the keySpace with the given name on
    * the specified Session.
    */
-  protected[this] def initKeySpace(session: Session, keySpace: String): Session = blocking {
+  protected[this] def initKeySpace(session: Session, space: String): Session = blocking {
     blocking {
-      session.execute(s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};")
+      val query = keyspaceQuery.map(_.apply(session, KeySpace(space))).getOrElse(defaultKeyspaceCreationQuery(session, space))
+      logger.info(s"Automatically initialising keyspace $space with query $query")
+      session.execute(query)
     }
-
     session
   }
 
@@ -47,8 +61,21 @@ class DefaultSessionProvider(val space: KeySpace, builder: ClusterBuilder) exten
    * Creates a new Session for the specified keySpace.
    */
   protected[this] def createSession(keySpace: String): Session = {
-    val session = cluster.connect
-    initKeySpace(session, keySpace)
+    Try {
+      val session = blocking {
+        cluster.connect
+      }
+
+      if (autoinit) {
+        initKeySpace(session, keySpace)
+      } else {
+        logger.info(s"Auto-init set to false, keyspace $space is not being auto-created.")
+        session
+      }
+    } match {
+      case Success(value) => value
+      case Failure(NonFatal(err)) => throw errorHandler(err);
+    }
   }
 
   val session = createSession(space.name)

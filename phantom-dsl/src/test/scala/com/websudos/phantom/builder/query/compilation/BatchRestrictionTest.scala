@@ -32,7 +32,7 @@ package com.websudos.phantom.builder.query.compilation
 import com.websudos.phantom.builder.query.SerializationTest
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables.{Recipe, TestDatabase}
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 

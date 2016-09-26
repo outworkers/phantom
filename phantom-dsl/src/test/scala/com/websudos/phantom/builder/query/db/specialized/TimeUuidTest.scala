@@ -33,7 +33,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.{dsl, PhantomSuite}
 import com.websudos.phantom.tables.{TimeUUIDRecord, TestDatabase}
 import org.joda.time.DateTime
-import com.websudos.util.testing._
+import com.outworkers.util.testing._
 import com.websudos.phantom.dsl._
 
 class TimeUuidTest extends PhantomSuite {

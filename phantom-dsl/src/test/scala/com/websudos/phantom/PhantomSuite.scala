@@ -31,9 +31,9 @@ package com.websudos.phantom
 
 import java.util.concurrent.TimeUnit
 
-import com.websudos.phantom.connectors.RootConnector
-import com.websudos.phantom.tables.TestDatabase
-import com.websudos.util.lift.{DateTimeSerializer, UUIDSerializer}
+import com.websudos.phantom.connectors.{RootConnector, VersionNumber}
+import com.websudos.phantom.tables.{Primitive, TestDatabase}
+import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -44,7 +44,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
-  protected[this] val defaultScalaTimeoutSeconds = 10
+  protected[this] val defaultScalaTimeoutSeconds = 25
 
   private[this] val defaultScalaInterval = 50L
 
@@ -60,10 +60,18 @@ trait PhantomBaseSuite extends Suite with Matchers
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )
+
+  implicit class CqlConverter[T](val obj: T) {
+    def asCql()(implicit primitive: com.websudos.phantom.builder.primitives.Primitive[T]): String = {
+      primitive.asCql(obj)
+    }
+  }
 }
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
   val database = TestDatabase
+
+  def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
 }
 
 

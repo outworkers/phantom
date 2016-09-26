@@ -35,14 +35,14 @@ import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Retries}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.tagobjects.Retryable
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures {
+class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures with Retries {
 
   implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
@@ -51,16 +51,15 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
     Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
   }
 
-
   it should "persist all data" taggedAs Retryable in {
     val completionLatch = new CountDownLatch(1)
 
     val subscriber = StreamDatabase.operaTable.subscriber(
-      2,
-      2,
-      BatchType.Unlogged,
-      None,
-      () => completionLatch.countDown()
+      batchSize = 2,
+      concurrentRequests = 2,
+      batchType = BatchType.Unlogged,
+      flushInterval = None,
+      completionFn = () => completionLatch.countDown()
     )
 
     OperaPublisher.subscribe(subscriber)
@@ -71,11 +70,8 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
       count <- StreamDatabase.operaTable.select.count().one()
     } yield count
 
-
     whenReady(chain) {
-      res => {
-        res.value shouldEqual OperaData.operas.length
-      }
+      res => res.value shouldEqual OperaData.operas.length
     }
 
   }
