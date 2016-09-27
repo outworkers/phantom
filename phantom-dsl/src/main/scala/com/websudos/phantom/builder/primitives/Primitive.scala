@@ -79,7 +79,7 @@ abstract class Primitive[RR] {
 
 }
 
-trait DefaultPrimitives {
+object Primitive {
 
   implicit object StringPrimitive extends Primitive[String] {
 
@@ -407,34 +407,14 @@ trait DefaultPrimitives {
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
 
-}
-
-object Primitive extends DefaultPrimitives {
   def apply[RR: Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 
-
-  def apply[T <: Enumeration](enum: T): Primitive[T#Value] = {
-    new Primitive[T#Value] {
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: String = Primitive[String].cassandraType
-
-      override def fromRow(name: String, row: Row): Try[T#Value] = {
-        nullCheck(name, row) {
-          r => enum.values.find(_.toString == r.getString(name)) match {
-            case Some(value) => value
-            case _ => throw new Exception(s"Value $name not found in enumeration") with NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: T#Value): String = Primitive[String].asCql(value.toString)
-
-      override def fromString(value: String): T#Value = enum.values.find(value == _.toString).getOrElse(None.orNull)
-
-      override def clz: Class[String] = classOf[java.lang.String]
-    }
-  }
+  /**
+    * Automatically derives a primitive for
+    * @tparam T
+    * @return
+    */
+  implicit def enumPrimitive[T <: Enumeration]: Primitive[T#Value] = macro PrimitiveMacro.enumMaterializer[T]
+  //implicit def listPrimitive[T : Primitive]: Primitive[List[T]] = macro PrimitiveMacro.enumMaterializer[T]
 
 }

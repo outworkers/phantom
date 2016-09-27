@@ -45,6 +45,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object basicTable extends ConcreteBasicTable with connector.Connector
   object enumTable extends ConcreteEnumTable with connector.Connector
   object namedEnumTable extends ConcreteNamedEnumTable with connector.Connector
+  object indexedEnumTable extends ConcreteNamedPartitionEnumTable with connector.Connector
+
   object clusteringTable extends ConcreteClusteringTable with connector.Connector
   object complexClusteringTable extends ConcreteComplexClusteringTable with connector.Connector
   object brokenClusteringTable extends ConcreteBrokenClusteringTable with connector.Connector

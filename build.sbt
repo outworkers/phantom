@@ -129,6 +129,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.bintrayRepo("websudos", "oss-releases")
   ),
   scalacOptions ++= Seq(
+    "-language:experimental.macros",
     "-language:postfixOps",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
@@ -213,6 +214,15 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+  unmanagedSourceDirectories in Compile ++= Seq(
+    (sourceDirectory in Compile).value / ("scala-2." + {
+      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
+        case Some((major, minor)) if minor == 11 => "11"
+        case Some((major, minor)) if minor == 12 => "12"
+        case _ => "10"
+      }
+    })),
   libraryDependencies ++= Seq(
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,

@@ -39,7 +39,7 @@ import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.websudos.phantom.builder.ops._
-import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.websudos.phantom.builder.serializers.KeySpaceConstruction
@@ -52,7 +52,6 @@ import scala.util.Try
 import scala.util.control.NoStackTrace
 
 package object dsl extends ImplicitMechanism with CreateImplicits
-  with DefaultPrimitives
   with SelectImplicits
   with Operators
   with UsingClauseOperations
