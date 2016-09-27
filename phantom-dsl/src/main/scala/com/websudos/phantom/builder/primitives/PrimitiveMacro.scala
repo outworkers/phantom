@@ -30,16 +30,15 @@
 package com.websudos.phantom.builder.primitives
 
 import scala.language.experimental.macros
-import com.websudos.phantom.macros.CrossVersionDefs.CrossVersionContext
 
 private[phantom] object PrimitiveMacro {
 
   def enumMaterializer[T <: Enumeration : c.WeakTypeTag](
-    c: CrossVersionContext
+    c: scala.reflect.macros.blackbox.Context
   ): c.Expr[Primitive[T#Value]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
-    val companion = tpe.typeSymbol
+    val companion = tpe.typeSymbol.companion
 
 
     val tree = q"""
