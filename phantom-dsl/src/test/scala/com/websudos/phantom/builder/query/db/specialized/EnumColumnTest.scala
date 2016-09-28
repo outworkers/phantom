@@ -35,15 +35,14 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
 
 import com.outworkers.util.testing._
 
 class EnumColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(database.enumTable.create.ifNotExists().future(), 5.seconds)
-    Await.result(database.namedEnumTable.create.ifNotExists().future(), 5.seconds)
+    Await.result(database.enumTable.create.ifNotExists().future(), defaultScalaTimeout)
+    Await.result(database.namedEnumTable.create.ifNotExists().future(), defaultScalaTimeout)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {

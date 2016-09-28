@@ -70,13 +70,6 @@ val liftVersion: String => String = {
   }
 }
 
-val scalaMacroDependencies: String => Seq[ModuleID] = {
-  s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => Seq.empty
-    case _ => Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
-  }
-}
-
 val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
@@ -145,7 +138,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
-  ) ++ scalaMacroDependencies(scalaVersion.value),
+  ),
   fork in Test := true,
   javaOptions ++= Seq(
     "-Xmx1G",
@@ -224,6 +217,9 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
       }
     })),
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "macro-compat" % "1.1.1",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
