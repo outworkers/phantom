@@ -29,14 +29,16 @@
  */
 package com.websudos.phantom.builder.primitives
 
+import macrocompat.bundle
+
 import scala.language.experimental.macros
+import scala.reflect.macros.blackbox
 
-private[phantom] object PrimitiveMacro {
+@bundle
+class PrimitiveMacro(val c: blackbox.Context) {
+  import c.universe._
 
-  def enumMaterializer[T <: Enumeration : c.WeakTypeTag](
-    c: scala.reflect.macros.blackbox.Context
-  ): c.Expr[Primitive[T#Value]] = {
-    import c.universe._
+  def enumMaterializer[T <: Enumeration : c.WeakTypeTag]: c.Expr[Primitive[T#Value]] = {
     val tpe = weakTypeOf[T]
     val companion = tpe.typeSymbol.companion
 

@@ -43,6 +43,7 @@ class EnumColumnTest extends PhantomSuite {
     super.beforeAll()
     Await.result(database.enumTable.create.ifNotExists().future(), defaultScalaTimeout)
     Await.result(database.namedEnumTable.create.ifNotExists().future(), defaultScalaTimeout)
+    Await.result(database.indexedEnumTable.create.ifNotExists().future(), defaultScalaTimeout)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
@@ -119,10 +120,11 @@ class EnumColumnTest extends PhantomSuite {
 
     val chain = for {
       store <- database.indexedEnumTable.store(sample).future()
-      get <- database.indexedEnumTable.select.where(_.enum eqs NamedRecords.One).fetch()
+      get <- database.indexedEnumTable.select.where(_.enum eqs NamedRecords.One).one()
     } yield get
 
     whenReady(chain) { res =>
+      res.value shouldEqual sample
     }
   }
 
