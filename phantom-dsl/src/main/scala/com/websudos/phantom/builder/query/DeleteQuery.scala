@@ -103,7 +103,6 @@ class DeleteQuery[
     timestamp(time.getMillis)
   }
 
-
   /**
     * The where method of a select query.
     *
@@ -178,6 +177,16 @@ class DeleteQuery[
     }
   }
 
+  def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    new DeleteQuery(
+      table,
+      init,
+      wherePart,
+      casPart append QueryBuilder.Update.ifExists,
+      usingPart,
+      options
+    )
+  }
 
   /**
    * Generates a conditional query clause based on CQL lightweight transactions.
@@ -199,9 +208,7 @@ class DeleteQuery[
     )
   }
 
-  override val qb: CQLQuery = {
-    (usingPart merge wherePart merge casPart) build init
-  }
+  override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 }
 
 
@@ -244,9 +251,7 @@ sealed class ConditionalDeleteQuery[
   override val options: QueryOptions
  ) extends ExecutableStatement with Batchable {
 
-  override val qb: CQLQuery = {
-    (usingPart merge wherePart merge casPart) build init
-  }
+  override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
   final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalDeleteQuery(

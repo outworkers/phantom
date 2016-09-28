@@ -95,6 +95,32 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
       }
     }
 
+    "should allow specifying a lightweight clause" - {
+      "should allow specifying an ifExists clause as part of a delete query" in {
+        val url = gen[String]
+
+        val qb = TestDatabase.recipes
+          .delete.where(_.url eqs url)
+          .ifExists
+          .queryString
+
+        qb shouldEqual s"DELETE FROM phantom.recipes WHERE url = '$url' IF EXISTS;"
+      }
+
+      "should allow specifying an ifExists clause and a conditional clause as part of a delete query" in {
+        val url = gen[String]
+        val value = gen[DateTime]
+
+        val qb = TestDatabase.recipes
+          .delete.where(_.url eqs url)
+          .ifExists
+          .onlyIf(_.lastcheckedat is value)
+          .queryString
+
+        qb shouldEqual s"DELETE FROM phantom.recipes WHERE url = '$url' IF EXISTS IF lastcheckedat = ${value.getMillis};"
+      }
+    }
+
     "should allow specifying a custom timestamp for deletes" - {
       "should allow using a milliseconds Long value as a timestamp" in {
         val value = gen[Long]
