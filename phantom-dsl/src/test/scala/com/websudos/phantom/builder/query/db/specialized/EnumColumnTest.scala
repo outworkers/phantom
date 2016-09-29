@@ -36,8 +36,6 @@ import com.websudos.phantom.tables._
 
 import scala.concurrent.Await
 
-import com.outworkers.util.testing._
-
 class EnumColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()

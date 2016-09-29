@@ -409,12 +409,6 @@ object Primitive {
 
   def apply[RR: Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 
-  /**
-    * Automatically derives a primitive for
-    * @tparam T
-    * @return
-    */
-  implicit def enumPrimitive[T <: Enumeration]: Primitive[T#Value] = macro PrimitiveMacro.enumMaterializer[T]
   //implicit def listPrimitive[T : Primitive]: Primitive[List[T]] = macro PrimitiveMacro.enumMaterializer[T]
 
 }

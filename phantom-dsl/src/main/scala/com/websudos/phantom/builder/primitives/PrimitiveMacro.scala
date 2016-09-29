@@ -32,10 +32,10 @@ package com.websudos.phantom.builder.primitives
 import macrocompat.bundle
 
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 @bundle
-class PrimitiveMacro(val c: blackbox.Context) {
+class PrimitiveMacro(val c: whitebox.Context) {
   import c.universe._
 
   def enumMaterializer[T <: Enumeration : c.WeakTypeTag]: c.Expr[Primitive[T#Value]] = {
