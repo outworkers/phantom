@@ -29,10 +29,8 @@
  */
 package com.websudos.phantom.tables
 
-import java.net.SocketOption
 import java.util.UUID
 
-import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.websudos.phantom.builder.query.CreateQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.database.DatabaseImpl

@@ -69,7 +69,7 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(column: String, row: Row): Try[RR]
+  def fromRow(col: String, row: Row): Try[RR]
 
   def fromString(value: String): RR
 
@@ -80,7 +80,7 @@ abstract class Primitive[RR] {
 }
 
 object Primitive {
-
+/*
   implicit object StringPrimitive extends Primitive[String] {
 
     override type PrimitiveType = java.lang.String
@@ -117,6 +117,8 @@ object Primitive {
     override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
   }
 
+
+
   implicit object SmallIntPrimitive extends Primitive[Short] {
 
     override type PrimitiveType = java.lang.Short
@@ -127,8 +129,8 @@ object Primitive {
 
     override def fromString(value: String): Short = value.toShort
 
-    override def fromRow(column: String, row: Row): Try[Short] = nullCheck(column, row) {
-      r => r.getShort(column)
+    override def fromRow(column: String, row: Row): Try[Short] = {
+      nullCheck(column, row)(_.getShort(column))
     }
 
     override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
@@ -144,8 +146,8 @@ object Primitive {
 
     override def fromString(value: String): Byte = value.toByte
 
-    override def fromRow(column: String, row: Row): Try[Byte] = nullCheck(column, row) {
-      r => r.getByte(column)
+    override def fromRow(column: String, row: Row): Try[Byte] = {
+      nullCheck(column, row)(_.getByte(column))
     }
 
     override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
@@ -161,8 +163,8 @@ object Primitive {
 
     override def fromString(value: String): Double = value.toDouble
 
-    override def fromRow(column: String, row: Row): Try[Double] = nullCheck(column, row) {
-      r => r.getDouble(column)
+    override def fromRow(column: String, row: Row): Try[Double] = {
+      nullCheck(column, row)(_.getDouble(column))
     }
 
     override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
@@ -219,6 +221,7 @@ object Primitive {
     override def clz: Class[UUID] = classOf[UUID]
   }
 
+
   implicit object DateIsPrimitive extends Primitive[Date] {
 
     override type PrimitiveType = java.util.Date
@@ -242,6 +245,7 @@ object Primitive {
 
     override def clz: Class[Date] = classOf[Date]
   }
+
 
   implicit object LocalDateIsPrimitive extends Primitive[LocalDate] {
 
@@ -273,15 +277,14 @@ object Primitive {
 
     val cassandraType = CQLSyntax.Types.Date
 
-    def fromRow(row: Row, name: String): Option[org.joda.time.LocalDate] =
-      if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate).toOption
-
     override def asCql(value: org.joda.time.LocalDate): String = {
       CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
     }
 
-    override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
-      r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
+    override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = {
+      nullCheck(column, row) {
+        r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
+      }
     }
 
     override def fromString(value: String): org.joda.time.LocalDate = {
@@ -290,6 +293,7 @@ object Primitive {
 
     override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
   }
+
 
   implicit object DateTimeIsPrimitive extends Primitive[DateTime] {
 
@@ -311,7 +315,7 @@ object Primitive {
 
     override def extract(obj: PrimitiveType): DateTime = new DateTime(obj)
   }
-
+*/
 
   implicit object BooleanIsPrimitive extends Primitive[Boolean] {
 
@@ -407,8 +411,8 @@ object Primitive {
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
 
-  def apply[RR: Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
+  def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 
-  //implicit def listPrimitive[T : Primitive]: Primitive[List[T]] = macro PrimitiveMacro.enumMaterializer[T]
+  implicit def enumPrimitive[T <: Enumeration]: Primitive[T#Value] = macro PrimitiveMacro.enumMaterializer[T]
 
 }

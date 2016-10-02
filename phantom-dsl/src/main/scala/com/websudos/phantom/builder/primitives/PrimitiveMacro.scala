@@ -38,10 +38,9 @@ import scala.reflect.macros.whitebox
 class PrimitiveMacro(val c: whitebox.Context) {
   import c.universe._
 
-  def enumMaterializer[T <: Enumeration : c.WeakTypeTag]: c.Expr[Primitive[T#Value]] = {
+  def enumMaterializer[T <: Enumeration : c.WeakTypeTag]: c.Expr[Primitive[_]] = {
     val tpe = weakTypeOf[T]
     val companion = tpe.typeSymbol.companion
-
 
     val tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$tpe#Value] {
