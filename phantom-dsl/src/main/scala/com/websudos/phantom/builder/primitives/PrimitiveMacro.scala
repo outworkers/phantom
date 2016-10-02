@@ -29,14 +29,49 @@
  */
 package com.websudos.phantom.builder.primitives
 
+import java.net.InetAddress
+import java.nio.ByteBuffer
+import java.util.UUID
+
 import macrocompat.bundle
 
 import scala.language.experimental.macros
-import scala.reflect.macros.whitebox
+import org.joda.time.{DateTime, LocalDate}
 
 @bundle
-class PrimitiveMacro(val c: whitebox.Context) {
+class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   import c.universe._
+
+  val cache = new CachedPrimitiveTrees(c)
+
+  class TypeHolder[A : TypeTag] {
+    def unapply: Option[Symbol] = Some(typeOf[A].typeSymbol)
+  }
+
+  def materializer[T : c.WeakTypeTag]: c.Expr[Primitive[_]] = {
+    val tpe = weakTypeOf[T].typeSymbol
+
+    val tree = tpe match {
+      case x: TypeHolder[String] => cache.stringPrimitive
+      case x: TypeHolder[Byte] => cache.bytePrimitive
+      case x: TypeHolder[Boolean] => cache.booleanPrimitive
+      case x: TypeHolder[Short] => cache.shortPrimitive
+      case x: TypeHolder[Long] => cache.longPrimitive
+      case x: TypeHolder[Double] => cache.doublePrimitive
+      case x: TypeHolder[Float] => cache.floatPrimitive
+      case x: TypeHolder[UUID] => cache.uuidPrimitive
+      case x: TypeHolder[DateTime] => cache.dateTimePrimitive
+      case x: TypeHolder[LocalDate] => cache.localJodaDate
+      case x: TypeHolder[InetAddress] => cache.inetType
+      case x: TypeHolder[BigDecimal] => cache.bigDecimalType
+      case x: TypeHolder[BigInt] => cache.bigIntType
+      case x: TypeHolder[ByteBuffer] => cache.bufferPrimitive
+      case x: TypeHolder[_ <: Enumeration] => enumMaterializer[T]
+      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
+    }
+
+    c.Expr[Primitive[_]](tree)
+  }
 
   def enumMaterializer[T <: Enumeration : c.WeakTypeTag]: c.Expr[Primitive[_]] = {
     val tpe = weakTypeOf[T]

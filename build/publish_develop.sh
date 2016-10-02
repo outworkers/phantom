@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
-#then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
+then
 
- #   if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
-  #  then
+    if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    then
 
         echo "Setting git user email to ci@outworkers.com"
         git config user.email "ci@outworkers.com"
@@ -82,9 +82,9 @@
         export pgp_passphrase=${maven_password}
         sbt +publishSigned sonatypeReleaseAll
 
-    #else
-     #   echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"
-    #fi
-#else
- #   echo "This is either a pull request or the branch is not develop, deployment not necessary"
-#fi
+    else
+        echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"
+    fi
+else
+    echo "This is either a pull request or the branch is not develop, deployment not necessary"
+fi

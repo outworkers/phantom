@@ -50,6 +50,10 @@ class CachedPrimitiveTrees(val c: blackbox.Context) {
   val localDate: Tree = tq"com.datastax.driver.core.LocalDate"
   val dateTimeType: Tree = tq"org.joda.time.DateTime"
   val localJodaDate: Tree = tq"org.joda.time.LocalDate"
+  val bigDecimalType: Tree = tq"scala.math.BigDecimal"
+  val inetType: Tree = tq"java.net.InetAddress"
+  val bigIntType = tq"scala.math.BigInt"
+  val bufferType = tq"java.nio.ByteBuffer"
 
   val cql = q"com.websudos.phantom.builder.query.CQLQuery"
   val syntax = q"com.websudos.phantom.builder.syntax.CQLSyntax"
@@ -301,7 +305,7 @@ class CachedPrimitiveTrees(val c: blackbox.Context) {
         com.websudos.phantom.builder.primitives.DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: $strType, row: Row): ${tryT(dateTimeType)} = {
+      override def fromRow(column: $strType, row: $rowType): ${tryT(dateTimeType)} = {
         nullCheck(column, row)(r =>
           new org.joda.time.DateTime(
             r.getTimestamp(column),
@@ -322,7 +326,7 @@ class CachedPrimitiveTrees(val c: blackbox.Context) {
           org.joda.time.DateTimeZone.UTC
         )
       }
-    """
+    }"""
 
   def localJodaDatePrimitive: c.Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$localJodaDate] {
@@ -364,4 +368,86 @@ class CachedPrimitiveTrees(val c: blackbox.Context) {
       override def clz: Class[$localJodaDate] = classOf[$localJodaDate]
     }
     """
+
+  def bigDecimalPrimitive: c.Tree = q"""
+    new com.websudos.phantom.builder.primitives.Primitive[$bigDecimalType] {
+
+      override type PrimitiveType = java.math.BigDecimal
+
+      val cassandraType = $syntax.Types.Decimal
+
+      override def fromRow(column: $strType, row: $rowType): ${tryT(bigDecimalType)} = {
+        nullCheck(column, row)(r => scala.math.BigDecimal(r.getDecimal(column)))
+      }
+
+      override def asCql(value: $bigDecimalType): String = value.toString()
+
+      override def fromString(value: String): $bigDecimalType = scala.math.BigDecimal(value)
+
+      override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
+
+      override def extract(obj: PrimitiveType): $bigDecimalType = scala.math.BigDecimal(obj)
+    }"""
+
+  def inetPrimitive: c.Tree = q"""
+    new com.websudos.phantom.builder.primitives.Primitive[InetAddress] {
+
+      override type PrimitiveType = java.net.InetAddress
+
+      val cassandraType = $syntax.Types.Inet
+
+      override def fromRow(column: $strType, row: $rowType): ${tryT(inetType)} = {
+        nullCheck(column, row)(_.getInet(column))
+      }
+
+      override def asCql(value: $inetType): $strType = $cql.empty.singleQuote(value.getHostAddress)
+
+      override def fromString(value: $strType): $inetType = java.net.InetAddress.getByName(value)
+
+      override def clz: Class[InetAddress] = classOf[InetAddress]
+    }
+    """
+
+  def bigIntPrimitive: c.Tree = q"""
+    new com.websudos.phantom.builder.primitives.Primitive[$bigIntType] {
+
+      override type PrimitiveType = java.math.BigInteger
+
+      val cassandraType = $syntax.Types.Varint
+
+      override def fromRow(column: $strType, row: $rowType): ${tryT(bigIntType)} = {
+        nullCheck(column, row)(_.getVarint(column))
+      }
+
+      override def asCql(value: $bigIntType): $strType = value.toString()
+
+      override def fromString(value: $strType): $bigIntType = scala.math.BigInt(value)
+
+      override def clz: Class[java.math.BigInteger] = classOf[java.math.BigInteger]
+    }
+  """
+
+  def bufferPrimitive: c.Tree = q"""
+    new com.websudos.phantom.builder.primitives.Primitive[$bufferType] {
+
+      override type PrimitiveType = java.nio.ByteBuffer
+
+      val cassandraType = $syntax.Types.Blob
+
+      override def fromRow(column: $strType, row: $rowType): ${tryT(bufferType)} = {
+        nullCheck(column, row)(_.getBytes(column))
+      }
+
+      override def asCql(value: $bufferType): $strType = {
+        com.datastax.driver.core.utils.Bytes.toHexString(value)
+      }
+
+      override def fromString(value: $strType): $bufferType = {
+        com.datastax.driver.core.utils.Bytes.fromHexString(value)
+      }
+
+      override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
+    }
+    """
+
 }

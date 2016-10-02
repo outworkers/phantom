@@ -79,8 +79,7 @@ abstract class Primitive[RR] {
 
 }
 
-object Primitive {
-/*
+object Primitive {/*
   implicit object StringPrimitive extends Primitive[String] {
 
     override type PrimitiveType = java.lang.String
@@ -315,7 +314,7 @@ object Primitive {
 
     override def extract(obj: PrimitiveType): DateTime = new DateTime(obj)
   }
-*/
+
 
   implicit object BooleanIsPrimitive extends Primitive[Boolean] {
 
@@ -341,6 +340,7 @@ object Primitive {
     override def clz: Class[java.lang.Boolean] = classOf[java.lang.Boolean]
   }
 
+
   implicit object BigDecimalPrimitive extends Primitive[BigDecimal] {
 
     override type PrimitiveType = java.math.BigDecimal
@@ -360,6 +360,7 @@ object Primitive {
     override def extract(obj: java.math.BigDecimal): BigDecimal = BigDecimal(obj)
   }
 
+
   implicit object InetAddressPrimitive extends Primitive[InetAddress] {
 
     override type PrimitiveType = java.net.InetAddress
@@ -376,6 +377,7 @@ object Primitive {
 
     override def clz: Class[InetAddress] = classOf[InetAddress]
   }
+
 
   implicit object BigIntPrimitive extends Primitive[BigInt] {
 
@@ -394,6 +396,7 @@ object Primitive {
     override def clz: Class[java.math.BigInteger] = classOf[java.math.BigInteger]
   }
 
+
   implicit object BlobIsPrimitive extends Primitive[ByteBuffer] {
 
     override type PrimitiveType = java.nio.ByteBuffer
@@ -410,9 +413,10 @@ object Primitive {
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
   }
+  */
 
   def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 
-  implicit def enumPrimitive[T <: Enumeration]: Primitive[T#Value] = macro PrimitiveMacro.enumMaterializer[T]
+  implicit def materializer[T] = macro PrimitiveMacro.materializer[T]
 
 }
