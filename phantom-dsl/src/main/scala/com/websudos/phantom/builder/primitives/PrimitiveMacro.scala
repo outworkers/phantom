@@ -419,7 +419,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         new org.joda.time.DateTime(value, org.joda.time.DateTimeZone.UTC).toLocalDate
       }
 
-      override def clz: Class[$localJodaDate] = classOf[$localJodaDate]
+      override def clz: Class[$localDate] = classOf[$localDate]
     }
     """
 
@@ -440,7 +440,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
 
-      override def extract(obj: PrimitiveType): $bigDecimalType = scala.math.BigDecimal(obj)
+      override def extract(obj: java.math.BigDecimal): $bigDecimalType = scala.math.BigDecimal(obj)
     }"""
 
   val inetPrimitive: Tree = q"""
@@ -507,7 +507,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   def enumPrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
 
     val tpe = tag.tpe
-    val comp = q"${TypeName(tag.tpe.toString.replace("#Value", ""))}"
+    val comp = c.parse(s"${tag.tpe.toString.replace("#Value", "")}")
 
     val tree = q""" new com.websudos.phantom.builder.primitives.Primitive[$tpe] {
       val strP = implicitly[com.websudos.phantom.builder.primitives.Primitive[String]]
