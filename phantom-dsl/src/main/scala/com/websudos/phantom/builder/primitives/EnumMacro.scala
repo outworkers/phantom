@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,19 +27,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.column
+package com.websudos.phantom.builder.primitives
 
-import java.util.UUID
+@macrocompat.bundle
+class EnumMacro(val c: scala.reflect.macros.blackbox.Context) {
 
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.syntax.CQLSyntax
+  def materializer[T <: Enumeration](
+    implicit tag: c.WeakTypeTag[T]
+  ): c.Expr[Primitive[T#Value]] = {
+    import c.universe._
 
-class OptionalTimeUUIDColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-](table: CassandraTable[Owner, Record])(
-  implicit primitive: Primitive[UUID]
-) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
-  override val cassandraType = CQLSyntax.Types.TimeUUID
+    val tpe = tag.tpe
+    val companion = tpe.typeSymbol.companion
+
+    val tree = q"""
+    new com.websudos.phantom.builder.primitives.Primitive[$tpe#Value] {
+      val strP = Primitive.materializer[String]
+
+      override type PrimitiveType = java.lang.String
+
+      override def cassandraType: String = strP.cassandraType
+
+      override def fromRow(name: String, row: com.datastax.driver.core.Row): scala.util.Try[$tpe#Value] = {
+        nullCheck(name, row) {
+          r => $companion.values.find(_.toString == r.getString(name)) match {
+            case Some(value) => value
+            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+          }
+        }
+      }
+
+      override def asCql(value: $tpe#Value): String = {
+        strP.asCql(value.toString)
+      }
+
+      override def fromString(value: String): $tpe#Value = {
+        $companion.values.find(value == _.toString).getOrElse(None.orNull)
+      }
+
+      override def clz: Class[String] = classOf[java.lang.String]
+    }"""
+    c.Expr[Primitive[T#Value]](tree)
+  }
 }

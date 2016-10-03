@@ -154,7 +154,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val ContactPoint = com.websudos.phantom.connectors.ContactPoint
   val ContactPoints = com.websudos.phantom.connectors.ContactPoints
 
-  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
+  /*
+  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T)(implicit p: Primitive[T#Value] = {
     new Primitive[T#Value] {
 
       override type PrimitiveType = java.lang.String
@@ -176,7 +177,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
       override def clz: Class[String] = classOf[java.lang.String]
     }
-  }
+  }*/
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)

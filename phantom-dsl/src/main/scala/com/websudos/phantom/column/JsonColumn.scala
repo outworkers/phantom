@@ -48,8 +48,6 @@ sealed trait JsonDefinition[T] {
   def valueAsCql(obj: T): String = CQLQuery.empty.singleQuote(toJson(obj))
 
   def fromString(c: String): T = fromJson(c)
-
-  val primitive = implicitly[Primitive[String]]
 }
 
 abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends Column[T, R,
@@ -64,54 +62,71 @@ abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: Cassan
   }
 }
 
-abstract class JsonListColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends AbstractListColumn[T, R,
-  ValueType](table) with JsonDefinition[ValueType] {
+abstract class JsonListColumn[
+  T <: CassandraTable[T, R],
+  R,
+  ValueType
+](table: CassandraTable[T, R])(
+  implicit primitive: Primitive[String]
+) extends AbstractListColumn[T, R, ValueType](table) with JsonDefinition[ValueType] {
 
   override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
 
-  override val cassandraType = QueryBuilder.Collections.listType(Primitive[String].cassandraType).queryString
+  override val cassandraType = QueryBuilder.Collections.listType(primitive.cassandraType).queryString
 
   override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {
       Success(List.empty[ValueType])
     } else {
-      Success(r.getList(name, Primitive[String].clz.asInstanceOf[Class[String]]).asScala.map(fromString).toList)
+      Success(r.getList(name, primitive.clz.asInstanceOf[Class[String]]).asScala.map(fromString).toList)
     }
   }
 }
 
-abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends AbstractSetColumn[T ,R,
+abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
+  table: CassandraTable[T, R]
+)(implicit primitive: Primitive[String]) extends AbstractSetColumn[T ,R,
   ValueType](table) with JsonDefinition[ValueType] {
 
-  override val cassandraType = QueryBuilder.Collections.setType(Primitive[String].cassandraType).queryString
+  override val cassandraType = QueryBuilder.Collections.setType(primitive.cassandraType).queryString
 
   override def parse(r: Row): Try[Set[ValueType]] = {
     if (r.isNull(name)) {
       Success(Set.empty[ValueType])
     } else {
-      Success(r.getSet(name, Primitive[String].clz).asScala.map(e => fromString(e.asInstanceOf[String])).toSet[ValueType])
+      Success(r.getSet(name, primitive.clz).asScala.map(e => fromString(e.asInstanceOf[String])).toSet[ValueType])
     }
   }
 }
 
-abstract class JsonMapColumn[Owner <: CassandraTable[Owner, Record], Record, K: Primitive, ValueType](table: CassandraTable[Owner, Record])
-  extends AbstractMapColumn[Owner, Record, K, ValueType](table) with JsonDefinition[ValueType] {
+abstract class JsonMapColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  KeyType,
+  ValueType
+](table: CassandraTable[Owner, Record])(
+  implicit primitive: Primitive[KeyType],
+  strPrimitive: Primitive[String]
+) extends AbstractMapColumn[Owner, Record, KeyType, ValueType](table) with JsonDefinition[ValueType] {
 
-  val keyPrimitive = Primitive[K]
+  val keyPrimitive = Primitive[KeyType]
 
-  override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
+  override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
-  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, Primitive[String].cassandraType).queryString
+  override val cassandraType = QueryBuilder.Collections.mapType(
+    keyPrimitive.cassandraType,
+    strPrimitive.cassandraType
+  ).queryString
 
   override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 
-  override def keyFromCql(c: String): K = keyPrimitive.fromString(c)
+  override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
 
-  override def parse(r: Row): Try[Map[K,ValueType]] = {
+  override def parse(r: Row): Try[Map[KeyType,ValueType]] = {
     if (r.isNull(name)) {
-      Success(Map.empty[K,ValueType])
+      Success(Map.empty[KeyType,ValueType])
     } else {
-      Success(r.getMap(name, keyPrimitive.clz, Primitive[String].clz).asScala.toMap.map {
+      Success(r.getMap(name, keyPrimitive.clz, strPrimitive.clz).asScala.toMap.map {
         case (k, v) => (keyPrimitive.extract(k), fromString(v.asInstanceOf[String]))
       })
     }

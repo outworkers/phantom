@@ -79,8 +79,9 @@ abstract class Primitive[RR] {
 
 }
 
-object Primitive {/*
-  implicit object StringPrimitive extends Primitive[String] {
+object Primitive {
+
+  /*implicit object StringPrimitive extends Primitive[String] {
 
     override type PrimitiveType = java.lang.String
 
@@ -412,11 +413,11 @@ object Primitive {/*
     override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 
     override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
-  }
-  */
+   }*/
+
+  //implicit def enumMaterializer[T <: Enumeration]: Primitive[T#Value] = macro EnumMacro.materializer[T]
+  implicit def materializer[T]: Primitive[T] = macro PrimitiveMacro.materializer[T]
 
   def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
-
-  implicit def materializer[T] = macro PrimitiveMacro.materializer[T]
 
 }

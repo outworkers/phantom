@@ -210,13 +210,10 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   unmanagedSourceDirectories in Compile ++= Seq(
     (sourceDirectory in Compile).value / ("scala-2." + {
       CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) if minor == 11 => "11"
-        case Some((major, minor)) if minor == 12 => "12"
-        case _ => "10"
+        case Some((major, minor)) => minor
       }
     })),
   libraryDependencies ++= Seq(
