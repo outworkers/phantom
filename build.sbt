@@ -137,7 +137,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
@@ -228,7 +227,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
-    "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
@@ -309,8 +307,9 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   unmanagedSourceDirectories in Compile ++= Seq(
     (sourceDirectory in Compile).value / ("scala-2." + {
       CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) if minor >= 11 => "11"
-        case _ => "10"
+        case Some((major, minor)) => minor
+        case None => "10"
+
       }
   })),
   publish := {
