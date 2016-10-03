@@ -31,6 +31,7 @@ package com.websudos.phantom.tables
 
 import java.util.UUID
 
+import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.websudos.phantom.builder.query.CreateQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.database.DatabaseImpl
@@ -98,7 +99,15 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
 }
 
 object Connector {
-  val default = ContactPoint.local.noHeartbeat().keySpace("phantom")
+  val default = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    )
+    .noHeartbeat().keySpace("phantom")
+
 }
 
 object TestDatabase extends TestDatabase(Connector.default)
