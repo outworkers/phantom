@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import macrocompat.bundle
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.DateTime
 
 import scala.language.experimental.macros
 
@@ -105,17 +105,16 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       bigIntPrimitive
     } else if (tpe == typed[ByteBuffer]) {
       bufferPrimitive
+    } else if (tpe == typed[Enumeration#Value]) {
+      enumPrimitive[T]()
     } else {
       c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
     }
 
-    println(s"Generated primitive for $tpe")
-    println(showCode(primitiveTree))
-
     c.Expr[Primitive[T]](primitiveTree)
   }
 
-  def booleanPrimitive: Tree = q"""
+  val booleanPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$boolType] {
 
       override type PrimitiveType = java.lang.Boolean
@@ -142,7 +141,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
     """
 
-  def stringPrimitive: Tree =
+  val stringPrimitive: Tree =
     q"""
       new com.websudos.phantom.builder.primitives.Primitive[$strType] {
 
@@ -162,7 +161,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
     """
 
-  def intPrimitive: Tree = q"""
+  val intPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$intType] {
 
       override type PrimitiveType = java.lang.Integer
@@ -181,7 +180,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
     """
 
-  def shortPrimitive: Tree = q"""
+  val shortPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$shortType] {
 
       override type PrimitiveType = java.lang.Short
@@ -200,7 +199,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def bytePrimitive: Tree = q"""
+  val bytePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$byteType] {
 
       override type PrimitiveType = java.lang.Byte
@@ -219,7 +218,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def doublePrimitive: Tree = q"""
+  val doublePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$doubleType] {
 
       override type PrimitiveType = java.lang.Double
@@ -237,7 +236,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
     }"""
 
-  def longPrimitive: Tree = q"""
+  val longPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[Long] {
 
       override type PrimitiveType = java.lang.Long
@@ -256,7 +255,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def floatPrimitive: Tree = q"""
+  val floatPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$floatType] {
 
       override type PrimitiveType = java.lang.Float
@@ -275,7 +274,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def uuidPrimitive: Tree = q"""
+  val uuidPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$uuidType] {
 
       override type PrimitiveType = java.util.UUID
@@ -294,7 +293,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def datePrimitive: Tree = q"""
+  val datePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$dateType] {
 
       override type PrimitiveType = java.util.Date
@@ -321,7 +320,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def localDatePrimitive: Tree = q"""
+  val localDatePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$localDate] {
 
       override type PrimitiveType = com.datastax.driver.core.LocalDate
@@ -349,7 +348,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def dateTimePrimitive: Tree = q"""
+  val dateTimePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$dateTimeType] {
 
       override type PrimitiveType = java.util.Date
@@ -383,7 +382,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
     }"""
 
-  def localJodaDatePrimitive: Tree = q"""
+  val localJodaDatePrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$localJodaDate] {
 
       override type PrimitiveType = com.datastax.driver.core.LocalDate
@@ -424,7 +423,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
     """
 
-  def bigDecimalPrimitive: Tree = q"""
+  val bigDecimalPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$bigDecimalType] {
 
       override type PrimitiveType = java.math.BigDecimal
@@ -444,7 +443,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       override def extract(obj: PrimitiveType): $bigDecimalType = scala.math.BigDecimal(obj)
     }"""
 
-  def inetPrimitive: Tree = q"""
+  val inetPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$inetType] {
 
       override type PrimitiveType = java.net.InetAddress
@@ -463,7 +462,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
     """
 
-  def bigIntPrimitive: Tree = q"""
+  val bigIntPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$bigIntType] {
 
       override type PrimitiveType = java.math.BigInteger
@@ -482,7 +481,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   """
 
-  def bufferPrimitive: Tree = q"""
+  val bufferPrimitive: Tree = q"""
     new com.websudos.phantom.builder.primitives.Primitive[$bufferType] {
 
       override type PrimitiveType = java.nio.ByteBuffer
@@ -504,4 +503,40 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
     }
     """
+
+  def enumPrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
+
+    val tpe = tag.tpe
+    val comp = q"${TypeName(tag.tpe.toString.replace("#Value", ""))}"
+
+    val tree = q""" new com.websudos.phantom.builder.primitives.Primitive[$tpe] {
+      val strP = implicitly[com.websudos.phantom.builder.primitives.Primitive[String]]
+
+      override type PrimitiveType = java.lang.String
+
+      override def cassandraType: $strType = strP.cassandraType
+
+      override def fromRow(name: $strType, row: $rowType): scala.util.Try[$tpe] = {
+        nullCheck(name, row) {
+          r => $comp.values.find(_.toString == r.getString(name)) match {
+            case Some(value) => value
+            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+          }
+        }
+      }
+
+      override def asCql(value: $tpe): String = {
+        strP.asCql(value.toString)
+      }
+
+      override def fromString(value: $strType): $tpe = {
+        $comp.values.find(value == _.toString).getOrElse(None.orNull)
+      }
+
+      override def clz: Class[$strType] = classOf[$strType]
+    }"""
+
+    println(showCode(tree))
+    tree
+  }
 }
