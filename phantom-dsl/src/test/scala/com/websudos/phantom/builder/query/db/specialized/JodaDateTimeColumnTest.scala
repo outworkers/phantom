@@ -34,11 +34,11 @@ import com.websudos.phantom.dsl._
 import com.websudos.phantom.tables._
 import com.outworkers.util.testing._
 
-class JodaDateTimeColumn extends PhantomSuite {
+class JodaDateTimeColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitivesJoda.insertSchema()
+    database.primitivesJoda.insertSchema()
   }
 
   it should "correctly insert and extract a JodaTime date" in {
@@ -50,7 +50,11 @@ class JodaDateTimeColumn extends PhantomSuite {
     } yield select
 
     chain successful {
-      res => res.value shouldEqual row
+      res => {
+        res.value.pkey shouldEqual row.pkey
+        res.value.int shouldEqual row.int
+        res.value.bi shouldEqual row.bi
+      }
     }
   }
 }

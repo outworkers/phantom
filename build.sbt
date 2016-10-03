@@ -34,7 +34,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.18.2"
+  val util = "0.20.0"
   val json4s = "3.3.0"
   val datastax = "3.0.2"
   val scalatest = "2.2.4"
@@ -46,7 +46,6 @@ lazy val Versions = new {
   val scalatra = "2.3.0"
   val play = "2.4.6"
   val scalameter = "0.6"
-  val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
