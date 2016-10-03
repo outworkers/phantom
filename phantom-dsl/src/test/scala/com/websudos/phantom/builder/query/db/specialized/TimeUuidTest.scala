@@ -30,9 +30,9 @@
 package com.websudos.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.utils.UUIDs
-import com.websudos.phantom.{dsl, PhantomSuite}
-import com.websudos.phantom.tables.{TimeUUIDRecord, TestDatabase}
-import org.joda.time.DateTime
+import com.websudos.phantom.{PhantomSuite, dsl}
+import com.websudos.phantom.tables.{TestDatabase, TimeUUIDRecord}
+import org.joda.time.{DateTime, DateTimeZone}
 import com.outworkers.util.testing._
 import com.websudos.phantom.dsl._
 
@@ -40,13 +40,13 @@ class TimeUuidTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.timeuuidTable.insertSchema()
+    database.timeuuidTable.insertSchema()
   }
 
   it should "be able to store and retrieve a time slice of records based on a combination of minTimeuuid and maxTimeuuid" in {
 
-    val start = new dsl.DateTime().plusMinutes(-60)
-    val end = new dsl.DateTime().plusMinutes(60)
+    val start = gen[DateTime].plusMinutes(-60)
+    val end = gen[DateTime].plusMinutes(60)
 
     val id = UUIDs.timeBased()
     val user = UUIDs.random()
@@ -55,7 +55,7 @@ class TimeUuidTest extends PhantomSuite {
       user,
       UUIDs.timeBased(),
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(id))
+      new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC)
     )
 
     val minuteOffset = start.plusMinutes(-1).timeuuid()
@@ -65,14 +65,14 @@ class TimeUuidTest extends PhantomSuite {
       user,
       minuteOffset,
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(minuteOffset))
+      new DateTime(UUIDs.unixTimestamp(minuteOffset), DateTimeZone.UTC)
     )
 
     val record2 = TimeUUIDRecord(
       user,
       secondOffset,
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(secondOffset))
+      new DateTime(UUIDs.unixTimestamp(secondOffset), DateTimeZone.UTC)
     )
 
     val chain = for {
@@ -88,8 +88,8 @@ class TimeUuidTest extends PhantomSuite {
 
       get2 <- TestDatabase.timeuuidTable.select
         .where(_.user eqs record.user)
-        .and(_.id <= maxTimeuuid(end))
         .and(_.id >= minTimeuuid(start.plusMinutes(-2)))
+        .and(_.id <= maxTimeuuid(end))
         .fetch()
     } yield (get, get2)
 
@@ -116,8 +116,8 @@ class TimeUuidTest extends PhantomSuite {
 
     val intervalOffset = 60
 
-    val start = new DateTime().plusMinutes(intervalOffset * -1)
-    val end = new DateTime().plusMinutes(intervalOffset)
+    val start = gen[DateTime].plusMinutes(intervalOffset * -1)
+    val end = gen[DateTime].plusMinutes(intervalOffset)
 
     val id = UUIDs.timeBased()
     val user = UUIDs.random()
@@ -126,7 +126,7 @@ class TimeUuidTest extends PhantomSuite {
       user,
       UUIDs.timeBased(),
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(id))
+      new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC)
     )
 
     val minuteOffset = start.plusMinutes(-1).timeuuid()
@@ -136,14 +136,14 @@ class TimeUuidTest extends PhantomSuite {
       user,
       minuteOffset,
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(minuteOffset))
+      new DateTime(UUIDs.unixTimestamp(minuteOffset), DateTimeZone.UTC)
     )
 
     val record2 = TimeUUIDRecord(
       user,
       secondOffset,
       gen[String],
-      new DateTime(UUIDs.unixTimestamp(secondOffset))
+      new DateTime(UUIDs.unixTimestamp(secondOffset), DateTimeZone.UTC)
     )
 
     val chain = for {
@@ -159,7 +159,7 @@ class TimeUuidTest extends PhantomSuite {
     } yield get
 
     whenReady(chain) {
-      case res => res.size shouldEqual 0
+      res => res.size shouldEqual 0
     }
   }
 

@@ -42,7 +42,7 @@ trait BigTest extends PhantomSuite {
       _.withSocketOptions(new SocketOptions()
         .setReadTimeoutMillis(connectionTimeoutMillis)
         .setConnectTimeoutMillis(connectionTimeoutMillis)
-      ).withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0))
-    ).keySpace(keySpace).session
+      )
+    ).noHeartbeat().keySpace(keySpace).session
   }
 }

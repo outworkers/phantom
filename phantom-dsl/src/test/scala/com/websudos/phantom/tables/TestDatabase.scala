@@ -105,8 +105,7 @@ object Connector {
         .setConnectTimeoutMillis(20000)
         .setReadTimeoutMillis(20000)
       )
-    )
-    .noHeartbeat().keySpace("phantom")
+    ).noHeartbeat().keySpace("phantom")
 
 }
 
