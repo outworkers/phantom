@@ -58,8 +58,10 @@ lazy val Versions = new {
   val javaxServlet = "3.0.1"
 }
 
-val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
-lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
+def runningUnderCi = sys.env.contains("CI") || sys.env.contains("TRAVIS")
+
+lazy val travisScala211 = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
+
 val defaultConcurrency = 4
 
 val liftVersion: String => String = {
@@ -79,7 +81,7 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val defaultCredentials: Seq[Credentials] = {
-  if (!RunningUnderCi) {
+  if (!runningUnderCi) {
     Seq(
       Credentials(Path.userHome / ".bintray" / ".credentials"),
       Credentials(Path.userHome / ".ivy2" / ".credentials")
@@ -166,7 +168,7 @@ lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
   if (bool) ref :: Nil else Nil
 
-lazy val isTravisScala210 = !TravisScala211
+lazy val isTravisScala210 = !travisScala211
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
