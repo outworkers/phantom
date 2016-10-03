@@ -172,8 +172,8 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 It's definitely more boilerplate than Quill, there's no doubt about that, however, this simple DSL can help us to great
 things:
 
-- Control the name we want to use for our columns. Not the most interest feature,
-but it helps avoid collisions with known Cassandra types. Currently this would be impossible in Quill.
+- Control the name we want to use for our columns. Not the most interesting feature,
+but it helps avoid collisions with known Cassandra types. Currently this doesn't look possible in Quill.
 
 - Generate the CQL schema on the fly. Every phantom table has a `.create` method, that will yield a `CreateQuery`,
 where you can set the creation properties in minute details. The schema is then inferred from the DSL.

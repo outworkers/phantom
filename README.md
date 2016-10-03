@@ -24,6 +24,11 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 - Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/websudos/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 
+### How phantom compares
+
+To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/comparison.md).
+
+
 ### Latest versions
 
 The latest versions are available here. The badges automatically update when a new version is released.
