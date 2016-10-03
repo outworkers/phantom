@@ -64,6 +64,7 @@ It is built on top of the Datastax Java driver, and uses all the default connect
 - A natural DSL that doesn't require any new terminology and aims to introduce a minimal learning curve. Phantom is not a leaking abstraction and it is exclusively built to target Cassnadra integration, therefore it has support for all the latest features of CQL and doesn't require constantly mapping terminology. Unlike LINQ style DSLs for instance, the naming will largely have 100% correspondence to CQL terminology you are already used to.
 - Automated schema generation, automated table migrations, automated database generation and more, meaning you will never ever have to manually initialise CQL tables from scripts ever again.
 - Native support of Scala concurrency primitives, from `scala.concurrent.Future` to more advanced access patterns such as reactive streams or even iteratees, available via separate dependencies.
+- Native support for `play-streams`, `reactive-streams` and `com.twitter.util.Future`, available via dedicated modules.
 
 #### Quill
 
@@ -77,6 +78,10 @@ some of which include Cassie from Twitter, Cascal, Astyanax from Netflix, and so
 We would be the first to credit the engineering virtue behind it, it's an excellently designed tool and a very very powerful example of
 just how far meta-programming can take you. Now that being said, there are a great number of items that make Quill less of suitable tool for application
 layer Cassandra.
+
+The paper that initially inspired Quill is a strong suggestion that the fundamental approach of having complex database level mappings
+and lightweight entities is wrong, and that the focus should be on the domain entities and on letting them drive the show. In a sense,
+phantom follows this same principle of augmenting entities, although it is true that unlike Quill there is an extra layer of indirection through the mapping DSL.
 
 ##### It introduces new terminology
 
@@ -109,7 +114,7 @@ case class Recipe(
   servings: Option[Int],
   lastCheckedAt: DateTime,
   props: Map[String, String],
-  uid: UUID
+  side_id: UUID
 )
 
 class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
@@ -126,7 +131,7 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
   object props extends MapColumn[String, String](this)
 
-  object uid extends UUIDColumn(this)
+  object side_id extends UUIDColumn(this)
 
 
   override def fromRow(r: Row): Recipe = {
@@ -137,7 +142,7 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
       servings(r),
       lastcheckedat(r),
       props(r),
-      uid(r)
+      side_id(r)
     )
   }
 }
@@ -160,7 +165,7 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
   object props extends MapColumn[String, String](this)
 
-  object uid extends UUIDColumn(this)
+  object side_id extends UUIDColumn(this)
 }
 ```
 
@@ -168,7 +173,7 @@ It's definitely more boilerplate than Quill, there's no doubt about that, howeve
 things:
 
 - Control the name we want to use for our columns. Not the most interest feature,
-but it helps avoid collissions with known Cassandra types. Currently this would be impossible in Quill.
+but it helps avoid collisions with known Cassandra types. Currently this would be impossible in Quill.
 
 - Generate the CQL schema on the fly. Every phantom table has a `.create` method, that will yield a `CreateQuery`,
 where you can set the creation properties in minute details. The schema is then inferred from the DSL.
@@ -180,13 +185,14 @@ an entire database in a single method call. Look ma', no manual CQL.
 - Phantom is schema aware. Using an advanced implicit mechanism powered by the Shapeless library, phantom is
 capable of "knowing" what queries are possible and what queries aren't. Let's take for example the `Recipes` above:
 
-The following query is invalid, because we have not defined any index for the `uid` column.
+The following query is invalid, because we have not defined any index for the `side_id` column.
 
 ```scala
 database.recipes.select.where(_.uid eqs someid)
 ```
 
-Quill will however happily compile and generate the query:
+Quill, *based on our current understanding, will however happily compile and generate the query, it has no way
+to know what you wanted to do with the `side_id` column.
 
 
 ##### It doesn't account for protocol version/Cassandra version dependent behaviour
@@ -215,3 +221,82 @@ UPDATE keyspace.table WHERE ID = 'some_id' SET a = 'b';
 And any client library will need to transparently handle the change in CQL protocol details. Hoewever, this would
 be impossible without knowing the version in advance, which means a cluster query which implies runtime.
 
+#### Extensibility
+
+Quill is likely easier to extend than Phantom, as infix notation and arbitrary string generation is easier to do
+than it is to extend more complex tightly coupled EDSL structures. But in an ideal world, you wouldn't be trying
+to extend the native driver at all, you would instead be welcomed by a wide range of supported features.
+
+In this category, both tools are imperfect and incomplete, and phantom has its own shortcomings. However,
+the Quill comparison simply states: "You could extend Phantom by extending the DSL to add new features,
+although it might not be a straightforward process.", which is a bit inaccurate.
+
+Being a very new player in the game, Quill is a nice toy when it comes to Cassandra feature support 
+and you will often find yourself needing to add features. Phantom has its gaps without a doubt, but it's a far far more mature alternative,
+and the amount of times when extension is required are significantly rarer.
+
+A few things to remember:
+
+- You do not need to create new column types to support new datatypes.
+- Phantom internally offers the `Primitive` type class for this very reason.
+- As of phantom 1.30.x, phantom offers `Primitive.derive[T, String](CaseClass.apply)` to offer you a custom datatype for `case class County(str: String)`.
+- In fact, `Primitive.derive[CaseClass]` will natively work with any `case class` that is built of `Primitive` types.
+
+#### Dependencies
+
+One of the common pains in modern development is of course the number of dependencies that are brought in. The Quill
+authors make the somewhat misleading argument that phantom introduces more dependencies and that each third party
+dependency will bring in more and more modules.
+
+- This is somewhat true, however if you are using the play-streams integration, the assumption is you already have
+play-streams somewhere else in you app, otherwise it makes little sense to not stick to defaults. The same is true
+ for every other module available in phantom, and by default you don't actually have to use any of them.
+
+- Most modules however are only useful if you already have most of those dependencies internally. It's pretty
+much impossible to build Thrift services without a dependency on Thrift itself, so in that respect it is highly
+unlikely that using those extra modules will end up bringing in more dependencies than you already have.
+
+- The one place where phantom sucks is the dependency on `scala-reflect`, which is causing some ugly things inside the 
+framework, namely the need for global locks to make reflection thread safe in the presence of multiple class loaders. This 
+is however going away in 2.0.0, and we are replacing `scala-reflect` with a macro based approach.
+ 
+- The only notable dependencies of phantom are `shapeless` and `cassandra-driver-core`, the latter of which you will have
+inevitably. Shapeless is also quite light and compile time, it depends only on macro libraries such as `macro-compat`. You
+can have a look yourself [here](https://github.com/milessabin/shapeless).
+
+#### Documentation and commercial support
+
+Both tools can do a lot better in this category, but phantom is probably doing a little better in that department, 
+since we have a plethora of tests, blog posts, and resources, on how to do things in phantom. This is not yet
+necessarily true of Quill, and we know very well just how challenging the ramp up process to stability can be.
+
+In terms of commercial support, phantom wins. We don't mean to start a debase on the virtues of open source, and 
+we are aware most of the development community strongly favours OSS licenses and the word "commercial" is unpleasant.
+However, we are constrained by the economic reality of having to pay the people competent enough to write this software
+for the benefit of us all and make sure they get enough spare time to focus on these things, which is a lot less fun.
+
+Add in a never ending stream of support messages, emails, chats, feature requests, and bug reports, and you would soon learn
+the true nature and responsibility of keeping a project like this alive. We know we're not really competing with Twitter
+on amount of OSS released, but on an impact/staff member ratio we would happily compete.
+
+Phantom-pro co-exists alongside the default OSS version to offer you more advanced support and a more interesting feature
+set helping you develop and integrate Cassandra even faster. Spark support with an advanced compile time mapper and more
+are made possible in phantom-pro, as well as automated table migrations, DSE Graph support, and some other really cool
+toys such as auto-tables, which will be in some respect similar to Quill as the mapping DSL will not be necessary anymore,
+but at the same time retain the powerful embedded query EDSL.
+
+
+#### Conclusion
+
+Let's sum up the points that we tried to make here in two key paragraphs.
+
+- Phantom does indeed make it slightly less verbose to extend things like TypeCodec. But how often do you find yourself dealing with that at application level layer? TypeCodec is not really the valid approach anyway, you have to think more in terms of Cassandra data types, why would you register a TypeCodec when you could use a simple map?
+Phantom requires minimal boilerplate around defining the table DSL and by nature doesn't really work well with sharing table columns. It can be done, but it's not the most beautiful code, nor is it the worst.
+Overall
+
+- Quill is an excellence piece of  software.
+It's better than phantom strictly at query generation, there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
+It's a vastly inferior tool at the application layer, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
+Phantom is far more mature, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
+
+- Phantom is a lot easier to adopt and learn, simply as it doesn't introduce any new terminology. The mapping DSL and the `Database` object are all you need to know.
