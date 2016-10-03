@@ -34,15 +34,18 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
-import shapeless.{HList, HNil, ::}
+import com.websudos.phantom.dsl.?
+import shapeless.{::, HList, HNil}
 
 abstract class QueryCondition[T <: HList](val qb: CQLQuery)
 
-sealed trait Clause {
-  /**
-   * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
-   */
-}
+/**
+  * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
+  */
+sealed trait Clause
+
+class PreparedCondition[RR] extends QueryCondition[RR :: HNil](?.qb)
+class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil](CQLQuery.empty)
 
 class WhereClause extends Clause {
 

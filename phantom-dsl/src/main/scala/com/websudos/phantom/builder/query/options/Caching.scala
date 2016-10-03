@@ -51,15 +51,15 @@ private[phantom] trait CachingStrategies {
   ](override val qb: CQLQuery) extends CacheProperty(qb) {
     def instance(qb: CQLQuery): QType
 
-    def keys(value: String = "ALL"): QType = {
+    def keys(value: String = CQLSyntax.CacheStrategies.All): QType = {
       instance(QueryBuilder.Create.Caching.keys(qb, value))
     }
 
-    def rows(value: String = "ALL"): QType = {
-      instance(QueryBuilder.Create.Caching.rows(qb, value))
+    def rows(value: String = CQLSyntax.CacheStrategies.All): QType = {
+      instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
     }
 
-    def rows_per_partition(value: String = "NONE"): QType = {
+    def rows_per_partition(value: String = CQLSyntax.CacheStrategies.All): QType = {
       instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
     }
   }
@@ -107,7 +107,7 @@ private[phantom] trait CachingStrategies {
   object KeysOnly extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): KeysOnly = {
       if (session.v4orNewer) {
-        new KeysOnly(CQLQuery.empty, true).keys().rows_per_partition()
+        new KeysOnly(CQLQuery.empty, true).keys().rows_per_partition(CQLSyntax.CacheStrategies.None)
       } else {
         new KeysOnly(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly), false)
       }
@@ -127,14 +127,12 @@ private[phantom] trait CachingStrategies {
   object All extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): AllCache = {
       if (session.v4orNewer) {
-        new AllCache(CQLQuery.empty, true).rows()
+        new AllCache(CQLQuery.empty, true).keys().rows()
       } else {
         new AllCache(CQLQuery(CQLSyntax.CacheStrategies.All), false)
       }
     }
   }
-
-  //case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
 }
 
 object Caching extends CachingStrategies

@@ -27,41 +27,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.options
+package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.dsl._
 
-sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
+class KeySpaceSerializerTest extends QuerySerializationTest {
 
-  def chunk_length_kb(unit: Int): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit + "KB"))
+  it should "create a simple keyspace creation query" in {
+    val query = QueryBuilder.keyspace("test").ifNotExists()
+      .`with`(replication eqs NetworkTopologyStrategy)
+      .and(durable_writes eqs true)
+      .qb.queryString
+
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
+      " AND DURABLE_WRITES = true"
+
+    query shouldEqual expected
   }
 
-  def crc_check_chance(size: Double): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.Create.crc_check_chance(qb, size))
-  }
-}
-
-private[phantom] trait CompressionStrategies {
-
-  private[this] def strategy(strategy: String) = {
-    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
-      .appendSingleQuote(CQLSyntax.CompressionOptions.sstable_compression)
-      .append(CQLSyntax.Symbols.`:`)
-      .forcePad.appendSingleQuote(strategy)
-  }
-
-  case object SnappyCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.SnappyCompressor))
-  case object LZ4Compressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.LZ4Compressor))
-  case object DeflateCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
-}
-
-
-
-private[phantom] class CompressionBuilder extends TableProperty {
-  def eqs(clause: CompressionStrategy): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.compression(clause.qb))
-  }
 }
