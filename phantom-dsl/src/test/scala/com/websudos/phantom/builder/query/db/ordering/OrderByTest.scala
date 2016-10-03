@@ -65,20 +65,20 @@ class OrderByTest extends PhantomSuite {
         val orderedAsc = records.sortWith((a, b) => { a.id.compareTo(b.id) <= 0 })
 
         info("The ascending results retrieved from the DB")
-        info(asc.map(x => UUIDs.unixTimestamp(x.id)).mkString("\n"))
+        info(asc.mkString("\n"))
 
         info("The ascending results expected")
-        info(orderedAsc.map(x => UUIDs.unixTimestamp(x.id)).mkString("\n"))
+        info(orderedAsc.mkString("\n"))
 
         asc shouldEqual orderedAsc
 
         val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
 
         info("The ascending results retrieved from the DB")
-        info(asc.map(x => UUIDs.unixTimestamp(x.id)).mkString("\n"))
+        info(desc.mkString("\n"))
 
         info("The ascending results expected")
-        info(orderedDesc.map(x => UUIDs.unixTimestamp(x.id)).mkString("\n"))
+        info(orderedDesc.mkString("\n"))
 
         desc shouldEqual orderedDesc
 

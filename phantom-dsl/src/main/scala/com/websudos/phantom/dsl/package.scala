@@ -45,6 +45,7 @@ import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImpl
 import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
+import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -154,31 +155,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val ContactPoint = com.websudos.phantom.connectors.ContactPoint
   val ContactPoints = com.websudos.phantom.connectors.ContactPoints
 
-  /*
-  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T)(implicit p: Primitive[T#Value] = {
-    new Primitive[T#Value] {
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: String = Primitive[String].cassandraType
-
-      override def fromRow(name: String, row: Row): Try[T#Value] = {
-        nullCheck(name, row) {
-          r => enum.values.find(_.toString == r.getString(name)) match {
-            case Some(value) => value
-            case _ => throw new Exception(s"Value $name not found in enumeration") with NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: T#Value): String = Primitive[String].asCql(value.toString)
-
-      override def fromString(value: String): T#Value = enum.values.find(value == _.toString).getOrElse(None.orNull)
-
-      override def clz: Class[String] = classOf[java.lang.String]
-    }
-  }*/
-
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
   }
@@ -237,7 +213,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     }
   }
 
-  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
+  implicit class CounterOperations[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
@@ -274,4 +253,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     }
   }
 
+  implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
+    def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
+  }
 }
