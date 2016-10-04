@@ -40,13 +40,13 @@ class CreateTest extends PhantomFreeSuite {
     "should generate CQL queries for custom caching properties" - {
       "serialize and create a table with Caching.None" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.None())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
@@ -57,13 +57,13 @@ class CreateTest extends PhantomFreeSuite {
 
       "serialize and create a table with Caching.KeysOnly" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.KeysOnly())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
@@ -74,13 +74,13 @@ class CreateTest extends PhantomFreeSuite {
 
       "serialize and create a table with Caching.RowsOnly" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.RowsOnly())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
@@ -96,7 +96,7 @@ class CreateTest extends PhantomFreeSuite {
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 

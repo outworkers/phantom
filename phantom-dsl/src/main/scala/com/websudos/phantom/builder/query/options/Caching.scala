@@ -64,6 +64,20 @@ private[phantom] trait CachingStrategies {
     }
   }
 
+  /**
+    * A class wrapping a "none" cache property definition.
+    * @param qb The query builder string that wraps the property definition.
+    * @param escaped If the propery is escaped it will be wrapped in curly braces at the end.
+    *
+    * Example: {{{
+    *   // if the escaped parameter is set to true
+    *   cache: {'rows_per_partition': 'none'}
+    *
+    *   // if set to false
+    *
+    * }}}
+    * @param session
+    */
   sealed class NoneCache(
     override val qb: CQLQuery,
     override val escaped: Boolean
