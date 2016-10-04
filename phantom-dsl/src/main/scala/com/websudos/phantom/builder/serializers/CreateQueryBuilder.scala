@@ -189,7 +189,11 @@ private[builder] class CreateTableBuilder extends
   }
 
   def caching(qb: String, wrapped: Boolean): CQLQuery = {
-    val settings = if (wrapped) CQLQuery.empty.appendSingleQuote(qb) else CQLQuery.empty.append(Utils.curlyWrap(qb))
+    val settings = if (!wrapped) {
+      CQLQuery.empty.appendSingleQuote(qb)
+    } else {
+      CQLQuery.empty.append(Utils.curlyWrap(qb))
+    }
 
     Utils.tableOption(
       CQLSyntax.CreateOptions.caching,
