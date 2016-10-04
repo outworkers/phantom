@@ -42,7 +42,6 @@ lazy val Versions = new {
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
   val scrooge = "4.10.0"
-  val play = "2.5.8"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
@@ -54,18 +53,27 @@ lazy val Versions = new {
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
+
+  val lift: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "3.0-RC3"
+      case _ => "3.0-M1"
+    }
+  }
+
+  val play: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "2.5.8"
+      case _ => "2.4.6"
+    }
+  }
 }
 
 val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
 lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
 val defaultConcurrency = 4
 
-val liftVersion: String => String = {
-  s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => "3.0-RC3"
-    case _ => "3.0-M1"
-  }
-}
+
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
   s => CrossVersion.partialVersion(s) match {
@@ -223,7 +231,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
   )
@@ -325,8 +332,8 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"             % Versions.play exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams"               % Versions.play exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees"             % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-streams"               % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
