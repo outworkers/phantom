@@ -34,10 +34,17 @@ import com.websudos.phantom.Manager
 import com.websudos.phantom.builder.primitives.Primitive
 import shapeless.{HList, HNil, Generic, :: => #:}
 import scala.util.{Failure, Success, Try}
+import scala.reflect.runtime.universe._
 
 trait FromRow[L <: HList] { def apply(row: List[(String, Row)]): Try[L] }
 
 object FromRow {
+
+  def classAccessors[T : TypeTag]: List[String] = {
+    typeOf[T].members.collect {
+      case m: MethodSymbol if m.isCaseAccessor => m.name.decodedName.toString
+    }.toList.reverse
+  }
 
   def apply[L <: HList](implicit fromRow: FromRow[L]): FromRow[L] = fromRow
 
@@ -68,7 +75,7 @@ object FromRow {
       fromRow: FromRow[L]
     ): A = {
       val applier = new RowParser[A] {}
-      val accessors = Helper.classAccessors[A]
+      val accessors = classAccessors[A]
 
       applier.apply(accessors zip List.tabulate(accessors.size)(_ => row))  match {
         case Success(value) => value
