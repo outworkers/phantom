@@ -168,8 +168,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
-  javaOptions ++= Seq(
-    "-Xmx1G",
+  javaOptions in Test ++= Seq(
+    "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
