@@ -41,7 +41,6 @@ lazy val Versions = new {
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
-  val scrooge = "4.10.0"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
@@ -61,10 +60,27 @@ lazy val Versions = new {
     }
   }
 
+  val scrooge: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "4.10.0"
+      case _ => "4.7.0"
+    }
+  }
+
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((major, minor)) if minor >= 11 => "2.5.8"
-      case _ => "2.4.6"
+      case _ => "2.4.8"
+    }
+  }
+
+  val playStreams: String => sbt.ModuleID = {
+    s => {
+      val v = play(s)
+      CrossVersion.partialVersion(s) match {
+        case Some((major, minor)) if minor >= 11 => "com.typesafe.play" %% "play-streams" % v
+        case _ => "com.typesafe.play" %% "play-streams-experimental" % v
+      }
     }
   }
 }
@@ -285,8 +301,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
-      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
-      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
+      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
+      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % Test,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
@@ -333,7 +349,7 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees"             % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams"               % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
