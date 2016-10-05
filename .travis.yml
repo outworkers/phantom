@@ -1,10 +1,12 @@
 language: scala
-sudo: false
-services:
-- cassandra
+
+sudo: required
+dist: trusty
+
 scala:
 - 2.10.6
 - 2.11.8
+
 env:
   global:
   - GH_REF: github.com/outworkers/phantom.git
@@ -13,18 +15,38 @@ env:
   - secure: hbuc+lReAC/tzOfmF3M70L4Qfb48S6fI/gqchctnBD7TcZ6i13EOLhsjgPkFwTuINYU7Bvwd54yjy9simu1Se34+DaGtxKPJ8NZIeWk0ciCGyFxNiz0QVkE+/Cc0kZLD7hJXb0UpLsbMwpIQFlL6FHcB/2xGmMhgYvGHe7+64zM=
   - secure: ma0SLHvjzABno6RmwR/LSZQVC6rv6UcUt5kJAz1l4yJmASpdxkivoa8xWXahsjYP1O05IWuPFGHy/o0Vu7fxykgqN5gOg01wVQ0irjguWR04nNLUQTrOUgKPXR3w22USAbPpzxxqQrGc0ZS/2QFpiu9fvLNsBTkZcosA3oLpyiY=
   - secure: hihHuKLYf8YemlopCITLM1QvvgJH7ITTTsLRvLxKOGfzzBsOLd1m6LKpDOrmWdoKtcigyON+J3AP24DBd4zO95Y8r+Cwq8I4IVfZol3qwhJxvYMSB4Tyje3ssSUGqr/LBUBdLAe8H5pBeoeAECt/iSjDcYYRLKVexWRaJJBafXY=
+
 notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
   - dev@websudos.co.uk
+
 branches:
   only:
   - master
   - develop
+
 jdk:
 - oraclejdk7
 - oraclejdk8
+
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+cache:
+  directories:
+    - $HOME/.ccm/repository
+
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
+
+install:
+  - pip install 'requests[security]'
+  - pip install ccm
+  - ccm create test -v 2.2.8 -n 3 -s
+
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh
+

@@ -164,7 +164,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback,
+    "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
