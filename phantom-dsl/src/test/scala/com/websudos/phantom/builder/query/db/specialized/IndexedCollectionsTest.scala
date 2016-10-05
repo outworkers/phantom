@@ -39,11 +39,11 @@ class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (cassandraVersion.value >= Version.`2.1.0`) {
+    if (cassandraVersion.value >= Version.`2.3.0`) {
       database.indexedCollectionsTable.insertSchema()
     }
 
-    if (cassandraVersion.value >= Version.`2.2.0`) {
+    if (cassandraVersion.value >= Version.`2.3.0`) {
       database.indexedEntriesTable.insertSchema()
     }
   }
@@ -58,7 +58,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -81,7 +81,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -104,7 +104,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -124,7 +124,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       result <- database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
     } yield result
 
-    if (cassandraVersion.value > Version.`2.2.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
