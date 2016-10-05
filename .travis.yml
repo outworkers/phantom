@@ -36,9 +36,7 @@ addons:
     packages:
       - oracle-java8-installer
 
-cache:
-  directories:
-    - $HOME/.ccm/repository
+before_install: unset SBT_OPTS JVM_OPTS
 
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
