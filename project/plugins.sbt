@@ -27,8 +27,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-
 def outworkersPattern: Patterns = {
   val pList = List(
     "[organisation]/[module](_[scalaVersion])(_[sbtVersion])/[revision]/[artifact]-[revision](-[classifier]).[ext]"
@@ -60,7 +58,7 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 
-if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
+if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
   addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 } else {
   addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
@@ -74,4 +72,4 @@ addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
-addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.10.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")

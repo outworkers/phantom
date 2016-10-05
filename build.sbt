@@ -62,7 +62,7 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 => "4.10.0"
+      case Some((major, minor)) if minor >= 11 => "4.7.0"
       case _ => "4.7.0"
     }
   }
