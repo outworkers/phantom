@@ -117,6 +117,7 @@ class EnumColumnTest extends PhantomSuite {
     )
 
     val chain = for {
+      store <- database.indexedEnumTable.truncate().future()
       store <- database.indexedEnumTable.store(sample).future()
       get <- database.indexedEnumTable.select.where(_.enum eqs NamedRecords.One).one()
     } yield get

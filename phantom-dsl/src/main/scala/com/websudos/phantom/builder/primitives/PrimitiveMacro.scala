@@ -33,6 +33,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
+import com.websudos.phantom.dsl.LocalDate
 import macrocompat.bundle
 import org.joda.time.DateTime
 
@@ -68,53 +69,56 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
   def typed[A : c.WeakTypeTag] = weakTypeOf[A].typeSymbol
 
+  object Symbols {
+    val intSymbol = typed[Int]
+    val byteSymbol = typed[Byte]
+    val stringSymbol = typed[String]
+    val boolSymbol = typed[Boolean]
+    val shortSymbol = typed[Short]
+    val longSymbol = typed[Long]
+    val doubleSymbol = typed[Double]
+    val floatSymbol = typed[Float]
+    val dateSymbol = typed[Date]
+    val dateTimeSymbol = typed[DateTime]
+    val localDateSymbol = typed[com.datastax.driver.core.LocalDate]
+    val uuidSymbol = typed[UUID]
+    val jodaLocalDateSymbol = typed[org.joda.time.LocalDate]
+    val inetSymbol = typed[InetAddress]
+    val bigInt = typed[BigInt]
+    val bigDecimal = typed[BigDecimal]
+    val buffer = typed[ByteBuffer]
+    val enum = typed[Enumeration#Value]
+  }
+
   def materializer[T : c.WeakTypeTag]: c.Expr[Primitive[T]] = {
     val tpe = weakTypeOf[T].typeSymbol
 
-    val primitiveTree: Tree = if (tpe == typed[String]) {
-      stringPrimitive
-    } else if (tpe == typed[Int]) {
-      intPrimitive
-    } else if (tpe == typed[Byte]) {
-      bytePrimitive
-    } else if (tpe == typed[Boolean]) {
-      booleanPrimitive
-    } else if (tpe == typed[Short]) {
-      shortPrimitive
-    } else if (tpe == typed[Long]) {
-      longPrimitive
-    } else if (tpe == typed[Double]) {
-      doublePrimitive
-    } else if (tpe == typed[Float]) {
-      floatPrimitive
-    } else if (tpe == typed[UUID]) {
-      uuidPrimitive
-    } else if (tpe == typed[Date]) {
-      datePrimitive
-    } else if (tpe == typed[DateTime]) {
-      dateTimePrimitive
-    } else if (tpe == typed[com.datastax.driver.core.LocalDate]) {
-      localDatePrimitive
-    } else if (tpe == typed[org.joda.time.LocalDate]) {
-      localJodaDatePrimitive
-    } else if (tpe == typed[InetAddress]) {
-      inetPrimitive
-    } else if (tpe == typed[BigDecimal]) {
-      bigDecimalPrimitive
-    } else if (tpe == typed[BigInt]) {
-      bigIntPrimitive
-    } else if (tpe == typed[ByteBuffer]) {
-      bufferPrimitive
-    } else if (tpe == typed[Enumeration#Value]) {
-      enumPrimitive[T]()
-    } else {
-      c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
+    val tree = tpe match {
+      case Symbols.boolSymbol => booleanPrimitive
+      case Symbols.byteSymbol => bytePrimitive
+      case Symbols.shortSymbol => shortPrimitive
+      case Symbols.intSymbol => intPrimitive
+      case Symbols.longSymbol => longPrimitive
+      case Symbols.doubleSymbol => doublePrimitive
+      case Symbols.floatSymbol => floatPrimitive
+      case Symbols.uuidSymbol => uuidPrimitive
+      case Symbols.stringSymbol => stringPrimitive
+      case Symbols.dateSymbol => datePrimitive
+      case Symbols.dateTimeSymbol => dateTimePrimitive
+      case Symbols.localDateSymbol => localDatePrimitive
+      case Symbols.jodaLocalDateSymbol => localJodaDatePrimitive
+      case Symbols.inetSymbol => inetPrimitive
+      case Symbols.bigInt => bigIntPrimitive
+      case Symbols.bigDecimal => bigDecimalPrimitive
+      case Symbols.buffer => bufferPrimitive
+      case Symbols.enum => enumPrimitive[T]()
+      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
     }
 
-    c.Expr[Primitive[T]](primitiveTree)
+    c.Expr[Primitive[T]](tree)
   }
 
-  def primitive(nm: String): Tree = c.parse(s"new com.websudos.phantom.builder.primitives.Primitives.$nm")
+  def primitive(nm: String): Tree = q"new com.websudos.phantom.builder.primitives.Primitives.${TypeName(nm)}"
 
   val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
 

@@ -40,11 +40,11 @@ sealed trait CreateOptionsBuilder {
     if (qb.nonEmpty) {
       qb.append(CQLSyntax.comma)
         .forcePad.appendSingleQuote(option)
-        .append(CQLSyntax.Symbols.`:`)
+        .append(CQLSyntax.Symbols.colon)
         .forcePad.appendSingleQuote(value)
     } else {
       qb.appendSingleQuote(option)
-        .append(CQLSyntax.Symbols.`:`)
+        .append(CQLSyntax.Symbols.colon)
         .forcePad.appendSingleQuote(value)
     }
   }
@@ -52,7 +52,7 @@ sealed trait CreateOptionsBuilder {
   protected[this] def simpleValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     qb.append(CQLSyntax.comma)
       .forcePad.appendSingleQuote(option)
-      .append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.colon)
       .forcePad.append(value)
   }
 }
@@ -235,7 +235,7 @@ private[builder] class CreateTableBuilder extends
    * @param table The name of the table to create the index on.
    * @param keySpace The keyspace to whom the table belongs to.
    * @param column The name of the column to create the secondary index on.
-   * @return A CQLQuery containing the valid CQL of creating a secondary index for the keys of a Map column.
+   * @return A CQLQuery containing the valid CQL of creating a secondary index for the keys of a Map column.e
    */
   def mapIndex(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)

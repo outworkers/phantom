@@ -30,13 +30,14 @@
 package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.QueryBuilder.Utils
+import com.websudos.phantom.builder.query.{CQLQuery, OptionPart}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 
 private object Strategies {
-  final val networkTopologyStrategy = "NetworkTopologyStrategy"
-  final val simpleStrategy = "SimpleStrategy"
+  final val networkTopology = "NetworkTopologyStrategy"
+  final val simple = "SimpleStrategy"
   final val replicationFactor = "replication_factor"
   final val replication = "REPLICATION"
   final val durableWrites = "DURABLE_WRITES"
@@ -44,30 +45,34 @@ private object Strategies {
 
 sealed class BuilderClause(val qb: CQLQuery)
 
-sealed class ReplicationStrategy(override val qb: CQLQuery) extends BuilderClause(qb) {
+sealed abstract class ReplicationStrategy[QT <: ReplicationStrategy[QT]](
+  options: OptionPart = OptionPart.empty
+) extends BuilderClause(options build CQLQuery.empty) {
 
-  def option(key: String, value: String): CQLQuery = {
-    CQLQuery(CQLQuery.escape(key))
-      .forcePad.append(":")
-      .pad.append(CQLQuery.escape(value))
+  def instance(options: OptionPart): QT
+
+  def option(key: String, value: String): QT = {
+    val opt = Utils.option(CQLQuery.escape(key), CQLSyntax.Symbols.colon, CQLQuery.escape(value))
+    instance(options append opt)
   }
 
-  def option(key: String, value: Int): CQLQuery = {
-    CQLQuery(CQLQuery.escape(key)).forcePad.append(":").pad.append(value.toString)
+  def option(key: String, value: Int): QT = {
+    val opt = Utils.option(CQLQuery.escape(key), CQLSyntax.Symbols.colon, value.toString)
+    instance(options append opt)
   }
 }
 
 sealed trait TopologyStrategies {
 
   private[this] def strategy(name: String): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`{`)
+    CQLQuery.empty
       .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
-      .append(":").forcePad.appendSingleQuote(name)
-      .append(CQLSyntax.Symbols.`}`)
+      .append(CQLSyntax.Symbols.colon).forcePad.appendSingleQuote(name)
   }
 
-  sealed class NetworkTopologyStrategy(override val qb: CQLQuery = strategy(Strategies.networkTopologyStrategy)) extends
-    ReplicationStrategy(qb) {
+  sealed class NetworkTopologyStrategy(
+    optionPart: OptionPart = OptionPart(strategy(Strategies.networkTopology))
+  ) extends ReplicationStrategy[NetworkTopologyStrategy](optionPart) {
 
     /**
       * Utility method that allows users to specify the replication factor for every data center
@@ -85,32 +90,30 @@ sealed trait TopologyStrategies {
       * @return A serializable network topology strategy that can be encoded.
       */
     def data_center(center: String, factor: Int): NetworkTopologyStrategy = {
-      new NetworkTopologyStrategy(
-        CQLQuery(qb.queryString.dropRight(1))
-          .append(option(center, factor))
-          .append(CQLSyntax.Symbols.`}`)
-      )
+      option(center, factor)
+    }
+
+    override def instance(options: OptionPart): NetworkTopologyStrategy = {
+      new NetworkTopologyStrategy(options)
     }
   }
 
-
-  sealed class SimpleStrategy(override val qb: CQLQuery) extends
-    ReplicationStrategy(qb) {
+  sealed class SimpleStrategy(options: OptionPart) extends ReplicationStrategy[SimpleStrategy](options) {
 
     def replication_factor(factor: Int): SimpleStrategy = {
-      new SimpleStrategy(
-        CQLQuery(qb.queryString.dropRight(1))
-          .append(option(Strategies.replicationFactor, factor))
-          .append(CQLSyntax.Symbols.`}`)
-      )
+      option(Strategies.replicationFactor, factor)
+    }
+
+    override def instance(options: OptionPart): SimpleStrategy = {
+      new SimpleStrategy(options)
     }
   }
 
-  case object SimpleStrategy extends SimpleStrategy(strategy(Strategies.simpleStrategy))
-  case object NetworkTopologyStrategy extends NetworkTopologyStrategy(strategy(Strategies.networkTopologyStrategy))
+  object SimpleStrategy extends SimpleStrategy(OptionPart(strategy(Strategies.simple)))
+  object NetworkTopologyStrategy extends NetworkTopologyStrategy(OptionPart(strategy(Strategies.networkTopology)))
 
-  object replication {
-    def eqs(strategy: ReplicationStrategy): BuilderClause = {
+  val replication = new {
+    def eqs(strategy: ReplicationStrategy[_]): BuilderClause = {
       new BuilderClause(
         CQLQuery(Strategies.replication)
           .forcePad.append(CQLSyntax.eqs)
@@ -119,9 +122,9 @@ sealed trait TopologyStrategies {
     }
   }
 
-  object durable_writes {
+  val durable_writes = new {
     def eqs(clause: Boolean): BuilderClause = {
-      new BuilderClause(CQLQuery(Strategies.durableWrites + " = " + clause.toString))
+      new BuilderClause(CQLQuery(s"${Strategies.durableWrites} ${CQLSyntax.eqs} ${clause.toString}"))
     }
   }
 }

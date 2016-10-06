@@ -72,4 +72,19 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
 
     query shouldEqual expected
   }
+
+  it should "create a simple keyspace using NetworkTopology and data center specific settings" in {
+    val query = QueryBuilder.keyspace("test").ifNotExists()
+      .`with`(replication eqs NetworkTopologyStrategy
+        .data_center("data1", 2)
+        .data_center("data2", 3)
+      )
+      .and(durable_writes eqs true)
+      .qb.queryString
+
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy', 'data1': 2, 'data2': 3}" +
+      " AND DURABLE_WRITES = true"
+
+    query shouldEqual expected
+  }
 }

@@ -122,6 +122,7 @@ object CQLSyntax {
 
     val dot = "."
     val `:` = ":"
+    val colon = ":"
     val `;` = ";"
     val `(` = "("
     val `)` = ")"

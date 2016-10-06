@@ -169,3 +169,16 @@ sealed class WithPart(override val list: List[CQLQuery] = Nil) extends CQLQueryP
 object WithPart {
   def empty: WithPart = new WithPart()
 }
+
+sealed class OptionPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[OptionPart](list) {
+  override def qb: CQLQuery = QueryBuilder.Utils.options(list)
+
+  override def instance(l: List[CQLQuery]): OptionPart = new OptionPart(l)
+}
+
+object OptionPart {
+
+  def apply(qb: CQLQuery): OptionPart = new OptionPart(qb :: Nil)
+
+  def empty: OptionPart = new OptionPart()
+}
