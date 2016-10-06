@@ -61,4 +61,15 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
     query shouldEqual expected
   }
 
+  it should "allow creating a simple strategy with a replication factor defined" in {
+    val query = QueryBuilder.keyspace("test").ifNotExists()
+      .`with`(replication eqs SimpleStrategy.replication_factor(2))
+      .and(durable_writes eqs true)
+      .qb.queryString
+
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 2}" +
+      " AND DURABLE_WRITES = true"
+
+    query shouldEqual expected
+  }
 }

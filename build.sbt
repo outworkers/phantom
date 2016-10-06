@@ -85,7 +85,7 @@ lazy val Versions = new {
   }
 }
 
-val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+val runningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
 lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
 val defaultConcurrency = 4
 
@@ -101,14 +101,9 @@ val scalaMacroDependencies: String => Seq[ModuleID] = {
 val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
-lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
-)
 
 lazy val defaultCredentials: Seq[Credentials] = {
-  if (!runningUnderCi) {
+  if (!Publishing.runningUnderCi) {
     Seq(
       Credentials(Path.userHome / ".bintray" / ".credentials"),
       Credentials(Path.userHome / ".ivy2" / ".credentials")
@@ -182,20 +177,12 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++ {
-  if (PublishTasks.publishToMaven) {
-    PublishTasks.mavenPublishingSettings
-  } else {
-    PublishTasks.bintrayPublishSettings
-  }
+  GitProject.gitSettings ++
+  Publishing.effectiveSettings
 }
 
-lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 
-lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
-  if (bool) ref :: Nil else Nil
 
-lazy val isTravisScala210 = !travisScala211
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -207,8 +194,8 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
 )
 
 lazy val fullProjectList = baseProjectList ++
-  addOnCondition(isJdk8, phantomJdk8) ++
-  addOnCondition(isTravisScala210, phantomSbtPlugin)
+  Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8) ++
+  Publishing.addOnCondition(Publishing.isTravisScala210, phantomSbtPlugin)
 
 lazy val phantom = (project in file("."))
   .configs(
@@ -216,11 +203,11 @@ lazy val phantom = (project in file("."))
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
-    sharedSettings ++ noPublishSettings
+    sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := PublishTasks.pgpPass
+    pgpPassphrase := Publishing.pgpPass
   ).aggregate(
     fullProjectList: _*
   )
