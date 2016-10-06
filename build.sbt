@@ -84,12 +84,7 @@ lazy val Versions = new {
     }
   }
 }
-
-val runningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
-lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
 val defaultConcurrency = 4
-
-
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
   s => CrossVersion.partialVersion(s) match {
@@ -102,40 +97,10 @@ val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
 
-lazy val defaultCredentials: Seq[Credentials] = {
-  if (!Publishing.runningUnderCi) {
-    Seq(
-      Credentials(Path.userHome / ".bintray" / ".credentials"),
-      Credentials(Path.userHome / ".ivy2" / ".credentials")
-    )
-  } else {
-    Seq(
-      Credentials(
-        realm = "Bintray",
-        host = "dl.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      ),
-      Credentials(
-        realm = "Sonatype OSS Repository Manager",
-        host = "oss.sonatype.org",
-        userName = System.getenv("maven_user"),
-        passwd = System.getenv("maven_password")
-      ),
-      Credentials(
-        realm = "Bintray API Realm",
-        host = "api.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      )
-    )
-  }
-}
-
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
   scalaVersion := "2.11.8",
-  credentials ++= defaultCredentials,
+  credentials ++= Publishing.defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -179,10 +144,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ VersionManagement.newSettings ++
   GitProject.gitSettings ++
   Publishing.effectiveSettings
-}
-
-
-
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,

@@ -46,6 +46,36 @@ object Publishing {
     publishArtifact := false
   )
 
+  lazy val defaultCredentials: Seq[Credentials] = {
+    if (!Publishing.runningUnderCi) {
+      Seq(
+        Credentials(Path.userHome / ".bintray" / ".credentials"),
+        Credentials(Path.userHome / ".ivy2" / ".credentials")
+      )
+    } else {
+      Seq(
+        Credentials(
+          realm = "Bintray",
+          host = "dl.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        ),
+        Credentials(
+          realm = "Sonatype OSS Repository Manager",
+          host = "oss.sonatype.org",
+          userName = System.getenv("maven_user"),
+          passwd = System.getenv("maven_password")
+        ),
+        Credentials(
+          realm = "Bintray API Realm",
+          host = "api.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        )
+      )
+    }
+  }
+
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
@@ -111,11 +141,12 @@ object Publishing {
     if (sys.env.contains("MAVEN_PUBLISH")) mavenSettings else bintraySettings
   }
 
-  lazy val runningUnderCi = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
+  def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
+  def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
 
-  lazy val isTravisScala210 = !travisScala211
+  def isTravisScala210: Boolean = !travisScala211
 
-  lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
+  def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
 
   lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
     if (bool) ref :: Nil else Nil
