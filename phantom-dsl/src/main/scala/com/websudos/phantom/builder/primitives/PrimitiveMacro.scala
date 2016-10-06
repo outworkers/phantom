@@ -114,402 +114,47 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     c.Expr[Primitive[T]](primitiveTree)
   }
 
-  val booleanPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$boolType] {
+  def primitive(nm: String): Tree = c.parse(s"new com.websudos.phantom.builder.primitives.Primitives.$nm")
 
-      override type PrimitiveType = java.lang.Boolean
+  val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
 
-      val cassandraType = $syntax.Types.Boolean
+  val stringPrimitive: Tree = primitive("StringPrimitive")
 
-      def fromRow(row: $rowType, name: $strType): Option[$boolType] = {
-        if (row.isNull(name)) None else scala.util.Try(row.getBool(name)).toOption
-      }
+  val intPrimitive: Tree = primitive("IntPrimitive")
 
-      override def asCql(value: $boolType): $strType = value.toString
+  val shortPrimitive: Tree = primitive("SmallIntPrimitive")
 
-      override def fromRow(column: $strType, row: $rowType): ${tryT(boolType)} = {
-        nullCheck(column, row)(_.getBool(column))
-      }
+  val bytePrimitive: Tree = primitive("TinyIntPrimitive")
 
-      override def fromString(value: $strType): $boolType = value match {
-        case "true" => true
-        case "false" => false
-        case _ => throw new Exception(s"Couldn't parse a boolean value from " + value)
-      }
+  val doublePrimitive: Tree = primitive("DoublePrimitive")
 
-      override def clz: Class[java.lang.Boolean] = classOf[java.lang.Boolean]
-    }
-    """
+  val longPrimitive: Tree = primitive("LongPrimitive")
 
-  val stringPrimitive: Tree =
-    q"""
-      new com.websudos.phantom.builder.primitives.Primitive[$strType] {
+  val floatPrimitive: Tree = primitive("FloatPrimitive")
 
-        override type PrimitiveType = $strType
+  val uuidPrimitive: Tree = primitive("UUIDPrimitive")
 
-        def asCql(value: $strType): $strType = $cql.empty.singleQuote(value)
+  val datePrimitive: Tree = primitive("DateIsPrimitive")
 
-        override def cassandraType: $strType = $syntax.Types.Text
+  val localDatePrimitive: Tree = primitive("LocalDateIsPrimitive")
 
-        override def fromString(value: $strType): $strType = value
+  val dateTimePrimitive: Tree = primitive("DateTimeIsPrimitive")
 
-        override def fromRow(column: $strType, row: $rowType): ${tryT(strType)} = {
-          nullCheck(column, row)(_.getString(column))
-        }
+  val localJodaDatePrimitive: Tree = primitive("JodaLocalDateIsPrimitive")
 
-        override def clz: Class[$strType] = classOf[$strType]
-      }
-    """
+  val bigDecimalPrimitive: Tree = primitive("BigDecimalIsPrimitive")
 
-  val intPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$intType] {
+  val inetPrimitive: Tree = primitive("InetAddressPrimitive")
 
-      override type PrimitiveType = java.lang.Integer
+  val bigIntPrimitive: Tree = primitive("BigIntPrimitive")
 
-      def asCql(value: $intType): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.Int
-
-      override def fromString(value: $strType): Int = value.toInt
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(intType)} = {
-        nullCheck(column, row)(_.getInt(column))
-      }
-
-      override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
-    }
-    """
-
-  val shortPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$shortType] {
-
-      override type PrimitiveType = java.lang.Short
-
-      def asCql(value: $shortType): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.SmallInt
-
-      override def fromString(value: $strType): $shortType = value.toShort
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(shortType)} = {
-        nullCheck(column, row)(_.getShort(column))
-      }
-
-      override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
-    }
-  """
-
-  val bytePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$byteType] {
-
-      override type PrimitiveType = java.lang.Byte
-
-      def asCql(value: $byteType): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.TinyInt
-
-      override def fromString(value: $strType): $byteType = value.toByte
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(byteType)} = {
-        nullCheck(column, row)(_.getByte(column))
-      }
-
-      override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
-    }
-  """
-
-  val doublePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$doubleType] {
-
-      override type PrimitiveType = java.lang.Double
-
-      def asCql(value: Double): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.Double
-
-      override def fromString(value: $strType): $doubleType = value.toDouble
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(doubleType)} = {
-        nullCheck(column, row)(_.getDouble(column))
-      }
-
-      override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
-    }"""
-
-  val longPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[Long] {
-
-      override type PrimitiveType = java.lang.Long
-
-      def asCql(value: $longType): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.BigInt
-
-      override def fromString(value: $strType): Long = value.toLong
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(longType)} = {
-        nullCheck(column, row)(_.getLong(column))
-      }
-
-      override def clz: Class[java.lang.Long] = classOf[java.lang.Long]
-    }
-  """
-
-  val floatPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$floatType] {
-
-      override type PrimitiveType = java.lang.Float
-
-      def asCql(value: $floatType): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.Float
-
-      override def fromString(value: $strType): $floatType = value.toFloat
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(floatType)} = {
-        nullCheck(column, row)(_.getFloat(column))
-      }
-
-      override def clz: Class[java.lang.Float] = classOf[java.lang.Float]
-    }
-  """
-
-  val uuidPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$uuidType] {
-
-      override type PrimitiveType = java.util.UUID
-
-      def asCql(value: UUID): $strType = value.toString
-
-      override def cassandraType: $strType = $syntax.Types.UUID
-
-      override def fromString(value: $strType): $uuidType = java.util.UUID.fromString(value)
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(uuidType)} = {
-        nullCheck(column, row)(_.getUUID(column))
-      }
-
-      override def clz: Class[$uuidType] = classOf[$uuidType]
-    }
-  """
-
-  val datePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$dateType] {
-
-      override type PrimitiveType = java.util.Date
-
-      val cassandraType = $syntax.Types.Timestamp
-
-      def fromRow(row: $rowType, name: $strType): Option[$dateType] = {
-        if (row.isNull(name)) None else scala.util.Try(row.getTimestamp(name)).toOption
-      }
-
-      override def asCql(value: $dateType): $strType = {
-        com.websudos.phantom.builder.primitives.DateSerializer.asCql(value)
-      }
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(dateType)} = {
-        nullCheck(column, row)(_.getTimestamp(column))
-      }
-
-      override def fromString(value: $strType): $dateType = {
-        new org.joda.time.DateTime(value, org.joda.time.DateTimeZone.UTC).toDate
-      }
-
-      override def clz: Class[$dateType] = classOf[$dateType]
-    }
-  """
-
-  val localDatePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$localDate] {
-
-      override type PrimitiveType = com.datastax.driver.core.LocalDate
-
-      val cassandraType = $syntax.Types.Date
-
-      override def asCql(value: $localDate): $strType = {
-        com.websudos.phantom.builder.primitives.DateSerializer.asCql(value)
-      }
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(localDate)} = {
-        nullCheck(column, row)(_.getDate(column))
-      }
-
-      override def fromString(value: $strType): $localDate = {
-        com.datastax.driver.core.LocalDate.fromMillisSinceEpoch(
-          new org.joda.time.DateTime(
-            value,
-            org.joda.time.DateTimeZone.UTC
-          ).getMillis
-        )
-      }
-
-      override def clz: Class[$localDate] = classOf[$localDate]
-    }
-  """
-
-  val dateTimePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$dateTimeType] {
-
-      override type PrimitiveType = java.util.Date
-
-      val cassandraType = $syntax.Types.Timestamp
-
-      override def asCql(value: $dateTimeType): $strType = {
-        com.websudos.phantom.builder.primitives.DateSerializer.asCql(value)
-      }
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(dateTimeType)} = {
-        nullCheck(column, row)(r =>
-          new org.joda.time.DateTime(
-            r.getTimestamp(column),
-            org.joda.time.DateTimeZone.UTC
-          )
-        )
-      }
-
-      override def fromString(value: $strType): $dateTimeType = {
-        new org.joda.time.DateTime(value, org.joda.time.DateTimeZone.UTC)
-      }
-
-      override def clz: Class[$dateType] = classOf[$dateType]
-
-      override def extract(obj: PrimitiveType): $dateTimeType = {
-        new org.joda.time.DateTime(
-          obj,
-          org.joda.time.DateTimeZone.UTC
-        )
-      }
-    }"""
-
-  val localJodaDatePrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$localJodaDate] {
-
-      override type PrimitiveType = com.datastax.driver.core.LocalDate
-
-      val cassandraType = $syntax.Types.Date
-
-      def fromRow(row: $rowType, name: $strType): Option[$localJodaDate] = {
-        if (row.isNull(name)) {
-          None
-        } else {
-          scala.util.Try(
-            new org.joda.time.DateTime(
-              row.getDate(name).getMillisSinceEpoch,
-              org.joda.time.DateTimeZone.UTC
-            ).toLocalDate
-          ).toOption
-        }
-      }
-
-      override def asCql(value: $localJodaDate): $strType = {
-        $cql.empty.singleQuote(com.websudos.phantom.builder.primitives.DateSerializer.asCql(value))
-      }
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(localJodaDate)} = {
-        nullCheck(column, row) {
-          r => new org.joda.time.DateTime(
-            r.getDate(column).getMillisSinceEpoch,
-            org.joda.time.DateTimeZone.UTC
-          ).toLocalDate
-        }
-      }
-
-      override def fromString(value: $strType): $localJodaDate = {
-        new org.joda.time.DateTime(value, org.joda.time.DateTimeZone.UTC).toLocalDate
-      }
-
-      override def clz: Class[$localDate] = classOf[$localDate]
-    }
-    """
-
-  val bigDecimalPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$bigDecimalType] {
-
-      override type PrimitiveType = java.math.BigDecimal
-
-      val cassandraType = $syntax.Types.Decimal
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(bigDecimalType)} = {
-        nullCheck(column, row)(r => scala.math.BigDecimal(r.getDecimal(column)))
-      }
-
-      override def asCql(value: $bigDecimalType): String = value.toString()
-
-      override def fromString(value: String): $bigDecimalType = scala.math.BigDecimal(value)
-
-      override def clz: Class[java.math.BigDecimal] = classOf[java.math.BigDecimal]
-
-      override def extract(obj: java.math.BigDecimal): $bigDecimalType = scala.math.BigDecimal(obj)
-    }"""
-
-  val inetPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$inetType] {
-
-      override type PrimitiveType = java.net.InetAddress
-
-      val cassandraType = $syntax.Types.Inet
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(inetType)} = {
-        nullCheck(column, row)(_.getInet(column))
-      }
-
-      override def asCql(value: $inetType): $strType = $cql.empty.singleQuote(value.getHostAddress)
-
-      override def fromString(value: $strType): $inetType = java.net.InetAddress.getByName(value)
-
-      override def clz: Class[$inetType] = classOf[$inetType]
-    }
-    """
-
-  val bigIntPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$bigIntType] {
-
-      override type PrimitiveType = java.math.BigInteger
-
-      val cassandraType = $syntax.Types.Varint
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(bigIntType)} = {
-        nullCheck(column, row)(_.getVarint(column))
-      }
-
-      override def asCql(value: $bigIntType): $strType = value.toString()
-
-      override def fromString(value: $strType): $bigIntType = scala.math.BigInt(value)
-
-      override def clz: Class[java.math.BigInteger] = classOf[java.math.BigInteger]
-    }
-  """
-
-  val bufferPrimitive: Tree = q"""
-    new com.websudos.phantom.builder.primitives.Primitive[$bufferType] {
-
-      override type PrimitiveType = java.nio.ByteBuffer
-
-      val cassandraType = $syntax.Types.Blob
-
-      override def fromRow(column: $strType, row: $rowType): ${tryT(bufferType)} = {
-        nullCheck(column, row)(_.getBytes(column))
-      }
-
-      override def asCql(value: $bufferType): $strType = {
-        com.datastax.driver.core.utils.Bytes.toHexString(value)
-      }
-
-      override def fromString(value: $strType): $bufferType = {
-        com.datastax.driver.core.utils.Bytes.fromHexString(value)
-      }
-
-      override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
-    }
-    """
+  val bufferPrimitive: Tree = primitive("BlobIsPrimitive")
 
   def enumPrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
-
     val tpe = tag.tpe
     val comp = c.parse(s"${tag.tpe.toString.replace("#Value", "")}")
 
-    val tree = q""" new com.websudos.phantom.builder.primitives.Primitive[$tpe] {
+    q""" new com.websudos.phantom.builder.primitives.Primitive[$tpe] {
       val strP = implicitly[com.websudos.phantom.builder.primitives.Primitive[String]]
 
       override type PrimitiveType = java.lang.String
@@ -535,8 +180,5 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def clz: Class[$strType] = classOf[$strType]
     }"""
-
-    println(showCode(tree))
-    tree
   }
 }
