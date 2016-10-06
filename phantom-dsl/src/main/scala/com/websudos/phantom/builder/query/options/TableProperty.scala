@@ -53,7 +53,7 @@ trait ClauseBuilder[T] extends TablePropertyClause {
 
   def options: OptionPart
 
-  override val qb: CQLQuery = options build CQLQuery.empty
+  override def qb: CQLQuery = options build CQLQuery.empty
 
   protected[this] def instance(opts: OptionPart): T
 

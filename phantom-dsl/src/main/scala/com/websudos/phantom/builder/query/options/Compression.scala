@@ -45,7 +45,7 @@ sealed abstract class CompressionStrategy[
   }
 
   def crc_check_chance(size: Double): CompressionStrategy[CS] = {
-    option(CQLSyntax.CompressionOptions.chunk_length_kb, size.toString)
+    option(CQLSyntax.CompressionOptions.crc_check_chance, size.toString)
   }
 }
 
@@ -54,7 +54,7 @@ private[phantom] trait CompressionStrategies {
   private[this] def strategy(strategy: String): OptionPart = {
     val qb = CQLQuery.empty
       .appendSingleQuote(CQLSyntax.CompressionOptions.sstable_compression)
-      .append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.colon)
       .forcePad.appendSingleQuote(strategy)
 
     OptionPart(qb)
@@ -68,6 +68,8 @@ private[phantom] trait CompressionStrategies {
     }
   }
 
+  object SnappyCompressor extends SnappyCompressor
+
   class LZ4Compressor extends CompressionStrategy[LZ4Compressor](
     strategy(CQLSyntax.CompressionStrategies.LZ4Compressor)
   ) {
@@ -76,6 +78,8 @@ private[phantom] trait CompressionStrategies {
     }
   }
 
+  object LZ4Compressor extends LZ4Compressor
+
   class DeflateCompressor extends CompressionStrategy[DeflateCompressor](
     strategy(CQLSyntax.CompressionStrategies.DeflateCompressor)
   ) {
@@ -83,6 +87,8 @@ private[phantom] trait CompressionStrategies {
       override val options: OptionPart = opts
     }
   }
+
+  object DeflateCompressor extends DeflateCompressor
 }
 
 private[phantom] class CompressionBuilder extends TableProperty {
