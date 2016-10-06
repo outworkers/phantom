@@ -59,9 +59,9 @@ class ExecutablePreparedQuery(val statement: Statement, val options: QueryOption
 }
 
 class ExecutablePreparedSelectQuery[
-  Table <: CassandraTable[Table, _],
-  R,
-  Limit <: LimitBound
+Table <: CassandraTable[Table, _],
+R,
+Limit <: LimitBound
 ](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
@@ -76,13 +76,13 @@ class ExecutablePreparedSelectQuery[
 
 
   /**
-   * Returns the first row from the select ignoring everything else
-   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param ev The implicit limit for the query.
-   * @param ec The implicit Scala execution context.
-   * @return A Scala future guaranteed to contain a single result wrapped as an Option.
-   */
+    * Returns the first row from the select ignoring everything else
+    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param ev The implicit limit for the query.
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+    */
   override def one()(
     implicit session: Session,
     keySpace: KeySpace,
@@ -173,8 +173,8 @@ class PreparedSelectBlock[
   R,
   Limit <: LimitBound,
   PS <: HList
-](qb: CQLQuery, fn: Row => R, options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
+  ](qb: CQLQuery, fn: Row => R, options: QueryOptions)
+(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.

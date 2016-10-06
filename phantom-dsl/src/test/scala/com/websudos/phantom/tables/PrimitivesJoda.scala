@@ -38,8 +38,8 @@ import scala.concurrent.Future
 
 case class JodaRow(
   pkey: String,
-  int: Int,
-  bi: DateTime
+  intColumn: Int,
+  timestamp: DateTime
 )
 
 sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaRow] {
@@ -47,22 +47,15 @@ sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaR
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  override def fromRow(r: Row): JodaRow = {
-    JodaRow(
-      pkey = pkey(r),
-      int = intColumn(r),
-      bi = timestamp(r)
-    )
-  }
+  override def fromRow(r: Row): JodaRow = extract[JodaRow](r)
 }
 
 abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {
 
   def store(primitive: JodaRow): InsertQuery.Default[ConcretePrimitivesJoda, JodaRow] = {
-    insert
-      .value(_.pkey, primitive.pkey)
-      .value(_.intColumn, primitive.int)
-      .value(_.timestamp, primitive.bi)
+    insert.value(_.pkey, primitive.pkey)
+      .value(_.intColumn, primitive.intColumn)
+      .value(_.timestamp, primitive.timestamp)
   }
 
   def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {

@@ -137,7 +137,7 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
 
       "should allow using operator values as parts of the insert statements" in {
         val query = TestDatabase.timeSeriesTable.insert
-          .opValue(_.id, now())
+          .valueOp(_.id, now())
           .queryString
 
         query shouldEqual "INSERT INTO phantom.timeSeriesTable (id) VALUES(now());"

@@ -83,11 +83,10 @@ class InsertQuery[
     * the "now()" operator when inserting the value of a date.
     * @param col The function that selects a specific column from the table.
     * @param value The value to insert in the column, based on the output of the operator.
-    * @tparam RR The type of the value held in the column.
     * @return A new instance of insert query, with the clause added.
     */
-  def opValue[RR](
-    col: Table => AbstractColumn[RR],
+  def valueOp(
+    col: Table => AbstractColumn[_],
     value: OperatorClause.Condition
   ): InsertQuery[Table, Record, Status, PS] = {
     new InsertQuery(

@@ -40,7 +40,7 @@ class DistinctTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
       super.beforeAll()
-      TestDatabase.tableWithCompoundKey.insertSchema()
+      database.tableWithCompoundKey.insertSchema()
   }
 
   it should "return distinct primary keys" in {
@@ -53,7 +53,7 @@ class DistinctTest extends PhantomSuite {
 
     val batch = rows.foldLeft(Batch.unlogged)((batch, row) => {
       batch.add(
-        TestDatabase.tableWithCompoundKey.insert
+        database.tableWithCompoundKey.insert
           .value(_.id, row.id)
           .value(_.second, UUID.nameUUIDFromBytes(row.name.getBytes))
           .value(_.name, row.name)
@@ -69,9 +69,7 @@ class DistinctTest extends PhantomSuite {
     val expectedResult = rows.filter(_.name != "b").map(_.id)
 
     whenReady(chain) {
-      res => {
-        res should contain only (expectedResult: _*)
-      }
+      res => res should contain only (expectedResult: _*)
     }
   }
 

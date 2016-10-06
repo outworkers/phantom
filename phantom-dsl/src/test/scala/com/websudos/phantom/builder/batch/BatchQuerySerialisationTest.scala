@@ -45,16 +45,16 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
 
     val statement3 = TestDatabase.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn setTo row2.int)
-      .and(_.timestamp setTo row2.bi)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo row2.timestamp)
 
     val statement4 = TestDatabase.primitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3, statement4).queryString
 
-    batch shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}," +
-      s" timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
+    batch shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.intColumn}," +
+      s" timestamp = ${row2.timestamp.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
       s" WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 
@@ -66,14 +66,14 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
 
     val statement3 = TestDatabase.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn setTo row2.int)
-      .and(_.timestamp setTo row2.bi)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo row2.timestamp)
 
     val statement4 = TestDatabase.primitivesJoda.delete.where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.int}," +
-      s" timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
+    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.intColumn}," +
+      s" timestamp = ${row2.timestamp.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.PrimitivesJoda" +
       s" WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
   }
 

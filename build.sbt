@@ -35,16 +35,12 @@ import com.twitter.sbt._
 lazy val Versions = new {
   val logback = "1.1.7"
   val util = "0.18.2"
-  val json4s = "3.3.0"
-  val datastax = "3.0.2"
+  val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
   val thrift = "0.8.0"
-  val finagle = "6.35.0"
-  val twitterUtil = "6.33.0"
-  val scrooge = "4.7.0"
-  val scalatra = "2.3.0"
-  val play = "2.4.6"
+  val finagle = "6.37.0"
+  val twitterUtil = "6.34.0"
   val scalameter = "0.6"
   val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
@@ -54,21 +50,46 @@ lazy val Versions = new {
   val akka = "2.3.14"
   val typesafeConfig = "1.2.1"
   val jetty = "9.1.2.v20140210"
-  val dispatch = "0.11.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
+
+  val lift: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "3.0-RC3"
+      case _ => "3.0-M1"
+    }
+  }
+
+  val scrooge: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "4.7.0"
+      case _ => "4.7.0"
+    }
+  }
+
+  val play: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "2.5.8"
+      case _ => "2.4.8"
+    }
+  }
+
+  val playStreams: String => sbt.ModuleID = {
+    s => {
+      val v = play(s)
+      CrossVersion.partialVersion(s) match {
+        case Some((major, minor)) if minor >= 11 => "com.typesafe.play" %% "play-streams" % v
+        case _ => "com.typesafe.play" %% "play-streams-experimental" % v
+      }
+    }
+  }
 }
 
 val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
 lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
 val defaultConcurrency = 4
 
-val liftVersion: String => String = {
-  s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => "3.0-RC3"
-    case _ => "3.0-M1"
-  }
-}
+
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
   s => CrossVersion.partialVersion(s) match {
@@ -129,6 +150,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.bintrayRepo("websudos", "oss-releases")
   ),
   scalacOptions ++= Seq(
+    "-language:experimental.macros",
     "-language:postfixOps",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
@@ -142,12 +164,12 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback,
+    "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ) ++ scalaMacroDependencies(scalaVersion.value),
   fork in Test := true,
-  javaOptions ++= Seq(
-    "-Xmx1G",
+  javaOptions in Test ++= Seq(
+    "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
@@ -225,7 +247,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
   )
@@ -280,9 +301,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
-      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
-      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
-      "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % Test,
+      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
+      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).settings(
@@ -327,8 +347,8 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"             % Versions.play exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams-experimental"  % Versions.play exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees"             % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
@@ -355,29 +375,5 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).dependsOn(
     phantomDsl,
     phantomReactiveStreams,
-    phantomThrift
-  )
-
-lazy val phantomContainerTests = (project in file("phantom-container-test"))
-  .settings(
-    name := "phantom-container-test",
-    moduleName := "phantom-container-test",
-    fork := true,
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
-    ),
-    libraryDependencies ++= Seq(
-      "org.json4s"                %% "json4s-native"                  % Versions.json4s,
-      "org.json4s"                %% "json4s-ext"                     % Versions.json4s,
-      "net.liftweb"               %% "lift-webkit"                    % liftVersion(scalaVersion.value),
-      "net.liftweb"               %% "lift-json"                      % liftVersion(scalaVersion.value),
-      "net.databinder.dispatch"   %% "dispatch-core"                  % Versions.dispatch,
-      "javax.servlet"             % "javax.servlet-api"               % Versions.javaxServlet,
-      "com.outworkers"            %% "util-testing"                   % Versions.util
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl,
     phantomThrift
   )

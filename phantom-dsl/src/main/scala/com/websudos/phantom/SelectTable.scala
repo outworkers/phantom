@@ -34,6 +34,7 @@ import com.websudos.phantom.builder.clauses.OperatorClause
 import com.websudos.phantom.builder.ops.SelectColumn
 import com.websudos.phantom.builder.query.RootSelectBlock
 import shapeless.ops.hlist.Mapper
+import shapeless.ops.traversable.FromTraversable
 import shapeless.ops.tuple.ToList
 import shapeless.{Generic, HList, LUBConstraint, Poly1}
 

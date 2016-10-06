@@ -43,7 +43,7 @@ import scala.concurrent.duration.FiniteDuration
 trait TableProperty
 
 class TablePropertyClause(val qb: CQLQuery) {
-  def escaped: Boolean = false
+  def wrapped: Boolean = false
 }
 
 sealed trait WithBound

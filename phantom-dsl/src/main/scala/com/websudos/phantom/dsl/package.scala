@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, Random}
 
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
+import com.datastax.driver.core.{GettableData, VersionNumber, ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
@@ -45,11 +45,13 @@ import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImpl
 import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.column.extractors.FromRow.RowParser
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
 import scala.util.control.NoStackTrace
+import scala.reflect.runtime.universe.TypeTag
 
 package object dsl extends ImplicitMechanism with CreateImplicits
   with DefaultPrimitives
@@ -162,7 +164,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
       override def cassandraType: String = Primitive[String].cassandraType
 
-      override def fromRow(name: String, row: Row): Try[T#Value] = {
+      override def fromRow(name: String, row: GettableData): Try[T#Value] = {
         nullCheck(name, row) {
           r => enum.values.find(_.toString == r.getString(name)) match {
             case Some(value) => value
@@ -273,5 +275,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
       new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
     }
   }
+
+  def extract[R]: RowParser[R] = new RowParser[R] {}
 
 }

@@ -74,9 +74,7 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
 
   def name: String = _name
 
-  def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(cassandraType)
-  }
+  def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 
 }
 
