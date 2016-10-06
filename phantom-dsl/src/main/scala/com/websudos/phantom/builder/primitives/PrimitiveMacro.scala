@@ -42,7 +42,7 @@ import scala.language.experimental.macros
 class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   import c.universe._
 
-  val rowType = tq"com.datastax.driver.core.Row"
+  val rowType = tq"com.datastax.driver.core.GettableData"
   val boolType = tq"scala.Boolean"
   val strType: Tree = tq"java.lang.String"
   val intType: Tree = tq"scala.Int"

@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
-import com.datastax.driver.core.{LocalDate, Row}
+import com.datastax.driver.core.{GettableData, LocalDate, Row}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
@@ -53,7 +53,7 @@ object Primitives {
 
       override def fromString(value: String): String = value
 
-      override def fromRow(column: String, row: Row): Try[String] = {
+      override def fromRow(column: String, row: GettableData): Try[String] = {
         nullCheck(column, row) {
           r => r.getString(column)
         }
@@ -72,7 +72,7 @@ object Primitives {
 
       override def fromString(value: String): Int = value.toInt
 
-      override def fromRow(column: String, row: Row): Try[Int] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Int] = nullCheck(column, row) {
         r => r.getInt(column)
       }
 
@@ -89,7 +89,7 @@ object Primitives {
 
       override def fromString(value: String): Short = value.toShort
 
-      override def fromRow(column: String, row: Row): Try[Short] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Short] = nullCheck(column, row) {
         r => r.getShort(column)
       }
 
@@ -106,7 +106,7 @@ object Primitives {
 
       override def fromString(value: String): Byte = value.toByte
 
-      override def fromRow(column: String, row: Row): Try[Byte] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Byte] = nullCheck(column, row) {
         r => r.getByte(column)
       }
 
@@ -123,7 +123,7 @@ object Primitives {
 
       override def fromString(value: String): Double = value.toDouble
 
-      override def fromRow(column: String, row: Row): Try[Double] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Double] = nullCheck(column, row) {
         r => r.getDouble(column)
       }
 
@@ -140,7 +140,7 @@ object Primitives {
 
       override def fromString(value: String): Long = value.toLong
 
-      override def fromRow(column: String, row: Row): Try[Long] = {
+      override def fromRow(column: String, row: GettableData): Try[Long] = {
         nullCheck(column, row)(_.getLong(column))
       }
 
@@ -157,7 +157,7 @@ object Primitives {
 
       override def fromString(value: String): Float = value.toFloat
 
-      override def fromRow(column: String, row: Row): Try[Float] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Float] = nullCheck(column, row) {
         r => r.getFloat(column)
       }
 
@@ -174,7 +174,7 @@ object Primitives {
 
       override def fromString(value: String): UUID = UUID.fromString(value)
 
-      override def fromRow(column: String, row: Row): Try[UUID] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[UUID] = nullCheck(column, row) {
         r => r.getUUID(column)
       }
 
@@ -187,14 +187,14 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Timestamp
 
-      def fromRow(row: Row, name: String): Option[Date] =
+      def fromRow(row: GettableData, name: String): Option[Date] =
         if (row.isNull(name)) None else Try(row.getTimestamp(name)).toOption
 
       override def asCql(value: Date): String = {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: Row): Try[Date] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Date] = nullCheck(column, row) {
         r => r.getTimestamp(column)
       }
 
@@ -211,14 +211,14 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Date
 
-      def fromRow(row: Row, name: String): Option[LocalDate] =
+      def fromRow(row: GettableData, name: String): Option[LocalDate] =
         if (row.isNull(name)) None else Try(row.getDate(name)).toOption
 
       override def asCql(value: LocalDate): String = {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: Row): Try[LocalDate] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[LocalDate] = nullCheck(column, row) {
         r => r.getDate(column)
       }
 
@@ -235,14 +235,17 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Date
 
-      def fromRow(row: Row, name: String): Option[org.joda.time.LocalDate] =
-        if (row.isNull(name)) None else Try(new DateTime(row.getDate(name).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate).toOption
+      def fromRow(row: GettableData, name: String): Option[org.joda.time.LocalDate] =
+        if (row.isNull(name)) None else Try(
+          new DateTime(row.getDate(name).getMillisSinceEpoch,
+            DateTimeZone.UTC).toLocalDate
+        ).toOption
 
       override def asCql(value: org.joda.time.LocalDate): String = {
         CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
       }
 
-      override def fromRow(column: String, row: Row): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
         r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
       }
 
@@ -263,15 +266,15 @@ object Primitives {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: Row): Try[DateTime] = nullCheck(column, row) {
-        r => new DateTime(r.getTimestamp(column))
+      override def fromRow(column: String, row: GettableData): Try[DateTime] = nullCheck(column, row) {
+        r => new DateTime(r.getTimestamp(column), DateTimeZone.UTC)
       }
 
-      override def fromString(value: String): DateTime = new DateTime(value)
+      override def fromString(value: String): DateTime = new DateTime(value, DateTimeZone.UTC)
 
       override def clz: Class[Date] = classOf[Date]
 
-      override def extract(obj: PrimitiveType): DateTime = new DateTime(obj)
+      override def extract(obj: PrimitiveType): DateTime = new DateTime(obj, DateTimeZone.UTC)
     }
 
 
@@ -281,12 +284,12 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Boolean
 
-      def fromRow(row: Row, name: String): Option[Boolean] =
+      def fromRow(row: GettableData, name: String): Option[Boolean] =
         if (row.isNull(name)) None else Try(row.getBool(name)).toOption
 
       override def asCql(value: Boolean): String = value.toString
 
-      override def fromRow(column: String, row: Row): Try[Boolean] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[Boolean] = nullCheck(column, row) {
         r => r.getBool(column)
       }
 
@@ -305,7 +308,7 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Decimal
 
-      override def fromRow(column: String, row: Row): Try[BigDecimal] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[BigDecimal] = nullCheck(column, row) {
         r => BigDecimal(r.getDecimal(column))
       }
 
@@ -324,7 +327,7 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Inet
 
-      override def fromRow(column: String, row: Row): Try[InetAddress] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[InetAddress] = nullCheck(column, row) {
         r => r.getInet(column)
       }
 
@@ -341,7 +344,7 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Varint
 
-      override def fromRow(column: String, row: Row): Try[BigInt] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[BigInt] = nullCheck(column, row) {
         r => r.getVarint(column)
       }
 
@@ -358,7 +361,7 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Blob
 
-      override def fromRow(column: String, row: Row): Try[ByteBuffer] = nullCheck(column, row) {
+      override def fromRow(column: String, row: GettableData): Try[ByteBuffer] = nullCheck(column, row) {
         r => r.getBytes(column)
       }
 

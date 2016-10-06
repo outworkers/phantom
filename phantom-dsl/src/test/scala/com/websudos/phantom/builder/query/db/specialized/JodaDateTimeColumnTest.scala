@@ -52,8 +52,8 @@ class JodaDateTimeColumnTest extends PhantomSuite {
     chain successful {
       res => {
         res.value.pkey shouldEqual row.pkey
-        res.value.int shouldEqual row.int
-        res.value.bi shouldEqual row.bi
+        res.value.intColumn shouldEqual row.intColumn
+        res.value.timestamp shouldEqual row.timestamp
       }
     }
   }

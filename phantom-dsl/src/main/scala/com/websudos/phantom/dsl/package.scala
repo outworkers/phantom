@@ -46,6 +46,7 @@ import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.column.extractors.FromRow.RowParser
+import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -252,6 +253,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
       val random = new Random()
       new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
     }
+  }
+
+  implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
+    def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
 
   def extract[R]: RowParser[R] = new RowParser[R] {}
