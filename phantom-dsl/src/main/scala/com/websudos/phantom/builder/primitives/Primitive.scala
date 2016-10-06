@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
-import com.datastax.driver.core.{LocalDate, Row}
+import com.datastax.driver.core.{GettableData, LocalDate, Row}
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
@@ -57,7 +57,7 @@ abstract class Primitive[RR] {
 
   type PrimitiveType
 
-  protected[this] def nullCheck[T](column: String, row: Row)(fn: Row => T): Try[T] = {
+  protected[this] def nullCheck[T](column: String, row: GettableData)(fn: GettableData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null") with NoStackTrace)
     } else {
@@ -69,7 +69,7 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(col: String, row: Row): Try[RR]
+  def fromRow(column: String, row: GettableData): Try[RR]
 
   def fromString(value: String): RR
 

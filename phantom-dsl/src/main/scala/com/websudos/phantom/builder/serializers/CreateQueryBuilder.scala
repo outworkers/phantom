@@ -189,17 +189,16 @@ private[builder] class CreateTableBuilder extends
   }
 
   def caching(qb: String, wrapped: Boolean): CQLQuery = {
-    if (wrapped) {
-      Utils.tableOption(
-        CQLSyntax.CreateOptions.caching,
-        CQLQuery.empty.append(Utils.curlyWrap(qb))
-      )
+    val settings = if (!wrapped) {
+      CQLQuery.empty.appendSingleQuote(qb)
     } else {
-      Utils.tableOption(
-        CQLSyntax.CreateOptions.caching,
-        CQLQuery.empty.appendSingleQuote(qb)
-      )
+      CQLQuery.empty.append(Utils.curlyWrap(qb))
     }
+
+    Utils.tableOption(
+      CQLSyntax.CreateOptions.caching,
+      settings
+    )
   }
 
   def caching(qb: CQLQuery): CQLQuery = {
@@ -209,7 +208,6 @@ private[builder] class CreateTableBuilder extends
   def `with`(clause: CQLQuery): CQLQuery = {
     CQLQuery(CQLSyntax.With).pad.append(clause)
   }
-
 
   /**
     * Creates an index on the keys on any column except for a Map column which requires special handling.

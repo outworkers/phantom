@@ -56,8 +56,8 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
       batch = rows.foldLeft(Batch.unlogged)((b, row) => {
         val statement = TestDatabase.primitivesJoda.insert
           .value(_.pkey, row.pkey)
-          .value(_.intColumn, row.int)
-          .value(_.timestamp, row.bi)
+          .value(_.intColumn, row.intColumn)
+          .value(_.timestamp, row.timestamp)
         b.add(statement)
       })
       w = batch.future()
@@ -74,7 +74,7 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
     val result = combinedFuture flatMap {
        rs => {
          info(s"done, inserted: $rs rows - start parsing")
-         TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r=> counter.incrementAndGet() }
+         TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r => counter.incrementAndGet() }
        }
     }
 

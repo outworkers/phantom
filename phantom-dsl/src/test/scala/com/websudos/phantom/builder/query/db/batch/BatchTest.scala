@@ -29,30 +29,27 @@
  */
 package com.websudos.phantom.builder.query.db.batch
 
+import com.outworkers.util.testing._
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{TestDatabase, JodaRow}
-import com.outworkers.util.testing._
+import com.websudos.phantom.tables.JodaRow
 import org.joda.time.DateTime
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
-
 
 class BatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitivesJoda.insertSchema()
+    database.primitivesJoda.insertSchema()
   }
 
   it should "get the correct count for batch queries" in {
     val row = gen[JodaRow]
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = database.primitivesJoda.update
       .where(_.pkey eqs row.pkey)
-      .modify(_.intColumn setTo row.int)
-      .and(_.timestamp setTo row.bi)
+      .modify(_.intColumn setTo row.intColumn)
+      .and(_.timestamp setTo row.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete
+    val statement4 = database.primitivesJoda.delete
       .where(_.pkey eqs row.pkey)
 
     val batch = Batch.logged.add(statement3, statement4)
@@ -65,16 +62,19 @@ class BatchTest extends PhantomSuite {
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
     val row3 = gen[JodaRow]
 
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = database.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn setTo row2.int)
-      .and(_.timestamp setTo row2.bi)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo row2.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete
+    val statement4 = database.primitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3, statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.TestDatabase.primitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.TestDatabase.primitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    val expected = s"BEGIN BATCH UPDATE phantom.database.primitivesJoda SET intColumn = ${row2.intColumn}, " +
+      s"timestamp = ${row2.timestamp.getMillis} WHERE pkey = '${row2.pkey}'; " +
+      s"DELETE FROM phantom.database.primitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    batch.queryString shouldEqual expected
   }
 
   ignore should "serialize a multiple table batch query chained from adding statements" in {
@@ -83,16 +83,20 @@ class BatchTest extends PhantomSuite {
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
     val row3 = gen[JodaRow]
 
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = database.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn setTo row2.int)
-      .and(_.timestamp setTo row2.bi)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo row2.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete
+    val statement4 = database.primitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
-    batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.TestDatabase.primitivesJoda SET intColumn = ${row2.int}, timestamp = ${row2.bi.getMillis} WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.TestDatabase.primitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+    val expected = s"BEGIN BATCH UPDATE phantom.database.primitivesJoda SET intColumn = ${row2.intColumn}, " +
+      s"timestamp = ${row2.timestamp.getMillis} WHERE pkey = '${row2.pkey}'; " +
+      s"DELETE FROM phantom.database.primitivesJoda WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
+
+    batch.queryString shouldEqual expected
   }
 
   it should "correctly execute a chain of INSERT queries" in {
@@ -100,27 +104,27 @@ class BatchTest extends PhantomSuite {
     val row2 = gen[JodaRow]
     val row3 = gen[JodaRow]
 
-    val statement1 = TestDatabase.primitivesJoda.insert
+    val statement1 = database.primitivesJoda.insert
       .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.int)
-      .value(_.timestamp, row.bi)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
 
-    val statement2 = TestDatabase.primitivesJoda.insert
+    val statement2 = database.primitivesJoda.insert
       .value(_.pkey, row2.pkey)
-      .value(_.intColumn, row2.int)
-      .value(_.timestamp, row2.bi)
+      .value(_.intColumn, row2.intColumn)
+      .value(_.timestamp, row2.timestamp)
 
-    val statement3 = TestDatabase.primitivesJoda.insert
+    val statement3 = database.primitivesJoda.insert
       .value(_.pkey, row3.pkey)
-      .value(_.intColumn, row3.int)
-      .value(_.timestamp, row3.bi)
+      .value(_.intColumn, row3.intColumn)
+      .value(_.timestamp, row3.timestamp)
 
     val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
 
     val chain = for {
-      ex <- TestDatabase.primitivesJoda.truncate.future()
+      ex <- database.primitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- TestDatabase.primitivesJoda.select.count.one()
+      count <- database.primitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -133,17 +137,17 @@ class BatchTest extends PhantomSuite {
   it should "correctly execute a chain of INSERT queries and not perform multiple inserts" in {
     val row = gen[JodaRow]
 
-    val statement1 = TestDatabase.primitivesJoda.insert
+    val statement1 = database.primitivesJoda.insert
       .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.int)
-      .value(_.timestamp, row.bi)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
 
     val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
-      ex <- TestDatabase.primitivesJoda.truncate.future()
+      ex <- database.primitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- TestDatabase.primitivesJoda.select.count.one()
+      count <- database.primitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -156,17 +160,17 @@ class BatchTest extends PhantomSuite {
   it should "correctly execute a chain of INSERT queries and not perform multiple inserts with Twitter Futures" in {
     val row = gen[JodaRow]
 
-    val statement1 = TestDatabase.primitivesJoda.insert
+    val statement1 = database.primitivesJoda.insert
       .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.int)
-      .value(_.timestamp, row.bi)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
 
     val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
-      ex <- TestDatabase.primitivesJoda.truncate.future()
+      ex <- database.primitivesJoda.truncate.future()
       batchDone <- batch.future()
-      count <- TestDatabase.primitivesJoda.select.count.one()
+      count <- database.primitivesJoda.select.count.one()
     } yield count
 
     chain.successful {
@@ -181,22 +185,22 @@ class BatchTest extends PhantomSuite {
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
     val row3 = gen[JodaRow]
 
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = database.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
-      .modify(_.intColumn setTo row2.int)
-      .and(_.timestamp setTo  row2.bi)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo  row2.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete
+    val statement4 = database.primitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
 
     val w = for {
-      s1 <- TestDatabase.primitivesJoda.store(row).future()
-      s3 <- TestDatabase.primitivesJoda.store(row3).future()
+      s1 <- database.primitivesJoda.store(row).future()
+      s3 <- database.primitivesJoda.store(row3).future()
       b <- batch.future()
-      updated <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
-      deleted <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
+      updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
 
     w successful {
@@ -210,26 +214,26 @@ class BatchTest extends PhantomSuite {
   ignore should "prioritise batch updates in a last first order" in {
     val row = gen[JodaRow]
 
-    val statement1 = TestDatabase.primitivesJoda.insert
+    val statement1 = database.primitivesJoda.insert
       .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.int)
-      .value(_.timestamp, row.bi)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
 
     val batch = Batch.logged
       .add(statement1)
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.int))
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)))
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15)))
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 20)))
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo row.intColumn))
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.intColumn + 10)))
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.intColumn + 15)))
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.intColumn + 20)))
 
     val chain = for {
       done <- batch.future()
-      updated <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
     chain.successful {
       res => {
-        res.value.int shouldEqual (row.int + 20)
+        res.value.intColumn shouldEqual (row.intColumn + 20)
       }
     }
   }
@@ -240,24 +244,29 @@ class BatchTest extends PhantomSuite {
     val last = gen[DateTime]
     val last2 = last.withDurationAdded(1000, 5)
 
-    val statement1 = TestDatabase.primitivesJoda.insert
+    val statement1 = database.primitivesJoda.insert
       .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.int)
-      .value(_.timestamp, row.bi)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
 
     val batch = Batch.logged
       .add(statement1)
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 10)).timestamp(last.getMillis))
-      .add(TestDatabase.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.int + 15))).timestamp(last2.getMillis)
+      .add(database.primitivesJoda.update
+        .where(_.pkey eqs row.pkey)
+        .modify(_.intColumn setTo (row.intColumn + 10)).timestamp(last.getMillis)
+      ).add(database.primitivesJoda.update
+        .where(_.pkey eqs row.pkey)
+        .modify(_.intColumn setTo (row.intColumn + 15))
+      ).timestamp(last2.getMillis)
 
     val chain = for {
       done <- batch.future()
-      updated <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
     chain.successful {
       res => {
-        res.value.int shouldEqual (row.int + 15)
+        res.value.intColumn shouldEqual (row.intColumn + 15)
       }
     }
   }

@@ -41,7 +41,7 @@ import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
 
 /**

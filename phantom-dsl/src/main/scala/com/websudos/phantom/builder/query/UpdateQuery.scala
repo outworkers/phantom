@@ -257,7 +257,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
+  final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -270,7 +270,7 @@ sealed class AssignmentsQuery[
   }
 
 
-  def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -282,7 +282,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 

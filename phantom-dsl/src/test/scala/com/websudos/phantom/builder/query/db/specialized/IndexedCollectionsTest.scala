@@ -39,11 +39,11 @@ class IndexedCollectionsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (cassandraVersion.value >= Version.`2.1.0`) {
+    if (cassandraVersion.value >= Version.`2.3.0`) {
       database.indexedCollectionsTable.insertSchema()
     }
 
-    if (cassandraVersion.value >= Version.`2.2.0`) {
+    if (cassandraVersion.value >= Version.`2.3.0`) {
       database.indexedEntriesTable.insertSchema()
     }
   }
@@ -52,13 +52,13 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable.select
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable.select
         .where(_.setText contains record.setText.headOption.value)
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -75,13 +75,13 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable.select
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable.select
         .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -97,14 +97,14 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- TestDatabase.indexedCollectionsTable.store(record).future()
-      get <- TestDatabase.indexedCollectionsTable
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable
         .select
         .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
         .fetch()
     } yield get
 
-    if (cassandraVersion.value > Version.`2.1.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true
@@ -120,11 +120,11 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
 
     val chain = for {
-      store <- TestDatabase.indexedEntriesTable.store(record).future()
-      result <- TestDatabase.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
+      store <- database.indexedEntriesTable.store(record).future()
+      result <- database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
     } yield result
 
-    if (cassandraVersion.value > Version.`2.2.0`) {
+    if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) {
         res => {
           res.nonEmpty shouldEqual true

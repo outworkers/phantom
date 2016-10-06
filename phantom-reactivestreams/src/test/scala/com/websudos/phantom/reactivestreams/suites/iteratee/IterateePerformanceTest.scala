@@ -53,8 +53,8 @@ class IterateePerformanceTest extends PhantomSuite {
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       val statement = TestDatabase.primitivesJoda.insert
         .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.int)
-        .value(_.timestamp, row.bi)
+        .value(_.intColumn, row.intColumn)
+        .value(_.timestamp, row.timestamp)
       b.add(statement)
     })
 

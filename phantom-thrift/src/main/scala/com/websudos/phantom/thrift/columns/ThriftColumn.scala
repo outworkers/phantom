@@ -32,14 +32,12 @@ package com.websudos.phantom.thrift.columns
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
-
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
-
-import com.datastax.driver.core.Row
-import com.twitter.scrooge.{ThriftStructSerializer, CompactThriftSerializer, ThriftStruct}
+import com.datastax.driver.core.{GettableData, Row}
+import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct, ThriftStructSerializer}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
 import com.websudos.phantom.CassandraTable
@@ -168,7 +166,7 @@ abstract class RootThriftPrimitive[T <: ThriftStruct] extends Primitive[T] {
 
   override type PrimitiveType = java.lang.String
 
-  override def fromRow(column: String, row: Row): Try[T] = nullCheck(column, row) {
+  override def fromRow(column: String, row: GettableData): Try[T] = nullCheck(column, row) {
     existing => serializer.fromString(row.getString(column))
   }
 

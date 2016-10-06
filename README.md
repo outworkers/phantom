@@ -4,7 +4,7 @@ phantom
 
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
 
-To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers_uk](https://twitter.com/outworkers_uk).
+To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers](https://twitter.com/outworkers_uk).
 
 If you use phantom, please consider adding your company to our list of adopters.
 phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware), but the more adopters our projects have, the more people from our company will actively work to make them better.
@@ -22,6 +22,11 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 - The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
 - Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/websudos/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+
+
+### How phantom compares
+
+To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/comparison.md).
 
 
 ### Latest versions
@@ -70,10 +75,11 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-This is a list of companies that have embraced phantom as part of their technology stack and using it in production environments.
+Some of the companies using phantom:
 
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
+- [UBS](https://www.ubs.com/global/en.html)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Paddy Power](http://www.paddypower.com/)
 - [Mobli](https://www.mobli.com/)
@@ -126,7 +132,7 @@ Scala/Cassandra users in the world rely on phantom.
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
-* Evan Chan ([@evanfchan](https://github.com/evanfchan))
+* Evan Chan ([@evanfchan](https://github.com/velvia))
 * Jens Halm ([@jenshalm](https://github.com/jenshalm))
 * Donovan Levinson ([@levinson](https://github.com/levinson))
 

@@ -31,9 +31,6 @@ package com.websudos.phantom.builder.serializers
 
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.dsl._
-import shapeless.{Generic, HList, HNil, LabelledGeneric}
-
-import scala.util.{Failure, Success, Try}
 
 class KeySpaceSerializerTest extends QuerySerializationTest {
 
@@ -44,18 +41,6 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
       .qb.queryString
 
     val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
-      " AND DURABLE_WRITES = true"
-
-    query shouldEqual expected
-  }
-
-  it should "create allow specifying a simple strategy " in {
-    val query = QueryBuilder.keyspace("test").ifNotExists()
-      .`with`(replication eqs SimpleStrategy)
-      .and(durable_writes eqs true)
-      .qb.queryString
-
-    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'SimpleStrategy'}" +
       " AND DURABLE_WRITES = true"
 
     query shouldEqual expected
