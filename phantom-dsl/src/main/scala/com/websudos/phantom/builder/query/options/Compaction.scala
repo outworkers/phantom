@@ -144,9 +144,9 @@ private[phantom] trait CompactionStrategies {
 
   }
 
-  case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.SizeTieredCompactionStrategy))
-  case object LeveledCompactionStrategy extends LeveledCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.LeveledCompactionStrategy))
-  case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.DateTieredCompactionStrategy))
+  case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.sizeTiered))
+  case object LeveledCompactionStrategy extends LeveledCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.leveled))
+  case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.dateTiered))
 }
 
 private[phantom] class CompactionBuilder extends TableProperty {

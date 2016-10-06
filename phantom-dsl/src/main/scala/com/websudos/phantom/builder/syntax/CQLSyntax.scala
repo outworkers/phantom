@@ -239,9 +239,10 @@ object CQLSyntax {
   }
 
   object CompactionStrategies {
-    val SizeTieredCompactionStrategy = "SizeTieredCompactionStrategy"
-    val DateTieredCompactionStrategy = "DateTieredCompactionStrategy"
-    val LeveledCompactionStrategy = "LeveledCompactionStrategy"
+    val sizeTiered = "SizeTieredCompactionStrategy"
+    val dateTiered = "DateTieredCompactionStrategy"
+    val leveled = "LeveledCompactionStrategy"
+    val timeWindow = "TimeWindowCompactionStrategy"
   }
 
   object CompressionOptions {
