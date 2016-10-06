@@ -103,8 +103,6 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
         val qb = BasicTable.alter.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
 
-        Console.println(qb)
-
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
       }
 
@@ -112,7 +110,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
         val qb = BasicTable.alter.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
 
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': '50'}"
+        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {

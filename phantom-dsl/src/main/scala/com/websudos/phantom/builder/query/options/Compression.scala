@@ -30,38 +30,65 @@
 package com.websudos.phantom.builder.query.options
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.query.{CQLQuery, OptionPart}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-sealed class CompressionStrategy(override val qb: CQLQuery) extends TablePropertyClause(qb) {
+sealed abstract class CompressionStrategy[
+  CS <: CompressionStrategy[CS]
+](val options: OptionPart) extends ClauseBuilder[CS] {
 
-  def chunk_length_kb(unit: Int): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(qb, unit + "KB"))
+  def chunk_length_kb(unit: Int): CompressionStrategy[CS] = {
+    option(
+      CQLSyntax.CompressionOptions.chunk_length_kb,
+      unit + "KB"
+    )
   }
 
-  def crc_check_chance(size: Double): CompressionStrategy = {
-    new CompressionStrategy(QueryBuilder.Create.crc_check_chance(qb, size))
+  def crc_check_chance(size: Double): CompressionStrategy[CS] = {
+    option(CQLSyntax.CompressionOptions.chunk_length_kb, size.toString)
   }
 }
 
 private[phantom] trait CompressionStrategies {
 
-  private[this] def strategy(strategy: String) = {
-    CQLQuery(CQLSyntax.Symbols.`{`).forcePad
+  private[this] def strategy(strategy: String): OptionPart = {
+    val qb = CQLQuery.empty
       .appendSingleQuote(CQLSyntax.CompressionOptions.sstable_compression)
       .append(CQLSyntax.Symbols.`:`)
       .forcePad.appendSingleQuote(strategy)
+
+    OptionPart(qb)
   }
 
-  case object SnappyCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.SnappyCompressor))
-  case object LZ4Compressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.LZ4Compressor))
-  case object DeflateCompressor extends CompressionStrategy(strategy(CQLSyntax.CompressionStrategies.DeflateCompressor))
+  class SnappyCompressor extends CompressionStrategy[SnappyCompressor](
+    strategy(CQLSyntax.CompressionStrategies.SnappyCompressor)
+  ) {
+    override protected[this] def instance(opts: OptionPart): SnappyCompressor = new SnappyCompressor {
+      override val options: OptionPart = opts
+    }
+  }
+
+  class LZ4Compressor extends CompressionStrategy[LZ4Compressor](
+    strategy(CQLSyntax.CompressionStrategies.LZ4Compressor)
+  ) {
+    override protected[this] def instance(opts: OptionPart): LZ4Compressor = new LZ4Compressor {
+      override val options: OptionPart = opts
+    }
+  }
+
+  class DeflateCompressor extends CompressionStrategy[DeflateCompressor](
+    strategy(CQLSyntax.CompressionStrategies.DeflateCompressor)
+  ) {
+    override protected[this] def instance(opts: OptionPart): DeflateCompressor = new DeflateCompressor {
+      override val options: OptionPart = opts
+    }
+  }
 }
 
-
-
 private[phantom] class CompressionBuilder extends TableProperty {
-  def eqs(clause: CompressionStrategy): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.compression(clause.qb))
+  def eqs(clause: CompressionStrategy[_]): TablePropertyClause = {
+    new TablePropertyClause {
+      override def qb: CQLQuery = QueryBuilder.Create.compression(clause.qb)
+    }
   }
 }

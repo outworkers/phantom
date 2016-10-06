@@ -36,9 +36,10 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.SessionAugmenterImplicits
 
 
-sealed abstract class CacheProperty(override val qb: CQLQuery) extends TablePropertyClause(qb)
+sealed abstract class CacheProperty(val qb: CQLQuery) extends TablePropertyClause
 
 private[phantom] trait CachingStrategies {
+
   private[this] def caching(strategy: String) = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .appendSingleQuote(CQLSyntax.CacheStrategies.Caching)
@@ -154,7 +155,11 @@ object Caching extends CachingStrategies
 class CachingBuilder extends TableProperty {
 
   def eqs(strategy: CacheProperty): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.caching(strategy.qb.queryString, strategy.wrapped))
+    new TablePropertyClause {
+      override def qb: CQLQuery = {
+        QueryBuilder.Create.caching(strategy.qb.queryString, strategy.wrapped)
+      }
+    }
   }
 
 }

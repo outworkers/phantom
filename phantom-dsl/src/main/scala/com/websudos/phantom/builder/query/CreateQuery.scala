@@ -153,7 +153,9 @@ class CreateQuery[
       }
     }.toList
 
-    `with`(new TablePropertyClause(QueryBuilder.Create.clusteringOrder(clusteringPairs)))
+    `with`(new TablePropertyClause {
+      override def qb: CQLQuery = QueryBuilder.Create.clusteringOrder(clusteringPairs)
+    })
   }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")

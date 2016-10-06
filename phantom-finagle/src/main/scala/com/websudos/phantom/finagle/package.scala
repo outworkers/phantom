@@ -30,7 +30,7 @@
 package com.websudos.phantom
 
 import java.util.concurrent.Executor
-import java.util.{ List => JavaList }
+import java.util.{List => JavaList}
 
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
@@ -41,6 +41,7 @@ import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.query._
 import com.websudos.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.websudos.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
@@ -497,9 +498,11 @@ package object finagle {
     def eqs(duration: com.twitter.util.Duration): TablePropertyClause = builder.eqs(Seconds.seconds(duration.inSeconds))
   }
 
-  implicit class CompressionStrategyAugmenter(val strategy: CompressionStrategy) extends AnyVal {
-    def chunk_length_kb(unit: StorageUnit): CompressionStrategy = {
-      new CompressionStrategy(QueryBuilder.Create.chunk_length_kb(strategy.qb, unit.inKilobytes + "KB"))
+  implicit class CompressionStrategyAugmenter[
+    CS <: CompressionStrategy[CS]
+  ](val strategy: CompressionStrategy[CS]) extends AnyVal {
+    def chunk_length_kb(unit: StorageUnit): CompressionStrategy[CS] = {
+      strategy.option(CQLSyntax.CompressionOptions.chunk_length_kb, unit.inKilobytes + "KB")
     }
   }
 }

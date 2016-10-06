@@ -57,16 +57,6 @@ sealed trait CreateOptionsBuilder {
   }
 }
 
-sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
-
-  def chunk_length_kb(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompressionOptions.chunk_length_kb, size)
-  }
-
-  def crc_check_chance(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompressionOptions.crc_check_chance, size.toString)
-  }
-}
 
 sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   def keys(qb: CQLQuery, value: String): CQLQuery = {
@@ -82,7 +72,7 @@ sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   }
 }
 
-private[builder] class CreateTableBuilder extends CompressionQueryBuilder {
+private[builder] class CreateTableBuilder {
 
   object Caching extends CachingQueryBuilder
 
@@ -115,11 +105,11 @@ private[builder] class CreateTableBuilder extends CompressionQueryBuilder {
   }
 
   def compression(qb: CQLQuery) : CQLQuery = {
-    Utils.tableOption(CQLSyntax.CreateOptions.compression, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compression, qb)
   }
 
   def compaction(qb: CQLQuery) : CQLQuery = {
-    Utils.tableOption(CQLSyntax.CreateOptions.compaction, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compaction, qb)
   }
 
   def comment(qb: String): CQLQuery = {

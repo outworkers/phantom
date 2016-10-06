@@ -39,7 +39,9 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
   */
 private[phantom] trait TablePropertyClauses extends CompactionStrategies with CompressionStrategies {
   object Storage {
-    case object CompactStorage extends TablePropertyClause(CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage))
+    case object CompactStorage extends TablePropertyClause {
+      def qb: CQLQuery = CQLQuery(CQLSyntax.StorageMechanisms.CompactStorage)
+    }
   }
 
   /**

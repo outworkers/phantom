@@ -33,9 +33,33 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.{CQLQuery, OptionPart}
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
-sealed abstract class CompactionStrategy(
-  override val qb: CQLQuery
-) extends TablePropertyClause(qb)
+sealed abstract class CompactionProperties[
+  T <: CompactionProperties[T]
+](val options: OptionPart) extends ClauseBuilder[T] {
+
+  def enabled(flag: Boolean): T = option(CQLSyntax.CompactionOptions.enabled, flag.toString)
+
+  def tombstone_compaction_interval(interval: Long): T = {
+    option(
+      CQLSyntax.CompactionOptions.tombstone_compaction_interval,
+      interval.toString
+    )
+  }
+
+  def tombstone_threshold(value: Double): T = {
+    option(
+      CQLSyntax.CompactionOptions.tombstone_threshold,
+      value.toString
+    )
+  }
+
+  def unchecked_tombstone_compaction(value: Double): T = {
+    option(
+      CQLSyntax.CompactionOptions.unchecked_tombstone_compaction,
+      value.toString
+    )
+  }
+}
 
 private[phantom] trait CompactionStrategies {
 
@@ -43,52 +67,9 @@ private[phantom] trait CompactionStrategies {
     OptionPart(
       CQLQuery.empty
       .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
-      .append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.colon)
       .forcePad.appendSingleQuote(strategy)
     )
-  }
-
-  sealed abstract class CompactionProperties[
-    T <: CompactionStrategy
-  ](options: OptionPart) extends CompactionStrategy(options build CQLQuery.empty) {
-
-    protected[this] def instance(opts: OptionPart): T
-
-    protected[this] def instance(qb: CQLQuery): T = instance(options append qb)
-
-    def option(key: String, value: String): T = {
-      instance(
-        QueryBuilder.Utils.option(
-          CQLQuery.escape(key),
-          CQLSyntax.Symbols.colon,
-          value
-        )
-      )
-    }
-
-    def enabled(flag: Boolean): T = option(CQLSyntax.CompactionOptions.enabled, flag.toString)
-
-    def tombstone_compaction_interval(interval: Long): T = {
-      option(
-        CQLSyntax.CompactionOptions.tombstone_compaction_interval,
-        interval.toString
-      )
-    }
-
-    def tombstone_threshold(value: Double): T = {
-      option(
-        CQLSyntax.CompactionOptions.tombstone_threshold,
-        value.toString
-      )
-    }
-
-    def unchecked_tombstone_compaction(value: Double): T = {
-      option(
-        CQLSyntax.CompactionOptions.unchecked_tombstone_compaction,
-        value.toString
-      )
-    }
-
   }
 
   sealed class SizeTieredCompactionStrategy(options: OptionPart)
@@ -192,13 +173,23 @@ private[phantom] trait CompactionStrategies {
     }
   }
 
-  case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.sizeTiered))
-  case object LeveledCompactionStrategy extends LeveledCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.leveled))
-  case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(strategy(CQLSyntax.CompactionStrategies.dateTiered))
+  case object SizeTieredCompactionStrategy extends SizeTieredCompactionStrategy(
+    strategy(CQLSyntax.CompactionStrategies.sizeTiered)
+  )
+
+  case object LeveledCompactionStrategy extends LeveledCompactionStrategy(
+    strategy(CQLSyntax.CompactionStrategies.leveled)
+  )
+
+  case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(
+    strategy(CQLSyntax.CompactionStrategies.dateTiered)
+  )
 }
 
 private[phantom] class CompactionBuilder extends TableProperty {
-  def eqs(clause: CompactionStrategy): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.compaction(clause.qb))
+  def eqs(clause: CompactionProperties[_]): TablePropertyClause = {
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.compaction(clause.qb)
+    }
   }
 }

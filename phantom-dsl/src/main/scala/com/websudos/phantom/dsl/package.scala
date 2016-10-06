@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, Random}
 
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{GettableData, VersionNumber, ConsistencyLevel => CLevel}
+import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
@@ -50,9 +50,6 @@ import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.Try
-import scala.util.control.NoStackTrace
-import scala.reflect.runtime.universe.TypeTag
 
 package object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
