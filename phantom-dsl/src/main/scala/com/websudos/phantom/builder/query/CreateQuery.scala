@@ -146,7 +146,6 @@ class CreateQuery[
     * @return A new Create query, where the builder contains a full clustering clause specified.
     */
   final def withClustering(): CreateQuery[Table, Record, Status] = {
-
     val clusteringPairs = table.clusteringColumns.map {
       col => {
         val order = if (col.isAscending) CQLSyntax.Ordering.asc else CQLSyntax.Ordering.desc

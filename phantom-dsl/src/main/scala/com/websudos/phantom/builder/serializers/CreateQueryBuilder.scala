@@ -57,65 +57,6 @@ sealed trait CreateOptionsBuilder {
   }
 }
 
-sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
-
-  def enabled(qb: CQLQuery, flag: Boolean): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.enabled, flag.toString)
-  }
-
-  def min_sstable_size[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size.toString)
-  }
-
-  def sstable_size_in_mb[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.sstable_size_in_mb, size.toString)
-  }
-
-  def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
-  }
-
-  def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_threshold, size.toString)
-  }
-
-  def unchecked_tombstone_compaction(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.unchecked_tombstone_compaction, size.toString)
-  }
-
-  def cold_reads_to_omit(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.cold_reads_to_omit, size.toString)
-  }
-
-  def base_time_seconds(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.base_time_seconds, value.toString)
-  }
-
-  def timestamp_resolution(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.timestamp_resolution, value.toString)
-  }
-
-  def max_sstable_age_days(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.max_sstable_age_days, value.toString)
-  }
-
-  def max_threshold(qb: CQLQuery, value: Int): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.max_threshold, value.toString)
-  }
-
-  def min_threshold(qb: CQLQuery, value: Int): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.min_threshold, value.toString)
-  }
-
-  def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_high, size.toString)
-  }
-
-  def bucket_low(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_low, size.toString)
-  }
-}
-
 sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
 
   def chunk_length_kb(qb: CQLQuery, size: String): CQLQuery = {
@@ -141,10 +82,7 @@ sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   }
 }
 
-
-private[builder] class CreateTableBuilder extends
-  CompactionQueryBuilder
-  with CompressionQueryBuilder {
+private[builder] class CreateTableBuilder extends CompressionQueryBuilder {
 
   object Caching extends CachingQueryBuilder
 
@@ -303,6 +241,4 @@ private[builder] class CreateTableBuilder extends
         .forcePad.append(tableKey)
         .append(CQLSyntax.Symbols.`)`)
   }
-
-
 }
