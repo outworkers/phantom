@@ -56,15 +56,15 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class'" +
-          ": 'SizeTieredCompactionStrategy' }"
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
+          ": 'SizeTieredCompactionStrategy'}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
         val qb = BasicTable.create.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': '50' }"
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
@@ -73,7 +73,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
         .qb.queryString
 
-        qb shouldEqual """CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = { 'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': '50' } AND compression = { 'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5 }"""
+        qb shouldEqual """CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50} AND compression = {'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5}"""
       }
 
       "add a comment option to a create query" in {
@@ -128,7 +128,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
 
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'none', 'rows_per_partition': 'none' }"
+          qb shouldEqual s"$baseQuery WITH caching = {'keys': 'none', 'rows_per_partition': 'none'}"
         } else {
           qb shouldEqual s"$baseQuery WITH caching = 'none'"
         }
@@ -139,7 +139,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         if (session.v4orNewer) {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'keys': 'all', 'rows_per_partition': 'none' }"
+            " PRIMARY KEY (id, id2, id3)) WITH caching = {'keys': 'all', 'rows_per_partition': 'none'}"
         } else {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
             " PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
@@ -151,7 +151,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         if (session.v4orNewer) {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = { 'rows_per_partition': 'all' }"
+            " PRIMARY KEY (id, id2, id3)) WITH caching = {'rows_per_partition': 'all'}"
         } else {
           qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
             " PRIMARY KEY (id, id2, id3)) WITH caching = 'rows_only'"
@@ -163,7 +163,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
 
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = { 'keys': 'all', 'rows_per_partition': 'all' }"
+          qb shouldEqual s"$baseQuery WITH caching = {'keys': 'all', 'rows_per_partition': 'all'}"
         } else {
           qb shouldEqual s"$baseQuery WITH caching = 'all'"
         }

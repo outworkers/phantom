@@ -34,15 +34,15 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.18.2"
-  val datastax = "3.1.0"
+  val util = "0.20.0"
+  val json4s = "3.3.0"
+  val datastax = "3.0.2"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
   val scalameter = "0.6"
-  val spark = "1.2.0-alpha3"
   val diesel = "0.3.0"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
@@ -84,12 +84,7 @@ lazy val Versions = new {
     }
   }
 }
-
-val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
-lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
 val defaultConcurrency = 4
-
-
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
   s => CrossVersion.partialVersion(s) match {
@@ -101,46 +96,11 @@ val scalaMacroDependencies: String => Seq[ModuleID] = {
 val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
-lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
-)
-
-lazy val defaultCredentials: Seq[Credentials] = {
-  if (!RunningUnderCi) {
-    Seq(
-      Credentials(Path.userHome / ".bintray" / ".credentials"),
-      Credentials(Path.userHome / ".ivy2" / ".credentials")
-    )
-  } else {
-    Seq(
-      Credentials(
-        realm = "Bintray",
-        host = "dl.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      ),
-      Credentials(
-        realm = "Sonatype OSS Repository Manager",
-        host = "oss.sonatype.org",
-        userName = System.getenv("maven_user"),
-        passwd = System.getenv("maven_password")
-      ),
-      Credentials(
-        realm = "Bintray API Realm",
-        host = "api.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      )
-    )
-  }
-}
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
   scalaVersion := "2.11.8",
-  credentials ++= defaultCredentials,
+  credentials ++= Publishing.defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -164,35 +124,26 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
+    "ch.qos.logback" % "logback-classic" % Versions.logback,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
-  ) ++ scalaMacroDependencies(scalaVersion.value),
+  ),
   fork in Test := true,
   javaOptions in Test ++= Seq(
     "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
+  gitTagName <<= (organization, name, version) map { (o, n, v) =>
+    "version=%s".format(v)
+  },
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
   testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++ {
-  if (PublishTasks.publishToMaven) {
-    PublishTasks.mavenPublishingSettings
-  } else {
-    PublishTasks.bintrayPublishSettings
-  }
-}
-
-lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
-
-lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
-  if (bool) ref :: Nil else Nil
-
-lazy val isTravisScala210 = !TravisScala211
+  GitProject.gitSettings ++
+  Publishing.effectiveSettings
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -204,8 +155,8 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
 )
 
 lazy val fullProjectList = baseProjectList ++
-  addOnCondition(isJdk8, phantomJdk8) ++
-  addOnCondition(isTravisScala210, phantomSbtPlugin)
+  Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8) ++
+  Publishing.addOnCondition(Publishing.isTravisScala210, phantomSbtPlugin)
 
 lazy val phantom = (project in file("."))
   .configs(
@@ -213,11 +164,11 @@ lazy val phantom = (project in file("."))
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
-    sharedSettings ++ noPublishSettings
+    sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := PublishTasks.pgpPass
+    pgpPassphrase := Publishing.pgpPass
   ).aggregate(
     fullProjectList: _*
   )
@@ -235,7 +186,16 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
+  unmanagedSourceDirectories in Compile ++= Seq(
+    (sourceDirectory in Compile).value / ("scala-2." + {
+      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
+        case Some((major, minor)) => minor
+      }
+    })),
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "macro-compat" % "1.1.1",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
@@ -243,7 +203,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
-    "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
@@ -322,8 +281,9 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   unmanagedSourceDirectories in Compile ++= Seq(
     (sourceDirectory in Compile).value / ("scala-2." + {
       CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) if minor >= 11 => "11"
-        case _ => "10"
+        case Some((major, minor)) => minor
+        case None => "10"
+
       }
   })),
   publish := {

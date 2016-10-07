@@ -30,7 +30,8 @@
 package com.websudos.phantom.builder.query.options
 
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.CQLQuery
+import com.websudos.phantom.builder.query.{CQLQuery, OptionPart}
+import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.Seconds
 
 import scala.concurrent.duration.FiniteDuration
@@ -42,8 +43,31 @@ import scala.concurrent.duration.FiniteDuration
   */
 trait TableProperty
 
-class TablePropertyClause(val qb: CQLQuery) {
+trait TablePropertyClause {
+  def qb: CQLQuery
+
   def wrapped: Boolean = false
+}
+
+trait ClauseBuilder[T] extends TablePropertyClause {
+
+  def options: OptionPart
+
+  override def qb: CQLQuery = options build CQLQuery.empty
+
+  protected[this] def instance(opts: OptionPart): T
+
+  protected[this] def instance(qb: CQLQuery): T = instance(options append qb)
+
+  def option(key: String, value: String): T = {
+    val qb = QueryBuilder.Utils.option(
+      CQLQuery.escape(key),
+      CQLSyntax.Symbols.colon,
+      value
+    )
+
+    instance(qb)
+  }
 }
 
 sealed trait WithBound
@@ -57,7 +81,9 @@ sealed trait UnspecifiedCompaction extends CompactionBound
 private[phantom] class TimeToLiveBuilder extends TableProperty {
 
   def eqs(time: Long): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.default_time_to_live(time.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.default_time_to_live(time.toString)
+    }
   }
 
   def eqs(duration: Seconds): TablePropertyClause = eqs(duration.getSeconds.toLong)
@@ -67,23 +93,31 @@ private[phantom] class TimeToLiveBuilder extends TableProperty {
 
 private[phantom] class GcGraceSecondsBuilder extends TableProperty {
   def eqs(clause: Seconds): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(clause.getSeconds.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.gc_grace_seconds(clause.getSeconds.toString)
+    }
   }
 
   def eqs(duration: FiniteDuration): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.gc_grace_seconds(duration.toSeconds.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.gc_grace_seconds(duration.toSeconds.toString)
+    }
   }
 }
 
 private[phantom] class ReadRepairChanceBuilder extends TableProperty {
   def eqs(clause: Double): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.read_repair_chance(clause.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.read_repair_chance(clause.toString)
+    }
   }
 }
 
 private[phantom] class ReplicateOnWriteBuilder extends TableProperty {
   def apply(clause: Boolean): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.replicate_on_write(clause.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.replicate_on_write(clause.toString)
+    }
   }
 
   def eqs(clause: Boolean): TablePropertyClause = apply(clause)
@@ -91,18 +125,24 @@ private[phantom] class ReplicateOnWriteBuilder extends TableProperty {
 
 private[phantom] class BloomFilterFpChanceBuilder extends TableProperty {
   def eqs(clause: Double): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.bloom_filter_fp_chance(clause.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.bloom_filter_fp_chance(clause.toString)
+    }
   }
 }
 
 private[phantom] class DcLocalReadRepairChanceBuilder extends TableProperty {
   def eqs(clause: Double): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.dclocal_read_repair_chance(clause.toString))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.dclocal_read_repair_chance(clause.toString)
+    }
   }
 }
 
 private[phantom] class CommentClauseBuilder extends TableProperty {
   def eqs(clause: String): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.comment(clause))
+    new TablePropertyClause {
+      def qb: CQLQuery = QueryBuilder.Create.comment(clause)
+    }
   }
 }

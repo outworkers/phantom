@@ -49,11 +49,10 @@ package object tables {
 
   implicit object JodaRowSampler extends Sample[JodaRow] {
     def sample: JodaRow = {
-      val d = new DateTime()
       JodaRow(
         gen[String],
         gen[Int],
-        new DateTime(d.plus(gen[Int].toLong))
+        gen[DateTime]
       )
     }
   }
@@ -185,7 +184,7 @@ package object tables {
         user = gen[UUID],
         id = id,
         name = gen[ShortString].value,
-        timestamp = new DateTime(UUIDs.unixTimestamp(id))
+        timestamp = new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC)
       )
     }
   }

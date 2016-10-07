@@ -27,23 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.serializers
+package com.websudos.phantom.builder.query.db.specialized
 
-import com.websudos.phantom.builder.QueryBuilder
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables._
+import com.outworkers.util.testing._
 
-class KeySpaceSerializerTest extends QuerySerializationTest {
+class JodaDateTimeColumnTest extends PhantomSuite {
 
-  it should "create a simple keyspace creation query" in {
-    val query = QueryBuilder.keyspace("test").ifNotExists()
-      .`with`(replication eqs NetworkTopologyStrategy)
-      .and(durable_writes eqs true)
-      .qb.queryString
-
-    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
-      " AND DURABLE_WRITES = true"
-
-    query shouldEqual expected
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.primitivesJoda.insertSchema()
   }
 
+  it should "correctly insert and extract a JodaTime date" in {
+    val row = gen[JodaRow]
+
+    val chain = for {
+      store <- TestDatabase.primitivesJoda.store(row).future()
+      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+    } yield select
+
+    chain successful {
+      res => {
+        res.value.pkey shouldEqual row.pkey
+        res.value.intColumn shouldEqual row.intColumn
+        res.value.timestamp shouldEqual row.timestamp
+      }
+    }
+  }
 }

@@ -103,14 +103,14 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
         val qb = BasicTable.alter.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
 
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = { 'class': 'SizeTieredCompactionStrategy' }"
+        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
         val qb = BasicTable.alter.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
 
-        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = { 'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': '50' }"
+        qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
@@ -120,7 +120,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
           .qb.queryString
 
-        qb shouldEqual """ALTER TABLE phantom.basicTable WITH compaction = { 'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': '50' } AND compression = { 'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5 }"""
+        qb shouldEqual """ALTER TABLE phantom.basicTable WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50} AND compression = {'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5}"""
       }
 
       "add a comment option to a create query" in {
@@ -173,7 +173,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
         val qb = BasicTable.alter.`with`(caching eqs Cache.None()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'none', 'rows_per_partition': 'none' }"
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = {'keys': 'none', 'rows_per_partition': 'none'}"
         } else {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'none'"
         }
@@ -183,7 +183,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
         val qb = BasicTable.alter.`with`(caching eqs Cache.KeysOnly()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = { 'keys': 'all', 'rows_per_partition': 'none' }"
+          qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = {'keys': 'all', 'rows_per_partition': 'none'}"
         } else {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = 'keys_only'"
         }

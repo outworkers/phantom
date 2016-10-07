@@ -32,7 +32,7 @@ package com.websudos.phantom.tables
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.concurrent.Future
 
@@ -78,7 +78,7 @@ sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUI
       user(row),
       id(row),
       name(row),
-      new DateTime(UUIDs.unixTimestamp(id(row)))
+      id(row).datetime
     )
   }
 }

@@ -35,7 +35,7 @@ import com.datastax.driver.core.Session
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.OperatorClause.Condition
 import com.websudos.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
-import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
@@ -106,7 +106,7 @@ sealed class NowCqlFunction extends CqlFunction {
   }
 }
 
-sealed class MaxTimeUUID extends CqlFunction with DefaultPrimitives {
+sealed class MaxTimeUUID extends CqlFunction {
 
   def apply(date: Date): OperatorClause.Condition = {
     new Condition(
@@ -125,7 +125,7 @@ sealed class MaxTimeUUID extends CqlFunction with DefaultPrimitives {
   }
 }
 
-sealed class MinTimeUUID extends CqlFunction with DefaultPrimitives {
+sealed class MinTimeUUID extends CqlFunction {
 
   def apply(date: Date): OperatorClause.Condition = {
     new Condition(
