@@ -33,28 +33,25 @@ import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.reflect.runtime.{currentMirror => cm}
 
-sealed trait CassandraWrites[T] {
+trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
 
   /**
-   * Provides the serialisation mechanism of a value to a CQL string.
-   * The vast majority of serializers are fed in via the Primitives mechanism.
-   *
-   * Primitive columns will automatically override and define "asCql" based on the
-   * serialization of specific primitives. When T is context bounded by a primitive:
-   *
-   * {{{
-   *   def asCql(v: T): String = implicitly[Primitive[T]].asCql(value)
-   * }}}
-   *
-   * @param v The value of the object to convert to a string.
-   * @return A string that can be directly appended to a CQL query.
-   */
+    * Provides the serialisation mechanism of a value to a CQL string.
+    * The vast majority of serializers are fed in via the Primitives mechanism.
+    *
+    * Primitive columns will automatically override and define "asCql" based on the
+    * serialization of specific primitives. When T is context bounded by a primitive:
+    *
+    * {{{
+    *   def asCql(v: T): String = implicitly[Primitive[T]].asCql(value)
+    * }}}
+    *
+    * @param v The value of the object to convert to a string.
+    * @return A string that can be directly appended to a CQL query.
+    */
   def asCql(v: T): String
 
   def cassandraType: String
-}
-
-trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   type Value = T
 

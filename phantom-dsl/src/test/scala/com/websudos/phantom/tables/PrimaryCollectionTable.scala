@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,46 +27,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.primitives
+package com.websudos.phantom.tables
 
-import java.nio.ByteBuffer
+import com.websudos.phantom.dsl._
 
-import org.joda.time.DateTime
-import org.scalatest.{FlatSpec, Matchers}
+case class PrimaryCollectionRecord(
+  index: List[String],
+  name: String,
+  value: Int
+)
 
-class PrimitivesTest extends FlatSpec with Matchers {
-
-  it should "coerce a DateTime into a valid timezone string" in {
-    val date = new DateTime(2014, 6, 2, 10, 5)
-
-    DateSerializer.asCql(date) shouldEqual date.getMillis.toString
-  }
-
-  it should "convert ByteBuffers to valid hex bytes" in {
-    val buf = ByteBuffer.wrap(Array[Byte](1, 2, 3, 4, 5))
-    Primitive[ByteBuffer].asCql(buf) shouldEqual "0x0102030405"
-
-    buf.position(2)   // Non-zero position
-    Primitive[ByteBuffer].asCql(buf) shouldEqual "0x030405"
-
-    val slice = buf.slice()   // Slice with non-zero arrayOffset
-    Primitive[ByteBuffer].asCql(slice) shouldEqual "0x030405"
-  }
-
-  it should "autogenerate list primitives for List types" in {
-    val test = Primitive[List[String]]
-
-    test.asCql(List("1", "2")) shouldEqual ""
-
-  }
-
-  it should "autogenerate set primitives for Set types" in {
-    val test = Primitive[Set[String]]
-  }
-
-
-  it should "autogenerate set primitives for Map types" in {
-    val test = Primitive[Map[String, String]]
-  }
-
+class PrimaryCollectionTable extends CassandraTable[] {
+  object index extends ListColumn[String](this) with PartitionKey[String]
 }

@@ -374,7 +374,7 @@ object Primitives {
 
   def list[T : Primitive](): Primitive[List[T]] = {
     new Primitive[List[T]] {
-      
+
       val ev = implicitly[Primitive[T]]
 
       override def fromRow(column: String, row: GettableData): Try[List[T]] = {

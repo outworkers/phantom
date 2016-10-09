@@ -34,6 +34,7 @@ import java.util.Date
 import com.datastax.driver.core.{GettableData, LocalDate}
 import org.joda.time.DateTime
 
+import scala.annotation.implicitNotFound
 import scala.util.control.NoStackTrace
 import scala.util.{Failure, Try}
 
@@ -48,6 +49,7 @@ private[phantom] object DateSerializer {
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
+@implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
   /**
