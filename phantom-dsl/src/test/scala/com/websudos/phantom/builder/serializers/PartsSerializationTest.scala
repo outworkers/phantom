@@ -95,9 +95,9 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
         val appended = part.append(l1).append(l2)
 
-        (appended qb).queryString shouldEqual "a = b, c = d"
+        (appended qb).queryString shouldEqual "SET a = b, c = d"
 
-        (appended build CQLQuery.empty).queryString shouldEqual "a = b, c = d"
+        (appended build CQLQuery.empty).queryString shouldEqual "SET a = b, c = d"
       }
     }
 
@@ -108,12 +108,12 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
           .append(QueryBuilder.Update.setTo("a", "b"))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
-        (part1 merge new SetPart()).build.queryString shouldEqual "a = b, c = d"
+        (part1 merge new SetPart()).build.queryString shouldEqual "SET a = b, c = d"
       }
 
       "should merge a query part with an empty second query part and an init string" in {
         val part1 = new SetPart()
-          .append(QueryBuilder.Update.set(QueryBuilder.Update.setTo("a", "b")))
+          .append(QueryBuilder.Update.setTo("a", "b"))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
         (part1 merge new SetPart()).build(QueryBuilder.Update.update("k.t")).queryString shouldEqual "UPDATE k.t SET a = b, c = d"
@@ -121,7 +121,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
       "should merge a SET part with an WHERE part in an Update clause and no init value" in {
         val part1 = new SetPart()
-          .append(QueryBuilder.Update.set(QueryBuilder.Update.setTo("a", "b")))
+          .append(QueryBuilder.Update.setTo("a", "b"))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
 
@@ -132,7 +132,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
       "should merge a SET part with an WHERE part in an Update clause and an init value" in {
         val part1 = new SetPart()
-          .append(QueryBuilder.Update.set(QueryBuilder.Update.setTo("a", "b")))
+          .append(QueryBuilder.Update.setTo("a", "b"))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
 
@@ -163,7 +163,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
       "should merge 3 query parts using a merge part" in {
         val part1 = new SetPart()
-          .append(QueryBuilder.Update.set(QueryBuilder.Update.setTo("a", "b")))
+          .append(QueryBuilder.Update.setTo("a", "b"))
           .append(QueryBuilder.Update.setTo("c", "d"))
 
 
