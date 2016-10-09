@@ -86,6 +86,22 @@ abstract class Primitive[RR] {
 
   def clz: Class[PrimitiveType]
 
+  /**
+    * Whether or not this is a compound primitive type that should free if the
+    * type of primitive is a collection.
+    *
+    * This means that Cassandra will serialise your collection to a blob
+    * instead of a normal index based collection storage, so things like index access
+    * will not be available.
+    *
+    * One such scenario is using a list as part of the primary key, because of how
+    * Cassandra works, we need to treat the list as a blob, as if we change its contents
+    * we would breach basic rules of serialisation/hashing.
+    *
+    * @return A boolean that says whether or not this type should be frozen.
+    */
+  def shouldFreeze: Boolean = false
+
   def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
 
 }
@@ -95,7 +111,7 @@ object Primitive {
   /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
     * library to macro materialise an instance of the required primitive based on the type argument.
-    * If this does not highlight properly in your IDE, fear not.
+    * If this does not highlight properly in your IDE, fear not, it works on my machine :)
     * @tparam T The type parameter to materialise a primitive for.
     * @return A concrete instance of a primitive, materialised via implicit blackbox macros.
     */

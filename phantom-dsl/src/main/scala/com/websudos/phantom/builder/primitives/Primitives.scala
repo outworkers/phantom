@@ -33,15 +33,17 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
+import com.datastax.driver.core.{GettableData, LocalDate}
 import com.datastax.driver.core.utils.Bytes
-import com.datastax.driver.core.{GettableData, LocalDate, Row}
+import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.collection.JavaConverters._
 import scala.util.Try
 
-object Primitives extends CollectionPrimitives {
+object Primitives {
 
     class StringPrimitive extends Primitive[String] {
 
@@ -370,4 +372,83 @@ object Primitives extends CollectionPrimitives {
       override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
     }
 
+  def list[T : Primitive](): Primitive[List[T]] = {
+    new Primitive[List[T]] {
+      override def shouldFreeze: Boolean = true
+
+      val ev = implicitly[Primitive[T]]
+
+      override def fromRow(column: String, row: GettableData): Try[List[T]] = {
+        Try(row.getList(column, ev.clz).asScala.toList.map(ev.extract))
+      }
+
+      override def cassandraType: String = QueryBuilder.Collections.listType(ev.cassandraType).queryString
+
+      override def fromString(value: String): List[T] = value.split(",").map(Primitive[T].fromString).toList
+
+      override def asCql(value: List[T]): String = QueryBuilder.Utils.collection(value.map(Primitive[T].asCql)).queryString
+
+      override def clz: Class[List[Primitive[T]#PrimitiveType]] = classOf[List[Primitive[T]#PrimitiveType]]
+
+      override type PrimitiveType = List[Primitive[T]#PrimitiveType]
+    }
   }
+
+  def set[T : Primitive](): Primitive[Set[T]] = {
+    new Primitive[Set[T]] {
+
+      override def shouldFreeze: Boolean = true
+
+      val ev = implicitly[Primitive[T]]
+
+      override def fromRow(column: String, row: GettableData): Try[Set[T]] = {
+        Try(row.getSet(column, ev.clz).asScala.toSet.map(ev.extract))
+      }
+
+      override def cassandraType: String = QueryBuilder.Collections.setType(ev.cassandraType).queryString
+
+      override def fromString(value: String): Set[T] = value.split(",").map(Primitive[T].fromString).toSet
+
+      override def asCql(value: Set[T]): String = QueryBuilder.Utils.collection(value.map(Primitive[T].asCql)).queryString
+
+      override def clz: Class[Set[Primitive[T]#PrimitiveType]] = classOf[Set[Primitive[T]#PrimitiveType]]
+
+      override type PrimitiveType = Set[Primitive[T]#PrimitiveType]
+    }
+  }
+
+  def map[K : Primitive, V : Primitive](): Primitive[Map[K, V]] = {
+    new Primitive[Map[K, V]] {
+
+      override def shouldFreeze: Boolean = true
+
+      val keyPrimitive = implicitly[Primitive[K]]
+      val valuePrimitive = implicitly[Primitive[V]]
+
+      override def fromRow(column: String, row: GettableData): Try[Map[K, V]] = {
+        Try {
+          row.getMap(column, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap.map {
+            case (key, value) => keyPrimitive.extract(key) -> valuePrimitive.extract(value)
+          }
+        }
+      }
+
+      override def cassandraType: String = QueryBuilder.Collections.mapType(
+        keyPrimitive.cassandraType,
+        valuePrimitive.cassandraType
+      ).queryString
+
+      override def fromString(value: String): Map[K, V] = Map.empty[K, V]
+
+      override def asCql(map: Map[K, V]): String = QueryBuilder.Utils.map(map.map {
+        case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
+      }).queryString
+
+      override def clz: Class[Map[Primitive[K]#PrimitiveType, Primitive[V]#PrimitiveType]] = {
+        classOf[Map[Primitive[K]#PrimitiveType, Primitive[V]#PrimitiveType]]
+      }
+
+      override type PrimitiveType = Map[Primitive[K]#PrimitiveType, Primitive[V]#PrimitiveType]
+    }
+  }
+}

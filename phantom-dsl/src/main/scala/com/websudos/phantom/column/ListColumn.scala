@@ -41,8 +41,12 @@ import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
 
 
-abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
-  extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
+abstract class AbstractListColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  RR
+](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
+  with CollectionValueDefinition[RR] {
 
   override def asCql(v: List[RR]): String = Utils.collection(v.map(valueAsCql)).queryString
 
