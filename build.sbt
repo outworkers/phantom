@@ -198,7 +198,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
-    "com.websudos"                 %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
