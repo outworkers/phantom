@@ -41,7 +41,7 @@ import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.util.Try
 
-object Primitives {
+object Primitives extends CollectionPrimitives {
 
     class StringPrimitive extends Primitive[String] {
 

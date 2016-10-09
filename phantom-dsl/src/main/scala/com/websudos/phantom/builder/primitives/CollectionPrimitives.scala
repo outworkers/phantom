@@ -35,17 +35,15 @@ import scala.collection.JavaConverters._
 
 import scala.util.Try
 
-class CollectionPrimitives {
+trait CollectionPrimitives {
 
-  def list[T : Primitive](
-    name: String
-  ): Primitive[List[T]] = {
+  def list[T : Primitive](): Primitive[List[T]] = {
     new Primitive[List[T]] {
 
       val ev = implicitly[Primitive[T]]
 
       override def fromRow(column: String, row: GettableData): Try[List[T]] = {
-        Try(row.getList(name, ev.clz).asScala.toList.map(ev.extract))
+        Try(row.getList(column, ev.clz).asScala.toList.map(ev.extract))
       }
 
       override def cassandraType: String = QueryBuilder.Collections.listType(ev.cassandraType).queryString
@@ -60,15 +58,13 @@ class CollectionPrimitives {
     }
   }
 
-  def set[T : Primitive](
-    name: String
-  ): Primitive[Set[T]] = {
+  def set[T : Primitive](): Primitive[Set[T]] = {
     new Primitive[Set[T]] {
 
       val ev = implicitly[Primitive[T]]
 
       override def fromRow(column: String, row: GettableData): Try[Set[T]] = {
-        Try(row.getSet(name, ev.clz).asScala.toSet.map(ev.extract))
+        Try(row.getSet(column, ev.clz).asScala.toSet.map(ev.extract))
       }
 
       override def cassandraType: String = QueryBuilder.Collections.setType(ev.cassandraType).queryString
@@ -83,9 +79,7 @@ class CollectionPrimitives {
     }
   }
 
-  def map[K : Primitive, V : Primitive](
-    name: String
-  ): Primitive[Map[K, V]] = {
+  def map[K : Primitive, V : Primitive](): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
 
       val keyPrimitive = implicitly[Primitive[K]]
@@ -93,7 +87,7 @@ class CollectionPrimitives {
 
       override def fromRow(column: String, row: GettableData): Try[Map[K, V]] = {
         Try {
-          row.getMap(name, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap.map {
+          row.getMap(column, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap.map {
             case (key, value) => keyPrimitive.extract(key) -> valuePrimitive.extract(value)
           }
         }

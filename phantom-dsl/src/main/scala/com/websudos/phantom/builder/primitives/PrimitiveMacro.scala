@@ -115,6 +115,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.bigDecimal => bigDecimalPrimitive
       case Symbols.buffer => bufferPrimitive
       case Symbols.enum => enumPrimitive[T]()
+      case Symbols.listSymbol => listPrimitive[T]()
+      case Symbols.setSymbol => setPrimitive[T]()
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
     }
 
@@ -156,6 +158,32 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bigIntPrimitive: Tree = primitive("BigIntPrimitive")
 
   val bufferPrimitive: Tree = primitive("BlobIsPrimitive")
+
+  def listPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val innerTpe = tpe.typeArgs.headOption
+
+    innerTpe match {
+      case Some(inner) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.list[$inner]"""
+      }
+      case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
+
+  def setPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val innerTpe = tpe.typeArgs.headOption
+
+    innerTpe match {
+      case Some(inner) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.set[$inner]"""
+      }
+      case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
 
   def enumPrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
     val tpe = tag.tpe

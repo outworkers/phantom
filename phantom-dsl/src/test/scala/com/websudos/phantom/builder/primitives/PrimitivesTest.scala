@@ -53,4 +53,9 @@ class PrimitivesTest extends FlatSpec with Matchers {
     Primitive[ByteBuffer].asCql(slice) shouldEqual "0x030405"
   }
 
+  it should "autogenerate list primitives for known primitive types" in {
+    val test = Primitive[List[String]]
+  }
+
+
 }
