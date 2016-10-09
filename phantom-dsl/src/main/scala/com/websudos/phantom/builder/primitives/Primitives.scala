@@ -54,9 +54,7 @@ object Primitives extends CollectionPrimitives {
       override def fromString(value: String): String = value
 
       override def fromRow(column: String, row: GettableData): Try[String] = {
-        nullCheck(column, row) {
-          r => r.getString(column)
-        }
+        nullCheck(column, row)(_.getString(column))
       }
 
       override def clz: Class[String] = classOf[String]

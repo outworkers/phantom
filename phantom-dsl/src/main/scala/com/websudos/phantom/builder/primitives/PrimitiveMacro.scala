@@ -117,6 +117,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.enum => enumPrimitive[T]()
       case Symbols.listSymbol => listPrimitive[T]()
       case Symbols.setSymbol => setPrimitive[T]()
+      case Symbols.mapSymbol => mapPrimitive[T]()
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
     }
 
@@ -169,6 +170,20 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         q"""com.websudos.phantom.builder.primitives.Primitives.list[$inner]"""
       }
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
+
+  def mapPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val keyTpe = tpe.typeArgs.headOption
+    val valueType = tpe.typeArgs.drop(1).headOption
+
+    (keyTpe, valueType) match {
+      case (Some(key), Some(value)) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.map[$key, $value]"""
+      }
+      case _ => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
 
