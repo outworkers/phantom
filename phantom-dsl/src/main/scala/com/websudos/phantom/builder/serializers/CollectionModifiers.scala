@@ -67,7 +67,10 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
    * @return A CQL query serialising the CQL collection column definition syntax.
    */
   def diamond(collection: String, value: String): CQLQuery = {
-    CQLQuery(collection).append(CQLSyntax.Symbols.`<`).append(value).append(CQLSyntax.Symbols.`>`)
+    CQLQuery(collection)
+      .append(CQLSyntax.Symbols.`<`)
+      .append(value).
+      append(CQLSyntax.Symbols.`>`)
   }
 
   def prepend(column: String, values: String*): CQLQuery = {
@@ -200,5 +203,9 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def mapColumnType(column: String, key: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def frozen(query: CQLQuery): CQLQuery = {
+    diamond(CQLSyntax.Collections.frozen, query.queryString)
   }
 }

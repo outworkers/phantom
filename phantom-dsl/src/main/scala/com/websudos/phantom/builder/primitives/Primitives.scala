@@ -374,8 +374,7 @@ object Primitives {
 
   def list[T : Primitive](): Primitive[List[T]] = {
     new Primitive[List[T]] {
-      override def shouldFreeze: Boolean = true
-
+      
       val ev = implicitly[Primitive[T]]
 
       override def fromRow(column: String, row: GettableData): Try[List[T]] = {
@@ -397,8 +396,6 @@ object Primitives {
   def set[T : Primitive](): Primitive[Set[T]] = {
     new Primitive[Set[T]] {
 
-      override def shouldFreeze: Boolean = true
-
       val ev = implicitly[Primitive[T]]
 
       override def fromRow(column: String, row: GettableData): Try[Set[T]] = {
@@ -419,8 +416,6 @@ object Primitives {
 
   def map[K : Primitive, V : Primitive](): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
-
-      override def shouldFreeze: Boolean = true
 
       val keyPrimitive = implicitly[Primitive[K]]
       val valuePrimitive = implicitly[Primitive[V]]

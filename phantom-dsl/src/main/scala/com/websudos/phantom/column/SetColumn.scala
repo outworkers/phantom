@@ -69,7 +69,15 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](
 
   val cassandraType = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
 
-  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+  override def qb: CQLQuery = {
+    val base = CQLQuery(name).forcePad.append(cassandraType)
+
+    if (shouldFreeze) {
+      QueryBuilder.Collections.frozen(base)
+    } else {
+      base
+    }
+  }
 
   override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)
 

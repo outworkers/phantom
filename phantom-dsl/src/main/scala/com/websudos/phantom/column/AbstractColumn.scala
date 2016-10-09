@@ -76,5 +76,21 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
 
   def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 
+  /**
+    * Whether or not this is a compound primitive type that should free if the
+    * type of primitive is a collection.
+    *
+    * This means that Cassandra will serialise your collection to a blob
+    * instead of a normal index based collection storage, so things like index access
+    * will not be available.
+    *
+    * One such scenario is using a list as part of the primary key, because of how
+    * Cassandra works, we need to treat the list as a blob, as if we change its contents
+    * we would breach basic rules of serialisation/hashing.
+    *
+    * @return A boolean that says whether or not this type should be frozen.
+    */
+  def shouldFreeze: Boolean = false
+
 }
 
