@@ -43,7 +43,7 @@ lazy val Versions = new {
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
   val scalameter = "0.6"
-  val diesel = "0.3.0"
+  val diesel = "0.4.1"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
@@ -198,6 +198,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
+    "com.websudos"                 %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
