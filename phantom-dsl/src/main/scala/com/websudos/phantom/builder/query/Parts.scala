@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.websudos.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
+import com.outworkers.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
 import com.websudos.phantom.builder.QueryBuilder
 
 
