@@ -37,7 +37,7 @@ class CreateTest extends PhantomFreeSuite {
 
   "The create query builder" - {
 
-    "should freeze colletions used as part of the primary key" - {
+    "should freeze collections used as part of the primary key" - {
       "freeze a list column used as part of a partition key" in {
 
         val query = database.primaryCollectionsTable.create.ifNotExists()
