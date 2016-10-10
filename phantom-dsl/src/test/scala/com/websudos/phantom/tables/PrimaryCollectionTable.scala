@@ -31,12 +31,34 @@ package com.websudos.phantom.tables
 
 import com.websudos.phantom.dsl._
 
+import scala.concurrent.Future
+
 case class PrimaryCollectionRecord(
   index: List[String],
   name: String,
   value: Int
 )
 
-class PrimaryCollectionTable extends CassandraTable[] {
-  object index extends ListColumn[String](this) with PartitionKey[String]
+class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
+  object listIndexx extends ListColumn[String](this) with PartitionKey[List[String]]
+  object name extends StringColumn(this) with PrimaryKey[String]
+  object value extends IntColumn(this)
+
+  def fromRow(row: Row): PrimaryCollectionRecord = {
+    PrimaryCollectionRecord(
+      listIndexx(row),
+      name(row),
+      value(row)
+    )
+  }
+}
+
+abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {
+
+  def store(rec: PrimaryCollectionRecord): Future[ResultSet] = {
+    insert.value(_.listIndexx, rec.index)
+      .value(_.name, rec.name)
+      .value(_.value, rec.value)
+      .future()
+  }
 }

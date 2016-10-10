@@ -31,13 +31,9 @@ package com.websudos.phantom.example.basics
 
 import com.websudos.phantom.connectors._
 
-trait KeyspaceDefinition {
-  implicit val space = KeySpace("phantom_example")
-}
+object Defaults {
 
-object Defaults extends KeyspaceDefinition {
-
-  val connector = ContactPoint.local.keySpace(space.name)
+  val connector = ContactPoint.local.keySpace("phantom_example")
 }
 
 /**
@@ -57,7 +53,7 @@ trait ExampleConnector extends Defaults.connector.Connector
  * It's really important to guarantee we are using a singleton here, otherwise
  * we will end up spawning a cluster on every call.
  */
-object RemoteConnector extends KeyspaceDefinition {
+object RemoteConnector {
 
   // Simply specify the list of hosts followed by the keyspace.
   // Now the connector object will automatically create the Database connection for us and initialise it.

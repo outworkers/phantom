@@ -31,13 +31,15 @@ package com.websudos.phantom.builder.primitives
 
 import java.nio.ByteBuffer
 
-import org.joda.time.DateTime
+import com.websudos.phantom.builder.QueryBuilder
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.{FlatSpec, Matchers}
+import com.outworkers.util.testing._
 
 class PrimitivesTest extends FlatSpec with Matchers {
 
   it should "coerce a DateTime into a valid timezone string" in {
-    val date = new DateTime(2014, 6, 2, 10, 5)
+    val date = new DateTime(2014, 6, 2, 10, 5, DateTimeZone.UTC)
 
     DateSerializer.asCql(date) shouldEqual date.getMillis.toString
   }
@@ -55,8 +57,10 @@ class PrimitivesTest extends FlatSpec with Matchers {
 
   it should "autogenerate list primitives for List types" in {
     val test = Primitive[List[String]]
+    val input = genList[String]()
+    val expected = QueryBuilder.Utils.collection(input.map(Primitive[String].asCql)).queryString
 
-    test.asCql(List("1", "2")) shouldEqual ""
+    test.asCql(input) shouldEqual expected
 
   }
 
