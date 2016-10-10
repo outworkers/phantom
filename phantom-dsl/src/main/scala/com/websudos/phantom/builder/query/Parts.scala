@@ -111,7 +111,10 @@ sealed class SetPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPa
     }
   }
 
-  override def qb: CQLQuery = QueryBuilder.Update.chain(list)
+  override def qb: CQLQuery = list match {
+    case Nil => CQLQuery.empty
+    case head :: tail => QueryBuilder.Update.set(QueryBuilder.Update.chain(list))
+  }
 
   override def instance(l: List[CQLQuery]): SetPart = new SetPart(l)
 }

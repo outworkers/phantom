@@ -37,7 +37,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "1.29.2-SNAPSHOT"
+    version := "1.29.3"
   )
 
   lazy val noPublishSettings = Seq(
@@ -48,7 +48,6 @@ object Publishing {
 
   lazy val defaultCredentials: Seq[Credentials] = {
     if (!Publishing.runningUnderCi) {
-      val x = Credentials(Path.userHome / ".ivy2" / ".credentials")
       Seq(
         Credentials(Path.userHome / ".bintray" / ".credentials"),
         Credentials(Path.userHome / ".ivy2" / ".credentials")
