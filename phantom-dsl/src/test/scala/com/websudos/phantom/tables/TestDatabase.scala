@@ -87,6 +87,9 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {
     val testUUID = UUID.randomUUID()
   }
+
+  object primaryCollectionsTable extends ConcretePrimaryCollectionTable with connector.Connector
+
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
   object multipleKeysTable$ extends ConcreteMultipleKeys with connector.Connector

@@ -37,6 +37,25 @@ class CreateTest extends PhantomFreeSuite {
 
   "The create query builder" - {
 
+    "should freeze colletions used as part of the primary key" - {
+      "freeze a list column used as part of a partition key" in {
+
+        val query = database.primaryCollectionsTable.create.ifNotExists()
+
+        Console.println(query.queryString)
+
+        val chain = for {
+          drop <- database.primaryCollectionsTable.alter.dropIfExists().future()
+          create <- query.future()
+        } yield create
+
+        whenReady(chain) {
+          res => res.wasApplied() shouldEqual true
+        }
+
+      }
+    }
+
     "should generate CQL queries for custom caching properties" - {
       "serialize and create a table with Caching.None" in {
 

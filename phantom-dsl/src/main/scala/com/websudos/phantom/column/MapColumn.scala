@@ -76,15 +76,16 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
 
   override val valuePrimitive = Primitive[V]
 
-  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, valuePrimitive.cassandraType).queryString
+  override val cassandraType = QueryBuilder.Collections.mapType(
+    keyPrimitive.cassandraType,
+    valuePrimitive.cassandraType
+  ).queryString
 
   override def qb: CQLQuery = {
-    val base = CQLQuery(name).forcePad.append(cassandraType)
-
     if (shouldFreeze) {
-      QueryBuilder.Collections.frozen(base)
+      QueryBuilder.Collections.frozen(name, cassandraType)
     } else {
-      base
+      CQLQuery(name).forcePad.append(cassandraType)
     }
   }
 

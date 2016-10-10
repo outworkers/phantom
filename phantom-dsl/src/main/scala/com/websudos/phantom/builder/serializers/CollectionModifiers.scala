@@ -46,10 +46,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def frozen(column: String, definition: String): CQLQuery = {
-    CQLQuery(CQLSyntax.frozen)
-      .append(CQLSyntax.Symbols.`<`)
-      .forcePad.append(diamond(column, definition))
-      .append(CQLSyntax.Symbols.`>`)
+    frozen(column, CQLQuery(definition))
   }
 
   /**
@@ -205,7 +202,9 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .append(key).append(CQLSyntax.Symbols.`]`)
   }
 
-  def frozen(query: CQLQuery): CQLQuery = {
-    diamond(CQLSyntax.Collections.frozen, query.queryString)
+  def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {
+    CQLQuery(name).forcePad.append(
+      diamond(CQLSyntax.Collections.frozen, cassandraType.queryString)
+    )
   }
 }
