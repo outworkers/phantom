@@ -42,8 +42,6 @@ class CreateTest extends PhantomFreeSuite {
 
         val query = database.primaryCollectionsTable.create.ifNotExists()
 
-        Console.println(query.queryString)
-
         val chain = for {
           drop <- database.primaryCollectionsTable.alter.dropIfExists().future()
           create <- query.future()

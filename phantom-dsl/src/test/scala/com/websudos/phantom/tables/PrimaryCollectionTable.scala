@@ -35,18 +35,24 @@ import scala.concurrent.Future
 
 case class PrimaryCollectionRecord(
   index: List[String],
+  set: Set[String],
+  map: Map[String, String],
   name: String,
   value: Int
 )
 
 class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
-  object listIndexx extends ListColumn[String](this) with PartitionKey[List[String]]
+  object listIndex extends ListColumn[String](this) with PartitionKey[List[String]]
+  object setCol extends SetColumn[String](this) with PrimaryKey[Set[String]]
+  object mapCol extends MapColumn[String, String](this) with PrimaryKey[Map[String, String]]
   object name extends StringColumn(this) with PrimaryKey[String]
   object value extends IntColumn(this)
 
   def fromRow(row: Row): PrimaryCollectionRecord = {
     PrimaryCollectionRecord(
-      listIndexx(row),
+      listIndex(row),
+      setCol(row),
+      mapCol(row),
       name(row),
       value(row)
     )
@@ -56,7 +62,9 @@ class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTab
 abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {
 
   def store(rec: PrimaryCollectionRecord): Future[ResultSet] = {
-    insert.value(_.listIndexx, rec.index)
+    insert.value(_.listIndex, rec.index)
+      .value(_.setCol, rec.set)
+      .value(_.mapCol, rec.map)
       .value(_.name, rec.name)
       .value(_.value, rec.value)
       .future()
