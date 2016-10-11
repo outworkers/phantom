@@ -33,28 +33,25 @@ import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.reflect.runtime.{currentMirror => cm}
 
-sealed trait CassandraWrites[T] {
+trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
 
   /**
-   * Provides the serialisation mechanism of a value to a CQL string.
-   * The vast majority of serializers are fed in via the Primitives mechanism.
-   *
-   * Primitive columns will automatically override and define "asCql" based on the
-   * serialization of specific primitives. When T is context bounded by a primitive:
-   *
-   * {{{
-   *   def asCql(v: T): String = implicitly[Primitive[T]].asCql(value)
-   * }}}
-   *
-   * @param v The value of the object to convert to a string.
-   * @return A string that can be directly appended to a CQL query.
-   */
+    * Provides the serialisation mechanism of a value to a CQL string.
+    * The vast majority of serializers are fed in via the Primitives mechanism.
+    *
+    * Primitive columns will automatically override and define "asCql" based on the
+    * serialization of specific primitives. When T is context bounded by a primitive:
+    *
+    * {{{
+    *   def asCql(v: T): String = implicitly[Primitive[T]].asCql(value)
+    * }}}
+    *
+    * @param v The value of the object to convert to a string.
+    * @return A string that can be directly appended to a CQL query.
+    */
   def asCql(v: T): String
 
   def cassandraType: String
-}
-
-trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] extends CassandraWrites[T] {
 
   type Value = T
 
@@ -74,9 +71,23 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] e
 
   def name: String = _name
 
-  def qb: CQLQuery = {
-    CQLQuery(name).forcePad.append(cassandraType)
-  }
+  def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+
+  /**
+    * Whether or not this is a compound primitive type that should free if the
+    * type of primitive is a collection.
+    *
+    * This means that Cassandra will serialise your collection to a blob
+    * instead of a normal index based collection storage, so things like index access
+    * will not be available.
+    *
+    * One such scenario is using a list as part of the primary key, because of how
+    * Cassandra works, we need to treat the list as a blob, as if we change its contents
+    * we would breach basic rules of serialisation/hashing.
+    *
+    * @return A boolean that says whether or not this type should be frozen.
+    */
+  def shouldFreeze: Boolean = false
 
 }
 

@@ -36,7 +36,11 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 
 import scala.util.{Failure, Success, Try}
 
-class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enumeration](table: CassandraTable[Owner, Record], enum: EnumType)
+class EnumColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  EnumType <: Enumeration
+](table: CassandraTable[Owner, Record], enum: EnumType)
   extends Column[Owner, Record, EnumType#Value](table) {
 
   def cassandraType: String = CQLSyntax.Types.Text
@@ -53,7 +57,11 @@ class EnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enu
   override def asCql(v: EnumType#Value): String = CQLQuery.empty.singleQuote(v.toString)
 }
 
-class OptionalEnumColumn[Owner <: CassandraTable[Owner, Record], Record, EnumType <: Enumeration](table: CassandraTable[Owner, Record], enum: EnumType)
+class OptionalEnumColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  EnumType <: Enumeration
+](table: CassandraTable[Owner, Record], enum: EnumType)
   extends OptionalColumn[Owner, Record, EnumType#Value](table) {
 
   def cassandraType: String = CQLSyntax.Types.Text

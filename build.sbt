@@ -44,72 +44,75 @@ lazy val Versions = new {
   val scrooge = "4.7.0"
   val play = "2.4.6"
   val scalameter = "0.6"
-  val spark = "1.2.0-alpha3"
-  val diesel = "0.3.0"
+  val diesel = "0.4.1"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
-  val akka = "2.3.14"
-  val typesafeConfig = "1.2.1"
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
-}
+  val typesafeConfig = "1.2.1"
 
-val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
-lazy val TravisScala211 = Option(System.getenv("TRAVIS_SCALA_VERSION")).exists(_.contains("2.11"))
+  val akka: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.10"
+      case _ => "2.3.15"
+    }
+  }
+
+  val lift: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "3.0-RC3"
+      case _ => "3.0-M1"
+    }
+  }
+
+  val scrooge: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "4.7.0"
+      case _ => "4.7.0"
+    }
+  }
+
+  val play: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "2.5.8"
+      case _ => "2.4.8"
+    }
+  }
+
+  val playStreams: String => sbt.ModuleID = {
+    s => {
+      val v = play(s)
+      CrossVersion.partialVersion(s) match {
+        case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams" % v
+        }
+        case Some((major, minor)) if minor >= 11  && !Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
+        }
+        case _ => "com.typesafe.play" %% "play-streams-experimental" % v
+      }
+    }
+  }
+}
 val defaultConcurrency = 4
 
-val liftVersion: String => String = {
+val scalaMacroDependencies: String => Seq[ModuleID] = {
   s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => "3.0-RC3"
-    case _ => "3.0-M1"
+    case Some((major, minor)) if minor >= 11 => Seq.empty
+    case _ => Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
   }
 }
 
 val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
-lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
-)
-
-lazy val defaultCredentials: Seq[Credentials] = {
-  if (!RunningUnderCi) {
-    Seq(
-      Credentials(Path.userHome / ".bintray" / ".credentials"),
-      Credentials(Path.userHome / ".ivy2" / ".credentials")
-    )
-  } else {
-    Seq(
-      Credentials(
-        realm = "Bintray",
-        host = "dl.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      ),
-      Credentials(
-        realm = "Sonatype OSS Repository Manager",
-        host = "oss.sonatype.org",
-        userName = System.getenv("maven_user"),
-        passwd = System.getenv("maven_password")
-      ),
-      Credentials(
-        realm = "Bintray API Realm",
-        host = "api.bintray.com",
-        userName = System.getenv("bintray_user"),
-        passwd = System.getenv("bintray_password")
-      )
-    )
-  }
-}
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.websudos",
   scalaVersion := "2.11.8",
-  credentials ++= defaultCredentials,
+  credentials ++= Publishing.defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -137,31 +140,22 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
-  javaOptions ++= Seq(
-    "-Xmx1G",
+  javaOptions in Test ++= Seq(
+    "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
+  gitTagName <<= (organization, name, version) map { (o, n, v) =>
+    "version=%s".format(v)
+  },
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
   testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++ {
-  if (PublishTasks.publishToMaven) {
-    PublishTasks.mavenPublishingSettings
-  } else {
-    PublishTasks.bintrayPublishSettings
-  }
-}
-
-lazy val isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
-
-lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
-  if (bool) ref :: Nil else Nil
-
-lazy val isTravisScala210 = !TravisScala211
+  GitProject.gitSettings ++
+  Publishing.effectiveSettings
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -173,8 +167,8 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
 )
 
 lazy val fullProjectList = baseProjectList ++
-  addOnCondition(isJdk8, phantomJdk8) ++
-  addOnCondition(isTravisScala210, phantomSbtPlugin)
+  Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8) ++
+  Publishing.addOnCondition(Publishing.isTravisScala210, phantomSbtPlugin)
 
 lazy val phantom = (project in file("."))
   .configs(
@@ -182,11 +176,11 @@ lazy val phantom = (project in file("."))
   ).settings(
     inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
-    sharedSettings ++ noPublishSettings
+    sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := PublishTasks.pgpPass
+    pgpPassphrase := Publishing.pgpPass
   ).aggregate(
     fullProjectList: _*
   )
@@ -204,22 +198,26 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
+  unmanagedSourceDirectories in Compile ++= Seq(
+    (sourceDirectory in Compile).value / ("scala-2." + {
+      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
+        case Some((major, minor)) => minor
+      }
+    })),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "macro-compat" % "1.1.1",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
-    "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
+    "com.outworkers"               %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
-    "org.slf4j"                    % "log4j-over-slf4j"                   % Versions.slf4j,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "net.liftweb"                  %% "lift-json"                         % liftVersion(scalaVersion.value) % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
   )
@@ -274,9 +272,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
-      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge,
-      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge,
-      "org.slf4j"                    % "slf4j-log4j12"                      % Versions.slf4j % Test,
+      "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
+      "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).settings(
@@ -296,8 +293,9 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   unmanagedSourceDirectories in Compile ++= Seq(
     (sourceDirectory in Compile).value / ("scala-2." + {
       CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) if minor >= 11 => "11"
-        case _ => "10"
+        case Some((major, minor)) => minor
+        case None => "10"
+
       }
   })),
   publish := {
@@ -321,15 +319,20 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"             % Versions.play exclude ("com.typesafe", "config"),
-      "com.typesafe.play"   %% "play-streams-experimental"  % Versions.play exclude ("com.typesafe", "config"),
-      "com.typesafe"        % "config"                      % Versions.typesafeConfig,
+      "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
-      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
+      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    )
+    ) ++ {
+      if (Publishing.isJdk8) {
+        Seq("com.typesafe" % "config" % Versions.typesafeConfig)
+      } else {
+        Seq.empty
+      }
+    }
   ).settings(
     sharedSettings: _*
   ).dependsOn(

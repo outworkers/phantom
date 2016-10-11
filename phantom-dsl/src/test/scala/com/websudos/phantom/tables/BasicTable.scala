@@ -52,11 +52,13 @@ object Records extends Enumeration {
   val TypeOne, TypeTwo, TypeThree = Value
 }
 
-object NamedRecords extends Enumeration {
+trait NamedRecords extends Enumeration {
   type NamedRecords = Value
   val One = Value("one")
   val Two = Value("two")
 }
+
+object NamedRecords extends NamedRecords
 
 case class EnumRecord(
   name: String,
@@ -68,6 +70,11 @@ case class NamedEnumRecord(
   name: String,
   enum: NamedRecords.type#Value,
   optEnum: Option[NamedRecords.type#Value]
+)
+
+case class NamedPartitionRecord(
+  enum: NamedRecords#Value,
+  id: UUID
 )
 
 abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
@@ -114,6 +121,27 @@ abstract class ConcreteNamedEnumTable extends NamedEnumTable with RootConnector 
       .value(_.id, sample.name)
       .value(_.enum, sample.enum)
       .value(_.optEnum, sample.optEnum)
+  }
+}
+
+
+sealed class NamedPartitionEnumTable extends CassandraTable[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] {
+  object enum extends EnumColumn[NamedRecords](this, NamedRecords) with PartitionKey[NamedRecords#Value]
+  object id extends UUIDColumn(this) with PrimaryKey[UUID]
+
+  def fromRow(row: Row): NamedPartitionRecord = {
+    NamedPartitionRecord(
+      enum = enum(row),
+      id = id(row)
+    )
+  }
+}
+
+abstract class ConcreteNamedPartitionEnumTable extends NamedPartitionEnumTable with RootConnector {
+  def store(sample: NamedPartitionRecord): InsertQuery.Default[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] = {
+    insert
+      .value(_.id, sample.id)
+      .value(_.enum, sample.enum)
   }
 }
 

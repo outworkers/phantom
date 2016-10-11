@@ -41,14 +41,15 @@ class EnumColumnTest extends PhantomSuite {
     super.beforeAll()
     Await.result(database.enumTable.create.ifNotExists().future(), defaultScalaTimeout)
     Await.result(database.namedEnumTable.create.ifNotExists().future(), defaultScalaTimeout)
+    Await.result(database.indexedEnumTable.create.ifNotExists().future(), defaultScalaTimeout)
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, None)
 
     val chain = for {
-      insert <- TestDatabase.enumTable.store(sample).future()
-      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).one()
+      insert <- database.enumTable.store(sample).future()
+      get <- database.enumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
     whenReady(chain) {
@@ -63,8 +64,8 @@ class EnumColumnTest extends PhantomSuite {
     val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, Some(Records.TypeTwo))
 
     val chain = for {
-      insert <- TestDatabase.enumTable.store(sample).future()
-      get <- TestDatabase.enumTable.select.where(_.id eqs sample.name).one()
+      insert <- database.enumTable.store(sample).future()
+      get <- database.enumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
     whenReady(chain) {
@@ -80,8 +81,8 @@ class EnumColumnTest extends PhantomSuite {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, None)
 
     val chain = for {
-      insert <- TestDatabase.namedEnumTable.store(sample).future()
-      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).one()
+      insert <- database.namedEnumTable.store(sample).future()
+      get <- database.namedEnumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
     whenReady(chain) {
@@ -96,8 +97,8 @@ class EnumColumnTest extends PhantomSuite {
     val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, Some(NamedRecords.Two))
 
     val chain = for {
-      insert <- TestDatabase.namedEnumTable.store(sample).future()
-      get <- TestDatabase.namedEnumTable.select.where(_.id eqs sample.name).one()
+      insert <- database.namedEnumTable.store(sample).future()
+      get <- database.namedEnumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
     whenReady(chain) {
@@ -109,6 +110,22 @@ class EnumColumnTest extends PhantomSuite {
     }
   }
 
+  it should "store and retrieve an indexed enumeration record" in {
+    val sample = NamedPartitionRecord(
+      NamedRecords.One,
+      UUIDs.random()
+    )
+
+    val chain = for {
+      store <- database.indexedEnumTable.truncate().future()
+      store <- database.indexedEnumTable.store(sample).future()
+      get <- database.indexedEnumTable.select.where(_.enum eqs NamedRecords.One).one()
+    } yield get
+
+    whenReady(chain) { res =>
+      res.value shouldEqual sample
+    }
+  }
 
 }
 

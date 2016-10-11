@@ -188,8 +188,6 @@ class PreparedInsertQueryTest extends PhantomSuite {
       usedTtl
     )
 
-    info(exec.statement.asInstanceOf[BoundStatement].preparedStatement().getQueryString)
-
     val chain = for {
       store <- exec.future()
       get <- database.recipes.select.where(_.url eqs sample.url).one()

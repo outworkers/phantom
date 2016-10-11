@@ -77,7 +77,22 @@ private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]
   }
 }
 
-sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col)
+sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col) {
+  /**
+    * Default setTo clause for all update queries except for map columns.
+    * This differs from the standard setTo in that it will only create a set clause
+    * if the option provided as an argument is not empty.
+    *
+    * @param value The typed value to set the column to.
+    * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
+    */
+  def setIfDefined(value: Option[RR]): UpdateClause.Default = {
+    value match {
+      case Some(existing) => new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, col.asCql(existing)))
+      case None => new UpdateClause.Condition(qb = CQLQuery.empty, skipped = true)
+    }
+  }
+}
 
 sealed class ModifyColumnOptional[RR](col: OptionalColumn[_, _, RR])
   extends AbstractModifyColumn[Option[RR]](col) {
@@ -213,8 +228,6 @@ private[ops] trait ModifyMechanism extends CollectionOperators with ColumnModifi
   )(implicit ev: col.type <:!< Unmodifiable,
       ev2: col.type <:!< CollectionValueDefinition[RR]
   ): ModifyColumnOptional[RR] = new ModifyColumnOptional(col)
-
-
 
 }
 

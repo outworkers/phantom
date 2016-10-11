@@ -36,9 +36,10 @@ import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.SessionAugmenterImplicits
 
 
-sealed abstract class CacheProperty(override val qb: CQLQuery) extends TablePropertyClause(qb)
+sealed abstract class CacheProperty(val qb: CQLQuery) extends TablePropertyClause
 
 private[phantom] trait CachingStrategies {
+
   private[this] def caching(strategy: String) = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .appendSingleQuote(CQLSyntax.CacheStrategies.Caching)
@@ -51,51 +52,65 @@ private[phantom] trait CachingStrategies {
   ](override val qb: CQLQuery) extends CacheProperty(qb) {
     def instance(qb: CQLQuery): QType
 
-    def keys(value: String = "ALL"): QType = {
+    def keys(value: String = CQLSyntax.CacheStrategies.All): QType = {
       instance(QueryBuilder.Create.Caching.keys(qb, value))
     }
 
-    def rows(value: String = "ALL"): QType = {
-      instance(QueryBuilder.Create.Caching.rows(qb, value))
+    def rows(value: String = CQLSyntax.CacheStrategies.All): QType = {
+      instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
     }
 
-    def rows_per_partition(value: String = "NONE"): QType = {
+    def rows_per_partition(value: String = CQLSyntax.CacheStrategies.All): QType = {
       instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
     }
   }
 
+  /**
+    * A class wrapping a "none" cache property definition.
+    * @param qb The query builder string that wraps the property definition.
+    * @param wrapped If the propery is escaped it will be wrapped in curly braces at the end.
+    *
+    * Example: {{{
+    *   // if the escaped parameter is set to true
+    *   cache: {'rows_per_partition': 'none'}
+    *
+    *   // if set to false
+    *
+    * }}}
+    * @param session
+    */
   sealed class NoneCache(
     override val qb: CQLQuery,
-    override val escaped: Boolean
+    override val wrapped: Boolean
   )(implicit session: Session) extends SpecificCacheProperty[NoneCache](qb) {
-    override def instance(qb: CQLQuery): NoneCache = new NoneCache(qb, escaped)
+    override def instance(qb: CQLQuery): NoneCache = new NoneCache(qb, wrapped)
   }
 
   sealed class KeysOnly(
     override val qb: CQLQuery,
-    override val escaped: Boolean
+    override val wrapped: Boolean
   )(implicit session: Session) extends SpecificCacheProperty[KeysOnly](qb) {
-    override def instance(qb: CQLQuery): KeysOnly = new KeysOnly(qb, escaped)
+    override def instance(qb: CQLQuery): KeysOnly = new KeysOnly(qb, wrapped)
   }
 
   sealed class RowsOnly(
     override val qb: CQLQuery,
-    override val escaped: Boolean
+    override val wrapped: Boolean
   )(implicit session: Session) extends SpecificCacheProperty[RowsOnly](qb) {
-    override def instance(qb: CQLQuery): RowsOnly = new RowsOnly(qb, escaped)
+    override def instance(qb: CQLQuery): RowsOnly = new RowsOnly(qb, wrapped)
   }
 
   sealed class AllCache(
     override val qb: CQLQuery,
-    override val escaped: Boolean
+    override val wrapped: Boolean
   )(implicit session: Session) extends SpecificCacheProperty[AllCache](qb) {
-    override def instance(qb: CQLQuery): AllCache = new AllCache(qb, escaped)
+    override def instance(qb: CQLQuery): AllCache = new AllCache(qb, wrapped)
   }
 
   object None extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): NoneCache = {
       if (session.v4orNewer) {
-        new NoneCache(CQLQuery.empty, true)
+        new NoneCache(CQLQuery.empty, wrapped = true)
           .keys(CQLSyntax.CacheStrategies.None)
           .rows(CQLSyntax.CacheStrategies.None)
       } else {
@@ -107,7 +122,7 @@ private[phantom] trait CachingStrategies {
   object KeysOnly extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): KeysOnly = {
       if (session.v4orNewer) {
-        new KeysOnly(CQLQuery.empty, true).keys().rows_per_partition()
+        new KeysOnly(CQLQuery.empty, wrapped = true).keys().rows_per_partition(CQLSyntax.CacheStrategies.None)
       } else {
         new KeysOnly(CQLQuery(CQLSyntax.CacheStrategies.KeysOnly), false)
       }
@@ -127,14 +142,12 @@ private[phantom] trait CachingStrategies {
   object All extends SessionAugmenterImplicits {
     def apply()(implicit session: Session): AllCache = {
       if (session.v4orNewer) {
-        new AllCache(CQLQuery.empty, true).rows()
+        new AllCache(CQLQuery.empty, true).keys().rows()
       } else {
         new AllCache(CQLQuery(CQLSyntax.CacheStrategies.All), false)
       }
     }
   }
-
-  //case object All extends CacheProperty(CQLQuery(CQLSyntax.CacheStrategies.All))
 }
 
 object Caching extends CachingStrategies
@@ -142,7 +155,11 @@ object Caching extends CachingStrategies
 class CachingBuilder extends TableProperty {
 
   def eqs(strategy: CacheProperty): TablePropertyClause = {
-    new TablePropertyClause(QueryBuilder.Create.caching(strategy.qb.queryString, strategy.escaped))
+    new TablePropertyClause {
+      override def qb: CQLQuery = {
+        QueryBuilder.Create.caching(strategy.qb.queryString, strategy.wrapped)
+      }
+    }
   }
 
 }

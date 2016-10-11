@@ -46,6 +46,32 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     scalaQueryStringToPromise(st).future
   }
 
+  protected[this] def preparedStatementToPromise(st: String)(
+    implicit session: Session,
+    keyspace: KeySpace,
+    executor: ExecutionContextExecutor
+  ): ScalaPromise[PreparedStatement] = {
+    Manager.logger.debug(s"Executing query: ${st.toString}")
+
+    val promise = ScalaPromise[PreparedStatement]()
+
+    val future = session.prepareAsync(st)
+
+    val callback = new FutureCallback[PreparedStatement] {
+      def onSuccess(result: PreparedStatement): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(future, callback, executor)
+    promise
+  }
+
   protected[this] def scalaQueryStringToPromise(st: Statement)(
     implicit session: Session,
     keyspace: KeySpace,

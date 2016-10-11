@@ -39,24 +39,23 @@ import com.websudos.phantom.batch.Batcher
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.websudos.phantom.builder.ops._
-import com.websudos.phantom.builder.primitives.{DefaultPrimitives, Primitive}
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.prepared.PrepareMark
 import com.websudos.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
+import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.column.extractors.FromRow.RowParser
+import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.Try
-import scala.util.control.NoStackTrace
-import scala.reflect.runtime.universe.TypeTag
 
 package object dsl extends ImplicitMechanism with CreateImplicits
-  with DefaultPrimitives
   with SelectImplicits
   with Operators
   with UsingClauseOperations
+  with KeySpaceConstruction
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.CassandraTable[Owner, Record]
@@ -115,6 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
   type Database = com.websudos.phantom.database.DatabaseImpl
+  type DatabaseProvider[T <: Database] = com.websudos.phantom.database.DatabaseProvider[T]
 
   type DateTime = org.joda.time.DateTime
   type LocalDate = org.joda.time.LocalDate
@@ -154,30 +154,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
   val ContactPoint = com.websudos.phantom.connectors.ContactPoint
   val ContactPoints = com.websudos.phantom.connectors.ContactPoints
-
-  implicit def enumToQueryConditionPrimitive[T <: Enumeration](enum: T): Primitive[T#Value] = {
-    new Primitive[T#Value] {
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: String = Primitive[String].cassandraType
-
-      override def fromRow(name: String, row: Row): Try[T#Value] = {
-        nullCheck(name, row) {
-          r => enum.values.find(_.toString == r.getString(name)) match {
-            case Some(value) => value
-            case _ => throw new Exception(s"Value $name not found in enumeration") with NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: T#Value): String = Primitive[String].asCql(value.toString)
-
-      override def fromString(value: String): T#Value = enum.values.find(value == _.toString).getOrElse(None.orNull)
-
-      override def clz: Class[String] = classOf[java.lang.String]
-    }
-  }
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
@@ -237,7 +213,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     }
   }
 
-  implicit class CounterOperations[Owner <: CassandraTable[Owner, Record], Record](val col: CounterColumn[Owner, Record]) extends AnyVal {
+  implicit class CounterOperations[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
@@ -272,6 +251,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
       val random = new Random()
       new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
     }
+  }
+
+  implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
+    def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
 
   def extract[R]: RowParser[R] = new RowParser[R] {}

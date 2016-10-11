@@ -57,4 +57,7 @@ object DefaultVersions extends VersionBuilder {
   val `2.2.0` = apply(2, 2, 0)
   val `2.2.1` = apply(2, 2, 1)
   val `2.2.2` = apply(2, 2, 2)
+  val `2.2.8` = apply(2, 2, 8)
+  val `2.3.0` = apply(2, 3, 0)
+  val `3.0.0` = apply(2, 2, 2)
 }

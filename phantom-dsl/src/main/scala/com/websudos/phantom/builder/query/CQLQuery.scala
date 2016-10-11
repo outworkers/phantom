@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.websudos.diesel.engine.query.AbstractQuery
+import com.outworkers.diesel.engine.query.AbstractQuery
 
 case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) {
   def create(str: String): CQLQuery = CQLQuery(str)
@@ -41,6 +41,8 @@ object CQLQuery {
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
+
+  def escaped(str: String): CQLQuery = CQLQuery("'" + str.replaceAll("'", "''") + "'")
 
   def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
 }

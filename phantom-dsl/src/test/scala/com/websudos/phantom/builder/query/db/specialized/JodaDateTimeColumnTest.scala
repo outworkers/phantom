@@ -27,14 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.column.extractors
-import scala.reflect.runtime.universe.{TypeTag, typeOf, MethodSymbol}
+package com.websudos.phantom.builder.query.db.specialized
 
-private[phantom] object Helper {
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables._
+import com.outworkers.util.testing._
 
-  def classAccessors[T : TypeTag]: List[String] = typeOf[T].members.collect {
-    case m: MethodSymbol if m.isCaseAccessor => m.name.decodedName.toString
-  }.toList.reverse
+class JodaDateTimeColumnTest extends PhantomSuite {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.primitivesJoda.insertSchema()
+  }
+
+  it should "correctly insert and extract a JodaTime date" in {
+    val row = gen[JodaRow]
+
+    val chain = for {
+      store <- TestDatabase.primitivesJoda.store(row).future()
+      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+    } yield select
+
+    chain successful {
+      res => {
+        res.value.pkey shouldEqual row.pkey
+        res.value.intColumn shouldEqual row.intColumn
+        res.value.timestamp shouldEqual row.timestamp
+      }
+    }
+  }
 }
-

@@ -34,24 +34,51 @@ import com.typesafe.sbt.pgp.PgpKeys._
 
 import scala.util.Properties
 
-object PublishTasks {
-
+object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "1.29.0"
+    version := "1.29.3"
   )
 
-  val publishToMaven = {
-    if (Option(System.getenv("MAVEN_PUBLISH")).exists("true" ==)) {
-      println("Maven publishing mode enabled")
-      true
+  lazy val noPublishSettings = Seq(
+    publish := (),
+    publishLocal := (),
+    publishArtifact := false
+  )
+
+  lazy val defaultCredentials: Seq[Credentials] = {
+    if (!Publishing.runningUnderCi) {
+      Seq(
+        Credentials(Path.userHome / ".bintray" / ".credentials"),
+        Credentials(Path.userHome / ".ivy2" / ".credentials")
+      )
     } else {
-      println("Maven publishing mode disabled, publishing to Bintray instead")
-      false
+      Seq(
+        Credentials(
+          realm = "Bintray",
+          host = "dl.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        ),
+        Credentials(
+          realm = "Sonatype OSS Repository Manager",
+          host = "oss.sonatype.org",
+          userName = System.getenv("maven_user"),
+          passwd = System.getenv("maven_password")
+        ),
+        Credentials(
+          realm = "Bintray API Realm",
+          host = "api.bintray.com",
+          userName = System.getenv("bintray_user"),
+          passwd = System.getenv("bintray_password")
+        )
+      )
     }
   }
 
-  lazy val bintrayPublishSettings: Seq[Def.Setting[_]] = Seq(
+  def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
+
+  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("websudos"),
     bintrayRepository <<= scalaVersion.apply {
@@ -65,18 +92,18 @@ object PublishTasks {
 
   lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
-  lazy val mavenPublishingSettings: Seq[Def.Setting[_]] = Seq(
+  lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     pgpPassphrase in ThisBuild := {
-      if (RunningUnderCi && pgpPass.isDefined) {
+      if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
         println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
         pgpPass
       } else {
         println("Could not find settings for a PGP passphrase.")
         println(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
-        println(s"Running under CI: $RunningUnderCi")
+        println(s"Running under CI: $runningUnderCi")
         None
       }
     },
@@ -110,6 +137,18 @@ object PublishTasks {
         </developers>
   ) ++ defaultPublishingSettings
 
-  lazy val RunningUnderCi = Option(System.getenv("CI")).isDefined || Option(System.getenv("TRAVIS")).isDefined
+  def effectiveSettings: Seq[Def.Setting[_]] = {
+    if (sys.env.contains("MAVEN_PUBLISH")) mavenSettings else bintraySettings
+  }
+
+  def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
+  def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
+
+  def isTravisScala210: Boolean = !travisScala211
+
+  def isJdk8: Boolean = sys.props("java.specification.version") == "1.8"
+
+  lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
+    if (bool) ref :: Nil else Nil
 
 }

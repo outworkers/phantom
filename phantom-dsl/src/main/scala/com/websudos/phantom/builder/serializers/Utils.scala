@@ -55,6 +55,10 @@ private[builder] trait Utils {
     CQLQuery(column).pad.append(op).forcePad.append(value)
   }
 
+  def option(column: String, op: String, value: String): CQLQuery = {
+    CQLQuery(column).append(op).forcePad.append(value)
+  }
+
   def join(list: TraversableOnce[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
   }
@@ -78,12 +82,21 @@ private[builder] trait Utils {
   }
 
   def curlyWrap(qb: String): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`{`)
-      .pad.append(qb)
-      .forcePad.append(CQLSyntax.Symbols.`}`)
+    CQLQuery(CQLSyntax.Symbols.`{`).append(qb).append(CQLSyntax.Symbols.`}`)
   }
 
-  def curlyWrap(qb: CQLQuery): CQLQuery = curlyWrap(qb)
+  def curlyWrap(qb: CQLQuery): CQLQuery = curlyWrap(qb.queryString)
+
+  /**
+    * A custom series of options that is used to serialize keyspace creation queries.
+    * for every instance where serializers are needed to produce {'a': 'b', 'c': 2} type queries.
+    * @param clauses The set of CQL clauses, pre-serialised to their 'a': 'b' form.
+    * @param sep A separator to use during query creation.
+    * @return A CQL query of the specified format.
+    */
+  def options(clauses: List[CQLQuery], sep: String = ", "): CQLQuery = {
+    Utils.curlyWrap(clauses.map(_.queryString).mkString(sep))
+  }
 
   /**
     * Serializes the CQL definition of a map key based on a column and a key value.

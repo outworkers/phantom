@@ -40,10 +40,11 @@ import scala.util.Try
 
 private[phantom] trait CounterRestriction[T]
 
-class CounterColumn[Owner <: CassandraTable[Owner, Record], Record](table: CassandraTable[Owner, Record])
+class CounterColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record
+](table: CassandraTable[Owner, Record])(implicit primitive: Primitive[Long])
   extends Column[Owner, Record, Long](table) with CounterRestriction[Long] with Unmodifiable {
-
-  private[this] val primitive = Primitive[Long]
 
   val cassandraType = CQLSyntax.Types.Counter
 

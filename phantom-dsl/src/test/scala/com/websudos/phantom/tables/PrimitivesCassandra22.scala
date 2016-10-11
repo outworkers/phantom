@@ -50,7 +50,14 @@ sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCass
 
   object date extends LocalDateColumn(this)
 
-  override def fromRow(r: Row): PrimitiveCassandra22 = extract[PrimitiveCassandra22](r)
+  override def fromRow(r: Row): PrimitiveCassandra22 = {
+    PrimitiveCassandra22(
+      pkey = pkey(r),
+      short = short(r),
+      byte = byte(r),
+      date = date(r)
+    )
+  }
 }
 
 abstract class ConcretePrimitivesCassandra22 extends PrimitivesCassandra22 with RootConnector {

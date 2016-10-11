@@ -30,12 +30,16 @@
 package com.websudos.phantom.column
 
 import java.util.UUID
+
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.syntax.CQLSyntax
 
 class OptionalTimeUUIDColumn[
   Owner <: CassandraTable[Owner, Record],
   Record
-](table: CassandraTable[Owner, Record]) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
+](table: CassandraTable[Owner, Record])(
+  implicit primitive: Primitive[UUID]
+) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
   override val cassandraType = CQLSyntax.Types.TimeUUID
 }

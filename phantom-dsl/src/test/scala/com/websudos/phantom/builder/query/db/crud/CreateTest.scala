@@ -37,61 +37,72 @@ class CreateTest extends PhantomFreeSuite {
 
   "The create query builder" - {
 
+    "should freeze collections used as part of the primary key" - {
+      "freeze a list column used as part of a partition key" in {
+
+        val query = database.primaryCollectionsTable.create.ifNotExists()
+
+        val chain = for {
+          drop <- database.primaryCollectionsTable.alter.dropIfExists().future()
+          create <- query.future()
+        } yield create
+
+        whenReady(chain) {
+          res => res.wasApplied() shouldEqual true
+        }
+
+      }
+    }
+
     "should generate CQL queries for custom caching properties" - {
       "serialize and create a table with Caching.None" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.None())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
       "serialize and create a table with Caching.KeysOnly" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.KeysOnly())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
       "serialize and create a table with Caching.RowsOnly" in {
 
-        val query = TestDatabase.timeSeriesTable
+        val query = database.timeSeriesTable
           .create.`with`(caching eqs Caching.RowsOnly())
 
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
 
@@ -102,18 +113,15 @@ class CreateTest extends PhantomFreeSuite {
         info(query.queryString)
 
         val chain = for {
-          drop <- TestDatabase.timeSeriesTable.alter.dropIfExists().future()
+          drop <- database.timeSeriesTable.alter.dropIfExists().future()
           create <- query.future()
         } yield create
 
         whenReady(chain) {
-          res => {
-            res.wasApplied() shouldEqual true
-          }
+          res => res.wasApplied() shouldEqual true
         }
       }
     }
-
   }
 
 }

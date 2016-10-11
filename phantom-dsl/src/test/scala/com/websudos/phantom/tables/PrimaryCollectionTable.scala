@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,34 +27,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.builder.query.db.specialized
+package com.websudos.phantom.tables
 
-import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables._
-import com.outworkers.util.testing._
 
 import scala.concurrent.Future
 
-import scala.concurrent.Future
+case class PrimaryCollectionRecord(
+  index: List[String],
+  set: Set[String],
+  map: Map[String, String],
+  name: String,
+  value: Int
+)
 
-class JodaDateTimeColumn extends PhantomSuite {
+class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
+  object listIndex extends ListColumn[String](this) with PartitionKey[List[String]]
+  object setCol extends SetColumn[String](this) with PrimaryKey[Set[String]]
+  object mapCol extends MapColumn[String, String](this) with PrimaryKey[Map[String, String]]
+  object name extends StringColumn(this) with PrimaryKey[String]
+  object value extends IntColumn(this)
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    TestDatabase.primitivesJoda.insertSchema()
+  def fromRow(row: Row): PrimaryCollectionRecord = {
+    PrimaryCollectionRecord(
+      listIndex(row),
+      setCol(row),
+      mapCol(row),
+      name(row),
+      value(row)
+    )
   }
+}
 
-  it should "correctly insert and extract a JodaTime date" in {
-    val row = gen[JodaRow]
+abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {
 
-    val chain = for {
-      store <- TestDatabase.primitivesJoda.store(row).future()
-      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
-    } yield select
-
-    chain successful {
-      res => res.value shouldEqual row
-    }
+  def store(rec: PrimaryCollectionRecord): Future[ResultSet] = {
+    insert.value(_.listIndex, rec.index)
+      .value(_.setCol, rec.set)
+      .value(_.mapCol, rec.map)
+      .value(_.name, rec.name)
+      .value(_.value, rec.value)
+      .future()
   }
 }

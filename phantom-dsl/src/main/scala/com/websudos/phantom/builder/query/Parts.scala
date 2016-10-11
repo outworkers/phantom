@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.builder.query
 
-import com.websudos.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
+import com.outworkers.diesel.engine.query.multiparts.{QueryPart, MergedQueryList}
 import com.websudos.phantom.builder.QueryBuilder
 
 
@@ -111,7 +111,10 @@ sealed class SetPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPa
     }
   }
 
-  override def qb: CQLQuery = QueryBuilder.Update.chain(list)
+  override def qb: CQLQuery = list match {
+    case Nil => CQLQuery.empty
+    case head :: tail => QueryBuilder.Update.set(QueryBuilder.Update.chain(list))
+  }
 
   override def instance(l: List[CQLQuery]): SetPart = new SetPart(l)
 }
@@ -168,4 +171,17 @@ sealed class WithPart(override val list: List[CQLQuery] = Nil) extends CQLQueryP
 
 object WithPart {
   def empty: WithPart = new WithPart()
+}
+
+sealed class OptionPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[OptionPart](list) {
+  override def qb: CQLQuery = QueryBuilder.Utils.options(list)
+
+  override def instance(l: List[CQLQuery]): OptionPart = new OptionPart(l)
+}
+
+object OptionPart {
+
+  def apply(qb: CQLQuery): OptionPart = new OptionPart(qb :: Nil)
+
+  def empty: OptionPart = new OptionPart()
 }

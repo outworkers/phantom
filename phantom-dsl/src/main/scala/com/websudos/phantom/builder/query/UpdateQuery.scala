@@ -58,9 +58,7 @@ class UpdateQuery[
   override val options: QueryOptions = QueryOptions.empty
 ) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
 
-  override val qb: CQLQuery = {
-    usingPart merge setPart merge wherePart build init
-  }
+  override val qb: CQLQuery = usingPart merge setPart merge wherePart build init
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -168,7 +166,7 @@ class UpdateQuery[
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart appendConditionally (QueryBuilder.Update.set(clause(table).qb), !clause(table).skipped),
+      setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped),
       casPart = casPart,
       options = options
     )
@@ -212,9 +210,7 @@ sealed class AssignmentsQuery[
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
 
-  val qb: CQLQuery = {
-    usingPart merge setPart merge wherePart merge casPart build init
-  }
+  val qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
   final def and[
     HL <: HList,
@@ -257,7 +253,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
+  final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -269,8 +265,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-
-  def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     new AssignmentsQuery(
       table = table,
       init = init,
@@ -282,7 +277,7 @@ sealed class AssignmentsQuery[
     )
   }
 
-  def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 

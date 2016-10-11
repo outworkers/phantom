@@ -289,4 +289,70 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with As
       }
     }
   }
+
+  it should "allow using initiating a setIfDefined chain with a None" in {
+    //char is not supported
+    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
+    val row = gen[Primitive]
+
+    val updatedRow = gen[Primitive].copy(pkey = row.pkey)
+
+    val chain = for {
+      store <- database.primitives.store(row).future()
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setIfDefined None)
+        .and(_.boolean setTo updatedRow.boolean)
+        .and(_.bDecimal setTo updatedRow.bDecimal)
+        .and(_.double setIfDefined None)
+        .and(_.float setTo updatedRow.float)
+        .and(_.inet setTo updatedRow.inet)
+        .and(_.int setTo updatedRow.int)
+        .and(_.date setTo updatedRow.date)
+        .and(_.uuid setTo updatedRow.uuid)
+        .and(_.bi setTo updatedRow.bi)
+        .future()
+      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, a2)
+
+    whenReady(chain) {
+      case (res1, res2) => {
+        res1.value shouldEqual row
+        res2.value shouldEqual updatedRow.copy(double = row.double, long = row.long)
+      }
+    }
+  }
+
+  it should "allow using setIfDefined on non optional columns" in {
+    //char is not supported
+    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
+    val row = gen[Primitive]
+
+    val updatedRow = gen[Primitive].copy(pkey = row.pkey)
+
+    val chain = for {
+      store <- database.primitives.store(row).future()
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setIfDefined Some(updatedRow.long))
+        .and(_.boolean setTo updatedRow.boolean)
+        .and(_.bDecimal setTo updatedRow.bDecimal)
+        .and(_.double setIfDefined None)
+        .and(_.float setTo updatedRow.float)
+        .and(_.inet setTo updatedRow.inet)
+        .and(_.int setTo updatedRow.int)
+        .and(_.date setTo updatedRow.date)
+        .and(_.uuid setTo updatedRow.uuid)
+        .and(_.bi setTo updatedRow.bi)
+        .future()
+      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, a2)
+
+    whenReady(chain) {
+      case (res1, res2) => {
+        res1.value shouldEqual row
+        res2.value shouldEqual updatedRow.copy(double = row.double)
+      }
+    }
+  }
 }

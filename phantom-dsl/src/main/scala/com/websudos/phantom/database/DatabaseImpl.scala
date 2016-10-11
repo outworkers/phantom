@@ -30,7 +30,7 @@
 package com.websudos.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
-import com.websudos.diesel.engine.reflection.EarlyInit
+import com.outworkers.diesel.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}

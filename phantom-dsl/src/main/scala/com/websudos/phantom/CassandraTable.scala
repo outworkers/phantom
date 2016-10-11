@@ -127,13 +127,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   def clustered: Boolean = clusteringColumns.nonEmpty
 
   /**
-   * This method will filter the columns from a Clustering Order definition.
-   * It is used to define TimeSeries tables, using the ClusteringOrder trait
-   * combined with a directional trait, either Ascending or Descending.
-   *
-   * This method will simply add to the trailing of a query.
-   * @return The clustering key, defined as a string or the empty string.
-   */
+    * This method will filter the columns from a Clustering Order definition.
+    * It is used to define TimeSeries tables, using the ClusteringOrder trait
+    * combined with a directional trait, either Ascending or Descending.
+    *
+    * This method will simply add to the trailing of a query.
+    * @return The clustering key, defined as a string or the empty string.
+    */
   private[phantom] def clusteringKey: String = {
     if (clusteringColumns.nonEmpty) {
       val key = clusteringColumns.map(col => {
@@ -151,22 +151,22 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   }
 
   /**
-   * This method will define the PRIMARY_KEY of the table.
-   * <ul>
-   *   <li>
-   *    For more than one partition key, it will define a Composite Key.
-   *    Example: PRIMARY_KEY((partition_key_1, partition_key2), primary_key_1, etc..)
-   *   </li>
-   *   <li>
-   *     For a single partition key, it will define a Compound Key.
-   *     Example: PRIMARY_KEY(partition_key_1, primary_key_1, primary_key_2)
-   *   </li>
-   *   <li>
-   *     For no partition key, it will throw an exception.
-   *   </li>
-   * </ul>
-   * @return A string value representing the primary key of the table.
-   */
+    * This method will define the PRIMARY_KEY of the table.
+    * <ul>
+    *   <li>
+    *    For more than one partition key, it will define a Composite Key.
+    *    Example: PRIMARY_KEY((partition_key_1, partition_key2), primary_key_1, etc..)
+    *   </li>
+    *   <li>
+    *     For a single partition key, it will define a Compound Key.
+    *     Example: PRIMARY_KEY(partition_key_1, primary_key_1, primary_key_2)
+    *   </li>
+    *   <li>
+    *     For no partition key, it will throw an exception.
+    *   </li>
+    * </ul>
+    * @return A string value representing the primary key of the table.
+    */
   @throws(classOf[InvalidPrimaryKeyException])
   private[phantom] def defineTableKey(): String = {
 
@@ -204,14 +204,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   }
 
   /**
-   * This method will check for common Cassandra anti-patterns during the intialisation of a schema.
-   * If the Schema definition violates valid CQL standard, this function will throw an error.
-   *
-   * A perfect example is using a mixture of Primary keys and Clustering keys in the same schema.
-   * While a Clustering key is also a primary key, when defining a clustering key all other keys must become clustering keys and specify their order.
-   *
-   * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
-   */
+    * This method will check for common Cassandra anti-patterns during the intialisation of a schema.
+    * If the Schema definition violates valid CQL standard, this function will throw an error.
+    *
+    * A perfect example is using a mixture of Primary keys and Clustering keys in the same schema.
+    * While a Clustering key is also a primary key, when defining a clustering key all other keys must become clustering keys and specify their order.
+    *
+    * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
+    */
   private[this] def preconditions(): Unit = {
     if (clustered && primaryKeys.diff(clusteringColumns).nonEmpty) {
       logger.error("When using CLUSTERING ORDER all PrimaryKey definitions" +

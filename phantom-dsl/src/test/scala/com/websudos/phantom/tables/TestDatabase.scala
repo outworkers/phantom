@@ -29,7 +29,6 @@
  */
 package com.websudos.phantom.tables
 
-import java.net.SocketOption
 import java.util.UUID
 
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
@@ -45,6 +44,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object basicTable extends ConcreteBasicTable with connector.Connector
   object enumTable extends ConcreteEnumTable with connector.Connector
   object namedEnumTable extends ConcreteNamedEnumTable with connector.Connector
+  object indexedEnumTable extends ConcreteNamedPartitionEnumTable with connector.Connector
+
   object clusteringTable extends ConcreteClusteringTable with connector.Connector
   object complexClusteringTable extends ConcreteComplexClusteringTable with connector.Connector
   object brokenClusteringTable extends ConcreteBrokenClusteringTable with connector.Connector
@@ -86,6 +87,9 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
   object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {
     val testUUID = UUID.randomUUID()
   }
+
+  object primaryCollectionsTable extends ConcretePrimaryCollectionTable with connector.Connector
+
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with connector.Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with connector.Connector
   object multipleKeysTable$ extends ConcreteMultipleKeys with connector.Connector
@@ -98,7 +102,14 @@ class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(con
 }
 
 object Connector {
-  val default = ContactPoint.local.noHeartbeat().keySpace("phantom")
+  val default = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    ).noHeartbeat().keySpace("phantom")
+
 }
 
 object TestDatabase extends TestDatabase(Connector.default)

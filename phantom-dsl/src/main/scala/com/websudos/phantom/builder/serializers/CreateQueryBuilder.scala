@@ -33,17 +33,18 @@ import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.QueryBuilder.Utils
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.connectors.KeySpace
 
 sealed trait CreateOptionsBuilder {
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     if (qb.nonEmpty) {
       qb.append(CQLSyntax.comma)
         .forcePad.appendSingleQuote(option)
-        .forcePad.append(CQLSyntax.Symbols.`:`)
+        .append(CQLSyntax.Symbols.colon)
         .forcePad.appendSingleQuote(value)
     } else {
-      qb.forcePad.appendSingleQuote(option)
-        .forcePad.append(CQLSyntax.Symbols.`:`)
+      qb.appendSingleQuote(option)
+        .append(CQLSyntax.Symbols.colon)
         .forcePad.appendSingleQuote(value)
     }
   }
@@ -51,80 +52,11 @@ sealed trait CreateOptionsBuilder {
   protected[this] def simpleValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     qb.append(CQLSyntax.comma)
       .forcePad.appendSingleQuote(option)
-      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .append(CQLSyntax.Symbols.colon)
       .forcePad.append(value)
   }
 }
 
-sealed trait CompactionQueryBuilder extends CreateOptionsBuilder {
-
-  def enabled(qb: CQLQuery, flag: Boolean): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.enabled, flag.toString)
-  }
-
-  def min_sstable_size[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.min_sstable_size, size.toString)
-  }
-
-  def sstable_size_in_mb[T : Numeric](qb: CQLQuery, size: T): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompactionOptions.sstable_size_in_mb, size.toString)
-  }
-
-  def tombstone_compaction_interval(qb: CQLQuery, size: String): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_compaction_interval, size)
-  }
-
-  def tombstone_threshold(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.tombstone_threshold, size.toString)
-  }
-
-  def unchecked_tombstone_compaction(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.unchecked_tombstone_compaction, size.toString)
-  }
-
-  def cold_reads_to_omit(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.cold_reads_to_omit, size.toString)
-  }
-
-  def base_time_seconds(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.base_time_seconds, value.toString)
-  }
-
-  def timestamp_resolution(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.timestamp_resolution, value.toString)
-  }
-
-  def max_sstable_age_days(qb: CQLQuery, value: Long): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.max_sstable_age_days, value.toString)
-  }
-
-  def max_threshold(qb: CQLQuery, value: Int): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.max_threshold, value.toString)
-  }
-
-  def min_threshold(qb: CQLQuery, value: Int): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.min_threshold, value.toString)
-  }
-
-  def bucket_high(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_high, size.toString)
-  }
-
-  def bucket_low(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompactionOptions.bucket_low, size.toString)
-  }
-}
-
-sealed trait CompressionQueryBuilder extends CreateOptionsBuilder {
-
-  def chunk_length_kb(qb: CQLQuery, size: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.CompressionOptions.chunk_length_kb, size)
-  }
-
-  def crc_check_chance(qb: CQLQuery, size: Double): CQLQuery = {
-    simpleValue(qb, CQLSyntax.CompressionOptions.crc_check_chance, size.toString)
-  }
-}
 
 sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   def keys(qb: CQLQuery, value: String): CQLQuery = {
@@ -140,10 +72,7 @@ sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   }
 }
 
-
-private[builder] class CreateTableBuilder extends
-  CompactionQueryBuilder
-  with CompressionQueryBuilder {
+private[builder] class CreateTableBuilder {
 
   object Caching extends CachingQueryBuilder
 
@@ -176,11 +105,11 @@ private[builder] class CreateTableBuilder extends
   }
 
   def compression(qb: CQLQuery) : CQLQuery = {
-    Utils.tableOption(CQLSyntax.CreateOptions.compression, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compression, qb)
   }
 
   def compaction(qb: CQLQuery) : CQLQuery = {
-    Utils.tableOption(CQLSyntax.CreateOptions.compaction, qb).pad.appendIfAbsent(CQLSyntax.Symbols.`}`)
+    Utils.tableOption(CQLSyntax.CreateOptions.compaction, qb)
   }
 
   def comment(qb: String): CQLQuery = {
@@ -188,7 +117,11 @@ private[builder] class CreateTableBuilder extends
   }
 
   def caching(qb: String, wrapped: Boolean): CQLQuery = {
-    val settings = if (wrapped) CQLQuery.empty.appendSingleQuote(qb) else CQLQuery.empty.append(Utils.curlyWrap(qb))
+    val settings = if (!wrapped) {
+      CQLQuery.empty.appendSingleQuote(qb)
+    } else {
+      CQLQuery.empty.append(Utils.curlyWrap(qb))
+    }
 
     Utils.tableOption(
       CQLSyntax.CreateOptions.caching,
@@ -230,7 +163,7 @@ private[builder] class CreateTableBuilder extends
    * @param table The name of the table to create the index on.
    * @param keySpace The keyspace to whom the table belongs to.
    * @param column The name of the column to create the secondary index on.
-   * @return A CQLQuery containing the valid CQL of creating a secondary index for the keys of a Map column.
+   * @return A CQLQuery containing the valid CQL of creating a secondary index for the keys of a Map column.e
    */
   def mapIndex(table: String, keySpace: String, column: String): CQLQuery = {
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
@@ -268,4 +201,34 @@ private[builder] class CreateTableBuilder extends
     CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
   }
 
+  def defaultCreateQuery(
+    keyspace: String,
+    table: String,
+    tableKey: String,
+    columns: Seq[CQLQuery]
+  ): CQLQuery = {
+    CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+      .forcePad.append(QueryBuilder.keyspace(keyspace, table)).forcePad
+      .append(CQLSyntax.Symbols.`(`)
+      .append(QueryBuilder.Utils.join(columns: _*))
+      .append(CQLSyntax.Symbols.`,`)
+      .forcePad.append(tableKey)
+      .append(CQLSyntax.Symbols.`)`)
+  }
+
+  def createIfNotExists(
+    keyspace: String,
+    table: String,
+    tableKey: String,
+    columns: Seq[CQLQuery]
+  ): CQLQuery = {
+      CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.table)
+        .forcePad.append(CQLSyntax.ifNotExists)
+        .forcePad.append(QueryBuilder.keyspace(keyspace, table))
+        .forcePad.append(CQLSyntax.Symbols.`(`)
+        .append(QueryBuilder.Utils.join(columns: _*))
+        .append(CQLSyntax.Symbols.`,`)
+        .forcePad.append(tableKey)
+        .append(CQLSyntax.Symbols.`)`)
+  }
 }
