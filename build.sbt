@@ -50,6 +50,7 @@ lazy val Versions = new {
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
+  val typesafeConfig = "1.2.1"
 
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -83,8 +84,12 @@ lazy val Versions = new {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
-        case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "com.typesafe.play" %% "play-streams" % v
-        case Some((major, minor)) if minor >= 11  && !Publishing.isJdk8=> "com.typesafe.play" %% "play-streams" % "2.4.8"
+        case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams" % v
+        }
+        case Some((major, minor)) if minor >= 11  && !Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
+        }
         case _ => "com.typesafe.play" %% "play-streams-experimental" % v
       }
     }
@@ -320,7 +325,13 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    )
+    ) ++ {
+      if (Publishing.isJdk8) {
+        Seq("com.typesafe" % "config" % Versions.typesafeConfig)
+      } else {
+        Seq.empty
+      }
+    }
   ).settings(
     sharedSettings: _*
   ).dependsOn(
