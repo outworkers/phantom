@@ -35,7 +35,7 @@ import com.websudos.phantom.builder.query.{RootCreateQuery, _}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 import com.websudos.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
-import com.websudos.phantom.macros.FieldsLister
+import com.websudos.phantom.macros.TableHelper
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -46,23 +46,25 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  * @tparam T Type of this table.
  * @tparam R Type of record.
  */
-abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
+abstract class CassandraTable[T <: CassandraTable[T, R], R](
+  implicit helper: TableHelper[T, R]
+) extends SelectTable[T, R] { self =>
 
-  def columns()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = lister.fields
+  def columns: Seq[AbstractColumn[_]] = helper.fields
 
-  def secondaryKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+  def secondaryKeys: Seq[AbstractColumn[_]] = {
     columns.filter(_.isSecondaryKey)
   }
 
-  def primaryKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+  def primaryKeys: Seq[AbstractColumn[_]] = {
     columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
   }
 
-  def partitionKeys()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+  def partitionKeys: Seq[AbstractColumn[_]] = {
     columns.filter(_.isPartitionKey)
   }
 
-  def clusteringColumns()(implicit lister: FieldsLister[T]): Seq[AbstractColumn[_]] = {
+  def clusteringColumns: Seq[AbstractColumn[_]] = {
     columns.filter(_.isClusteringKey)
   }
 
@@ -88,9 +90,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def tableName: String = macro TableMacro.tableName[T]
+  def tableName: String = helper.tableName
 
-  def fromRow(r: Row): R = macro TableMacro.fromRowMacroImpl[T, R]
+  def fromRow(r: Row): R = helper.fromRow(r)
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.

@@ -30,17 +30,71 @@
 package com.websudos.phantom.macros
 
 import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.dsl.CassandraTable
+import com.datastax.driver.core.Row
+
 import scala.reflect.macros.blackbox
 
-trait FieldsLister[T] {
+trait TableHelper[T <: CassandraTable[T, R], R] {
+
+  def tableName: String
+
+  def fromRow(row: Row): R
+
   def fields: Seq[AbstractColumn[_]]
 }
 
-object FieldsLister {
-  implicit def fieldsMacro[T]: Seq[AbstractColumn[_]] = macro fieldsMacroImpl[T]
+object TableHelper {
+  implicit def fieldsMacro[T]: Seq[AbstractColumn[_]] = macro TableHelperMacro.macroImpl[T]
+}
 
-  def fieldsMacroImpl[T : c.WeakTypeTag](c: blackbox.Context): c.Expr[Seq[AbstractColumn[_]]] = {
-    import c.universe._
+@macrocompat.bundle
+class TableHelperMacro(val c: blackbox.Context) {
+
+  import c.universe._
+
+  def macroImpl[T : WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[T]
+
+    q"""
+       new com.websudos.phantom.macros.TableHelper[$tpe] {
+
+       }
+     """
+  }
+
+
+  def tableName[T : WeakTypeTag]: Expr[String] = {
+    val tpe = weakTypeOf[T]
+    c.Expr[String](q"""${tpe.termSymbol.asTerm.name}""")
+  }
+
+  def fieldList[T : WeakTypeTag]: c.Expr[Seq[AbstractColumn[_]]] = {
+    val tpe = weakTypeOf[T]
+    val accessors: Iterable[TermName] = tpe.decls
+      .filter(sym => sym.isModule && sym.asMethod.typeSignature <:< typeOf[AbstractColumn[_]])
+      .map(_.asTerm.name)
+
+    val res = q"""Seq(..$accessors)"""
+
+    c.Expr[Seq[AbstractColumn[_]]](res)
+  }
+
+  def fields(tpe: Type): Iterable[(Name, Type)] = {
+    object CaseField {
+      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
+        if (arg.isVal && arg.isCaseAccessor) {
+          Some(TermName(arg.name.toString.trim), arg.typeSignature)
+        } else {
+          None
+        }
+      }
+    }
+
+    tpe.decls.collect { case CaseField(name, fType) => name -> fType }
+  }
+
+  def fieldsMacroImpl[T : WeakTypeTag]: Expr[Seq[AbstractColumn[_]]] = {
 
     val tpe = weakTypeOf[T]
     val accessors: Iterable[TermName] = tpe.decls
