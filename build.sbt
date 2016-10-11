@@ -68,7 +68,7 @@ lazy val Versions = new {
 
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 => "2.5.8"
+      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.5.8"
       case _ => "2.4.8"
     }
   }
