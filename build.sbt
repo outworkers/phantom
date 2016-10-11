@@ -47,10 +47,16 @@ lazy val Versions = new {
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
-  val akka = if (Publishing.isJdk8) "2.4-M2" else "2.3.15"
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
+
+  val akka: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4-M2"
+      case _ => "2.3.15"
+    }
+  }
 
   val lift: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -309,7 +315,7 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
-      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
+      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
