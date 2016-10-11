@@ -33,7 +33,6 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import com.websudos.phantom.dsl.LocalDate
 import macrocompat.bundle
 import org.joda.time.DateTime
 
@@ -67,7 +66,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
 
-  def typed[A : c.WeakTypeTag] = weakTypeOf[A].typeSymbol
+  def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   object Symbols {
     val intSymbol = typed[Int]
@@ -79,6 +78,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val doubleSymbol = typed[Double]
     val floatSymbol = typed[Float]
     val dateSymbol = typed[Date]
+    val listSymbol = typed[scala.collection.immutable.List[_]]
+    val setSymbol = typed[scala.collection.immutable.Set[_]]
+    val mapSymbol = typed[scala.collection.immutable.Map[_, _]]
     val dateTimeSymbol = typed[DateTime]
     val localDateSymbol = typed[com.datastax.driver.core.LocalDate]
     val uuidSymbol = typed[UUID]
@@ -112,6 +114,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.bigDecimal => bigDecimalPrimitive
       case Symbols.buffer => bufferPrimitive
       case Symbols.enum => enumPrimitive[T]()
+      case Symbols.listSymbol => listPrimitive[T]()
+      case Symbols.setSymbol => setPrimitive[T]()
+      case Symbols.mapSymbol => mapPrimitive[T]()
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
     }
 
@@ -153,6 +158,46 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bigIntPrimitive: Tree = primitive("BigIntPrimitive")
 
   val bufferPrimitive: Tree = primitive("BlobIsPrimitive")
+
+  def listPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val innerTpe = tpe.typeArgs.headOption
+
+    innerTpe match {
+      case Some(inner) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.list[$inner]"""
+      }
+      case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
+
+  def mapPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val keyTpe = tpe.typeArgs.headOption
+    val valueType = tpe.typeArgs.drop(1).headOption
+
+    (keyTpe, valueType) match {
+      case (Some(key), Some(value)) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.map[$key, $value]"""
+      }
+      case _ => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
+
+  def setPrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val innerTpe = tpe.typeArgs.headOption
+
+    innerTpe match {
+      case Some(inner) => {
+        q"""com.websudos.phantom.builder.primitives.Primitives.set[$inner]"""
+      }
+      case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    }
+  }
 
   def enumPrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
     val tpe = tag.tpe

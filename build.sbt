@@ -43,15 +43,21 @@ lazy val Versions = new {
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
   val scalameter = "0.6"
-  val diesel = "0.3.0"
+  val diesel = "0.4.1"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
-  val akka = "2.3.14"
-  val typesafeConfig = "1.2.1"
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
+  val typesafeConfig = "1.2.1"
+
+  val akka: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.10"
+      case _ => "2.3.15"
+    }
+  }
 
   val lift: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -78,7 +84,12 @@ lazy val Versions = new {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
-        case Some((major, minor)) if minor >= 11 => "com.typesafe.play" %% "play-streams" % v
+        case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams" % v
+        }
+        case Some((major, minor)) if minor >= 11  && !Publishing.isJdk8 => {
+          "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
+        }
         case _ => "com.typesafe.play" %% "play-streams-experimental" % v
       }
     }
@@ -197,7 +208,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
-    "com.websudos"                 %% "diesel-engine"                     % Versions.diesel,
+    "com.outworkers"               %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
@@ -307,15 +318,20 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"             % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
-      "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
-      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
+      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    )
+    ) ++ {
+      if (Publishing.isJdk8) {
+        Seq("com.typesafe" % "config" % Versions.typesafeConfig)
+      } else {
+        Seq.empty
+      }
+    }
   ).settings(
     sharedSettings: _*
   ).dependsOn(

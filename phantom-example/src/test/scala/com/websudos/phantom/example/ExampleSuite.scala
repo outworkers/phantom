@@ -39,7 +39,8 @@ import org.scalatest._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-trait BaseSuite extends Suite with Matchers
+trait BaseSuite extends Suite
+  with Matchers
   with BeforeAndAfterAll
   with RootConnector
   with ScalaFutures
@@ -51,16 +52,16 @@ trait BaseSuite extends Suite with Matchers
 }
 
 
-class ExampleSuite extends FreeSpec with BaseSuite with RecipesDatabase.connector.Connector {
+trait ExampleSuite extends Suite with BaseSuite with RecipesDatabase.connector.Connector {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(RecipesDatabase.autocreate().future(), 5.seconds)
+    Await.ready(RecipesDatabase.autocreate().future(), 20.seconds)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    Await.ready(RecipesDatabase.autotruncate().future(), 8.seconds)
+    Await.result(RecipesDatabase.autotruncate().future(), 20.seconds)
   }
 }
 

@@ -46,10 +46,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def frozen(column: String, definition: String): CQLQuery = {
-    CQLQuery(CQLSyntax.frozen)
-      .append(CQLSyntax.Symbols.`<`)
-      .forcePad.append(diamond(column, definition))
-      .append(CQLSyntax.Symbols.`>`)
+    frozen(column, CQLQuery(definition))
   }
 
   /**
@@ -67,7 +64,10 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
    * @return A CQL query serialising the CQL collection column definition syntax.
    */
   def diamond(collection: String, value: String): CQLQuery = {
-    CQLQuery(collection).append(CQLSyntax.Symbols.`<`).append(value).append(CQLSyntax.Symbols.`>`)
+    CQLQuery(collection)
+      .append(CQLSyntax.Symbols.`<`)
+      .append(value).
+      append(CQLSyntax.Symbols.`>`)
   }
 
   def prepend(column: String, values: String*): CQLQuery = {
@@ -200,5 +200,11 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def mapColumnType(column: String, key: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {
+    CQLQuery(name).forcePad.append(
+      diamond(CQLSyntax.Collections.frozen, cassandraType.queryString)
+    )
   }
 }

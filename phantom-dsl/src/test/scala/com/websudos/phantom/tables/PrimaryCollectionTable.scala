@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,50 +27,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.keys
+package com.websudos.phantom.tables
 
-import com.websudos.phantom.column.AbstractColumn
+import com.websudos.phantom.dsl._
 
-private[phantom] trait Undroppable
-private[phantom] trait Unmodifiable
-private[phantom] trait Indexed
+import scala.concurrent.Future
 
-private[phantom] trait Key[ValueType, KeyType <: Key[ValueType, KeyType]] {
-  self: AbstractColumn[ValueType] =>
+case class PrimaryCollectionRecord(
+  index: List[String],
+  set: Set[String],
+  map: Map[String, String],
+  name: String,
+  value: Int
+)
+
+class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
+  object listIndex extends ListColumn[String](this) with PartitionKey[List[String]]
+  object setCol extends SetColumn[String](this) with PrimaryKey[Set[String]]
+  object mapCol extends MapColumn[String, String](this) with PrimaryKey[Map[String, String]]
+  object name extends StringColumn(this) with PrimaryKey[String]
+  object value extends IntColumn(this)
+
+  def fromRow(row: Row): PrimaryCollectionRecord = {
+    PrimaryCollectionRecord(
+      listIndex(row),
+      setCol(row),
+      mapCol(row),
+      name(row),
+      value(row)
+    )
+  }
 }
 
-trait PrimaryKey[ValueType] extends Key[ValueType, PrimaryKey[ValueType]] with Unmodifiable with Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
-  override val isPrimary = true
+abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {
 
-  override val shouldFreeze: Boolean = true
-}
-
-trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] with Unmodifiable with Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
-  override val isPartitionKey = true
-  override val isPrimary = true
-
-  override val shouldFreeze: Boolean = true
-}
-
-/**
- * A trait mixable into Column definitions to allow storing them as keys.
- */
-trait Index[ValueType] extends Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
-
-  override val isSecondaryKey = true
-}
-
-trait Keys {
-  self : Index[_] with AbstractColumn[_] =>
-
-  override private[phantom] val isMapKeyIndex = true
-}
-
-trait Entries {
-  self: Index[_] with AbstractColumn[_] =>
-
-  override private[phantom] val isMapEntryIndex = true
+  def store(rec: PrimaryCollectionRecord): Future[ResultSet] = {
+    insert.value(_.listIndex, rec.index)
+      .value(_.setCol, rec.set)
+      .value(_.mapCol, rec.map)
+      .value(_.name, rec.name)
+      .value(_.value, rec.value)
+      .future()
+  }
 }

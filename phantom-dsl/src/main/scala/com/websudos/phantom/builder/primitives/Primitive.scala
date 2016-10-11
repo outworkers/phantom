@@ -29,16 +29,12 @@
  */
 package com.websudos.phantom.builder.primitives
 
-import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.util.{Date, UUID}
+import java.util.Date
 
-import com.datastax.driver.core.utils.Bytes
-import com.datastax.driver.core.{GettableData, LocalDate, Row}
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.builder.syntax.CQLSyntax
-import org.joda.time.{DateTime, DateTimeZone}
+import com.datastax.driver.core.{GettableData, LocalDate}
+import org.joda.time.DateTime
 
+import scala.annotation.implicitNotFound
 import scala.util.control.NoStackTrace
 import scala.util.{Failure, Try}
 
@@ -53,8 +49,18 @@ private[phantom] object DateSerializer {
   def asCql(date: DateTime): String = date.getMillis.toString
 }
 
+@implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
+  /**
+    * A way of maintaining compatibility with the underlying Java driver.
+    * The driver often type checks records before casting them and to do that
+    * it needs the correct Java Class obtained via classOf[] or .getClass in Java.
+    *
+    * We use this because the appropriate Scala type is often different than the
+    * Java equivalent. For instance, we don't want users to deal with [[java.util.List]],
+    * even if the Java Driver will attempt to look for one.
+    */
   type PrimitiveType
 
   protected[this] def nullCheck[T](column: String, row: GettableData)(fn: GettableData => T): Try[T] = {
@@ -65,6 +71,13 @@ abstract class Primitive[RR] {
     }
   }
 
+  /**
+    * Converts the type to a CQL compatible string.
+    * The primitive is responsible for handling all aspects of adequate escaping as well.
+    * This is used to generate the final queries from domain objects.
+    * @param value The strongly typed value.
+    * @return The string representation of the value with respect to CQL standards.
+    */
   def asCql(value: RR): String
 
   def cassandraType: String
@@ -76,12 +89,24 @@ abstract class Primitive[RR] {
   def clz: Class[PrimitiveType]
 
   def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
-
 }
 
 object Primitive {
 
+  /**
+    * !! Warning !! Black magic going on. This will use the excellent macro compat
+    * library to macro materialise an instance of the required primitive based on the type argument.
+    * If this does not highlight properly in your IDE, fear not, it works on my machine :)
+    * @tparam T The type parameter to materialise a primitive for.
+    * @return A concrete instance of a primitive, materialised via implicit blackbox macros.
+    */
   implicit def materializer[T]: Primitive[T] = macro PrimitiveMacro.materializer[T]
 
+  /**
+    * Convenience method to materialise the context bound and return a reference to it.
+    * This is somewhat shorter syntax than using implicitly.
+    * @tparam RR The type of the primitive to retrieve.
+    * @return A reference to a concrete materialised implementation of a primitive for the given type.
+    */
   def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
 }

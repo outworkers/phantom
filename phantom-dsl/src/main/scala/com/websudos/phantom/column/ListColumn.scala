@@ -41,8 +41,12 @@ import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
 
 
-abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
-  extends Column[Owner, Record, List[RR]](table) with CollectionValueDefinition[RR] {
+abstract class AbstractListColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  RR
+](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
+  with CollectionValueDefinition[RR] {
 
   override def asCql(v: List[RR]): String = Utils.collection(v.map(valueAsCql)).queryString
 
@@ -51,15 +55,24 @@ abstract class AbstractListColumn[Owner <: CassandraTable[Owner, Record], Record
   }
 }
 
-@implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class ListColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](table: CassandraTable[Owner, Record])
+class ListColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  RR : Primitive
+](table: CassandraTable[Owner, Record])
     extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = Primitive[RR]
 
   override val cassandraType = QueryBuilder.Collections.listType(valuePrimitive.cassandraType).queryString
 
-  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+  override def qb: CQLQuery = {
+    if (shouldFreeze) {
+      QueryBuilder.Collections.frozen(name, cassandraType)
+    } else {
+      CQLQuery(name).forcePad.append(cassandraType)
+    }
+  }
 
   override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
 
