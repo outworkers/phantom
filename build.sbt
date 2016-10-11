@@ -54,7 +54,7 @@ lazy val Versions = new {
 
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4-M2"
+      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.10"
       case _ => "2.3.15"
     }
   }

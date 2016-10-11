@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,12 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.websudos.phantom.database
 
-import com.websudos.phantom.example.ExampleSuite
-import org.scalatest.FlatSpec
-
-class SimpleRecipesTest extends FlatSpec with ExampleSuite {
-  it should "insert a new record in" in {
-  }
+trait DatabaseProvider[T <: DatabaseImpl] {
+  def database: T
 }
