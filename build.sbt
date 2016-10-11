@@ -47,8 +47,7 @@ lazy val Versions = new {
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
-  val akka = "2.3.14"
-  val typesafeConfig = "1.2.1"
+  val akka = if (Publishing.isJdk8) "2.4-M2" else "2.3.15"
   val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
@@ -307,9 +306,8 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
     libraryDependencies ++= Seq(
-      "com.typesafe.play"   %% "play-iteratees"             % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
+      "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
-      "com.typesafe"        % "config"                      % Versions.typesafeConfig,
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka,
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,

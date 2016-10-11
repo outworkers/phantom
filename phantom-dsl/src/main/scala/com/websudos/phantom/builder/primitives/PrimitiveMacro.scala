@@ -33,7 +33,6 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import com.websudos.phantom.dsl.LocalDate
 import macrocompat.bundle
 import org.joda.time.DateTime
 
@@ -67,7 +66,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
 
-  def typed[A : c.WeakTypeTag] = weakTypeOf[A].typeSymbol
+  def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   object Symbols {
     val intSymbol = typed[Int]

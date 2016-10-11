@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 Websudos, Limited.
+ * Copyright 2013-2015 Websudos, Limited.
  *
  * All rights reserved.
  *
@@ -27,42 +27,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example
+package com.websudos.phantom.example.basics
 
-import com.websudos.phantom.Manager._
-import com.websudos.phantom.connectors.RootConnector
-import com.websudos.phantom.example.advanced.RecipesDatabase
-import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
-import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
-import org.scalatest._
+import com.websudos.phantom.example.ExampleSuite
+import org.scalatest.FlatSpec
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+class SimpleRecipesTest extends FlatSpec with ExampleSuite {
+  it should "insert a new record in" in {
 
-trait BaseSuite extends Suite
-  with Matchers
-  with BeforeAndAfterAll
-  with RootConnector
-  with ScalaFutures
-  with OptionValues {
-
-  implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(10 seconds)
-
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
-}
-
-
-trait ExampleSuite extends Suite with BaseSuite with RecipesDatabase.connector.Connector {
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    Await.ready(RecipesDatabase.autocreate().future(), 20.seconds)
-  }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
-    Await.result(RecipesDatabase.autotruncate().future(), 20.seconds)
   }
 }
-
-
