@@ -29,13 +29,14 @@
  */
 package com.websudos.phantom.tables
 
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, compactRender}
 
-case class JsonTest(prop1: String, prop2: String)
+@sample case class JsonTest(prop1: String, prop2: String)
 
-case class JsonClass(
+@sample case class JsonClass(
   id: UUID,
   name: String,
   json: JsonTest,

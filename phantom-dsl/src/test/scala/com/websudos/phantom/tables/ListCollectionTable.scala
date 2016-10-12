@@ -29,10 +29,11 @@
  */
 package com.websudos.phantom.tables
 
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-case class MyTestRow(
+@sample case class MyTestRow(
   key: String,
   optionA: Option[Int],
   stringlist: List[String]

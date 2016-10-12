@@ -29,10 +29,11 @@
  */
 package com.websudos.phantom.tables
 
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-case class Article(
+@sample case class Article(
   name: String,
   id: UUID,
   orderId: Long

@@ -30,13 +30,14 @@
 package com.websudos.phantom.tables
 
 import com.datastax.driver.core.PagingState
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime
 
 import scala.concurrent.Future
 
-case class JodaRow(
+@sample case class JodaRow(
   pkey: String,
   intColumn: Int,
   timestamp: DateTime

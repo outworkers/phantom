@@ -61,12 +61,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
 
     val accessors = filterMembers[T, AbstractColumn[_]]
-      .map(_.asTerm.name).map(tm => q"table.$tm")
+      .map(_.asTerm.name).map(tm => q"table.$tm").toSet
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
 
-    q"""
+    val tree = q"""
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = ${name.toString}
 
@@ -75,6 +75,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
+    println(show(tree))
+    tree
   }
 
 }
