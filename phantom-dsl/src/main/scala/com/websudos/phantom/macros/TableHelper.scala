@@ -45,7 +45,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 }
 
 object TableHelper {
-  implicit def fieldsMacro[T]: Seq[AbstractColumn[_]] = macro TableHelperMacro.macroImpl[T]
+  implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 }
 
 @macrocompat.bundle
@@ -53,38 +53,40 @@ class TableHelperMacro(val c: blackbox.Context) {
 
   import c.universe._
 
-  def macroImpl[T : WeakTypeTag]: Tree = {
+  def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
+    val rTpe = weakTypeOf[R]
+    val name = tpe.typeSymbol.asType.name.toTermName
 
-    q"""
-       new com.websudos.phantom.macros.TableHelper[$tpe] {
+    val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
+    val columnSymbol = typeOf[AbstractColumn[_]].typeSymbol
 
+    val accessors: Iterable[TermName] = tpe.decls.filter {
+      sym => sym.typeSignature.typeSymbol == columnSymbol
+    } map (_.asTerm.name)
+
+    val rowType = tq"com.datastax.driver.core.Row"
+    val strTpe = tq"java.lang.String"
+
+    val tree = q"""
+       new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
+          def tableName: $strTpe = ${name.toString}
+
+          def fields: scala.collection.immutable.Seq[$colTpe] = Seq(..$accessors)
+
+          def fromRow(row: $rowType): $rTpe = null
        }
      """
-  }
 
-
-  def tableName[T : WeakTypeTag]: Expr[String] = {
-    val tpe = weakTypeOf[T]
-    c.Expr[String](q"""${tpe.termSymbol.asTerm.name}""")
-  }
-
-  def fieldList[T : WeakTypeTag]: c.Expr[Seq[AbstractColumn[_]]] = {
-    val tpe = weakTypeOf[T]
-    val accessors: Iterable[TermName] = tpe.decls
-      .filter(sym => sym.isModule && sym.asMethod.typeSignature <:< typeOf[AbstractColumn[_]])
-      .map(_.asTerm.name)
-
-    val res = q"""Seq(..$accessors)"""
-
-    c.Expr[Seq[AbstractColumn[_]]](res)
+    Console.println(showCode(tree))
+    tree
   }
 
   def fields(tpe: Type): Iterable[(Name, Type)] = {
     object CaseField {
       def unapply(arg: TermSymbol): Option[(Name, Type)] = {
         if (arg.isVal && arg.isCaseAccessor) {
-          Some(TermName(arg.name.toString.trim), arg.typeSignature)
+          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
         } else {
           None
         }
@@ -92,17 +94,5 @@ class TableHelperMacro(val c: blackbox.Context) {
     }
 
     tpe.decls.collect { case CaseField(name, fType) => name -> fType }
-  }
-
-  def fieldsMacroImpl[T : WeakTypeTag]: Expr[Seq[AbstractColumn[_]]] = {
-
-    val tpe = weakTypeOf[T]
-    val accessors: Iterable[TermName] = tpe.decls
-      .filter(sym => sym.isModule && sym.asMethod.typeSignature <:< typeOf[AbstractColumn[_]])
-      .map(_.asTerm.name)
-
-    val res = q"""Seq(..$accessors)"""
-
-    c.Expr[Seq[AbstractColumn[_]]](res)
   }
 }
