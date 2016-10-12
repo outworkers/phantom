@@ -31,7 +31,6 @@ package com.websudos.phantom.macros
 
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.dsl.CassandraTable
-import com.datastax.driver.core.Row
 
 import scala.reflect.macros.blackbox
 
@@ -39,9 +38,9 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableName: String
 
-  def fromRow(row: Row): R
+  //def fromRow(row: Row): R
 
-  def fields: Seq[AbstractColumn[_]]
+  def fields(table: T): Seq[AbstractColumn[_]]
 }
 
 object TableHelper {
@@ -49,50 +48,33 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(val c: blackbox.Context) {
+class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   import c.universe._
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
+
     val rTpe = weakTypeOf[R]
     val name = tpe.typeSymbol.asType.name.toTermName
 
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
-    val columnSymbol = typeOf[AbstractColumn[_]].typeSymbol
 
-    val accessors: Iterable[TermName] = tpe.decls.filter {
-      sym => sym.typeSignature.typeSymbol == columnSymbol
-    } map (_.asTerm.name)
+    val accessors = filterMembers[T, AbstractColumn[_]]
+      .map(_.asTerm.name).map(tm => q"table.$tm")
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
 
-    val tree = q"""
+    q"""
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = ${name.toString}
 
-          def fields: scala.collection.immutable.Seq[$colTpe] = Seq(..$accessors)
-
-          def fromRow(row: $rowType): $rTpe = null
+          def fields(table: $tpe): scala.collection.immutable.Seq[$colTpe] = {
+            scala.collection.immutable.Seq(..$accessors)
+          }
        }
      """
-
-    Console.println(showCode(tree))
-    tree
   }
 
-  def fields(tpe: Type): Iterable[(Name, Type)] = {
-    object CaseField {
-      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
-        if (arg.isVal && arg.isCaseAccessor) {
-          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
-        } else {
-          None
-        }
-      }
-    }
-
-    tpe.decls.collect { case CaseField(name, fType) => name -> fType }
-  }
 }

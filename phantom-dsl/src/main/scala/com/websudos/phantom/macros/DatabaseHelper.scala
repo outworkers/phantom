@@ -27,47 +27,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.database
+package com.websudos.phantom.macros
 
-import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.dsl._
-import com.outworkers.util.testing._
+import com.websudos.phantom.database.Database
+import com.websudos.phantom.CassandraTable
 
-class DatabaseImplTest extends PhantomSuite {
-  val db = new TestDatabase
-  val db2 = new ValueInitDatabase
+import scala.reflect.macros.blackbox
 
-  it should "instantiate a database and collect references to the tables" in {
-    db.tables.size shouldEqual 4
-  }
+trait DatabaseHelper[T <: Database[T]] {
+  def tables(db: T): Set[CassandraTable[_ ,_]]
+}
 
-  it should "automatically generate the CQL schema and initialise tables " in {
-    db.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
-    }
-  }
+object DatabaseHelper {
+  implicit def macroMaterialise[T <: Database[T]]: DatabaseHelper[T] = macro DatabaseHelperMacro.macroImpl[T]
+}
 
-  ignore should "instantiate a database object and collect references to value fields" in {
-    db2.tables.foreach(item => info(item.tableName))
-    db2.tables.size shouldEqual 4
-  }
+@macrocompat.bundle
+class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+  import c.universe._
 
-  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
-    db2.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
-    }
-  }
+  def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[T]
+    val tableSymbol = tq"com.websudos.phantom.CassandraTable[_, _]"
 
-  it should "respect any auto-creation options specified for the particular table" in {
-    val space = KeySpace("phantom_test")
-    val queries = db.autocreate().queries()(space)
+    val accessors = filterMembers[T, CassandraTable[_, _]].map(sym => {
+      val name = sym.asTerm.name
+      q"""db.$name"""
+    })
 
-    val target = db.recipes.autocreate(space).qb
-
-    queries should contain (target)
+    q"""
+       new com.websudos.phantom.macros.DatabaseHelper[$tpe] {
+         def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
+           scala.collection.immutable.Set(..$accessors)
+         }
+       }
+     """
   }
 }

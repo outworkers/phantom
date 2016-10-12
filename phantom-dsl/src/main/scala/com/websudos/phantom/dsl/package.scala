@@ -46,6 +46,7 @@ import com.websudos.phantom.builder.serializers.KeySpaceConstruction
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.column.extractors.FromRow.RowParser
+import com.websudos.phantom.database.Database
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
@@ -113,8 +114,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Entries = com.websudos.phantom.keys.Entries
   type StaticColumn[ValueType] = com.websudos.phantom.keys.StaticColumn[ValueType]
 
-  type Database = com.websudos.phantom.database.DatabaseImpl
-  type DatabaseProvider[T <: Database] = com.websudos.phantom.database.DatabaseProvider[T]
+  type Database[DB <: Database[DB]] = com.websudos.phantom.database.Database[DB]
+  type DatabaseProvider[DB <: Database[DB]] = com.websudos.phantom.database.DatabaseProvider[DB]
 
   type DateTime = org.joda.time.DateTime
   type LocalDate = org.joda.time.LocalDate

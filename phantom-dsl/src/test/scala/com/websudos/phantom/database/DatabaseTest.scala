@@ -29,25 +29,45 @@
  */
 package com.websudos.phantom.database
 
-import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.tables._
+import com.websudos.phantom.PhantomSuite
+import com.websudos.phantom.dsl._
+import com.outworkers.util.testing._
 
+class DatabaseTest extends PhantomSuite {
+  val db = new TestDatabase
+  val db2 = new ValueInitDatabase
 
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
-}
+  it should "instantiate a database and collect references to the tables" in {
+    db.tables.size shouldEqual 4
+  }
 
-class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
-  object basicTable extends BasicTable with connector.Connector
-  object enumTable extends EnumTable with connector.Connector
-  object jsonTable extends JsonTable with connector.Connector
-  object recipes extends Recipes with connector.Connector
-}
+  it should "automatically generate the CQL schema and initialise tables " in {
+    db.autocreate().future().successful {
+      res => {
+        res.nonEmpty shouldEqual true
+      }
+    }
+  }
 
+  ignore should "instantiate a database object and collect references to value fields" in {
+    db2.tables.foreach(item => info(item.tableName))
+    db2.tables.size shouldEqual 4
+  }
 
-class ValueInitDatabase extends Database(DefaultKeyspace.local) {
-  val basicTable = new BasicTable with connector.Connector
-  val enumTable = new EnumTable with connector.Connector
-  val jsonTable = new JsonTable with connector.Connector
-  val recipes = new Recipes with connector.Connector
+  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
+    db2.autocreate().future().successful {
+      res => {
+        res.nonEmpty shouldEqual true
+      }
+    }
+  }
+
+  it should "respect any auto-creation options specified for the particular table" in {
+    val space = KeySpace("phantom_test")
+    val queries = db.autocreate().queries()(space)
+
+    val target = db.recipes.autocreate(space).qb
+
+    queries should contain (target)
+  }
 }

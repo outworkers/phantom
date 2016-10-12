@@ -31,7 +31,7 @@ package com.websudos.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
 import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
-import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.database.Database
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.reactivestreams.RequestBuilder
 import com.outworkers.util.testing._
@@ -104,7 +104,7 @@ object StreamConnector {
   val connector = ContactPoint.local.keySpace("phantom")
 }
 
-class StreamDatabase extends DatabaseImpl(StreamConnector.connector) {
+class StreamDatabase extends Database(StreamConnector.connector) {
   object operaTable extends ConcreteOperaTable with connector.Connector
 }
 

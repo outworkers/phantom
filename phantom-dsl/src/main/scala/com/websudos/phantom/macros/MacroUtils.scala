@@ -27,27 +27,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.database
+package com.websudos.phantom.macros
+import scala.reflect.macros.blackbox
 
-import com.websudos.phantom.connectors.ContactPoint
-import com.websudos.phantom.tables._
+class MacroUtils(val c: blackbox.Context) {
+  import c.universe._
+
+  def fields(tpe: Type): Iterable[(Name, Type)] = {
+    object CaseField {
+      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
+        if (arg.isVal && arg.isCaseAccessor) {
+          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
+        } else {
+          None
+        }
+      }
+    }
+
+    tpe.decls.collect { case CaseField(name, fType) => name -> fType }
+  }
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+
+    (for {
+      baseClass <- tpe.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< typeOf[Filter]
+    } yield symbol)(collection.breakOut)
+  }
 
 
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
-}
-
-class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
-  object basicTable extends BasicTable with connector.Connector
-  object enumTable extends EnumTable with connector.Connector
-  object jsonTable extends JsonTable with connector.Connector
-  object recipes extends Recipes with connector.Connector
-}
-
-
-class ValueInitDatabase extends Database(DefaultKeyspace.local) {
-  val basicTable = new BasicTable with connector.Connector
-  val enumTable = new EnumTable with connector.Connector
-  val jsonTable = new JsonTable with connector.Connector
-  val recipes = new Recipes with connector.Connector
 }

@@ -50,7 +50,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
 
-  def columns: Seq[AbstractColumn[_]] = helper.fields
+  def columns: Seq[AbstractColumn[_]] = helper.fields(this.asInstanceOf[T])
 
   def secondaryKeys: Seq[AbstractColumn[_]] = {
     columns.filter(_.isSecondaryKey)
@@ -92,7 +92,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def tableName: String = helper.tableName
 
-  def fromRow(r: Row): R = helper.fromRow(r)
+  def fromRow(r: Row): R
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.
