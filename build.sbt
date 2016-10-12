@@ -41,8 +41,6 @@ lazy val Versions = new {
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
-  val scrooge = "4.7.0"
-  val play = "2.4.6"
   val scalameter = "0.6"
   val diesel = "0.4.1"
   val scalacheck = "1.13.0"
@@ -96,6 +94,7 @@ lazy val Versions = new {
     }
   }
 }
+
 val defaultConcurrency = 4
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
