@@ -43,22 +43,32 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+class DatabaseHelperMacro(val c: blackbox.Context) {
   import c.universe._
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+
+    (for {
+      baseClass <- tpe.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< typeOf[Filter]
+    } yield symbol)(collection.breakOut)
+  }
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
     val tableSymbol = tq"com.websudos.phantom.CassandraTable[_, _]"
 
     val accessors = filterMembers[T, CassandraTable[_, _]].map(sym => {
-      val name = sym.asTerm.name
+      val name = sym.asTerm.name.toTermName
       q"""db.$name"""
     })
 
     q"""
        new com.websudos.phantom.macros.DatabaseHelper[$tpe] {
          def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
-           scala.collection.immutable.Set(..$accessors)
+           scala.collection.immutable.Set.apply[$tableSymbol](..$accessors)
          }
        }
      """

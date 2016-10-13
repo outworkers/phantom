@@ -48,9 +48,33 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+class TableHelperMacro(val c: blackbox.Context) {
 
   import c.universe._
+
+  def fields(tpe: Type): Iterable[(Name, Type)] = {
+    object CaseField {
+      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
+        if (arg.isVal && arg.isCaseAccessor) {
+          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
+        } else {
+          None
+        }
+      }
+    }
+
+    tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
+  }
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+
+    (for {
+      baseClass <- tpe.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< typeOf[Filter]
+    } yield symbol)(collection.breakOut)
+  }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
@@ -61,7 +85,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
 
     val accessors = filterMembers[T, AbstractColumn[_]]
-      .map(_.asTerm.name).map(tm => q"table.$tm").toSet
+      .map(_.asTerm.name).map(tm => q"table.${tm.toTermName}").toSet
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
@@ -71,7 +95,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           def tableName: $strTpe = ${name.toString}
 
           def fields(table: $tpe): scala.collection.immutable.Seq[$colTpe] = {
-            scala.collection.immutable.Seq(..$accessors)
+            scala.collection.immutable.Seq.apply[$colTpe](..$accessors)
           }
        }
      """
