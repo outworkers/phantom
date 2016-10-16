@@ -36,7 +36,7 @@ import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, compactRender}
 
 @sample case class JsonTest(prop1: String, prop2: String)
 
-@sample case class JsonClass(
+case class JsonClass(
   id: UUID,
   name: String,
   json: JsonTest,

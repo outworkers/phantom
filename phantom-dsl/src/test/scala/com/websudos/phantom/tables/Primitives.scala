@@ -33,7 +33,7 @@ import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-@sample case class Primitive(
+case class Primitive(
   pkey: String,
   long: Long,
   boolean: Boolean,

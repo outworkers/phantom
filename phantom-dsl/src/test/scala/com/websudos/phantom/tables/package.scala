@@ -38,6 +38,42 @@ import com.outworkers.util.testing._
 
 package object tables {
 
+  implicit object JsonClassSampler extends Sample[JsonClass] {
+    def sample: JsonClass = JsonClass(
+      gen[UUID],
+      gen[String],
+      gen[JsonTest],
+      genList[JsonTest](),
+      genList[JsonTest]().toSet
+    )
+  }
+
+  implicit object PrimitiveSampler extends Sample[Primitive] {
+    def sample: Primitive = {
+      Primitive(
+        pkey = gen[String],
+        long = gen[Long],
+        boolean = false,
+        bDecimal = gen[BigDecimal],
+        double = gen[Double],
+        float = gen[Float],
+        inet = InetAddress.getByName("127.0.0.1"),
+        int = gen[Int],
+        date = gen[Date],
+        uuid = gen[UUID],
+        bi = BigInt(gen[Int])
+      )
+    }
+  }
+
+  implicit object MyTestRowSampler extends Sample[MyTestRow] {
+    def sample: MyTestRow = MyTestRow(
+      gen[String],
+      genOpt[Int],
+      genList[String]()
+    )
+  }
+
   implicit object OptionalPrimitiveSampler extends Sample[OptionalPrimitive] {
     def sample: OptionalPrimitive = {
       OptionalPrimitive(

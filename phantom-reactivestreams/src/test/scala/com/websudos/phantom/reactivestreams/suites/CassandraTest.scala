@@ -104,7 +104,7 @@ object StreamConnector {
   val connector = ContactPoint.local.keySpace("phantom")
 }
 
-class StreamDatabase extends Database(StreamConnector.connector) {
+class StreamDatabase extends Database[StreamDatabase](StreamConnector.connector) {
   object operaTable extends ConcreteOperaTable with connector.Connector
 }
 

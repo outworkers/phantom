@@ -33,7 +33,7 @@ import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-@sample case class MyTestRow(
+case class MyTestRow(
   key: String,
   optionA: Option[Int],
   stringlist: List[String]
