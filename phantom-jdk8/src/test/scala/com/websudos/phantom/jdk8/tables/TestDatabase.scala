@@ -41,4 +41,4 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
 }
 
-object TestDatabase extendFs TestDatabase(ContactPoint.local.keySpace("phantom"))
+object TestDatabase extend TestDatabase(ContactPoint.local.keySpace("phantom"))

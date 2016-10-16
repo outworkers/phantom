@@ -48,33 +48,9 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(val c: blackbox.Context) {
+class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   import c.universe._
-
-  def fields(tpe: Type): Iterable[(Name, Type)] = {
-    object CaseField {
-      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
-        if (arg.isVal && arg.isCaseAccessor) {
-          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
-        } else {
-          None
-        }
-      }
-    }
-
-    tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
-  }
-
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
-    val tpe = weakTypeOf[T].typeSymbol.typeSignature
-
-    (for {
-      baseClass <- tpe.baseClasses.reverse
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< typeOf[Filter]
-    } yield symbol)(collection.breakOut)
-  }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
@@ -99,7 +75,6 @@ class TableHelperMacro(val c: blackbox.Context) {
           }
        }
      """
-    println(show(tree))
     tree
   }
 

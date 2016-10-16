@@ -37,7 +37,7 @@ class MacroUtils(val c: blackbox.Context) {
     object CaseField {
       def unapply(arg: TermSymbol): Option[(Name, Type)] = {
         if (arg.isVal && arg.isCaseAccessor) {
-          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
+          Some(newTermName(arg.name.toString.trim) -> arg.typeSignature)
         } else {
           None
         }
@@ -46,5 +46,16 @@ class MacroUtils(val c: blackbox.Context) {
 
     tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
   }
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+
+    (for {
+      baseClass <- tpe.baseClasses.reverse
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< typeOf[Filter]
+    } yield symbol)(collection.breakOut)
+  }
+
 
 }

@@ -34,7 +34,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.21.0"
+  val util = "0.22.0"
   val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"

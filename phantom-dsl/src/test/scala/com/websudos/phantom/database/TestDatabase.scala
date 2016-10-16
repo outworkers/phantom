@@ -45,9 +45,10 @@ class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
 }
 
 
+/*
 class ValueInitDatabase extends Database[ValueInitDatabase](DefaultKeyspace.local) {
   val basicTable = new BasicTable with connector.Connector
   val enumTable = new EnumTable with connector.Connector
   val jsonTable = new JsonTable with connector.Connector
   val recipes = new Recipes with connector.Connector
-}
+}*/
