@@ -47,7 +47,7 @@ class MacroUtils(val c: blackbox.Context) {
     tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  def getDirectBase(sym: Symbol): Set[Symbol] = {
+  def directSuperclass(sym: Symbol): Set[Symbol] = {
     if (sym.isClass) {
       val clz = sym.asClass
       val base = clz.baseClasses.toSet - clz //`baseClasses` contains `a` itself
