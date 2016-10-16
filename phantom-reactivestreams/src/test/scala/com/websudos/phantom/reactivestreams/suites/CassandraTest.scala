@@ -78,7 +78,7 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 
   override def afterAll(): Unit = {
     super.afterAll()
-    system.terminate()
+    system.shutdown()
   }
 
 }
