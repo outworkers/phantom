@@ -29,6 +29,6 @@
  */
 package com.websudos.phantom.database
 
-trait DatabaseProvider[T <: DatabaseImpl] {
+trait DatabaseProvider[T <: Database[T]] {
   def database: T
 }

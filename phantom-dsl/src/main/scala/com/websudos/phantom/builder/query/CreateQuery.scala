@@ -49,7 +49,7 @@ class RootCreateQuery[
       keySpace.name,
       table.tableName,
       table.defineTableKey(),
-      table.columns.map(_.qb)
+      table.columns.map(_.qb).toSeq
     )
   }
 
@@ -62,7 +62,7 @@ class RootCreateQuery[
       keySpace.name,
       table.tableName,
       table.defineTableKey(),
-      table.columns.map(_.qb)
+      table.columns.map(_.qb).toSeq
     )
   }
 

@@ -35,7 +35,11 @@ import com.websudos.phantom.CassandraTable
 import scala.util.{Failure, Success, Try}
 
 
-abstract class Column[Owner <: CassandraTable[Owner, Record], Record, T](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
+abstract class Column[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  T
+](val table: CassandraTable[Owner, Record]) extends AbstractColumn[T] {
 
   def parse(r: Row): Try[T]
 

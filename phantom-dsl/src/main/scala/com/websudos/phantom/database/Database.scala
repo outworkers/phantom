@@ -30,23 +30,25 @@
 package com.websudos.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
-import com.outworkers.diesel.reflection.EarlyInit
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
+import com.websudos.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
 
 private object Lock
 
-abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[CassandraTable[_, _]] {
+abstract class Database[
+  DB <: Database[DB]
+](val connector: KeySpaceDef)(implicit helper: DatabaseHelper[DB]) {
 
   implicit val space: KeySpace = KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
 
-  lazy val tables: Set[CassandraTable[_, _]] = initialize().toSet
+  val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
 
   def shutdown(): Unit = {
     blocking {
@@ -70,16 +72,14 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autocreate(): ExecutableCreateStatementsList = {
-    new ExecutableCreateStatementsList(tables)
-  }
+  def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
 
   /**
     * A blocking method that will create all the tables. This is designed to prevent the
     * requirement of the implicit session to escape the enclosure of the database object.
  *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
   def create(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -129,7 +129,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
     * requirement of the implicit session to escape the enclosure of the database object.
  *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
   def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -159,7 +159,7 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
     * requirement of the implicit session to escape the enclosure of the database object.
  *
     * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.websudos.phantom.database.DatabaseImpl#defaultTimeout]]
+    *                Defaults to [[com.websudos.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
   def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
@@ -177,17 +177,13 @@ abstract class DatabaseImpl(val connector: KeySpaceDef) extends EarlyInit[Cassan
   }
 }
 
-sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
-
-  private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
-    tables.toSeq.map(_.autocreate(keySpace).qb)
-  }
+sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
 
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
-    Future.sequence(tables.toSeq.map(_.autocreate(keySpace).future()))
+    Future.sequence(queries(keySpace).map(_.future()))
   }
 }

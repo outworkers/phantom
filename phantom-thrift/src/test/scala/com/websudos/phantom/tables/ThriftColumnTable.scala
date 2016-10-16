@@ -35,7 +35,7 @@ import com.datastax.driver.core.Row
 import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.database.Database
 import com.websudos.phantom.dsl._
 import com.websudos.phantom.thrift._
 
@@ -173,7 +173,7 @@ abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootCo
   }
 }
 
-class ThriftDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
+class ThriftDatabase(override val connector: KeySpaceDef) extends Database[ThriftDatabase](connector) {
   object thriftColumnTable extends ConcreteThriftColumnTable with connector.Connector
   object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
 }

@@ -30,10 +30,10 @@
 package com.websudos.phantom.jdk8.tables
 
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.database.Database
 
 
-class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
+class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
 
   object primitivesJdk8 extends ConcretePrimitivesJdk8 with connector.Connector
 

@@ -35,20 +35,20 @@ import org.scalatest.{FlatSpec, Matchers}
 class BasicTableMethods extends FlatSpec with Matchers {
 
   it should "retrieve the correct number of columns in a simple table" in {
-    TestDatabase.basicTable.columns.length shouldEqual 4
+    TestDatabase.basicTable.columns.size shouldEqual 4
   }
 
   it should "retrieve the correct number of columns in a big table" in {
-    TestDatabase.complexCompoundKeyTable.columns.length shouldEqual 10
+    TestDatabase.complexCompoundKeyTable.columns.size shouldEqual 10
   }
 
   it should "retrieve the correct number of primary keys for a table" in {
-    TestDatabase.simpleCompoundKeyTable.primaryKeys.length shouldEqual 2
-    TestDatabase.simpleCompoundKeyTable.partitionKeys.length shouldEqual 1
+    TestDatabase.simpleCompoundKeyTable.primaryKeys.size shouldEqual 2
+    TestDatabase.simpleCompoundKeyTable.partitionKeys.size shouldEqual 1
   }
 
   it should "retrieve the correct number of clustering keys for a table" in {
-    TestDatabase.clusteringTable.clusteringColumns.length shouldEqual 2
+    TestDatabase.clusteringTable.clusteringColumns.size shouldEqual 2
   }
 
   it should "create the correct CLUSTERING_ORDER key for a 3 part clustering key" in {

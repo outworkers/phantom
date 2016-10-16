@@ -27,50 +27,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.base
+package com.websudos.phantom.macros
+import scala.reflect.macros.blackbox
 
-import org.scalatest.{FlatSpec, Matchers}
-import com.websudos.phantom.dsl._
+class MacroUtils(val c: blackbox.Context) {
+  import c.universe._
 
-case class CustomRecord(name: String, mp: Map[String, String])
+  def fields(tpe: Type): Iterable[(Name, Type)] = {
+    object CaseField {
+      def unapply(arg: TermSymbol): Option[(Name, Type)] = {
+        if (arg.isVal && arg.isCaseAccessor) {
+          Some(newTermName(arg.name.toString.trim) -> arg.typeSignature)
+        } else {
+          None
+        }
+      }
+    }
 
-trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-  object rec extends StringColumn(this) with PartitionKey[String]
-  object sampleLongTextColumnDefinition extends MapColumn[String, String](this)
-
-  override def fromRow(r: Row): CustomRecord = {
-    CustomRecord(
-      rec(r),
-      sampleLongTextColumnDefinition(r)
-    )
-  }
-}
-
-object TestTableNames extends TestTableNames
-
-object Test extends PrimitiveColumn[TestTableNames, CustomRecord, String](TestTableNames)
-
-trait TestNames extends TestTableNames
-
-class Parent extends TestNames
-class Parent2 extends Parent
-
-class ClassNameExtraction extends FlatSpec with Matchers {
-
-
-  it should "correctly name objects inside record classes " in {
-    TestTableNames.rec.name shouldEqual "rec"
+    tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  it should "correctly extract long object name definitions in nested record classes" in {
-    TestTableNames.sampleLongTextColumnDefinition.name shouldEqual "sampleLongTextColumnDefinition"
+  def baseType(sym: Symbol): Set[Symbol] = {
+    if (sym.isClass) {
+      val clz = sym.asClass
+      val base = clz.baseClasses.toSet - clz //`baseClasses` contains `a` itself
+      val basebase = base.flatMap {
+        case x: ClassSymbol => x.baseClasses.toSet - x
+      }
+      base -- basebase
+    } else {
+      c.abort(c.enclosingPosition, s"Expected a class, but the symbol was different")
+    }
   }
 
-  it should "correctly name Cassandra Tables" in {
-    TestTableNames.tableName shouldEqual "testTableNames"
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
+    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+  ): Set[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+
+    (for {
+      baseClass <- tpe.baseClasses.reverse.flatMap(x => exclusions(x))
+      symbol <- baseClass.typeSignature.members.sorted
+      if symbol.typeSignature <:< typeOf[Filter]
+    } yield symbol)(collection.breakOut)
   }
 
-  it should "correctly extract the object name " in {
-    Test.name shouldEqual "Test"
-  }
+
 }

@@ -30,6 +30,7 @@
 package com.websudos.phantom.tables
 
 import com.datastax.driver.core.PagingState
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import org.joda.time.DateTime

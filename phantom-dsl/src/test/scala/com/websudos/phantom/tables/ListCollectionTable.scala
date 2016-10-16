@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.tables
 
+import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 

@@ -34,9 +34,8 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.20.0"
-  val json4s = "3.3.0"
-  val datastax = "3.0.2"
+  val util = "0.22.0"
+  val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
   val thrift = "0.8.0"
@@ -95,6 +94,7 @@ lazy val Versions = new {
     }
   }
 }
+
 val defaultConcurrency = 4
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
@@ -207,8 +207,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.typelevel" %% "macro-compat" % "1.1.1",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
-    "com.outworkers"               %% "diesel-reflection"                 % Versions.diesel,
+    "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",

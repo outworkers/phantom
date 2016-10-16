@@ -32,9 +32,9 @@ package com.websudos.phantom
 import java.net.InetAddress
 import java.util.{Date, UUID}
 
-import org.joda.time.{DateTimeZone, DateTime}
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.util.testing._
+import org.joda.time.{DateTime, DateTimeZone}
 
 package object tables {
 
@@ -263,5 +263,4 @@ package object tables {
   implicit object SimpleStringClassSampler extends Sample[SimpleStringClass] {
     def sample: SimpleStringClass = SimpleStringClass(gen[String])
   }
-
 }

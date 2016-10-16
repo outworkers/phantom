@@ -34,10 +34,10 @@ import java.util.UUID
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.websudos.phantom.builder.query.CreateQuery
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.database.DatabaseImpl
+import com.websudos.phantom.database.Database
 import com.websudos.phantom.dsl._
 
-class TestDatabase(override val connector: KeySpaceDef) extends DatabaseImpl(connector) {
+class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
   object articles extends ConcreteArticles with connector.Connector
   object articlesByAuthor extends ConcreteArticlesByAuthor with connector.Connector
 
