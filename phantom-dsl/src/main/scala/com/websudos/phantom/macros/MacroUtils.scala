@@ -50,11 +50,7 @@ class MacroUtils(val c: blackbox.Context) {
   def filterMembers[T : WeakTypeTag, Filter : TypeTag]: Set[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
-    (for {
-      baseClass <- tpe.baseClasses.reverse
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< typeOf[Filter]
-    } yield symbol)(collection.breakOut)
+    tpe.declarations.filter(_.typeSignature <:< typeOf[Filter]).toSet[Symbol]
   }
 
 
