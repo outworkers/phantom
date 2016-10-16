@@ -71,7 +71,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
 
     val listType = tq"$prefix.ExecutableCreateStatementsList"
 
-    val tree = q"""
+    q"""
        new com.websudos.phantom.macros.DatabaseHelper[$tpe] {
          def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
            scala.collection.immutable.Set.apply[$tableSymbol](..$tableList)
@@ -84,8 +84,5 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
          }
        }
      """
-
-    println(showCode(tree))
-    tree
   }
 }

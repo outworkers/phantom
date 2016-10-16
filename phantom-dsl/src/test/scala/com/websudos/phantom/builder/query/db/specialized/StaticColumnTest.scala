@@ -32,15 +32,15 @@ package com.websudos.phantom.builder.query.db.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{StaticCollectionRecord, TestDatabase}
+import com.websudos.phantom.tables.StaticCollectionRecord
 import com.outworkers.util.testing._
 
 class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.staticTable.insertSchema()
-    TestDatabase.staticCollectionTable.insertSchema()
+    database.staticTable.insertSchema()
+    database.staticCollectionTable.insertSchema()
   }
 
   it should "use a static value for a static column" in {
@@ -50,9 +50,9 @@ class StaticColumnTest extends PhantomSuite {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
-      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).future()
-      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
+      insert <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
+      insert2 <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).future()
+      select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
     } yield select
 
     whenReady(chain) {
@@ -71,20 +71,19 @@ class StaticColumnTest extends PhantomSuite {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
+      insert <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
 
       // The second insert updates the static value
-      insert2 <- TestDatabase.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).future()
+      insert2 <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).future()
 
       // We query for the first record inserted.
-      select <- TestDatabase.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
+      select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
     } yield select
 
     whenReady(chain) {
-      res => {
+      res =>
         // The first record should hold the updated value.
         res.value.static shouldEqual static2
-      }
     }
   }
 
@@ -94,22 +93,20 @@ class StaticColumnTest extends PhantomSuite {
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
-    val qb = TestDatabase.staticCollectionTable.update.where(_.id eqs id)
+    val qb = database.staticCollectionTable.update.where(_.id eqs id)
       .and(_.clusteringId eqs sample.clustering)
       .modify(_.staticList append "test")
       .queryString
 
-    Console.println(qb)
-
     val chain = for {
-      store1 <- TestDatabase.staticCollectionTable.store(sample).future()
-      store2 <- TestDatabase.staticCollectionTable.store(sample2).future()
-      update <- TestDatabase.staticCollectionTable.update.where(_.id eqs id)
+      store1 <- database.staticCollectionTable.store(sample).future()
+      store2 <- database.staticCollectionTable.store(sample2).future()
+      update <- database.staticCollectionTable.update.where(_.id eqs id)
         .and(_.clusteringId eqs sample.clustering)
         .modify(_.staticList append "test")
         .future()
 
-      rec <- TestDatabase.staticCollectionTable
+      rec <- database.staticCollectionTable
         .select
         .where(_.id eqs id)
         .and(_.clusteringId eqs sample.clustering)
@@ -117,9 +114,7 @@ class StaticColumnTest extends PhantomSuite {
     } yield rec
 
     whenReady(chain) {
-      res => {
-        res.value.list shouldEqual sample.list ::: List("test")
-      }
+      res => res.value.list shouldEqual sample.list ::: List("test")
     }
   }
 
