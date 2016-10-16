@@ -32,7 +32,7 @@ package com.websudos.phantom.tables
 import com.outworkers.util.testing.sample
 import com.websudos.phantom.dsl._
 
-@sample case class CounterRecord(id: UUID, count: Long)
+case class CounterRecord(id: UUID, count: Long)
 
 class CounterTableTest extends CassandraTable[ConcreteCounterTableTest, CounterRecord] {
 

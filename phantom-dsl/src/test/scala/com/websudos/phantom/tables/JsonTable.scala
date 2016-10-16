@@ -34,7 +34,7 @@ import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, compactRender}
 
-@sample case class JsonTest(prop1: String, prop2: String)
+case class JsonTest(prop1: String, prop2: String)
 
 case class JsonClass(
   id: UUID,

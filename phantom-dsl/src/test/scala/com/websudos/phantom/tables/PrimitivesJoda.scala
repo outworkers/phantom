@@ -37,7 +37,7 @@ import org.joda.time.DateTime
 
 import scala.concurrent.Future
 
-@sample case class JodaRow(
+case class JodaRow(
   pkey: String,
   intColumn: Int,
   timestamp: DateTime

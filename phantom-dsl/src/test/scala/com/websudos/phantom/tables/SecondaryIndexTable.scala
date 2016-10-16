@@ -33,7 +33,7 @@ import com.outworkers.util.testing.sample
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-@sample case class SecondaryIndexRecord(
+ case class SecondaryIndexRecord(
   primary: UUID,
   secondary: UUID,
   name: String
