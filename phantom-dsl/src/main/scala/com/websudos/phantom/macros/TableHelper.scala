@@ -130,7 +130,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val realTable = findRealTable(tpe, tableSym)
 
     val finalName = realTable match {
-      case Some(tb) => tb.asType.name
+      case Some(tb) => {
+        val initial = tb.asType.name.decodedName.toString
+        // Lower case the first letter of the type
+        // This will make sure the macro derived name is compatible
+        // with the old school namin structure used in phantom.
+        initial(0).toLower + initial.drop(1)
+      }
       case None => c.abort(c.enclosingPosition, s"Could not find out the name of ${sourceName.toString}")
     }
 
@@ -142,7 +148,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     q"""
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
-          def tableName: $strTpe = ${finalName.toString}
+          def tableName: $strTpe = ${finalName}
 
           def fields(table: $tpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
