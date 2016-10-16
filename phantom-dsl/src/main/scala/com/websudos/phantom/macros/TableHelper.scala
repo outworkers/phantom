@@ -71,7 +71,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   def findRealTable(tpe: Type, target: Symbol): Option[Symbol] = {
     tpe.baseClasses.find(clz => {
-      val base = directSuperclass(clz)
+      val base = baseType(clz)
 
       if (base.isEmpty) {
         c.abort(
