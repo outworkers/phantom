@@ -47,11 +47,26 @@ class MacroUtils(val c: blackbox.Context) {
     tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: Set[Symbol] = {
+  def getDirectBase(sym: Symbol): Set[Symbol] = {
+    if (sym.isClass) {
+      val clz = sym.asClass
+      val base = clz.baseClasses.toSet - clz //`baseClasses` contains `a` itself
+      val basebase = base.flatMap {
+        case x: ClassSymbol => x.baseClasses.toSet - x
+      }
+      base -- basebase
+    } else {
+      c.abort(c.enclosingPosition, s"Expected a class, but the symbol was different")
+    }
+  }
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
+    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+  ): Set[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
     (for {
-      baseClass <- tpe.baseClasses.reverse
+      baseClass <- tpe.baseClasses.reverse.flatMap(x => exclusions(x))
       symbol <- baseClass.typeSignature.members.sorted
       if symbol.typeSignature <:< typeOf[Filter]
     } yield symbol)(collection.breakOut)

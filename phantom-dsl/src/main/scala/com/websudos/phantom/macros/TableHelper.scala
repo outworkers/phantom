@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.macros
 
+import com.websudos.phantom.SelectTable
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.dsl.CassandraTable
 
@@ -47,36 +48,107 @@ object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 }
 
+/**()
+    val tableSym = typeOf[CassandraTable[_, _]].typeSymbol
+    val selectTable = typeOf[SelectTable[_, _]].typeSymbol
+    val rootConn = typeOf[SelectTable[_, _]].typeSymbol
+
+    val exclusions: Symbol => Option[Symbol] = s => {
+      val sig = s.typeSignature.typeSymbol
+
+      if (sig == tableSym || sig == selectTable || sig == rootConn) {
+        None
+      } else {
+        Some(s)
+      }
+    }
+
+    val nameSources = exclude[T, CassandraTable[_, _]](exclusions).filterNot(sym => {
+      val named = sym.name.decodedName.toString
+      knownList.contains(named)
+    })
+    println(s"Found ${nameSources.size} naming sources for ${name}")
+    nameSources.foreach(s => println(s.name.decodedName.toString))
+  */
+
+
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   import c.universe._
 
+  val knownList = List("Any", "Object", "RootConnector")
+
+  val tableSym = typeOf[CassandraTable[_, _]].typeSymbol
+  val selectTable = typeOf[SelectTable[_, _]].typeSymbol
+  val rootConn = typeOf[SelectTable[_, _]].typeSymbol
+
+  val exclusions: Symbol => Option[Symbol] = s => {
+    val sig = s.typeSignature.typeSymbol
+
+    if (sig == tableSym || sig == selectTable || sig == rootConn) {
+      None
+    } else {
+      Some(s)
+    }
+  }
+
+  def findRealTable(tpe: Type, target: Symbol): Option[Symbol] = {
+    tpe.baseClasses.find(clz => {
+      val base = getDirectBase(clz)
+
+      if (base.isEmpty) {
+        c.abort(
+          c.enclosingPosition,
+          s"Could not find a direct ancestor for type ${tpe.typeSymbol.name.decodedName.toString}"
+        )
+      }
+
+      base.head == target
+    })
+  }
+
+
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
 
+    val sourceName = tpe.typeSymbol.name.decodedName
     val rTpe = weakTypeOf[R]
     val name = tpe.typeSymbol.asType.name.toTermName
 
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
 
-    val accessors = filterMembers[T, AbstractColumn[_]]
-      .map(_.asTerm.name).map(tm => q"table.${tm.toTermName}").toSet
+    /*
+    val tableName = nameSources match {
+      case sym :: Nil => sym.name.decodedName.toString
+      case _ => c.abort(
+        c.enclosingPosition,
+        s"Unable to infer table name, found ${nameSources.size} possible naming sources"
+      )
+    }*/
+
+    val realTable = findRealTable(tpe, tableSym)
+
+    val finalName = realTable match {
+      case Some(tb) => tb
+      case None => c.abort(c.enclosingPosition, s"Could not find out the name of ${sourceName.toString}")
+    }
+
+    val accessors = filterMembers[T, AbstractColumn[_]](exclusions)
+      .map(_.asTerm.name).map(tm => q"table.${tm.toTermName}")
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
 
-    val tree = q"""
+    q"""
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
-          def tableName: $strTpe = ${name.toString}
+          def tableName: $strTpe = ${finalName.toString}
 
           def fields(table: $tpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }
      """
-    println(showCode(tree))
-    tree
   }
 
 }

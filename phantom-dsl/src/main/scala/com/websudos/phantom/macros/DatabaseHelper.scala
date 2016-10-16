@@ -50,20 +50,17 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
     val tpe = weakTypeOf[T]
     val tableSymbol = tq"com.websudos.phantom.CassandraTable[_, _]"
 
-    val accessors = filterMembers[T, CassandraTable[_, _]].map(sym => {
+    val accessors = filterMembers[T, CassandraTable[_, _]]().map(sym => {
       val name = sym.asTerm.name.toTermName
       q"""db.$name"""
     })
 
-    val tree = q"""
+    q"""
        new com.websudos.phantom.macros.DatabaseHelper[$tpe] {
          def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
            scala.collection.immutable.Set.apply[$tableSymbol](..$accessors)
          }
        }
      """
-
-    println(showCode(tree))
-    tree
   }
 }
