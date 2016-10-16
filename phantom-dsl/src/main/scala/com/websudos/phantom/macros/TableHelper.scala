@@ -48,30 +48,6 @@ object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 }
 
-/**()
-    val tableSym = typeOf[CassandraTable[_, _]].typeSymbol
-    val selectTable = typeOf[SelectTable[_, _]].typeSymbol
-    val rootConn = typeOf[SelectTable[_, _]].typeSymbol
-
-    val exclusions: Symbol => Option[Symbol] = s => {
-      val sig = s.typeSignature.typeSymbol
-
-      if (sig == tableSym || sig == selectTable || sig == rootConn) {
-        None
-      } else {
-        Some(s)
-      }
-    }
-
-    val nameSources = exclude[T, CassandraTable[_, _]](exclusions).filterNot(sym => {
-      val named = sym.name.decodedName.toString
-      knownList.contains(named)
-    })
-    println(s"Found ${nameSources.size} naming sources for ${name}")
-    nameSources.foreach(s => println(s.name.decodedName.toString))
-  */
-
-
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
@@ -114,18 +90,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val sourceName = tpe.typeSymbol.name.decodedName
     val rTpe = weakTypeOf[R]
-    val name = tpe.typeSymbol.asType.name.toTermName
 
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
-
-    /*
-    val tableName = nameSources match {
-      case sym :: Nil => sym.name.decodedName.toString
-      case _ => c.abort(
-        c.enclosingPosition,
-        s"Unable to infer table name, found ${nameSources.size} possible naming sources"
-      )
-    }*/
 
     val realTable = findRealTable(tpe, tableSym)
 
@@ -148,7 +114,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     q"""
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
-          def tableName: $strTpe = ${finalName}
+          def tableName: $strTpe = $finalName
 
           def fields(table: $tpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)

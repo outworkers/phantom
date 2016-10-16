@@ -32,7 +32,7 @@ package com.websudos.phantom.tables
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-abstract class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
+class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey[UUID]
   object id2 extends UUIDColumn(this) with PrimaryKey[UUID]
