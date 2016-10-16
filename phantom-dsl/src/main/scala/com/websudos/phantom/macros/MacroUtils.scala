@@ -47,7 +47,7 @@ class MacroUtils(val c: blackbox.Context) {
     tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: List[Symbol] = {
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag]: Set[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
     (for {

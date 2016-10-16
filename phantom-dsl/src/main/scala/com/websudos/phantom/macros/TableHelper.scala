@@ -40,7 +40,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   //def fromRow(row: Row): R
 
-  def fields(table: T): Seq[AbstractColumn[_]]
+  def fields(table: T): Set[AbstractColumn[_]]
 }
 
 object TableHelper {
@@ -70,8 +70,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = ${name.toString}
 
-          def fields(table: $tpe): scala.collection.immutable.Seq[$colTpe] = {
-            scala.collection.immutable.Seq.apply[$colTpe](..$accessors)
+          def fields(table: $tpe): scala.collection.immutable.Set[$colTpe] = {
+            scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }
      """

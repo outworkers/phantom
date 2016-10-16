@@ -50,21 +50,21 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
 
-  def columns: Seq[AbstractColumn[_]] = helper.fields(this.asInstanceOf[T])
+  def columns: Set[AbstractColumn[_]] = helper.fields(this.asInstanceOf[T])
 
-  def secondaryKeys: Seq[AbstractColumn[_]] = {
+  def secondaryKeys: Set[AbstractColumn[_]] = {
     columns.filter(_.isSecondaryKey)
   }
 
-  def primaryKeys: Seq[AbstractColumn[_]] = {
+  def primaryKeys: Set[AbstractColumn[_]] = {
     columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
   }
 
-  def partitionKeys: Seq[AbstractColumn[_]] = {
+  def partitionKeys: Set[AbstractColumn[_]] = {
     columns.filter(_.isPartitionKey)
   }
 
-  def clusteringColumns: Seq[AbstractColumn[_]] = {
+  def clusteringColumns: Set[AbstractColumn[_]] = {
     columns.filter(_.isClusteringKey)
   }
 
