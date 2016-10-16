@@ -130,7 +130,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val realTable = findRealTable(tpe, tableSym)
 
     val finalName = realTable match {
-      case Some(tb) => tb
+      case Some(tb) => tb.asType.name
       case None => c.abort(c.enclosingPosition, s"Could not find out the name of ${sourceName.toString}")
     }
 
