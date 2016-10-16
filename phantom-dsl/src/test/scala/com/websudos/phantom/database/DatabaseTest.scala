@@ -34,7 +34,7 @@ import com.websudos.phantom.dsl._
 import com.outworkers.util.testing._
 
 class DatabaseTest extends PhantomSuite {
-  val db = new TestDatabase
+  object db extends TestDatabase
 
   it should "instantiate a database and collect references to the tables" in {
     db.tables.size shouldEqual 4
@@ -48,7 +48,7 @@ class DatabaseTest extends PhantomSuite {
 
   it should "respect any auto-creation options specified for the particular table" in {
     val space = KeySpace("phantom_test")
-    val queries = db.autocreate().queries()(space)
+    val queries = db.autocreate().queries(space).map(_.qb)
 
     val target = db.recipes.autocreate(space).qb
 

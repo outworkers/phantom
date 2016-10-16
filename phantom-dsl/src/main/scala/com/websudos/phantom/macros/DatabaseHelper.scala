@@ -29,13 +29,17 @@
  */
 package com.websudos.phantom.macros
 
-import com.websudos.phantom.database.Database
+import com.websudos.phantom.database.{Database, ExecutableCreateStatementsList}
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.query.CreateQuery
+import com.websudos.phantom.connectors.KeySpace
 
 import scala.reflect.macros.blackbox
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Set[CassandraTable[_ ,_]]
+
+  def createQueries(db: T)(implicit keySpace: KeySpace): ExecutableCreateStatementsList
 }
 
 object DatabaseHelper {
@@ -46,21 +50,42 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
+  val keySpaceTpe = tq"com.websudos.phantom.connectors.KeySpace"
+
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
     val tableSymbol = tq"com.websudos.phantom.CassandraTable[_, _]"
 
-    val accessors = filterMembers[T, CassandraTable[_, _]]().map(sym => {
+    val accessors = filterMembers[T, CassandraTable[_, _]]()
+
+    val prefix = q"com.websudos.phantom.database"
+
+    val tableList = accessors.map(sym => {
       val name = sym.asTerm.name.toTermName
       q"""db.$name"""
     })
 
-    q"""
+    val queryList = tableList.map { tb =>
+      q"""$tb.autocreate(space)"""
+    }
+
+    val listType = tq"$prefix.ExecutableCreateStatementsList"
+
+    val tree = q"""
        new com.websudos.phantom.macros.DatabaseHelper[$tpe] {
          def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
-           scala.collection.immutable.Set.apply[$tableSymbol](..$accessors)
+           scala.collection.immutable.Set.apply[$tableSymbol](..$tableList)
+         }
+
+         def createQueries(db: $tpe)(implicit space: $keySpaceTpe): $listType = {
+            new $prefix.ExecutableCreateStatementsList(
+              space => scala.collection.immutable.Seq.apply(..$queryList)
+            )
          }
        }
      """
+
+    println(showCode(tree))
+    tree
   }
 }

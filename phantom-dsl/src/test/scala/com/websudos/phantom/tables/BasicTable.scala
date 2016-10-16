@@ -39,9 +39,7 @@ class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
   object id3 extends UUIDColumn(this) with PrimaryKey[UUID]
   object placeholder extends StringColumn(this)
 
-  def fromRow(r: Row): String = {
-    placeholder(r)
-  }
+  def fromRow(r: Row): String = placeholder(r)
 }
 
 abstract class ConcreteBasicTable extends BasicTable with RootConnector

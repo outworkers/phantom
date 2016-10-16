@@ -38,11 +38,13 @@ private[this] object DefaultKeyspace {
 }
 
 class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
-  object basicTable extends BasicTable with connector.Connector
   object enumTable extends EnumTable with connector.Connector
+  object basicTable extends BasicTable with connector.Connector
   object jsonTable extends JsonTable with connector.Connector
   object recipes extends Recipes with connector.Connector
 }
+
+object TestDatabase extends TestDatabase
 
 
 /*

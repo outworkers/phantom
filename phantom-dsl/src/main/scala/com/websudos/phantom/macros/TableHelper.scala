@@ -41,7 +41,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   //def fromRow(row: Row): R
 
-  def fields(table: T): Set[AbstractColumn[_]]
+  def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
 }
 
 object TableHelper {
@@ -92,22 +92,25 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val rTpe = weakTypeOf[R]
 
     val colTpe = tq"com.websudos.phantom.column.AbstractColumn[_]"
+    val tableTpe = tq"com.websudos.phantom.CassandraTable[$tpe, $rTpe]"
 
     val realTable = findRealTable(tpe, tableSym)
 
-    val finalName = realTable match {
-      case Some(tb) => {
-        val initial = tb.asType.name.decodedName.toString
-        // Lower case the first letter of the type
-        // This will make sure the macro derived name is compatible
-        // with the old school namin structure used in phantom.
-        initial(0).toLower + initial.drop(1)
-      }
+    val realType = realTable match {
+      case Some(tb) => tb.asType
       case None => c.abort(c.enclosingPosition, s"Could not find out the name of ${sourceName.toString}")
     }
 
+    val finalName = {
+      val initial = realType.asType.name.decodedName.toString
+      // Lower case the first letter of the type
+      // This will make sure the macro derived name is compatible
+      // with the old school namin structure used in phantom.
+      initial(0).toLower + initial.drop(1)
+    }
+
     val accessors = filterMembers[T, AbstractColumn[_]](exclusions)
-      .map(_.asTerm.name).map(tm => q"table.${tm.toTermName}")
+      .map(_.asTerm.name).map(tm => q"table.asInstanceOf[$realType].${tm.toTermName}")
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
@@ -116,7 +119,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
        new com.websudos.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = $finalName
 
-          def fields(table: $tpe): scala.collection.immutable.Set[$colTpe] = {
+          def fields(table: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }

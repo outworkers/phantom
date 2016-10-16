@@ -50,7 +50,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self: CassandraTable[T, R] =>
 
-  def columns: Set[AbstractColumn[_]] = helper.fields(self.asInstanceOf[T])
+  def columns: Set[AbstractColumn[_]] = helper.fields(this)
 
   def secondaryKeys: Set[AbstractColumn[_]] = {
     columns.filter(_.isSecondaryKey)

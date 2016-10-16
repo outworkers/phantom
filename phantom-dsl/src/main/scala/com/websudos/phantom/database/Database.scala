@@ -31,7 +31,7 @@ package com.websudos.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
 import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
+import com.websudos.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
 import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
 import com.websudos.phantom.macros.DatabaseHelper
 
@@ -48,7 +48,7 @@ abstract class Database[
 
   implicit lazy val session: Session = connector.session
 
-  def tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
+  val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
 
   def shutdown(): Unit = {
     blocking {
@@ -72,9 +72,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autocreate(): ExecutableCreateStatementsList = {
-    new ExecutableCreateStatementsList(tables)
-  }
+  def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
 
   /**
     * A blocking method that will create all the tables. This is designed to prevent the
@@ -179,17 +177,13 @@ abstract class Database[
   }
 }
 
-sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
-
-  private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
-    tables.toSeq.map(_.autocreate(keySpace).qb)
-  }
+sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
 
   def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): Future[Seq[ResultSet]] = {
-    Future.sequence(tables.toSeq.map(_.autocreate(keySpace).future()))
+    Future.sequence(queries(keySpace).map(_.future()))
   }
 }
