@@ -27,42 +27,51 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.jdk8
 
-import com.twitter.scrooge.CompactThriftSerializer
+import java.time.{LocalDate, OffsetDateTime}
+
+import com.outworkers.phantom.jdk8.dsl._
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
+case class OptionalJdk8Row(
+  pkey: String,
+  offsetDateTime: Option[OffsetDateTime],
+  zonedDateTime: Option[ZonedDateTime],
+  localDate: Option[LocalDate]
 )
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] {
 
+  object pkey extends StringColumn(this) with PartitionKey[String]
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
+  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
+  object zonedDateTime extends OptionalZonedDateTimeColumn(this)
+
+  object localDate extends OptionalJdkLocalDateColumn(this)
+
+  override def fromRow(r: Row): OptionalJdk8Row = {
+    OptionalJdk8Row(
+      pkey = pkey(r),
+      offsetDateTime = offsetDateTime(r),
+      zonedDateTime = zonedDateTime(r),
+      localDate = localDate(r)
     )
   }
 }
 
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
+abstract class ConcreteOptionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 with RootConnector {
+
+  def store(primitive: OptionalJdk8Row): InsertQuery.Default[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] = {
+    insert.value(_.pkey, primitive.pkey)
+      .value(_.offsetDateTime, primitive.offsetDateTime)
+      .value(_.zonedDateTime, primitive.zonedDateTime)
+      .value(_.localDate, primitive.localDate)
+  }
+
+  override val tableName = "OptionalPrimitivesJdk8"
+
+}

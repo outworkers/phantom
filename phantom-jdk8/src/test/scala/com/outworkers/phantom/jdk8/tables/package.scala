@@ -27,42 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.jdk8
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import java.time.{LocalDate, OffsetDateTime, ZoneOffset, ZonedDateTime}
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+import com.outworkers.util.testing.{Sample, _}
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+package object tables {
 
-
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
+  implicit object Jdk8RowSampler extends Sample[Jdk8Row] {
+    def sample: Jdk8Row = {
+      Jdk8Row(
+        gen[String],
+        OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
+        ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
+        LocalDate.now().plusDays(gen[Long])
+      )
     }
   }
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
+  implicit object OptionalJdk8RowSampler extends Sample[OptionalJdk8Row] {
+    def sample: OptionalJdk8Row = {
+      OptionalJdk8Row(
+        gen[String],
+        Some(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
+        Some(ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
+        Some(LocalDate.now().plusDays(gen[Long]))
+      )
+    }
   }
-}
 
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
+}

@@ -27,42 +27,60 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.suites
 
-import com.twitter.scrooge.CompactThriftSerializer
+import com.datastax.driver.core.utils.UUIDs
+import com.outworkers.phantom.tables.ThriftDatabase
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import com.outworkers.util.testing._
+import org.scalatest.FlatSpec
+import org.scalatest.time.SpanSugar._
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+  override def beforeAll(): Unit = {
+    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
+  }
 
+  it should "allow storing thrift columns" in {
+    val id = UUIDs.timeBased()
+    val sample = gen[ThriftTest]
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
+    val insert = ThriftDatabase.thriftColumnTable.insert
+      .value(_.id, id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .future() flatMap {
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+    }
+
+    insert.successful {
+      result => {
+        result.value.struct shouldEqual sample
+      }
     }
   }
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
+  it should "allow storing lists of thrift objects" in {
+    val id = UUIDs.timeBased()
+    val sample = gen[ThriftTest]
+    val sample2 = gen[ThriftTest]
+    val sampleList = Set(sample, sample2)
+
+    val insert = ThriftDatabase.thriftColumnTable.insert
+      .value(_.id, id)
+      .value(_.name, sample.name)
+      .value(_.ref, sample)
+      .value(_.thriftSet, sampleList)
+      .future() flatMap {
+      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+    }
+
+    insert.successful {
+      result => {
+        result.value.struct shouldEqual sample
+        result.value.thriftSet shouldEqual sampleList
+      }
+    }
   }
 }
-
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector

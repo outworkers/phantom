@@ -80,7 +80,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   type JsonListColumn[RR] = com.websudos.phantom.column.JsonListColumn[T, R, RR]
   type JsonMapColumn[KK,VV] = com.websudos.phantom.column.JsonMapColumn[T, R, KK, VV]
 
-  private[phantom] def insertSchema()(
+  def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor

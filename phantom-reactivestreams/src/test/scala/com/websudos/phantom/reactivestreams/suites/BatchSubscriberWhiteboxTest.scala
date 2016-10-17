@@ -29,6 +29,7 @@
  */
 package com.websudos.phantom.reactivestreams.suites
 
+import com.outworkers.phantom.reactivestreams.BatchSubscriber
 import com.websudos.phantom.batch.BatchType
 import com.websudos.phantom.reactivestreams._
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}

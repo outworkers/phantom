@@ -135,4 +135,4 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
 
 }
 
-private[phantom] object QueryBuilder extends QueryBuilder(QueryBuilderConfig.Default)
+object QueryBuilder extends QueryBuilder(QueryBuilderConfig.Default)

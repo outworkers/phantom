@@ -27,42 +27,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.jdk8
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import com.websudos.phantom.dsl.CassandraTable
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+package object dsl extends DefaultJava8Primitives {
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+  type OffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
 
+  type ZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
+  type JdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
-  }
+  type OptionalOffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  type OptionalZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
+
+  type OptionalJdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
+
+  type OffsetDateTime = java.time.OffsetDateTime
+  type ZonedDateTime = java.time.ZonedDateTime
+  type JdkLocalDate = java.time.LocalDate
+
 }
-
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector

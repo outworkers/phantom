@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2016 Websudos, Limited.
  *
  * All rights reserved.
  *
@@ -27,42 +27,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.suites
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import com.outworkers.phantom.tables.ThriftDatabase
+import com.outworkers.util.testing._
+import org.scalatest.concurrent.PatienceConfiguration
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+import scala.concurrent.duration._
+import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
-
-
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
-
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
-  }
+trait ThriftTestSuite extends Suite
+  with BeforeAndAfterAll
+  with Matchers
+  with OptionValues
+  with ThriftDatabase.connector.Connector {
+  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 }
-
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector

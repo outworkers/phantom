@@ -27,42 +27,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+package com.outworkers.phantom.thrift
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+import com.websudos.phantom.CassandraTable
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+package object columns {
+  type ThriftStruct = com.twitter.scrooge.ThriftStruct
+  type ThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftColumn[T, R, Model]
+  type ThriftSetColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
+  type ThriftListColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftListColumn[T, R, Model]
+  type ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
 
+  type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
-
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
-  }
+  type ThriftPrimitive[T <: ThriftStruct] = RootThriftPrimitive[T]
 }
 
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
+
+

@@ -27,42 +27,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.thrift
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import java.util.UUID
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+import com.outworkers.phantom.tables.Output
+import com.outworkers.util.testing._
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+package object suites {
 
+  type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
+  implicit object OutputSample extends Sample[Output] {
+    def sample: Output = {
+      Output(
+        id = gen[UUID],
+        name = gen[String],
+        struct = gen[ThriftTest],
+        thriftSet = genList[ThriftTest]().toSet[ThriftTest],
+        thriftList = genList[ThriftTest](),
+        thriftMap = genList[ThriftTest]().map {
+          item => (item.toString, item)
+        }.toMap,
+        optThrift = genOpt[ThriftTest]
+      )
     }
   }
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
+  implicit object ThriftTestSample extends Sample[ThriftTest] {
+    def sample: ThriftTest = ThriftTest(
+      gen[Int],
+      gen[String],
+      test = false
     )
   }
-}
 
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
+}

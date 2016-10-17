@@ -27,42 +27,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.jdk8.tables
 
-import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
-
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
-
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
+import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
+import com.websudos.phantom.database.Database
 
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
+class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
-  }
+  object primitivesJdk8 extends ConcretePrimitivesJdk8 with connector.Connector
+
+  object optionalPrimitivesJdk8 extends ConcreteOptionalPrimitivesJdk8 with connector.Connector
+
 }
 
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
+object TestDatabase extends TestDatabase(ContactPoint.local.keySpace("phantom"))

@@ -27,42 +27,48 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.jdk8
 
-import com.twitter.scrooge.CompactThriftSerializer
+import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import com.outworkers.phantom.jdk8.tables.{Jdk8Row, TestDatabase, _}
+import com.outworkers.util.testing._
 
-// Sample model here comes from the Thrift struct definition.
-// The IDL is available in phantom-example/src/main/thrift.
-case class SampleRecord(
-  stuff: String,
-  someList: List[String],
-  thriftModel: SampleModel
-)
+class Jdk8TimeColumnsTest extends PhantomSuite {
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
-
-
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
-  // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    if (session.v4orNewer) {
+      TestDatabase.primitivesJdk8.insertSchema()
+      TestDatabase.optionalPrimitivesJdk8.insertSchema()
     }
   }
 
-  def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
+  if (session.v4orNewer) {
+    it should "correctly insert and extract java.time columns" in {
+      val row = gen[Jdk8Row]
+
+      val chain = for {
+        store <- TestDatabase.primitivesJdk8.store(row).future()
+        select <- TestDatabase.primitivesJdk8.select.where(_.pkey eqs row.pkey).one()
+      } yield select
+
+      chain successful {
+        res => res.value shouldEqual row
+      }
+    }
+
+    it should "correctly insert and extract optional java.time columns" in {
+      val row = gen[OptionalJdk8Row]
+
+      val chain = for {
+        store <- TestDatabase.optionalPrimitivesJdk8.store(row).future()
+        select <- TestDatabase.optionalPrimitivesJdk8.select.where(_.pkey eqs row.pkey).one()
+      } yield select
+
+      chain successful {
+        res => res.value shouldEqual row
+      }
+    }
   }
 }
-
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector
