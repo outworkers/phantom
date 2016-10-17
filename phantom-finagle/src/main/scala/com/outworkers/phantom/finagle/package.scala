@@ -36,14 +36,14 @@ import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util._
-import com.websudos.phantom.Manager
+import com.outworkers.phantom.Manager
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
@@ -86,8 +86,8 @@ package object finagle {
       * Produces a Twitter Spool of [R]ows
       * This enumerator can be consumed afterwards with an Iteratee
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return
       */
@@ -110,8 +110,8 @@ package object finagle {
       * all operations(map, flatMap) that originate on a Twitter Future obtained as the result of a database
       * call will execute inside [[Manager.executor]].
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return
       */
@@ -130,8 +130,8 @@ package object finagle {
       * database calls.
       *
       * @param modifyStatement The function allowing to modify underlying [[Statement]]
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return
       */
@@ -171,8 +171,8 @@ package object finagle {
       * A spool is both lazily constructed and consumed, suitable for large
       * collections when using twitter futures.
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Spool of R.
       */
@@ -187,8 +187,8 @@ package object finagle {
       * Returns a parsed sequence of [R]ows
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -200,8 +200,8 @@ package object finagle {
       * Returns a parsed sequence of rows after the generated statement is modified by the modifier function.
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -217,8 +217,8 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -234,8 +234,8 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -247,8 +247,8 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -264,8 +264,8 @@ package object finagle {
       * Returns a parsed sequence of [R]ows together with a result set.
       * This is not suitable for big results set
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -285,8 +285,8 @@ package object finagle {
       * This is not suitable for big results set
       *
       * @param state An optional paging state that will be added only if the state is defined.
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -371,8 +371,8 @@ package object finagle {
     /**
       * Returns the first row from the select ignoring everything else
       * This will always use a LIMIT 1 in the Cassandra query.
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param ev The implicit limit for the query.
       * @param executor The implicit Java executor.
       * @return
@@ -471,8 +471,8 @@ package object finagle {
     /**
       * Get the result of an operation as a Twitter Future.
       *
-      * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param ev The implicit limit for the query.
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping the result.

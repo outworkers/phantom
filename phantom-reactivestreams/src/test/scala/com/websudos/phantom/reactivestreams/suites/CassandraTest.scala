@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.outworkers.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
 import com.outworkers.phantom.connectors.RootConnector

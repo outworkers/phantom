@@ -35,7 +35,7 @@ import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.finagle._
+import com.outworkers.phantom.finagle._
 import org.scalatest.FlatSpec
 
 class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {

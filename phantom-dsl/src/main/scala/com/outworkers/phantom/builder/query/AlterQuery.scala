@@ -34,7 +34,7 @@ import com.outworkers.phantom.builder.ops.DropColumn
 import com.outworkers.phantom.builder.query.options.{TablePropertyClause, WithBound, WithChainned, WithUnchainned}
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.outworkers.phantom.column.AbstractColumn
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 

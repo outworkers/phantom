@@ -30,13 +30,13 @@
 package com.outworkers.phantom.example.advanced
 
 import com.outworkers.phantom.connectors
-import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.KeySpaceDef
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics._
 
 import scala.concurrent.{Future => ScalaFuture}
 
-// In this section, we will show how you can create a real-world Cassandra service with com.websudos.phantom.
+// In this section, we will show how you can create a real-world Cassandra service with com.outworkers.phantom.
 // First you have to think of what queries you need to perform. The usual.
 // Say you come up with id and author.
 

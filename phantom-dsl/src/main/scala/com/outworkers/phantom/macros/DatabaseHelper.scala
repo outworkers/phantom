@@ -32,7 +32,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 import scala.reflect.macros.blackbox
 
@@ -50,7 +50,7 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
-  val keySpaceTpe = tq"com.websudos.phantom.connectors.KeySpace"
+  val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]

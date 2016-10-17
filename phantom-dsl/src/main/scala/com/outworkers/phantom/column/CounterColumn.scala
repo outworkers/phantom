@@ -34,7 +34,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.keys.Unmodifiable
+import com.outworkers.phantom.keys.Unmodifiable
 
 import scala.util.Try
 

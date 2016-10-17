@@ -33,7 +33,7 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
 
 sealed abstract class CacheProperty(val qb: CQLQuery) extends TablePropertyClause

@@ -27,12 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites.iteratee
+package com.outworkers.phantom.reactivestreams.suites.iteratee
 
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.outworkers.phantom.PhantomSuite
-import com.websudos.phantom.reactivestreams._
+import com.outworkers.phantom.reactivestreams._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.outworkers.phantom.dsl._

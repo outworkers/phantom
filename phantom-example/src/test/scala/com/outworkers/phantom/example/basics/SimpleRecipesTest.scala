@@ -29,7 +29,7 @@
  */
 package com.outworkers.phantom.example.basics
 
-import com.websudos.phantom.example.ExampleSuite
+import com.outworkers.phantom.example.ExampleSuite
 import org.scalatest.FlatSpec
 
 class SimpleRecipesTest extends FlatSpec with ExampleSuite {

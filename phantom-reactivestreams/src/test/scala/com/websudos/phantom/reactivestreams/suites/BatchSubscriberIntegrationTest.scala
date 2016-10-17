@@ -27,14 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.outworkers.phantom.reactivestreams.suites
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import com.outworkers.phantom.batch.BatchType
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
-import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
+import com.outworkers.phantom.reactivestreams._
+import com.outworkers.phantom.reactivestreams.suites.iteratee.OperaPublisher
 import org.scalatest.{FlatSpec, Retries}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.tagobjects.Retryable

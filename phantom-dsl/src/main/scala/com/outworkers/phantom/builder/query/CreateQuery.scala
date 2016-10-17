@@ -34,8 +34,8 @@ import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.{CassandraTable, Manager}
+import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.{CassandraTable, Manager}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}

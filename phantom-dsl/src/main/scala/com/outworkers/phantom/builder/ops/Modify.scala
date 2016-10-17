@@ -36,7 +36,7 @@ import com.outworkers.phantom.builder.clauses.{PreparedWhereClause, UpdateClause
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column._
-import com.websudos.phantom.keys._
+import com.outworkers.phantom.keys._
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound

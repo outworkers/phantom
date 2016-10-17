@@ -27,10 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites.iteratee
+package com.outworkers.phantom.reactivestreams.suites.iteratee
 
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
+import com.outworkers.phantom.reactivestreams._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}

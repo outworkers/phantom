@@ -39,7 +39,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
-import com.websudos.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.DateTime
 import shapeless.{=:!=, HList}
 

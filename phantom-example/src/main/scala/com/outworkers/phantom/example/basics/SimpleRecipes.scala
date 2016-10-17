@@ -36,12 +36,12 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ResultSet, Row}
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.reactivestreams._
+import com.outworkers.phantom.reactivestreams._
 import com.twitter.conversions.time._
 
 /**
  * In this example we will create a simple table storing recipes.
- * Data modeling with com.websudos.phantom is trivial and covers some of the more advanced features of Cassandra.
+ * Data modeling with com.outworkers.phantom is trivial and covers some of the more advanced features of Cassandra.
  *
  * Phantom will auto-generate the CQL3 table definition from your Scala code.
  * And you can automatically insert the schema during tests or even live environments.
@@ -131,7 +131,7 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
     select.where(_.id eqs id).one()
   }
 
-  // com.websudos.phantom allows partial selects from any query.
+  // com.outworkers.phantom allows partial selects from any query.
   // this is currently limited to 22 fields.
   def findRecipeIngredients(id: UUID): ScalaFuture[Option[Set[String]]] = {
     select(_.ingredients).where(_.id eqs id).one()

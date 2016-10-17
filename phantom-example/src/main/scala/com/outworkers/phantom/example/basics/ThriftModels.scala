@@ -32,7 +32,7 @@ package com.outworkers.phantom.example.basics
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.thrift._
+import com.outworkers.phantom.thrift._
 import com.outworkers.phantom.thrift.columns.ThriftColumn
 
 // Sample model here comes from the Thrift struct definition.
@@ -49,7 +49,7 @@ sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleReco
   object someList extends ListColumn[String](this)
 
 
-  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
+  // As you can see, com.outworkers.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.
   object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
     def serializer = new CompactThriftSerializer[SampleModel] {

@@ -34,7 +34,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.twitter.util.{Future => TwitterFuture}
 import com.outworkers.phantom.builder.query.db.ordering.TimeSeriesTest._
 import com.outworkers.phantom.builder.query.prepared._
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._

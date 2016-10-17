@@ -35,7 +35,7 @@ import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound,
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.prepared.PreparedSelectBlock
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
@@ -280,8 +280,8 @@ class SelectQuery[
 
   /**
    * Returns the first row from the select ignoring everything else
-   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.

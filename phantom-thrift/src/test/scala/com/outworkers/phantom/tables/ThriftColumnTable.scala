@@ -36,7 +36,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.builder.query.InsertQuery
-import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.KeySpaceDef
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 

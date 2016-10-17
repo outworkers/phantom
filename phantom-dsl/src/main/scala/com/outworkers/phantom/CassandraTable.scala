@@ -33,8 +33,9 @@ import com.datastax.driver.core.{Row, Session}
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
-import com.websudos.phantom.macros.TableHelper
+import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._

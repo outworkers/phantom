@@ -105,7 +105,7 @@ Let's have a look at a basic example, for the basic `Recipe` case class, in this
 
 ```scala
 
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 
 case class Recipe(
   url: String,

@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.outworkers.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
@@ -36,8 +36,6 @@ import java.util.{Date, Random}
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
-import com.outworkers.phantom.Manager
-import com.outworkers.phantom.connectors.{ContactPoint, ContactPoints, DefaultVersions, RootConnector}
 import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
@@ -49,7 +47,7 @@ import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.column.extractors.FromRow.RowParser
-import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.connectors.DefaultVersions
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
@@ -127,9 +125,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Row = com.datastax.driver.core.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
-  type KeySpace = com.websudos.phantom.connectors.KeySpace
-  val KeySpace = com.websudos.phantom.connectors.KeySpace
-  type RootConnector = RootConnector
+  type KeySpace = com.outworkers.phantom.connectors.KeySpace
+  val KeySpace = com.outworkers.phantom.connectors.KeySpace
+  type RootConnector = com.outworkers.phantom.connectors.RootConnector
 
   val Version = DefaultVersions
 
@@ -155,9 +153,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val SERIAL = CLevel.SERIAL
   }
 
-  type KeySpaceDef = com.websudos.phantom.connectors.KeySpaceDef
-  val ContactPoint = ContactPoint
-  val ContactPoints = ContactPoints
+  type KeySpaceDef = com.outworkers.phantom.connectors.KeySpaceDef
+  val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
+  val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
     def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)

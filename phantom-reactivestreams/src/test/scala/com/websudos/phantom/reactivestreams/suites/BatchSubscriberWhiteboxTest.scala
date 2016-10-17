@@ -27,11 +27,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.outworkers.phantom.reactivestreams.suites
 
 import com.outworkers.phantom.reactivestreams.BatchSubscriber
 import com.outworkers.phantom.batch.BatchType
-import com.websudos.phantom.reactivestreams._
+import com.outworkers.phantom.reactivestreams._
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}
 import org.reactivestreams.tck.{SubscriberWhiteboxVerification, TestEnvironment}
 import org.reactivestreams.{Subscriber, Subscription}

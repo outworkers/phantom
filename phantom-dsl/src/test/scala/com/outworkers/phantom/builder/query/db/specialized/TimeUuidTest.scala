@@ -31,7 +31,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
-import com.websudos.phantom.{com, dsl, outworkers, phantom}
+import com.outworkers.phantom.{com, dsl, outworkers, phantom}
 import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import org.joda.time.{DateTime, DateTimeZone}
 import com.outworkers.util.testing._

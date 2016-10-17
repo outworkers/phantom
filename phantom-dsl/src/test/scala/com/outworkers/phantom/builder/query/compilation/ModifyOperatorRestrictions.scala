@@ -29,7 +29,7 @@
  */
 package com.outworkers.phantom.builder.query.compilation
 
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.testing._

@@ -33,7 +33,7 @@ import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.{Generic, HList}
 import shapeless.ops.hlist.Tupler
@@ -77,8 +77,8 @@ Limit <: LimitBound
 
   /**
     * Returns the first row from the select ignoring everything else
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
     * @param ec The implicit Scala execution context.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.

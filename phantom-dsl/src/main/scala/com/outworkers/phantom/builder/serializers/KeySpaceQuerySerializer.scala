@@ -33,7 +33,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.{CQLQuery, OptionPart}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 private object Strategies {
   final val networkTopology = "NetworkTopologyStrategy"

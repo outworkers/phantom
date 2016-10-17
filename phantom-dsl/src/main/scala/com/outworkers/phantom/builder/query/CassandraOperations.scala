@@ -32,7 +32,7 @@ package com.outworkers.phantom.builder.query
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.outworkers.phantom.Manager
-import com.websudos.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture, Promise => ScalaPromise}
 

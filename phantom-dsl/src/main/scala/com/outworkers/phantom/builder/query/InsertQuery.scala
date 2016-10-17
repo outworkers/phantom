@@ -36,7 +36,7 @@ import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.?
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}

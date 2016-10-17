@@ -34,7 +34,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}

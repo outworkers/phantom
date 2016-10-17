@@ -43,7 +43,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // you can't really use a SecondaryKey for multi-billion record databases.
 
 // Instead, you create mapping tables and ensure consistency from the application level.
-// This will illustrate just how easy it is to do that with com.websudos.phantom.
+// This will illustrate just how easy it is to do that with com.outworkers.phantom.
 sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
 
   // In this table, the author will be PrimaryKey and PartitionKey.

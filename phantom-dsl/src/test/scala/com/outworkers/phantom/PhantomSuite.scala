@@ -31,6 +31,7 @@ package com.outworkers.phantom
 
 import java.util.concurrent.TimeUnit
 
+import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import com.outworkers.phantom.tables.TestDatabase

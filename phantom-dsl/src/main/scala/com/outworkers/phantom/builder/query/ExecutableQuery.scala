@@ -34,7 +34,7 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
@@ -72,12 +72,12 @@ trait ExecutableStatement extends CassandraOperations {
     * database end.
     *
     * The execution context of the transformation is provided by phantom via
-    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * [[com.outworkers.phantom.Manager.scalaExecutor]] and it is recommended to
     * use [[com.outworkers.phantom.dsl.context]] for operations that chain
     * database calls.
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return An asynchronous Scala future wrapping the Datastax result set.
     */
@@ -95,13 +95,13 @@ trait ExecutableStatement extends CassandraOperations {
     * database end.
     *
     * The execution context of the transformation is provided by phantom via
-    * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
+    * [[com.outworkers.phantom.Manager.scalaExecutor]] and it is recommended to
     * use [[com.outworkers.phantom.dsl.context]] for operations that chain
     * database calls.
     *
     * @param modifyStatement The function allowing to modify underlying [[Statement]]
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param executor The implicit Scala executor.
     * @return An asynchronous Scala future wrapping the Datastax result set.
     */
@@ -183,8 +183,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   /**
    * Returns the first row from the select ignoring everything else
    *
-   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
@@ -200,8 +200,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
    * Returns a parsed sequence of [R]ows
    * This is not suitable for big results set
    *
-   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ec The implicit Scala execution context.
    * @return A Scala future wrapping a list of mapped results.
    */
@@ -217,8 +217,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
@@ -236,8 +236,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
@@ -255,8 +255,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
@@ -272,8 +272,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
@@ -303,8 +303,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * Returns a parsed sequence of [R]ows
     * This is not suitable for big results set
     *
-    * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
@@ -321,8 +321,8 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   /**
    * Returns a parsed iterator of [R]ows
    *
-   * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
+   * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ec The implicit Scala execution context.
    * @return A Scala future wrapping scala iterator of mapped results.
    */

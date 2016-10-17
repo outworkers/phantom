@@ -36,7 +36,7 @@ import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.query.prepared.PreparedBlock
 import com.outworkers.phantom.column.AbstractColumn
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}

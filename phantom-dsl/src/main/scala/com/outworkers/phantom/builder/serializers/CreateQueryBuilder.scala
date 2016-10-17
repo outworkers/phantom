@@ -33,7 +33,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 sealed trait CreateOptionsBuilder {
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {

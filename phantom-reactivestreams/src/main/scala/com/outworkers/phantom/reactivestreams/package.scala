@@ -33,9 +33,10 @@ import akka.actor.ActorSystem
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.batch.BatchType
 import com.outworkers.phantom.builder.LimitBound
-import com.outworkers.phantom.builder.query.ExecutableQuery
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _}
+import com.outworkers.phantom.reactivestreams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams

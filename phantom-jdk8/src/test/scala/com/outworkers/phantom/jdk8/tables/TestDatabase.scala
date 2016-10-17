@@ -31,7 +31,7 @@ package com.outworkers.phantom.jdk8.tables
 
 import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
-import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.KeySpaceDef
 import com.outworkers.phantom.database.Database
 
 

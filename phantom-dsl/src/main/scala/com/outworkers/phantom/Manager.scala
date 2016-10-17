@@ -12,7 +12,7 @@ object Manager {
 
   implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
 
-  lazy val logger = LoggerFactory.getLogger("com.websudos.phantom")
+  lazy val logger = LoggerFactory.getLogger("com.outworkers.phantom")
 
   /**
     * Shuts down the default task executors for Guava ListenableFutures and for Scala Futures.

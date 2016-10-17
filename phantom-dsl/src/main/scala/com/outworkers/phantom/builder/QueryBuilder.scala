@@ -32,7 +32,7 @@ package com.outworkers.phantom.builder
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.serializers._
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 case class QueryBuilderConfig(caseSensitiveTables: Boolean)
 

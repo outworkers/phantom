@@ -31,7 +31,7 @@ package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
-import com.websudos.phantom.finagle._
+import com.outworkers.phantom.finagle._
 import com.outworkers.util.testing._
 import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._

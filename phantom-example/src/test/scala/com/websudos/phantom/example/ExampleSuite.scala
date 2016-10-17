@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example
+package com.outworkers.phantom.example
 
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.Manager._

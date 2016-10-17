@@ -33,7 +33,7 @@ import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}

@@ -34,12 +34,36 @@ import com.outworkers.phantom.CassandraTable
 
 package object columns {
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
-  type ThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftColumn[T, R, Model]
-  type ThriftSetColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
-  type ThriftListColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftListColumn[T, R, Model]
-  type ThriftMapColumn[T <: CassandraTable[T, R], R, KeyType, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
 
-  type OptionalThriftColumn[T <: CassandraTable[T, R], R, Model <: ThriftStruct] = com.outworkers.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
+  type ThriftColumn[
+    T <: CassandraTable[T, R],
+    R, Model <: ThriftStruct
+  ] = com.outworkers.phantom.thrift.columns.ThriftColumn[T, R, Model]
+
+  type ThriftSetColumn[
+    T <: CassandraTable[T, R],
+    R,
+    Model <: ThriftStruct
+  ] = com.outworkers.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
+
+  type ThriftListColumn[
+    T <: CassandraTable[T, R],
+    R,
+    Model <: ThriftStruct
+  ] = com.outworkers.phantom.thrift.columns.ThriftListColumn[T, R, Model]
+
+  type ThriftMapColumn[
+    T <: CassandraTable[T, R],
+    R,
+    KeyType,
+    Model <: ThriftStruct
+  ] = com.outworkers.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
+
+  type OptionalThriftColumn[
+    T <: CassandraTable[T, R],
+    R,
+    Model <: ThriftStruct
+  ] = com.outworkers.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 
   type ThriftPrimitive[T <: ThriftStruct] = RootThriftPrimitive[T]
 }

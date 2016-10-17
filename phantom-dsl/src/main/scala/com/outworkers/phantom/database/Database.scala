@@ -31,10 +31,10 @@ package com.outworkers.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
-import com.websudos.phantom.CassandraTable
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
-import com.websudos.phantom.connectors.{KeySpace, KeySpaceDef}
-import com.websudos.phantom.macros.DatabaseHelper
+import com.outworkers.phantom.connectors.{KeySpace, KeySpaceDef}
+import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
