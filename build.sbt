@@ -109,7 +109,7 @@ lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
-  organization := "com.websudos",
+  organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
@@ -149,7 +149,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   },
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
-  testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
+  testOptions in PerformanceTest := Seq(Tests.Filter(performanceFilter)),
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
