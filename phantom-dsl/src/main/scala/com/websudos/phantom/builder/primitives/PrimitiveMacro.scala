@@ -64,6 +64,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val cql = q"com.websudos.phantom.builder.query.CQLQuery"
   val syntax = q"com.websudos.phantom.builder.syntax.CQLSyntax"
 
+  val prefix = q"com.websudos.phantom.builder.primitives"
+
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
 
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
@@ -123,7 +125,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     c.Expr[Primitive[T]](tree)
   }
 
-  def primitive(nm: String): Tree = q"new com.websudos.phantom.builder.primitives.Primitives.${TypeName(nm)}"
+  def primitive(nm: String): Tree = q"new $prefix.Primitives.${TypeName(nm)}"
 
   val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
 
@@ -166,7 +168,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     innerTpe match {
       case Some(inner) => {
-        q"""com.websudos.phantom.builder.primitives.Primitives.list[$inner]"""
+        q"""$prefix.Primitives.list[$inner]"""
       }
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
@@ -180,7 +182,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     (keyTpe, valueType) match {
       case (Some(key), Some(value)) => {
-        q"""com.websudos.phantom.builder.primitives.Primitives.map[$key, $value]"""
+        q"""$prefix.Primitives.map[$key, $value]"""
       }
       case _ => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
@@ -193,7 +195,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     innerTpe match {
       case Some(inner) => {
-        q"""com.websudos.phantom.builder.primitives.Primitives.set[$inner]"""
+        q"""$prefix.Primitives.set[$inner]"""
       }
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
@@ -203,8 +205,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val tpe = tag.tpe
     val comp = c.parse(s"${tag.tpe.toString.replace("#Value", "")}")
 
-    q""" new com.websudos.phantom.builder.primitives.Primitive[$tpe] {
-      val strP = implicitly[com.websudos.phantom.builder.primitives.Primitive[String]]
+    q""" new $prefix.Primitive[$tpe] {
+      val strP = implicitly[$prefix.Primitive[$strType]]
 
       override type PrimitiveType = java.lang.String
 
@@ -219,12 +221,12 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         }
       }
 
-      override def asCql(value: $tpe): String = {
+      override def asCql(value: $tpe): $strType = {
         strP.asCql(value.toString)
       }
 
       override def fromString(value: $strType): $tpe = {
-        $comp.values.find(value == _.toString).getOrElse(None.orNull)
+        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
       }
 
       override def clz: Class[$strType] = classOf[$strType]

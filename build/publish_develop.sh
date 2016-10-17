@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/2.0.0" ]);
 then
 
     if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
@@ -71,16 +71,22 @@ then
         echo "Publishing new version to bintray"
         sbt +bintray:publish
 
-        echo "Creating GPG deploy key"
-        openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+        if [ "$TRAVIS_BRANCH" == "develop" ];
+        then
+            echo "Creating GPG deploy key"
+            openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-        echo "importing GPG key to local GBP repo"
-        gpg --fast-import build/deploy.asc
+            echo "importing GPG key to local GBP repo"
+            gpg --fast-import build/deploy.asc
 
-        echo "Setting MAVEN_PUBLISH mode to true"
-        export MAVEN_PUBLISH="true"
-        export pgp_passphrase=${maven_password}
-        sbt +publishSigned sonatypeReleaseAll
+            echo "Setting MAVEN_PUBLISH mode to true"
+            export MAVEN_PUBLISH="true"
+            export pgp_passphrase=${maven_password}
+            sbt +publishSigned sonatypeReleaseAll
+            exit $?
+        else
+            echo "Not deploying to Maven Central, branch is not develop"
+        fi
 
     else
         echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"
