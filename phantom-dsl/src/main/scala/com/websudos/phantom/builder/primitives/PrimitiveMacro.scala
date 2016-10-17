@@ -117,7 +117,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.listSymbol => listPrimitive[T]()
       case Symbols.setSymbol => setPrimitive[T]()
       case Symbols.mapSymbol => mapPrimitive[T]()
-      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implemention for $tpe")
+      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
     c.Expr[Primitive[T]](tree)
