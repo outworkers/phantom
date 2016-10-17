@@ -256,13 +256,14 @@ play-streams somewhere else in you app, otherwise it makes little sense to not s
 much impossible to build Thrift services without a dependency on Thrift itself, so in that respect it is highly
 unlikely that using those extra modules will end up bringing in more dependencies than you already have.
 
-- The one place where phantom sucks is the dependency on `scala-reflect`, which is causing some ugly things inside the 
+- The one place where phantom used to suck is the dependency on `scala-reflect`, which is causing some ugly things inside the 
 framework, namely the need for global locks to make reflection thread safe in the presence of multiple class loaders. This 
-is however going away in 2.0.0, and we are replacing `scala-reflect` with a macro based approach.
+is however going away in 2.0.0, already available on `feature/2.0.0`, and we are replacing `scala-reflect` with a macro based approach.
  
 - The only notable dependencies of phantom are `shapeless` and `cassandra-driver-core`, the latter of which you will have
 inevitably. Shapeless is also quite light and compile time, it depends only on macro libraries such as `macro-compat`. You
-can have a look yourself [here](https://github.com/milessabin/shapeless).
+can have a look yourself [here](https://github.com/milessabin/shapeless). We also depend on an internal engine called the
+diesel engine, which itself only depends on `macro-compat`, since it's nothing more than a customised macro toolchain.
 
 #### Documentation and commercial support
 

@@ -135,7 +135,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback,
+    "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
@@ -216,8 +216,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
+    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test
   )
 ).dependsOn(
   phantomConnectors
