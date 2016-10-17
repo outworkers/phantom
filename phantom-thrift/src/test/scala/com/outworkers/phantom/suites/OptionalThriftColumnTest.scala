@@ -32,12 +32,14 @@ package com.outworkers.phantom.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-class OptionalThriftColumnTest extends FlatSpec with OptionValues with Matchers with BeforeAndAfterAll with ThriftDatabase.connector.Connector {
+class OptionalThriftColumnTest extends FlatSpec
+  with OptionValues with Matchers with BeforeAndAfterAll with ThriftDatabase.connector.Connector {
 
   override def beforeAll(): Unit = {
     ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)

@@ -28,11 +28,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.outworkers.phantom.thrift
+package com.outworkers.phantom
 
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.thrift.columns.RootThriftPrimitive
 
-package object columns {
+package object thrift {
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
 
   type ThriftColumn[

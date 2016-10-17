@@ -31,6 +31,7 @@ package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration
@@ -147,7 +148,10 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet removeAll Set(sample2, sample3)).future()
+      update <- ThriftDatabase
+        .thriftColumnTable.update.where(_.id eqs id)
+        .modify(_.thriftSet removeAll Set(sample2, sample3))
+        .future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield {
       select

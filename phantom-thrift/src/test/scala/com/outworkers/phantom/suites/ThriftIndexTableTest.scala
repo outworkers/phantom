@@ -30,12 +30,12 @@
 package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.{Output, ThriftDatabase}
-import com.outworkers.phantom.thrift.columns.ThriftPrimitive
 import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
+import com.outworkers.phantom.thrift.ThriftPrimitive
 import org.scalatest.FlatSpec
 
 class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {

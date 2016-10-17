@@ -39,6 +39,8 @@ import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.connectors.KeySpaceDef
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift._
+import com.outworkers.phantom.thrift.suites.ThriftTest
 
 case class Output(
   id: UUID,
