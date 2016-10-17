@@ -27,45 +27,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.advanced
+package com.outworkers.phantom.example.basics
 
-import java.util.UUID
-
-import com.datastax.driver.core.{ResultSet, Row}
+import com.twitter.scrooge.CompactThriftSerializer
 import com.websudos.phantom.dsl._
+import com.websudos.phantom.thrift._
+import com.outworkers.phantom.thrift.columns.ThriftColumn
 
-import scala.concurrent.{Future => ScalaFuture}
+// Sample model here comes from the Thrift struct definition.
+// The IDL is available in phantom-example/src/main/thrift.
+case class SampleRecord(
+  stuff: String,
+  someList: List[String],
+  thriftModel: SampleModel
+)
+
+sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object stuff extends StringColumn(this)
+  object someList extends ListColumn[String](this)
 
 
-// Now you want to enable querying Recipes by author.
-// Because of the massive performance overhead of filtering,
-// you can't really use a SecondaryKey for multi-billion record databases.
+  // As you can see, com.websudos.phantom will use a compact Thrift serializer.
+  // And store the records as strings in Cassandra.
+  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
+    def serializer = new CompactThriftSerializer[SampleModel] {
+      override def codec = SampleModel
+    }
+  }
 
-// Instead, you create mapping tables and ensure consistency from the application level.
-// This will illustrate just how easy it is to do that with com.websudos.phantom.
-sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
-
-  // In this table, the author will be PrimaryKey and PartitionKey.
-  object title extends StringColumn(this) with PartitionKey[String]
-
-  // The id is just another normal field.
-  object id extends UUIDColumn(this)
-
-  def fromRow(row: Row): (String, UUID) = {
-    Tuple2(title(row), id(row))
+  def fromRow(r: Row): SampleRecord = {
+    SampleRecord(
+      stuff = stuff(r),
+      someList = someList(r),
+      thriftModel = thriftModel(r)
+    )
   }
 }
 
-abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
-  override lazy val tableName = "recipes_by_title"
-
-  def insertRecipe(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
-    insert.value(_.title, recipe._1).value(_.id, recipe._2).future()
-  }
-
-  // now you can have the tile in a where clause
-  // without the performance impact of a secondary index.
-  def findRecipeByTitle(title: String): ScalaFuture[Option[(String, UUID)]] = {
-    select.where(_.title eqs title).one()
-  }
-}
+abstract class ConcreteThriftTable extends ThriftTable with RootConnector

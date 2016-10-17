@@ -27,17 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.advanced
+package com.outworkers.phantom.example.basics
 
 import java.util.UUID
-
-import com.datastax.driver.core.{ResultSet, Row}
-import com.twitter.conversions.time._
+import scala.concurrent.{ Future => ScalaFuture }
+import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.example.basics.Recipe
-import org.joda.time.DateTime
-
-import scala.concurrent.{Future => ScalaFuture}
 
 /**
  * In this example we will create a  table storing recipes.
@@ -47,7 +42,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
+sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey[UUID] {
     // You can override the name of your key to whatever you like.
@@ -55,7 +50,10 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
     override lazy  val name = "the_primary_key"
   }
 
-  object name extends StringColumn(this)
+  // Now we define a column for each field in our case class.
+  // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
+  object name extends StringColumn(this) with PrimaryKey[String] // and you're done
+
 
   object title extends StringColumn(this)
   object author extends StringColumn(this)
@@ -65,7 +63,7 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
   // Cassandra collections target a small number of items, but usage is trivial.
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime]
+  object timestamp extends DateTimeColumn(this)
 
   // Now the mapping function, transforming a row into a custom type.
   // This is a bit of boilerplate, but it's one time only and very short.
@@ -84,23 +82,14 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
 }
 
 
-abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnector {
+abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with RootConnector {
 
-  def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert.value(_.id, recipe.id)
-      .value(_.author, recipe.author)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.name, recipe.name)
-      .value(_.props, recipe.props)
-      .value(_.timestamp, recipe.timestamp)
-      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
-      .future()
+  // now you can use composite keys in the normal way.
+  // If you would select only by id,
+  // Cassandra will tell you a part of the primary is missing from the where clause.
+  // Querying by composite keys is trivial using the "and" operator.
+  def findRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
+    select.where(_.id eqs id).and(_.name eqs name).one()
   }
 
-  // Like in the real world, you have now planned your queries ahead.
-  // You know what you can do and what you can't based on the schema limitations.
-  def findById(id: UUID): ScalaFuture[Option[Recipe]] = {
-    select.where(_.id eqs id).one()
-  }
 }

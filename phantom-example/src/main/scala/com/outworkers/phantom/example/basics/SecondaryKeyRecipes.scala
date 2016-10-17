@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.basics
+package com.outworkers.phantom.example.basics
 
 import java.util.UUID
 import scala.concurrent.{ Future => ScalaFuture }

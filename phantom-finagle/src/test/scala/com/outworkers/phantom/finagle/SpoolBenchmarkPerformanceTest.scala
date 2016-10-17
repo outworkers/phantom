@@ -27,57 +27,48 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.finagle
+package com.outworkers.phantom.finagle
 
-import com.datastax.driver.core.{ResultSet, Row}
-import com.twitter.concurrent.Spool
-import com.twitter.util.{FuturePool, Future => TFuture}
+import com.twitter.util.{Await => TwitterAwait}
+import com.websudos.phantom.dsl._
+import com.websudos.phantom.tables.{JodaRow, TestDatabase}
+import com.outworkers.util.testing._
+import org.scalameter.api.{Gen => MeterGen, gen => _, _}
+import org.scalatest.time.SpanSugar._
+import scala.concurrent.{Await, Future}
 
-import scala.collection.JavaConversions._
 
-/**
-  * Wrapper for creating Spools of Rows
-  */
-private[phantom] object ResultSpool {
-  lazy val pool = FuturePool.unboundedPool
+class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
 
-  def loop(head: Row, it: Iterator[Row], rs: ResultSet): Spool[Row] = {
-    lazy val tail =
-      if (rs.isExhausted) {
-        TFuture.value(Spool.empty)
-      } else {
-        val a = rs.getAvailableWithoutFetching
+  TestDatabase.primitivesJoda.insertSchema()
 
-        // 100 is somewhat arbitrary. In practice it might not matter that much
-        // but it should be tested.
-        if (a < 100 && !rs.isFullyFetched) {
-          rs.fetchMoreResults
-        }
+  val fs = for {
+    step <- 1 to 3
+    rows = Iterator.fill(10000)(gen[JodaRow])
 
-        if (a > 0) {
-          TFuture.value(loop(it.next(), it, rs))
-        } else {
-          pool(it.next()).map(x => loop(x, it, rs))
+    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+      val statement = TestDatabase.primitivesJoda.insert
+        .value(_.pkey, row.pkey)
+        .value(_.intColumn, row.intColumn)
+        .value(_.timestamp, row.timestamp)
+      b.add(statement)
+    })
+    w = batch.future()
+    f = w map (_ => println(s"step $step has succeed") )
+    r = Await.result(f, 200 seconds)
+  } yield f map (_ => r)
+
+  Await.ready(Future.sequence(fs), 20 seconds)
+
+  val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
+
+  performance of "ResultSpool" in {
+    measure method "fetchSpool" in {
+      using(sizes) in {
+        size => TwitterAwait.ready {
+          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
         }
       }
-
-    head *:: tail
-  }
-
-  /**
-    * Create a Spool of Rows.
-    *
-    * Things to make sure:
-    *   1) We don't block!
-    *   2) If we don't have anything else to do we submit to the thread pool and
-    *      wait to get called back and chain onto that.
-    */
-  def spool(rs: ResultSet): TFuture[Spool[Row]] = {
-    val it = rs.iterator
-    if (!rs.isExhausted) {
-      pool(it.next).map(x => loop(x, it, rs))
-    } else {
-      TFuture.value(Spool.empty)
     }
   }
 }

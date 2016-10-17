@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom
+package com.outworkers.phantom
 
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
@@ -36,6 +36,7 @@ import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util._
+import com.websudos.phantom.{CassandraTable, Manager}
 import com.websudos.phantom.batch.BatchQuery
 import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.query._

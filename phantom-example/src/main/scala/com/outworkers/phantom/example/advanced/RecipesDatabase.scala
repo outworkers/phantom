@@ -27,11 +27,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.example.advanced
+package com.outworkers.phantom.example.advanced
 
 import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
 import com.websudos.phantom.dsl._
-import com.websudos.phantom.example.basics._
+import com.outworkers.phantom.example.basics._
 
 import scala.concurrent.{Future => ScalaFuture}
 
