@@ -30,8 +30,8 @@
 package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import com.outworkers.util.testing._
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{TestDatabase, TimeUUIDRecord}
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.Future

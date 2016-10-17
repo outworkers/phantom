@@ -30,7 +30,7 @@
 
 package com.outworkers.phantom.thrift
 
-import com.websudos.phantom.CassandraTable
+import com.outworkers.phantom.CassandraTable
 
 package object columns {
   type ThriftStruct = com.twitter.scrooge.ThriftStruct

@@ -29,9 +29,10 @@
  */
 package com.outworkers.phantom.jdk8.tables
 
+import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
-import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.database.Database
+import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.database.Database
 
 
 class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {

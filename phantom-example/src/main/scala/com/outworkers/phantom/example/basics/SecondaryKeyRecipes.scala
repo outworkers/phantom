@@ -30,9 +30,11 @@
 package com.outworkers.phantom.example.basics
 
 import java.util.UUID
-import scala.concurrent.{ Future => ScalaFuture }
+
+import scala.concurrent.{Future => ScalaFuture}
 import com.datastax.driver.core.Row
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.dsl._
 
 /**
  * In this example we will create a table storing recipes with a SecondaryKey.

@@ -34,7 +34,7 @@ import com.outworkers.phantom.thrift.columns.ThriftPrimitive
 import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.finagle._
 import org.scalatest.FlatSpec
 

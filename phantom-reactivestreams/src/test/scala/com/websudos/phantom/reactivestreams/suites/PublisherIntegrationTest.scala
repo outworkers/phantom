@@ -31,7 +31,7 @@ package com.websudos.phantom.reactivestreams.suites
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.outworkers.util.testing._
 import org.reactivestreams.{Subscriber, Subscription}

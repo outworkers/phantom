@@ -32,11 +32,13 @@ package com.outworkers.phantom.tables
 import java.util.UUID
 
 import com.datastax.driver.core.Row
+import com.outworkers.phantom.connectors
+import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.database.Database
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.dsl._
 
 case class Output(
   id: UUID,
@@ -177,4 +179,4 @@ class ThriftDatabase(override val connector: KeySpaceDef) extends Database[Thrif
   object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
 }
 
-object ThriftDatabase extends ThriftDatabase(ContactPoint.local.keySpace("phantom"))
+object ThriftDatabase extends ThriftDatabase(connectors.ContactPoint.local.keySpace("phantom"))

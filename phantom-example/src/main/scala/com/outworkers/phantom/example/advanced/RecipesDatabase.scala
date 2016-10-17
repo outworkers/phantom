@@ -29,8 +29,9 @@
  */
 package com.outworkers.phantom.example.advanced
 
-import com.websudos.phantom.connectors.{ContactPoint, KeySpaceDef}
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.connectors
+import com.websudos.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics._
 
 import scala.concurrent.{Future => ScalaFuture}
@@ -80,4 +81,4 @@ class RecipesDatabase(override val connector: KeySpaceDef) extends Database[Reci
   }
 }
 
-object RecipesDatabase extends RecipesDatabase(ContactPoint.local.keySpace("recipes"))
+object RecipesDatabase extends RecipesDatabase(connectors.ContactPoint.local.keySpace("recipes"))

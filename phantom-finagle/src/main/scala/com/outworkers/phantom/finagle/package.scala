@@ -36,15 +36,15 @@ import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util._
-import com.websudos.phantom.{CassandraTable, Manager}
-import com.websudos.phantom.batch.BatchQuery
-import com.websudos.phantom.builder._
-import com.websudos.phantom.builder.query._
-import com.websudos.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
-import com.websudos.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.websudos.phantom.Manager
+import com.outworkers.phantom.batch.BatchQuery
+import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
+import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.database.ExecutableCreateStatementsList
+import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
 
@@ -108,7 +108,7 @@ package object finagle {
       * Unlike Scala Futures, Twitter Futures and operations on them do not require an implicit context.
       * Instead, the context propagates from one future to another inside a flatMap chain which means
       * all operations(map, flatMap) that originate on a Twitter Future obtained as the result of a database
-      * call will execute inside [[com.websudos.phantom.Manager.executor]].
+      * call will execute inside [[Manager.executor]].
       *
       * @param session The implicit session provided by a [[com.websudos.phantom.connectors.Connector]].
       * @param keySpace The implicit keySpace definition provided by a [[com.websudos.phantom.connectors.Connector]].
@@ -125,8 +125,8 @@ package object finagle {
       * database end.
       *
       * The execution context of the transformation is provided by phantom via
-      * [[com.websudos.phantom.Manager.scalaExecutor]] and it is recommended to
-      * use [[com.websudos.phantom.dsl.context]] for operations that chain
+      * [[Manager.scalaExecutor]] and it is recommended to
+      * use [[com.outworkers.phantom.dsl.context]] for operations that chain
       * database calls.
       *
       * @param modifyStatement The function allowing to modify underlying [[Statement]]

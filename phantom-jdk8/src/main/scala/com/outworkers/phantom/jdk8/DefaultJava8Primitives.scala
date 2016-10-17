@@ -34,9 +34,9 @@ import java.util.Date
 
 import com.datastax.driver.core.GettableData
 import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import scala.util.Try
 
 trait DefaultJava8Primitives {

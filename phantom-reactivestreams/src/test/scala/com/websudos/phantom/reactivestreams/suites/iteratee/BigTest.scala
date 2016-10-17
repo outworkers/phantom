@@ -30,8 +30,8 @@
 package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
-import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.connectors.ContactPoint
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.connectors.ContactPoint
 
 trait BigTest extends PhantomSuite {
 

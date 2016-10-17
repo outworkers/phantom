@@ -31,7 +31,7 @@ package com.websudos.phantom.reactivestreams.suites.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.outworkers.util.testing._
 import org.scalatest.concurrent.ScalaFutures

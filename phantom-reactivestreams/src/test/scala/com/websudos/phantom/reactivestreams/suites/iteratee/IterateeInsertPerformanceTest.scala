@@ -38,8 +38,8 @@ import org.scalatest.Matchers
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.tables.{ TestDatabase, JodaRow }
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.{ TestDatabase, JodaRow }
 import com.outworkers.util.testing._
 
 class IterateeInsertPerformanceTest extends BigTest with Matchers {

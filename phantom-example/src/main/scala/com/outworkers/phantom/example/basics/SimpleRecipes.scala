@@ -31,15 +31,12 @@ package com.outworkers.phantom.example.basics
 
 import java.util.UUID
 
-import scala.concurrent.{ Future => ScalaFuture }
-
+import scala.concurrent.{Future => ScalaFuture}
 import org.joda.time.DateTime
-
-import com.datastax.driver.core.{ ResultSet, Row }
-
-import com.websudos.phantom.dsl._
+import com.datastax.driver.core.{ResultSet, Row}
+import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
-
 import com.twitter.conversions.time._
 
 /**

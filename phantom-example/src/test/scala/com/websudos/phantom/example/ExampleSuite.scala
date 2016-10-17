@@ -29,8 +29,8 @@
  */
 package com.websudos.phantom.example
 
-import com.websudos.phantom.Manager._
-import com.websudos.phantom.connectors.RootConnector
+import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.Manager._
 import com.outworkers.phantom.example.advanced.RecipesDatabase
 import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}

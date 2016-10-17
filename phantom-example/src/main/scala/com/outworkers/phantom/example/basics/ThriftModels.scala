@@ -29,8 +29,9 @@
  */
 package com.outworkers.phantom.example.basics
 
+import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.thrift._
 import com.outworkers.phantom.thrift.columns.ThriftColumn
 

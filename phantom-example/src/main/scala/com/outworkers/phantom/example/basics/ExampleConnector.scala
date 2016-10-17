@@ -29,6 +29,7 @@
  */
 package com.outworkers.phantom.example.basics
 
+import com.outworkers.phantom.connectors.{ContactPoint, ContactPoints}
 import com.websudos.phantom.connectors._
 
 object Defaults {

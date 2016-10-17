@@ -31,10 +31,11 @@ package com.outworkers.phantom.jdk8
 
 import java.time.{LocalDate, OffsetDateTime}
 
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.jdk8.dsl._
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.InsertQuery
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.dsl._
 
 case class OptionalJdk8Row(
   pkey: String,

@@ -31,12 +31,11 @@ package com.outworkers.phantom
 
 import akka.actor.ActorSystem
 import com.datastax.driver.core.Session
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.batch.BatchType
-import com.websudos.phantom.builder.LimitBound
-import com.websudos.phantom.builder.query.ExecutableQuery
+import com.outworkers.phantom.batch.BatchType
+import com.outworkers.phantom.builder.LimitBound
+import com.outworkers.phantom.builder.query.ExecutableQuery
 import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.dsl.{context => _}
+import com.outworkers.phantom.dsl.{context => _}
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams
@@ -85,15 +84,15 @@ package object reactivestreams {
      *                       explanation.
      * @param flushInterval used to schedule periodic batch execution even though the number of statements hasn't
      *                      been reached yet. Useful in never-ending streams that will never been completed.
-     * @param completionFn a function that will be invoked when the stream is completed
-     * @param errorFn a function that will be invoked when an error occurs
-     * @param builder an implicitly resolved [[RequestBuilder]] that wraps a phantom [[com.websudos.phantom.builder.query.ExecutableStatement]].
-     *                Every T element that gets into the stream from the upstream is turned into a ExecutableStatement
-     *                by means of this builder.
-     * @param system the underlying [[ActorSystem]]. This [[org.reactivestreams.Subscriber]] implementation uses Akka
-     *               actors, but is not restricted to be used in the context of Akka Streams.
-     * @param session the Cassandra [[com.datastax.driver.core.Session]]
-     * @param space the Cassandra [[KeySpace]]
+     * @param completionFn  a function that will be invoked when the stream is completed
+     * @param errorFn       a function that will be invoked when an error occurs
+     * @param builder       an implicitly resolved [[RequestBuilder]] that wraps a phantom [[com.outworkers.phantom.builder.query.ExecutableStatement]].
+     *                      Every T element that gets into the stream from the upstream is turned into a ExecutableStatement
+     *                      by means of this builder.
+     * @param system        the underlying [[ActorSystem]]. This [[org.reactivestreams.Subscriber]] implementation uses Akka
+     *                      actors, but is not restricted to be used in the context of Akka Streams.
+     * @param session       the Cassandra [[com.datastax.driver.core.Session]]
+     * @param space         the Cassandra [[KeySpace]]
      * @param ev an evidence to get the T type removed by erasure
      * @return the [[org.reactivestreams.Subscriber]] to be connected to a reactive stream typically initiated by
      *         a [[org.reactivestreams.Publisher]]

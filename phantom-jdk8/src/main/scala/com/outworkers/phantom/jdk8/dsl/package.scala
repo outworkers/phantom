@@ -29,39 +29,39 @@
  */
 package com.outworkers.phantom.jdk8
 
-import com.websudos.phantom.dsl.CassandraTable
+import com.outworkers.phantom.dsl.CassandraTable
 
 package object dsl extends DefaultJava8Primitives {
 
   type OffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
+  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
 
   type ZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
+  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
 
   type JdkLocalDateColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
+  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
 
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
+  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
 
   type OptionalZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
+  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
 
   type OptionalJdkLocalDateColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
+  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
 
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime

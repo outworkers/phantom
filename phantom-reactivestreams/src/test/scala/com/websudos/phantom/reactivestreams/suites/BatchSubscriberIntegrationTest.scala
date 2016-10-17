@@ -31,8 +31,8 @@ package com.websudos.phantom.reactivestreams.suites
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
-import com.websudos.phantom.batch.BatchType
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.batch.BatchType
+import com.outworkers.phantom.dsl._
 import com.websudos.phantom.reactivestreams._
 import com.websudos.phantom.reactivestreams.suites.iteratee.OperaPublisher
 import org.scalatest.{FlatSpec, Retries}

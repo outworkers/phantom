@@ -29,8 +29,8 @@
  */
 package com.outworkers.phantom.jdk8
 
-import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8.tables.{Jdk8Row, TestDatabase, _}
 import com.outworkers.util.testing._
 

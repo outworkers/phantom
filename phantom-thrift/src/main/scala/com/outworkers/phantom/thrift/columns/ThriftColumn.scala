@@ -32,15 +32,15 @@ package com.outworkers.phantom.thrift.columns
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.QueryBuilder.Utils
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.QueryBuilder.Utils
+import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.datastax.driver.core.{GettableData, Row}
+import com.outworkers.phantom.CassandraTable
 import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct, ThriftStructSerializer}
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
-import com.websudos.phantom.CassandraTable
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {
 
