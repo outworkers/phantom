@@ -46,6 +46,7 @@ trait ThriftTestSuite extends Suite
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
+  val ThriftTest = com.outworkers.phantom.thrift.ThriftTest
 
   implicit object OutputSample extends Sample[Output] {
     def sample: Output = {

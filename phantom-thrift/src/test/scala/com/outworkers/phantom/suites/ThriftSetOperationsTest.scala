@@ -31,7 +31,6 @@ package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration

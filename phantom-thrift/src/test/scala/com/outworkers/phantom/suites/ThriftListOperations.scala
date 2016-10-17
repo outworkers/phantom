@@ -33,7 +33,6 @@ import com.outworkers.phantom.tables.{Output, ThriftDatabase}
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.tables.ThriftDatabase
-import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration

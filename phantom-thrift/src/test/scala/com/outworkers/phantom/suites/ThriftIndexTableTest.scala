@@ -30,7 +30,6 @@
 package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.{Output, ThriftDatabase}
-import com.outworkers.phantom.thrift.suites.ThriftTest
 import com.outworkers.util.testing._
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._

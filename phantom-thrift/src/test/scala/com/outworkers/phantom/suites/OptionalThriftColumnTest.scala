@@ -30,21 +30,17 @@
 package com.outworkers.phantom.suites
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.util.testing._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
-import org.scalatest.concurrent.PatienceConfiguration
+import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._
 
-class OptionalThriftColumnTest extends FlatSpec
-  with OptionValues with Matchers with BeforeAndAfterAll with ThriftDatabase.connector.Connector {
+class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
   override def beforeAll(): Unit = {
     ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
   }
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
 
   it should "find an item if it was defined" in {
 
