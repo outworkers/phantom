@@ -29,7 +29,9 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.ThriftDatabase
+import java.util.UUID
+
+import com.outworkers.phantom.tables.{Output, ThriftDatabase}
 import com.outworkers.util.testing._
 import org.scalatest.concurrent.PatienceConfiguration
 
@@ -42,4 +44,30 @@ trait ThriftTestSuite extends Suite
   with OptionValues
   with ThriftDatabase.connector.Connector {
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
+
+  implicit object OutputSample extends Sample[Output] {
+    def sample: Output = {
+      Output(
+        id = gen[UUID],
+        name = gen[String],
+        struct = gen[ThriftTest],
+        thriftSet = genList[ThriftTest]().toSet[ThriftTest],
+        thriftList = genList[ThriftTest](),
+        thriftMap = genList[ThriftTest]().map {
+          item => (item.toString, item)
+        }.toMap,
+        optThrift = genOpt[ThriftTest]
+      )
+    }
+  }
+
+  implicit object ThriftTestSample extends Sample[ThriftTest] {
+    def sample: ThriftTest = ThriftTest(
+      gen[Int],
+      gen[String],
+      test = false
+    )
+  }
 }
