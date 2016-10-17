@@ -191,7 +191,7 @@ package object reactivestreams {
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
       val eventualEnum = block.all().future() map {
-        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.fromRow)
+        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.rowFunc)
       }
       PlayEnumerator.flatten(eventualEnum)
     }
