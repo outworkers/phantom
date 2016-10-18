@@ -64,15 +64,16 @@ then
         git add .
         git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
         git checkout -b version_branch
-        git checkout -B develop version_branch
+        git checkout -B $TRAVIS_BRANCH version_branch
 
-        git push "https://${github_token}@${GH_REF}" develop
+        git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
 
         echo "Publishing new version to bintray"
         sbt +bintray:publish
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
+
             echo "Creating GPG deploy key"
             openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
