@@ -139,7 +139,9 @@ private[phantom] trait CompactionStrategies {
 
   sealed class TimeWindowCompactionStrategy(options: OptionPart)
     extends CompactionProperties[DateTieredCompactionStrategy](options) {
-
+    override protected[this] def instance(opts: OptionPart): TimeWindowCompactionStrategy = {
+      new TimeWindowCompactionStrategy(options)
+    }
   }
 
   sealed class DateTieredCompactionStrategy(options: OptionPart)
@@ -190,7 +192,9 @@ private[phantom] trait CompactionStrategies {
     strategy(CQLSyntax.CompactionStrategies.dateTiered)
   )
 
-  case object TimeWindowCompactionStrategy extends
+  case object TimeWindowCompactionStrategy extends TimeWindowCompactionStrategy(
+    strategy(CQLSyntax.CompactionStrategies.timeWindow)
+  )
 }
 
 private[phantom] class CompactionBuilder extends TableProperty {
