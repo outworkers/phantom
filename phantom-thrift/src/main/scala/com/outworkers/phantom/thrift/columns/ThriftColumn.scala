@@ -121,9 +121,6 @@ abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: Thrif
 
   override val cassandraType = QueryBuilder.Collections.listType(CQLSyntax.Types.Text).queryString
 
-  override def asCql(v: List[ValueType]): String = Utils.collection(v.map(valueAsCql)).queryString
-
-
   override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {
       Success(Nil)

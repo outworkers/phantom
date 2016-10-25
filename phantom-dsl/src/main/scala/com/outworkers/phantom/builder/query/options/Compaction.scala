@@ -138,7 +138,7 @@ private[phantom] trait CompactionStrategies {
   }
 
   sealed class TimeWindowCompactionStrategy(options: OptionPart)
-    extends CompactionProperties[DateTieredCompactionStrategy](options) {
+    extends CompactionProperties[TimeWindowCompactionStrategy](options) {
     override protected[this] def instance(opts: OptionPart): TimeWindowCompactionStrategy = {
       new TimeWindowCompactionStrategy(options)
     }
