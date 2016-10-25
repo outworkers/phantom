@@ -67,10 +67,6 @@ private[builder] trait Utils {
     CQLQuery(qbs.map(_.queryString).mkString(", "))
   }
 
-  def collection(list: TraversableOnce[String]): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`[`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`]`)
-  }
-
   def set(list: Set[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`}`)
   }

@@ -385,7 +385,11 @@ object Primitives {
 
       override def fromString(value: String): List[T] = value.split(",").map(Primitive[T].fromString).toList
 
-      override def asCql(value: List[T]): String = QueryBuilder.Utils.collection(value.map(Primitive[T].asCql)).queryString
+      override def asCql(value: List[T]): String = {
+        QueryBuilder.Collections
+          .serialize(value.map(Primitive[T].asCql))
+          .queryString
+      }
 
       override def clz: Class[List[Primitive[T]#PrimitiveType]] = classOf[List[Primitive[T]#PrimitiveType]]
 
@@ -406,7 +410,9 @@ object Primitives {
 
       override def fromString(value: String): Set[T] = value.split(",").map(Primitive[T].fromString).toSet
 
-      override def asCql(value: Set[T]): String = QueryBuilder.Utils.collection(value.map(Primitive[T].asCql)).queryString
+      override def asCql(value: Set[T]): String = {
+        QueryBuilder.Collections.serialize(value.map(Primitive[T].asCql)).queryString
+      }
 
       override def clz: Class[Set[Primitive[T]#PrimitiveType]] = classOf[Set[Primitive[T]#PrimitiveType]]
 

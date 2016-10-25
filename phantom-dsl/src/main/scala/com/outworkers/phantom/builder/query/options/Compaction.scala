@@ -137,6 +137,11 @@ private[phantom] trait CompactionStrategies {
     }
   }
 
+  sealed class TimeWindowCompactionStrategy(options: OptionPart)
+    extends CompactionProperties[DateTieredCompactionStrategy](options) {
+
+  }
+
   sealed class DateTieredCompactionStrategy(options: OptionPart)
     extends CompactionProperties[DateTieredCompactionStrategy](options) {
 
@@ -184,6 +189,8 @@ private[phantom] trait CompactionStrategies {
   case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(
     strategy(CQLSyntax.CompactionStrategies.dateTiered)
   )
+
+  case object TimeWindowCompactionStrategy extends
 }
 
 private[phantom] class CompactionBuilder extends TableProperty {
