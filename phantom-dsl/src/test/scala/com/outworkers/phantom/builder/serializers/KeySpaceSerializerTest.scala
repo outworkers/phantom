@@ -38,7 +38,7 @@ import scala.util.{Failure, Success, Try}
 class KeySpaceSerializerTest extends QuerySerializationTest {
 
   it should "create a simple keyspace creation query" in {
-    val query = QueryBuilder.keyspace("test").ifNotExists()
+    val query = KeySpaceSerializer("test").ifNotExists()
       .`with`(replication eqs NetworkTopologyStrategy)
       .and(durable_writes eqs true)
       .qb.queryString
