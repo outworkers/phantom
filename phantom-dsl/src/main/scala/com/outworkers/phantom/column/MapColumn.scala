@@ -101,7 +101,7 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
     } else {
       Try(
         r.getMap(name, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap map {
-          case (k, v) => (keyPrimitive.extract(k), valuePrimitive.extract(v))
+          case (k, v) => keyPrimitive.extract(k) -> valuePrimitive.extract(v)
         }
       )
     }
