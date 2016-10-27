@@ -119,7 +119,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo,
     // Temporary deployment location until mainstream release available
-    Resolver.bintrayRepo("outworkers", "enterprise")
+    Resolver.bintrayRepo("outworkers", "oss-releases")
   ),
   scalacOptions ++= Seq(
     "-language:experimental.macros",

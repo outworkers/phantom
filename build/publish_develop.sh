@@ -86,7 +86,7 @@ then
             sbt +publishSigned sonatypeReleaseAll
             exit $?
         else
-            echo "Not deploying to Maven Central, branch is not develop"
+            echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
         fi
 
     else
