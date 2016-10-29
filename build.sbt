@@ -34,7 +34,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.22.0"
+  val util = "0.23.1"
   val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
@@ -118,7 +118,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo,
-    // Temporary deployment location until mainstream release available
     Resolver.bintrayRepo("outworkers", "oss-releases")
   ),
   scalacOptions ++= Seq(
