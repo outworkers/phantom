@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -137,6 +137,13 @@ private[phantom] trait CompactionStrategies {
     }
   }
 
+  sealed class TimeWindowCompactionStrategy(options: OptionPart)
+    extends CompactionProperties[TimeWindowCompactionStrategy](options) {
+    override protected[this] def instance(opts: OptionPart): TimeWindowCompactionStrategy = {
+      new TimeWindowCompactionStrategy(options)
+    }
+  }
+
   sealed class DateTieredCompactionStrategy(options: OptionPart)
     extends CompactionProperties[DateTieredCompactionStrategy](options) {
 
@@ -183,6 +190,10 @@ private[phantom] trait CompactionStrategies {
 
   case object DateTieredCompactionStrategy extends DateTieredCompactionStrategy(
     strategy(CQLSyntax.CompactionStrategies.dateTiered)
+  )
+
+  case object TimeWindowCompactionStrategy extends TimeWindowCompactionStrategy(
+    strategy(CQLSyntax.CompactionStrategies.timeWindow)
   )
 }
 

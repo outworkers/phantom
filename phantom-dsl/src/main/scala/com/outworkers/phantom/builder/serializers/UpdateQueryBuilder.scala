@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *

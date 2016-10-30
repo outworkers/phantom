@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -37,7 +37,7 @@ class CollectionModifiersSerialisationTest extends FreeSpec with Matchers {
   "The collection modifier query builder" - {
 
     "should append a pre-serialized list as a collection" in {
-      QueryBuilder.Collections.append("test", QueryBuilder.Utils.collection(List("test1", "test2")).queryString)
+      QueryBuilder.Collections.append("test", QueryBuilder.Collections.serialize(List("test1", "test2")).queryString)
         .queryString shouldEqual "test = test + [test1, test2]"
     }
 
@@ -50,7 +50,7 @@ class CollectionModifiersSerialisationTest extends FreeSpec with Matchers {
     }
 
     "should prepend a pre-serialized list as a collection" in {
-      QueryBuilder.Collections.prepend("test", QueryBuilder.Utils.collection(List("test1", "test2")).queryString)
+      QueryBuilder.Collections.prepend("test", QueryBuilder.Collections.serialize(List("test1", "test2")).queryString)
         .queryString shouldEqual "test = [test1, test2] + test"
     }
 

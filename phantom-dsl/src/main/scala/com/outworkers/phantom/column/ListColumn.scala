@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -48,7 +48,7 @@ abstract class AbstractListColumn[
 ](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
   with CollectionValueDefinition[RR] {
 
-  override def asCql(v: List[RR]): String = Utils.collection(v.map(valueAsCql)).queryString
+  override def asCql(v: List[RR]): String = QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
 
   override def apply(r: Row): List[RR] = {
     parse(r).getOrElse(Nil)

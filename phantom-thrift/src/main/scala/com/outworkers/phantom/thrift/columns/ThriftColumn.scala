@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -120,9 +120,6 @@ abstract class ThriftListColumn[T <: CassandraTable[T, R], R, ValueType <: Thrif
     extends AbstractListColumn[T, R, ValueType](table) with CollectionThriftColumnDefinition[ValueType] {
 
   override val cassandraType = QueryBuilder.Collections.listType(CQLSyntax.Types.Text).queryString
-
-  override def asCql(v: List[ValueType]): String = Utils.collection(v.map(valueAsCql)).queryString
-
 
   override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -65,9 +65,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
       q"""db.$name"""
     })
 
-    val queryList = tableList.map { tb =>
-      q"""$tb.autocreate(space)"""
-    }
+    val queryList = tableList.map { tb => q"""$tb.autocreate(space)""" }
 
     val listType = tq"$prefix.ExecutableCreateStatementsList"
 

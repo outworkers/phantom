@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -58,7 +58,7 @@ class PrimitivesTest extends FlatSpec with Matchers {
   it should "autogenerate list primitives for List types" in {
     val test = Primitive[List[String]]
     val input = genList[String]()
-    val expected = QueryBuilder.Utils.collection(input.map(Primitive[String].asCql)).queryString
+    val expected = QueryBuilder.Collections.serialize(input.map(Primitive[String].asCql)).queryString
 
     test.asCql(input) shouldEqual expected
 

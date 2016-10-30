@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -73,7 +73,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def prepend(column: String, values: String*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
       collectionModifier(
-        queryBuilder.Utils.collection(values).queryString,
+        queryBuilder.Collections.serialize(values).queryString,
         CQLSyntax.Symbols.plus,
         column
       )
@@ -90,7 +90,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
       collectionModifier(
         column, CQLSyntax.Symbols.plus,
-        queryBuilder.Utils.collection(values).queryString
+        queryBuilder.Collections.serialize(values).queryString
       )
     )
   }
@@ -106,7 +106,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       collectionModifier(
         column,
         CQLSyntax.Symbols.-,
-        queryBuilder.Utils.collection(values).queryString
+        queryBuilder.Collections.serialize(values).queryString
       )
     )
   }
@@ -171,6 +171,12 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
         queryBuilder.Utils.map(pairs)
       )
     )
+  }
+
+  def serialize(list: Seq[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`[`)
+      .append(list.mkString(", "))
+      .append(CQLSyntax.Symbols.`]`)
   }
 
   def serialize(set: Set[String]): CQLQuery = {
