@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,11 +27,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites.iteratee
+package com.outworkers.phantom.reactivestreams.suites.iteratee
 
 import com.datastax.driver.core.{PoolingOptions, Session, SocketOptions}
-import com.websudos.phantom.PhantomSuite
-import com.websudos.phantom.connectors.ContactPoint
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.connectors.ContactPoint
 
 trait BigTest extends PhantomSuite {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,13 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.websudos.phantom.reactivestreams.suites
+package com.outworkers.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
-import com.websudos.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
-import com.websudos.phantom.database.Database
-import com.websudos.phantom.dsl._
-import com.websudos.phantom.reactivestreams.RequestBuilder
+import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.reactivestreams.RequestBuilder
+import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
+import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.dsl._
 import com.outworkers.util.testing._
 import org.scalatest._
 

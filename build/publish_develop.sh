@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/2.0.0" ]);
 then
 
     if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
@@ -64,23 +64,30 @@ then
         git add .
         git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
         git checkout -b version_branch
-        git checkout -B develop version_branch
+        git checkout -B $TRAVIS_BRANCH version_branch
 
-        git push "https://${github_token}@${GH_REF}" develop
+        git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
 
         echo "Publishing new version to bintray"
         sbt +bintray:publish
 
-        echo "Creating GPG deploy key"
-        openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+        if [ "$TRAVIS_BRANCH" == "develop" ];
+        then
 
-        echo "importing GPG key to local GBP repo"
-        gpg --fast-import build/deploy.asc
+            echo "Creating GPG deploy key"
+            openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-        echo "Setting MAVEN_PUBLISH mode to true"
-        export MAVEN_PUBLISH="true"
-        export pgp_passphrase=${maven_password}
-        sbt +publishSigned sonatypeReleaseAll
+            echo "importing GPG key to local GBP repo"
+            gpg --fast-import build/deploy.asc
+
+            echo "Setting MAVEN_PUBLISH mode to true"
+            export MAVEN_PUBLISH="true"
+            export pgp_passphrase=${maven_password}
+            sbt +publishSigned sonatypeReleaseAll
+            exit $?
+        else
+            echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
+        fi
 
     else
         echo "Only publishing version for Scala 2.11.8 and Oracle JDK 8 to prevent multiple artifacts"

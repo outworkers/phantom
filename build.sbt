@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2017 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -34,7 +34,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.22.0"
+  val util = "0.23.1"
   val datastax = "3.1.0"
   val scalatest = "2.2.4"
   val shapeless = "2.2.5"
@@ -109,7 +109,7 @@ lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
-  organization := "com.websudos",
+  organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
@@ -118,7 +118,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo,
-    Resolver.bintrayRepo("websudos", "oss-releases")
+    Resolver.bintrayRepo("outworkers", "oss-releases")
   ),
   scalacOptions ++= Seq(
     "-language:experimental.macros",
@@ -135,7 +135,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
-    "ch.qos.logback" % "logback-classic" % Versions.logback,
+    "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
@@ -149,7 +149,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   },
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
-  testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
+  testOptions in PerformanceTest := Seq(Tests.Filter(performanceFilter)),
   fork in PerformanceTest := false,
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
@@ -216,8 +216,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
+    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test
   )
 ).dependsOn(
   phantomConnectors
