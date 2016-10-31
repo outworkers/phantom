@@ -37,7 +37,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.0.2-SNAPSHOT"
+    version := "2.0.2"
   )
 
   lazy val noPublishSettings = Seq(
@@ -82,7 +82,7 @@ object Publishing {
     publishMavenStyle := true,
     bintrayOrganization := Some("outworkers"),
     bintrayRepository <<= scalaVersion.apply {
-      v => if (v.trim.endsWith("SNAPSHOT")) "enterprise-snapshots" else "enterprise-releases"
+      v => if (v.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases"
     },
     bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
