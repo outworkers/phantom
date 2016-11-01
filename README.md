@@ -1,5 +1,5 @@
 phantom
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
@@ -21,7 +21,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 - The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
-- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/websudos/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 
 ### How phantom compares
@@ -34,7 +34,7 @@ To compare phantom to similar tools in the Scala/Cassandra category, you can rea
 The latest versions are available here. The badges automatically update when a new version is released.
 
 - Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
-- Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
+- Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
@@ -99,17 +99,13 @@ Some of the companies using phantom:
 License and copyright
 ======================
 
-Phantom is [freeware software](https://en.wikipedia.org/wiki/Freeware) and uses a proprietary license that in plain English says the following:
+Phantom is distributed under the Apache V2 License.
 
-- Phantom is the intellectual property of `Outworkers`, it is not provided under an OSS license.
+- `Outworkers, Limited` is the copyright holder.
 
-- You can use phantom in commercial products or otherwise, so long as you use one of the official versions available on Bintray or Maven Central.
+- You can use phantom in commercial products or otherwise.
 
-- You are not allowed to distribute altered copies of phantom in binary form.
-
-- You cannot offer paid for training on phantom unless you are a direct partner to `Outworkers` and you have a written intellectual property agreement in place with us.
-
-- If you simply have a `Build.scala` or `build.sbt` dependency on phantom, you have nothing to worry about.
+- We strongly appreciate and encourage contributions.
 
 - All paid for features are published and sold separately as `phantom-pro`, everything that is currently available for free will remain so forever.
 
