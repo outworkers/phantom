@@ -21,6 +21,7 @@ import com.datastax.driver.core.{ResultSet, Row}
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.example.basics.Recipe
 import org.joda.time.DateTime
 
 import scala.concurrent.{Future => ScalaFuture}

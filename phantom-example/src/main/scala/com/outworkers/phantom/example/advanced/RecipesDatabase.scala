@@ -18,6 +18,7 @@ package com.outworkers.phantom.example.advanced
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.KeySpaceDef
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.example.basics._
 
 import scala.concurrent.{Future => ScalaFuture}
 

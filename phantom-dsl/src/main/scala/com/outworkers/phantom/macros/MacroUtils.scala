@@ -16,6 +16,7 @@
 package com.outworkers.phantom.macros
 import scala.reflect.macros.blackbox
 
+@macrocompat.bundle
 class MacroUtils(val c: blackbox.Context) {
   import c.universe._
 
@@ -23,14 +24,14 @@ class MacroUtils(val c: blackbox.Context) {
     object CaseField {
       def unapply(arg: TermSymbol): Option[(Name, Type)] = {
         if (arg.isVal && arg.isCaseAccessor) {
-          Some(newTermName(arg.name.toString.trim) -> arg.typeSignature)
+          Some(TermName(arg.name.toString.trim) -> arg.typeSignature)
         } else {
           None
         }
       }
     }
 
-    tpe.declarations.collect { case CaseField(name, fType) => name -> fType }
+    tpe.decls.collect { case CaseField(name, fType) => name -> fType }
   }
 
   def baseType(sym: Symbol): Set[Symbol] = {
