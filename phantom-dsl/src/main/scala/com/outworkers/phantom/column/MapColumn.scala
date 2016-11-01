@@ -26,8 +26,13 @@ import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-private[phantom] abstract class AbstractMapColumn[Owner <: CassandraTable[Owner, Record], Record, K, V](table: CassandraTable[Owner, Record])
-  extends Column[Owner, Record, Map[K, V]](table) with CollectionValueDefinition[V] {
+private[phantom] abstract class AbstractMapColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  K,
+  V
+](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table)
+  with CollectionValueDefinition[V] {
 
   def keyAsCql(v: K): String
 
