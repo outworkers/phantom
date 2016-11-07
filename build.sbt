@@ -307,7 +307,8 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
-      "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
+      "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test,
+      "ch.qos.logback" % "logback-classic" % Versions.logback % Test
     ) ++ {
       if (Publishing.isJdk8) {
         Seq("com.typesafe" % "config" % Versions.typesafeConfig)
