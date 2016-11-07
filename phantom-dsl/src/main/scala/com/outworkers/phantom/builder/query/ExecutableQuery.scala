@@ -15,8 +15,7 @@
  */
 package com.outworkers.phantom.builder.query
 
-import java.util.{List => JavaList}
-
+import java.util.{List => JavaList, Iterator => JavaIterator}
 import com.datastax.driver.core._
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
@@ -33,6 +32,12 @@ trait RecordResult[R] {
 }
 
 case class ListResult[R](records: List[R], result: ResultSet) extends RecordResult[R]
+
+object ListResult {
+  def apply[R](res: ResultSet, records: List[R]): ListResult[R] = ListResult(records, res)
+
+  def apply[R](rec: (ResultSet, List[R])): ListResult[R] = apply(rec._2, rec._1)
+}
 
 case class IteratorResult[R](records: Iterator[R], result: ResultSet) extends RecordResult[R]
 
@@ -144,6 +149,10 @@ private[phantom] trait RootExecutableQuery[R] {
   protected[this] def directMapper(results: JavaList[Row]): List[R] = {
     List.tabulate(results.size())(index => fromRow(results.get(index)))
   }
+
+  protected[this] def directMapper(results: JavaIterator[Row]): List[R] = {
+    results.asScala.map(fromRow).toList
+  }
 }
 
 /**
@@ -157,6 +166,17 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   extends ExecutableStatement with RootExecutableQuery[R] {
 
   def fromRow(r: Row): R
+
+  protected[this] def greedyEval(f: ScalaFuture[ResultSet]): ScalaFuture[ListResult[R]] = {
+    f map { r =>
+      val records = if (r.isFullyFetched) directMapper(r.all()) else directMapper(r.iterator())
+      ListResult(records, r)
+    }
+  }
+
+  protected[this] def lazyEval(f: ScalaFuture[ResultSet]): ScalaFuture[IteratorResult[R]] = {
+    f map { r => IteratorResult(r.iterator().asScala.map(fromRow), r) }
+  }
 
   private[phantom] def singleFetch()(
     implicit session: Session,
@@ -208,38 +228,20 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch(state: PagingState)(
-    implicit session: Session,
-    keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[List[R]] = {
-    future(_.setPagingState(state)) map {
-      resultSet => directMapper(resultSet.all)
-    }
-  }
-
-  /**
-    * Returns a parsed sequence of [R]ows
-    * This is not suitable for big results set
-    *
-    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param ec The implicit Scala execution context.
-    * @return A Scala future wrapping a list of mapped results.
-    */
   def fetch(modifyStatement : Modifier)(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[List[R]] = {
-    future(modifyStatement) map {
-      resultSet => directMapper(resultSet.all)
-    }
+    future(modifyStatement) map { resultSet => directMapper(resultSet.all) }
   }
 
   /**
     * Returns a parsed sequence of [R]ows
-    * This is not suitable for big results set
+    * This is not suitable for big results set as it will attempt to fetch the entire result set
+    * as a List, circumventing pagination settings.
+    *
+    * Use [[paginateRecord()]] or other means if you like to deal with bigger result sets.
     *
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
@@ -263,26 +265,53 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetchRecord(state: PagingState)(
+  def fetchRecord(modifyStatement: Modifier)(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ListResult[R]] = {
-    future(st => st.setPagingState(state)) map {
+    future(modifyStatement) map {
       set => ListResult(directMapper(set.all), set)
     }
   }
 
-  def fetchRecord(state: Option[PagingState])(
+  /**
+    * Returns a parsed sequence of [R]ows but paginates the results using paging state.
+    * This will not consume or return the entire set of available results, it will
+    * instead return an amount of records equal to the fetch size setting.
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def paginateRecord()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ListResult[R]] = {
-    state.fold(future().map {
-      set => ListResult(directMapper(set.all), set)
-    }) (state => future(_.setPagingState(state)) map {
-      set => ListResult(directMapper(set.all), set)
-    })
+    greedyEval(future())
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows.
+    * This will only fetch the amount of records defined in the fetchSize setting.
+    * It will allow pagination of the inner result set as a [[scala.collection.immutable.List]].
+    *
+    * It will greedy evaluate the records inside a single fetch size batch as it returns a list as opposed to
+    * an iterator. For a non greedy variant of the size method use [[iterator()]].
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def paginateRecord(state: PagingState)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[ListResult[R]] = {
+    greedyEval(future(_.setPagingState(state)))
   }
 
   /**
@@ -294,14 +323,36 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetchRecord(modifyStatement: Modifier)(
+  def paginateRecord(state: Option[PagingState])(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ListResult[R]] = {
-    future(modifyStatement) map {
-      set => ListResult(directMapper(set.all), set)
+    state match {
+      case None => greedyEval(future())
+      case Some(defined) => greedyEval(future(_.setPagingState(defined)))
     }
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows.
+    * This will only fetch the amount of records defined in the fetchSize setting.
+    * It will allow pagination of the inner result set as a [[scala.collection.immutable.List]].
+    *
+    * It will greedy evaluate the records inside a single fetch size batch as it returns a list as opposed to
+    * an iterator. For a non greedy variant of the size method use [[iterator()]].
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def paginateRecord(modifier: Modifier)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[ListResult[R]] = {
+    greedyEval(future(modifier))
   }
 
   /**
@@ -320,11 +371,80 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     future() map { _.iterator().asScala.map(fromRow) }
   }
 
-  def iteratorRecord()(
+  /**
+    * Returns a parsed iterator of [R]ows lazily evaluated. This will respect the fetch size setting
+    * of a query, meaning you will need to provide a paging state to fetch records beyond the regular fetch
+    * size.
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping scala iterator of mapped results.
+    */
+  def iterator()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[IteratorResult[R]] = {
-    future() map { result => IteratorResult(result.iterator().asScala.map(fromRow), result) }
+    future() map { res => IteratorResult(res.iterator().asScala.map(fromRow), res) }
+  }
+
+  /**
+    * Returns a parsed iterator of [R]ows lazily evaluated. This will respect the fetch size setting
+    * of a query, meaning you will need to provide a paging state to fetch records beyond the regular fetch
+    * size.
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping scala iterator of mapped results.
+    */
+  def iterator(modifier: Modifier)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[IteratorResult[R]] = {
+    future(modifier) map { res => IteratorResult(res.iterator().asScala.map(fromRow), res) }
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows.
+    * This will only fetch the amount of records defined in the fetchSize setting.
+    * It will allow pagination of the inner result set as a [[scala.collection.immutable.List]].
+    *
+    * It will greedy evaluate the records inside a single fetch size batch as it returns a list as opposed to
+    * an iterator. For a non greedy variant of the size method use [[iterator()]].
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def iterator(state: PagingState)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[IteratorResult[R]] = {
+    lazyEval(future(_.setPagingState(state)))
+  }
+
+  /**
+    * Returns a parsed sequence of [R]ows
+    * This is not suitable for big results set
+    *
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future wrapping a list of mapped results.
+    */
+  def iterator(state: Option[PagingState])(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[IteratorResult[R]] = {
+    state match {
+      case None => lazyEval(future())
+      case Some(defined) => lazyEval(future(_.setPagingState(defined)))
+    }
   }
 }
