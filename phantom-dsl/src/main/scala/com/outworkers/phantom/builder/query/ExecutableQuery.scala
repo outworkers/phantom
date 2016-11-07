@@ -167,14 +167,18 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
 
   def fromRow(r: Row): R
 
-  protected[this] def greedyEval(f: ScalaFuture[ResultSet]): ScalaFuture[ListResult[R]] = {
+  protected[this] def greedyEval(
+    f: ScalaFuture[ResultSet]
+  )(implicit ex: ExecutionContextExecutor): ScalaFuture[ListResult[R]] = {
     f map { r =>
       val records = if (r.isFullyFetched) directMapper(r.all()) else directMapper(r.iterator())
       ListResult(records, r)
     }
   }
 
-  protected[this] def lazyEval(f: ScalaFuture[ResultSet]): ScalaFuture[IteratorResult[R]] = {
+  protected[this] def lazyEval(
+    f: ScalaFuture[ResultSet]
+  )(implicit ex: ExecutionContextExecutor): ScalaFuture[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterator().asScala.map(fromRow), r) }
   }
 
@@ -353,22 +357,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     ec: ExecutionContextExecutor
   ): ScalaFuture[ListResult[R]] = {
     greedyEval(future(modifier))
-  }
-
-  /**
-   * Returns a parsed iterator of [R]ows
-   *
-   * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
-   * @param ec The implicit Scala execution context.
-   * @return A Scala future wrapping scala iterator of mapped results.
-   */
-  def iterator()(
-    implicit session: Session,
-    keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[Iterator[R]] = {
-    future() map { _.iterator().asScala.map(fromRow) }
   }
 
   /**
