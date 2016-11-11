@@ -128,6 +128,28 @@ private[phantom] trait CompactionStrategies {
     override protected[this] def instance(opts: OptionPart): TimeWindowCompactionStrategy = {
       new TimeWindowCompactionStrategy(options)
     }
+
+    def compaction_window_size(value: Long): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.compaction_window_size,
+        value.toString
+      )
+    }
+
+    def compaction_window_unit(value: String): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.compaction_window_unit,
+        value
+      )
+    }
+
+    def timestamp_resolution(value: String): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.timestamp_resolution,
+        value
+      )
+    }
+
   }
 
   sealed class DateTieredCompactionStrategy(options: OptionPart)
