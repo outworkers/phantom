@@ -47,6 +47,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bigIntType = tq"scala.math.BigInt"
   val bufferType = tq"java.nio.ByteBuffer"
 
+  val builder = q"com.outworkers.phantom.builder"
   val cql = q"com.outworkers.phantom.builder.query.CQLQuery"
   val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
 
@@ -84,6 +85,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val tpe = weakTypeOf[T].typeSymbol
 
     val tree = tpe match {
+      case sym if sym.name.toTypeName.decodedName.toString.contains("scala.Tuple") => tuplePrimitive[T]
       case Symbols.boolSymbol => booleanPrimitive
       case Symbols.byteSymbol => bytePrimitive
       case Symbols.shortSymbol => shortPrimitive
@@ -158,6 +160,41 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
+  }
+
+  def tuplePrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val comp = tpe.companion.termSymbol.name
+
+    val fields = tpe.typeArgs.map {
+      argTpe => q"$prefix.Primitive[$argTpe]"
+    }
+
+    q"""new $prefix.Primitive[$tpe] {
+      override type PrimitiveType = $tpe
+
+      override def cassandraType: $strType = $prefix
+
+      override def fromRow(name: $strType, row: $rowType): scala.util.Try[$tpe] = {
+        nullCheck(name, row) {
+          r => {
+            val source = r.getTupleValue(name)
+
+          }
+        }
+      }
+
+      override def asCql(value: $tpe): $strType = {
+        strP.asCql(value.toString)
+      }
+
+      override def fromString(value: $strType): $tpe = {
+        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
+      }
+
+      override def clz: Class[$strType] = classOf[$strType]
+    }"""
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {

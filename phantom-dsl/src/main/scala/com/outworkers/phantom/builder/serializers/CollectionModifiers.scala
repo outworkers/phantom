@@ -194,6 +194,13 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .append(key).append(CQLSyntax.Symbols.`]`)
   }
 
+  def tupleType(types: Seq[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Collections.tuple)
+    .append(CQLSyntax.Symbols.`<`)
+    .append(types)
+    .append(CQLSyntax.Symbols.`>`)
+  }
+
   def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {
     CQLQuery(name).forcePad.append(
       diamond(CQLSyntax.Collections.frozen, cassandraType.queryString)

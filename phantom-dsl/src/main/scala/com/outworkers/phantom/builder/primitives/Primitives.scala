@@ -19,8 +19,8 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import com.datastax.driver.core.{GettableData, LocalDate}
 import com.datastax.driver.core.utils.Bytes
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -41,8 +41,12 @@ object Primitives {
 
       override def fromString(value: String): String = value
 
-      override def fromRow(column: String, row: GettableData): Try[String] = {
+      override def fromRow(column: String, row: GettableByNameData): Try[String] = {
         nullCheck(column, row)(_.getString(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[String] = {
+        nullCheck(index, row)(_.getString(index))
       }
 
       override def clz: Class[String] = classOf[String]
@@ -58,8 +62,12 @@ object Primitives {
 
       override def fromString(value: String): Int = value.toInt
 
-      override def fromRow(column: String, row: GettableData): Try[Int] = nullCheck(column, row) {
-        r => r.getInt(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Int] = nullCheck(column, row) {
+        _.getInt(column)
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Int] = {
+        nullCheck(index, row)(_.getInt(index))
       }
 
       override def clz: Class[java.lang.Integer] = classOf[java.lang.Integer]
@@ -75,8 +83,12 @@ object Primitives {
 
       override def fromString(value: String): Short = value.toShort
 
-      override def fromRow(column: String, row: GettableData): Try[Short] = nullCheck(column, row) {
-        r => r.getShort(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Short] = {
+        nullCheck(column, row)(_.getShort(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Short] = {
+        nullCheck(index, row)(_.getShort(index))
       }
 
       override def clz: Class[java.lang.Short] = classOf[java.lang.Short]
@@ -92,11 +104,15 @@ object Primitives {
 
       override def fromString(value: String): Byte = value.toByte
 
-      override def fromRow(column: String, row: GettableData): Try[Byte] = nullCheck(column, row) {
-        r => r.getByte(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Byte] = {
+        nullCheck(column, row)(_.getByte(column))
       }
 
       override def clz: Class[java.lang.Byte] = classOf[java.lang.Byte]
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Byte] = {
+        nullCheck(index, row)(_.getByte(index))
+      }
     }
 
     class DoublePrimitive extends Primitive[Double] {
@@ -109,11 +125,15 @@ object Primitives {
 
       override def fromString(value: String): Double = value.toDouble
 
-      override def fromRow(column: String, row: GettableData): Try[Double] = nullCheck(column, row) {
-        r => r.getDouble(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Double] = {
+        nullCheck(column, row)(_.getDouble(column))
       }
 
       override def clz: Class[java.lang.Double] = classOf[java.lang.Double]
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Double] = {
+        nullCheck(index, row)(_.getDouble(index))
+      }
     }
 
     class LongPrimitive extends Primitive[Long] {
@@ -126,8 +146,12 @@ object Primitives {
 
       override def fromString(value: String): Long = value.toLong
 
-      override def fromRow(column: String, row: GettableData): Try[Long] = {
+      override def fromRow(column: String, row: GettableByNameData): Try[Long] = {
         nullCheck(column, row)(_.getLong(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Long] = {
+        nullCheck(index, row)(_.getLong(index))
       }
 
       override def clz: Class[java.lang.Long] = classOf[java.lang.Long]
@@ -143,8 +167,12 @@ object Primitives {
 
       override def fromString(value: String): Float = value.toFloat
 
-      override def fromRow(column: String, row: GettableData): Try[Float] = nullCheck(column, row) {
-        r => r.getFloat(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Float] = {
+        nullCheck(column, row)(r => r.getFloat(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Float] = {
+        nullCheck(index, row)(_.getFloat(index))
       }
 
       override def clz: Class[java.lang.Float] = classOf[java.lang.Float]
@@ -160,8 +188,12 @@ object Primitives {
 
       override def fromString(value: String): UUID = UUID.fromString(value)
 
-      override def fromRow(column: String, row: GettableData): Try[UUID] = nullCheck(column, row) {
-        r => r.getUUID(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[UUID] = {
+        nullCheck(column, row)(_.getUUID(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[UUID] = {
+        nullCheck(index, row)(_.getUUID(index))
       }
 
       override def clz: Class[UUID] = classOf[UUID]
@@ -180,8 +212,12 @@ object Primitives {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: GettableData): Try[Date] = nullCheck(column, row) {
-        r => r.getTimestamp(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Date] = {
+        nullCheck(column, row)(_.getTimestamp(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Date] = {
+        nullCheck(index, row)(_.getTimestamp(index))
       }
 
       override def fromString(value: String): Date = {
@@ -204,12 +240,16 @@ object Primitives {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: GettableData): Try[LocalDate] = nullCheck(column, row) {
-        r => r.getDate(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[LocalDate] = {
+        nullCheck(column, row)(_.getDate(column))
       }
 
       override def fromString(value: String): LocalDate = {
         LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[LocalDate] = {
+        nullCheck(index, row)(_.getDate(index))
       }
 
       override def clz: Class[LocalDate] = classOf[LocalDate]
@@ -330,8 +370,8 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Varint
 
-      override def fromRow(column: String, row: GettableData): Try[BigInt] = nullCheck(column, row) {
-        r => r.getVarint(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[BigInt] = nullCheck(column, row) {
+        _.getVarint(column)
       }
 
       override def asCql(value: BigInt): String = value.toString()
