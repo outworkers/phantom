@@ -28,7 +28,8 @@ import scala.language.experimental.macros
 class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   import c.universe._
 
-  val rowType = tq"com.datastax.driver.core.GettableData"
+  val rowByNameType = tq"com.datastax.driver.core.GettableByNameData"
+  val rowByIndexType = tq"com.datastax.driver.core.GettableByIndexData"
   val boolType = tq"scala.Boolean"
   val strType: Tree = tq"java.lang.String"
   val intType: Tree = tq"scala.Int"
@@ -165,10 +166,18 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   def tuplePrimitive[T : WeakTypeTag](): Tree = {
     val tpe = weakTypeOf[T]
 
-    val comp = tpe.companion.termSymbol.name
+    val comp = tpe.companion.termSymbol.name.toTermName
+    val sourceTerm = TermName("source")
 
-    val fields = tpe.typeArgs.map {
-      argTpe => q"$prefix.Primitive[$argTpe]"
+    val extractors = tpe.typeArgs.zipWithIndex.map {
+      case (argTpe, i) => TermName(s"tp$i")
+    }
+
+    val fields = tpe.typeArgs.zipWithIndex.map {
+      case (argTpe, i) => {
+        val currentTerm = TermName(s"tp$i")
+        fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(${TermName(i.toString)}, $sourceTerm)"
+      }
     }
 
     q"""new $prefix.Primitive[$tpe] {
@@ -176,11 +185,11 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def cassandraType: $strType = $prefix
 
-      override def fromRow(name: $strType, row: $rowType): scala.util.Try[$tpe] = {
+      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe] = {
         nullCheck(name, row) {
           r => {
-            val source = r.getTupleValue(name)
-
+            val $sourceTerm = r.getTupleValue(name)
+            for (..$fields) yield $comp.apply(..$extractors)
           }
         }
       }
@@ -235,9 +244,18 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def cassandraType: $strType = strP.cassandraType
 
-      override def fromRow(name: $strType, row: $rowType): scala.util.Try[$tpe] = {
+      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe] = {
         nullCheck(name, row) {
           r => $comp.values.find(_.toString == r.getString(name)) match {
+            case Some(value) => value
+            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+          }
+        }
+      }
+
+      override def fromRow(index: $intType, row: $rowByIndexType): scala.util.Try[$tpe] = {
+        nullCheck(index, row) {
+          r => $comp.values.find(_.toString == r.getString(index)) match {
             case Some(value) => value
             case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
           }

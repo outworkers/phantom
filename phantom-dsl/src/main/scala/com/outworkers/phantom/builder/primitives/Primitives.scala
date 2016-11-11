@@ -271,8 +271,10 @@ object Primitives {
         CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
       }
 
-      override def fromRow(column: String, row: GettableData): Try[org.joda.time.LocalDate] = nullCheck(column, row) {
-        r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
+      override def fromRow(column: String, row: GettableByNameData): Try[org.joda.time.LocalDate] = {
+        nullCheck(column, row) {
+          r => new DateTime(r.getDate(column).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
+        }
       }
 
       override def fromString(value: String): org.joda.time.LocalDate = {
@@ -280,6 +282,12 @@ object Primitives {
       }
 
       override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[org.joda.time.LocalDate] = {
+        nullCheck(index, row) {
+          r => new DateTime(r.getDate(index).getMillisSinceEpoch, DateTimeZone.UTC).toLocalDate
+        }
+      }
     }
 
     class DateTimeIsPrimitive extends Primitive[DateTime] {
@@ -292,8 +300,10 @@ object Primitives {
         DateSerializer.asCql(value)
       }
 
-      override def fromRow(column: String, row: GettableData): Try[DateTime] = nullCheck(column, row) {
-        r => new DateTime(r.getTimestamp(column), DateTimeZone.UTC)
+      override def fromRow(column: String, row: GettableByNameData): Try[DateTime] = {
+        nullCheck(column, row) {
+          r => new DateTime(r.getTimestamp(column), DateTimeZone.UTC)
+        }
       }
 
       override def fromString(value: String): DateTime = new DateTime(value, DateTimeZone.UTC)
@@ -301,6 +311,12 @@ object Primitives {
       override def clz: Class[Date] = classOf[Date]
 
       override def extract(obj: PrimitiveType): DateTime = new DateTime(obj, DateTimeZone.UTC)
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[DateTime] = {
+        nullCheck(index, row) {
+          r => new DateTime(r.getTimestamp(index), DateTimeZone.UTC)
+        }
+      }
     }
 
 
@@ -315,8 +331,12 @@ object Primitives {
 
       override def asCql(value: Boolean): String = value.toString
 
-      override def fromRow(column: String, row: GettableData): Try[Boolean] = nullCheck(column, row) {
-        r => r.getBool(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[Boolean] = {
+        nullCheck(column, row)(_.getBool(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Boolean] = {
+        nullCheck(index, row)(_.getBool(index))
       }
 
       override def fromString(value: String): Boolean = value match {
@@ -334,8 +354,12 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Decimal
 
-      override def fromRow(column: String, row: GettableData): Try[BigDecimal] = nullCheck(column, row) {
-        r => BigDecimal(r.getDecimal(column))
+      override def fromRow(column: String, row: GettableByNameData): Try[BigDecimal] = {
+        nullCheck(column, row)(r => BigDecimal(r.getDecimal(column)))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[BigDecimal] = {
+        nullCheck(index, row)(r => BigDecimal(r.getDecimal(index)))
       }
 
       override def asCql(value: BigDecimal): String = value.toString()
@@ -353,8 +377,12 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Inet
 
-      override def fromRow(column: String, row: GettableData): Try[InetAddress] = nullCheck(column, row) {
-        r => r.getInet(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[InetAddress] = {
+        nullCheck(column, row)(_.getInet(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[InetAddress] = {
+        nullCheck(index, row)(_.getInet(index))
       }
 
       override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
@@ -362,6 +390,7 @@ object Primitives {
       override def fromString(value: String): InetAddress = InetAddress.getByName(value)
 
       override def clz: Class[InetAddress] = classOf[InetAddress]
+
     }
 
     class BigIntPrimitive extends Primitive[BigInt] {
@@ -370,8 +399,12 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Varint
 
-      override def fromRow(column: String, row: GettableByNameData): Try[BigInt] = nullCheck(column, row) {
-        _.getVarint(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[BigInt] = {
+        nullCheck(column, row)(_.getVarint(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[BigInt] = {
+        nullCheck(index, row)(_.getVarint(index))
       }
 
       override def asCql(value: BigInt): String = value.toString()
@@ -379,6 +412,7 @@ object Primitives {
       override def fromString(value: String): BigInt = BigInt(value)
 
       override def clz: Class[java.math.BigInteger] = classOf[java.math.BigInteger]
+
     }
 
     class BlobIsPrimitive extends Primitive[ByteBuffer] {
@@ -387,8 +421,12 @@ object Primitives {
 
       val cassandraType = CQLSyntax.Types.Blob
 
-      override def fromRow(column: String, row: GettableData): Try[ByteBuffer] = nullCheck(column, row) {
-        r => r.getBytes(column)
+      override def fromRow(column: String, row: GettableByNameData): Try[ByteBuffer] = {
+        nullCheck(column, row)(_.getBytes(column))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[ByteBuffer] = {
+        nullCheck(index, row)(_.getBytes(index))
       }
 
       override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
@@ -396,6 +434,7 @@ object Primitives {
       override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 
       override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
+
     }
 
   def list[T : Primitive](): Primitive[List[T]] = {
@@ -403,8 +442,12 @@ object Primitives {
 
       val ev = implicitly[Primitive[T]]
 
-      override def fromRow(column: String, row: GettableData): Try[List[T]] = {
+      override def fromRow(column: String, row: GettableByNameData): Try[List[T]] = {
         Try(row.getList(column, ev.clz).asScala.toList.map(ev.extract))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[List[T]] = {
+        Try(row.getList(index, ev.clz).asScala.toList.map(ev.extract))
       }
 
       override def cassandraType: String = QueryBuilder.Collections.listType(ev.cassandraType).queryString
@@ -428,8 +471,12 @@ object Primitives {
 
       val ev = implicitly[Primitive[T]]
 
-      override def fromRow(column: String, row: GettableData): Try[Set[T]] = {
+      override def fromRow(column: String, row: GettableByNameData): Try[Set[T]] = {
         Try(row.getSet(column, ev.clz).asScala.toSet.map(ev.extract))
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Set[T]] = {
+        Try(row.getList(index, ev.clz).asScala.toSet.map(ev.extract))
       }
 
       override def cassandraType: String = QueryBuilder.Collections.setType(ev.cassandraType).queryString
@@ -452,9 +499,17 @@ object Primitives {
       val keyPrimitive = implicitly[Primitive[K]]
       val valuePrimitive = implicitly[Primitive[V]]
 
-      override def fromRow(column: String, row: GettableData): Try[Map[K, V]] = {
+      override def fromRow(column: String, row: GettableByNameData): Try[Map[K, V]] = {
         Try {
           row.getMap(column, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap.map {
+            case (key, value) => keyPrimitive.extract(key) -> valuePrimitive.extract(value)
+          }
+        }
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Map[K, V]] = {
+        Try {
+          row.getMap(index, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap.map {
             case (key, value) => keyPrimitive.extract(key) -> valuePrimitive.extract(value)
           }
         }
