@@ -224,7 +224,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
 
       override def asCql(tp: $tpe): $strType = {
-        $builder.QueryBuilder.Collections.tupled(${fields.map(_.serializer)}).queryString
+        $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 
       override def fromString(value: $strType): $tpe = ???
