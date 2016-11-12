@@ -40,6 +40,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val longType: Tree = tq"scala.Long"
   val floatType: Tree = tq"scala.Float"
   val dateType: Tree = tq"java.util.Date"
+  val tupleValue: Tree = tq"com.datastax.driver.core.TupleValue"
   val localDate: Tree = tq"com.datastax.driver.core.LocalDate"
   val dateTimeType: Tree = tq"org.joda.time.DateTime"
   val localJodaDate: Tree = tq"org.joda.time.LocalDate"
@@ -55,6 +56,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val prefix = q"com.outworkers.phantom.builder.primitives"
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
+  def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
 
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
@@ -163,46 +165,61 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   }
 
+  case class TupleType(
+    term: TermName,
+    cassandraType: Tree,
+    extractor: Tree,
+    serializer: Tree
+  )
+
   def tuplePrimitive[T : WeakTypeTag](): Tree = {
     val tpe = weakTypeOf[T]
 
     val comp = tpe.companion.termSymbol.name.toTermName
     val sourceTerm = TermName("source")
 
-    val extractors = tpe.typeArgs.zipWithIndex.map {
-      case (argTpe, i) => TermName(s"tp$i")
-    }
-
-    val fields = tpe.typeArgs.zipWithIndex.map {
+    val fields: List[TupleType] = tpe.typeArgs.zipWithIndex.map {
       case (argTpe, i) => {
         val currentTerm = TermName(s"tp$i")
-        fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(${TermName(i.toString)}, $sourceTerm)"
+        val tpIndex = TermName("_" + i)
+
+        TupleType(
+          currentTerm,
+          q"$prefix.Primitive[$argTpe].cassandraType",
+          fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(${TermName(i.toString)}, $sourceTerm)",
+          q"$prefix.Primitive[$argTpe].asCql(tp.$tpIndex)"
+        )
       }
     }
 
     q"""new $prefix.Primitive[$tpe] {
-      override type PrimitiveType = $tpe
+      override type PrimitiveType = $tupleValue
 
-      override def cassandraType: $strType = $prefix
+      override def cassandraType: $strType = $builder.QueryBuilder.Collections.tupleType()
 
-      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe] = {
-        nullCheck(name, row) {
-          r => {
-            val $sourceTerm = r.getTupleValue(name)
-            for (..$fields) yield $comp.apply(..$extractors)
-          }
+      override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
+        nullCheck(name, row) { r =>
+          val $sourceTerm = r.getTupleValue(name)
+          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
         }
       }
 
-      override def asCql(value: $tpe): $strType = {
-        strP.asCql(value.toString)
+      override def fromRow(index: $intType, row: $rowByIndexType): ${tryT(tpe)}  = {
+        nullCheck(index, row) { r =>
+           val $sourceTerm = r.getTupleValue(name)
+           for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+        }
+      }
+
+      override def asCql(tp: $tpe): $strType = {
+        val seq = ${fields.map(_.serializer)}
       }
 
       override def fromString(value: $strType): $tpe = {
         $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
       }
 
-      override def clz: Class[$strType] = classOf[$strType]
+      override def clz: Class[$strType] = classOf[$tupleValue]
     }"""
   }
 
