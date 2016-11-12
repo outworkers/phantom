@@ -47,16 +47,21 @@ class PrimitivesTest extends FlatSpec with Matchers {
     val expected = QueryBuilder.Collections.serialize(input.map(Primitive[String].asCql)).queryString
 
     test.asCql(input) shouldEqual expected
+  }
 
+  it should "correctly serialize a tuple using a primitive" in {
+    val primitive = implicitly[Primitive[(String, Long)]]
+    QueryBuilder.Collections.tupled("'test'", "5").queryString shouldEqual "('test', 5)"
+    primitive.asCql("test" -> 5) shouldEqual "('test', 5)"
   }
 
   it should "autogenerate set primitives for Set types" in {
-    val test = Primitive[Set[String]]
+    """val test = Primitive[Set[String]]""" should compile
   }
 
 
   it should "autogenerate set primitives for Map types" in {
-    val test = Primitive[Map[String, String]]
+    """val test = Primitive[Map[String, String]]""" should compile
   }
 
 }

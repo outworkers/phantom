@@ -249,4 +249,8 @@ package object tables {
   implicit object SimpleStringClassSampler extends Sample[SimpleStringClass] {
     def sample: SimpleStringClass = SimpleStringClass(gen[String])
   }
+
+  implicit object TupleRecordSampler extends Sample[TupleRecord] {
+    override def sample: TupleRecord = TupleRecord(gen[UUID], gen[String] -> gen[Long])
+  }
 }

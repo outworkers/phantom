@@ -21,11 +21,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
-  def tupled(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).wrap(queryBuilder.Utils.join(tuples))
-  }
-
-  def tupled(tuples: Seq[String]): CQLQuery = {
+  def tupled(tuples: String*): CQLQuery = {
     queryBuilder.Utils.join(tuples)
   }
 

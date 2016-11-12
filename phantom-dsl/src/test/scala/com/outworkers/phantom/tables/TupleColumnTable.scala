@@ -17,7 +17,10 @@ package com.outworkers.phantom.tables
 
 import java.util.UUID
 
+import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+
+import scala.concurrent.Future
 
 case class TupleRecord(id: UUID, tp: (String, Long))
 
@@ -33,4 +36,15 @@ class TupleColumnTable extends CassandraTable[ConcreteTupleColumnTable, TupleRec
   }
 }
 
-abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnector
+abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnector {
+
+  def store(rec: TupleRecord): InsertQuery.Default[ConcreteTupleColumnTable, TupleRecord] = {
+    insert
+      .value(_.id, rec.id)
+      .value(_.tp, rec.tp)
+  }
+
+  def findById(id: UUID): Future[Option[TupleRecord]] = {
+    select.where(_.id eqs id).one()
+  }
+}

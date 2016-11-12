@@ -174,13 +174,10 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     serializer: Tree
   )
 
-  def tuplePrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
-
-    val comp = tpe.typeSymbol.name.toTermName
+  def tupleFields(tpe: Type): List[TupleType] = {
     val sourceTerm = TermName("source")
 
-    val fields: List[TupleType] = tpe.typeArgs.zipWithIndex.map {
+    tpe.typeArgs.zipWithIndex.map {
       case (argTpe, i) => {
         val currentTerm = TermName(s"tp${i + 1}")
         val tupleRef = TermName("_" + (i + 1).toString)
@@ -195,8 +192,17 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         )
       }
     }
+  }
 
-    q"""new $prefix.Primitive[$tpe] {
+  def tuplePrimitive[T : WeakTypeTag](): Tree = {
+    val tpe = weakTypeOf[T]
+
+    val comp = tpe.typeSymbol.name.toTermName
+    val sourceTerm = TermName("source")
+
+    val fields: List[TupleType] = tupleFields(tpe)
+
+    val tree = q"""new $prefix.Primitive[$tpe] {
       override type PrimitiveType = $tupleValue
 
       override def cassandraType: $strType = {
@@ -231,6 +237,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def clz: Class[$tupleValue] = classOf[$tupleValue]
     }"""
+
+    println(showCode(tree))
+    tree
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {
