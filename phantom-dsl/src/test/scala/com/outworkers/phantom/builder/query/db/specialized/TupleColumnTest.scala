@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.db.specialized
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.TupleRecord
+import com.outworkers.phantom.tables.{NestedTupleRecord, TupleRecord}
 import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
 
@@ -24,6 +24,7 @@ class TupleColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.tuple2Table.insertSchema()
+    database.nestedTupleTable.insertSchema()
   }
 
   it should "store and retrieve a record with a tuple column" in {
@@ -55,6 +56,48 @@ class TupleColumnTest extends PhantomSuite {
       rec <- database.tuple2Table.findById(sample.id)
       update <- database.tuple2Table.update.where(_.id eqs sample.id).modify(_.tp setTo sample2.tp).future()
       rec2 <- database.tuple2Table.findById(sample.id)
+    } yield (rec, rec2)
+
+    whenReady(chain) {
+      case (beforeUpdate, afterUpdate) => {
+        beforeUpdate shouldBe defined
+        beforeUpdate.value shouldEqual sample
+
+        afterUpdate shouldBe defined
+        afterUpdate.value.tp shouldEqual sample2.tp
+      }
+    }
+  }
+
+  it should "store and retrieve a record with a nested tuple column" in {
+    val sample = gen[NestedTupleRecord]
+
+    val insert = database.nestedTupleTable.store(sample)
+
+    val chain = for {
+      store <- insert.future()
+      rec <- database.nestedTupleTable.findById(sample.id)
+    } yield rec
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
+
+  it should "update the value of a nested tuple column" in {
+    val sample = gen[NestedTupleRecord]
+    val sample2 = gen[NestedTupleRecord].copy(id = sample.id)
+
+    val insert = database.nestedTupleTable.store(sample)
+
+    val chain = for {
+      store <- insert.future()
+      rec <- database.nestedTupleTable.findById(sample.id)
+      update <- database.nestedTupleTable.update.where(_.id eqs sample.id).modify(_.tp setTo sample2.tp).future()
+      rec2 <- database.nestedTupleTable.findById(sample.id)
     } yield (rec, rec2)
 
     whenReady(chain) {

@@ -87,6 +87,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
   object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with connector.Connector
   object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
   object tuple2Table extends ConcreteTupleColumnTable with connector.Connector
+  object nestedTupleTable extends ConcreteNestedTupleColumnTable with connector.Connector
 }
 
 object Connector {

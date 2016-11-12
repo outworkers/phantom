@@ -253,4 +253,10 @@ package object tables {
   implicit object TupleRecordSampler extends Sample[TupleRecord] {
     override def sample: TupleRecord = TupleRecord(gen[UUID], gen[String] -> gen[Long])
   }
+
+  implicit object NestedTupleRecordSampler extends Sample[NestedTupleRecord] {
+    override def sample: NestedTupleRecord = NestedTupleRecord(
+      gen[UUID], gen[String] -> (gen[String] -> gen[Long])
+    )
+  }
 }
