@@ -25,6 +25,10 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     CQLQuery(name).wrap(queryBuilder.Utils.join(tuples))
   }
 
+  def tupled(tuples: Seq[String]): CQLQuery = {
+    queryBuilder.Utils.join(tuples)
+  }
+
   def tuple(name: String, tuples: String*): CQLQuery = {
     CQLQuery(name).forcePad.append(CQLSyntax.Collections.tuple)
       .wrap(queryBuilder.Utils.join(tuples))
@@ -194,7 +198,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .append(key).append(CQLSyntax.Symbols.`]`)
   }
 
-  def tupleType(types: Seq[String]): CQLQuery = {
+  def tupleType(types: String*): CQLQuery = {
     CQLQuery(CQLSyntax.Collections.tuple)
     .append(CQLSyntax.Symbols.`<`)
     .append(types)

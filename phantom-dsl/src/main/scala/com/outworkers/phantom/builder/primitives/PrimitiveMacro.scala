@@ -88,7 +88,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val tpe = weakTypeOf[T].typeSymbol
 
     val tree = tpe match {
-      case sym if sym.name.toTypeName.decodedName.toString.contains("scala.Tuple") => tuplePrimitive[T]
+      case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => tuplePrimitive[T]()
       case Symbols.boolSymbol => booleanPrimitive
       case Symbols.byteSymbol => bytePrimitive
       case Symbols.shortSymbol => shortPrimitive
@@ -110,7 +110,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.listSymbol => listPrimitive[T]()
       case Symbols.setSymbol => setPrimitive[T]()
       case Symbols.mapSymbol => mapPrimitive[T]()
-      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
+      case sym @ _ => {
+        c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
+      }
     }
 
     c.Expr[Primitive[T]](tree)
@@ -175,19 +177,21 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   def tuplePrimitive[T : WeakTypeTag](): Tree = {
     val tpe = weakTypeOf[T]
 
-    val comp = tpe.companion.termSymbol.name.toTermName
+    val comp = tpe.typeSymbol.name.toTermName
     val sourceTerm = TermName("source")
 
     val fields: List[TupleType] = tpe.typeArgs.zipWithIndex.map {
       case (argTpe, i) => {
-        val currentTerm = TermName(s"tp$i")
-        val tpIndex = TermName("_" + i)
+        val currentTerm = TermName(s"tp${i + 1}")
+        val tupleRef = TermName("_" + (i + 1).toString)
+
+        val index = q"$i"
 
         TupleType(
           currentTerm,
           q"$prefix.Primitive[$argTpe].cassandraType",
-          fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(${TermName(i.toString)}, $sourceTerm)",
-          q"$prefix.Primitive[$argTpe].asCql(tp.$tpIndex)"
+          fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(index = $index, row = $sourceTerm)",
+          q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)"
         )
       }
     }
@@ -195,31 +199,37 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     q"""new $prefix.Primitive[$tpe] {
       override type PrimitiveType = $tupleValue
 
-      override def cassandraType: $strType = $builder.QueryBuilder.Collections.tupleType()
+      override def cassandraType: $strType = {
+        $builder.QueryBuilder.Collections
+          .tupleType(..${fields.map(_.cassandraType)})
+          .queryString
+      }
 
       override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
-        nullCheck(name, row) { r =>
-          val $sourceTerm = r.getTupleValue(name)
+        if (scala.Option(row).isEmpty || row.isNull(name)) {
+          scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
+        } else {
+          val $sourceTerm = row.getTupleValue(name)
           for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
         }
       }
 
       override def fromRow(index: $intType, row: $rowByIndexType): ${tryT(tpe)}  = {
-        nullCheck(index, row) { r =>
-           val $sourceTerm = r.getTupleValue(name)
-           for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+        if (scala.Option(row).isEmpty || row.isNull(index)) {
+          scala.util.Failure(new Exception("Column with index " + index + " is null") with scala.util.control.NoStackTrace)
+        } else {
+          val $sourceTerm = row.getTupleValue(index)
+          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
         }
       }
 
       override def asCql(tp: $tpe): $strType = {
-        val seq = ${fields.map(_.serializer)}
+        $builder.QueryBuilder.Collections.tupled(${fields.map(_.serializer)}).queryString
       }
 
-      override def fromString(value: $strType): $tpe = {
-        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
-      }
+      override def fromString(value: $strType): $tpe = ???
 
-      override def clz: Class[$strType] = classOf[$tupleValue]
+      override def clz: Class[$tupleValue] = classOf[$tupleValue]
     }"""
   }
 
