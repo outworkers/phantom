@@ -46,7 +46,9 @@ object Primitives {
       }
 
       override def fromRow(index: Int, row: GettableByIndexData): Try[String] = {
-        nullCheck(index, row)(_.getString(index))
+        nullCheck(index, row) {
+          r => Console.println("Database tuple");Console.println(r.getString(index)); r.getString(index)
+        }
       }
 
       override def clz: Class[String] = classOf[String]

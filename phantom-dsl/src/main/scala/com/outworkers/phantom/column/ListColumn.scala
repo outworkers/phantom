@@ -56,7 +56,11 @@ class ListColumn[
     if (shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)
     } else if (valuePrimitive.frozen) {
-      CQLQuery(name).forcePad.append(QueryBuilder.Collections.frozen(valuePrimitive.cassandraType))
+      CQLQuery(name).forcePad.append(
+        QueryBuilder.Collections.listType(
+          QueryBuilder.Collections.frozen(valuePrimitive.cassandraType).queryString
+        )
+      )
     } else {
       CQLQuery(name).forcePad.append(cassandraType)
     }

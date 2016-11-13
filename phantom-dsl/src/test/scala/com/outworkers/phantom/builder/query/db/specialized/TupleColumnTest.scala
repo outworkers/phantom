@@ -118,7 +118,6 @@ class TupleColumnTest extends PhantomSuite {
   it should "store and retrieve a record with a collection tuple column" in {
     val sample = gen[TupleCollectionRecord]
 
-
     val insert = database.tupleCollectionsTable.store(sample)
 
     val chain = for {
@@ -153,6 +152,16 @@ class TupleColumnTest extends PhantomSuite {
       rec2 <- database.tupleCollectionsTable.findById(sample.id)
     } yield (rec, rec2)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain) {
+      case (beforeUpdate, afterUpdate) => {
+
+        beforeUpdate shouldBe defined
+        beforeUpdate.value.id shouldEqual sample.id
+        beforeUpdate.value.tuples should contain theSameElementsAs sample.tuples
+
+        afterUpdate shouldBe defined
+        afterUpdate.value.tuples should contain (appended)
+      }
+    }
   }
 }
