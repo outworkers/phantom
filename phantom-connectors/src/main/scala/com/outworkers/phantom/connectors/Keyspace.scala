@@ -53,14 +53,15 @@ trait SessionAugmenterImplicits {
  * @param name the name of the keySpace
  * @param clusterBuilder the provider for this keySpace
  */
-class KeySpaceDef(
+class CassandraConnection(
   val name: String,
   clusterBuilder: ClusterBuilder,
   autoinit: Boolean,
-  keyspaceFn: Option[(Session, KeySpace) => String] = None
+  keyspaceFn: Option[(Session, KeySpace) => String] = None,
+  errorHander: Throwable => Throwable = identity
 ) {
 
-  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn)
+  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn, errorHander)
 
   val self = this
 

@@ -19,7 +19,7 @@ import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{KeySpace, KeySpaceDef}
+import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
 import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._
@@ -29,7 +29,7 @@ private object Lock
 
 abstract class Database[
   DB <: Database[DB]
-](val connector: KeySpaceDef)(implicit helper: DatabaseHelper[DB]) {
+](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
 
   implicit val space: KeySpace = KeySpace(connector.name)
 

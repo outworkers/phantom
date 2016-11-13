@@ -37,7 +37,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     keyspace: KeySpace,
     executor: ExecutionContextExecutor
   ): ScalaPromise[PreparedStatement] = {
-    Manager.logger.debug(s"Executing query: ${st.toString}")
+    Manager.logger.debug(s"Executing prepared statement: ${st.toString}")
 
     val promise = ScalaPromise[PreparedStatement]()
 
@@ -63,7 +63,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     keyspace: KeySpace,
     executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: ${st.toString}")
+    Manager.logger.debug(s"Executing query: $st")
 
     val promise = ScalaPromise[ResultSet]()
 

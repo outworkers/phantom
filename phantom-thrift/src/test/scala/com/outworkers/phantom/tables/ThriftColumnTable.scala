@@ -22,7 +22,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift._
@@ -161,7 +161,7 @@ abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootCo
   }
 }
 
-class ThriftDatabase(override val connector: KeySpaceDef) extends Database[ThriftDatabase](connector) {
+class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {
   object thriftColumnTable extends ConcreteThriftColumnTable with connector.Connector
   object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
 }

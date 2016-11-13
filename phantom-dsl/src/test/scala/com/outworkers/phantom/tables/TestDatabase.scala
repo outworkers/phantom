@@ -20,11 +20,11 @@ import java.util.UUID
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
+class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
   object articles extends ConcreteArticles with connector.Connector
   object articlesByAuthor extends ConcreteArticlesByAuthor with connector.Connector
 

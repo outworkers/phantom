@@ -21,8 +21,8 @@ import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class Article(
-  name: String,
   id: UUID,
+  name: String,
   orderId: Long
 )
 
@@ -32,7 +32,7 @@ sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def fromRow(row: Row): Article = extract[Article].apply(row)
+  override def fromRow(row: Row): Article = Article(id(row), name(row), orderId(row))
 }
 
 abstract class ConcreteArticles extends Articles with RootConnector {

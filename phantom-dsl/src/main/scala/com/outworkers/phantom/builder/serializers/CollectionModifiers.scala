@@ -201,6 +201,14 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     .append(CQLSyntax.Symbols.`>`)
   }
 
+  def frozen(cassandraType: String): CQLQuery = {
+    diamond(CQLSyntax.Collections.frozen, cassandraType)
+  }
+
+  def frozen(cassandraType: CQLQuery): CQLQuery = {
+    frozen(cassandraType.queryString)
+  }
+
   def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {
     CQLQuery(name).forcePad.append(
       diamond(CQLSyntax.Collections.frozen, cassandraType.queryString)

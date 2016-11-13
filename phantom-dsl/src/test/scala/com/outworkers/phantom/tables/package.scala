@@ -74,8 +74,8 @@ package object tables {
 
   implicit object ArticleSampler extends Sample[Article] {
     def sample: Article = Article(
-      gen[String],
       gen[UUID],
+      gen[String],
       gen[Long]
     )
   }

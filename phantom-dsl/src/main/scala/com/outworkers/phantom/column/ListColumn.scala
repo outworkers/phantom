@@ -53,8 +53,10 @@ class ListColumn[
   override val cassandraType = QueryBuilder.Collections.listType(valuePrimitive.cassandraType).queryString
 
   override def qb: CQLQuery = {
-    if (shouldFreeze || valuePrimitive.frozen) {
+    if (shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)
+    } else if (valuePrimitive.frozen) {
+      CQLQuery(name).forcePad.append(QueryBuilder.Collections.frozen(valuePrimitive.cassandraType))
     } else {
       CQLQuery(name).forcePad.append(cassandraType)
     }

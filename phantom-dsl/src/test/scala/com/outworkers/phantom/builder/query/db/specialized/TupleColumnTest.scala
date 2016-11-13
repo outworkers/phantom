@@ -27,6 +27,8 @@ class TupleColumnTest extends PhantomSuite {
     database.tuple2Table.insertSchema()
     database.nestedTupleTable.insertSchema()
     database.tupleCollectionsTable.insertSchema()
+
+    Console.println(database.tupleCollectionsTable.create.ifNotExists().queryString)
   }
 
   it should "store and retrieve a record with a tuple column" in {
@@ -116,6 +118,7 @@ class TupleColumnTest extends PhantomSuite {
   it should "store and retrieve a record with a collection tuple column" in {
     val sample = gen[TupleCollectionRecord]
 
+
     val insert = database.tupleCollectionsTable.store(sample)
 
     val chain = for {
@@ -126,7 +129,12 @@ class TupleColumnTest extends PhantomSuite {
     whenReady(chain) {
       res => {
         res shouldBe defined
-        res.value shouldEqual sample
+        res.value.id shouldEqual sample.id
+        Console.println("Source tuples")
+        Console.println(sample.tuples.mkString("\n"))
+        Console.println("DB tuples")
+        Console.println(res.value.tuples.mkString("\n"))
+        res.value.tuples should contain theSameElementsAs sample.tuples
       }
     }
   }
