@@ -75,3 +75,31 @@ abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable wit
     select.where(_.id eqs id).one()
   }
 }
+
+
+case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
+
+class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {
+  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object tuples extends ListColumn[(Int, String)](this)
+
+  def fromRow(row: Row): TupleCollectionRecord = {
+    TupleCollectionRecord(
+      id(row),
+      tuples(row)
+    )
+  }
+}
+
+abstract class ConcreteTupleCollectionsTable extends TupleCollectionsTable with RootConnector {
+
+  def store(rec: TupleCollectionRecord): InsertQuery.Default[ConcreteTupleCollectionsTable, TupleCollectionRecord] = {
+    insert
+      .value(_.id, rec.id)
+      .value(_.tuples, rec.tuples)
+  }
+
+  def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
+    select.where(_.id eqs id).one()
+  }
+}

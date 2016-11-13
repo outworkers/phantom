@@ -259,4 +259,10 @@ package object tables {
       gen[UUID], gen[String] -> (gen[String] -> gen[Long])
     )
   }
+
+  implicit object TupleCollectionRecordSampler extends Sample[TupleCollectionRecord] {
+    override def sample: TupleCollectionRecord = TupleCollectionRecord(
+      gen[UUID], genList[Int]().map(_ -> gen[String])
+    )
+  }
 }

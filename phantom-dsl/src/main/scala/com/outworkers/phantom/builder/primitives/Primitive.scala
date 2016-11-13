@@ -85,6 +85,8 @@ abstract class Primitive[RR] {
   def clz: Class[PrimitiveType]
 
   def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
+
+  def frozen: Boolean = false
 }
 
 object Primitive {

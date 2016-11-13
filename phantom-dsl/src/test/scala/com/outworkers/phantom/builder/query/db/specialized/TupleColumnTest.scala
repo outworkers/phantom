@@ -15,8 +15,9 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
+import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{NestedTupleRecord, TupleRecord}
+import com.outworkers.phantom.tables.{NestedTupleRecord, TupleCollectionRecord, TupleRecord}
 import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
 
@@ -25,6 +26,7 @@ class TupleColumnTest extends PhantomSuite {
     super.beforeAll()
     database.tuple2Table.insertSchema()
     database.nestedTupleTable.insertSchema()
+    database.tupleCollectionsTable.insertSchema()
   }
 
   it should "store and retrieve a record with a tuple column" in {
@@ -109,5 +111,40 @@ class TupleColumnTest extends PhantomSuite {
         afterUpdate.value.tp shouldEqual sample2.tp
       }
     }
+  }
+
+  it should "store and retrieve a record with a collection tuple column" in {
+    val sample = gen[TupleCollectionRecord]
+
+    val insert = database.tupleCollectionsTable.store(sample)
+
+    val chain = for {
+      store <- insert.future()
+      rec <- database.tupleCollectionsTable.findById(sample.id)
+    } yield rec
+
+    whenReady(chain) {
+      res => {
+        res shouldBe defined
+        res.value shouldEqual sample
+      }
+    }
+  }
+
+  it should "update the value of a collection tuple column" in {
+    val sample = gen[TupleCollectionRecord]
+
+    val appended = gen[Int] -> gen[String]
+
+    val insert = database.tupleCollectionsTable.store(sample)
+
+    val chain = for {
+      store <- insert.future()
+      rec <- database.tupleCollectionsTable.findById(sample.id)
+      update <- database.tupleCollectionsTable.update.where(_.id eqs sample.id).modify(_.tuples append appended).future()
+      rec2 <- database.tupleCollectionsTable.findById(sample.id)
+    } yield (rec, rec2)
+
+    chain.failing[InvalidQueryException]
   }
 }
