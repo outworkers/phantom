@@ -15,9 +15,13 @@
  */
 package com.outworkers.phantom.builder.query.options
 
+import java.util.concurrent.TimeUnit
+
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.{CQLQuery, OptionPart}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+
+import scala.concurrent.duration.TimeUnit
 
 sealed abstract class CompactionProperties[
   T <: CompactionProperties[T]
@@ -136,20 +140,18 @@ private[phantom] trait CompactionStrategies {
       )
     }
 
-    def compaction_window_unit(value: String): TimeWindowCompactionStrategy = {
+    /**
+      * Declares the time unit to use with this compaction strategy.
+      * This will default to days as per [[http://cassandra.apache.org/doc/latest/operating/compaction.html?highlight=time%20window%20compaction#time-window-compactionstrategy/]]
+      * @param unit The [[java.util.concurrent.TimeUnit]] to use, defaults to [[java.util.concurrent.TimeUnit.DAYS]].
+      * @return A compaction strategy builder with a time unit specified.
+      */
+    def compaction_window_unit(unit: TimeUnit): TimeWindowCompactionStrategy = {
       option(
         CQLSyntax.CompactionOptions.compaction_window_unit,
-        value
+        unit.name()
       )
     }
-
-    def timestamp_resolution(value: String): TimeWindowCompactionStrategy = {
-      option(
-        CQLSyntax.CompactionOptions.timestamp_resolution,
-        value
-      )
-    }
-
   }
 
   sealed class DateTieredCompactionStrategy(options: OptionPart)
