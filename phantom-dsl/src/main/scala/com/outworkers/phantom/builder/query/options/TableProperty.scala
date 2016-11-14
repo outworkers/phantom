@@ -43,7 +43,9 @@ trait ClauseBuilder[T] extends TablePropertyClause {
 
   protected[this] def instance(opts: OptionPart): T
 
-  protected[this] def instance(qb: CQLQuery): T = instance(options append qb)
+  protected[this] def instance(qb: CQLQuery): T = {
+    instance(options append qb)
+  }
 
   def option(key: String, value: String): T = {
     val qb = QueryBuilder.Utils.option(

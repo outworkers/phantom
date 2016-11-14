@@ -46,6 +46,32 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
           ": 'SizeTieredCompactionStrategy'}"
       }
 
+      "serialise a create query with a TimeWindowCompactionStrategy" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy).qb.queryString
+
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy'}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy and an option set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy.compaction_window_unit(TimeUnit.DAYS)
+        ).qb.queryString
+
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
+      }
+
+
+      "serialise a create query with a TimeWindowCompactionStrategy and both options set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy
+          .compaction_window_unit(TimeUnit.DAYS)
+          .compaction_window_size(5)
+        ).qb.queryString
+
+        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5}"
+      }
+
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
         val qb = BasicTable.create.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
