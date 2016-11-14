@@ -20,7 +20,7 @@ import com.outworkers.phantom.connectors._
 
 object Defaults {
 
-  val connector = ContactPoint.local.keySpace("phantom_example")
+  val connector = ContactPoint.local.noHeartbeat().keySpace("phantom_example")
 }
 
 /**
