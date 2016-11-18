@@ -32,10 +32,12 @@ class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
 abstract class ConcreteBasicTable extends BasicTable with RootConnector
 
 
-object Records extends Enumeration {
+trait Records extends Enumeration {
   type Records = Value
   val TypeOne, TypeTwo, TypeThree = Value
 }
+
+object Records extends Records
 
 trait NamedRecords extends Enumeration {
   type NamedRecords = Value
@@ -47,14 +49,14 @@ object NamedRecords extends NamedRecords
 
 case class EnumRecord(
   name: String,
-  enum: Records.type#Value,
-  optEnum: Option[Records.type#Value]
+  enum: Records#Value,
+  optEnum: Option[Records#Value]
 )
 
 case class NamedEnumRecord(
   name: String,
-  enum: NamedRecords.type#Value,
-  optEnum: Option[NamedRecords.type#Value]
+  enum: NamedRecords#Value,
+  optEnum: Option[NamedRecords#Value]
 )
 
 case class NamedPartitionRecord(
@@ -64,8 +66,8 @@ case class NamedPartitionRecord(
 
 abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey
-  object enum extends EnumColumn[Records.type](this)
-  object optEnum extends OptionalEnumColumn[Records.type](this)
+  object enum extends EnumColumn[Records](this)
+  object optEnum extends OptionalEnumColumn[Records](this)
 
   def fromRow(row: Row): EnumRecord = {
     EnumRecord(
@@ -88,8 +90,8 @@ abstract class ConcreteEnumTable extends EnumTable with RootConnector {
 
 sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn(this) with PartitionKey
-  object enum extends EnumColumn[NamedRecords.type](this)
-  object optEnum extends OptionalEnumColumn[NamedRecords.type](this)
+  object enum extends EnumColumn[NamedRecords](this)
+  object optEnum extends OptionalEnumColumn[NamedRecords](this)
 
   def fromRow(row: Row): NamedEnumRecord = {
     NamedEnumRecord(
