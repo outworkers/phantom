@@ -60,7 +60,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
   type MapColumn[KK, VV] =  com.outworkers.phantom.column.MapColumn[T, R, KK, VV]
   type JsonColumn[RR] = com.outworkers.phantom.column.JsonColumn[T, R, RR]
-  type EnumColumn[RR <: Enumeration] = com.outworkers.phantom.column.EnumColumn[T, R, RR]
+  type EnumColumn[RR <: Enumeration] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
   type OptionalEnumColumn[RR <: Enumeration] = com.outworkers.phantom.column.OptionalEnumColumn[T, R, RR]
   type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]

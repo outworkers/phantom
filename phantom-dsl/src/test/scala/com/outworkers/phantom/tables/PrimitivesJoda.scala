@@ -31,7 +31,7 @@ case class JodaRow(
 )
 
 sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaRow] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 

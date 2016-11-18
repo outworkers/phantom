@@ -35,7 +35,7 @@ case class Primitive(
 )
 
 sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object long extends LongColumn(this)
 

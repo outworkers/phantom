@@ -22,6 +22,7 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics.Recipe
+import com.outworkers.phantom.{CassandraTable => _, _}
 import org.joda.time.DateTime
 
 import scala.concurrent.{Future => ScalaFuture}
@@ -36,7 +37,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // Keep reading for examples.
 sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -52,7 +53,7 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
   // Cassandra collections target a small number of items, but usage is trivial.
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime]
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder
 
   // Now the mapping function, transforming a row into a custom type.
   // This is a bit of boilerplate, but it's one time only and very short.

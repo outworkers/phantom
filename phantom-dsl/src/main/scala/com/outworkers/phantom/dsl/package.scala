@@ -91,12 +91,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
   type OptionalTimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalTimeUUIDColumn[Owner, Record]
 
-  type ClusteringOrder[ValueType] = com.outworkers.phantom.keys.ClusteringOrder[ValueType]
+  type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
   type Descending = com.outworkers.phantom.keys.Descending
-  type PartitionKey[ValueType] = com.outworkers.phantom.keys.PartitionKey[ValueType]
-  type PrimaryKey[ValueType] = com.outworkers.phantom.keys.PrimaryKey[ValueType]
-  type Index[ValueType] = com.outworkers.phantom.keys.Index[ValueType]
+  type PartitionKey = com.outworkers.phantom.keys.PartitionKey
+  type PrimaryKey = com.outworkers.phantom.keys.PrimaryKey
+  type Index = com.outworkers.phantom.keys.Index
   type Keys = com.outworkers.phantom.keys.Keys
   type Entries = com.outworkers.phantom.keys.Entries
   type StaticColumn[ValueType] = com.outworkers.phantom.keys.StaticColumn[ValueType]
@@ -153,7 +153,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
-  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
+  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey) extends AnyVal {
 
     def ltToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
