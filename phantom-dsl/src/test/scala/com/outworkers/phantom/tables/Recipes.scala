@@ -81,7 +81,7 @@ case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
 sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
 
   object map extends MapColumn[Long, DateTime](this)
 

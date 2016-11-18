@@ -64,7 +64,7 @@ case class NamedPartitionRecord(
 
 abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey
-  object enum extends EnumColumn[Records.type](this, Records)
+  object enum extends EnumColumn[Records.type](this)
   object optEnum extends OptionalEnumColumn[Records.type](this)
 
   def fromRow(row: Row): EnumRecord = {
