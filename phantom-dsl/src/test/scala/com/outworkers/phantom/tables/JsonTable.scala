@@ -36,7 +36,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
 
   implicit val formats = DefaultFormats
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
 
   object name extends StringColumn(this)
 

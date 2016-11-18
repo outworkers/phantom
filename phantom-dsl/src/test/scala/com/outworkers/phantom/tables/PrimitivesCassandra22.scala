@@ -29,7 +29,7 @@ case class PrimitiveCassandra22(
 
 sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
 
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object short extends SmallIntColumn(this)
 

@@ -99,7 +99,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Index = com.outworkers.phantom.keys.Index
   type Keys = com.outworkers.phantom.keys.Keys
   type Entries = com.outworkers.phantom.keys.Entries
-  type StaticColumn[ValueType] = com.outworkers.phantom.keys.StaticColumn[ValueType]
+  type StaticColumn = com.outworkers.phantom.keys.StaticColumn
 
   type Database[DB <: Database[DB]] = com.outworkers.phantom.database.Database[DB]
   type DatabaseProvider[DB <: Database[DB]] = com.outworkers.phantom.database.DatabaseProvider[DB]

@@ -60,7 +60,7 @@ object OptionalPrimitive {
 }
 
 sealed class OptionalPrimitives extends CassandraTable[ConcreteOptionalPrimitives, OptionalPrimitive] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object string extends OptionalStringColumn(this)
 

@@ -28,7 +28,7 @@ case class ScalaPrimitiveMapRecord(
 
 class ScalaTypesMapTable extends CassandraTable[ConcreteScalaTypesMapTable, ScalaPrimitiveMapRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object map extends MapColumn[DateTime, BigDecimal](this)
 
   override def fromRow(row: Row): ScalaPrimitiveMapRecord = {

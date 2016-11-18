@@ -34,7 +34,7 @@ case class Recipe(
 
 class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn(this) with PartitionKey
 
   object description extends OptionalStringColumn(this)
 
