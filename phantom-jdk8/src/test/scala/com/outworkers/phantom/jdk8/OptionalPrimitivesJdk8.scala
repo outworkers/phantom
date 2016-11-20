@@ -32,7 +32,7 @@ case class OptionalJdk8Row(
 
 sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] {
 
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
 

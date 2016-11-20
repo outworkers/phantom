@@ -21,7 +21,9 @@ part of long term re-branding efforts, we have finally felt it's time to make su
 - There is a new and now completely optional Bintray resolver, `Resolver.bintrayRepo("outworkers", "oss-releases")`,
  that gives you free access to the latest cuts of our open source releases before they hit Maven Central. We assume
  no liability for your usage of latest cuts, but we welcome feedback and we do our best to have elaborate CI processes in place.
-
+- `EnumColumn` is now relying entirely on `Primitive.macroImpl`, which means you will not need to pass in the enumeration
+as an argument to `EnumColumn` anymore. This means `object enum extends EnumColumn(this, enum: MyEnum)` is now simply
+`object enum extends EnumColumn[MyEnum#Value]`
 - All dependencies are now being published to Maven Central. This includes outworkers util and outworkers diesel,
 projects which have in their own right been completely open sourced under Apache V2 and made public on GitHub.
 - All dependencies on `scala-reflect` have been completely removed.
@@ -31,7 +33,6 @@ the column type passed anymore.
 - `KeySpaceDef` has been renamed to the more appropiate `CassandraConnector`.
 - Collections can now be used as part of a primary or partition key.
 - Tuples are now natively supported as valid types via `TupleColumn`. 
-
 
 
 Using phantom
