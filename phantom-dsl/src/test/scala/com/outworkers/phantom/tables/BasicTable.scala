@@ -66,8 +66,8 @@ case class NamedPartitionRecord(
 
 abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
   object id extends StringColumn(this) with PartitionKey
-  object enum extends EnumColumn[Records](this)
-  object optEnum extends OptionalEnumColumn[Records](this)
+  object enum extends EnumColumn[Records#Value](this)
+  object optEnum extends OptionalEnumColumn[Records#Value](this)
 
   def fromRow(row: Row): EnumRecord = {
     EnumRecord(
@@ -90,8 +90,8 @@ abstract class ConcreteEnumTable extends EnumTable with RootConnector {
 
 sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn(this) with PartitionKey
-  object enum extends EnumColumn[NamedRecords](this)
-  object optEnum extends OptionalEnumColumn[NamedRecords](this)
+  object enum extends EnumColumn[NamedRecords#Value](this)
+  object optEnum extends OptionalEnumColumn[NamedRecords#Value](this)
 
   def fromRow(row: Row): NamedEnumRecord = {
     NamedEnumRecord(
@@ -113,7 +113,7 @@ abstract class ConcreteNamedEnumTable extends NamedEnumTable with RootConnector 
 
 
 sealed class NamedPartitionEnumTable extends CassandraTable[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] {
-  object enum extends EnumColumn[NamedRecords](this) with PartitionKey
+  object enum extends EnumColumn[NamedRecords#Value](this) with PartitionKey
   object id extends UUIDColumn(this) with PrimaryKey
 
   def fromRow(row: Row): NamedPartitionRecord = {
