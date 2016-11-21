@@ -35,7 +35,7 @@ sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTa
     )
   }
 
-  object key extends StringColumn(this) with PartitionKey[String]
+  object key extends StringColumn(this) with PartitionKey
 
   object stringlist extends ListColumn[String](this)
 

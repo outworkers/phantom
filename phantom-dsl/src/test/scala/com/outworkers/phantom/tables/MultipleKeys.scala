@@ -21,14 +21,14 @@ import com.outworkers.phantom.dsl._
 
 class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleKeys]] {
 
-  object pkey extends StringColumn(this) with PartitionKey[String]
-  object intColumn1 extends IntColumn(this) with PrimaryKey[Int] with Index[Int]
-  object intColumn2 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn3 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn4 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn5 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn6 extends IntColumn(this) with PrimaryKey[Int]
-  object intColumn7 extends IntColumn(this) with PrimaryKey[Int]
+  object pkey extends StringColumn(this) with PartitionKey
+  object intColumn1 extends IntColumn(this) with PrimaryKey with Index
+  object intColumn2 extends IntColumn(this) with PrimaryKey
+  object intColumn3 extends IntColumn(this) with PrimaryKey
+  object intColumn4 extends IntColumn(this) with PrimaryKey
+  object intColumn5 extends IntColumn(this) with PrimaryKey
+  object intColumn6 extends IntColumn(this) with PrimaryKey
+  object intColumn7 extends IntColumn(this) with PrimaryKey
   object timestamp8 extends DateTimeColumn(this)
 
   def fromRow(r: Row): Option[MultipleKeys] = None

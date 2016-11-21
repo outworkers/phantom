@@ -49,7 +49,7 @@ case class Recipe(
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy val name = "the_primary_key"

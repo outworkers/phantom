@@ -28,7 +28,7 @@ case class Article(
 
 sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
@@ -49,9 +49,9 @@ abstract class ConcreteArticles extends Articles with RootConnector {
 
 sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, Article] {
 
-  object author_id extends UUIDColumn(this) with PartitionKey[UUID]
-  object category extends UUIDColumn(this) with PartitionKey[UUID]
-  object id extends UUIDColumn(this) with PrimaryKey[UUID]
+  object author_id extends UUIDColumn(this) with PartitionKey
+  object category extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PrimaryKey
 
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)

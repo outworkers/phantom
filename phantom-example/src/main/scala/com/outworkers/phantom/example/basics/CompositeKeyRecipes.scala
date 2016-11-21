@@ -32,7 +32,7 @@ import com.outworkers.phantom.dsl._
 // Keep reading for examples.
 sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -40,7 +40,7 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
 
   // Now we define a column for each field in our case class.
   // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
-  object name extends StringColumn(this) with PrimaryKey[String] // and you're done
+  object name extends StringColumn(this) with PrimaryKey // and you're done
 
 
   object title extends StringColumn(this)

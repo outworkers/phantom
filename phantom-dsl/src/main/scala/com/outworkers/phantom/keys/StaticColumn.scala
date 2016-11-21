@@ -17,7 +17,7 @@ package com.outworkers.phantom.keys
 
 import com.outworkers.phantom.column.AbstractColumn
 
-trait StaticColumn[ValueType] extends Key[ValueType, PartitionKey[ValueType]] {
-  self: AbstractColumn[ValueType] =>
+trait StaticColumn extends Key[StaticColumn] {
+  self: AbstractColumn[_] =>
     override val isStaticColumn = true
 }

@@ -29,10 +29,10 @@ case class PrimaryCollectionRecord(
 )
 
 class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
-  object listIndex extends ListColumn[String](this) with PartitionKey[List[String]]
-  object setCol extends SetColumn[String](this) with PrimaryKey[Set[String]]
-  object mapCol extends MapColumn[String, String](this) with PrimaryKey[Map[String, String]]
-  object name extends StringColumn(this) with PrimaryKey[String]
+  object listIndex extends ListColumn[String](this) with PartitionKey
+  object setCol extends SetColumn[String](this) with PrimaryKey
+  object mapCol extends MapColumn[String, String](this) with PrimaryKey
+  object name extends StringColumn(this) with PrimaryKey
   object value extends IntColumn(this)
 
   def fromRow(row: Row): PrimaryCollectionRecord = {

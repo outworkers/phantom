@@ -32,19 +32,19 @@ import com.outworkers.phantom.dsl._
 // Keep reading for examples.
 sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
   }
 
-  object name extends StringColumn(this) with PrimaryKey[String]
+  object name extends StringColumn(this) with PrimaryKey
 
   object title extends StringColumn(this)
 
   // If you want to query by a field, you need an index on it.
   // One of the strategies for doing so is using a SecondaryKey
-  object author extends StringColumn(this) with Index[String] // done
+  object author extends StringColumn(this) with Index // done
 
   object description extends StringColumn(this)
 
