@@ -63,7 +63,7 @@ class SimpleRecipesTest extends ExampleSuite {
     } yield res
 
     whenReady(chain) { res =>
-      res shouldEqual sample
+      res should contain theSameElementsAs sample
     }
   }
 
