@@ -24,12 +24,18 @@ import com.outworkers.phantom.example.basics.Recipe
 import com.outworkers.util.testing._
 import org.joda.time.DateTime
 import org.scalatest.FlatSpec
+import com.outworkers.phantom.dsl.context
 
 trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
   override def database: RecipesDatabase = RecipesDatabase
 }
 
 trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider with RecipesDatabase.Connector {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.create()
+  }
 
   implicit object RecipeSampler extends Sample[Recipe] {
     override def sample: Recipe = Recipe(
