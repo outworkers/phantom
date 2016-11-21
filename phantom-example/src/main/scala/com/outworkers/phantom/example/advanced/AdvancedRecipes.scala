@@ -31,9 +31,8 @@ import scala.concurrent.{Future => ScalaFuture}
  * In this example we will create a  table storing recipes.
  * This time we will use a composite key formed by name and id.
  */
-
 // You can seal the class and only allow importing the companion object.
-// The companion object is where you would implement your custom methods.
+// It's not directly meant for end user consumption anyway, the correct approach
 // Keep reading for examples.
 sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
@@ -77,12 +76,12 @@ abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnecto
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)
       .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
       .value(_.description, recipe.description)
       .value(_.ingredients, recipe.ingredients)
       .value(_.name, recipe.name)
       .value(_.props, recipe.props)
       .value(_.timestamp, recipe.timestamp)
-      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
       .future()
   }
 

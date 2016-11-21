@@ -96,12 +96,12 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   def insertNewRecord(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)
       .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
       .value(_.description, recipe.description)
       .value(_.ingredients, recipe.ingredients)
       .value(_.name, recipe.name)
       .value(_.props, recipe.props)
       .value(_.timestamp, recipe.timestamp)
-      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
       .future()
   }
 
