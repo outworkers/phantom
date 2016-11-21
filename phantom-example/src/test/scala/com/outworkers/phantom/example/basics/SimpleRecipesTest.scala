@@ -51,7 +51,7 @@ class SimpleRecipesTest extends ExampleSuite {
     }
   }
 
-  it should "retrieve the ingredients of a recipe" in {
+  it should "retrieve an entire table in a single fetch" in {
     val sample = genList[Recipe]()
 
     val chain = for {
