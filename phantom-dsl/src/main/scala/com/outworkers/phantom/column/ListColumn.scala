@@ -22,10 +22,8 @@ import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
 
-import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
-
 
 abstract class AbstractListColumn[
   Owner <: CassandraTable[Owner, Record],
@@ -36,9 +34,7 @@ abstract class AbstractListColumn[
 
   override def asCql(v: List[RR]): String = QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
 
-  override def apply(r: Row): List[RR] = {
-    parse(r).getOrElse(Nil)
-  }
+  override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
 }
 
 class ListColumn[
