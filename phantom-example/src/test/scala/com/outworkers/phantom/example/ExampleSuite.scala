@@ -15,14 +15,19 @@
  */
 package com.outworkers.phantom.example
 
+import java.util.UUID
+
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.Manager._
+import com.outworkers.phantom.dsl.DatabaseProvider
 import com.outworkers.phantom.example.advanced.RecipesDatabase
+import com.outworkers.phantom.example.basics.Recipe
 import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
+import com.outworkers.util.testing._
+import org.joda.time.DateTime
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest._
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 
 trait BaseSuite extends Suite
@@ -37,17 +42,33 @@ trait BaseSuite extends Suite
   implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 }
 
+trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
+  override def database: RecipesDatabase = RecipesDatabase
+}
 
-trait ExampleSuite extends Suite with BaseSuite with RecipesDatabase.connector.Connector {
+trait ExampleSuite extends Suite with BaseSuite with RecipesDatabase.connector.Connector with RecipesDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.ready(RecipesDatabase.autocreate().future(), 20.seconds)
+    RecipesDatabase.create()
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    Await.result(RecipesDatabase.autotruncate().future(), 20.seconds)
+    RecipesDatabase.truncate()
+  }
+
+  implicit object RecipeSampler extends Sample[Recipe] {
+    override def sample: Recipe = Recipe(
+      id = gen[UUID],
+      name = gen[ShortString].value,
+      title = gen[ShortString].value,
+      author = gen[ShortString].value,
+      description = gen[ShortString].value,
+      ingredients = genList[String]().toSet,
+      props = genMap[String](),
+      timestamp = gen[DateTime]
+    )
   }
 }
 
