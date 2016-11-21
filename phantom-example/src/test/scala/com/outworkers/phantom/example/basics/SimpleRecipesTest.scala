@@ -15,14 +15,13 @@
  */
 package com.outworkers.phantom.example.basics
 
-import com.outworkers.util.testing._
+import com.outworkers.phantom.dsl.context
 import com.outworkers.phantom.example.ExampleSuite
-import org.scalatest.FlatSpec
+import com.outworkers.util.testing._
 
 import scala.concurrent.Future
-import com.outworkers.phantom.dsl.context
 
-class SimpleRecipesTest extends FlatSpec with ExampleSuite {
+class SimpleRecipesTest extends ExampleSuite {
 
   it should "insert a new record in the recipes table and retrieve it" in {
     val sample = gen[Recipe]
@@ -89,7 +88,6 @@ class SimpleRecipesTest extends FlatSpec with ExampleSuite {
 
   it should "delete a recipe by its id" in {
     val sample = gen[Recipe]
-    val newAuthor = gen[ShortString].value
 
     val chain = for {
       store <- database.Recipes.insertNewRecord(sample).future
