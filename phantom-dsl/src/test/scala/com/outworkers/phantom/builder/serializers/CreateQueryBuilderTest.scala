@@ -35,41 +35,96 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
   final val DefaultTtl = 500
   final val OneDay = 86400
 
+  val root = BasicTable.create.qb.queryString
+
   "The CREATE query builder" - {
-    "should allow specifying table creation options" - {
 
-      "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
+    "should allow using DateTieredCompactionStrategy and its options" - {
+      "serialise a create query with a DateTieredCompactionStrategy" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy
+        ).qb.queryString
 
-        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
-
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'SizeTieredCompactionStrategy'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy'}"
       }
+
+      "allow setting base_time_seconds" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.base_time_seconds(5L)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'base_time_seconds': 5}"
+      }
+
+      "allow setting max_threshold" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.max_threshold(5)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'max_threshold': 5}"
+      }
+
+      "allow setting min_threshold" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.min_threshold(5)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'min_threshold': 5}"
+      }
+
+      "allow setting timestamp_resolution" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.timestamp_resolution(TimeUnit.MILLISECONDS)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'timestamp_resolution': 'MILLISECONDS'}"
+      }
+    }
+
+    "should allow using TimeWindowCompactionStrategy and its options" - {
 
       "serialise a create query with a TimeWindowCompactionStrategy" in {
         val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'TimeWindowCompactionStrategy'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy'}"
       }
 
       "serialise a create query with a TimeWindowCompactionStrategy and an option set" in {
         val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy.compaction_window_unit(TimeUnit.DAYS)
         ).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
       }
 
-
-      "serialise a create query with a TimeWindowCompactionStrategy and both options set" in {
+      "serialise a create query with a TimeWindowCompactionStrategy and two options set" in {
         val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy
           .compaction_window_unit(TimeUnit.DAYS)
           .compaction_window_size(5)
         ).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
+        qb shouldEqual s"$root WITH compaction = {'class'" +
           ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy and three options set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy
+          .compaction_window_unit(TimeUnit.DAYS)
+          .compaction_window_size(5)
+          .timestamp_resolution(TimeUnit.MILLISECONDS)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5, 'timestamp_resolution': 'MILLISECONDS'}"
+      }
+    }
+
+    "should allow specifying table creation options" - {
+
+      "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
+
+        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
