@@ -75,8 +75,10 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-Some of the companies using phantom:
+The following are just some of the biggest phantom adopters, though the full list
+is far more comprehensive.
 
+- [Starbucks Corporation](https://www.starbucks.com/)
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
 - [UBS](https://www.ubs.com/global/en.html)

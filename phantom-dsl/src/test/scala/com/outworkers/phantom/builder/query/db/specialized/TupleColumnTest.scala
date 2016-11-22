@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{NestedTupleRecord, TupleCollectionRecord, TupleRecord}
 import com.outworkers.util.testing._

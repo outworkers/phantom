@@ -230,6 +230,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
 
       override def asCql(tp: $tpe): $strType = {
+        Console.println("As CQL input tuple")
+        Console.println(tp)
+        Console.println(scala.collection.immutable.Seq(..${fields.map(_.serializer)}).mkString(""))
         $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 
