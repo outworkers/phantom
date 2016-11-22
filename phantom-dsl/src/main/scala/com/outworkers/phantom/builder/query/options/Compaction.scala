@@ -131,6 +131,23 @@ private[phantom] trait CompactionStrategies {
       new TimeWindowCompactionStrategy(opts)
     }
 
+    /**
+      * Declares the time unit to write with.
+      * This will default to microseconds as per [[http://cassandra.apache.org/doc/latest/operating/compaction.html?highlight=time%20window%20compaction#time-window-compactionstrategy/ the official Cassandra Docs]]
+      *
+      * The only two valid options are [[java.util.concurrent.TimeUnit.MILLISECONDS]] and
+      * [[java.util.concurrent.TimeUnit.MILLISECONDS]].
+      *
+      * @param unit The [[java.util.concurrent.TimeUnit]] to use, defaults to [[java.util.concurrent.TimeUnit.MICROSECONDS]].
+      * @return A compaction strategy builder with a time unit specified.
+      */
+    def timestamp_resolution(unit: TimeUnit): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.timestamp_resolution,
+        CQLQuery.escape(unit.name())
+      )
+    }
+
     def compaction_window_size(value: Long): TimeWindowCompactionStrategy = {
       option(
         CQLSyntax.CompactionOptions.compaction_window_size,
