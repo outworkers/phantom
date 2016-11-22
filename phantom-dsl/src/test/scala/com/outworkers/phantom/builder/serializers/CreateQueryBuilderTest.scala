@@ -35,30 +35,109 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
   final val DefaultTtl = 500
   final val OneDay = 86400
 
+  val root = BasicTable.create.qb.queryString
+
   "The CREATE query builder" - {
-    "should allow specifying table creation options" - {
 
-      "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
+    "should allow using DateTieredCompactionStrategy and its options" - {
+      "serialise a create query with a DateTieredCompactionStrategy" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy
+        ).qb.queryString
 
-        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
-
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'SizeTieredCompactionStrategy'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy'}"
       }
+
+      "allow setting base_time_seconds" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.base_time_seconds(5L)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'base_time_seconds': 5}"
+      }
+
+      "allow setting max_threshold" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.max_threshold(5)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'max_threshold': 5}"
+      }
+
+      "allow setting min_threshold" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.min_threshold(5)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'min_threshold': 5}"
+      }
+
+      "allow setting timestamp_resolution" in {
+        val qb = BasicTable.create.`with`(
+          compaction eqs DateTieredCompactionStrategy.timestamp_resolution(TimeUnit.MILLISECONDS)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'DateTieredCompactionStrategy', 'timestamp_resolution': 'MILLISECONDS'}"
+      }
+    }
+
+    "should allow using TimeWindowCompactionStrategy and its options" - {
 
       "serialise a create query with a TimeWindowCompactionStrategy" in {
         val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'TimeWindowCompactionStrategy'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy'}"
       }
 
       "serialise a create query with a TimeWindowCompactionStrategy and an option set" in {
         val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy.compaction_window_unit(TimeUnit.DAYS)
         ).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy and two options set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy
+          .compaction_window_unit(TimeUnit.DAYS)
+          .compaction_window_size(5)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy and three options set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy
+          .compaction_window_unit(TimeUnit.DAYS)
+          .compaction_window_size(5)
+          .timestamp_resolution(TimeUnit.MILLISECONDS)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class'" +
+          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5, 'timestamp_resolution': 'MILLISECONDS'}"
+      }
+    }
+
+    "should allow specifying table creation options" - {
+
+      "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
+
+        val qb = BasicTable.create.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy'}"
+      }
+
+      "serialise a create query with a TimeWindowCompactionStrategy and an option set" in {
+        val qb = BasicTable.create.`with`(compaction eqs TimeWindowCompactionStrategy.compaction_window_unit(TimeUnit.DAYS)
+        ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS'}"
       }
 
 
@@ -68,8 +147,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
           .compaction_window_size(5)
         ).qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class'" +
-          ": 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5}"
+        qb shouldEqual s"$root WITH compaction = {'class': 'TimeWindowCompactionStrategy', 'compaction_window_unit': 'DAYS', 'compaction_window_size': 5}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
@@ -85,7 +163,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
         .qb.queryString
 
-        qb shouldEqual """CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50} AND compression = {'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5}"""
+        qb shouldEqual s"""$root WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50} AND compression = {'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5}"""
       }
 
       "add a comment option to a create query" in {
@@ -93,43 +171,42 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
           .`with`(comment eqs "testing")
           .qb.queryString
 
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH comment = 'testing'"
+        qb shouldEqual s"$root WITH comment = 'testing'"
       }
 
       "allow specifying a read_repair_chance clause" in {
         val qb = BasicTable.create.`with`(read_repair_chance eqs 5D).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH read_repair_chance = 5.0"
+        qb shouldEqual s"$root WITH read_repair_chance = 5.0"
       }
 
       "allow specifying a dclocal_read_repair_chance clause" in {
         val qb = BasicTable.create.`with`(dclocal_read_repair_chance eqs 5D).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH dclocal_read_repair_chance = 5.0"
+        qb shouldEqual s"$root WITH dclocal_read_repair_chance = 5.0"
       }
 
       "allow specifying a replicate_on_write clause" in {
         val qb = BasicTable.create.`with`(replicate_on_write eqs true).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH replicate_on_write = true"
+        qb shouldEqual s"$root WITH replicate_on_write = true"
       }
 
       "allow specifying a custom gc_grace_seconds clause" in {
         val qb = BasicTable.create.`with`(gc_grace_seconds eqs 5.seconds).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 5"
+        qb shouldEqual s"$root WITH gc_grace_seconds = 5"
       }
 
       "allow specifying larger custom units as gc_grace_seconds" in {
         val qb = BasicTable.create.`with`(gc_grace_seconds eqs 1.day).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
+        qb shouldEqual s"$root WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
         val qb = BasicTable.create.`with`(gc_grace_seconds eqs Seconds.seconds(OneDay)).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH gc_grace_seconds = 86400"
+        qb shouldEqual s"$root WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying a bloom_filter_fp_chance using a Double param value" in {
         val qb = BasicTable.create.`with`(bloom_filter_fp_chance eqs 5D).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH " +
-          "bloom_filter_fp_chance = 5.0"
+        qb shouldEqual s"$root WITH bloom_filter_fp_chance = 5.0"
       }
     }
 
@@ -137,12 +214,10 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       "specify Cache.None as a cache strategy" in {
         val qb = BasicTable.create.`with`(caching eqs Cache.None()).qb.queryString
 
-        val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
-
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = {'keys': 'none', 'rows_per_partition': 'none'}"
+          qb shouldEqual s"$root WITH caching = {'keys': 'none', 'rows_per_partition': 'none'}"
         } else {
-          qb shouldEqual s"$baseQuery WITH caching = 'none'"
+          qb shouldEqual s"$root WITH caching = 'none'"
         }
       }
 
@@ -150,11 +225,9 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val qb = BasicTable.create.`with`(caching eqs Cache.KeysOnly()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = {'keys': 'all', 'rows_per_partition': 'none'}"
+          qb shouldEqual s"$root WITH caching = {'keys': 'all', 'rows_per_partition': 'none'}"
         } else {
-          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = 'keys_only'"
+          qb shouldEqual s"$root WITH caching = 'keys_only'"
         }
       }
 
@@ -162,22 +235,18 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val qb = BasicTable.create.`with`(caching eqs Cache.RowsOnly()).qb.queryString
 
         if (session.v4orNewer) {
-          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = {'rows_per_partition': 'all'}"
+          qb shouldEqual s"$root WITH caching = {'rows_per_partition': 'all'}"
         } else {
-          qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text," +
-            " PRIMARY KEY (id, id2, id3)) WITH caching = 'rows_only'"
+          qb shouldEqual s"$root WITH caching = 'rows_only'"
         }
       }
 
       "specify Cache.All as a caching strategy" in {
         val qb = BasicTable.create.`with`(caching eqs Cache.All()).qb.queryString
-        val baseQuery = "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3))"
-
         if (session.v4orNewer) {
-          qb shouldEqual s"$baseQuery WITH caching = {'keys': 'all', 'rows_per_partition': 'all'}"
+          qb shouldEqual s"$root WITH caching = {'keys': 'all', 'rows_per_partition': 'all'}"
         } else {
-          qb shouldEqual s"$baseQuery WITH caching = 'all'"
+          qb shouldEqual s"$root WITH caching = 'all'"
         }
 
       }
@@ -186,17 +255,17 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
     "should allow specifying a default_time_to_live" - {
       "specify a default time to live using a Long value" in {
         val qb = BasicTable.create.`with`(default_time_to_live eqs DefaultTtl.toLong).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
+        qb shouldEqual s"$root WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a org.joda.time.Seconds value" in {
         val qb = BasicTable.create.`with`(default_time_to_live eqs Seconds.seconds(DefaultTtl)).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
+        qb shouldEqual s"$root WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
         val qb = BasicTable.create.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
-        qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH default_time_to_live = 500"
+        qb shouldEqual s"$root WITH default_time_to_live = 500"
       }
     }
 
