@@ -22,6 +22,7 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics.Recipe
+import com.outworkers.phantom.{CassandraTable => _, _}
 import org.joda.time.DateTime
 
 import scala.concurrent.{Future => ScalaFuture}
@@ -30,13 +31,12 @@ import scala.concurrent.{Future => ScalaFuture}
  * In this example we will create a  table storing recipes.
  * This time we will use a composite key formed by name and id.
  */
-
 // You can seal the class and only allow importing the companion object.
-// The companion object is where you would implement your custom methods.
+// It's not directly meant for end user consumption anyway, the correct approach
 // Keep reading for examples.
 sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -52,7 +52,7 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
   // Cassandra collections target a small number of items, but usage is trivial.
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime]
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder
 
   // Now the mapping function, transforming a row into a custom type.
   // This is a bit of boilerplate, but it's one time only and very short.
@@ -76,12 +76,12 @@ abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnecto
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)
       .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
       .value(_.description, recipe.description)
       .value(_.ingredients, recipe.ingredients)
       .value(_.name, recipe.name)
       .value(_.props, recipe.props)
       .value(_.timestamp, recipe.timestamp)
-      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
       .future()
   }
 

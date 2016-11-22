@@ -80,6 +80,17 @@ abstract class Primitive[RR] {
 object Primitive {
 
   /**
+    * A helper for implicit lookups that require the refined inner abstract type of a concrete
+    * primitive implementation produced by an implicit macro.
+    * This is useful to eliminate a compiler warning produced for map columns, where
+    * we need to manually cast values to their PrimitiveType after extraction
+    * just to please the compiler.
+    * @tparam Outer The outer, visible Scala type of a primitive.
+    * @tparam Inner The inner, primitive type, used to unwrap Java bindings.
+    */
+  type Aux[Outer, Inner] = Primitive[Outer] { type PrimitiveType = Inner }
+
+  /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
     * library to macro materialise an instance of the required primitive based on the type argument.
     * If this does not highlight properly in your IDE, fear not, it works on my machine :)

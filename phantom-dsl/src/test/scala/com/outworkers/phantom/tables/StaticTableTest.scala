@@ -23,10 +23,10 @@ case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
 
 sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, StaticCollectionSingle] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
 
-  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticTest extends StringColumn(this) with StaticColumn[String]
+  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object staticTest extends StringColumn(this) with StaticColumn
 
   def fromRow(row: Row): StaticCollectionSingle = {
     StaticCollectionSingle(
@@ -48,10 +48,10 @@ case class StaticCollectionRecord(
 
 sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticCollectionTableTest, StaticCollectionRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
 
-  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticList extends ListColumn[String](this) with StaticColumn[List[String]]
+  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object staticList extends ListColumn[String](this) with StaticColumn
 
   def fromRow(row: Row): StaticCollectionRecord = {
     StaticCollectionRecord(

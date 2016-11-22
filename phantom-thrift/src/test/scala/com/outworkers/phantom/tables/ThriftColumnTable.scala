@@ -39,7 +39,7 @@ case class Output(
 
 sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable, Output] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
@@ -103,7 +103,7 @@ sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTabl
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
 
-  object ref extends ThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) with PartitionKey[ThriftTest] {
+  object ref extends ThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) with PartitionKey {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }

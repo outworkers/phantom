@@ -21,7 +21,7 @@ import com.outworkers.phantom.dsl._
 case class StubRecord(name: String, id: UUID)
 sealed class TableWithSingleKey extends CassandraTable[ConcreteTableWithSingleKey, StubRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
 
   def fromRow(r: Row): StubRecord = {
@@ -33,8 +33,8 @@ abstract class ConcreteTableWithSingleKey extends TableWithSingleKey with RootCo
 
 class TableWithCompoundKey extends CassandraTable[ConcreteTableWithCompoundKey, StubRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object second extends UUIDColumn(this) with PrimaryKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
+  object second extends UUIDColumn(this) with PrimaryKey
   object name extends StringColumn(this)
 
   def fromRow(r: Row): StubRecord = {
@@ -47,9 +47,9 @@ abstract class ConcreteTableWithCompoundKey extends TableWithCompoundKey with Ro
 
 sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompositeKey, StubRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object second_part extends UUIDColumn(this) with PartitionKey[UUID]
-  object second extends UUIDColumn(this) with PrimaryKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
+  object second_part extends UUIDColumn(this) with PartitionKey
+  object second extends UUIDColumn(this) with PrimaryKey
   object name extends StringColumn(this)
 
   def fromRow(r: Row): StubRecord = {

@@ -19,19 +19,18 @@ import com.outworkers.phantom.column.AbstractColumn
 
 /**
  * A trait mixable into a Column to allow clustering order.
- * @tparam ValueType The value stored in the column.
  */
-trait ClusteringOrder[ValueType] extends PrimaryKey[ValueType]{
-  self: AbstractColumn[ValueType] =>
+trait ClusteringOrder extends PrimaryKey {
+  self: AbstractColumn[_] =>
   override val isClusteringKey = true
 
 }
 
 trait Ascending {
-  self: AbstractColumn[_] with ClusteringOrder[_] =>
+  self: AbstractColumn[_] with ClusteringOrder =>
   override val isAscending = true
 }
 
 trait Descending {
-  self: AbstractColumn[_] with ClusteringOrder[_] =>
+  self: AbstractColumn[_] with ClusteringOrder =>
 }

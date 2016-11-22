@@ -42,7 +42,7 @@ object OptionalPrimitiveCassandra22 {
 
 sealed class OptionalPrimitivesCassandra22 extends CassandraTable[ConcreteOptionalPrimitivesCassandra22, OptionalPrimitiveCassandra22] {
 
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object short extends OptionalSmallIntColumn(this)
 

@@ -30,7 +30,7 @@ case class SampleRecord(
 )
 
 sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object stuff extends StringColumn(this)
   object someList extends ListColumn[String](this)
 

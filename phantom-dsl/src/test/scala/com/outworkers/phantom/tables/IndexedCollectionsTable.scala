@@ -23,17 +23,17 @@ import com.outworkers.phantom.dsl._
 
 sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedCollectionsTable, TestRow] {
 
-  object key extends StringColumn(this) with PartitionKey[String]
+  object key extends StringColumn(this) with PartitionKey
 
   object list extends ListColumn[String](this)
 
-  object setText extends SetColumn[String](this) with Index[Set[String]]
+  object setText extends SetColumn[String](this) with Index
 
-  object mapTextToText extends MapColumn[String, String](this) with Index[Map[String, String]]
+  object mapTextToText extends MapColumn[String, String](this) with Index
 
   object setInt extends SetColumn[Int](this)
 
-  object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
+  object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this)
 
@@ -69,19 +69,19 @@ abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable w
 
 sealed class IndexedEntriesTable extends CassandraTable[ConcreteIndexedEntriesTable, TestRow] {
 
-  object key extends StringColumn(this) with PartitionKey[String]
+  object key extends StringColumn(this) with PartitionKey
 
   object list extends ListColumn[String](this)
 
-  object setText extends SetColumn[String](this) with Index[Set[String]]
+  object setText extends SetColumn[String](this) with Index
 
-  object mapTextToText extends MapColumn[String, String](this) with Index[Map[String, String]]
+  object mapTextToText extends MapColumn[String, String](this) with Index
 
   object setInt extends SetColumn[Int](this)
 
-  object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
+  object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
-  object mapIntToInt extends MapColumn[Int, Int](this) with Index[Map[Int, Int]] with Entries
+  object mapIntToInt extends MapColumn[Int, Int](this) with Index with Entries
 
   def fromRow(r: Row): TestRow = {
     TestRow(
