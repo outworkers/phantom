@@ -27,8 +27,8 @@ import com.outworkers.phantom.dsl._
 
 sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTable, SecondaryIndexRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object secondary extends UUIDColumn(this) with Index[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
+  object secondary extends UUIDColumn(this) with Index
   object name extends StringColumn(this)
 
   def fromRow(r: Row): SecondaryIndexRecord = {

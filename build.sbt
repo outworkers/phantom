@@ -332,7 +332,7 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).settings(
     sharedSettings: _*
   ).dependsOn(
-    phantomDsl,
+    phantomDsl % "compile->compile;test->test;",
     phantomReactiveStreams,
     phantomThrift
   )

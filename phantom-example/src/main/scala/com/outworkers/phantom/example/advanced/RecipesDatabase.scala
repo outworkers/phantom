@@ -49,7 +49,7 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
    * Nonetheless, if you are using Scala you can almost replicate the below with a Future.sequence or Future.traverse over a List.
    *
    * This is a very neat and simple trick which will initialise all your tables in parallel at any time you want. The initialisation will automatically
-   * trigger the mecbanism that connects to Cassandra and gives you back a session.
+   * trigger the mechanism that connects to Cassandra and gives you back a session.
    */
 
   // For instance, right now when you want to insert a new recipe.

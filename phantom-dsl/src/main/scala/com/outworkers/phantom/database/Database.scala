@@ -31,6 +31,8 @@ abstract class Database[
   DB <: Database[DB]
 ](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
 
+  trait Connector extends connector.Connector
+
   implicit val space: KeySpace = KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session

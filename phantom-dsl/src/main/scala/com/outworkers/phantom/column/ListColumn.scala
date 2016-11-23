@@ -22,10 +22,8 @@ import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
 
-import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
-
 
 abstract class AbstractListColumn[
   Owner <: CassandraTable[Owner, Record],

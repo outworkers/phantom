@@ -21,17 +21,17 @@ private[phantom] trait Undroppable
 private[phantom] trait Unmodifiable
 private[phantom] trait Indexed
 
-private[phantom] trait Key[ValueType, KeyType <: Key[ValueType, KeyType]] {
-  self: AbstractColumn[ValueType] =>
+private[phantom] trait Key[KeyType <: Key[KeyType]] {
+  self: AbstractColumn[_] =>
 }
 
-trait PrimaryKey[ValueType] extends Key[ValueType, PrimaryKey[ValueType]] with Unmodifiable with Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
+trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Undroppable {
+  self: AbstractColumn[_] =>
   override val isPrimary = true
 }
 
-trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] with Unmodifiable with Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
+trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Indexed with Undroppable {
+  self: AbstractColumn[_] =>
   override val isPartitionKey = true
   override val isPrimary = true
 }
@@ -39,20 +39,20 @@ trait PartitionKey[ValueType] extends Key[ValueType, PartitionKey[ValueType]] wi
 /**
  * A trait mixable into Column definitions to allow storing them as keys.
  */
-trait Index[ValueType] extends Indexed with Undroppable {
-  self: AbstractColumn[ValueType] =>
+trait Index extends Indexed with Undroppable {
+  self: AbstractColumn[_] =>
 
   override val isSecondaryKey = true
 }
 
 trait Keys {
-  self : Index[_] with AbstractColumn[_] =>
+  self : Index with AbstractColumn[_] =>
 
   override private[phantom] val isMapKeyIndex = true
 }
 
 trait Entries {
-  self: Index[_] with AbstractColumn[_] =>
+  self: Index with AbstractColumn[_] =>
 
   override private[phantom] val isMapEntryIndex = true
 }

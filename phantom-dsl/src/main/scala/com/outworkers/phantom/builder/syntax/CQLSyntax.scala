@@ -222,6 +222,8 @@ object CQLSyntax {
     val base_time_seconds = "base_time_seconds"
     val max_sstable_age_days = "max_sstable_age_days"
     val timestamp_resolution = "timestamp_resolution"
+    val compaction_window_size = "compaction_window_size"
+    val compaction_window_unit = "compaction_window_unit"
   }
 
   object CompactionStrategies {

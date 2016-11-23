@@ -26,8 +26,10 @@ import com.outworkers.phantom.builder.query.CQLQuery
 import scala.util.Try
 
 @implicitNotFound(msg = "Type ${T} must be a Cassandra primitive")
-class OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, @specialized(Int, Double, Float, Long, Boolean,
-  Short) T : Primitive](t: CassandraTable[Owner, Record]) extends OptionalColumn[Owner, Record, T](t) {
+class OptionalPrimitiveColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record, @specialized(Int, Double, Float, Long, Boolean, Short) T : Primitive
+](table: CassandraTable[Owner, Record]) extends OptionalColumn[Owner, Record, T](table) {
 
   def cassandraType: String = Primitive[T].cassandraType
 

@@ -19,6 +19,8 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.{CQLQuery, OptionPart}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
+import scala.concurrent.duration.TimeUnit
+
 sealed abstract class CompactionProperties[
   T <: CompactionProperties[T]
 ](val options: OptionPart) extends ClauseBuilder[T] {
@@ -126,7 +128,44 @@ private[phantom] trait CompactionStrategies {
   sealed class TimeWindowCompactionStrategy(options: OptionPart)
     extends CompactionProperties[TimeWindowCompactionStrategy](options) {
     override protected[this] def instance(opts: OptionPart): TimeWindowCompactionStrategy = {
-      new TimeWindowCompactionStrategy(options)
+      new TimeWindowCompactionStrategy(opts)
+    }
+
+    /**
+      * Declares the time unit to write with.
+      * This will default to microseconds as per [[http://cassandra.apache.org/doc/latest/operating/compaction.html?highlight=time%20window%20compaction#time-window-compactionstrategy/ the official Cassandra Docs]]
+      *
+      * The only two valid options are [[java.util.concurrent.TimeUnit.MILLISECONDS]] and
+      * [[java.util.concurrent.TimeUnit.MILLISECONDS]].
+      *
+      * @param unit The [[java.util.concurrent.TimeUnit]] to use, defaults to [[java.util.concurrent.TimeUnit.MICROSECONDS]].
+      * @return A compaction strategy builder with a time unit specified.
+      */
+    def timestamp_resolution(unit: TimeUnit): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.timestamp_resolution,
+        CQLQuery.escape(unit.name())
+      )
+    }
+
+    def compaction_window_size(value: Long): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.compaction_window_size,
+        value.toString
+      )
+    }
+
+    /**
+      * Declares the time unit to use with this compaction strategy.
+      * This will default to days as per [[http://cassandra.apache.org/doc/latest/operating/compaction.html?highlight=time%20window%20compaction#time-window-compactionstrategy/ the official Cassandra Docs]]
+      * @param unit The [[java.util.concurrent.TimeUnit]] to use, defaults to [[java.util.concurrent.TimeUnit.DAYS]].
+      * @return A compaction strategy builder with a time unit specified.
+      */
+    def compaction_window_unit(unit: TimeUnit): TimeWindowCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.compaction_window_unit,
+        CQLQuery.escape(unit.name())
+      )
     }
   }
 
@@ -135,6 +174,23 @@ private[phantom] trait CompactionStrategies {
 
     override protected[this] def instance(opts: OptionPart): DateTieredCompactionStrategy = {
       new DateTieredCompactionStrategy(opts)
+    }
+
+    /**
+      * Declares the time unit to write with.
+      * This will default to microseconds as per [[http://cassandra.apache.org/doc/latest/operating/compaction.html?highlight=time%20window%20compaction#time-window-compactionstrategy/ the official Cassandra Docs]]
+      *
+      * The only two valid options are [[java.util.concurrent.TimeUnit.MILLISECONDS]] and
+      * [[java.util.concurrent.TimeUnit.MILLISECONDS]].
+      *
+      * @param unit The [[java.util.concurrent.TimeUnit]] to use, defaults to [[java.util.concurrent.TimeUnit.MICROSECONDS]].
+      * @return A compaction strategy builder with a time unit specified.
+      */
+    def timestamp_resolution(unit: TimeUnit): DateTieredCompactionStrategy = {
+      option(
+        CQLSyntax.CompactionOptions.timestamp_resolution,
+        CQLQuery.escape(unit.name())
+      )
     }
 
     def base_time_seconds(value: Long): DateTieredCompactionStrategy = {

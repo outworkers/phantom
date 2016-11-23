@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.keys
+package com.outworkers.phantom.example.basics
 
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.example.ExampleSuite
+import com.outworkers.util.testing._
+import com.outworkers.phantom.dsl.context
 
-trait StaticColumn extends Key[StaticColumn] {
-  self: AbstractColumn[_] =>
-    override val isStaticColumn = true
+class AdvancedRecipesTest extends ExampleSuite {
+
+  it should "insert a new record in the table" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.AdvancedRecipes.insertRecipe(sample)
+      rec <- database.AdvancedRecipes.findById(sample.id)
+    } yield rec
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
 }

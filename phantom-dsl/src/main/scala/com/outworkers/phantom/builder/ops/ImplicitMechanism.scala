@@ -155,9 +155,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   implicit def optionalIndexToQueryColumn[T : Primitive](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
 
-  implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey[RR]): OrderingColumn[RR] = new OrderingColumn[RR](col)
+  implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey): OrderingColumn[RR] = new OrderingColumn[RR](col)
 
-  implicit def setColumnToQueryColumn[T <: CassandraTable[T, R], R, RR](col: AbstractSetColumn[T, R, RR] with Index[Set[RR]]): SetConditionals[T, R, RR] = {
+  implicit def setColumnToQueryColumn[T <: CassandraTable[T, R], R, RR](col: AbstractSetColumn[T, R, RR] with Index): SetConditionals[T, R, RR] = {
     new SetConditionals(col)
   }
 
@@ -187,7 +187,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     * @return A MapConditionals class with CONTAINS support.
     */
   implicit def mapColumnToQueryColumn[T <: CassandraTable[T, R], R, K, V](
-    col: AbstractMapColumn[T, R, K, V] with Index[Map[K, V]]
+    col: AbstractMapColumn[T, R, K, V] with Index
   )(implicit ev: col.type <:!< Keys): MapConditionals[T, R, K, V] = {
     new MapConditionals(col)
   }
@@ -204,7 +204,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     * @return A MapConditionals class with CONTAINS KEY support.
     */
   implicit def mapKeysColumnToQueryColumn[T <: CassandraTable[T, R], R, K, V](
-    col: AbstractMapColumn[T, R, K, V] with Index[Map[K, V]] with Keys): MapKeyConditionals[T, R, K, V] = {
+    col: AbstractMapColumn[T, R, K, V] with Index with Keys): MapKeyConditionals[T, R, K, V] = {
     new MapKeyConditionals(col)
   }
 

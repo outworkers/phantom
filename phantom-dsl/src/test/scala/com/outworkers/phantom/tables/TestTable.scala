@@ -31,7 +31,7 @@ case class TestRow(
 
 sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 
-  object key extends StringColumn(this) with PartitionKey[String]
+  object key extends StringColumn(this) with PartitionKey
 
   object list extends ListColumn[String](this)
 
