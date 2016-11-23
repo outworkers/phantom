@@ -91,8 +91,7 @@ package object reactivestreams {
       flushInterval: Option[FiniteDuration] = None,
       completionFn: () => Unit = () => (),
       errorFn: Throwable => Unit = _ => ()
-    )(implicit
-      builder: RequestBuilder[CT, T],
+    )(implicit builder: RequestBuilder[CT, T],
       system: ActorSystem,
       session: Session,
       space: KeySpace,
@@ -129,9 +128,7 @@ package object reactivestreams {
 
   implicit class PublisherConverter[T](val enumerator: PlayEnumerator[T]) extends AnyVal {
 
-    def publisher: Publisher[T] = {
-      Streams.enumeratorToPublisher(enumerator)
-    }
+    def publisher: Publisher[T] = Streams.enumeratorToPublisher(enumerator)
   }
 
   /**
