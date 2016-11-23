@@ -176,10 +176,11 @@ package object reactivestreams {
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
-      val eventualEnum = block.all().future() map {
-        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.rowFunc)
+      PlayEnumerator.flatten {
+        block.all().future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
+        }
       }
-      PlayEnumerator.flatten(eventualEnum)
     }
   }
 
@@ -204,10 +205,11 @@ package object reactivestreams {
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
-      val eventualEnum = query.future() map {
-        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(query.fromRow)
+      PlayEnumerator.flatten {
+        query.future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
+        }
       }
-      PlayEnumerator.flatten(eventualEnum)
     }
   }
 
