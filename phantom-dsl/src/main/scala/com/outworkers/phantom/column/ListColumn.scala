@@ -36,9 +36,7 @@ abstract class AbstractListColumn[
 
   override def asCql(v: List[RR]): String = QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
 
-  override def apply(r: Row): List[RR] = {
-    parse(r).getOrElse(Nil)
-  }
+  override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
 }
 
 class ListColumn[
@@ -46,7 +44,8 @@ class ListColumn[
   Record,
   RR : Primitive
 ](table: CassandraTable[Owner, Record])
-    extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
+  extends AbstractListColumn[Owner, Record, RR](table)
+  with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = Primitive[RR]
 
