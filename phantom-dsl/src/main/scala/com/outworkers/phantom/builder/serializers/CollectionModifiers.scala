@@ -22,8 +22,6 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
   def tupled(tuples: String*): CQLQuery = {
-    Console.println("Input tuples after serialisation")
-    Console.println(tuples)
     queryBuilder.Utils.join(tuples)
   }
 

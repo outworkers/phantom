@@ -211,6 +211,11 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
           .queryString
       }
 
+      override def extract($sourceTerm: $tupleValue): $tpe = {
+        val tp = for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+        tp.get
+      }
+
       override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
         if (scala.Option(row).isEmpty || row.isNull(name)) {
           scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
@@ -230,9 +235,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
 
       override def asCql(tp: $tpe): $strType = {
-        Console.println("As CQL input tuple")
-        Console.println(tp)
-        Console.println(scala.collection.immutable.Seq(..${fields.map(_.serializer)}).mkString(""))
         $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 

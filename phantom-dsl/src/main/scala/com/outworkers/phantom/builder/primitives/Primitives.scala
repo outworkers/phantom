@@ -46,9 +46,7 @@ object Primitives {
       }
 
       override def fromRow(index: Int, row: GettableByIndexData): Try[String] = {
-        nullCheck(index, row) {
-          r => Console.println("Database tuple");Console.println(r.getString(index)); r.getString(index)
-        }
+        nullCheck(index, row)(_.getString(index))
       }
 
       override def clz: Class[String] = classOf[String]
@@ -478,7 +476,7 @@ object Primitives {
       }
 
       override def fromRow(index: Int, row: GettableByIndexData): Try[Set[T]] = {
-        Try(row.getList(index, ev.clz).asScala.toSet.map(ev.extract))
+        Try(row.getSet(index, ev.clz).asScala.toSet.map(ev.extract))
       }
 
       override def cassandraType: String = QueryBuilder.Collections.setType(ev.cassandraType).queryString

@@ -59,6 +59,13 @@ class PrimitivesTest extends FlatSpec with Matchers {
     """val test = Primitive[Set[String]]""" should compile
   }
 
+  it should "generate a primitive for a collection of tuples" in {
+    val primitive = Primitive[List[(String, Int)]]
+    val strPrimitive = Primitive[List[String]]
+
+    val samples = genList[Int]() map (i => gen[String] -> i)
+    val strSamples = genList[String]()
+  }
 
   it should "autogenerate set primitives for Map types" in {
     """val test = Primitive[Map[String, String]]""" should compile

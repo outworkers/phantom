@@ -25,7 +25,7 @@ import scala.concurrent.Future
 case class TupleRecord(id: UUID, tp: (String, Long))
 
 class TupleColumnTable extends CassandraTable[ConcreteTupleColumnTable, TupleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, Long)](this)
 
   def fromRow(row: Row): TupleRecord = {
@@ -52,7 +52,7 @@ abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnec
 case class NestedTupleRecord(id: UUID, tp: (String, (String, Long)))
 
 class NestedTupleColumnTable extends CassandraTable[ConcreteNestedTupleColumnTable, NestedTupleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, (String, Long))](this)
 
   def fromRow(row: Row): NestedTupleRecord = {
@@ -80,7 +80,7 @@ abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable wit
 case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
 
 class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object tuples extends ListColumn[(Int, String)](this)
 
   def fromRow(row: Row): TupleCollectionRecord = {

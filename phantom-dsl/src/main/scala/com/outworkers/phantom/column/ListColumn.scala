@@ -32,7 +32,9 @@ abstract class AbstractListColumn[
 ](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
   with CollectionValueDefinition[RR] {
 
-  override def asCql(v: List[RR]): String = QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
+  override def asCql(v: List[RR]): String = {
+    QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
+  }
 
   override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
 }
@@ -71,7 +73,7 @@ class ListColumn[
     if (r.isNull(name)) {
       Success(Nil)
     } else {
-      Success(r.getList(name, Primitive[RR].clz.asInstanceOf[Class[RR]]).asScala.toList)
+      Try(r.getList(name, valuePrimitive.clz).asScala.map(valuePrimitive.extract).toList)
     }
   }
 }
