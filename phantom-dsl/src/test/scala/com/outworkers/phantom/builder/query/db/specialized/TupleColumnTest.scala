@@ -112,6 +112,7 @@ class TupleColumnTest extends PhantomSuite {
     }
   }
 
+
   it should "store and retrieve a record with a collection tuple column" in {
     val sample = gen[TupleCollectionRecord]
 

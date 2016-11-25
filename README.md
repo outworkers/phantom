@@ -109,6 +109,7 @@ is far more comprehensive.
 - [UBS](https://www.ubs.com/global/en.html)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Paddy Power](http://www.paddypower.com/)
+- [Strava](https://www.strava.com/)
 - [Mobli](https://www.mobli.com/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Equens](http://www.equens.com/)
