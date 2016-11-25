@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.primitives
 
 import java.util.Date
 
-import com.datastax.driver.core.{GettableData, LocalDate}
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -49,9 +49,17 @@ abstract class Primitive[RR] {
     */
   type PrimitiveType
 
-  protected[this] def nullCheck[T](column: String, row: GettableData)(fn: GettableData => T): Try[T] = {
+  protected[this] def nullCheck[T](column: String, row: GettableByNameData)(fn: GettableByNameData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null") with NoStackTrace)
+    } else {
+      Try(fn(row))
+    }
+  }
+
+  protected[this] def nullCheck[T](index: Int, row: GettableByIndexData)(fn: GettableByIndexData => T): Try[T] = {
+    if (Option(row).isEmpty || row.isNull(index)) {
+      Failure(new Exception(s"Column with index $index is null") with NoStackTrace)
     } else {
       Try(fn(row))
     }
@@ -68,13 +76,17 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(column: String, row: GettableData): Try[RR]
+  def fromRow(column: String, row: GettableByNameData): Try[RR]
+
+  def fromRow(index: Int, row: GettableByIndexData): Try[RR]
 
   def fromString(value: String): RR
 
   def clz: Class[PrimitiveType]
 
   def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
+
+  def frozen: Boolean = false
 }
 
 object Primitive {

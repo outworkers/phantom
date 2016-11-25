@@ -31,7 +31,6 @@ class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
 
 object TestDatabase extends TestDatabase
 
-
 /*
 class ValueInitDatabase extends Database[ValueInitDatabase](DefaultKeyspace.local) {
   val basicTable = new BasicTable with connector.Connector

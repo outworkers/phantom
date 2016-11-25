@@ -32,7 +32,6 @@ import com.outworkers.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteIm
 import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.column.extractors.FromRow.RowParser
 import com.outworkers.phantom.connectors.DefaultVersions
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
@@ -139,7 +138,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val SERIAL = CLevel.SERIAL
   }
 
-  type KeySpaceDef = com.outworkers.phantom.connectors.KeySpaceDef
+  type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
   val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
 
@@ -244,7 +243,4 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
-
-  def extract[R]: RowParser[R] = new RowParser[R] {}
-
 }

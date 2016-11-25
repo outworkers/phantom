@@ -22,7 +22,6 @@ import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util._
-import com.outworkers.phantom.Manager
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
@@ -94,7 +93,7 @@ package object finagle {
       * Unlike Scala Futures, Twitter Futures and operations on them do not require an implicit context.
       * Instead, the context propagates from one future to another inside a flatMap chain which means
       * all operations(map, flatMap) that originate on a Twitter Future obtained as the result of a database
-      * call will execute inside [[Manager.executor]].
+      * call will execute inside [[Manager.scalaExecutor]].
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
@@ -302,8 +301,6 @@ package object finagle {
       }))
     }
   }
-
-
 
   implicit class CreateQueryAugmenter[
     Table <: CassandraTable[Table, _],

@@ -28,16 +28,12 @@ private[phantom] trait Key[KeyType <: Key[KeyType]] {
 trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Undroppable {
   self: AbstractColumn[_] =>
   override val isPrimary = true
-
-  override val shouldFreeze: Boolean = true
 }
 
 trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Indexed with Undroppable {
   self: AbstractColumn[_] =>
   override val isPartitionKey = true
   override val isPrimary = true
-
-  override val shouldFreeze: Boolean = true
 }
 
 /**

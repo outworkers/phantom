@@ -100,13 +100,16 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-Some of the companies using phantom:
+The following are just some of the biggest phantom adopters, though the full list
+is far more comprehensive.
 
+- [Starbucks Corporation](https://www.starbucks.com/)
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
 - [UBS](https://www.ubs.com/global/en.html)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Paddy Power](http://www.paddypower.com/)
+- [Strava](https://www.strava.com/)
 - [Mobli](https://www.mobli.com/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Equens](http://www.equens.com/)

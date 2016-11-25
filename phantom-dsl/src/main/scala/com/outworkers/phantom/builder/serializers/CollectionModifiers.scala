@@ -21,8 +21,8 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
-  def tupled(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).wrap(queryBuilder.Utils.join(tuples))
+  def tupled(tuples: String*): CQLQuery = {
+    queryBuilder.Utils.join(tuples)
   }
 
   def tuple(name: String, tuples: String*): CQLQuery = {
@@ -192,6 +192,21 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def mapColumnType(column: String, key: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def tupleType(types: String*): CQLQuery = {
+    CQLQuery(CQLSyntax.Collections.tuple)
+    .append(CQLSyntax.Symbols.`<`)
+    .append(types)
+    .append(CQLSyntax.Symbols.`>`)
+  }
+
+  def frozen(cassandraType: String): CQLQuery = {
+    diamond(CQLSyntax.Collections.frozen, cassandraType)
+  }
+
+  def frozen(cassandraType: CQLQuery): CQLQuery = {
+    frozen(cassandraType.queryString)
   }
 
   def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {

@@ -73,7 +73,7 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
     *
     * @return A boolean that says whether or not this type should be frozen.
     */
-  def shouldFreeze: Boolean = false
+  def shouldFreeze: Boolean = isPrimary
 
 }
 

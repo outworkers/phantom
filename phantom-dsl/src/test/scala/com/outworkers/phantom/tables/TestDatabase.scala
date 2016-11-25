@@ -20,11 +20,11 @@ import java.util.UUID
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
+class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
   object articles extends ConcreteArticles with connector.Connector
   object articlesByAuthor extends ConcreteArticlesByAuthor with connector.Connector
 
@@ -86,6 +86,9 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with connector.Connector
   object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
+  object tuple2Table extends ConcreteTupleColumnTable with connector.Connector
+  object nestedTupleTable extends ConcreteNestedTupleColumnTable with connector.Connector
+  object tupleCollectionsTable extends ConcreteTupleCollectionsTable with connector.Connector
 }
 
 object Connector {

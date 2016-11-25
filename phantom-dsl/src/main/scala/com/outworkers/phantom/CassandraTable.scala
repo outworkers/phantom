@@ -65,6 +65,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]
   type JsonMapColumn[KK,VV] = com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV]
+  type TupleColumn[RR] =  com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
 
   def insertSchema()(
     implicit session: Session,

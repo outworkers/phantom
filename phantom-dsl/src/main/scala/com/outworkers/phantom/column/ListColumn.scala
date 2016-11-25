@@ -32,7 +32,9 @@ abstract class AbstractListColumn[
 ](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
   with CollectionValueDefinition[RR] {
 
-  override def asCql(v: List[RR]): String = QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
+  override def asCql(v: List[RR]): String = {
+    QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
+  }
 
   override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
 }
@@ -42,7 +44,8 @@ class ListColumn[
   Record,
   RR : Primitive
 ](table: CassandraTable[Owner, Record])
-    extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
+  extends AbstractListColumn[Owner, Record, RR](table)
+  with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = Primitive[RR]
 
@@ -51,6 +54,12 @@ class ListColumn[
   override def qb: CQLQuery = {
     if (shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)
+    } else if (valuePrimitive.frozen) {
+      CQLQuery(name).forcePad.append(
+        QueryBuilder.Collections.listType(
+          QueryBuilder.Collections.frozen(valuePrimitive.cassandraType).queryString
+        )
+      )
     } else {
       CQLQuery(name).forcePad.append(cassandraType)
     }
@@ -64,7 +73,7 @@ class ListColumn[
     if (r.isNull(name)) {
       Success(Nil)
     } else {
-      Success(r.getList(name, Primitive[RR].clz.asInstanceOf[Class[RR]]).asScala.toList)
+      Try(r.getList(name, valuePrimitive.clz).asScala.map(valuePrimitive.extract).toList)
     }
   }
 }

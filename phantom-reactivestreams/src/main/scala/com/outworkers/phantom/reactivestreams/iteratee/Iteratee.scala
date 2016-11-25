@@ -64,7 +64,7 @@ object Iteratee {
   }
 
   /**
-    * A drop method called directly on the iteratee, will asynchronously processs the drop using the Play Iteratee API.
+    * A drop method called directly on the iteratee, will asynchronously process the drop using the Play Iteratee API.
     * @param num The number of records to drop from the "left hand side" of the iteratee.
     * @param ex The execution context in which to execute the operation.
     * @tparam R The type of the Record being selected from the Cassandra table.
