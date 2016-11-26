@@ -1,4 +1,6 @@
-phantom [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+phantom
+
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 =============================================================================================================
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
 
@@ -39,8 +41,6 @@ adopters, please get in touch. We are very happy and eager to listen.
 
 - [x] Support for frozen collection columns as primary columns.
 
-- [ ] Deeper integration of CQL features, such as advanced `USING` clauses, `GROUP BY` and `PER PARTITION LIMIT`.(2.0.0)
-
 - [ ] SASI Index support.
 
 - [x] A `KeySpaceBuilder` that allows type safe specification of keyspace creation properties.(available as of 1.29.4)
@@ -48,29 +48,35 @@ adopters, please get in touch. We are very happy and eager to listen.
 
 #### Phantom 2.0.0
 
-- [x] Removing `scala-reflect.jar` from `build.sbt`, replacing the DSL mechanism with a macro based one.
+- [x] Remove `scala-reflect.jar` from `build.sbt`, replacing the DSL mechanism with a macro based one.
 
-- [ ] Added Scala 2.12 support.
+- [ ] Allow using collection columns as primary keys.
 
-- [x] Added native support for `TupleColumn`, with implicit macro generation.
+- [ ] Use `QueryPart` as a building block for schema inference during table auto-generation.
 
-- [x] Added support for `TimeWindowCompaction`.
+- [ ] Stabilise tracing and discovery of inheritance patterns via macros. 
 
-- [ ] Add support for `GROUP BY` and `PER PARTITION LIMIT`.
+- [ ] Add Scala 2.12 support.
 
-- [ ] Moving documentation back to a branch and to a dedicated versioned website based on Git tags.
+- [x] Add native support for `TupleColumn`, with implicit macro generation.
+
+- [x] Add support for `TimeWindowCompactionStrategy`.
+
+- [ ] Deeper integration of CQL features, such as advanced `USING` clauses, `GROUP BY` and `PER PARTITION LIMIT`.(2.0.0)
+
+- [ ] Move documentation back to a branch and to a dedicated versioned website based on Git tags.
 
 - [ ] Added implicit.ly integration to notify our audience of new releases.
 
-- [ ] Bringing test coverage to 100%(2.0.0)
+- [ ] Bring test coverage to 100%(2.0.0)
 
-- [ ] Ability to specify application wide configuration, such as case sensitive column names.
+- [ ] Add ability to specify application wide configuration, such as case sensitive column names.
 
 - [ ] A new website with highly improved documentation, as well as a per version docs browser.
 
 - [x] Replacing Travis Cassandra service with CCM to natively include multi-version testing in our setup.
 
-- [x] Macro derived primitives for complex types.
+- [x] Add support for macro derived primitives for complex types.
 
 ### Phantom Pro
 
