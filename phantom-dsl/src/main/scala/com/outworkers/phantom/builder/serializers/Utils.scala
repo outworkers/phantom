@@ -99,7 +99,7 @@ private[builder] trait Utils {
   }
 
   def tableOption(option: String, value: String): CQLQuery = {
-    Utils.concat(option, CQLSyntax.Symbols.`=`, value)
+    Utils.concat(option, CQLSyntax.Symbols.eqs, value)
   }
 
   def tableOption(option: String, value: CQLQuery): CQLQuery = {

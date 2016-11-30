@@ -28,7 +28,7 @@ private[builder] class UpdateQueryBuilder {
   val ifExists: CQLQuery = CQLQuery(CQLSyntax.ifExists)
 
   private[this] def counterSetter(column: String, op: String, value: String): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`)
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs)
       .forcePad.append(column)
       .forcePad.append(op)
       .forcePad.append(value)
@@ -43,7 +43,7 @@ private[builder] class UpdateQueryBuilder {
   }
 
   def setTo(column: String, value: String): CQLQuery = {
-    Utils.concat(column, CQLSyntax.Symbols.`=`, value)
+    Utils.concat(column, CQLSyntax.Symbols.eqs, value)
   }
 
   def set(clause: CQLQuery): CQLQuery = {
@@ -80,7 +80,7 @@ private[builder] class UpdateQueryBuilder {
 
   def updateMapColumn(column: String, key: String, value: String): CQLQuery = {
     qUtils.mapKey(column, key)
-      .forcePad.append(CQLSyntax.Symbols.`=`)
+      .forcePad.append(CQLSyntax.Symbols.eqs)
       .forcePad.append(value)
   }
 }

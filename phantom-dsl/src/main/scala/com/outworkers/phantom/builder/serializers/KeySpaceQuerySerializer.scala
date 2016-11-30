@@ -52,7 +52,7 @@ sealed trait TopologyStrategies {
 
   private[this] def strategy(name: String): CQLQuery = {
     CQLQuery.empty
-      .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
+      .appendSingleQuote(CQLSyntax.CompactionOptions.clz)
       .append(CQLSyntax.Symbols.colon).forcePad.appendSingleQuote(name)
   }
 
