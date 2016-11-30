@@ -24,7 +24,6 @@ import com.outworkers.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 
-
 class AlterQuery[
   Table <: CassandraTable[Table, _],
   Record,
@@ -104,17 +103,19 @@ class AlterQuery[
     new AlterQuery(table, QueryBuilder.Alter.drop(qb, column), options)
   }
 
-  @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
-  final def `with`(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb), options)
+  @deprecated("Use option instead", "2.0.0")
+  final def `with`(clause: TablePropertyClause)(
+    implicit ev: Chain =:= WithUnchainned
+  ): AlterQuery[Table, Record, Status, WithChainned] = {
+    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
   }
 
-  @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
-  final def option(clause: TablePropertyClause)(implicit ev: Chain =:= WithUnchainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.`with`(qb, clause.qb), options)
+  final def option(clause: TablePropertyClause)(
+    implicit ev: Chain =:= WithUnchainned
+  ): AlterQuery[Table, Record, Status, WithChainned] = {
+    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
   }
 
-  @implicitNotFound("You have to use `with` before using `and` in a create query.")
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): AlterQuery[Table, Record, Status, WithChainned] = {
     new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
   }
