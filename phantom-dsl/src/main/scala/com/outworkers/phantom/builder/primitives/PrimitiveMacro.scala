@@ -116,7 +116,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.enum => treeCache.getOrElseUpdate(typed[T], enumPrimitive[T]())
       case Symbols.listSymbol => treeCache.getOrElseUpdate(typed[T], listPrimitive[T]())
       case Symbols.setSymbol => treeCache.getOrElseUpdate(typed[T], setPrimitive[T]())
-      case Symbols.mapSymbol => treeCache.getOrElseUpdate(typed[T], listPrimitive[T]())
+      case Symbols.mapSymbol => treeCache.getOrElseUpdate(typed[T], mapPrimitive[T]())
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
