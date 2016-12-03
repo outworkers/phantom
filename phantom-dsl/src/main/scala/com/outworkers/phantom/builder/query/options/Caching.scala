@@ -28,7 +28,7 @@ private[phantom] trait CachingStrategies {
   private[this] def caching(strategy: String) = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .appendSingleQuote(CQLSyntax.CacheStrategies.Caching)
-      .forcePad.append(CQLSyntax.Symbols.`:`)
+      .forcePad.append(CQLSyntax.Symbols.colon)
       .forcePad.appendSingleQuote(strategy)
   }
 

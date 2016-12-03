@@ -22,6 +22,7 @@ import java.util.{Date, UUID}
 import macrocompat.bundle
 import org.joda.time.DateTime
 
+import scala.collection.concurrent.TrieMap
 import scala.language.experimental.macros
 
 @bundle
@@ -59,6 +60,12 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
 
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
+
+  /**
+    * Adds a caching layer for subsequent requests to materialise the same primitive type.
+    * This adds a simplistic caching layer that computes primitives based on types.
+    */
+  val treeCache = TrieMap.empty[Symbol, Tree]
 
   object Symbols {
     val intSymbol = typed[Int]
@@ -106,13 +113,11 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.bigInt => bigIntPrimitive
       case Symbols.bigDecimal => bigDecimalPrimitive
       case Symbols.buffer => bufferPrimitive
-      case Symbols.enum => enumPrimitive[T]()
-      case Symbols.listSymbol => listPrimitive[T]()
-      case Symbols.setSymbol => setPrimitive[T]()
-      case Symbols.mapSymbol => mapPrimitive[T]()
-      case sym @ _ => {
-        c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
-      }
+      case Symbols.enum => treeCache.getOrElseUpdate(typed[T], enumPrimitive[T]())
+      case Symbols.listSymbol => treeCache.getOrElseUpdate(typed[T], listPrimitive[T]())
+      case Symbols.setSymbol => treeCache.getOrElseUpdate(typed[T], setPrimitive[T]())
+      case Symbols.mapSymbol => treeCache.getOrElseUpdate(typed[T], mapPrimitive[T]())
+      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
     c.Expr[Primitive[T]](tree)

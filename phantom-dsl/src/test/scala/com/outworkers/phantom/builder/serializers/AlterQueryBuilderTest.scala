@@ -87,14 +87,14 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and no compaction strategy options set" in {
 
-        val qb = BasicTable.alter.`with`(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+        val qb = BasicTable.alter.option(compaction eqs SizeTieredCompactionStrategy).qb.queryString
 
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
       }
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
-        val qb = BasicTable.alter.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
+        val qb = BasicTable.alter.option(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
 
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50}"
       }
@@ -102,7 +102,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set and a compression strategy set" in {
 
         val qb = BasicTable.alter
-          .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+          .option(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
           .qb.queryString
 
@@ -111,44 +111,44 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "add a comment option to a create query" in {
         val qb = BasicTable.alter
-          .`with`(comment eqs "testing")
+          .option(comment eqs "testing")
           .qb.queryString
 
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH comment = 'testing'"
       }
 
       "allow specifying a read_repair_chance clause" in {
-        val qb = BasicTable.alter.`with`(read_repair_chance eqs 5D).qb.queryString
+        val qb = BasicTable.alter.option(read_repair_chance eqs 5D).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH read_repair_chance = 5.0"
       }
 
       "allow specifying a dclocal_read_repair_chance clause" in {
-        val qb = BasicTable.alter.`with`(dclocal_read_repair_chance eqs 5D).qb.queryString
+        val qb = BasicTable.alter.option(dclocal_read_repair_chance eqs 5D).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH dclocal_read_repair_chance = 5.0"
       }
 
       "allow specifying a replicate_on_write clause" in {
-        val qb = BasicTable.alter.`with`(replicate_on_write eqs true).qb.queryString
+        val qb = BasicTable.alter.option(replicate_on_write eqs true).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH replicate_on_write = true"
       }
 
       "allow specifying a custom gc_grace_seconds clause" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs 5.seconds).qb.queryString
+        val qb = BasicTable.alter.option(gc_grace_seconds eqs 5.seconds).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 5"
       }
 
       "allow specifying larger custom units as gc_grace_seconds" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs 1.day).qb.queryString
+        val qb = BasicTable.alter.option(gc_grace_seconds eqs 1.day).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying custom gc_grade_seconds using the Joda Time ReadableInstant and Second API" in {
-        val qb = BasicTable.alter.`with`(gc_grace_seconds eqs Seconds.seconds(OneDay)).qb.queryString
+        val qb = BasicTable.alter.option(gc_grace_seconds eqs Seconds.seconds(OneDay)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH gc_grace_seconds = 86400"
       }
 
       "allow specifying a bloom_filter_fp_chance using a Double param value" in {
-        val qb = BasicTable.alter.`with`(bloom_filter_fp_chance eqs 5D).qb.queryString
+        val qb = BasicTable.alter.option(bloom_filter_fp_chance eqs 5D).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH " +
           "bloom_filter_fp_chance = 5.0"
       }
@@ -156,7 +156,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying cache strategies " - {
       "specify Cache.None as a cache strategy" in {
-        val qb = BasicTable.alter.`with`(caching eqs Cache.None()).qb.queryString
+        val qb = BasicTable.alter.option(caching eqs Cache.None()).qb.queryString
 
         if (session.v4orNewer) {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = {'keys': 'none', 'rows_per_partition': 'none'}"
@@ -166,7 +166,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
       }
 
       "specify Cache.KeysOnly as a caching strategy" in {
-        val qb = BasicTable.alter.`with`(caching eqs Cache.KeysOnly()).qb.queryString
+        val qb = BasicTable.alter.option(caching eqs Cache.KeysOnly()).qb.queryString
 
         if (session.v4orNewer) {
           qb shouldEqual "ALTER TABLE phantom.basicTable WITH caching = {'keys': 'all', 'rows_per_partition': 'none'}"
@@ -178,17 +178,17 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying a default_time_to_live" - {
       "specify a default time to live using a Long value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs DefaultTtl).qb.queryString
+        val qb = BasicTable.alter.option(default_time_to_live eqs DefaultTtl).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a org.joda.time.Seconds value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs Seconds.seconds(DefaultTtl)).qb.queryString
+        val qb = BasicTable.alter.option(default_time_to_live eqs Seconds.seconds(DefaultTtl)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
-        val qb = BasicTable.alter.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
+        val qb = BasicTable.alter.option(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable WITH default_time_to_live = 500"
       }
     }

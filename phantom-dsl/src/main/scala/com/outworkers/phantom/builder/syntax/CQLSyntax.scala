@@ -107,7 +107,6 @@ object CQLSyntax {
     val `]` = "]"
 
     val dot = "."
-    val `:` = ":"
     val colon = ":"
     val `;` = ";"
     val `(` = "("
@@ -115,7 +114,7 @@ object CQLSyntax {
     val `,` = ","
     val `<` = "<"
     val `>` = ">"
-    val `=` = "="
+    val eqs = "="
     val + = "+"
     val plus = "+"
     val - = "-"
@@ -207,7 +206,7 @@ object CQLSyntax {
   }
 
   object CompactionOptions {
-    val `class` = "class"
+    val clz = "class"
     val enabled = "enabled"
     val max_threshold = "max_threshold"
     val min_threshold = "min_threshold"

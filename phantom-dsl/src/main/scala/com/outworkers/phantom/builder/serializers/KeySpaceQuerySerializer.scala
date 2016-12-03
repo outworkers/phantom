@@ -52,7 +52,7 @@ sealed trait TopologyStrategies {
 
   private[this] def strategy(name: String): CQLQuery = {
     CQLQuery.empty
-      .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
+      .appendSingleQuote(CQLSyntax.CompactionOptions.clz)
       .append(CQLSyntax.Symbols.colon).forcePad.appendSingleQuote(name)
   }
 
@@ -119,7 +119,7 @@ sealed trait TopologyStrategies {
 sealed class KeySpaceSerializer(val keySpace: KeySpace, val qb: CQLQuery = CQLQuery.empty) {
 
   def `with`(clause: BuilderClause): KeySpaceSerializer = {
-    new KeySpaceSerializer(keySpace, QueryBuilder.Alter.`with`(qb, clause.qb))
+    new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
   }
 
   def and(clause: BuilderClause): KeySpaceSerializer = {

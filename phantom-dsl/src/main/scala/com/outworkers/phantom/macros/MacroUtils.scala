@@ -58,6 +58,4 @@ class MacroUtils(val c: blackbox.Context) {
       if symbol.typeSignature <:< typeOf[Filter]
     } yield symbol)(collection.breakOut)
   }
-
-
 }
