@@ -15,8 +15,9 @@
  */
 package com.outworkers.phantom.macros
 
+import com.datastax.driver.core.Row
 import com.outworkers.phantom.SelectTable
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.column.{AbstractColumn, PrimitiveColumn}
 import com.outworkers.phantom.dsl.CassandraTable
 
 import scala.reflect.macros.blackbox
@@ -25,7 +26,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableName: String
 
-  //def fromRow(row: Row): R
+  def fromRow(row: Row): R
 
   def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
 }
@@ -39,11 +40,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   import c.universe._
 
+  val rowType = tq"com.datastax.driver.core.Row"
+
   val knownList = List("Any", "Object", "RootConnector")
 
   val tableSym = typeOf[CassandraTable[_, _]].typeSymbol
   val selectTable = typeOf[SelectTable[_, _]].typeSymbol
   val rootConn = typeOf[SelectTable[_, _]].typeSymbol
+  val colSymbol = typeOf[AbstractColumn[_]].typeSymbol
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
@@ -70,6 +74,50 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     })
   }
 
+  def materializeExtractor[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
+    val tableTpe = weakTypeOf[T]
+    val recordTpe = weakTypeOf[R]
+    val sourceMembers = filterMembers[T, AbstractColumn[_]](exclusions)
+
+    Console.println(sourceMembers)
+
+
+    val columns = sourceMembers.map(_.asModule.info)
+    val records = fields(recordTpe) map (_._2) toSet
+
+    val colMembers = sourceMembers.map { member =>
+      val memberType = member.typeSignatureIn(tableTpe)
+
+      memberType.baseClasses.find(colSymbol ==) match {
+        case Some(root) => {
+
+          println(root.asType.typeSignature.widen.dealias.typeArgs)
+
+          root.typeSignatureIn(memberType).typeArgs.headOption match {
+            case Some(colSignature) => colSignature
+            case None => c.abort(
+              c.enclosingPosition,
+              s"Could not find the type argument passed to AbstractColumn for ${member.asModule.name}"
+            )
+          }
+        }
+        case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
+      }
+    }
+
+    Console.println("The column types in the type tree")
+    Console.println(colMembers.map(_.typeSymbol.name.decodedName.toString).mkString("\n"))
+    Console.println("The records types in the type tree")
+    Console.println(records.map(_.typeSymbol.name.decodedName.toString).mkString("\n"))
+
+    val methodTree = q"""
+      null.asInstanceOf[$recordTpe]
+    """
+
+    println(showCode(methodTree))
+    methodTree
+  }
+
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
@@ -91,7 +139,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       val initial = realType.asType.name.decodedName.toString
       // Lower case the first letter of the type
       // This will make sure the macro derived name is compatible
-      // with the old school namin structure used in phantom.
+      // with the old school naming structure used in phantom.
       initial(0).toLower + initial.drop(1)
     }
 
@@ -101,15 +149,21 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
 
-    q"""
+    val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = $finalName
+
+          def fromRow(row: $rowType): $rTpe = {
+            return ${materializeExtractor[T, R]}
+          }
 
           def fields(table: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }
      """
+    println(showCode(tree))
+    tree
   }
 
 }

@@ -52,10 +52,12 @@ class MacroUtils(val c: blackbox.Context) {
   ): Set[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
-    (for {
-      baseClass <- tpe.baseClasses.reverse.flatMap(x => exclusions(x))
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< typeOf[Filter]
-    } yield symbol)(collection.breakOut)
+    (
+      for {
+        baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
+        symbol <- baseClass.typeSignature.members.sorted
+        if symbol.typeSignature <:< typeOf[Filter]
+      } yield symbol
+    )(collection.breakOut)
   }
 }
