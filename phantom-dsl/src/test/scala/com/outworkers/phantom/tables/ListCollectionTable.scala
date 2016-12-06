@@ -27,13 +27,6 @@ case class MyTestRow(
 )
 
 sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
-  def fromRow(r: Row): MyTestRow = {
-    MyTestRow(
-      key(r),
-      optionA(r),
-      stringlist(r)
-    )
-  }
 
   object key extends StringColumn(this) with PartitionKey
 

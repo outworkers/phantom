@@ -18,15 +18,15 @@ package com.outworkers.phantom.tables
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
-case class StubRecord(name: String, id: UUID)
+case class StubRecord(
+  id: UUID,
+  name: String
+)
+
 sealed class TableWithSingleKey extends CassandraTable[ConcreteTableWithSingleKey, StubRecord] {
 
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
-
-  def fromRow(r: Row): StubRecord = {
-    StubRecord(name(r), id(r))
-  }
 }
 
 abstract class ConcreteTableWithSingleKey extends TableWithSingleKey with RootConnector
@@ -37,9 +37,7 @@ class TableWithCompoundKey extends CassandraTable[ConcreteTableWithCompoundKey, 
   object second extends UUIDColumn(this) with PrimaryKey
   object name extends StringColumn(this)
 
-  def fromRow(r: Row): StubRecord = {
-    StubRecord(name(r), id(r))
-  }
+  override def fromRow(r: Row): StubRecord = StubRecord(id(r), name(r))
 }
 
 abstract class ConcreteTableWithCompoundKey extends TableWithCompoundKey with RootConnector
@@ -52,10 +50,10 @@ sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompo
   object second extends UUIDColumn(this) with PrimaryKey
   object name extends StringColumn(this)
 
-  def fromRow(r: Row): StubRecord = {
+  override def fromRow(r: Row): StubRecord = {
     StubRecord(
-      name = name(r),
-      id = id(r)
+      id = id(r),
+      name = name(r)
     )
   }
 }
@@ -63,16 +61,8 @@ sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompo
 abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with RootConnector
 
 sealed class TableWithNoKey extends CassandraTable[ConcreteTableWithNoKey, StubRecord] {
-
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
-
-  def fromRow(r: Row): StubRecord = {
-    StubRecord(
-      name = name(r),
-      id = id(r)
-    )
-  }
 }
 
 abstract class ConcreteTableWithNoKey extends TableWithNoKey with RootConnector

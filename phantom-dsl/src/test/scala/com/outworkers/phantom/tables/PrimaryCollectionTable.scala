@@ -34,16 +34,6 @@ class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTab
   object mapCol extends MapColumn[String, String](this) with PrimaryKey
   object name extends StringColumn(this) with PrimaryKey
   object value extends IntColumn(this)
-
-  def fromRow(row: Row): PrimaryCollectionRecord = {
-    PrimaryCollectionRecord(
-      listIndex(row),
-      setCol(row),
-      mapCol(row),
-      name(row),
-      value(row)
-    )
-  }
 }
 
 abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {

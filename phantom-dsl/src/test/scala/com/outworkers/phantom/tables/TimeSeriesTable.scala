@@ -42,14 +42,6 @@ sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, Tim
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending {
     override val name = "unixTimestamp"
   }
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
 }
 
 abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
@@ -60,7 +52,7 @@ sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUI
   object id extends TimeUUIDColumn(this) with ClusteringOrder with Descending
   object name extends StringColumn(this)
 
-  def fromRow(row: Row): TimeUUIDRecord = {
+  override def fromRow(row: Row): TimeUUIDRecord = {
     TimeUUIDRecord(
       user(row),
       id(row),

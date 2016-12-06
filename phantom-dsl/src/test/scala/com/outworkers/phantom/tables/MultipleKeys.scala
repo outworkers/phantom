@@ -31,7 +31,7 @@ class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleK
   object intColumn7 extends IntColumn(this) with PrimaryKey
   object timestamp8 extends DateTimeColumn(this)
 
-  def fromRow(r: Row): Option[MultipleKeys] = None
+  override def fromRow(r: Row): Option[MultipleKeys] = None
 }
 
 abstract class ConcreteMultipleKeys extends MultipleKeys with RootConnector {

@@ -42,18 +42,6 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
   object setInt extends SetColumn[Int](this)
 
   object mapIntToText extends MapColumn[Int, String](this)
-
-  def fromRow(r: Row): TestRow = {
-    TestRow(
-      key = key(r),
-      list = list(r),
-      setText = setText(r),
-      mapTextToText = mapTextToText(r),
-      setInt = setInt(r),
-      mapIntToText = mapIntToText(r),
-      mapIntToInt = Map.empty[Int, Int]
-    )
-  }
 }
 
 abstract class ConcreteTestTable extends TestTable with RootConnector {

@@ -25,13 +25,6 @@ class CounterTableTest extends CassandraTable[ConcreteCounterTableTest, CounterR
 
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
-
-  def fromRow(row: Row): CounterRecord = {
-    CounterRecord(
-      id = id(row),
-      count = count_entries(row)
-    )
-  }
 }
 
 abstract class ConcreteCounterTableTest extends CounterTableTest with RootConnector {
@@ -41,13 +34,6 @@ abstract class ConcreteCounterTableTest extends CounterTableTest with RootConnec
 class SecondaryCounterTable extends CassandraTable[ConcreteSecondaryCounterTable, CounterRecord] {
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
-
-  def fromRow(row: Row): CounterRecord = {
-    CounterRecord(
-      id = id(row),
-      count = count_entries(row)
-    )
-  }
 }
 
 abstract class ConcreteSecondaryCounterTable extends SecondaryCounterTable with RootConnector {
@@ -58,13 +44,6 @@ class BrokenCounterTableTest extends CassandraTable[ConcreteBrokenCounterTableTe
 
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
-
-  def fromRow(row: Row): CounterRecord = {
-    CounterRecord(
-      id = id(row),
-      count = count_entries(row)
-    )
-  }
 
 }
 

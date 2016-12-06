@@ -69,16 +69,6 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
       compactRender(Extraction.decompose(obj))
     }
   }
-
-  def fromRow(row: Row): JsonClass = {
-    JsonClass(
-      id = id(row),
-      name = name(row),
-      json = json(row),
-      jsonList = jsonList(row),
-      jsonSet = jsonSet(row)
-    )
-  }
 }
 
 abstract class ConcreteJsonTable extends JsonTable with RootConnector {

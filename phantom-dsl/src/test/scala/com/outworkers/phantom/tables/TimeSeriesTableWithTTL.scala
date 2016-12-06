@@ -24,14 +24,6 @@ sealed class TimeSeriesTableWithTTL extends CassandraTable[ConcreteTimeSeriesTab
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
 }
 
 abstract class ConcreteTimeSeriesTableWithTTL extends TimeSeriesTableWithTTL with RootConnector
@@ -40,14 +32,6 @@ sealed class TimeSeriesTableWithTTL2 extends CassandraTable[ConcreteTimeSeriesTa
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this)
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
 }
 
 abstract class ConcreteTimeSeriesTableWithTTL2 extends TimeSeriesTableWithTTL2 with RootConnector {

@@ -47,19 +47,6 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object uid extends UUIDColumn(this)
-
-
-  override def fromRow(r: Row): Recipe = {
-    Recipe(
-      url(r),
-      description(r),
-      ingredients(r),
-      servings(r),
-      lastcheckedat(r),
-      props(r),
-      uid(r)
-    )
-  }
 }
 
 abstract class ConcreteRecipes extends Recipes with RootConnector {
@@ -76,21 +63,11 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   }
 }
 
-
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
 sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
-
   object id extends UUIDColumn(this) with PartitionKey
-
   object map extends MapColumn[Long, DateTime](this)
-
-  def fromRow(row: Row): SampleEvent = {
-    SampleEvent(
-      id = id(row),
-      map = map(row)
-    )
-  }
 }
 
 abstract class ConcreteEvents extends Events with RootConnector {

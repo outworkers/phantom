@@ -52,21 +52,6 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
-
-  // Now the mapping function, transforming a row into a custom type.
-  // This is a bit of boilerplate, but it's one time only and very short.
-  def fromRow(row: Row): Recipe = {
-    Recipe(
-      id(row),
-      name(row),
-      title(row),
-      author(row),
-      description(row),
-      ingredients(row),
-      props(row),
-      timestamp(row)
-    )
-  }
 }
 
 
@@ -91,5 +76,4 @@ abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with Root
   def findRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).and(_.name eqs name).one()
   }
-
 }

@@ -111,7 +111,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         definition could not be inferred.
     */
   def materializeExtractor(tableTpe: Type, recordTpe: Type): Tree = {
-    val sourceMembers = filterMembers[AbstractColumn[_]](tableTpe, exclusions)
+    val sourceMembers = tableTpe.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
     val columnNames = sourceMembers.map(
       tpe => {
         q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
@@ -152,10 +152,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
 
     if (recordMembers.size == colMembers.size) {
-      if (recordMembers.zip(colMembers).forall { case (rec, col) => rec == col }) {
+      if (!recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec != col }) {
         q"""new $recordTpe(..$columnNames)"""
       } else {
-        c.abort(c.enclosingPosition, "Columns and case class fields were not of equal types")
+        q"???"
       }
     } else {
       q"???"
@@ -204,7 +204,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
-    println(showCode(tree))
     tree
   }
 
