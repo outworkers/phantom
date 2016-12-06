@@ -31,10 +31,10 @@ class DistinctTest extends PhantomSuite {
 
   it should "return distinct primary keys" in {
     val rows = List(
-      StubRecord("a", UUID.nameUUIDFromBytes("1".getBytes)),
-      StubRecord("b", UUID.nameUUIDFromBytes("1".getBytes)),
-      StubRecord("c", UUID.nameUUIDFromBytes("2".getBytes)),
-      StubRecord("d", UUID.nameUUIDFromBytes("3".getBytes))
+      StubRecord(UUID.nameUUIDFromBytes("1".getBytes), "a"),
+      StubRecord(UUID.nameUUIDFromBytes("1".getBytes), "b"),
+      StubRecord(UUID.nameUUIDFromBytes("2".getBytes), "c"),
+      StubRecord(UUID.nameUUIDFromBytes("3".getBytes), "d")
     )
 
     val batch = rows.foldLeft(Batch.unlogged)((batch, row) => {
