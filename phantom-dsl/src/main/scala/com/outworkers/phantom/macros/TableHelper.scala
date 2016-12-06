@@ -17,10 +17,9 @@ package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.SelectTable
-import com.outworkers.phantom.column.{AbstractColumn, PrimitiveColumn}
+import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.CassandraTable
 
-import scala.collection.immutable.ListSet
 import scala.reflect.macros.blackbox
 
 trait TableHelper[T <: CassandraTable[T, R], R] {
@@ -80,7 +79,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   /**
     * Materializes an extractor method for a table, the so called "fromRow" method.
     *
-    * This will only work if the types of the [[R]] record type match the types
+    * This will only work if the types of the record type match the types
     * inferred by the return types of the columns inside the table.
     *
     * If the implementation could not be inferred, the output of this method will be the unimplemented
@@ -106,20 +105,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *   }
     * }}}
     *
-    * @tparam T The type of the Cassandra table to infer the extractor for.
-    * @tparam R The record type to infer the extractor for.
     * @return An interpolated tree that will contain the automatically generated implementation
     *         of the fromRow method in a Cassandra Table.
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
-    val tableTpe = weakTypeOf[T]
-    val recordTpe = weakTypeOf[R]
-
-    val rowTerm = TermName("row")
-
-    val sourceMembers = filterMembers[T, AbstractColumn[_]](exclusions)
+  def materializeExtractor(tableTpe: Type, recordTpe: Type): Tree = {
+    val sourceMembers = filterMembers[AbstractColumn[_]](tableTpe, exclusions)
     val columnNames = sourceMembers.map(
       tpe => {
         q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
@@ -133,7 +125,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val recordMembers = fields(recordTpe) map (_._2)
 
     /**
-      * Then we do the same for the columns, we filter for the members of [[T]] that
+      * Then we do the same for the columns, we filter for the members of the table type that
       * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
       * are going to look at what type argumnt was passed by the specific column definition
       * when extending [[AbstractColumn[_]] as this will tell us the Scala output type
@@ -159,18 +151,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       }
     }
 
-    val recordMembersSet = recordMembers.to[ListSet]
-
-    Console.println(s"The ${recordMembersSet.size} case class types")
-    Console.println(recordMembersSet.map(_.typeSymbol.fullName).mkString("\n"))
-
-    Console.println(s"The ${colMembers.size} output types inferred from the schema definition")
-    Console.println(colMembers.map(_.typeSymbol.fullName).mkString("\n"))
-
-    val tree = q"""new ${recordTpe}(..$columnNames)"""
-
-    println(showCode(tree))
-    tree
+    if (recordMembers.size == colMembers.size) {
+      if (recordMembers.zip(colMembers).forall { case (rec, col) => rec == col }) {
+        q"""new $recordTpe(..$columnNames)"""
+      } else {
+        c.abort(c.enclosingPosition, "Columns and case class fields were not of equal types")
+      }
+    } else {
+      q"???"
+    }
   }
 
 
@@ -208,7 +197,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = $finalName
 
-          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = ${materializeExtractor[T, R]}
+          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = ${materializeExtractor(tpe, rTpe)}
 
           def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)

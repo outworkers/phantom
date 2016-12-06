@@ -47,6 +47,21 @@ class MacroUtils(val c: blackbox.Context) {
     }
   }
 
+  def filterMembers[Filter : TypeTag](
+    tag: Type,
+    exclusions: Symbol => Option[Symbol]
+  ): Set[Symbol] = {
+    val tpe = tag.typeSymbol.typeSignature
+
+    (
+      for {
+        baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
+        symbol <- baseClass.typeSignature.members.sorted
+        if symbol.typeSignature <:< typeOf[Filter]
+      } yield symbol
+      )(collection.breakOut)
+  }
+
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
   ): Set[Symbol] = {
