@@ -27,7 +27,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableName: String
 
-  def fromRow(row: Row): R
+  def fromRow(table: T, row: Row): R
 
   def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
 }
@@ -42,6 +42,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
   val rowType = tq"com.datastax.driver.core.Row"
+  val rowTerm = TermName("row")
+  val tableTerm = TermName("table")
 
   val knownList = List("Any", "Object", "RootConnector")
 
@@ -120,7 +122,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val sourceMembers = filterMembers[T, AbstractColumn[_]](exclusions)
     val columnNames = sourceMembers.map(
       tpe => {
-        q"${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
+        q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
       }
     )
 
@@ -206,9 +208,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = $finalName
 
-          def fromRow(row: $rowType): $rTpe = ${materializeExtractor[T, R]}
+          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = ${materializeExtractor[T, R]}
 
-          def fields(table: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
+          def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }

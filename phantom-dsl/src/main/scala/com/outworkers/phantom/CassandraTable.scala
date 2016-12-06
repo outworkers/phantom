@@ -79,7 +79,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def tableName: String = helper.tableName
 
-  def fromRow(r: Row): R
+  def fromRow(r: Row): R = helper.fromRow(instance, r)
 
   /**
    * The new create mechanism introduced in Phantom 1.6.0.
