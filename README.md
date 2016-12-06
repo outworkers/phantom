@@ -21,6 +21,7 @@ part of long term re-branding efforts, we have finally felt it's time to make su
 - There is a new and now completely optional Bintray resolver, `Resolver.bintrayRepo("outworkers", "oss-releases")`,
  that gives you free access to the latest cuts of our open source releases before they hit Maven Central. We assume
  no liability for your usage of latest cuts, but we welcome feedback and we do our best to have elaborate CI processes in place.
+- Manually defining a `fromRow` inside a `CassandraTable` is no longer required if your column types match your case class types.
 - `EnumColumn` is now relying entirely on `Primitive.macroImpl`, which means you will not need to pass in the enumeration
 as an argument to `EnumColumn` anymore. This means `object enum extends EnumColumn(this, enum: MyEnum)` is now simply
 `object enum extends EnumColumn[MyEnum#Value]`
