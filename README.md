@@ -30,7 +30,8 @@ projects which have in their own right been completely open sourced under Apache
 - A new, macro based mechanism now performs the same auto-discovery task that reflection used to, thanks to `macro-compat`.
 - Index modifiers no longer require a type parameter, `PartitionKey`, `PrimaryKey`, `ClusteringOrder` and `Index` don't require
 the column type passed anymore.
-- `KeySpaceDef` has been renamed to the more appropiate `CassandraConnector`.
+- `KeySpaceDef` has been renamed to the more appropiate `
+CassandraConnector`.
 - `CassandraConnector` now natively supports specifying a keyspace creation query.
 - `TimeWindowCompactionStrategy` is now natively supported in the CREATE/ALTER dsl.
 - Collections can now be used as part of a primary or partition key.

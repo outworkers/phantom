@@ -22,4 +22,7 @@ package object connectors {
   type ClusterBuilder = (Cluster.Builder => Cluster.Builder)
 
   type VersionNumber = com.datastax.driver.core.VersionNumber
+
+  @deprecated("Renamed to the more descriptive CassandraConnection", "2.0.0")
+  type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
 }
