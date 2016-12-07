@@ -16,9 +16,9 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
-import com.outworkers.phantom.SelectTable
+import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl.{CassandraTable, ClusteringOrder, PartitionKey, PrimaryKey}
+import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.reflect.macros.blackbox
 
@@ -44,6 +44,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   val rowType = tq"com.datastax.driver.core.Row"
   val builder = q"com.outworkers.phantom.builder.QueryBuilder"
+  val strTpe = tq"java.lang.String"
+  val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
+  val collections = q"scala.collection.immutable"
   val rowTerm = TermName("row")
   val tableTerm = TermName("table")
 
@@ -64,6 +67,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
+  def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
+    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
+  }
+
   /**
     * This method will check for common Cassandra anti-patterns during the intialisation of a schema.
     * If the Schema definition violates valid CQL standard, this function will throw an error.
@@ -73,31 +80,29 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *
     * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
     */
-  def inferPrimaryKey(table: Type, columns: Seq[Type]): Unit = {
+  def inferPrimaryKey(table: Type, columns: Seq[Type]): Tree = {
     val tableName = table.typeSymbol.name.decodedName
 
-    if (!columns.exists(_ <:< typeOf[PartitionKey])) {
+    val partitionKeys = filterColumns[PartitionKey](columns)
+      .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
+      .map(name => q"$tableTerm.$name")
+
+    if (partitionKeys.isEmpty) {
       c.abort(
         c.enclosingPosition,
         s"Table $tableName needs to have at least one partition key"
       )
     }
 
-    val partitionKeys = columns
-      .filter(_ <:< typeOf[PartitionKey])
+    val primaries = filterColumns[PrimaryKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
 
-    val primaries = columns
-      .filter(_ <:< typeOf[PrimaryKey])
+    val clusteringKeys = filterColumns[ClusteringOrder](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
 
-    val clusteringKeys = columns.filter(_ <:< typeOf[ClusteringOrder])
-      .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
-      .map(name => q"$tableTerm.$name")
-
-    if (clusteringKeys.nonEmpty && primaries.nonEmpty) {
+    if (clusteringKeys.nonEmpty && (clusteringKeys.size != primaries.size)) {
       c.abort(
         c.enclosingPosition,
         "Using clustering order on one primary key part " +
@@ -105,7 +110,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           s"Table $tableName still has ${primaries.size} primary keys defined"
       )
     } else {
-      q"$builder.Create.primaryKey(..$partitionKeys, ..$primaries, ..$clusteringKeys)"
+      q"""
+        $builder.Create.primaryKey(
+          $collections.List[$colType](..$partitionKeys).map(_.name),
+          $collections.List[$colType](..$primaries).map(_.name),
+          $collections.List[$colType](..$clusteringKeys).map(_.name)
+        ).queryString
+      """
     }
 
   }
@@ -208,16 +219,16 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val finalName = tpe.typeSymbol.name.toTermName
 
-    val columns = tpe.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
+    val columns = filterMembers[T, AbstractColumn[_]](exclusions)
+
+    Console.println("Column definitions")
+    Console.println(columns.map(_.name.decodedName.toString).mkString("\n"))
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
-    val rowType = tq"com.datastax.driver.core.Row"
-    val strTpe = tq"java.lang.String"
-
     val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
-          def tableName: $strTpe = $finalName
+          def tableName: $strTpe = ${finalName.toString.capitalize}
 
           def tableKey($tableTerm: $tpe): $strTpe = ${inferPrimaryKey(tpe, columns.map(_.typeSignature))}
 
@@ -228,6 +239,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
+    Console.println(showCode(tree))
     tree
   }
 

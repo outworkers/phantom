@@ -35,7 +35,7 @@ class RootCreateQuery[
     QueryBuilder.Create.defaultCreateQuery(
       keySpace.name,
       table.tableName,
-      table.defineTableKey(),
+      table.tableKey,
       table.columns.map(_.qb).toSeq
     )
   }
@@ -48,7 +48,7 @@ class RootCreateQuery[
     QueryBuilder.Create.createIfNotExists(
       keySpace.name,
       table.tableName,
-      table.defineTableKey(),
+      table.tableKey,
       table.columns.map(_.qb).toSeq
     )
   }

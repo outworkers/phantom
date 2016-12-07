@@ -46,6 +46,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def clusteringColumns: Set[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
+  def tableKey: String = helper.tableKey(instance)
+
+  @deprecated("Method replaced with macro implementation", "2.0.0")
+  def defineTableKey(): String = tableKey
+
   def instance: T = this.asInstanceOf[T]
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))

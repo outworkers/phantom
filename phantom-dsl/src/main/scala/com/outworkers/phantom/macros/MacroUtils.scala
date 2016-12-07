@@ -50,7 +50,7 @@ class MacroUtils(val c: blackbox.Context) {
   def filterMembers[Filter : TypeTag](
     tag: Type,
     exclusions: Symbol => Option[Symbol]
-  ): Set[Symbol] = {
+  ): Seq[Symbol] = {
     val tpe = tag.typeSymbol.typeSignature
 
     (
@@ -59,12 +59,12 @@ class MacroUtils(val c: blackbox.Context) {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-      )(collection.breakOut)
+      )(collection.breakOut) distinct
   }
 
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
-  ): Set[Symbol] = {
+  ): Seq[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
     (
@@ -73,6 +73,6 @@ class MacroUtils(val c: blackbox.Context) {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-    )(collection.breakOut)
+    )(collection.breakOut) distinct
   }
 }

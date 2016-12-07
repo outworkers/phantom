@@ -64,8 +64,8 @@ private[builder] class CreateTableBuilder {
 
   def partitionKey(keys: List[String]): CQLQuery = {
     keys match {
-      case head :: tail => CQLQuery.empty.wrap(keys)
       case head :: Nil => CQLQuery(head)
+      case head :: tail => CQLQuery.empty.wrap(keys)
       case _ => CQLQuery.empty
     }
   }
@@ -104,15 +104,28 @@ private[builder] class CreateTableBuilder {
     */
   def primaryKey(
     partitions: List[String],
-    primaries: List[String],
-    clusteringKeys: List[String]
+    primaries: List[String] = Nil,
+    clusteringKeys: List[String] = Nil
   ): CQLQuery = {
-    CQLQuery("PRIMARY KEY").forcePad
+    val root = CQLQuery("PRIMARY KEY").forcePad
       .append(CQLSyntax.`(`)
       .append(partitionKey(partitions))
-      .append(CQLSyntax.comma)
-      .append(CQLSyntax.`)`)
-      .append(clusteringKey(clusteringKeys))
+
+    val stage2 = if (primaries.nonEmpty || clusteringKeys.nonEmpty) {
+      // This only works because the macro prevents the user from defining both primaries and clustering keys
+      // in the same table.
+      val finalKeys = primaries ::: clusteringKeys
+      root.append(CQLSyntax.comma)
+          .append(CQLQuery.empty.wrap(finalKeys))
+          .append(CQLSyntax.`)`)
+    } else {
+      root.append(CQLSyntax.`)`)
+    }
+
+    clusteringKeys match {
+      case head :: tail => stage2.append(clusteringKey(clusteringKeys))
+      case _ => stage2
+    }
   }
 
   def read_repair_chance(st: String): CQLQuery = {
