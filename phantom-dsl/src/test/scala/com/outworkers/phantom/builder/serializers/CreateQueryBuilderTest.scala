@@ -39,6 +39,20 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
   "The CREATE query builder" - {
 
+    "should correctly serialise primary key definitions" - {
+      "a simple single partition key defintion" in {
+        val cols = List("test")
+        QueryBuilder.Create.primaryKey(cols).queryString shouldEqual "PRIMARY KEY (test)"
+      }
+
+      "a single partition key and a primary key" in {
+        val partitions = List("test")
+        val primaries = List("test2")
+        QueryBuilder.Create.primaryKey(partitions, primaries).queryString shouldEqual "PRIMARY KEY (test, test2)"
+      }
+    }
+
+
     "should allow using DateTieredCompactionStrategy and its options" - {
       "serialise a create query with a DateTieredCompactionStrategy" in {
         val qb = BasicTable.create.`with`(

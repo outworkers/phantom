@@ -155,7 +155,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor(tableTpe: Type, recordTpe: Type): Tree = {
+  def materializeExtractor(tableTpe: Type, recordTpe: Type): Option[Tree] = {
     val sourceMembers = tableTpe.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
     val columnNames = sourceMembers.map(
       tpe => {
@@ -198,12 +198,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     if (recordMembers.size == colMembers.size) {
       if (!recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec != col }) {
-        q"""new $recordTpe(..$columnNames)"""
+        Some(q"""new $recordTpe(..$columnNames)""")
       } else {
-        q"???"
+        None
       }
     } else {
-      q"???"
+      None
     }
   }
 
@@ -220,6 +220,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
+    val fromRowDefinition = materializeExtractor(tpe, rTpe) getOrElse q"???"
+
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
     q"""
@@ -228,7 +230,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
           def tableKey($tableTerm: $tpe): $strTpe = ${inferPrimaryKey(tpe, columns.map(_.typeSignature))}
 
-          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = ${materializeExtractor(tpe, rTpe)}
+          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
           def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)

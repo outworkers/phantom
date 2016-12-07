@@ -116,7 +116,8 @@ private[builder] class CreateTableBuilder {
       // in the same table.
       val finalKeys = primaries ::: clusteringKeys
       root.append(CQLSyntax.comma)
-          .append(CQLQuery.empty.wrap(finalKeys))
+        .forcePad
+          .append(finalKeys)
           .append(CQLSyntax.`)`)
     } else {
       root.append(CQLSyntax.`)`)
