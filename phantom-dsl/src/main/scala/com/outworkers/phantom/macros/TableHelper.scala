@@ -18,7 +18,7 @@ package com.outworkers.phantom.macros
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.SelectTable
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl.CassandraTable
+import com.outworkers.phantom.dsl.{CassandraTable, ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.reflect.macros.blackbox
 
@@ -27,6 +27,8 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
   def tableName: String
 
   def fromRow(table: T, row: Row): R
+
+  def tableKey(table: T): String
 
   def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
 }
@@ -41,6 +43,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
   val rowType = tq"com.datastax.driver.core.Row"
+  val builder = q"com.outworkers.phantom.builder.QueryBuilder"
   val rowTerm = TermName("row")
   val tableTerm = TermName("table")
 
@@ -61,19 +64,50 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
-  def findRealTable(tpe: Type, target: Symbol): Option[Symbol] = {
-    tpe.baseClasses.find(clz => {
-      val base = baseType(clz)
+  /**
+    * This method will check for common Cassandra anti-patterns during the intialisation of a schema.
+    * If the Schema definition violates valid CQL standard, this function will throw an error.
+    *
+    * A perfect example is using a mixture of Primary keys and Clustering keys in the same schema.
+    * While a Clustering key is also a primary key, when defining a clustering key all other keys must become clustering keys and specify their order.
+    *
+    * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
+    */
+  def inferPrimaryKey(table: Type, columns: Seq[Type]): Unit = {
+    val tableName = table.typeSymbol.name.decodedName
 
-      if (base.isEmpty) {
-        c.abort(
-          c.enclosingPosition,
-          s"Could not find a direct ancestor for type ${tpe.typeSymbol.name.decodedName.toString}"
-        )
-      }
+    if (!columns.exists(_ <:< typeOf[PartitionKey])) {
+      c.abort(
+        c.enclosingPosition,
+        s"Table $tableName needs to have at least one partition key"
+      )
+    }
 
-      base.head == target
-    })
+    val partitionKeys = columns
+      .filter(_ <:< typeOf[PartitionKey])
+      .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
+      .map(name => q"$tableTerm.$name")
+
+    val primaries = columns
+      .filter(_ <:< typeOf[PrimaryKey])
+      .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
+      .map(name => q"$tableTerm.$name")
+
+    val clusteringKeys = columns.filter(_ <:< typeOf[ClusteringOrder])
+      .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
+      .map(name => q"$tableTerm.$name")
+
+    if (clusteringKeys.nonEmpty && primaries.nonEmpty) {
+      c.abort(
+        c.enclosingPosition,
+        "Using clustering order on one primary key part " +
+          "means all primary key parts must explicitly define clustering. " +
+          s"Table $tableName still has ${primaries.size} primary keys defined"
+      )
+    } else {
+      q"$builder.Create.primaryKey(..$partitionKeys, ..$primaries, ..$clusteringKeys)"
+    }
+
   }
 
   /**
@@ -172,23 +206,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
     val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tpe, $rTpe]"
 
-    val realTable = findRealTable(tpe, tableSym)
+    val finalName = tpe.typeSymbol.name.toTermName
 
-    val realType = realTable match {
-      case Some(tb) => tb.asType
-      case None => c.abort(c.enclosingPosition, s"Could not find out the name of ${sourceName.toString}")
-    }
+    val columns = tpe.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
-    val finalName = {
-      val initial = realType.asType.name.decodedName.toString
-      // Lower case the first letter of the type
-      // This will make sure the macro derived name is compatible
-      // with the old school naming structure used in phantom.
-      initial(0).toLower + initial.drop(1)
-    }
-
-    val accessors = filterMembers[T, AbstractColumn[_]](exclusions)
-      .map(_.asTerm.name).map(tm => q"table.asInstanceOf[$realType].${tm.toTermName}")
+    val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
     val rowType = tq"com.datastax.driver.core.Row"
     val strTpe = tq"java.lang.String"
@@ -196,6 +218,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = $finalName
+
+          def tableKey($tableTerm: $tpe): $strTpe = ${inferPrimaryKey(tpe, columns.map(_.typeSignature))}
 
           def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = ${materializeExtractor(tpe, rTpe)}
 

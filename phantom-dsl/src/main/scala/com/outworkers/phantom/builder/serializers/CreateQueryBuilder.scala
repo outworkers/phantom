@@ -62,6 +62,59 @@ private[builder] class CreateTableBuilder {
 
   object Caching extends CachingQueryBuilder
 
+  def partitionKey(keys: List[String]): CQLQuery = {
+    keys match {
+      case head :: tail => CQLQuery.empty.wrap(keys)
+      case head :: Nil => CQLQuery(head)
+      case _ => CQLQuery.empty
+    }
+  }
+
+  /**
+    * This method will filter the columns from a Clustering Order definition.
+    * It is used to define TimeSeries tables, using the ClusteringOrder trait
+    * combined with a directional trait, either Ascending or Descending.
+    *
+    * This method will simply add to the trailing of a query.
+    * @return The clustering key, defined as a string or the empty string.
+    */
+  def clusteringKey(keys: List[String]): CQLQuery = {
+    keys match {
+      case head :: tail => CQLQuery.empty.pad.append("WITH CLUSTERING ORDER BY").wrap(keys)
+      case _ => CQLQuery.empty
+    }
+  }
+
+  /**
+    * This method will define the PRIMARY_KEY of the table.
+    * <ul>
+    *   <li>
+    *    For more than one partition key, it will define a Composite Key.
+    *    Example: PRIMARY_KEY((partition_key_1, partition_key2), primary_key_1, etc..)
+    *   </li>
+    *   <li>
+    *     For a single partition key, it will define a Compound Key.
+    *     Example: PRIMARY_KEY(partition_key_1, primary_key_1, primary_key_2)
+    *   </li>
+    *   <li>
+    *     For no partition key, it will throw an exception.
+    *   </li>
+    * </ul>
+    * @return A string value representing the primary key of the table.
+    */
+  def primaryKey(
+    partitions: List[String],
+    primaries: List[String],
+    clusteringKeys: List[String]
+  ): CQLQuery = {
+    CQLQuery("PRIMARY KEY").forcePad
+      .append(CQLSyntax.`(`)
+      .append(partitionKey(partitions))
+      .append(CQLSyntax.comma)
+      .append(CQLSyntax.`)`)
+      .append(clusteringKey(clusteringKeys))
+  }
+
   def read_repair_chance(st: String): CQLQuery = {
     Utils.tableOption(CQLSyntax.CreateOptions.read_repair_chance, st)
   }
