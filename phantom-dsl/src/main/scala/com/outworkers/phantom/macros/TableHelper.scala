@@ -211,7 +211,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
 
-    val sourceName = tpe.typeSymbol.name.decodedName
     val rTpe = weakTypeOf[R]
 
     val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
@@ -221,12 +220,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
-    Console.println("Column definitions")
-    Console.println(columns.map(_.name.decodedName.toString).mkString("\n"))
-
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
           def tableName: $strTpe = ${finalName.toString.capitalize}
 
@@ -239,8 +235,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
-    Console.println(showCode(tree))
-    tree
   }
 
 }

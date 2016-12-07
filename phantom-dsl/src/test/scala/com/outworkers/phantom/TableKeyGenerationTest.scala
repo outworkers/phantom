@@ -15,33 +15,45 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import com.outworkers.phantom.tables._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+import com.outworkers.phantom.dsl._
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {
 
   it should "correctly create a Compound key from a table with a single Partition key" in {
-    TestDatabase.tableWithSingleKey.defineTableKey() shouldEqual s"PRIMARY KEY (id)"
+    TestDatabase.tableWithSingleKey.tableKey shouldEqual s"PRIMARY KEY (id)"
   }
 
   it should "correctly create a Compound key from a table with a single Partition key and one Primary key" in {
-    TestDatabase.tableWithCompoundKey.defineTableKey() shouldEqual s"PRIMARY KEY (id, second)"
+    TestDatabase.tableWithCompoundKey.tableKey shouldEqual s"PRIMARY KEY (id, second)"
   }
 
   it should "correctly create a Composite key from a table with a two Partition keys and one Primary key" in {
-    TestDatabase.tableWithCompositeKey.defineTableKey() shouldEqual s"PRIMARY KEY ((id, second_part), second)"
+    TestDatabase.tableWithCompositeKey.tableKey shouldEqual s"PRIMARY KEY ((id, second_part), second)"
   }
 
   it should "throw an error if the schema has no PartitionKey" in {
-    intercept[InvalidPrimaryKeyException] {
-      TestDatabase.tableWithNoKey.defineTableKey()
-    }
+    """
+      |abstract class TableWithNoKey extends CassandraTable[TableWithNoKey, StubRecord] {
+      |  object id extends UUIDColumn(this)
+      |  object name extends StringColumn(this)
+      |}
+    """.stripMargin shouldNot compile
   }
 
   it should "throw an error if the table uses a ClusteringColumn with PrimaryKeys" in {
-    intercept[InvalidClusteringKeyException] {
-      TestDatabase.brokenClusteringTable.defineTableKey()
-    }
+    """
+      |sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable, String] {
+      |  object id extends UUIDColumn(this) with PartitionKey
+      |
+      |  object id2 extends UUIDColumn(this) with PrimaryKey
+      |  object id3 extends UUIDColumn(this) with ClusteringOrder with Descending
+      |  object placeholder extends StringColumn(this) with ClusteringOrder with Descending
+      |
+      |  override def fromRow(r: Row): String = placeholder(r)
+      |}
+      |
+    """.stripMargin shouldNot compile
   }
 }

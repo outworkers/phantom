@@ -35,7 +35,6 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object clusteringTable extends ConcreteClusteringTable with connector.Connector
   object complexClusteringTable extends ConcreteComplexClusteringTable with connector.Connector
-  object brokenClusteringTable extends ConcreteBrokenClusteringTable with connector.Connector
   object simpleCompoundKeyTable extends ConcreteSimpleCompoundKeyTable with connector.Connector
   object complexCompoundKeyTable extends ConcreteComplexCompoundKeyTable with connector.Connector
 
@@ -68,7 +67,6 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithSingleKey extends ConcreteTableWithSingleKey with connector.Connector
   object tableWithCompoundKey extends ConcreteTableWithCompoundKey with connector.Connector
   object tableWithCompositeKey extends ConcreteTableWithCompositeKey with connector.Connector
-  object tableWithNoKey extends ConcreteTableWithNoKey with connector.Connector
 
   object testTable extends ConcreteTestTable with connector.Connector
   object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {

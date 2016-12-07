@@ -60,9 +60,4 @@ sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompo
 
 abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with RootConnector
 
-sealed class TableWithNoKey extends CassandraTable[ConcreteTableWithNoKey, StubRecord] {
-  object id extends UUIDColumn(this)
-  object name extends StringColumn(this)
-}
 
-abstract class ConcreteTableWithNoKey extends TableWithNoKey with RootConnector

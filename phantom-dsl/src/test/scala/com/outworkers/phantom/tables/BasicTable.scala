@@ -133,20 +133,6 @@ sealed class ComplexClusteringTable extends CassandraTable[ConcreteComplexCluste
 
 abstract class ConcreteComplexClusteringTable extends ComplexClusteringTable with RootConnector
 
-
-sealed class BrokenClusteringTable extends CassandraTable[ConcreteBrokenClusteringTable, String] {
-  object id extends UUIDColumn(this) with PartitionKey
-
-  object id2 extends UUIDColumn(this) with PrimaryKey
-  object id3 extends UUIDColumn(this) with ClusteringOrder with Descending
-  object placeholder extends StringColumn(this) with ClusteringOrder with Descending
-
-  override def fromRow(r: Row): String = placeholder(r)
-}
-
-abstract class ConcreteBrokenClusteringTable extends BrokenClusteringTable
-
-
 sealed class ComplexCompoundKeyTable extends CassandraTable[ConcreteComplexCompoundKeyTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey
