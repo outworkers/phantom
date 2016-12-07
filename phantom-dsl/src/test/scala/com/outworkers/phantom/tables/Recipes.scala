@@ -32,7 +32,7 @@ case class Recipe(
   uid: UUID
 )
 
-class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
   object url extends StringColumn(this) with PartitionKey
 
@@ -47,11 +47,8 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object uid extends UUIDColumn(this)
-}
 
-abstract class ConcreteRecipes extends Recipes with RootConnector {
-
-  def store(recipe: Recipe): InsertQuery.Default[ConcreteRecipes, Recipe] = {
+  def store(recipe: Recipe): InsertQuery.Default[Recipes, Recipe] = {
     insert
       .value(_.url, recipe.url)
       .value(_.description, recipe.description)

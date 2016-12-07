@@ -54,8 +54,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object primitivesCassandra22 extends ConcretePrimitivesCassandra22 with connector.Connector
   object optionalPrimitivesCassandra22 extends ConcreteOptionalPrimitivesCassandra22 with connector.Connector
 
-  object recipes extends ConcreteRecipes with connector.Connector {
-    override def autocreate(space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
+  object recipes extends Recipes with connector.Connector {
+    override def autocreate(space: KeySpace): CreateQuery.Default[Recipes, Recipe] = {
       create.ifNotExists()(space).`with`(comment eqs "This is a test string")
     }
   }
