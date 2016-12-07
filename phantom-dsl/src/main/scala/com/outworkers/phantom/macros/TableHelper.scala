@@ -80,9 +80,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *
     * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
     */
-  def inferPrimaryKey(table: Type, columns: Seq[Type]): Tree = {
-    val tableName = table.typeSymbol.name.decodedName
-
+  def inferPrimaryKey(tableName: String, table: Type, columns: Seq[Type]): Tree = {
     val partitionKeys = filterColumns[PartitionKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
@@ -207,36 +205,51 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
+  def determineReferenceTable(tpe: Type): Option[Symbol] = {
+    tpe.baseClasses.reverse.find(symbol => {
+      symbol.typeSignature.decls.exists(_.typeSignature <:< typeOf[AbstractColumn[_]])
+    })
+  }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[T]
+    val tableType = weakTypeOf[T]
 
     val rTpe = weakTypeOf[R]
 
     val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
-    val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tpe, $rTpe]"
+    val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
 
-    val finalName = tpe.typeSymbol.name.toTermName
+
+    val referenceTable = determineReferenceTable(tableType).map(_.name.toTypeName.decodedName.toString)
+
+    val tableName = referenceTable match {
+      case Some(value) => value.charAt(0).toLower + value.drop(1)
+      case None => {
+        val sourceName = tableType.typeSymbol.name.decodedName.toString
+        sourceName.charAt(0).toLower + sourceName.drop(1)
+      }
+    }
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
-    val fromRowDefinition = materializeExtractor(tpe, rTpe) getOrElse q"???"
+    val fromRowDefinition = materializeExtractor(tableType, rTpe) getOrElse q"???"
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
-    q"""
-       new com.outworkers.phantom.macros.TableHelper[$tpe, $rTpe] {
-          def tableName: $strTpe = ${finalName.toString.capitalize}
+    val tree = q"""
+       new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
+          def tableName: $strTpe = $tableName
 
-          def tableKey($tableTerm: $tpe): $strTpe = ${inferPrimaryKey(tpe, columns.map(_.typeSignature))}
+          def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, columns.map(_.typeSignature))}
 
-          def fromRow($tableTerm: $tpe, $rowTerm: $rowType): $rTpe = $fromRowDefinition
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
           def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }
      """
+    tree
   }
 
 }

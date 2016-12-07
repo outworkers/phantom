@@ -40,7 +40,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
   "The CREATE query builder" - {
 
     "should correctly serialise primary key definitions" - {
-      "a simple single partition key defintion" in {
+      "a simple single partition key definition" in {
         val cols = List("test")
         QueryBuilder.Create.primaryKey(cols).queryString shouldEqual "PRIMARY KEY (test)"
       }
