@@ -42,6 +42,8 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
   object setInt extends SetColumn[Int](this)
 
   object mapIntToText extends MapColumn[Int, String](this)
+
+  object mapIntToInt extends MapColumn[Int, Int](this)
 }
 
 abstract class ConcreteTestTable extends TestTable with RootConnector {
@@ -55,6 +57,7 @@ abstract class ConcreteTestTable extends TestTable with RootConnector {
       .value(_.mapTextToText, row.mapTextToText)
       .value(_.setInt, row.setInt)
       .value(_.mapIntToText, row.mapIntToText)
+      .value(_.mapIntToInt, row.mapIntToInt)
   }
 
 }
