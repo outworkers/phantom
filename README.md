@@ -37,7 +37,19 @@ The latest versions are available here. The badges automatically update when a n
 
 ### Roadmap to Phantom 2.0.0
 
+With the rapidly evolving requirements, Cassansdra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
+
+- Go back to the flexible licensing model everyone knows and loves(especially your legal department). No one wants to go through corporate litigation and licensing compliance to a `build.sbt` dependency, and if you've ever worked in a bank we all know it's not happening.
+
+- Phantom was a really fun time saving introduction years ago when it was first introduced, but since then Scala has evolved to a point where many features of more esoteric components, such as the macro API, have reached a degree of stability that we can now exploit to our great advantage: **boilerplate elimitation**.
+
+- From type parameters to keys, table class cake patterns, having to define `fromRow`, and a whole lot of other boilerplatey items, we have eliminated them one by one, reducing the amount of code you need to type to make it all work. The future looks even brighter, as we plan on fully eliminating the mapping DSL very shortly in favour of even more lightweight techniques.
+
 Phantom's next major release is slowly approaching completion, and if you would like to know more about what's to come and about what we have in store for you next, have a look at the below list. Feedback and contributions are welcome, and we are happy to prioritise any crucial features Phantom may currently be lacking.
+
+If the boxes are checked it means this is already complete on the gigantic [2.0.0 pull request](https://github.com/outworkers/phantom/pull/576). This is initial "in progres" [migration guide](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide) to Phantom 2.0.0 that should give you some more detail into the changes made.
+
+Intermediary releases of phantom 2.0.x are already available via `Resolver.bintrayRepo("outworkers", "oss-releases")` and the latest version is [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion).
 
 #### Licensing and distribution
 
@@ -45,6 +57,7 @@ Phantom's next major release is slowly approaching completion, and if you would 
 - [ ] Publish `outworkers-util` and all sub modules to Maven Central.
 - [ ] Publish `outworkers-diesel` and all sub modules to Maven Central.
 - [ ] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
+- [ ] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
 
 #### Macro API to replace runtime features
 
@@ -83,6 +96,7 @@ Phantom's next major release is slowly approaching completion, and if you would 
 
 #### Documentatiom
 
+- [ ] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
 - [ ] Move documentation back to the docs folder.
 - [ ] Add a documentation website on the main page.
 - [ ] Create a navigator that allows viewing the documentation at a particular point in time.
