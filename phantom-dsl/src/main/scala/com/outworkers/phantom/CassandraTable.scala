@@ -34,9 +34,9 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
-) extends SelectTable[T, R] { self: CassandraTable[T, R] =>
+) extends SelectTable[T, R] { self =>
 
-  def columns: Set[AbstractColumn[_]] = helper.fields(this)
+  def columns: Set[AbstractColumn[_]] = helper.fields(self)
 
   def secondaryKeys: Set[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
@@ -51,7 +51,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   @deprecated("Method replaced with macro implementation", "2.0.0")
   def defineTableKey(): String = tableKey
 
-  def instance: T = this.asInstanceOf[T]
+  def instance: T = self.asInstanceOf[T]
 
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
