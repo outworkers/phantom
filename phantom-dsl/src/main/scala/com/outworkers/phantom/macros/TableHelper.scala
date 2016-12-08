@@ -111,8 +111,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       q"""
         $builder.Create.primaryKey(
           $collections.List[$colType](..$partitionKeys).map(_.name),
-          $collections.List[$colType](..$primaries).map(_.name),
-          $collections.List[$colType](..$clusteringKeys).map(_.name)
+          $collections.List[$colType](..$primaries).map(_.name)
         ).queryString
       """
     }
@@ -153,9 +152,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor(tableTpe: Type, recordTpe: Type): Option[Tree] = {
-    val sourceMembers = tableTpe.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
-    val columnNames = sourceMembers.map(
+  def materializeExtractor(tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
+    val columnNames = columns.map(
       tpe => {
         q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
       }
@@ -176,7 +174,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       * We create a list of these types and if they match the case class types expected,
       * it means we can auto-generate a fromRow implementation.
       */
-    val colMembers = sourceMembers.map { member =>
+    val colMembers = columns.map { member =>
       val memberType = member.typeSignatureIn(tableTpe)
 
       memberType.baseClasses.find(colSymbol ==) match {
@@ -198,9 +196,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       if (!recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec != col }) {
         Some(q"""new $recordTpe(..$columnNames)""")
       } else {
+        Console.println(s"The case class records did not match the column member types for ${tableTpe.typeSymbol.name}")
+        Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
+        Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
         None
       }
     } else {
+      Console.println(s"There were ${recordMembers.size} case class fields and ${colMembers.size} columns for ${tableTpe.typeSymbol.name}")
+      Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
+      Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
       None
     }
   }
@@ -220,7 +224,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
 
 
-    val referenceTable = determineReferenceTable(tableType).map(_.name.toTypeName.decodedName.toString)
+    val refTable = determineReferenceTable(tableType)
+    val referenceTable = refTable.map(_.name.toTypeName.decodedName.toString)
+    val referenceColumns = refTable.map(_.typeSignature).getOrElse(tableType)
+      .decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
+
+    //val finalInferredTableType = refTable.map(_.typeSignature).getOrElse(tableType)
 
     val tableName = referenceTable match {
       case Some(value) => value.charAt(0).toLower + value.drop(1)
@@ -232,7 +241,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
-    val fromRowDefinition = materializeExtractor(tableType, rTpe) getOrElse q"???"
+    val fromRowDefinition = materializeExtractor(tableType, rTpe, referenceColumns) getOrElse q"???"
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
@@ -240,7 +249,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
-          def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, columns.map(_.typeSignature))}
+          def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 

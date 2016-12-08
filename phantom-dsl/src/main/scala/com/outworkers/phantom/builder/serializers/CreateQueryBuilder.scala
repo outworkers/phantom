@@ -65,7 +65,7 @@ private[builder] class CreateTableBuilder {
   def partitionKey(keys: List[String]): CQLQuery = {
     keys match {
       case head :: Nil => CQLQuery(head)
-      case head :: tail => CQLQuery.empty.wrap(keys)
+      case head :: tail => CQLQuery.empty.wrapn(keys)
       case _ => CQLQuery.empty
     }
   }
@@ -111,10 +111,10 @@ private[builder] class CreateTableBuilder {
       .append(CQLSyntax.`(`)
       .append(partitionKey(partitions))
 
-    val stage2 = if (primaries.nonEmpty || clusteringKeys.nonEmpty) {
+    val stage2 = if (primaries.nonEmpty) {
       // This only works because the macro prevents the user from defining both primaries and clustering keys
       // in the same table.
-      val finalKeys = primaries ::: clusteringKeys
+      val finalKeys = primaries.toSet
       root.append(CQLSyntax.comma)
         .forcePad
           .append(finalKeys)
@@ -247,7 +247,7 @@ private[builder] class CreateTableBuilder {
   }
 
   def clusteringOrder(orderings: List[(String, String)]): CQLQuery = {
-    val list = orderings.foldRight(List.empty[String]){ case ((key, value), l) =>
+    val list = orderings.foldRight(List.empty[String]) { case ((key, value), l) =>
       (key + " " + value) :: l
     }
 
