@@ -28,13 +28,64 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/blob/develop/comparison.md).
 
-
 ### Latest versions
 
 The latest versions are available here. The badges automatically update when a new version is released.
 
 - Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) (Maven Central)
 - Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
+
+### Roadmap to Phantom 2.0.0
+
+Phantom's next major release is slowly approaching completion, and if you would like to know more about what's to come and about what we have in store for you next, have a look at the below list. Feedback and contributions are welcome, and we are happy to prioritise any crucial features Phantom may currently be lacking.
+
+#### Licensing and distribution
+
+- [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License. 
+- [ ] Publish `outworkers-util` and all sub modules to Maven Central.
+- [ ] Publish `outworkers-diesel` and all sub modules to Maven Central.
+- [ ] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
+
+#### Macro API to replace runtime features
+
+- [x] Replace the Scala reflection library with a macro that can figure out what the contents of a table are.
+- [x] Generate the name of a table using macros.
+- [x] Generate the primary key of a table using macros.
+- [x] Enforce primary key restrictions on a table using a macro.
+- [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
+- [ ] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
+- [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
+- [ ] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
+
+#### Tech debt
+
+- [ ] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
+- [ ] Add a build matrix that will test phantom against multiple versions of Cassandra in Travis for Scala 2.11, with support for all major releases of Cassandra.
+- [ ] Bump code coverage up to 100%
+
+#### Features
+
+- [ ] Native support for multi-tenanted environments via cached sessions.
+- [ ] Case sensitive CQL.
+- [ ] Materialized views.
+- [ ] SASI index support
+- [ ] Support for `PER PARTITION LIMIT` in `SelectQuery`.
+- [ ] Support for `GROUP BY` in `SelectQuery`.
+
+#### Scala 2.12 support
+
+- [ ] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
+- [x] Add support for Scala 2.12 in the `diesel-engine`.
+- [ ] Add support for Scala 2.12 in `phantom-dsl`
+- [ ] Add support for Scala 2.12 in `phantom-connectors`
+- [ ] Add support for Scala 2.12 in `phantom-reactivestreams`
+- [ ] Add support for Scala 2.12 in `phantom-finagle`
+
+#### Documentatiom
+
+- [ ] Move documentation back to the docs folder.
+- [ ] Add a documentation website on the main page.
+- [ ] Create a navigator that allows viewing the documentation at a particular point in time.
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
