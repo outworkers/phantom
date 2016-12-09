@@ -215,6 +215,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     })
   }
 
+  def extractTableName(source: Type): String =  {
+    val value = source.typeSymbol.name.toTermName.decodedName.toString
+    value.charAt(0).toLower + value.drop(1)
+  }
+
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tableType = weakTypeOf[T]
 
@@ -224,20 +229,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
 
 
-    val refTable = determineReferenceTable(tableType)
-    val referenceTable = refTable.map(_.name.toTypeName.decodedName.toString)
-    val referenceColumns = refTable.map(_.typeSignature).getOrElse(tableType)
-      .decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
+    val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
+    val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
-    //val finalInferredTableType = refTable.map(_.typeSignature).getOrElse(tableType)
-
-    val tableName = referenceTable match {
-      case Some(value) => value.charAt(0).toLower + value.drop(1)
-      case None => {
-        val sourceName = tableType.typeSymbol.name.decodedName.toString
-        sourceName.charAt(0).toLower + sourceName.drop(1)
-      }
-    }
+    val tableName = extractTableName(refTable)
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
