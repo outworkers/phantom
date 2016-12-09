@@ -59,11 +59,15 @@ class CassandraConnection(
   autoinit: Boolean,
   keyspaceFn: Option[(Session, KeySpace) => String] = None,
   errorHander: Throwable => Throwable = identity
-) {
+) { outer =>
 
-  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn, errorHander)
-
-  val self = this
+  lazy val provider = new DefaultSessionProvider(
+    KeySpace(name),
+    clusterBuilder,
+    autoinit,
+    keyspaceFn,
+    errorHander
+  )
 
   /**
    * The Session associated with this keySpace.
@@ -107,15 +111,15 @@ class CassandraConnection(
    */
   trait Connector extends com.outworkers.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = self.provider
+    lazy val provider = outer.provider
 
-    lazy val keySpace = self.name
+    lazy val keySpace = outer.name
 
-    implicit val space: KeySpace = KeySpace(self.name)
+    implicit val space: KeySpace = KeySpace(outer.name)
 
-    def cassandraVersion: Option[VersionNumber] = self.cassandraVersion
+    def cassandraVersion: Option[VersionNumber] = outer.cassandraVersion
 
-    def cassandraVersions: Set[VersionNumber] = self.cassandraVersions
+    def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
   }
 
 }

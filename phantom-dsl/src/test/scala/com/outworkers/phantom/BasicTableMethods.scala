@@ -36,14 +36,4 @@ class BasicTableMethods extends FlatSpec with Matchers {
   it should "retrieve the correct number of clustering keys for a table" in {
     TestDatabase.clusteringTable.clusteringColumns.size shouldEqual 2
   }
-
-  it should "create the correct CLUSTERING_ORDER key for a 3 part clustering key" in {
-    val key = TestDatabase.clusteringTable.clusteringKey
-    key shouldEqual "WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC)"
-  }
-
-  it should "create the correct CLUSTERING_ORDER key for a 2 part clustering key" in {
-    val key = TestDatabase.complexClusteringTable.clusteringKey
-    key shouldEqual "WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC, placeholder DESC)"
-  }
 }

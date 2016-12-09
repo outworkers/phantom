@@ -36,18 +36,6 @@ sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedColle
   object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this)
-
-  def fromRow(r: Row): TestRow = {
-    TestRow(
-      key = key(r),
-      list = list(r),
-      setText = setText(r),
-      mapTextToText = mapTextToText(r),
-      setInt = setInt(r),
-      mapIntToText = mapIntToText(r),
-      mapIntToInt = mapIntToInt(r)
-    )
-  }
 }
 
 abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable with RootConnector {
@@ -82,18 +70,6 @@ sealed class IndexedEntriesTable extends CassandraTable[ConcreteIndexedEntriesTa
   object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this) with Index with Entries
-
-  def fromRow(r: Row): TestRow = {
-    TestRow(
-      key = key(r),
-      list = list(r),
-      setText = setText(r),
-      mapTextToText = mapTextToText(r),
-      setInt = setInt(r),
-      mapIntToText = mapIntToText(r),
-      mapIntToInt = mapIntToInt(r)
-    )
-  }
 }
 
 abstract class ConcreteIndexedEntriesTable extends IndexedEntriesTable with RootConnector {

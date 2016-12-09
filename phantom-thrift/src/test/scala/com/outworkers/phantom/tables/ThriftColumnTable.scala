@@ -70,18 +70,6 @@ sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable,
       val codec = ThriftTest
     }
   }
-
-  def fromRow(row: Row): Output = {
-    Output(
-      id = id(row),
-      name = name(row),
-      struct = ref(row),
-      thriftSet = thriftSet(row),
-      thriftList = thriftList(row),
-      thriftMap = thriftMap(row),
-      optThrift = optionalThrift(row)
-    )
-  }
 }
 
 abstract class ConcreteThriftColumnTable extends ThriftColumnTable with RootConnector {
@@ -131,18 +119,6 @@ sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTabl
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
-  }
-
-  def fromRow(row: Row): Output = {
-    Output(
-      id(row),
-      name(row),
-      ref(row),
-      thriftSet(row),
-      thriftList(row),
-      thriftMap(row),
-      optionalThrift(row)
-    )
   }
 }
 
