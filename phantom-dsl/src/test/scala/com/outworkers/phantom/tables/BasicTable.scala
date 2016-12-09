@@ -19,7 +19,7 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
-class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
+abstract class BasicTable extends CassandraTable[BasicTable, String] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object id2 extends UUIDColumn(this) with PrimaryKey
@@ -28,9 +28,6 @@ class BasicTable extends CassandraTable[ConcreteBasicTable, String] {
 
   override def fromRow(r: Row): String = placeholder(r)
 }
-
-abstract class ConcreteBasicTable extends BasicTable with RootConnector
-
 
 trait Records extends Enumeration {
   type Records = Value
@@ -64,14 +61,12 @@ case class NamedPartitionRecord(
   id: UUID
 )
 
-abstract class EnumTable extends CassandraTable[ConcreteEnumTable, EnumRecord] {
+abstract class EnumTable extends CassandraTable[EnumTable, EnumRecord] with RootConnector {
   object id extends StringColumn(this) with PartitionKey
   object enum extends EnumColumn[Records#Value](this)
   object optEnum extends OptionalEnumColumn[Records#Value](this)
-}
 
-abstract class ConcreteEnumTable extends EnumTable with RootConnector {
-  def store(sample: EnumRecord): InsertQuery.Default[ConcreteEnumTable, EnumRecord] = {
+  def store(sample: EnumRecord): InsertQuery.Default[EnumTable, EnumRecord] = {
     insert
       .value(_.id, sample.name)
       .value(_.enum, sample.enum)

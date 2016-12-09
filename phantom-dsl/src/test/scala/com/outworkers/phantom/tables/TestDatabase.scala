@@ -28,8 +28,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object articles extends ConcreteArticles with connector.Connector
   object articlesByAuthor extends ConcreteArticlesByAuthor with connector.Connector
 
-  object basicTable extends ConcreteBasicTable with connector.Connector
-  object enumTable extends ConcreteEnumTable with connector.Connector
+  object basicTable extends BasicTable with connector.Connector
+  object enumTable extends EnumTable with connector.Connector
   object namedEnumTable extends ConcreteNamedEnumTable with connector.Connector
   object indexedEnumTable extends ConcreteNamedPartitionEnumTable with connector.Connector
 
@@ -44,7 +44,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with connector.Connector
   object indexedEntriesTable extends ConcreteIndexedEntriesTable with connector.Connector
-  object jsonTable extends ConcreteJsonTable with connector.Connector
+  object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with connector.Connector
   object optionalPrimitives extends ConcreteOptionalPrimitives with connector.Connector
   object primitives extends ConcretePrimitives with connector.Connector

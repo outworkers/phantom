@@ -253,7 +253,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
-    Console.println(tree)
+    //Console.println(tree)
     tree
   }
 
