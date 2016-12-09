@@ -32,11 +32,11 @@ package com.websudos.phantom.jdk8
 import java.time._
 import java.util.Date
 
-import com.datastax.driver.core.{GettableData, Row}
+import com.datastax.driver.core.GettableData
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
-import com.websudos.phantom.jdk8.dsl.{JdkLocalDate, OffsetDateTime, ZonedDateTime}
+import com.websudos.phantom.jdk8.dsl.{JdkLocalDate, JdkLocalDateTime, OffsetDateTime, ZonedDateTime}
 
 import scala.util.Try
 
@@ -99,6 +99,27 @@ trait DefaultJava8Primitives {
     }
 
     override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
+  }
+
+  implicit object JdkLocalDateTimeIsPrimitive extends Primitive[JdkLocalDateTime] {
+
+    override type PrimitiveType = java.time.LocalDateTime
+
+    val cassandraType = CQLSyntax.Types.Timestamp
+
+    override def asCql(value: JdkLocalDateTime): String = {
+      CQLQuery.empty.singleQuote(value.atZone(ZoneOffset.UTC).toString)
+    }
+
+    override def fromRow(column: String, row: GettableData): Try[JdkLocalDateTime] = nullCheck(column, row) {
+      r => LocalDateTime.ofInstant(Instant.ofEpochMilli(r.getTimestamp(column).getTime), ZoneOffset.UTC)
+    }
+
+    override def fromString(value: String): JdkLocalDateTime = {
+      Instant.ofEpochMilli(value.toLong).atZone(ZoneOffset.UTC).toLocalDateTime
+    }
+
+    override def clz: Class[JdkLocalDateTime] = classOf[JdkLocalDateTime]
   }
 
 }
