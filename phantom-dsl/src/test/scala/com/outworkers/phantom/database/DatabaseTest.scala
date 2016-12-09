@@ -19,15 +19,16 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.testing._
 
+object db extends TestDatabase
+
 class DatabaseTest extends PhantomSuite {
-  object db extends TestDatabase
 
   it should "instantiate a database and collect references to the tables" in {
     db.tables.size shouldEqual 4
   }
 
   it should "automatically generate the CQL schema and initialise tables " in {
-    db.autocreate().future().successful {
+    db.createAsync().successful {
       res => res.nonEmpty shouldEqual true
     }
   }

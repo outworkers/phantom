@@ -83,7 +83,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
    * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
    * @return A root create block, with full support for all CQL Create query options.
    */
-  final def create: RootCreateQuery[T, R] = new RootCreateQuery(instance)
+  final def create: RootCreateQuery[T, R] = new RootCreateQuery(
+    tableName,
+    tableKey,
+    columns.map(_.qb),
+    clusteringColumns,
+    secondaryKeys
+  )
 
   def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
