@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.jdk8.tables
 
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.query.InsertQuery
@@ -40,7 +40,8 @@ case class OptionalJdk8Row(
   pkey: String,
   offsetDateTime: Option[OffsetDateTime],
   zonedDateTime: Option[ZonedDateTime],
-  localDate: Option[LocalDate]
+  localDate: Option[LocalDate],
+  localDateTime: Option[LocalDateTime]
 )
 
 sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] {
@@ -53,12 +54,15 @@ sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimi
 
   object localDate extends OptionalJdkLocalDateColumn(this)
 
+  object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
+
   override def fromRow(r: Row): OptionalJdk8Row = {
     OptionalJdk8Row(
       pkey = pkey(r),
       offsetDateTime = offsetDateTime(r),
       zonedDateTime = zonedDateTime(r),
-      localDate = localDate(r)
+      localDate = localDate(r),
+      localDateTime = localDateTime(r)
     )
   }
 }
@@ -70,6 +74,7 @@ abstract class ConcreteOptionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 wit
       .value(_.offsetDateTime, primitive.offsetDateTime)
       .value(_.zonedDateTime, primitive.zonedDateTime)
       .value(_.localDate, primitive.localDate)
+      .value(_.localDateTime, primitive.localDateTime)
   }
 
   override val tableName = "OptionalPrimitivesJdk8"

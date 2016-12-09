@@ -29,7 +29,7 @@
  */
 package com.websudos.phantom.jdk8
 
-import java.time.{LocalDate, OffsetDateTime, ZoneOffset, ZonedDateTime}
+import java.time._
 
 import com.outworkers.util.testing.{Sample, _}
 
@@ -41,7 +41,8 @@ package object tables {
         gen[String],
         OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
         ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
-        LocalDate.now().plusDays(gen[Long])
+        LocalDate.now().plusDays(gen[Long]),
+        LocalDateTime.now().plusSeconds(gen[Long])
       )
     }
   }
@@ -52,7 +53,8 @@ package object tables {
         gen[String],
         Some(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
         Some(ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
-        Some(LocalDate.now().plusDays(gen[Long]))
+        Some(LocalDate.now().plusDays(gen[Long])),
+        Some(LocalDateTime.now().plusSeconds(gen[Long]))
       )
     }
   }

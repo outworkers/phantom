@@ -36,6 +36,7 @@ package object dsl extends DefaultJava8Primitives {
   type OffsetDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
   type ZonedDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
   type JdkLocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
+  type JdkLocalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDateTime]
 
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
@@ -48,9 +49,11 @@ package object dsl extends DefaultJava8Primitives {
   ] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
 
   type OptionalJdkLocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
+  type OptionalJdkLocalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.websudos.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDateTime]
 
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
+  type JdkLocalDateTime = java.time.LocalDateTime
 
 }
