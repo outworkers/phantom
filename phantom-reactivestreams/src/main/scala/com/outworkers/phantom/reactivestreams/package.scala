@@ -91,8 +91,7 @@ package object reactivestreams {
       flushInterval: Option[FiniteDuration] = None,
       completionFn: () => Unit = () => (),
       errorFn: Throwable => Unit = _ => ()
-    )(implicit
-      builder: RequestBuilder[CT, T],
+    )(implicit builder: RequestBuilder[CT, T],
       system: ActorSystem,
       session: Session,
       space: KeySpace,
@@ -129,9 +128,7 @@ package object reactivestreams {
 
   implicit class PublisherConverter[T](val enumerator: PlayEnumerator[T]) extends AnyVal {
 
-    def publisher: Publisher[T] = {
-      Streams.enumeratorToPublisher(enumerator)
-    }
+    def publisher: Publisher[T] = Streams.enumeratorToPublisher(enumerator)
   }
 
   /**
@@ -176,10 +173,11 @@ package object reactivestreams {
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
-      val eventualEnum = block.all().future() map {
-        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(block.rowFunc)
+      PlayEnumerator.flatten {
+        block.all().future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
+        }
       }
-      PlayEnumerator.flatten(eventualEnum)
     }
   }
 
@@ -204,10 +202,11 @@ package object reactivestreams {
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
-      val eventualEnum = query.future() map {
-        resultSet => Enumerator.enumerator(resultSet) through Enumeratee.map(query.fromRow)
+      PlayEnumerator.flatten {
+        query.future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
+        }
       }
-      PlayEnumerator.flatten(eventualEnum)
     }
   }
 

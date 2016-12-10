@@ -23,18 +23,9 @@ case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
 
 sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, StaticCollectionSingle] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-
-  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticTest extends StringColumn(this) with StaticColumn[String]
-
-  def fromRow(row: Row): StaticCollectionSingle = {
-    StaticCollectionSingle(
-      id(row),
-      clusteringId(row),
-      staticTest(row)
-    )
-  }
+  object id extends UUIDColumn(this) with PartitionKey
+  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object staticTest extends StringColumn(this) with StaticColumn
 }
 
 abstract class ConcreteStaticTableTest extends StaticTableTest with RootConnector
@@ -48,18 +39,9 @@ case class StaticCollectionRecord(
 
 sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticCollectionTableTest, StaticCollectionRecord] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-
-  object clusteringId extends UUIDColumn(this) with PrimaryKey[UUID] with ClusteringOrder[UUID] with Descending
-  object staticList extends ListColumn[String](this) with StaticColumn[List[String]]
-
-  def fromRow(row: Row): StaticCollectionRecord = {
-    StaticCollectionRecord(
-      id = id(row),
-      clustering = clusteringId(row),
-      list = staticList(row)
-    )
-  }
+  object id extends UUIDColumn(this) with PartitionKey
+  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object staticList extends ListColumn[String](this) with StaticColumn
 }
 
 abstract class ConcreteStaticCollectionTableTest extends StaticCollectionTableTest with RootConnector {

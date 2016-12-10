@@ -16,7 +16,7 @@
 package com.outworkers.phantom.example.advanced
 
 import com.outworkers.phantom.connectors
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics._
 
@@ -31,7 +31,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-class RecipesDatabase(override val connector: KeySpaceDef) extends Database[RecipesDatabase](connector) {
+class RecipesDatabase(override val connector: CassandraConnection) extends Database[RecipesDatabase](connector) {
 
   object Recipes extends ConcreteRecipes with connector.Connector
   object AdvancedRecipes extends ConcreteAdvancedRecipes with connector.Connector
@@ -49,7 +49,7 @@ class RecipesDatabase(override val connector: KeySpaceDef) extends Database[Reci
    * Nonetheless, if you are using Scala you can almost replicate the below with a Future.sequence or Future.traverse over a List.
    *
    * This is a very neat and simple trick which will initialise all your tables in parallel at any time you want. The initialisation will automatically
-   * trigger the mecbanism that connects to Cassandra and gives you back a session.
+   * trigger the mechanism that connects to Cassandra and gives you back a session.
    */
 
   // For instance, right now when you want to insert a new recipe.

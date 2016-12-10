@@ -32,7 +32,7 @@ import scala.util.{Failure, Success, Try}
   * First the plugin must be included in your `plugins.sbt`:
   *
   * {{{
-  *   addSbtPlugin("com.websudos" %% "phantom-sbt" % phantomVersion)
+  *   addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
   * }}}
   * The plugin does the following
   * things:

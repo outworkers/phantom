@@ -49,7 +49,7 @@ case class Recipe(
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
 sealed class Recipes extends CassandraTable[Recipes, Recipe] {
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy val name = "the_primary_key"
@@ -68,21 +68,6 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object timestamp extends DateTimeColumn(this)
-
-  // Now the mapping function, transforming a row into a custom type.
-  // This is a bit of boilerplate, but it's one time only and very short.
-  def fromRow(row: Row): Recipe = {
-    Recipe(
-      id(row),
-      name(row),
-      title(row),
-      author(row),
-      description(row),
-      ingredients(row),
-      props(row),
-      timestamp(row)
-    )
-  }
 }
 
 
@@ -96,12 +81,12 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   def insertNewRecord(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)
       .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
       .value(_.description, recipe.description)
       .value(_.ingredients, recipe.ingredients)
       .value(_.name, recipe.name)
       .value(_.props, recipe.props)
       .value(_.timestamp, recipe.timestamp)
-      .ttl(150.minutes.inSeconds) // you can use TTL if you want to.
       .future()
   }
 

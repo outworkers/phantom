@@ -32,7 +32,6 @@ import com.outworkers.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteIm
 import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.column.extractors.FromRow.RowParser
 import com.outworkers.phantom.connectors.DefaultVersions
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
@@ -91,15 +90,15 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
   type OptionalTimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalTimeUUIDColumn[Owner, Record]
 
-  type ClusteringOrder[ValueType] = com.outworkers.phantom.keys.ClusteringOrder[ValueType]
+  type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
   type Descending = com.outworkers.phantom.keys.Descending
-  type PartitionKey[ValueType] = com.outworkers.phantom.keys.PartitionKey[ValueType]
-  type PrimaryKey[ValueType] = com.outworkers.phantom.keys.PrimaryKey[ValueType]
-  type Index[ValueType] = com.outworkers.phantom.keys.Index[ValueType]
+  type PartitionKey = com.outworkers.phantom.keys.PartitionKey
+  type PrimaryKey = com.outworkers.phantom.keys.PrimaryKey
+  type Index = com.outworkers.phantom.keys.Index
   type Keys = com.outworkers.phantom.keys.Keys
   type Entries = com.outworkers.phantom.keys.Entries
-  type StaticColumn[ValueType] = com.outworkers.phantom.keys.StaticColumn[ValueType]
+  type StaticColumn = com.outworkers.phantom.keys.StaticColumn
 
   type Database[DB <: Database[DB]] = com.outworkers.phantom.database.Database[DB]
   type DatabaseProvider[DB <: Database[DB]] = com.outworkers.phantom.database.DatabaseProvider[DB]
@@ -139,7 +138,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val SERIAL = CLevel.SERIAL
   }
 
-  type KeySpaceDef = com.outworkers.phantom.connectors.KeySpaceDef
+  type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
   val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
 
@@ -153,7 +152,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
-  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey[T]) extends AnyVal {
+  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey) extends AnyVal {
 
     def ltToken(value: T): WhereClause.Condition = {
       new WhereClause.Condition(
@@ -244,7 +243,4 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
-
-  def extract[R]: RowParser[R] = new RowParser[R] {}
-
 }

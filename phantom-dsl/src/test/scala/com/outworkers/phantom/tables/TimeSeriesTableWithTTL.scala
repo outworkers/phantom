@@ -21,35 +21,17 @@ import com.outworkers.util.testing._
 import org.joda.time.DateTime
 
 sealed class TimeSeriesTableWithTTL extends CassandraTable[ConcreteTimeSeriesTableWithTTL, TimeSeriesRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder[DateTime] with Descending
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
+  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending
 }
 
-abstract class ConcreteTimeSeriesTableWithTTL extends TimeSeriesTableWithTTL with RootConnector {
-  val testUUID = gen[UUID]
-}
+abstract class ConcreteTimeSeriesTableWithTTL extends TimeSeriesTableWithTTL with RootConnector
 
 sealed class TimeSeriesTableWithTTL2 extends CassandraTable[ConcreteTimeSeriesTableWithTTL2, TimeSeriesRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this)
-
-  def fromRow(row: Row): TimeSeriesRecord = {
-    TimeSeriesRecord(
-      id(row),
-      name(row),
-      timestamp(row)
-    )
-  }
 }
 
 abstract class ConcreteTimeSeriesTableWithTTL2 extends TimeSeriesTableWithTTL2 with RootConnector {

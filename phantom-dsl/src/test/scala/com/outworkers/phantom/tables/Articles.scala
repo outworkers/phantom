@@ -21,18 +21,18 @@ import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class Article(
-  name: String,
   id: UUID,
+  name: String,
   orderId: Long
 )
 
 sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def fromRow(row: Row): Article = extract[Article].apply(row)
+  override def fromRow(row: Row): Article = Article(id(row), name(row), orderId(row))
 }
 
 abstract class ConcreteArticles extends Articles with RootConnector {
@@ -49,9 +49,9 @@ abstract class ConcreteArticles extends Articles with RootConnector {
 
 sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, Article] {
 
-  object author_id extends UUIDColumn(this) with PartitionKey[UUID]
-  object category extends UUIDColumn(this) with PartitionKey[UUID]
-  object id extends UUIDColumn(this) with PrimaryKey[UUID]
+  object author_id extends UUIDColumn(this) with PartitionKey
+  object category extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PrimaryKey
 
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)

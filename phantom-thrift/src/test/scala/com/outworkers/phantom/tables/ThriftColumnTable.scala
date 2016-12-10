@@ -22,7 +22,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift._
@@ -39,7 +39,7 @@ case class Output(
 
 sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable, Output] {
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object ref extends ThriftColumn[ConcreteThriftColumnTable, Output, ThriftTest](this) {
     val serializer = new CompactThriftSerializer[ThriftTest] {
@@ -70,18 +70,6 @@ sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable,
       val codec = ThriftTest
     }
   }
-
-  def fromRow(row: Row): Output = {
-    Output(
-      id = id(row),
-      name = name(row),
-      struct = ref(row),
-      thriftSet = thriftSet(row),
-      thriftList = thriftList(row),
-      thriftMap = thriftMap(row),
-      optThrift = optionalThrift(row)
-    )
-  }
 }
 
 abstract class ConcreteThriftColumnTable extends ThriftColumnTable with RootConnector {
@@ -103,7 +91,7 @@ sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTabl
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
 
-  object ref extends ThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) with PartitionKey[ThriftTest] {
+  object ref extends ThriftColumn[ConcreteThriftIndexedTable, Output, ThriftTest](this) with PartitionKey {
     val serializer = new CompactThriftSerializer[ThriftTest] {
       val codec = ThriftTest
     }
@@ -132,18 +120,6 @@ sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTabl
       val codec = ThriftTest
     }
   }
-
-  def fromRow(row: Row): Output = {
-    Output(
-      id(row),
-      name(row),
-      ref(row),
-      thriftSet(row),
-      thriftList(row),
-      thriftMap(row),
-      optionalThrift(row)
-    )
-  }
 }
 
 abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootConnector {
@@ -161,7 +137,7 @@ abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootCo
   }
 }
 
-class ThriftDatabase(override val connector: KeySpaceDef) extends Database[ThriftDatabase](connector) {
+class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {
   object thriftColumnTable extends ConcreteThriftColumnTable with connector.Connector
   object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
 }

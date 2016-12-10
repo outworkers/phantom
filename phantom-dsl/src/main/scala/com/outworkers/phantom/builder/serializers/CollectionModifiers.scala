@@ -21,8 +21,8 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
-  def tupled(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).wrap(queryBuilder.Utils.join(tuples))
+  def tupled(tuples: String*): CQLQuery = {
+    queryBuilder.Utils.join(tuples)
   }
 
   def tuple(name: String, tuples: String*): CQLQuery = {
@@ -57,7 +57,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def prepend(column: String, values: String*): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         queryBuilder.Collections.serialize(values).queryString,
         CQLSyntax.Symbols.plus,
@@ -67,13 +67,13 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def prepend(column: String, valueDef: String): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(valueDef, CQLSyntax.Symbols.plus, column)
     )
   }
 
   def append(column: String, values: String*): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column, CQLSyntax.Symbols.plus,
         queryBuilder.Collections.serialize(values).queryString
@@ -82,13 +82,13 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def append(column: String, valueDef: String): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(column, CQLSyntax.Symbols.plus, valueDef)
     )
   }
 
   def discard(column: String, values: String*): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
         CQLSyntax.Symbols.-,
@@ -98,13 +98,13 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def discard(column: String, valueDef: String): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(column, CQLSyntax.Symbols.-, valueDef)
     )
   }
 
   def add(column: String, values: Set[String]): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
         CQLSyntax.Symbols.plus,
@@ -126,7 +126,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
    * @return A CQLQuery set remove query as described above.
    */
   def remove(column: String, values: Set[String]): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
         CQLSyntax.Symbols.-,
@@ -150,7 +150,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   }
 
   def put(column: String, pairs: (String, String)*): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.`=`).forcePad.append(
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
         CQLSyntax.Symbols.plus,
@@ -192,6 +192,21 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def mapColumnType(column: String, key: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
+  }
+
+  def tupleType(types: String*): CQLQuery = {
+    CQLQuery(CQLSyntax.Collections.tuple)
+    .append(CQLSyntax.Symbols.`<`)
+    .append(types)
+    .append(CQLSyntax.Symbols.`>`)
+  }
+
+  def frozen(cassandraType: String): CQLQuery = {
+    diamond(CQLSyntax.Collections.frozen, cassandraType)
+  }
+
+  def frozen(cassandraType: CQLQuery): CQLQuery = {
+    frozen(cassandraType.queryString)
   }
 
   def frozen(name: String, cassandraType: CQLQuery): CQLQuery = {

@@ -18,11 +18,12 @@ package com.outworkers.phantom.jdk8
 import java.time._
 import java.util.Date
 
-import com.datastax.driver.core.GettableData
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData}
 import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+
 import scala.util.Try
 
 trait DefaultJava8Primitives {
@@ -37,8 +38,12 @@ trait DefaultJava8Primitives {
       value.toInstant.toEpochMilli.toString
     }
 
-    override def fromRow(column: String, row: GettableData): Try[OffsetDateTime] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableByNameData): Try[OffsetDateTime] = nullCheck(column, row) {
       r => OffsetDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
+    }
+
+    override def fromRow(index: Int, row: GettableByIndexData): Try[OffsetDateTime] = nullCheck(index, row) {
+      r => OffsetDateTime.ofInstant(r.getTimestamp(index).toInstant, ZoneOffset.UTC)
     }
 
     override def fromString(value: String): OffsetDateTime = OffsetDateTime.parse(value)
@@ -56,8 +61,12 @@ trait DefaultJava8Primitives {
       value.toInstant.toEpochMilli.toString
     }
 
-    override def fromRow(column: String, row: GettableData): Try[ZonedDateTime] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableByNameData): Try[ZonedDateTime] = nullCheck(column, row) {
       r => ZonedDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
+    }
+
+    override def fromRow(index: Int, row: GettableByIndexData): Try[ZonedDateTime] = nullCheck(index, row) {
+      r => ZonedDateTime.ofInstant(r.getTimestamp(index).toInstant, ZoneOffset.UTC)
     }
 
     override def fromString(value: String): ZonedDateTime = ZonedDateTime.parse(value)
@@ -75,8 +84,12 @@ trait DefaultJava8Primitives {
       CQLQuery.empty.singleQuote(value.toString)
     }
 
-    override def fromRow(column: String, row: GettableData): Try[JdkLocalDate] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableByNameData): Try[JdkLocalDate] = nullCheck(column, row) {
       r => LocalDate.ofEpochDay(r.getDate(column).getDaysSinceEpoch)
+    }
+
+    override def fromRow(index: Int, row: GettableByIndexData): Try[JdkLocalDate] = nullCheck(index, row) {
+      r => LocalDate.ofEpochDay(r.getDate(index).getDaysSinceEpoch)
     }
 
     override def fromString(value: String): JdkLocalDate = {

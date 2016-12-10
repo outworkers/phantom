@@ -74,8 +74,8 @@ package object tables {
 
   implicit object ArticleSampler extends Sample[Article] {
     def sample: Article = Article(
-      gen[String],
       gen[UUID],
+      gen[String],
       gen[Long]
     )
   }
@@ -248,5 +248,21 @@ package object tables {
 
   implicit object SimpleStringClassSampler extends Sample[SimpleStringClass] {
     def sample: SimpleStringClass = SimpleStringClass(gen[String])
+  }
+
+  implicit object TupleRecordSampler extends Sample[TupleRecord] {
+    override def sample: TupleRecord = TupleRecord(gen[UUID], gen[String] -> gen[Long])
+  }
+
+  implicit object NestedTupleRecordSampler extends Sample[NestedTupleRecord] {
+    override def sample: NestedTupleRecord = NestedTupleRecord(
+      gen[UUID], gen[String] -> (gen[String] -> gen[Long])
+    )
+  }
+
+  implicit object TupleCollectionRecordSampler extends Sample[TupleCollectionRecord] {
+    override def sample: TupleCollectionRecord = TupleCollectionRecord(
+      gen[UUID], genList[Int]().map(_ -> gen[String])
+    )
   }
 }

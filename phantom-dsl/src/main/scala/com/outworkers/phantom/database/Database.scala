@@ -19,7 +19,7 @@ import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{KeySpace, KeySpaceDef}
+import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
 import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._
@@ -29,7 +29,9 @@ private object Lock
 
 abstract class Database[
   DB <: Database[DB]
-](val connector: KeySpaceDef)(implicit helper: DatabaseHelper[DB]) {
+](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
+
+  trait Connector extends connector.Connector
 
   implicit val space: KeySpace = KeySpace(connector.name)
 
@@ -59,7 +61,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
+  private[phantom] def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
 
   /**
     * A blocking method that will create all the tables. This is designed to prevent the
@@ -95,7 +97,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autodrop(): ExecutableStatementList = {
+  private[phantom] def autodrop(): ExecutableStatementList = {
     new ExecutableStatementList(tables.toSeq.map {
       table => table.alter().drop().qb
     })
@@ -135,10 +137,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autotruncate(): ExecutableStatementList = {
-    new ExecutableStatementList(tables.toSeq.map {
-      table => table.truncate().qb
-    })
+  private[phantom] def autotruncate(): ExecutableStatementList = {
+    new ExecutableStatementList(tables.toSeq.map(_.truncate().qb))
   }
 
   /**

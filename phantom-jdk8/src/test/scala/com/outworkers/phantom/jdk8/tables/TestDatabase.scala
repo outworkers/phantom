@@ -17,11 +17,11 @@ package com.outworkers.phantom.jdk8.tables
 
 import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
+class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
 
   object primitivesJdk8 extends ConcretePrimitivesJdk8 with connector.Connector
 

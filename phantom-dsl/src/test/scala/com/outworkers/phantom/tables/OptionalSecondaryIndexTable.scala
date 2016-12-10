@@ -27,17 +27,12 @@ case class OptionalSecondaryRecord(
   secondary: Option[Int]
 )
 
-sealed class OptionalSecondaryIndexTable extends
-  CassandraTable[ConcreteOptionalSecondaryIndexTable, OptionalSecondaryRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
-  object secondary extends OptionalIntColumn(this) with Index[Option[Int]]
-
-  def fromRow(row: Row): OptionalSecondaryRecord = {
-    OptionalSecondaryRecord(
-      id(row),
-      secondary(row)
-    )
-  }
+sealed class OptionalSecondaryIndexTable extends CassandraTable[
+  ConcreteOptionalSecondaryIndexTable,
+  OptionalSecondaryRecord
+] {
+  object id extends UUIDColumn(this) with PartitionKey
+  object secondary extends OptionalIntColumn(this) with Index
 }
 
 abstract class ConcreteOptionalSecondaryIndexTable

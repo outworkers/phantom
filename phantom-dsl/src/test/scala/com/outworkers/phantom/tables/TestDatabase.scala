@@ -20,22 +20,21 @@ import java.util.UUID
 import com.datastax.driver.core.{PoolingOptions, SocketOptions}
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.connectors.KeySpaceDef
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
+class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
   object articles extends ConcreteArticles with connector.Connector
   object articlesByAuthor extends ConcreteArticlesByAuthor with connector.Connector
 
-  object basicTable extends ConcreteBasicTable with connector.Connector
-  object enumTable extends ConcreteEnumTable with connector.Connector
+  object basicTable extends BasicTable with connector.Connector
+  object enumTable extends EnumTable with connector.Connector
   object namedEnumTable extends ConcreteNamedEnumTable with connector.Connector
   object indexedEnumTable extends ConcreteNamedPartitionEnumTable with connector.Connector
 
   object clusteringTable extends ConcreteClusteringTable with connector.Connector
   object complexClusteringTable extends ConcreteComplexClusteringTable with connector.Connector
-  object brokenClusteringTable extends ConcreteBrokenClusteringTable with connector.Connector
   object simpleCompoundKeyTable extends ConcreteSimpleCompoundKeyTable with connector.Connector
   object complexCompoundKeyTable extends ConcreteComplexCompoundKeyTable with connector.Connector
 
@@ -45,7 +44,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with connector.Connector
   object indexedEntriesTable extends ConcreteIndexedEntriesTable with connector.Connector
-  object jsonTable extends ConcreteJsonTable with connector.Connector
+  object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with connector.Connector
   object optionalPrimitives extends ConcreteOptionalPrimitives with connector.Connector
   object primitives extends ConcretePrimitives with connector.Connector
@@ -55,8 +54,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
   object primitivesCassandra22 extends ConcretePrimitivesCassandra22 with connector.Connector
   object optionalPrimitivesCassandra22 extends ConcreteOptionalPrimitivesCassandra22 with connector.Connector
 
-  object recipes extends ConcreteRecipes with connector.Connector {
-    override def autocreate(space: KeySpace): CreateQuery.Default[ConcreteRecipes, Recipe] = {
+  object recipes extends Recipes with connector.Connector {
+    override def autocreate(space: KeySpace): CreateQuery.Default[Recipes, Recipe] = {
       create.ifNotExists()(space).`with`(comment eqs "This is a test string")
     }
   }
@@ -68,7 +67,6 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
   object tableWithSingleKey extends ConcreteTableWithSingleKey with connector.Connector
   object tableWithCompoundKey extends ConcreteTableWithCompoundKey with connector.Connector
   object tableWithCompositeKey extends ConcreteTableWithCompositeKey with connector.Connector
-  object tableWithNoKey extends ConcreteTableWithNoKey with connector.Connector
 
   object testTable extends ConcreteTestTable with connector.Connector
   object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {
@@ -86,6 +84,9 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with connector.Connector
   object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with connector.Connector
+  object tuple2Table extends ConcreteTupleColumnTable with connector.Connector
+  object nestedTupleTable extends ConcreteNestedTupleColumnTable with connector.Connector
+  object tupleCollectionsTable extends ConcreteTupleCollectionsTable with connector.Connector
 }
 
 object Connector {

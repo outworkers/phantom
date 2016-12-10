@@ -20,7 +20,13 @@ import com.outworkers.phantom.CassandraTable
 
 import scala.util.Try
 
-abstract class OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T](table: CassandraTable[Owner, Record]) extends AbstractColumn[Option[T]] {
+abstract class OptionalColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  T
+](
+  table: CassandraTable[Owner, Record]
+) extends AbstractColumn[Option[T]] {
 
   def apply(r: Row): Option[T] = optional(r).toOption
 

@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.datastax.driver.core.{GettableData, Row}
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, Row}
 import com.outworkers.phantom.CassandraTable
 import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct, ThriftStructSerializer}
 import com.outworkers.phantom.builder.primitives.Primitive
@@ -149,8 +149,12 @@ abstract class RootThriftPrimitive[T <: ThriftStruct] extends Primitive[T] {
 
   override type PrimitiveType = java.lang.String
 
-  override def fromRow(column: String, row: GettableData): Try[T] = nullCheck(column, row) {
+  override def fromRow(column: String, row: GettableByNameData): Try[T] = nullCheck(column, row) {
     existing => serializer.fromString(row.getString(column))
+  }
+
+  override def fromRow(index: Int, row: GettableByIndexData): Try[T] = nullCheck(index, row) {
+    existing => serializer.fromString(row.getString(index))
   }
 
   override def cassandraType: String = CQLSyntax.Types.Text

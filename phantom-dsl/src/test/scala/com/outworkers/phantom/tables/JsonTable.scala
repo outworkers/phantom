@@ -32,11 +32,11 @@ case class JsonClass(
 )
 
 
-class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
+abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootConnector {
 
   implicit val formats = DefaultFormats
 
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+  object id extends UUIDColumn(this) with PartitionKey
 
   object name extends StringColumn(this)
 
@@ -70,19 +70,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
     }
   }
 
-  def fromRow(row: Row): JsonClass = {
-    JsonClass(
-      id = id(row),
-      name = name(row),
-      json = json(row),
-      jsonList = jsonList(row),
-      jsonSet = jsonSet(row)
-    )
-  }
-}
-
-abstract class ConcreteJsonTable extends JsonTable with RootConnector {
-  def store(sample: JsonClass): InsertQuery.Default[ConcreteJsonTable, JsonClass] = {
+  def store(sample: JsonClass): InsertQuery.Default[JsonTable, JsonClass] = {
     insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)

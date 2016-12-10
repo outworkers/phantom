@@ -29,8 +29,8 @@ case class SampleRecord(
   thriftModel: SampleModel
 )
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+sealed class ThriftTable extends CassandraTable[ConcreteThriftTable, SampleRecord] {
+  object id extends UUIDColumn(this) with PartitionKey
   object stuff extends StringColumn(this)
   object someList extends ListColumn[String](this)
 
@@ -43,7 +43,7 @@ sealed class ThriftTable extends CassandraTable[ConcreteThriftTable,  SampleReco
     }
   }
 
-  def fromRow(r: Row): SampleRecord = {
+  override def fromRow(r: Row): SampleRecord = {
     SampleRecord(
       stuff = stuff(r),
       someList = someList(r),

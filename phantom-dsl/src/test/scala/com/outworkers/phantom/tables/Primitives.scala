@@ -35,7 +35,7 @@ case class Primitive(
 )
 
 sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
 
   object long extends LongColumn(this)
 
@@ -57,7 +57,19 @@ sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
 
   object bi extends BigIntColumn(this)
 
-  override def fromRow(r: Row): Primitive = extract[Primitive](r)
+  override def fromRow(r: Row): Primitive = Primitive(
+    pkey(r),
+    long(r),
+    boolean(r),
+    bDecimal(r),
+    double(r),
+    float(r),
+    inet(r),
+    int(r),
+    date(r),
+    uuid(r),
+    bi(r)
+  )
 }
 
 abstract class ConcretePrimitives extends Primitives with RootConnector {

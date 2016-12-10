@@ -33,14 +33,10 @@ import scala.concurrent.{Future => ScalaFuture}
 sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
 
   // In this table, the author will be PrimaryKey and PartitionKey.
-  object title extends StringColumn(this) with PartitionKey[String]
+  object title extends StringColumn(this) with PartitionKey
 
   // The id is just another normal field.
   object id extends UUIDColumn(this)
-
-  def fromRow(row: Row): (String, UUID) = {
-    Tuple2(title(row), id(row))
-  }
 }
 
 abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {

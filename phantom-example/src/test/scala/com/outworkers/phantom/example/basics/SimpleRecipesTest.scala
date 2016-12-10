@@ -15,10 +15,92 @@
  */
 package com.outworkers.phantom.example.basics
 
+import com.outworkers.phantom.dsl.context
 import com.outworkers.phantom.example.ExampleSuite
-import org.scalatest.FlatSpec
+import com.outworkers.util.testing._
 
-class SimpleRecipesTest extends FlatSpec with ExampleSuite {
-  it should "insert a new record in" in {
+import scala.concurrent.Future
+
+class SimpleRecipesTest extends ExampleSuite {
+
+  it should "insert a new record in the recipes table and retrieve it" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.Recipes.insertNewRecord(sample).future
+      res <- database.Recipes.findRecipeById(sample.id)
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
   }
+
+  it should "retrieve the ingredients of a recipe" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.Recipes.insertNewRecord(sample).future
+      res <- database.Recipes.findRecipeIngredients(sample.id)
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample.ingredients
+    }
+  }
+
+  it should "retrieve an entire table in a single fetch" in {
+    val sample = genList[Recipe]()
+
+    val chain = for {
+      store <- database.Recipes.truncate().future()
+      store <- Future.sequence(
+        sample.map(s => database.Recipes.insertNewRecord(s).future)
+      )
+      res <- database.Recipes.retrieveEntireTable
+    } yield res
+
+    whenReady(chain) { res =>
+      res should contain theSameElementsAs sample
+    }
+  }
+
+  it should "update the author of a recipe" in {
+    val sample = gen[Recipe]
+    val newAuthor = gen[ShortString].value
+
+    val chain = for {
+      store <- database.Recipes.insertNewRecord(sample).future
+      res <- database.Recipes.findRecipeById(sample.id)
+      updateAuthor <- database.Recipes.updateRecipeAuthor(sample.id, newAuthor)
+      res2 <- database.Recipes.findRecipeById(sample.id)
+    } yield (res, res2)
+
+    whenReady(chain) { case (res, res2) =>
+      res shouldBe defined
+      res.value shouldEqual sample
+      res2 shouldBe defined
+      res2.value shouldEqual sample.copy(author = newAuthor)
+    }
+  }
+
+  it should "delete a recipe by its id" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.Recipes.insertNewRecord(sample).future
+      res <- database.Recipes.findRecipeById(sample.id)
+      updateAuthor <- database.Recipes.deleteRecipeById(sample.id)
+      res2 <- database.Recipes.findRecipeById(sample.id)
+    } yield (res, res2)
+
+    whenReady(chain) { case (res, res2) =>
+      res shouldBe defined
+      res.value shouldEqual sample
+      res2 shouldBe empty
+    }
+  }
+
 }

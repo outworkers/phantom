@@ -31,11 +31,11 @@ case class JodaRow(
 )
 
 sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaRow] {
-  object pkey extends StringColumn(this) with PartitionKey[String]
+  object pkey extends StringColumn(this) with PartitionKey
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  override def fromRow(r: Row): JodaRow = extract[JodaRow](r)
+  override def fromRow(r: Row): JodaRow = JodaRow(pkey(r), intColumn(r), timestamp(r))
 }
 
 abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {

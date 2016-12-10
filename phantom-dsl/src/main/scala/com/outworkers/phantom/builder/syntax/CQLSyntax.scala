@@ -107,7 +107,6 @@ object CQLSyntax {
     val `]` = "]"
 
     val dot = "."
-    val `:` = ":"
     val colon = ":"
     val `;` = ";"
     val `(` = "("
@@ -115,7 +114,7 @@ object CQLSyntax {
     val `,` = ","
     val `<` = "<"
     val `>` = ">"
-    val `=` = "="
+    val eqs = "="
     val + = "+"
     val plus = "+"
     val - = "-"
@@ -207,7 +206,7 @@ object CQLSyntax {
   }
 
   object CompactionOptions {
-    val `class` = "class"
+    val clz = "class"
     val enabled = "enabled"
     val max_threshold = "max_threshold"
     val min_threshold = "min_threshold"
@@ -222,6 +221,8 @@ object CQLSyntax {
     val base_time_seconds = "base_time_seconds"
     val max_sstable_age_days = "max_sstable_age_days"
     val timestamp_resolution = "timestamp_resolution"
+    val compaction_window_size = "compaction_window_size"
+    val compaction_window_unit = "compaction_window_unit"
   }
 
   object CompactionStrategies {

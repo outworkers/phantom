@@ -27,20 +27,12 @@ case class MyTestRow(
 )
 
 sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
-  def fromRow(r: Row): MyTestRow = {
-    MyTestRow(
-      key(r),
-      optionA(r),
-      stringlist(r)
-    )
-  }
 
-  object key extends StringColumn(this) with PartitionKey[String]
-
-  object stringlist extends ListColumn[String](this)
+  object key extends StringColumn(this) with PartitionKey
 
   object optionA extends OptionalIntColumn(this)
 
+  object stringlist extends ListColumn[String](this)
 }
 
 abstract class ConcreteListCollectionTable extends ListCollectionTable with RootConnector {

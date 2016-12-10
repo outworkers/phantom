@@ -32,7 +32,7 @@ import com.outworkers.phantom.dsl._
 // Keep reading for examples.
 sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey[UUID] {
+  object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -40,7 +40,7 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
 
   // Now we define a column for each field in our case class.
   // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
-  object name extends StringColumn(this) with PrimaryKey[String] // and you're done
+  object name extends StringColumn(this) with PrimaryKey // and you're done
 
 
   object title extends StringColumn(this)
@@ -52,25 +52,22 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
-
-  // Now the mapping function, transforming a row into a custom type.
-  // This is a bit of boilerplate, but it's one time only and very short.
-  def fromRow(row: Row): Recipe = {
-    Recipe(
-      id(row),
-      name(row),
-      title(row),
-      author(row),
-      description(row),
-      ingredients(row),
-      props(row),
-      timestamp(row)
-    )
-  }
 }
 
 
 abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with RootConnector {
+
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
+    insert.value(_.id, recipe.id)
+      .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.name, recipe.name)
+      .value(_.props, recipe.props)
+      .value(_.timestamp, recipe.timestamp)
+      .future()
+  }
 
   // now you can use composite keys in the normal way.
   // If you would select only by id,
@@ -79,5 +76,4 @@ abstract class ConcreteCompositeKeyRecipes extends CompositeKeyRecipes with Root
   def findRecipeByIdAndName(id: UUID, name: String): ScalaFuture[Option[Recipe]] = {
     select.where(_.id eqs id).and(_.name eqs name).one()
   }
-
 }
