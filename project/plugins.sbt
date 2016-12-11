@@ -26,8 +26,7 @@ def outworkersPattern: Patterns = {
 }
 
 resolvers ++= Seq(
-  "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
-  "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
+  Resolver.sonatypeRepo("releases"),
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",
   Resolver.bintrayRepo("websudos", "oss-releases"),
