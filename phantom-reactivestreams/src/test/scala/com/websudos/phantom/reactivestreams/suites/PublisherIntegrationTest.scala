@@ -82,6 +82,6 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     eventually {
       counter.get() shouldEqual generatorCount
-    } (defaultPatience)
+    }
   }
 }

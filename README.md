@@ -54,10 +54,11 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 #### Licensing and distribution
 
 - [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License. 
-- [ ] Publish `outworkers-util` and all sub modules to Maven Central.
-- [ ] Publish `outworkers-diesel` and all sub modules to Maven Central.
-- [ ] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
-- [ ] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
+- [x] Publish `outworkers-util` and all sub modules to Maven Central.
+- [x] Publish `outworkers-diesel` and all sub modules to Maven Central.
+- [x] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
+- [x] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
+- [x] Create a `1.30.x` release that allows users to transition to a no custom resolver version of Phantom 1.0.x even before 2.0.0 is stable.
 
 #### Macro API to replace runtime features
 

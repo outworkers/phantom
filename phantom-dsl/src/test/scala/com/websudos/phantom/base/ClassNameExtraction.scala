@@ -67,7 +67,7 @@ class ClassNameExtraction extends FlatSpec with Matchers {
   }
 
   it should "correctly name Cassandra Tables" in {
-    TestTableNames.tableName shouldEqual "testTableNames"
+    TestTableNames.tableName shouldEqual "TestTableNames"
   }
 
   it should "correctly extract the object name " in {
