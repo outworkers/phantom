@@ -26,6 +26,7 @@ branches:
   only:
   - master
   - develop
+  - feature/2.0.0
 
 jdk:
 - oraclejdk7

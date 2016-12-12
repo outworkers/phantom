@@ -32,25 +32,6 @@ package com.websudos.phantom.base
 import org.scalatest.{FlatSpec, Matchers}
 import com.websudos.phantom.dsl._
 
-trait Test {
-  private[this] lazy val _name: String = {
-    val packagePath = getClass.getName.split("\\.")
-    val fullName = packagePath(packagePath.length - 1)
-
-    val index = fullName.indexOf("$$anonfun")
-
-    if (index != -1) {
-      val str = fullName.substring(index + 9, fullName.length)
-      str.replaceAll("[(\\$\\d+\\$)]", "")
-    } else {
-      fullName.replaceAll("[(\\$\\d+\\$)]", "")
-    }
-  }
-
-  def name: String = _name
-}
-
-
 case class CustomRecord(name: String, mp: Map[String, String])
 
 trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
@@ -86,7 +67,7 @@ class ClassNameExtraction extends FlatSpec with Matchers {
   }
 
   it should "correctly name Cassandra Tables" in {
-    TestTableNames.tableName shouldEqual "TestTableNames"
+    TestTableNames.tableName shouldEqual "testTableNames"
   }
 
   it should "correctly extract the object name " in {

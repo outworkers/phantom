@@ -32,7 +32,11 @@ package com.websudos.phantom.tables
 import com.websudos.phantom.builder.query.InsertQuery
 import com.websudos.phantom.dsl._
 
-case class SecondaryIndexRecord(primary: UUID, secondary: UUID, name: String)
+ case class SecondaryIndexRecord(
+  primary: UUID,
+  secondary: UUID,
+  name: String
+)
 
 sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTable, SecondaryIndexRecord] {
 

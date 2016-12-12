@@ -44,7 +44,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // We usually overlay a service on top of the mapping tables.
 // To keep all the complexity away from other parts of the application.
 
-class RecipesDatabase(override val connector: KeySpaceDef) extends Database(connector) {
+class RecipesDatabase(override val connector: KeySpaceDef) extends Database[RecipesDatabase](connector) {
 
   object Recipes extends ConcreteRecipes with connector.Connector
   object AdvancedRecipes extends ConcreteAdvancedRecipes with connector.Connector

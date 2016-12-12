@@ -33,9 +33,8 @@ import com.websudos.phantom.PhantomSuite
 import com.websudos.phantom.dsl._
 import com.outworkers.util.testing._
 
-class DatabaseImplTest extends PhantomSuite {
-  val db = new TestDatabase
-  val db2 = new ValueInitDatabase
+class DatabaseTest extends PhantomSuite {
+  object db extends TestDatabase
 
   it should "instantiate a database and collect references to the tables" in {
     db.tables.size shouldEqual 4
@@ -43,22 +42,7 @@ class DatabaseImplTest extends PhantomSuite {
 
   it should "automatically generate the CQL schema and initialise tables " in {
     db.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
-    }
-  }
-
-  ignore should "instantiate a database object and collect references to value fields" in {
-    db2.tables.foreach(item => info(item.tableName))
-    db2.tables.size shouldEqual 4
-  }
-
-  ignore should "automatically generate the CQL schema and initialise tables for value tables" in {
-    db2.autocreate().future().successful {
-      res => {
-        res.nonEmpty shouldEqual true
-      }
+      res => res.nonEmpty shouldEqual true
     }
   }
 

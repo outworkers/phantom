@@ -87,11 +87,9 @@ class KeySpaceDef(
   clusterBuilder: ClusterBuilder,
   autoinit: Boolean,
   keyspaceFn: Option[(Session, KeySpace) => String] = None
-) {
+) { outer ⇒
 
-  val provider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn)
-
-  val self = this
+  lazy val provider: SessionProvider = new DefaultSessionProvider(KeySpace(name), clusterBuilder, autoinit, keyspaceFn)
 
   /**
    * The Session associated with this keySpace.
@@ -135,15 +133,15 @@ class KeySpaceDef(
    */
   trait Connector extends com.websudos.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = self.provider
+    lazy val provider = outer.provider
 
-    lazy val keySpace = self.name
+    lazy val keySpace = outer.name
 
-    implicit val space: KeySpace = KeySpace(self.name)
+    implicit val space: KeySpace = KeySpace(outer.name)
 
-    def cassandraVersion: Option[VersionNumber] = self.cassandraVersion
+    def cassandraVersion: Option[VersionNumber] = outer.cassandraVersion
 
-    def cassandraVersions: Set[VersionNumber] = self.cassandraVersions
+    def cassandraVersions: Set[VersionNumber] = outer.cassandraVersions
   }
 
 }
