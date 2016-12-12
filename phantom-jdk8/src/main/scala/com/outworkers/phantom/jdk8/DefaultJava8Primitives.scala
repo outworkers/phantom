@@ -109,8 +109,12 @@ trait DefaultJava8Primitives {
       CQLQuery.empty.singleQuote(value.atZone(ZoneOffset.UTC).toString)
     }
 
-    override def fromRow(column: String, row: GettableData): Try[LocalDateTime] = nullCheck(column, row) {
+    override def fromRow(column: String, row: GettableByNameData): Try[LocalDateTime] = nullCheck(column, row) {
       r => LocalDateTime.ofInstant(Instant.ofEpochMilli(r.getTimestamp(column).getTime), ZoneOffset.UTC)
+    }
+
+    override def fromRow(index: Int, row: GettableByIndexData): Try[LocalDateTime] = nullCheck(index, row) {
+      r => LocalDateTime.ofInstant(Instant.ofEpochMilli(r.getTimestamp(index).getTime), ZoneOffset.UTC)
     }
 
     override def fromString(value: String): LocalDateTime = {
