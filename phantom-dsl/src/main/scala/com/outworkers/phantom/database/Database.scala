@@ -164,7 +164,11 @@ abstract class Database[
   }
 }
 
-sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
+sealed class ExecutableCreateStatementsList(val tables: Set[CassandraTable[_, _]]) {
+
+  private[phantom] def queries()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
+    tables.toSeq.map(_.autocreate(keySpace).qb)
+  }
 
   def future()(
     implicit session: Session,

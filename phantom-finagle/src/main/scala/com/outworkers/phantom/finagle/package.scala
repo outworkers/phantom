@@ -328,7 +328,7 @@ package object finagle {
 
   implicit class ExecutableCreateStatementsListAugmenter(val list: ExecutableCreateStatementsList) extends AnyVal {
     def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Seq[ResultSet]] = {
-      Future.collect(list.queries(keySpace).map(_.execute()))
+      Future.collect(list.tables.toSeq.map(_.autocreate(keySpace).execute()))
     }
   }
 
