@@ -34,16 +34,16 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.20.0"
+  val util = "0.25.0"
   val json4s = "3.3.0"
-  val datastax = "3.0.2"
+  val datastax = "3.1.0"
   val scalatest = "2.2.4"
-  val shapeless = "2.2.5"
+  val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
   val scalameter = "0.6"
-  val diesel = "0.4.1"
+  val diesel = "0.5.0"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
@@ -117,8 +117,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
-    Resolver.jcenterRepo,
-    Resolver.bintrayRepo("websudos", "oss-releases")
+    Resolver.jcenterRepo
   ),
   scalacOptions ++= Seq(
     "-language:experimental.macros",
@@ -197,16 +196,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
-  unmanagedSourceDirectories in Compile ++= Seq(
-    (sourceDirectory in Compile).value / ("scala-2." + {
-      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) => minor
-      }
-    })),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "macro-compat" % "1.1.1",
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
     "com.outworkers"               %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
