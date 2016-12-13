@@ -1,0 +1,125 @@
+/*
+ * Copyright 2013 - 2017 Outworkers Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.outworkers.phantom.builder.query.db.specialized
+
+import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.{TestDatabase, TestRow}
+import com.outworkers.util.testing._
+
+class IndexedCollectionsTest extends PhantomSuite {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    if (cassandraVersion.value >= Version.`2.3.0`) {
+      database.indexedCollectionsTable.insertSchema()
+    }
+
+    if (cassandraVersion.value >= Version.`2.3.0`) {
+      database.indexedEntriesTable.insertSchema()
+    }
+  }
+
+  it should "store a record and retrieve it with a CONTAINS query on the SET" in {
+    val record = gen[TestRow]
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable.select
+        .where(_.setText contains record.setText.headOption.value)
+        .fetch()
+    } yield get
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) {
+        res => {
+          res.nonEmpty shouldEqual true
+          res should contain (record)
+        }
+      }
+    } else {
+      chain.failing[InvalidQueryException]
+    }
+
+  }
+
+  it should "store a record and retrieve it with a CONTAINS query on the MAP" in {
+    val record = gen[TestRow]
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable.select
+        .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
+        .fetch()
+    } yield get
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) {
+        res => {
+          res.nonEmpty shouldEqual true
+          res should contain (record)
+        }
+      }
+    } else {
+      chain.failing[InvalidQueryException]
+    }
+  }
+
+  it should "store a record and retrieve it with a CONTAINS KEY query on the MAP" in {
+    val record = gen[TestRow]
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable
+        .select
+        .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
+        .fetch()
+    } yield get
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) {
+        res => {
+          res.nonEmpty shouldEqual true
+          res should contain (record)
+        }
+      }
+    } else {
+      chain.failing[InvalidQueryException]
+    }
+  }
+
+  it should "store a record and retrieve it with a CONTAINS ENTRY equals query on the map" in {
+    val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
+
+    val chain = for {
+      store <- database.indexedEntriesTable.store(record).future()
+      result <- database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
+    } yield result
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) {
+        res => {
+          res.nonEmpty shouldEqual true
+          res should contain (record)
+        }
+      }
+    } else {
+      chain.failing[InvalidQueryException]
+    }
+  }
+
+}
