@@ -55,7 +55,8 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   def keySpace(
     name: String,
     autoinit: Boolean = true,
-    query: Option[(Session, KeySpace) => String] = None
+    query: Option[(Session, KeySpace) => String] = None,
+    errorHandler: Throwable => Throwable = identity
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, autoinit, query)
   }
@@ -70,8 +71,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     */
   def keySpace(
     name: String,
-    query: (Session, KeySpace) => String,
-    errorHandler: Throwable => Throwable = identity
+    query: (Session, KeySpace) => String
   ): CassandraConnection = {
-    new CassandraConnection(name, clusterBuilder, true, Some(query), errorHandler)
+    new CassandraConnection(name, clusterBuilder, true, Some(query))
   }}
