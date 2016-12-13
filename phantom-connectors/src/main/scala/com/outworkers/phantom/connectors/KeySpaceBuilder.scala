@@ -40,9 +40,8 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     * @return A new cluster builder, with the heartbeat interval set to 0(disabled).
     */
   def noHeartbeat(): KeySpaceBuilder = {
-    new KeySpaceBuilder(clusterBuilder andThen(_.withPoolingOptions(
-      new PoolingOptions().setHeartbeatIntervalSeconds(0))
-      )
+    new KeySpaceBuilder(clusterBuilder andThen (
+      _.withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0)))
     )
   }
 
@@ -56,7 +55,8 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   def keySpace(
     name: String,
     autoinit: Boolean = true,
-    query: Option[(Session, KeySpace) => String] = None
+    query: Option[(Session, KeySpace) => String] = None,
+    errorHandler: Throwable => Throwable = identity
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, autoinit, query)
   }
@@ -74,6 +74,4 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     query: (Session, KeySpace) => String
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, true, Some(query))
-  }
-
-}
+  }}

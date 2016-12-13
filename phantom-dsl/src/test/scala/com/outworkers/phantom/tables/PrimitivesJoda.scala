@@ -47,7 +47,7 @@ abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector 
   }
 
   def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
-    select.limit(limit).fetchRecord(paging)
+    select.limit(limit).paginateRecord(paging)
   }
 
   override val tableName = "PrimitivesJoda"

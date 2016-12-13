@@ -165,8 +165,7 @@ abstract class Database[
 }
 
 sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
-
-  def future()(
+    def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor

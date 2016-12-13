@@ -184,7 +184,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
           .where(_.id eqs id)
           .qb.queryString
 
-        qb shouldEqual s"SELECT dateOf(id) FROM phantom.timeUUIDTable WHERE id = $id"
+        qb shouldEqual s"SELECT dateOf(id) FROM phantom.${TestDatabase.timeuuidTable.tableName} WHERE id = $id"
       }
     }
   }

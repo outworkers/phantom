@@ -152,7 +152,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor(tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
+  def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val columnNames = columns.map(
       tpe => {
         q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
@@ -192,23 +192,35 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       }
     }
 
+    val tableSymbolName = tableTpe.typeSymbol.name
+
     if (recordMembers.size == colMembers.size) {
-      if (!recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec != col }) {
-        Some(q"""new $recordTpe(..$columnNames)""")
+      if (recordMembers.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
+
+        val tree = q"""new $recordTpe(..$columnNames)"""
+
+        Console.println(s"Automatically generated fromRow method as types matched for $tableSymbolName")
+        Console.println(showCode(tree))
+        Some(tree)
       } else {
-        Console.println(s"The case class records did not match the column member types for ${tableTpe.typeSymbol.name}")
+        Console.println(s"The case class records did not match the column member types for $tableSymbolName")
         Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
         Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
         None
       }
     } else {
-      Console.println(s"There were ${recordMembers.size} case class fields and ${colMembers.size} columns for ${tableTpe.typeSymbol.name}")
+      Console.println(s"There were ${recordMembers.size} case class fields and ${colMembers.size} columns for ${tableSymbolName}")
       Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
       Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
       None
     }
   }
 
+  /**
+    * Finds the first type in the type hierarchy for which columns exist as direct members.
+    * @param tpe The type of the table.
+    * @return An optional symbol, if such a type was found in the type hierarchy.
+    */
   def determineReferenceTable(tpe: Type): Option[Symbol] = {
     tpe.baseClasses.reverse.find(symbol => {
       symbol.typeSignature.decls.exists(_.typeSignature <:< typeOf[AbstractColumn[_]])

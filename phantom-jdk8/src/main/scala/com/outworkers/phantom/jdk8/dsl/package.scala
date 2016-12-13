@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.jdk8
 
+import java.time.LocalDateTime
+
 import com.outworkers.phantom.dsl.CassandraTable
 
 package object dsl extends DefaultJava8Primitives {
@@ -34,6 +36,11 @@ package object dsl extends DefaultJava8Primitives {
     Record
   ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
 
+  type JdkLocalDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, LocalDateTime]
+
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
@@ -49,8 +56,14 @@ package object dsl extends DefaultJava8Primitives {
     Record
   ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
 
+  type OptionalJdkLocalDateTimeColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record
+  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
+
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
+  type JdkLocalDateTime = java.time.LocalDateTime
 
 }
