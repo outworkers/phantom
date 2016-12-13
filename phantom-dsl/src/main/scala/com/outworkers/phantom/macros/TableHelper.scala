@@ -195,7 +195,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val tableSymbolName = tableTpe.typeSymbol.name
 
     if (recordMembers.size == colMembers.size) {
-      if (recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
+      if (recordMembers.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
 
         val tree = q"""new $recordTpe(..$columnNames)"""
 
