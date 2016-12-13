@@ -152,7 +152,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor(tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
+  def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val columnNames = columns.map(
       tpe => {
         q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
@@ -193,8 +193,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
 
     if (recordMembers.size == colMembers.size) {
-      if (!recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec != col }) {
-        Some(q"""new $recordTpe(..$columnNames)""")
+      if (recordMembers.toSeq.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
+
+        val tree = q"""new $recordTpe(..$columnNames)"""
+
+        Console.println("Automatically generated fromRow method as types matched.")
+        Console.println(showCode(tree))
+        Some(tree)
       } else {
         Console.println(s"The case class records did not match the column member types for ${tableTpe.typeSymbol.name}")
         Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
