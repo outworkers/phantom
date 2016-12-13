@@ -32,11 +32,11 @@ trait SessionAugmenter {
     protocolVersion.compareTo(pv) > 0
   }
 
-  def v3orNewer : Boolean = isNewerThan(ProtocolVersion.V2)
+  def v3orNewer: Boolean = isNewerThan(ProtocolVersion.V2)
 
   def protocolConsistency: Boolean = isNewerThan(ProtocolVersion.V1)
 
-  def v4orNewer : Boolean = isNewerThan(ProtocolVersion.V3)
+  def v4orNewer: Boolean = isNewerThan(ProtocolVersion.V3)
 }
 
 trait SessionAugmenterImplicits {
