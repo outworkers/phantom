@@ -19,7 +19,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.25.0"
+  val util = "0.26.0"
   val json4s = "3.3.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
@@ -27,7 +27,7 @@ lazy val Versions = new {
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val twitterUtil = "6.34.0"
-  val scalameter = "0.6"
+  val scalameter = "0.8+"
   val diesel = "0.5.0"
   val scalacheck = "1.13.0"
   val slf4j = "1.7.21"
@@ -87,10 +87,9 @@ val PerformanceTest = config("perf").extend(Test)
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
-  organization := "com.websudos",
+  organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
@@ -174,6 +173,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "macro-compat" % "1.1.1",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -199,6 +199,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
@@ -214,6 +215,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -224,6 +226,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .configs(PerformanceTest).settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
@@ -239,6 +242,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
@@ -258,21 +262,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
   name := "phantom-sbt",
   moduleName := "phantom-sbt",
-  scalaVersion := "2.10.6",
-  unmanagedSourceDirectories in Compile ++= Seq(
-    (sourceDirectory in Compile).value / ("scala-2." + {
-      CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-        case Some((major, minor)) => minor
-        case None => "10"
-
-      }
-  })),
-  publish := {
-    CrossVersion.partialVersion(scalaVersion.value).map {
-      case (2, scalaMajor) if scalaMajor >= 11 => false
-      case _ => true
-    }
-  },
+  crossScalaVersions := Seq("2.10.6"),
   publishMavenStyle := false,
   sbtPlugin := true,
   libraryDependencies ++= Seq(
