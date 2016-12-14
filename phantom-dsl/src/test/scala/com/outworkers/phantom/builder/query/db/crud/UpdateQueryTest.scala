@@ -21,10 +21,10 @@ import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.concurrent.{AsyncAssertions, Waiters}
 import org.scalatest.{Assertions, Inside, Matchers}
 
-class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with AsyncAssertions with Inside {
+class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Waiters with Inside {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

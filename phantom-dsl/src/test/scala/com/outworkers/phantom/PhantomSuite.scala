@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.util.lift.{DateTimeSerializer, UUIDSerializer}
 import com.outworkers.phantom.tables.TestDatabase
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -31,11 +30,11 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
+  implicit val formats = org.json4s.DefaultFormats
+
   protected[this] val defaultScalaTimeoutSeconds = 25
 
   private[this] val defaultScalaInterval = 50L
-
-  implicit val formats = net.liftweb.json.DefaultFormats + new UUIDSerializer + new DateTimeSerializer
 
   implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
 

@@ -19,8 +19,8 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.26.0"
-  val json4s = "3.3.0"
+  val util = "0.26.1"
+  val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
@@ -29,13 +29,19 @@ lazy val Versions = new {
   val twitterUtil = "6.34.0"
   val scalameter = "0.8+"
   val diesel = "0.5.0"
-  val scalacheck = "1.13.0"
+  val scalacheck = "1.13.4"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
-  val jetty = "9.1.2.v20140210"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
   val typesafeConfig = "1.3.1"
+
+  val twitterUtilVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((major, minor)) if minor >= 11 => "6.39.0"
+      case _ => "6.34.0"
+    }
+  }
 
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -80,6 +86,7 @@ lazy val Versions = new {
     }
   }
 }
+
 val defaultConcurrency = 4
 
 val PerformanceTest = config("perf").extend(Test)
@@ -137,13 +144,11 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomExample,
   phantomConnectors,
   phantomFinagle,
-  // phantomReactiveStreams,
+  phantomReactiveStreams,
   phantomThrift
 )
 
-lazy val fullProjectList = baseProjectList ++
-  Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8) ++
-  Publishing.addOnCondition(Publishing.isTravisScala210, phantomSbtPlugin)
+lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
 
 lazy val phantom = (project in file("."))
   .configs(
@@ -184,8 +189,8 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
+    "org.json4s"                   %% "json4s-native"                     % Versions.json4s,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
-    "com.outworkers"               %% "util-lift"                         % Versions.util                   % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
@@ -228,7 +233,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     moduleName := "phantom-finagle",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
-      "com.twitter"                  %% "util-core"                         % Versions.twitterUtil,
+      "com.twitter"                  %% "util-core"                         % Versions.twitterUtilVersion(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     )
@@ -277,6 +282,7 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
   .settings(
     name := "phantom-reactivestreams",
     moduleName := "phantom-reactivestreams",
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
@@ -301,6 +307,7 @@ lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
       "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
@@ -309,7 +316,7 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).settings(
     sharedSettings: _*
   ).dependsOn(
-    phantomDsl,
-    //phantomReactiveStreams,
+    phantomDsl % "test->test;compile->compile;",
+    phantomReactiveStreams,
     phantomThrift
   )

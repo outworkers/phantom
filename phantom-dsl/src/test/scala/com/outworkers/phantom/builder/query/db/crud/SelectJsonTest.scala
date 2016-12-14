@@ -20,7 +20,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
-import net.liftweb.json.JsonParser
+import org.json4s.native.JsonParser
 
 class SelectJsonTest extends PhantomSuite {
   override def beforeAll(): Unit = {
