@@ -2,7 +2,7 @@
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/2.0.0" ]);
 then
 
-    if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    if [ "${TRAVIS_SCALA_VERSION}" == "2.12.0" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
     then
 
         echo "Setting git user email to ci@outworkers.com"
