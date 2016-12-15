@@ -103,14 +103,13 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
   ),
-  scalacOptions ++= Seq(
+  scalacOptions in ThisBuild ++= Seq(
     "-language:experimental.macros",
     "-language:postfixOps",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
     "-language:higherKinds",
     "-language:existentials",
-    "-Yinline-warnings",
     "-Xlint",
     "-deprecation",
     "-feature",
