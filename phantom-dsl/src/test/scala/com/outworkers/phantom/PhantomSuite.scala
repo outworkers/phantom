@@ -28,9 +28,10 @@ trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
   with RootConnector
   with ScalaFutures
+  with JsonFormats
   with OptionValues {
 
-  implicit val formats = org.json4s.DefaultFormats
+  implicit val formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 
