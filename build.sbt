@@ -173,7 +173,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
 ).settings(
   name := "phantom-dsl",
   moduleName := "phantom-dsl",
-  testOptions in Test += Tests.Argument("-oF"),
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
