@@ -78,14 +78,6 @@ If the boxes are checked it means this is already complete on the gigantic [2.0.
 
 Intermediary releases of phantom 2.0.x are already available via `Resolver.bintrayRepo("outworkers", "oss-releases")` and the latest version is [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion).
 
-#### Licensing and distribution
-
-- [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License. 
-- [ ] Publish `outworkers-util` and all sub modules to Maven Central.
-- [ ] Publish `outworkers-diesel` and all sub modules to Maven Central.
-- [ ] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
-- [ ] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
-
 #### Macro API to replace runtime features
 
 - [x] Replace the Scala reflection library with a macro that can figure out what the contents of a table are.
@@ -93,40 +85,9 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 - [x] Generate the primary key of a table using macros.
 - [x] Enforce primary key restrictions on a table using a macro.
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
-- [ ] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
+- [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
 - [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
 - [ ] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
-
-#### Tech debt
-
-- [ ] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
-- [ ] Add a build matrix that will test phantom against multiple versions of Cassandra in Travis for Scala 2.11, with support for all major releases of Cassandra.
-- [ ] Bump code coverage up to 100%
-
-#### Features
-
-- [ ] Native support for multi-tenanted environments via cached sessions.
-- [ ] Case sensitive CQL.
-- [ ] Materialized views.
-- [ ] SASI index support
-- [ ] Support for `PER PARTITION LIMIT` in `SelectQuery`.
-- [ ] Support for `GROUP BY` in `SelectQuery`.
-
-#### Scala 2.12 support
-
-- [ ] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
-- [x] Add support for Scala 2.12 in the `diesel-engine`.
-- [ ] Add support for Scala 2.12 in `phantom-dsl`
-- [ ] Add support for Scala 2.12 in `phantom-connectors`
-- [ ] Add support for Scala 2.12 in `phantom-reactivestreams`
-- [ ] Add support for Scala 2.12 in `phantom-finagle`
-
-#### Documentatiom
-
-- [ ] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
-- [ ] Move documentation back to the docs folder.
-- [ ] Add a documentation website on the main page.
-- [ ] Create a navigator that allows viewing the documentation at a particular point in time.
 
 ### Roadmap to Phantom 2.0.0
 
@@ -162,7 +123,7 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
 - [ ] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
 - [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
-- [ ] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
+- [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 #### Tech debt
 
@@ -181,10 +142,10 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 
 #### Scala 2.12 support
 
-- [ ] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
+- [x] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
 - [x] Add support for Scala 2.12 in the `diesel-engine`.
-- [ ] Add support for Scala 2.12 in `phantom-dsl`
-- [ ] Add support for Scala 2.12 in `phantom-connectors`
+- [x] Add support for Scala 2.12 in `phantom-dsl`
+- [x] Add support for Scala 2.12 in `phantom-connectors`
 - [ ] Add support for Scala 2.12 in `phantom-reactivestreams`
 - [ ] Add support for Scala 2.12 in `phantom-finagle`
 
