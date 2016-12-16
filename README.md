@@ -39,6 +39,25 @@ CassandraConnector`.
 - Tuples are now natively supported as valid types via `TupleColumn`.
 
 
+Available modules
+=================
+
+This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
+
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
+| ------------          | ------------------- | ------------------| ----------------- |
+| phantom-connectors    | <span>yes</span>    | <span>yes</<span> | <span>yes</span>  |
+| phantom-dsl           | <span>yes</span>    | <span>yes</<span> | <span>yes</span>  |
+| phantom-jdk8          | <span>yes</span>    | <span>yes</<span> | <span>yes</span>  |
+| phantom-sbt           | <span>yes</span>    | <span>no</<span>  | <span>no</span>   |
+| phantom-example       | <span>yes</span>    | <span>yes</<span> | <span>no</<span>  |
+| phantom-thrift        | <span>yes</span>    | <span>yes</<span> | <span>no>/<span>  |
+| phantom-finagle       | <span>yes</span>    | <span>yes</<span> | <span>no</<span>  |
+| phantom-streams       | <span>yes</span>    | <span>yes</<span> | <span>no</<span>  |
+
+
+
+
 Using phantom
 =============
 

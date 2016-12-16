@@ -143,7 +143,7 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomExample,
   phantomConnectors,
   phantomFinagle,
-  phantomReactiveStreams,
+  phantomStreams,
   phantomThrift
 )
 
@@ -276,10 +276,10 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   )
 )
 
-lazy val phantomReactiveStreams = (project in file("phantom-reactivestreams"))
+lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
-    name := "phantom-reactivestreams",
-    moduleName := "phantom-reactivestreams",
+    name := "phantom-streams",
+    moduleName := "phantom-streams",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
@@ -315,6 +315,6 @@ lazy val phantomExample = (project in file("phantom-example"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
-    phantomReactiveStreams,
+    phantomStreams,
     phantomThrift
   )
