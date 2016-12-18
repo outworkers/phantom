@@ -35,7 +35,7 @@ resolvers ++= Seq(
   Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.5")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
@@ -58,3 +58,5 @@ addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
+
+addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")

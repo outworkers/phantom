@@ -19,7 +19,8 @@ import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
 import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
-import net.liftweb.json.{ compactRender, Extraction }
+import org.json4s.Extraction
+import org.json4s.native._
 
 class InsertQuerySerializationTest extends QueryBuilderTest {
 
@@ -107,7 +108,8 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
 
       "should serialize a JSON clause as the insert part" in {
         val sample = gen[Recipe]
-        val query = TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).queryString
+        val json = compactJson(renderJValue(Extraction.decompose(sample)))
+        val query = TestDatabase.recipes.insert.json(json).queryString
 
       }
 

@@ -19,7 +19,8 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
-import net.liftweb.json._
+import org.json4s.Extraction
+import org.json4s.native._
 
 class InsertTest extends PhantomSuite {
 
@@ -150,7 +151,7 @@ class InsertTest extends PhantomSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- TestDatabase.recipes.insert.json(compactRender(Extraction.decompose(sample))).future()
+      store <- TestDatabase.recipes.insert.json(compactJson(renderJValue(Extraction.decompose(sample)))).future()
       get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
