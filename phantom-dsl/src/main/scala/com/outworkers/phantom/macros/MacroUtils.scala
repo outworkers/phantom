@@ -47,17 +47,32 @@ class MacroUtils(val c: blackbox.Context) {
     }
   }
 
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
-    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
-  ): Set[Symbol] = {
-    val tpe = weakTypeOf[T].typeSymbol.typeSignature
+  def filterMembers[Filter : TypeTag](
+    tag: Type,
+    exclusions: Symbol => Option[Symbol]
+  ): Seq[Symbol] = {
+    val tpe = tag.typeSymbol.typeSignature
 
-    (for {
-      baseClass <- tpe.baseClasses.reverse.flatMap(x => exclusions(x))
-      symbol <- baseClass.typeSignature.members.sorted
-      if symbol.typeSignature <:< typeOf[Filter]
-    } yield symbol)(collection.breakOut)
+    (
+      for {
+        baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
+        symbol <- baseClass.typeSignature.members.sorted
+        if symbol.typeSignature <:< typeOf[Filter]
+      } yield symbol
+      )(collection.breakOut) distinct
   }
 
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
+    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+  ): Seq[Symbol] = {
+    val tpe = weakTypeOf[T].typeSymbol.typeSignature
 
+    (
+      for {
+        baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
+        symbol <- baseClass.typeSignature.members.sorted
+        if symbol.typeSignature <:< typeOf[Filter]
+      } yield symbol
+    )(collection.breakOut) distinct
+  }
 }

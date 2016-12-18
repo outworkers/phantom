@@ -72,12 +72,8 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 
 case class Opera(name: String)
 
-abstract class OperaTable extends CassandraTable[ConcreteOperaTable, Opera] {
+class OperaTable extends CassandraTable[ConcreteOperaTable, Opera] {
   object name extends StringColumn(this) with PartitionKey
-
-  def fromRow(row: Row): Opera = {
-    Opera(name(row))
-  }
 }
 
 abstract class ConcreteOperaTable extends OperaTable with RootConnector {

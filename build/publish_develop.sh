@@ -69,11 +69,10 @@ then
         git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
 
         echo "Publishing new version to bintray"
-        sbt +bintray:publish
+        sbt "such publish"
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
-
             echo "Creating GPG deploy key"
             openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
@@ -83,7 +82,8 @@ then
             echo "Setting MAVEN_PUBLISH mode to true"
             export MAVEN_PUBLISH="true"
             export pgp_passphrase=${maven_password}
-            sbt +publishSigned sonatypeReleaseAll
+            sbt "such publishSigned"
+            sbt sonatypeReleaseAll
             exit $?
         else
             echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"

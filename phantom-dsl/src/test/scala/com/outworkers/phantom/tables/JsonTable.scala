@@ -16,10 +16,10 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.util.testing.sample
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
-import net.liftweb.json.{DefaultFormats, Extraction, JsonParser, compactRender}
+import org.json4s.Extraction
+import org.json4s.native._
 
 case class JsonTest(prop1: String, prop2: String)
 
@@ -32,9 +32,9 @@ case class JsonClass(
 )
 
 
-class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
+abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootConnector {
 
-  implicit val formats = DefaultFormats
+  implicit val formats = org.json4s.DefaultFormats
 
   object id extends UUIDColumn(this) with PartitionKey
 
@@ -45,9 +45,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
       JsonParser.parse(obj).extract[JsonTest]
     }
 
-    override def toJson(obj: JsonTest): String = {
-      compactRender(Extraction.decompose(obj))
-    }
+    override def toJson(obj: JsonTest): String = compactJson(renderJValue(Extraction.decompose(obj)))
   }
 
   object jsonList extends JsonListColumn[JsonTest](this) {
@@ -56,7 +54,7 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
     }
 
     override def toJson(obj: JsonTest): String = {
-      compactRender(Extraction.decompose(obj))
+      compactJson(renderJValue(Extraction.decompose(obj)))
     }
   }
 
@@ -66,23 +64,11 @@ class JsonTable extends CassandraTable[ConcreteJsonTable, JsonClass] {
     }
 
     override def toJson(obj: JsonTest): String = {
-      compactRender(Extraction.decompose(obj))
+      compactJson(renderJValue(Extraction.decompose(obj)))
     }
   }
 
-  def fromRow(row: Row): JsonClass = {
-    JsonClass(
-      id = id(row),
-      name = name(row),
-      json = json(row),
-      jsonList = jsonList(row),
-      jsonSet = jsonSet(row)
-    )
-  }
-}
-
-abstract class ConcreteJsonTable extends JsonTable with RootConnector {
-  def store(sample: JsonClass): InsertQuery.Default[ConcreteJsonTable, JsonClass] = {
+  def store(sample: JsonClass): InsertQuery.Default[JsonTable, JsonClass] = {
     insert
       .value(_.id, sample.id)
       .value(_.name, sample.name)

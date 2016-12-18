@@ -61,7 +61,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
+  private[phantom] def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
 
   /**
     * A blocking method that will create all the tables. This is designed to prevent the
@@ -97,7 +97,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autodrop(): ExecutableStatementList = {
+  private[phantom] def autodrop(): ExecutableStatementList = {
     new ExecutableStatementList(tables.toSeq.map {
       table => table.alter().drop().qb
     })
@@ -137,10 +137,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  def autotruncate(): ExecutableStatementList = {
-    new ExecutableStatementList(tables.toSeq.map {
-      table => table.truncate().qb
-    })
+  private[phantom] def autotruncate(): ExecutableStatementList = {
+    new ExecutableStatementList(tables.toSeq.map(_.truncate().qb))
   }
 
   /**
@@ -167,8 +165,7 @@ abstract class Database[
 }
 
 sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
-
-  def future()(
+    def future()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor

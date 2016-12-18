@@ -27,13 +27,6 @@ case class TupleRecord(id: UUID, tp: (String, Long))
 class TupleColumnTable extends CassandraTable[ConcreteTupleColumnTable, TupleRecord] {
   object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, Long)](this)
-
-  def fromRow(row: Row): TupleRecord = {
-    TupleRecord(
-      id(row),
-      tp(row)
-    )
-  }
 }
 
 abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnector {
@@ -54,13 +47,6 @@ case class NestedTupleRecord(id: UUID, tp: (String, (String, Long)))
 class NestedTupleColumnTable extends CassandraTable[ConcreteNestedTupleColumnTable, NestedTupleRecord] {
   object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, (String, Long))](this)
-
-  def fromRow(row: Row): NestedTupleRecord = {
-    NestedTupleRecord(
-      id(row),
-      tp(row)
-    )
-  }
 }
 
 abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable with RootConnector {
@@ -82,13 +68,6 @@ case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
 class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {
   object id extends UUIDColumn(this) with PartitionKey
   object tuples extends ListColumn[(Int, String)](this)
-
-  def fromRow(row: Row): TupleCollectionRecord = {
-    TupleCollectionRecord(
-      id(row),
-      tuples(row)
-    )
-  }
 }
 
 abstract class ConcreteTupleCollectionsTable extends TupleCollectionsTable with RootConnector {

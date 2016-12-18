@@ -16,7 +16,7 @@
 package com.outworkers.phantom
 
 import akka.actor.ActorSystem
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.batch.BatchType
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
@@ -195,7 +195,7 @@ package object reactivestreams {
       * @param session The Cassandra session in use.
       * @param keySpace The keyspace object in use.
       * @param ctx The Execution Context.
-      * @return
+      * @return A play enumerator containing the results of the query.
       */
     def fetchEnumerator()(
       implicit session: Session,
@@ -204,6 +204,27 @@ package object reactivestreams {
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         query.future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
+        }
+      }
+    }
+
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      * @param mod A modifier to apply to a statement.
+      * @param session The Cassandra session in use.
+      * @param keySpace The keyspace object in use.
+      * @param ctx The Execution Context.
+      * @return A play enumerator containing the results of the query.
+      */
+    def fetchEnumerator(mod: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
+      PlayEnumerator.flatten {
+        query.future(mod) map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
         }
       }

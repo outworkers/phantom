@@ -68,21 +68,6 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object timestamp extends DateTimeColumn(this)
-
-  // Now the mapping function, transforming a row into a custom type.
-  // This is a bit of boilerplate, but it's one time only and very short.
-  def fromRow(row: Row): Recipe = {
-    Recipe(
-      id(row),
-      name(row),
-      title(row),
-      author(row),
-      description(row),
-      ingredients(row),
-      props(row),
-      timestamp(row)
-    )
-  }
 }
 
 

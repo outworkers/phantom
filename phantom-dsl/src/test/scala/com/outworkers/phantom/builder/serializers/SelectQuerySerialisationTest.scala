@@ -47,7 +47,8 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       "should correctly append a column selection to a distinct clause" in {
         val id = gen[UUID]
 
-        val qb = TestDatabase.tableWithCompositeKey.select(_.id, _.second_part)
+        val qb = TestDatabase.tableWithCompositeKey
+          .select(_.id, _.second_part)
           .distinct()
           .where(_.id eqs id)
           .limit(limit).queryString
@@ -183,7 +184,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
           .where(_.id eqs id)
           .qb.queryString
 
-        qb shouldEqual s"SELECT dateOf(id) FROM phantom.timeUUIDTable WHERE id = $id"
+        qb shouldEqual s"SELECT dateOf(id) FROM phantom.${TestDatabase.timeuuidTable.tableName} WHERE id = $id"
       }
     }
   }

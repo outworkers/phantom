@@ -20,7 +20,7 @@ import com.outworkers.phantom.dsl.Batch
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.outworkers.phantom.dsl._
 
 class CountTest extends PhantomSuite {
 

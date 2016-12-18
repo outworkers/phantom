@@ -103,7 +103,7 @@ private[phantom] trait AlterQueryBuilder {
    * @param clause The clause or option to append to the root query.
    * @return A new CQL query, where the underlying query contains an option clause.
    */
-  def `with`(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+  def option(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.With).pad.append(clause)
   }
 
@@ -131,7 +131,6 @@ private[phantom] trait AlterQueryBuilder {
       .forcePad.append(CQLSyntax.ifExists)
       .forcePad.append(QueryBuilder.keyspace(keyspace, table))
   }
-
 
   def alter(tableName: String): CQLQuery = {
     CQLQuery(CQLSyntax.alter)

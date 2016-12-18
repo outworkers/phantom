@@ -39,6 +39,52 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
   "The CREATE query builder" - {
 
+    "should correctly serialise primary key definitions" - {
+      "a simple single partition key definition" in {
+        val cols = List("test")
+        QueryBuilder.Create.primaryKey(cols).queryString shouldEqual "PRIMARY KEY (test)"
+      }
+
+      "a single partition key and a primary key" in {
+        val partitions = List("test")
+        val primaries = List("test2")
+        QueryBuilder.Create.primaryKey(partitions, primaries).queryString shouldEqual "PRIMARY KEY (test, test2)"
+      }
+
+      "a composite partition key" in {
+        val partitions = List("partition1", "partition2")
+        val primaries = List("primary1")
+        val key = QueryBuilder.Create.primaryKey(partitions, primaries).queryString
+
+        key shouldEqual "PRIMARY KEY ((partition1, partition2), primary1)"
+      }
+
+      "a compound primary key" in {
+        val partitions = List("partition1")
+        val primaries = List("primary1", "primary2")
+        val key = QueryBuilder.Create.primaryKey(partitions, primaries).queryString
+
+        key shouldEqual "PRIMARY KEY (partition1, primary1, primary2)"
+      }
+
+      "a composite and compound primary key" in {
+        val partitions = List("partition1", "partition2")
+        val primaries = List("primary1", "primary2")
+        val key = QueryBuilder.Create.primaryKey(partitions, primaries).queryString
+
+        key shouldEqual "PRIMARY KEY ((partition1, partition2), primary1, primary2)"
+      }
+
+      "a composite with clustering order" in {
+        val partitions = List("partition1", "partition2")
+        val primaries = List("primary1", "primary2")
+        val clustering = List("primary1 ASC", "primary2 ASC")
+        val key = QueryBuilder.Create.primaryKey(partitions, primaries, clustering).queryString
+
+        key shouldEqual "PRIMARY KEY ((partition1, partition2), primary1, primary2) WITH CLUSTERING ORDER BY (primary1 ASC, primary2 ASC)"
+      }
+    }
+
     "should allow using DateTieredCompactionStrategy and its options" - {
       "serialise a create query with a DateTieredCompactionStrategy" in {
         val qb = BasicTable.create.`with`(
@@ -161,7 +207,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val qb = BasicTable.create
           .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-        .qb.queryString
+          .qb.queryString
 
         qb shouldEqual s"""$root WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50} AND compression = {'sstable_compression': 'LZ4Compressor', 'crc_check_chance': 0.5}"""
       }

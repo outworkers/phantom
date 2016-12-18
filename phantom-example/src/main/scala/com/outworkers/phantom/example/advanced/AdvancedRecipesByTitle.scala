@@ -37,10 +37,6 @@ sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecip
 
   // The id is just another normal field.
   object id extends UUIDColumn(this)
-
-  def fromRow(row: Row): (String, UUID) = {
-    Tuple2(title(row), id(row))
-  }
 }
 
 abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
