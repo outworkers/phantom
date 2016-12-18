@@ -37,6 +37,7 @@ CassandraConnector`.
 - `TimeWindowCompactionStrategy` is now natively supported in the CREATE/ALTER dsl.
 - Collections can now be used as part of a primary or partition key.
 - Tuples are now natively supported as valid types via `TupleColumn`.
+- `phantom-reactivestreams` is now simply called `phantom-streams`.
 
 
 Available modules
