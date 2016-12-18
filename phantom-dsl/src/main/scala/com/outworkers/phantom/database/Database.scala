@@ -37,7 +37,7 @@ abstract class Database[
 
   implicit lazy val session: Session = connector.session
 
-  val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
+  lazy val tables: Set[CassandraTable[_, _]] = initialize().toSet
 
   def shutdown(): Unit = {
     blocking {

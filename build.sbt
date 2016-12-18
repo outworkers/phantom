@@ -86,7 +86,6 @@ lazy val Versions = new {
     }
   }
 }
-
 val defaultConcurrency = 4
 
 val PerformanceTest = config("perf").extend(Test)
@@ -182,7 +181,8 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.typelevel" %% "macro-compat" % "1.1.1",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
+    "org.scala-lang"               %  "scala-reflect"                     % scalaVersion.value,
+    "com.outworkers"               %% "diesel-reflection"                 % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % "2.9.4",
     "org.joda"                     %  "joda-convert"                      % "1.8.1",
