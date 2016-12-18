@@ -196,7 +196,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   )
 ).dependsOn(
   phantomConnectors
-)
+).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
@@ -211,7 +211,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomConnectors = (project in file("phantom-connectors"))
   .configs(PerformanceTest)
@@ -224,7 +224,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))
   .configs(PerformanceTest).settings(
@@ -240,7 +240,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     inConfig(PerformanceTest)(Defaults.testTasks) ++ sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
@@ -258,24 +258,24 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).dependsOn(
     phantomDsl,
     phantomFinagle
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   .settings(
     sharedSettings: _*
   ).settings(
-  name := "phantom-sbt",
-  moduleName := "phantom-sbt",
-  crossScalaVersions := Seq("2.10.6"),
-  publishMavenStyle := false,
-  sbtPlugin := true,
-  libraryDependencies ++= Seq(
-    "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
-      ExclusionRule("org.slf4j", "slf4j-log4j12"),
-      ExclusionRule("org.slf4j", "slf4j-jdk14")
+    name := "phantom-sbt",
+    moduleName := "phantom-sbt",
+    crossScalaVersions := Seq("2.10.6"),
+    publishMavenStyle := false,
+    sbtPlugin := true,
+    libraryDependencies ++= Seq(
+      "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
+        ExclusionRule("org.slf4j", "slf4j-log4j12"),
+        ExclusionRule("org.slf4j", "slf4j-jdk14")
+      )
     )
-  )
-)
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
@@ -301,7 +301,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
@@ -318,4 +318,4 @@ lazy val phantomExample = (project in file("phantom-example"))
     phantomDsl % "test->test;compile->compile;",
     phantomStreams,
     phantomThrift
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
