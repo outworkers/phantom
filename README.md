@@ -11,7 +11,6 @@ phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware)
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
-
 2.0.0 Migration guide
 =====================
 
@@ -81,33 +80,6 @@ The latest versions are available here. The badges automatically update when a n
 
 - Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
 - Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
-
-### Roadmap to Phantom 2.0.0
-
-With the rapidly evolving requirements, Cassansdra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
-
-- Go back to the flexible licensing model everyone knows and loves(especially your legal department). No one wants to go through corporate litigation and licensing compliance to a `build.sbt` dependency, and if you've ever worked in a bank we all know it's not happening.
-
-- Phantom was a really fun time saving introduction years ago when it was first introduced, but since then Scala has evolved to a point where many features of more esoteric components, such as the macro API, have reached a degree of stability that we can now exploit to our great advantage: **boilerplate elimitation**.
-
-- From type parameters to keys, table class cake patterns, having to define `fromRow`, and a whole lot of other boilerplatey items, we have eliminated them one by one, reducing the amount of code you need to type to make it all work. The future looks even brighter, as we plan on fully eliminating the mapping DSL very shortly in favour of even more lightweight techniques.
-
-Phantom's next major release is slowly approaching completion, and if you would like to know more about what's to come and about what we have in store for you next, have a look at the below list. Feedback and contributions are welcome, and we are happy to prioritise any crucial features Phantom may currently be lacking.
-
-If the boxes are checked it means this is already complete on the gigantic [2.0.0 pull request](https://github.com/outworkers/phantom/pull/576). This is initial "in progres" [migration guide](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide) to Phantom 2.0.0 that should give you some more detail into the changes made.
-
-Intermediary releases of phantom 2.0.x are already available via `Resolver.bintrayRepo("outworkers", "oss-releases")` and the latest version is [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion).
-
-#### Macro API to replace runtime features
-
-- [x] Replace the Scala reflection library with a macro that can figure out what the contents of a table are.
-- [x] Generate the name of a table using macros.
-- [x] Generate the primary key of a table using macros.
-- [x] Enforce primary key restrictions on a table using a macro.
-- [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
-- [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
-- [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
-- [ ] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 ### Roadmap to Phantom 2.0.0
 
@@ -286,6 +258,7 @@ The following are just some of the biggest phantom adopters, though the full lis
 is far more comprehensive.
 
 - [Starbucks Corporation](https://www.starbucks.com/)
+- [Microsoft](https://www.microsoft.com/en-gb/)
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
 - [UBS](https://www.ubs.com/global/en.html)
@@ -348,7 +321,7 @@ Scala/Cassandra users in the world rely on phantom.
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright &copy; 2013 - 2016 outworkers.
+Copyright &copy; 2013 - 2017 outworkers.
 
 Contributing to phantom
 =======================
