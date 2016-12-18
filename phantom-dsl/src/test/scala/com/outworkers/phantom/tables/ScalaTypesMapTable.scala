@@ -30,13 +30,6 @@ class ScalaTypesMapTable extends CassandraTable[ConcreteScalaTypesMapTable, Scal
 
   object id extends UUIDColumn(this) with PartitionKey
   object map extends MapColumn[DateTime, BigDecimal](this)
-
-  override def fromRow(row: Row): ScalaPrimitiveMapRecord = {
-    ScalaPrimitiveMapRecord(
-      id(row),
-      map(row)
-    )
-  }
 }
 
 abstract class ConcreteScalaTypesMapTable extends ScalaTypesMapTable with RootConnector {
