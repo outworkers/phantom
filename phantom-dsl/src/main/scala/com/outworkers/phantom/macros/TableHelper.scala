@@ -193,15 +193,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
 
     val tableSymbolName = tableTpe.typeSymbol.name
+    Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
+    Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
 
     if (recordMembers.size == colMembers.size) {
       if (recordMembers.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
-
-        val tree = q"""new $recordTpe(..$columnNames)"""
-
-        Console.println(s"Automatically generated fromRow method as types matched for $tableSymbolName")
-        Console.println(showCode(tree))
-        Some(tree)
+        Some(q"""new $recordTpe(..$columnNames)""")
       } else {
         Console.println(s"The case class records did not match the column member types for $tableSymbolName")
         Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
