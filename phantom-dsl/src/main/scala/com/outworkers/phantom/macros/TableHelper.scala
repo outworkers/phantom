@@ -197,7 +197,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
 
     if (recordMembers.size == colMembers.size) {
-      if (recordMembers.zip(colMembers).forall { case (rec, col) => rec =:= col }) {
+      if (recordMembers.zip(colMembers).forall { case (rec, col) => {
+        val res = rec =:= col
+        Console.println(s"$rec was equal to $col status: $res" )
+        res
+      } }) {
         Some(q"""new $recordTpe(..$columnNames)""")
       } else {
         Console.println(s"The case class records did not match the column member types for $tableSymbolName")
@@ -237,7 +241,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
     val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
 
-
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
@@ -249,7 +252,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
@@ -262,8 +265,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
      """
-    //Console.println(tree)
-    tree
   }
 
 }
