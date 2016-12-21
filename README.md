@@ -23,7 +23,7 @@ part of long term re-branding efforts, we have finally felt it's time to make su
 - Manually defining a `fromRow` inside a `CassandraTable` is no longer required if your column types match your case class types.
 - `EnumColumn` is now relying entirely on `Primitive.macroImpl`, which means you will not need to pass in the enumeration
 as an argument to `EnumColumn` anymore. This means `object enum extends EnumColumn(this, enum: MyEnum)` is now simply
-`object enum extends EnumColumn[MyEnum#Value]`
+`object enum extends EnumColumn[MyEnum#Value](this)`
 - All dependencies are now being published to Maven Central. This includes outworkers util and outworkers diesel,
 projects which have in their own right been completely open sourced under Apache V2 and made public on GitHub.
 - All dependencies on `scala-reflect` have been completely removed.
@@ -37,6 +37,10 @@ CassandraConnector`.
 - Collections can now be used as part of a primary or partition key.
 - Tuples are now natively supported as valid types via `TupleColumn`.
 - `phantom-reactivestreams` is now simply called `phantom-streams`.
+- `Database.autocreate` and `Database.autotruncate` are now no longer accessible. Use `create`, `createAsync`, `truncate` and `truncateAsync` instead.
+- `Database` now requires an f-bounded type argument: `class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector)`.
+- Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
+This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
 
 
 Available modules
@@ -54,9 +58,6 @@ This is a table of the available modules for the various Scala versions. Not all
 | phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 | phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 | phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-
-
-
 
 Using phantom
 =============
