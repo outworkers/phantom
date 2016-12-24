@@ -264,7 +264,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             scala.collection.immutable.Set.apply[$colTpe](..$accessors)
           }
        }
-     """
+    """
   }
 
 }
