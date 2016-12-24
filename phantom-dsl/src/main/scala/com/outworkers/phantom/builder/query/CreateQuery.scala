@@ -29,29 +29,23 @@ import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
   Record
-](
-  val tableName: String,
-  val tableKey: String,
-  val columns: Set[CQLQuery],
-  val clusteringColumns: Set[AbstractColumn[_]],
-  val secondaryKeys: Set[AbstractColumn[_]]
-) {
+](val table: Table) {
 
   private[phantom] def default()(implicit keySpace: KeySpace): CQLQuery = {
     QueryBuilder.Create.defaultCreateQuery(
       keySpace.name,
-      tableName,
-      tableKey,
-      columns.toSeq
+      table.tableName,
+      table.tableKey,
+      table.columns.map(_.qb).toSeq
     )
   }
 
   private[this] def lightweight()(implicit keySpace: KeySpace): CQLQuery = {
     QueryBuilder.Create.createIfNotExists(
       keySpace.name,
-      tableName,
-      tableKey,
-      columns.toSeq
+      table.tableName,
+      table.tableKey,
+      table.columns.map(_.qb).toSeq
     )
   }
 
@@ -65,23 +59,15 @@ class RootCreateQuery[
    * @return A create query executed with a lightweight transactions.
    */
   def ifNotExists()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
-    if (clusteringColumns.nonEmpty) {
+    if (table.clusteringColumns.nonEmpty) {
       new CreateQuery(
-        tableName,
-        tableKey,
-        columns,
-        clusteringColumns,
-        secondaryKeys,
+        table,
         lightweight(),
         WithPart.empty
       ).withClustering()
     } else {
       new CreateQuery(
-        tableName,
-        tableKey,
-        columns,
-        clusteringColumns,
-        secondaryKeys,
+        table,
         lightweight(),
         WithPart.empty
       )
@@ -89,17 +75,12 @@ class RootCreateQuery[
   }
 }
 
-
 class CreateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
 ](
-  val tableName: String,
-  val tableKey: String,
-  val columns: Set[CQLQuery],
-  val clusteringColumns: Set[AbstractColumn[_]],
-  val secondaryKeys: Set[AbstractColumn[_]],
+  val table: Table,
   val init: CQLQuery,
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
@@ -109,11 +90,7 @@ class CreateQuery[
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
       new CreateQuery(
-        tableName: String,
-        tableKey: String,
-        columns: Set[CQLQuery],
-        clusteringColumns: Set[AbstractColumn[_]],
-        secondaryKeys,
+        table,
         qb,
         withClause,
         usingPart,
@@ -121,11 +98,7 @@ class CreateQuery[
       )
     } else {
       new CreateQuery(
-        tableName: String,
-        tableKey: String,
-        columns: Set[CQLQuery],
-        clusteringColumns: Set[AbstractColumn[_]],
-        secondaryKeys,
+        table,
         init,
         withClause,
         usingPart append QueryBuilder.consistencyLevel(level.toString),
@@ -138,11 +111,7 @@ class CreateQuery[
   final def `with`(clause: TablePropertyClause): CreateQuery[Table, Record, Status] = {
     if (withClause.list.isEmpty) {
       new CreateQuery(
-        tableName: String,
-        tableKey: String,
-        columns: Set[CQLQuery],
-        clusteringColumns: Set[AbstractColumn[_]],
-        secondaryKeys,
+        table,
         init,
         withClause append QueryBuilder.Create.`with`(clause.qb),
         usingPart,
@@ -150,11 +119,7 @@ class CreateQuery[
       )
     } else {
       new CreateQuery(
-        tableName: String,
-        tableKey: String,
-        columns: Set[CQLQuery],
-        clusteringColumns: Set[AbstractColumn[_]],
-        secondaryKeys,
+        table,
         init,
         withClause append QueryBuilder.Update.and(clause.qb),
         usingPart,
@@ -171,7 +136,7 @@ class CreateQuery[
     * @return A new Create query, where the builder contains a full clustering clause specified.
     */
   final def withClustering(): CreateQuery[Table, Record, Status] = {
-    val clusteringPairs = clusteringColumns.map {
+    val clusteringPairs = table.clusteringColumns.map {
       col => {
         val order = if (col.isAscending) CQLSyntax.Ordering.asc else CQLSyntax.Ordering.desc
         (col.name, order)
@@ -196,14 +161,14 @@ class CreateQuery[
   override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
   private[phantom] def indexList(name: String): ExecutableStatementList = {
-    new ExecutableStatementList(secondaryKeys map {
+    new ExecutableStatementList(table.secondaryKeys map {
       key => {
         if (key.isMapKeyIndex) {
-          QueryBuilder.Create.mapIndex(tableName, name, key.name)
+          QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
         } else if (key.isMapEntryIndex) {
-          QueryBuilder.Create.mapEntries(tableName, name, key.name)
+          QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
         } else {
-          QueryBuilder.Create.index(tableName, name, key.name)
+          QueryBuilder.Create.index(table.tableName, name, key.name)
         }
       }
     })
@@ -214,14 +179,14 @@ class CreateQuery[
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    if (secondaryKeys.isEmpty) {
+    if (table.secondaryKeys.isEmpty) {
       scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
     } else {
       super.future() flatMap {
         res => {
           indexList(keySpace.name).future() map {
             _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, tableName).queryString}")
+              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
               res
             }
           }
@@ -243,22 +208,14 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
     T <: CassandraTable[T, _],
     R
   ](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = {
-    if (root.clusteringColumns.nonEmpty) {
+    if (root.table.clusteringColumns.nonEmpty) {
       new CreateQuery[T, R, Unspecified](
-        root.tableName,
-        root.tableKey,
-        root.columns,
-        root.clusteringColumns,
-        root.secondaryKeys,
+        root.table,
         root.default()
       ).withClustering()
     } else {
       new CreateQuery[T, R, Unspecified](
-        root.tableName,
-        root.tableKey,
-        root.columns,
-        root.clusteringColumns,
-        root.secondaryKeys,
+        root.table,
         root.default()
       )
     }

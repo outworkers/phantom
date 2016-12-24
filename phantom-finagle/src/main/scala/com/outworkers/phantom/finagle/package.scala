@@ -309,17 +309,15 @@ package object finagle {
   ](val query: CreateQuery[Table, Record, Status]) extends AnyVal {
 
     def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
-      if (query.secondaryKeys.isEmpty) {
+      if (query.table.secondaryKeys.isEmpty) {
         twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate().queryString))
       } else {
         query.execute() flatMap {
-          res => {
-            query.indexList(keySpace.name).execute() map {
-              _ => {
-                Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, query.tableName).queryString}")
-                res
-              }
-            }
+          res => query.indexList(keySpace.name).execute() map { _ =>
+            Manager.logger.debug(
+              s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, query.table.tableName).queryString}"
+            )
+            res
           }
         }
       }
