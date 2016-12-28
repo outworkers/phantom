@@ -34,17 +34,24 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
 
-  def store(table: CassandraTable[T, R])(implicit space: KeySpace): InsertQuery.Default[T, R]
+  def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 }
 
+
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
+
   import c.universe._
+
+  case class ColumnMember(
+    name: TermName,
+    tpe: Type
+  )
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
   private[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
@@ -127,7 +134,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   }
 
-  def extractColumnMembers(table: Type, columns: List[Symbol]): List[Type] = {
+  def extractColumnMembers(table: Type, columns: List[Symbol]): List[ColumnMember] = {
     /**
       * We filter for the members of the table type that
       * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
@@ -148,7 +155,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             // We use the special API to see what type was passed through to AbstractColumn[_]
             // with special thanks to https://github.com/joroKr21 for helping me not rip
             // the remainder of my hair off while uncovering this marvelous macro API method.
-            case head :: Nil => head.asType.toType.asSeenFrom(memberType, colSymbol)
+            case head :: Nil => ColumnMember(
+              member.asModule.name,
+              head.asType.toType.asSeenFrom(memberType, colSymbol)
+            )
             case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
           }
         case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
@@ -208,7 +218,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     val tableSymbolName = tableTpe.typeSymbol.name
     if (recordMembers.size == colMembers.size) {
       if (recordMembers.zip(colMembers).forall { case (rec, col) => {
-        rec =:= col
+        rec =:= col.tpe
       } }) {
         Some(q"""new $recordTpe(..$columnNames)""")
       } else {
