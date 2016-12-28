@@ -51,7 +51,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   case class ColumnMember(
     name: TermName,
     tpe: Type
-  )
+  ) {
+    def symbol: Symbol = tpe.typeSymbol
+  }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
   private[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
@@ -134,6 +136,42 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   }
 
+  trait TableMatchResult
+
+  case class Match(
+    results: List[ColumnMember],
+    partition: Boolean
+  ) extends TableMatchResult
+
+  case object NoMatch extends TableMatchResult
+
+  /**
+    * Finds a matching subset of columns inside a table definition where the extracted
+    * type from a table does not need to include all of the columns inside a table.
+    *
+    * This addresses [[https://websudos.atlassian.net/browse/PHANTOM-237]].
+    *
+    * @param recordMembers The type members of the record type.
+    * @param members The type members of the table.
+    * @return
+    */
+  def findMatchingSubset(
+    members: List[ColumnMember],
+    recordMembers: Iterable[ColumnMember]
+  ): TableMatchResult = {
+    if (members.isEmpty) {
+      NoMatch
+    } else {
+      if (members.size >= recordMembers.size && recordMembers.zip(members).forall { case (rec, col) =>
+        rec.tpe =:= col.tpe
+      }) {
+        Match(members, recordMembers.size != members.size)
+      } else{
+        findMatchingSubset(members.tail, recordMembers)
+      }
+    }
+  }
+
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[ColumnMember] = {
     /**
       * We filter for the members of the table type that
@@ -156,7 +194,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             // with special thanks to https://github.com/joroKr21 for helping me not rip
             // the remainder of my hair off while uncovering this marvelous macro API method.
             case head :: Nil => ColumnMember(
-              member.asModule.name,
+              member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
             case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
@@ -201,33 +239,30 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         definition could not be inferred.
     */
   def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
-    val columnNames = columns.map(
-      tpe => {
-        q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
-      }
-    )
-
     /**
       * First we create a set of ordered types corresponding to the type signatures
       * found in the case class arguments.
       */
-    val recordMembers = fields(recordTpe) map (_._2)
+    val recordMembers = fields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
 
     val colMembers = extractColumnMembers(tableTpe, columns)
 
     val tableSymbolName = tableTpe.typeSymbol.name
-    if (recordMembers.size == colMembers.size) {
-      if (recordMembers.zip(colMembers).forall { case (rec, col) => {
-        rec =:= col.tpe
-      } }) {
+
+
+    findMatchingSubset(colMembers, recordMembers) match {
+      case Match(results, _) if recordTpe.typeSymbol.isClass && recordTpe.typeSymbol.asClass.isCaseClass => {
+        val columnNames = results.map { member =>
+          q"$tableTerm.${member.name}.apply($rowTerm)"
+        }
+
         Some(q"""new $recordTpe(..$columnNames)""")
-      } else {
-        Console.println(s"The case class records did not match the column member types for $tableSymbolName")
+      }
+      case _ => None
+      case NoMatch => {
+        Console.println(s"Couldn't automatically infer an extractor for $tableSymbolName")
         None
       }
-    } else {
-      Console.println(s"There were ${recordMembers.size} case class fields and ${colMembers.size} columns for ${tableSymbolName}")
-      None
     }
   }
 

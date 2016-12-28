@@ -22,7 +22,7 @@ import com.outworkers.util.testing._
 case class Record(value: String)
 
 object Record {
-  implicit val recordPrimitive = Primitive.derive[Record, String](_.value)(Record.apply)
+  implicit val recordPrimitive: Primitive[Record] = Primitive.derive[Record, String](_.value)(Record.apply)
 }
 
 class DerivedPrimitivesTest extends PhantomSuite {
@@ -30,6 +30,6 @@ class DerivedPrimitivesTest extends PhantomSuite {
   it should "derive a primitive for a custom wrapper type" in {
     val str = gen[String]
 
-    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escaped(str)
+    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
   }
 }
