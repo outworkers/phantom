@@ -114,4 +114,22 @@ class TableHelperTest extends PhantomSuite {
       ev.fromRow(null.asInstanceOf[Row])
     }
   }
+
+  it should "generate a fromRow method from a partial table definition" in {
+    case class Ev2(
+      id: UUID,
+      set: Set[Int]
+    )
+
+    class Events2 extends CassandraTable[Events2, Ev2] {
+      object partition extends UUIDColumn(this) with PartitionKey
+      object id extends UUIDColumn(this) with PartitionKey
+      object map extends SetColumn[String](this)
+    }
+
+    val ev = new Events2()
+    intercept[NullPointerException] {
+      ev.fromRow(null.asInstanceOf[Row])
+    }
+  }
 }

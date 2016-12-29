@@ -24,7 +24,7 @@ import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.{Await, Future}
 
-class IterateeBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
+class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.insertSchema()
 

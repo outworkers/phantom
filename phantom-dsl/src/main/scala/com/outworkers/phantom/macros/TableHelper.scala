@@ -145,6 +145,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
+  def show(list: List[Type]): String = {
+    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  }
+
+  def show(list: Iterable[Type]): String = {
+    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  }
+
   /**
     * Finds a matching subset of columns inside a table definition where the extracted
     * type from a table does not need to include all of the columns inside a table.
@@ -162,11 +170,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     if (members.isEmpty) {
       NoMatch
     } else {
-      if (members.size >= recordMembers.size && recordMembers.zip(members).forall { case (rec, col) =>
+      Console.println(s"Table column members ${show(members.map(_.tpe))}")
+      Console.println(s"Record members ${show(recordMembers.map(_.tpe))}")
+      if (members.size >= recordMembers.size && members.zip(recordMembers).forall { case (rec, col) =>
         rec.tpe =:= col.tpe
       }) {
         Match(members, recordMembers.size != members.size)
-      } else{
+      } else {
         findMatchingSubset(members.tail, recordMembers)
       }
     }
@@ -258,8 +268,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
         Some(q"""new $recordTpe(..$columnNames)""")
       }
-      case _ => None
-      case NoMatch => {
+      case _ => {
         Console.println(s"Couldn't automatically infer an extractor for $tableSymbolName")
         None
       }
@@ -318,7 +327,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
     """
-    println(showCode(tree))
     tree
   }
 
