@@ -149,8 +149,9 @@ class TableHelperTest extends PhantomSuite with MockFactory {
 
 
     val ev = new Events2()
-    val res = ev.fromRow(row)
 
-    res shouldEqual instance
+    intercept[NullPointerException] {
+      ev.fromRow(row)
+    }
   }
 }
