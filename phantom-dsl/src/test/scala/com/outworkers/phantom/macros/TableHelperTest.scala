@@ -18,8 +18,9 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.PhantomSuite
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
+import org.scalamock.scalatest.MockFactory
 
-class TableHelperTest extends PhantomSuite {
+class TableHelperTest extends PhantomSuite with MockFactory {
 
   it should "not generate a fromRow if a normal type is different" in {
 
@@ -116,9 +117,12 @@ class TableHelperTest extends PhantomSuite {
   }
 
   it should "generate a fromRow method from a partial table definition" in {
+
+    val row = mock[Row]
+
     case class Ev2(
       id: UUID,
-      set: Set[Int]
+      set: Set[String]
     )
 
     class Events2 extends CassandraTable[Events2, Ev2] {
@@ -128,8 +132,6 @@ class TableHelperTest extends PhantomSuite {
     }
 
     val ev = new Events2()
-    intercept[NullPointerException] {
-      ev.fromRow(null.asInstanceOf[Row])
-    }
+    val res = ev.fromRow(row)
   }
 }

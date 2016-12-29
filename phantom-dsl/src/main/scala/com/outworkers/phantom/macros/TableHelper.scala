@@ -253,12 +253,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       * First we create a set of ordered types corresponding to the type signatures
       * found in the case class arguments.
       */
-    val recordMembers = fields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
+    val recordMembers = caseFields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
 
     val colMembers = extractColumnMembers(tableTpe, columns)
 
     val tableSymbolName = tableTpe.typeSymbol.name
-
 
     findMatchingSubset(colMembers, recordMembers) match {
       case Match(results, _) if recordTpe.typeSymbol.isClass && recordTpe.typeSymbol.asClass.isCaseClass => {
