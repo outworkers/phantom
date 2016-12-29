@@ -16,9 +16,24 @@
 package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.primitives.Primitive
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
 import org.scalamock.scalatest.MockFactory
+import com.outworkers.util.testing._
+
+import scala.collection.JavaConverters._
+
+case class Ev2(
+  id: UUID,
+  set: Set[String]
+)
+
+class Events2 extends CassandraTable[Events2, Ev2] {
+  object partition extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PartitionKey
+  object map extends SetColumn[String](this)
+}
 
 class TableHelperTest extends PhantomSuite with MockFactory {
 
@@ -118,20 +133,24 @@ class TableHelperTest extends PhantomSuite with MockFactory {
 
   it should "generate a fromRow method from a partial table definition" in {
 
-    val row = mock[Row]
+    val row = stub[Row]
 
-    case class Ev2(
-      id: UUID,
-      set: Set[String]
-    )
+    val instance = Ev2(gen[UUID], genList[String]().toSet)
 
-    class Events2 extends CassandraTable[Events2, Ev2] {
-      object partition extends UUIDColumn(this) with PartitionKey
-      object id extends UUIDColumn(this) with PartitionKey
-      object map extends SetColumn[String](this)
-    }
+    val primitive = Primitive[String]
+
+    (row.getUUID(_: String))
+      .when("id")
+      .returns(instance.id)
+
+    (row.getSet[String](_: String, _: primitive.PrimitiveType))
+      .when("set", Primitive[String].clz)
+      .returns(instance.set.asJava)
+
 
     val ev = new Events2()
     val res = ev.fromRow(row)
+
+    res shouldEqual instance
   }
 }
