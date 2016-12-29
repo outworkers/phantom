@@ -61,3 +61,5 @@ addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+
+addSbtPlugin("com.artima.supersafe" % "sbtplugin" % "1.1.0")
