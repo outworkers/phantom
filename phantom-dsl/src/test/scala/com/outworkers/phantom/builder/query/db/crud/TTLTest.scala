@@ -1,0 +1,120 @@
+/*
+ * Copyright 2013 - 2017 Outworkers Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.outworkers.phantom.builder.query.db.crud
+
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.query.prepared._
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.{Primitive, TestDatabase}
+import com.outworkers.util.testing._
+import org.scalatest.{Outcome, Retries}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.tagobjects.Retryable
+
+import scala.concurrent.duration._
+
+class TTLTest extends PhantomSuite with Eventually with Retries {
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    TestDatabase.primitives.insertSchema()
+  }
+
+  override def withFixture(test: NoArgTest): Outcome = {
+    if (isRetryable(test)) {
+      withRetry(super.withFixture(test))
+    } else {
+      super.withFixture(test)
+    }
+  }
+
+  private[this] val ttl = 2 seconds
+  private[this] val granularity = 5 seconds
+
+  it should "expire inserted records after TTL" taggedAs Retryable in {
+    val row = gen[Primitive]
+
+    val chain = for {
+      store <- TestDatabase.primitives.store(row).ttl(ttl).future()
+      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    chain.successful { record =>
+      record shouldEqual Some(row)
+    }
+
+    eventually(timeout(ttl + granularity)) {
+      val futureRecord = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      futureRecord.successful { record =>
+        record shouldBe empty
+      }
+    }
+  }
+
+  it should "expire inserted records after TTL with prepared statement" taggedAs Retryable in {
+    val row = gen[Primitive]
+
+    val fetchQuery = TestDatabase.primitives.select
+      .where(_.pkey eqs ?)
+      .prepare()
+
+    val insertQuery = TestDatabase.primitives.insert
+      .p_value(_.pkey, ?)
+      .p_value(_.long, ?)
+      .p_value(_.boolean, ?)
+      .p_value(_.bDecimal, ?)
+      .p_value(_.double, ?)
+      .p_value(_.float, ?)
+      .p_value(_.inet, ?)
+      .p_value(_.int, ?)
+      .p_value(_.date, ?)
+      .p_value(_.uuid, ?)
+      .p_value(_.bi, ?)
+      .ttl(ttl)
+      .prepare()
+
+    def preparedInsert(row: Primitive): ExecutablePreparedQuery = {
+      insertQuery.bind(
+        row.pkey,
+        row.long,
+        row.boolean,
+        row.bDecimal,
+        row.double,
+        row.float,
+        row.inet,
+        row.int,
+        row.date,
+        row.uuid,
+        row.bi)
+    }
+
+    val chain = for {
+      store <- preparedInsert(row).future()
+      get <- fetchQuery.bind(row.pkey).one()
+    } yield get
+
+    chain.successful { result =>
+      result shouldEqual Some(row)
+    }
+
+    eventually(timeout(ttl + granularity)) {
+      val futureResults = fetchQuery.bind(row.pkey).one()
+      futureResults.successful { results =>
+        results.isEmpty shouldBe true
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 phantom
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
@@ -11,17 +11,64 @@ phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware)
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
+2.0.0 Migration guide
+=====================
+
+- The OSS version of phantom has as of 2.0.0 returned to the Apache V2 license and the license is here to stay.
+- All packages and dependencies are now available under the `com.outworkers` organisation instead of `com.websudos`. As
+part of long term re-branding efforts, we have finally felt it's time to make sure the change is consistent throughout.
+- There is a new and now completely optional Bintray resolver, `Resolver.bintrayRepo("outworkers", "oss-releases")`,
+ that gives you free access to the latest cuts of our open source releases before they hit Maven Central. We assume
+ no liability for your usage of latest cuts, but we welcome feedback and we do our best to have elaborate CI processes in place.
+- Manually defining a `fromRow` inside a `CassandraTable` is no longer required if your column types match your case class types.
+- `EnumColumn` is now relying entirely on `Primitive.macroImpl`, which means you will not need to pass in the enumeration
+as an argument to `EnumColumn` anymore. This means `object enum extends EnumColumn(this, enum: MyEnum)` is now simply
+`object enum extends EnumColumn[MyEnum#Value](this)`
+- All dependencies are now being published to Maven Central. This includes outworkers util and outworkers diesel,
+projects which have in their own right been completely open sourced under Apache V2 and made public on GitHub.
+- All dependencies on `scala-reflect` have been completely removed.
+- A new, macro based mechanism now performs the same auto-discovery task that reflection used to, thanks to `macro-compat`.
+- Index modifiers no longer require a type parameter, `PartitionKey`, `PrimaryKey`, `ClusteringOrder` and `Index` don't require
+the column type passed anymore.
+- `KeySpaceDef` has been renamed to the more appropiate `
+CassandraConnector`.
+- `CassandraConnector` now natively supports specifying a keyspace creation query.
+- `TimeWindowCompactionStrategy` is now natively supported in the CREATE/ALTER dsl.
+- Collections can now be used as part of a primary or partition key.
+- Tuples are now natively supported as valid types via `TupleColumn`.
+- `phantom-reactivestreams` is now simply called `phantom-streams`.
+- `Database.autocreate` and `Database.autotruncate` are now no longer accessible. Use `create`, `createAsync`, `truncate` and `truncateAsync` instead.
+- `Database` now requires an f-bounded type argument: `class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector)`.
+- Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
+This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
+
+
+Available modules
+=================
+
+This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
+
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
+| ------------          | ------------------- | ------------------| ----------------- |
+| phantom-connectors    | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>   |
+| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 
 Using phantom
 =============
 
-### Scala 2.10 and 2.11 releases ###
+### Scala 2.10, 2.11 and 2.12 releases ###
 
 We publish phantom in 2 formats, stable releases and bleeding edge.
 
 - The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
-- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/websudos/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 
 ### How phantom compares
@@ -32,8 +79,8 @@ To compare phantom to similar tools in the Scala/Cassandra category, you can rea
 
 The latest versions are available here. The badges automatically update when a new version is released.
 
-- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) (Maven Central)
-- Bleeding edge: [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
+- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
+- Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
 ### Roadmap to Phantom 2.0.0
 
@@ -69,7 +116,7 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
 - [ ] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
 - [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
-- [ ] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
+- [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 #### Tech debt
 
@@ -88,14 +135,16 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 
 #### Scala 2.12 support
 
-- [ ] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
+- [x] Add support for Scala 2.12 in the `util` library, remove all dependencies that don't comply.
 - [x] Add support for Scala 2.12 in the `diesel-engine`.
-- [ ] Add support for Scala 2.12 in `phantom-dsl`
-- [ ] Add support for Scala 2.12 in `phantom-connectors`
-- [ ] Add support for Scala 2.12 in `phantom-reactivestreams`
+- [x] Add support for Scala 2.12 in `phantom-dsl`
+- [x] Add support for Scala 2.12 in `phantom-connectors`
+- [ ] Add support for Scala 2.12 in `phantom-example`
+- [ ] Add support for Scala 2.12 in `phantom-streams`
+- [ ] Add support for Scala 2.12 in `phantom-thrift`
 - [ ] Add support for Scala 2.12 in `phantom-finagle`
 
-#### Documentatiom
+#### Documentation
 
 - [ ] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
 - [ ] Move documentation back to the docs folder.
@@ -141,13 +190,17 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
-Some of the companies using phantom:
+The following are just some of the biggest phantom adopters, though the full list
+is far more comprehensive.
 
+- [Starbucks Corporation](https://www.starbucks.com/)
+- [Microsoft](https://www.microsoft.com/en-gb/)
 - [CreditSuisse](https://www.credit-suisse.com/global/en/)
 - [ING](http://www.ing.com/en.htm)
 - [UBS](https://www.ubs.com/global/en.html)
 - [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
 - [Paddy Power](http://www.paddypower.com/)
+- [Strava](https://www.strava.com/)
 - [Mobli](https://www.mobli.com/)
 - [Pellucid Analytics](http://www.pellucid.com/)
 - [Equens](http://www.equens.com/)
@@ -165,17 +218,13 @@ Some of the companies using phantom:
 License and copyright
 ======================
 
-Phantom is [freeware software](https://en.wikipedia.org/wiki/Freeware) and uses a proprietary license that in plain English says the following:
+Phantom is distributed under the Apache V2 License.
 
-- Phantom is the intellectual property of `Outworkers`, it is not provided under an OSS license.
+- `Outworkers, Limited` is the copyright holder.
 
-- You can use phantom in commercial products or otherwise, so long as you use one of the official versions available on Bintray or Maven Central.
+- You can use phantom in commercial products or otherwise.
 
-- You are not allowed to distribute altered copies of phantom in binary form.
-
-- You cannot offer paid for training on phantom unless you are a direct partner to `Outworkers` and you have a written intellectual property agreement in place with us.
-
-- If you simply have a `Build.scala` or `build.sbt` dependency on phantom, you have nothing to worry about.
+- We strongly appreciate and encourage contributions.
 
 - All paid for features are published and sold separately as `phantom-pro`, everything that is currently available for free will remain so forever.
 
@@ -208,7 +257,7 @@ Scala/Cassandra users in the world rely on phantom.
 
 Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
 
-Copyright &copy; 2013 - 2016 outworkers.
+Copyright &copy; 2013 - 2017 outworkers.
 
 Contributing to phantom
 =======================

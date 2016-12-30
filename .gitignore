@@ -21,6 +21,8 @@ java_pid*
 
 # InteliJ IDEA
 *.iml
+.idea_modules/
+.idea/
 
 # sbt specific
 dist/*
@@ -35,7 +37,3 @@ project/plugins/project/
 
 # MacOS X specific
 .DS_Store
-
-#InteliJ
-.idea_modules/
-.idea/
