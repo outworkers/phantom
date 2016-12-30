@@ -112,6 +112,46 @@ object Primitive {
   implicit def materializer[T]: Primitive[T] = macro PrimitiveMacro.materializer[T]
 
   /**
+    * Derives primitives and encodings for a non standard type.
+    * @param to The function that converts a [[Target]] instance to a [[Source]] instance.
+    * @param from The function that converts a [[Source]] instance to a [[Target]] instance.
+    * @tparam Target The type you want to derive a primitive for.
+    * @tparam Source The source type of the primitive, must already have a primitive defined for it.
+    * @return A new primitive that can interact with the target type.
+    */
+  def derive[Target, Source : Primitive](to: Target => Source)(from: Source => Target): Primitive[Target] = {
+
+    val source = implicitly[Primitive[Source]]
+
+    new Primitive[Target] {
+      override type PrimitiveType = source.PrimitiveType
+
+      /**
+        * Converts the type to a CQL compatible string.
+        * The primitive is responsible for handling all aspects of adequate escaping as well.
+        * This is used to generate the final queries from domain objects.
+        *
+        * @param value The strongly typed value.
+        * @return The string representation of the value with respect to CQL standards.
+        */
+      override def asCql(value: Target): String = source.asCql(to(value))
+
+      override def cassandraType: String = source.cassandraType
+
+      override def fromRow(column: String, row: GettableByNameData): Try[Target] = {
+        source.fromRow(column, row) map from
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Target] = {
+        source.fromRow(index, row) map from
+      }
+      override def fromString(value: String): Target = from(source.fromString(value))
+
+      override def clz: Class[source.PrimitiveType] = source.clz
+    }
+  }
+
+  /**
     * Convenience method to materialise the context bound and return a reference to it.
     * This is somewhat shorter syntax than using implicitly.
     * @tparam RR The type of the primitive to retrieve.

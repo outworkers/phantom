@@ -21,13 +21,15 @@ import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
+
+import scala.collection.immutable.IndexedSeq
 import scala.concurrent.{Await, Future}
 
-class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with TestDatabase.connector.Connector {
+class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.insertSchema()
 
-  val fs = for {
+  val fs: IndexedSeq[Future[Unit]] = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])
 
@@ -39,7 +41,7 @@ class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with 
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ => println(s"step $step has succeed") )
+    f = w map (_ =>println(s"step $step has succeed") )
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 
@@ -51,7 +53,7 @@ class SpoolBenchmarkPerformanceTest extends PerformanceTest.Quickbenchmark with 
     measure method "fetchSpool" in {
       using(sizes) in {
         size => TwitterAwait.ready {
-          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(s => s.toSeq)
+          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(_.toSeq)
         }
       }
     }

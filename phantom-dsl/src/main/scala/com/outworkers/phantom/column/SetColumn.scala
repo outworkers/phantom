@@ -50,9 +50,9 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
 class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](table: CassandraTable[Owner, Record])
     extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
-  override val valuePrimitive = Primitive[RR]
+  override val valuePrimitive: Primitive[RR] = Primitive[RR]
 
-  val cassandraType = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
+  val cassandraType: String = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
 
   override def qb: CQLQuery = {
     if (shouldFreeze) {

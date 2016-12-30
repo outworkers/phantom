@@ -20,7 +20,7 @@ import scala.reflect.macros.blackbox
 class MacroUtils(val c: blackbox.Context) {
   import c.universe._
 
-  def fields(tpe: Type): Iterable[(Name, Type)] = {
+  def caseFields(tpe: Type): Iterable[(Name, Type)] = {
     object CaseField {
       def unapply(arg: TermSymbol): Option[(Name, Type)] = {
         if (arg.isVal && arg.isCaseAccessor) {

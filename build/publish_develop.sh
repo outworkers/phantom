@@ -55,7 +55,18 @@ then
             echo "Bintray credentials still not found"
         fi
 
-        sbt version-bump-patch git-tag
+        COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
+        COMMIT_SKIP_MESSAGE = "[version skip]"
+
+        echo "Last commit message $COMMIT_MSG"
+
+        if [[ $COMMIT_MSG == *"${COMMIT_SKIP_MESSAGE}"* ]]
+        then
+            echo "Skipping version bump and simply tagging"
+            sbt git-tag
+        else
+            sbt version-bump-patch git-tag
+        fi
 
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"

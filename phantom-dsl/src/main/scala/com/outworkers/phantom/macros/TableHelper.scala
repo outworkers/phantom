@@ -16,8 +16,10 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
+import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.reflect.macros.blackbox
@@ -31,31 +33,43 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
   def tableKey(table: T): String
 
   def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
+
+  def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 }
 
+
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
+
   import c.universe._
 
-  val rowType = tq"com.datastax.driver.core.Row"
-  val builder = q"com.outworkers.phantom.builder.QueryBuilder"
-  val strTpe = tq"java.lang.String"
-  val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
-  val collections = q"scala.collection.immutable"
-  val rowTerm = TermName("row")
-  val tableTerm = TermName("table")
+  case class ColumnMember(
+    name: TermName,
+    tpe: Type
+  ) {
+    def symbol: Symbol = tpe.typeSymbol
+  }
+
+  private[this] val rowType = tq"com.datastax.driver.core.Row"
+  private[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
+  private[this] val strTpe = tq"java.lang.String"
+  private[this] val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
+  private[this] val collections = q"scala.collection.immutable"
+  private[this] val rowTerm = TermName("row")
+  private[this] val tableTerm = TermName("table")
+  private[this] val keyspaceType = tq"com.outworkers.phantom.connectors.KeySpace"
 
   val knownList = List("Any", "Object", "RootConnector")
 
-  val tableSym = typeOf[CassandraTable[_, _]].typeSymbol
-  val selectTable = typeOf[SelectTable[_, _]].typeSymbol
-  val rootConn = typeOf[SelectTable[_, _]].typeSymbol
-  val colSymbol = typeOf[AbstractColumn[_]].typeSymbol
+  val tableSym: Symbol = typeOf[CassandraTable[_, _]].typeSymbol
+  val selectTable: Symbol = typeOf[SelectTable[_, _]].typeSymbol
+  val rootConn: Symbol = typeOf[SelectTable[_, _]].typeSymbol
+  val colSymbol: Symbol = typeOf[AbstractColumn[_]].typeSymbol
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
@@ -69,6 +83,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
     columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
+  }
+
+  def insertQueryType(table: Type, record: Type): Tree = {
+    tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
   }
 
   /**
@@ -118,6 +136,85 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   }
 
+  trait TableMatchResult
+
+  case class Match(
+    results: List[ColumnMember],
+    partition: Boolean
+  ) extends TableMatchResult
+
+  case object NoMatch extends TableMatchResult
+
+  def show(list: List[Type]): String = {
+    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  }
+
+  def show(list: Iterable[Type]): String = {
+    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  }
+
+  /**
+    * Finds a matching subset of columns inside a table definition where the extracted
+    * type from a table does not need to include all of the columns inside a table.
+    *
+    * This addresses [[https://websudos.atlassian.net/browse/PHANTOM-237]].
+    *
+    * @param recordMembers The type members of the record type.
+    * @param members The type members of the table.
+    * @return
+    */
+  def findMatchingSubset(
+    tableName: Name,
+    members: List[ColumnMember],
+    recordMembers: Iterable[ColumnMember]
+  ): TableMatchResult = {
+    if (members.isEmpty) {
+      NoMatch
+    } else {
+
+      if (members.size >= recordMembers.size && members.zip(recordMembers).forall { case (rec, col) =>
+        rec.tpe =:= col.tpe
+      }) {
+        Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
+        Match(members, recordMembers.size != members.size)
+      } else {
+        findMatchingSubset(tableName, members.tail, recordMembers)
+      }
+    }
+  }
+
+  def extractColumnMembers(table: Type, columns: List[Symbol]): List[ColumnMember] = {
+    /**
+      * We filter for the members of the table type that
+      * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
+      * are going to look at what type argument was passed by the specific column definition
+      * when extending [[AbstractColumn[_]] as this will tell us the Scala output type
+      * of the given column.
+      * We create a list of these types and if they match the case class types expected,
+      * it means we can auto-generate a fromRow implementation.
+      */
+    columns.map { member =>
+      val memberType = member.typeSignatureIn(table)
+
+      memberType.baseClasses.find(colSymbol ==) match {
+        case Some(root) =>
+          // Here we expect to have a single type argument or type param
+          // because we know root here will point to an AbstractColumn[_] symbol.
+          root.typeSignature.typeParams match {
+            // We use the special API to see what type was passed through to AbstractColumn[_]
+            // with special thanks to https://github.com/joroKr21 for helping me not rip
+            // the remainder of my hair off while uncovering this marvelous macro API method.
+            case head :: Nil => ColumnMember(
+              member.asModule.name.toTermName,
+              head.asType.toType.asSeenFrom(memberType, colSymbol)
+            )
+            case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
+          }
+        case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
+      }
+    }
+  }
+
   /**
     * Materializes an extractor method for a table, the so called "fromRow" method.
     *
@@ -153,67 +250,28 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *         definition could not be inferred.
     */
   def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
-    val columnNames = columns.map(
-      tpe => {
-        q"$tableTerm.${tpe.typeSignatureIn(tableTpe).typeSymbol.name.toTermName}.apply($rowTerm)"
-      }
-    )
-
     /**
       * First we create a set of ordered types corresponding to the type signatures
       * found in the case class arguments.
       */
-    val recordMembers = fields(recordTpe) map (_._2)
+    val recordMembers = caseFields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
 
-    /**
-      * Then we do the same for the columns, we filter for the members of the table type that
-      * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
-      * are going to look at what type argumnt was passed by the specific column definition
-      * when extending [[AbstractColumn[_]] as this will tell us the Scala output type
-      * of the given column.
-      * We create a list of these types and if they match the case class types expected,
-      * it means we can auto-generate a fromRow implementation.
-      */
-    val colMembers = columns.map { member =>
-      val memberType = member.typeSignatureIn(tableTpe)
-
-      memberType.baseClasses.find(colSymbol ==) match {
-        case Some(root) =>
-          // Here we expect to have a single type argument or type param
-          // because we know root here will point to an AbstractColumn[_] symbol.
-          root.typeSignature.typeParams match {
-            // We use the special API to see what type was passed through to AbstractColumn[_]
-            // with special thanks to https://github.com/joroKr21 for helping me not rip
-            // the remainder of my hair off while uncovering this marvelous macro API method.
-            case head :: Nil => head.asType.toType.asSeenFrom(memberType, colSymbol)
-            case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
-          }
-        case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
-      }
-    }
+    val colMembers = extractColumnMembers(tableTpe, columns)
 
     val tableSymbolName = tableTpe.typeSymbol.name
-    Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
-    Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
 
-    if (recordMembers.size == colMembers.size) {
-      if (recordMembers.zip(colMembers).forall { case (rec, col) => {
-        val res = rec =:= col
-        Console.println(s"$rec was equal to $col status: $res" )
-        res
-      } }) {
+    findMatchingSubset(tableSymbolName, colMembers, recordMembers) match {
+      case Match(results, _) if recordTpe.typeSymbol.isClass && recordTpe.typeSymbol.asClass.isCaseClass => {
+        val columnNames = results.map { member =>
+          q"$tableTerm.${member.name}.apply($rowTerm)"
+        }
+
         Some(q"""new $recordTpe(..$columnNames)""")
-      } else {
-        Console.println(s"The case class records did not match the column member types for $tableSymbolName")
-        Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
-        Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
+      }
+      case _ => {
+        Console.println(s"Couldn't automatically infer an extractor for $tableSymbolName")
         None
       }
-    } else {
-      Console.println(s"There were ${recordMembers.size} case class fields and ${colMembers.size} columns for ${tableSymbolName}")
-      Console.println(recordMembers.map(_.typeSymbol.name.toTypeName.decodedName.toString).mkString(", "))
-      Console.println(colMembers.map(_.typeSymbol.name.toTermName.decodedName.toString).mkString(", "))
-      None
     }
   }
 
@@ -252,9 +310,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
 
-    q"""
+    val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
+
+          def store($tableTerm: $tableType)(implicit space: $keyspaceType): ${insertQueryType(tableType, rTpe)} = {
+            $tableTerm.insert()
+          }
 
           def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
 
@@ -265,6 +327,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
        }
     """
+    tree
   }
 
 }

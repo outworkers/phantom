@@ -26,9 +26,9 @@ def outworkersPattern: Patterns = {
 }
 
 resolvers ++= Seq(
-  Resolver.sonatypeRepo("releases"),
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",
+  Resolver.sonatypeRepo("releases"),
   Resolver.bintrayRepo("websudos", "oss-releases"),
   Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns),
   Resolver.url("bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.mavenStylePatterns),

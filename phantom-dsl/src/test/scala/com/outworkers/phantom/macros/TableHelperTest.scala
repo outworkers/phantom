@@ -16,10 +16,26 @@
 package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.primitives.Primitive
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
+import org.scalamock.scalatest.MockFactory
+import com.outworkers.util.testing._
 
-class TableHelperTest extends PhantomSuite {
+import scala.collection.JavaConverters._
+
+case class Ev2(
+  id: UUID,
+  set: Set[String]
+)
+
+class Events2 extends CassandraTable[Events2, Ev2] {
+  object partition extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PartitionKey
+  object map extends SetColumn[String](this)
+}
+
+class TableHelperTest extends PhantomSuite with MockFactory {
 
   it should "not generate a fromRow if a normal type is different" in {
 
@@ -112,6 +128,19 @@ class TableHelperTest extends PhantomSuite {
     val ev = new Events()
     intercept[NotImplementedError] {
       ev.fromRow(null.asInstanceOf[Row])
+    }
+  }
+
+  it should "generate a fromRow method from a partial table definition" in {
+
+    val row = stub[Row]
+
+    val instance = Ev2(gen[UUID], genList[String]().toSet)
+
+    val ev = new Events2()
+
+    intercept[NullPointerException] {
+      ev.fromRow(row)
     }
   }
 }
