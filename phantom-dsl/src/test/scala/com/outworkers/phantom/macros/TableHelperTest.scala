@@ -137,17 +137,6 @@ class TableHelperTest extends PhantomSuite with MockFactory {
 
     val instance = Ev2(gen[UUID], genList[String]().toSet)
 
-    val primitive = Primitive[String]
-
-    (row.getUUID(_: String))
-      .when("id")
-      .returns(instance.id)
-
-    (row.getSet[String](_: String, _: primitive.PrimitiveType))
-      .when("set", Primitive[String].clz)
-      .returns(instance.set.asJava)
-
-
     val ev = new Events2()
 
     intercept[NullPointerException] {

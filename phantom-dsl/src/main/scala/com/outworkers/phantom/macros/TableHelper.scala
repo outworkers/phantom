@@ -164,20 +164,21 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     * @return
     */
   def findMatchingSubset(
+    tableName: Name,
     members: List[ColumnMember],
     recordMembers: Iterable[ColumnMember]
   ): TableMatchResult = {
     if (members.isEmpty) {
       NoMatch
     } else {
-      Console.println(s"Table column members ${show(members.map(_.tpe))}")
-      Console.println(s"Record members ${show(recordMembers.map(_.tpe))}")
+
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall { case (rec, col) =>
         rec.tpe =:= col.tpe
       }) {
+        Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
       } else {
-        findMatchingSubset(members.tail, recordMembers)
+        findMatchingSubset(tableName, members.tail, recordMembers)
       }
     }
   }
@@ -259,7 +260,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val tableSymbolName = tableTpe.typeSymbol.name
 
-    findMatchingSubset(colMembers, recordMembers) match {
+    findMatchingSubset(tableSymbolName, colMembers, recordMembers) match {
       case Match(results, _) if recordTpe.typeSymbol.isClass && recordTpe.typeSymbol.asClass.isCaseClass => {
         val columnNames = results.map { member =>
           q"$tableTerm.${member.name}.apply($rowTerm)"
