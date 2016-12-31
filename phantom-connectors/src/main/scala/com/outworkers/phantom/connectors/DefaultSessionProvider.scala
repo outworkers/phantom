@@ -78,5 +78,5 @@ class DefaultSessionProvider(
     }
   }
 
-  val session = createSession(space.name)
+  val session: Session = createSession(space.name)
 }

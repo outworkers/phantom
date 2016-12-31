@@ -153,6 +153,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     list map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
+  private[this] def predicate(source: (ColumnMember, ColumnMember)): Boolean = {
+    val (col, rec) = source
+    (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
+  }
+
   /**
     * Finds a matching subset of columns inside a table definition where the extracted
     * type from a table does not need to include all of the columns inside a table.
@@ -172,9 +177,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       NoMatch
     } else {
 
-      if (members.size >= recordMembers.size && members.zip(recordMembers).forall { case (rec, col) =>
-        rec.tpe =:= col.tpe
-      }) {
+      if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
         Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
       } else {
