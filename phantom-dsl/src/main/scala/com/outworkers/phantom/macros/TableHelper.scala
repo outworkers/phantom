@@ -15,12 +15,17 @@
  */
 package com.outworkers.phantom.macros
 
+import java.net.InetAddress
+import java.nio.ByteBuffer
+import java.util.{Date, UUID}
+
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
+import org.joda.time.DateTime
 
 import scala.reflect.macros.blackbox
 
@@ -53,6 +58,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     tpe: Type
   ) {
     def symbol: Symbol = tpe.typeSymbol
+  }
+
+  object ColumnMember {
+    def apply(tp: (TermName, Type)): ColumnMember = ColumnMember(tp._1, tp._2)
   }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
@@ -218,6 +227,23 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
+  def extractRecordMembers(tpe: Type): List[ColumnMember] = {
+    tpe.typeSymbol match {
+      case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => {
+
+        val names = List.tabulate(tpe.typeArgs.size)(identity) map {
+          index => TermName("_" + index)
+        }
+
+        names.zip(tpe.typeArgs)
+      }
+
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(recordTpe) map ColumnMember.apply
+
+      case _ => Nil
+    }
+  }
+
   /**
     * Materializes an extractor method for a table, the so called "fromRow" method.
     *
@@ -255,9 +281,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     /**
       * First we create a set of ordered types corresponding to the type signatures
-      * found in the case class arguments.
+      * found in the record. These types are extracted differently based on the specific
+      * type passed as an argument to the table.
       */
-    val recordMembers = caseFields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
+    val recordMembers = extractRecordMembers(recordTpe)
 
     val colMembers = extractColumnMembers(tableTpe, columns)
 
@@ -299,7 +326,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val rTpe = weakTypeOf[R]
 
-    val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
     val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
 
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
@@ -325,8 +351,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
-          def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
-            scala.collection.immutable.Set.apply[$colTpe](..$accessors)
+          def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colType] = {
+            scala.collection.immutable.Set.apply[$colType](..$accessors)
           }
        }
     """
