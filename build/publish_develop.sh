@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/2.0.0" ]);
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
 
     if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
@@ -71,19 +71,24 @@ then
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"
 
-        echo "Publishing version bump information to GitHub"
-        git add .
-        git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
-        git checkout -b version_branch
-        git checkout -B $TRAVIS_BRANCH version_branch
-
-        git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
+        if [[ $COMMIT_MSG == *"${COMMIT_SKIP_MESSAGE}"* ]]
+        then
+            echo "No version bump performed in CI, no GitHub push necessary."
+        else
+            echo "Publishing version bump information to GitHub"
+            git add .
+            git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
+            git checkout -b version_branch
+            git checkout -B $TRAVIS_BRANCH version_branch
+            git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
+        fi
 
         echo "Publishing new version to bintray"
         sbt "such publish"
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
+            echo "Publishing new version to Maven Central"
             echo "Creating GPG deploy key"
             openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 

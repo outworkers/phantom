@@ -1,18 +1,19 @@
 phantom
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
 
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers](https://twitter.com/outworkers_uk).
 
-If you use phantom, please consider adding your company to our list of adopters.
-phantom is and will always be [freeware](https://en.wikipedia.org/wiki/Freeware), but the more adopters our projects have, the more people from our company will actively work to make them better.
+If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be open source, but the more adopters our projects have, the more people from our company will actively work to make them better.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
 2.0.0 Migration guide
 =====================
+
+As a word of introduction, this guide is brand new and there may be certain elements we have currently left out. Phantom has an immense adopter base which includes many of you using the library in ways which we do not know of. 2.0.0 completely replaces fundemental aspects of the framework to provide superior performance and reliability, and we have tested back and forth to ensure the smoothest possible transition, but please feel free to report any issues via GitHub and we will fix them straight away.
 
 - The OSS version of phantom has as of 2.0.0 returned to the Apache V2 license and the license is here to stay.
 - All packages and dependencies are now available under the `com.outworkers` organisation instead of `com.websudos`. As
@@ -114,7 +115,7 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 - [x] Generate the primary key of a table using macros.
 - [x] Enforce primary key restrictions on a table using a macro.
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
-- [ ] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
+- [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
 - [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
 - [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
@@ -146,8 +147,8 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 
 #### Documentation
 
-- [ ] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
-- [ ] Move documentation back to the docs folder.
+- [x] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
+- [x] Move documentation back to the docs folder.
 - [ ] Add a documentation website on the main page.
 - [ ] Create a navigator that allows viewing the documentation at a particular point in time.
 
@@ -234,8 +235,7 @@ If you would like our help with any new content or initiatives, we'd love to hea
 =====================================
 <a href="#table-of-contents">back to top</a>
 
-Phantom was developed at outworkers as an in-house project. All Cassandra integration at outworkers goes through phantom, and nowadays it's safe to say most
-Scala/Cassandra users in the world rely on phantom.
+Phantom was developed at outworkers as an in-house project. All Cassandra integration at outworkers goes through phantom, and nowadays it's safe to say most Scala/Cassandra users in the world rely on phantom.
 
 * Flavian Alexandru ([@alexflav23](https://github.com/alexflav23)) - maintainer
 * Bartosz Jankiewicz ([@bjankie1](https://github.com/bjankie1))
