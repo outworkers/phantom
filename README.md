@@ -13,7 +13,7 @@ If you use phantom, please consider adding your company to our list of adopters.
 2.0.0 Migration guide
 =====================
 
-As a word of introduction, this guide is brand new and there may be certain elements we have currently left out. Phantom has an immense adopter base which includges many of you using the library in ways which we do not know of. 2.0.0 completely replaces fundemental aspects of the framework to provide superior performance and reliability, and we have tested back and forth to ensure the smoothest possible transition, but please feel free to report any issues via GitHub and we will fix them straight away.
+As a word of introduction, this guide is brand new and there may be certain elements we have currently left out. Phantom has an immense adopter base which includes many of you using the library in ways which we do not know of. 2.0.0 completely replaces fundemental aspects of the framework to provide superior performance and reliability, and we have tested back and forth to ensure the smoothest possible transition, but please feel free to report any issues via GitHub and we will fix them straight away.
 
 - The OSS version of phantom has as of 2.0.0 returned to the Apache V2 license and the license is here to stay.
 - All packages and dependencies are now available under the `com.outworkers` organisation instead of `com.websudos`. As
