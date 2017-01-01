@@ -102,7 +102,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
-    Resolver.bintrayRepo("outworkers", "oss-releases"),
     Resolver.jcenterRepo
   ),
   scalacOptions in ThisBuild ++= Seq(
