@@ -33,7 +33,7 @@ class TableHelperRuntimeTests extends PhantomSuite {
 
     val chain = for {
       store <- database.tableTypeTuple.store(sample).future()
-      find <- database.tableTypeTuple.select.where(_.id eqs sample._1).one()
+      find <- database.tableTypeTuple.findById(sample._1)
     } yield find
 
     whenReady(chain) { res =>

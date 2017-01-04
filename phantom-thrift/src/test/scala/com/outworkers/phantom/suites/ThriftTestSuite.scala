@@ -17,20 +17,11 @@ package com.outworkers.phantom.suites
 
 import java.util.UUID
 
+import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Output, ThriftDatabase}
 import com.outworkers.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
 
-import scala.concurrent.duration._
-import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
-
-trait ThriftTestSuite extends Suite
-  with BeforeAndAfterAll
-  with Matchers
-  with OptionValues
-  with ThriftDatabase.connector.Connector {
-
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+trait ThriftTestSuite extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -142,4 +142,4 @@ class ThriftDatabase(override val connector: CassandraConnection) extends Databa
   object thriftIndexedTable extends ConcreteThriftIndexedTable with Connector
 }
 
-object ThriftDatabase extends ThriftDatabase(connectors.ContactPoint.local.keySpace("phantom"))
+object ThriftDatabase extends ThriftDatabase(Connector.default)

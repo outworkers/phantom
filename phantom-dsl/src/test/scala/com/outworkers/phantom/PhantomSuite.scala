@@ -56,13 +56,13 @@ trait PhantomBaseSuite extends Suite with Matchers
   }
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.Connector {
   val database = TestDatabase
 
   def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
 }
 
 
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.Connector {
   val database = TestDatabase
 }
