@@ -16,9 +16,6 @@
 package com.outworkers.phantom.tables
 
 import java.util.UUID
-
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.RootConnector
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.builder.query.InsertQuery

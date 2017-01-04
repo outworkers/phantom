@@ -20,6 +20,7 @@ import java.util.UUID
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Output, ThriftDatabase}
 import com.outworkers.util.testing._
+import com.outworkers.phantom.dsl.context
 
 trait ThriftTestSuite extends PhantomSuite {
 
