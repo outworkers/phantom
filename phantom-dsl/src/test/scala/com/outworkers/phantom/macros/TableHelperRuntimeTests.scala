@@ -38,7 +38,7 @@ class TableHelperRuntimeTests extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      res shouldEqual sample
+      res.value shouldEqual sample
     }
   }
 
