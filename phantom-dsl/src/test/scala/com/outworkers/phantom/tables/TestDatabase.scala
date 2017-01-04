@@ -64,9 +64,9 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object staticTable extends ConcreteStaticTableTest with connector.Connector
   object staticCollectionTable extends ConcreteStaticCollectionTableTest with connector.Connector
 
-  object tableWithSingleKey extends ConcreteTableWithSingleKey with connector.Connector
-  object tableWithCompoundKey extends ConcreteTableWithCompoundKey with connector.Connector
-  object tableWithCompositeKey extends ConcreteTableWithCompositeKey with connector.Connector
+  object tableWithSingleKey extends TableWithSingleKey with connector.Connector
+  object tableWithCompoundKey extends TableWithCompoundKey with connector.Connector
+  object tableWithCompositeKey extends TableWithCompositeKey with connector.Connector
 
   object testTable extends ConcreteTestTable with connector.Connector
   object timeSeriesTable extends ConcreteTimeSeriesTable with connector.Connector {
@@ -90,7 +90,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 }
 
 object Connector {
-  val default = connectors.ContactPoint.local
+  val default: CassandraConnection = connectors.ContactPoint.local
     .withClusterBuilder(_.withSocketOptions(
       new SocketOptions()
         .setConnectTimeoutMillis(20000)

@@ -27,7 +27,7 @@ case class PrimitiveCassandra22(
   date: LocalDate
 )
 
-sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCassandra22, PrimitiveCassandra22] {
+abstract class PrimitivesCassandra22 extends CassandraTable[PrimitivesCassandra22, PrimitiveCassandra22] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
 
@@ -37,21 +37,9 @@ sealed class PrimitivesCassandra22 extends CassandraTable[ConcretePrimitivesCass
 
   object date extends LocalDateColumn(this)
 
-  override def fromRow(r: Row): PrimitiveCassandra22 = {
-    PrimitiveCassandra22(
-      pkey = pkey(r),
-      short = short(r),
-      byte = byte(r),
-      date = date(r)
-    )
-  }
-}
-
-abstract class ConcretePrimitivesCassandra22 extends PrimitivesCassandra22 with RootConnector {
-
   override val tableName = "PrimitivesCassandra22"
 
-  def store(row: PrimitiveCassandra22): InsertQuery.Default[ConcretePrimitivesCassandra22, PrimitiveCassandra22] = {
+  def store(row: PrimitiveCassandra22): InsertQuery.Default[PrimitivesCassandra22, PrimitiveCassandra22] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.short, row.short)
