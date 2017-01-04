@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.tables.TestDatabase
+import org.json4s.Formats
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -31,7 +32,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   with JsonFormats
   with OptionValues {
 
-  implicit val formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
+  implicit val formats: Formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 

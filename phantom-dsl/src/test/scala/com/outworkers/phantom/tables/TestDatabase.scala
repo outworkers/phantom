@@ -88,6 +88,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tuple2Table extends ConcreteTupleColumnTable with Connector
   object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
   object tupleCollectionsTable extends ConcreteTupleCollectionsTable with Connector
+
+  object tableTypeTuple extends TupleTypeTable with Connector
 }
 
 object Connector {

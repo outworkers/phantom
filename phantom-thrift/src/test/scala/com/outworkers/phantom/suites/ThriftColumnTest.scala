@@ -37,9 +37,7 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
     }
 
     insert.successful {
-      result => {
-        result.value.struct shouldEqual sample
-      }
+      result => result.value.struct shouldEqual sample
     }
   }
 
@@ -55,8 +53,8 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
-    }
+        _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+      }
 
     insert.successful {
       result => {

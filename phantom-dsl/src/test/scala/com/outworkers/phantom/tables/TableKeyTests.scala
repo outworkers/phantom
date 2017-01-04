@@ -52,4 +52,3 @@ abstract class TableWithCompositeKey extends CassandraTable[TableWithCompositeKe
     )
   }
 }
-
