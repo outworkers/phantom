@@ -42,14 +42,6 @@ sealed class ThriftTable extends CassandraTable[ConcreteThriftTable, SampleRecor
       override def codec = SampleModel
     }
   }
-
-  override def fromRow(r: Row): SampleRecord = {
-    SampleRecord(
-      stuff = stuff(r),
-      someList = someList(r),
-      thriftModel = thriftModel(r)
-    )
-  }
 }
 
 abstract class ConcreteThriftTable extends ThriftTable with RootConnector

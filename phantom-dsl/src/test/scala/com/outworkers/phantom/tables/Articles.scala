@@ -26,19 +26,15 @@ case class Article(
   orderId: Long
 )
 
-sealed class Articles extends CassandraTable[ConcreteArticles, Article] {
+abstract class Articles extends CassandraTable[Articles, Article] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def fromRow(row: Row): Article = Article(id(row), name(row), orderId(row))
-}
-
-abstract class ConcreteArticles extends Articles with RootConnector {
   override def tableName: String = "articles"
 
-  def store(article: Article): InsertQuery.Default[ConcreteArticles, Article] = {
+  def store(article: Article): InsertQuery.Default[Articles, Article] = {
     insert
       .value(_.id, article.id)
       .value(_.name, article.name)

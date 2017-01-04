@@ -17,7 +17,7 @@ package com.outworkers.phantom.reactivestreams.suites
 
 import akka.actor.ActorSystem
 import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
-import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.reactivestreams.RequestBuilder
@@ -60,11 +60,13 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(StreamDatabase.autocreate().future(), 5.seconds)
+    StreamDatabase.create()
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
+    // Note we are intentionally using the deprecated API here to make sure we do not break Scala 2.10
+    // compatibility. Please do not yet use [[system.terminate()]].
     system.shutdown()
   }
 
@@ -84,7 +86,7 @@ abstract class ConcreteOperaTable extends OperaTable with RootConnector {
 
 
 object StreamConnector {
-  val connector = ContactPoint.local.keySpace("phantom")
+  val connector: CassandraConnection = ContactPoint.local.keySpace("phantom")
 }
 
 class StreamDatabase extends Database[StreamDatabase](StreamConnector.connector) {
@@ -94,5 +96,5 @@ class StreamDatabase extends Database[StreamDatabase](StreamConnector.connector)
 object StreamDatabase extends StreamDatabase
 
 object OperaData {
-  val operas = genList[String]().map(Opera)
+  val operas: List[Opera] = genList[String]().map(Opera)
 }

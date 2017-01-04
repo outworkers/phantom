@@ -257,7 +257,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).settings(
     sharedSettings: _*
   ).dependsOn(
-    phantomDsl,
+    phantomDsl % "compile->compile;test->test;",
     phantomFinagle
   ).enablePlugins(CrossPerProjectPlugin)
 

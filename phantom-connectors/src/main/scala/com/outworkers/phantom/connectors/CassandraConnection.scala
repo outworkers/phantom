@@ -88,9 +88,9 @@ class CassandraConnection(
    */
   trait Connector extends com.outworkers.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = outer.provider
+    lazy val provider: DefaultSessionProvider = outer.provider
 
-    lazy val keySpace = outer.name
+    lazy val keySpace: String = outer.name
 
     implicit val space: KeySpace = KeySpace(outer.name)
 

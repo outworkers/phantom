@@ -24,10 +24,6 @@ import org.scalatest.time.SpanSugar._
 
 class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
-  override def beforeAll(): Unit = {
-    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
-  }
-
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()
     val sample = gen[ThriftTest]
@@ -41,9 +37,7 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
     }
 
     insert.successful {
-      result => {
-        result.value.struct shouldEqual sample
-      }
+      result => result.value.struct shouldEqual sample
     }
   }
 
@@ -59,8 +53,8 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
-    }
+        _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+      }
 
     insert.successful {
       result => {
