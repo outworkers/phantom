@@ -15,17 +15,12 @@
  */
 package com.outworkers.phantom.macros
 
-import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.util.{Date, UUID}
-
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
-import org.joda.time.DateTime
+import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.reflect.macros.blackbox
 
@@ -53,7 +48,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
   case class Field(
-    name: Name,
+    name: TermName,
     tpe: Type
   ) {
     def symbol: Symbol = tpe.typeSymbol
@@ -61,7 +56,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   object Field {
     def apply(tp: (TermName, Type)): Field = Field(tp._1, tp._2)
-    def apply(tp: (Name, Type)): Field = Field(tp._1, tp._2)
+    def tupled(tp: (Name, Type)): Field = Field(tp._1.toTermName, tp._2)
   }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
@@ -154,11 +149,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
-  def show(list: List[Type]): String = {
+  private[this] def show(list: List[Type]): String = {
     list map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
-  def show(list: Iterable[Type]): String = {
+  private[this] def show(list: Iterable[Type]): String = {
     list map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
@@ -227,6 +222,17 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
+  /**
+    * A "generic" type extractor that's meant to produce a list of fields from a record type.
+    * We support a narrow domain of types for automated generation, currently including:
+    * - Case classes
+    * - Tuples
+    *
+    * To achieve this, we simply have specific ways of extracting the types from the underlying records,
+    * and producing a [[Field]] for each of the members in the product type,
+    * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
+    * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
+    */
   def extractRecordMembers(tpe: Type): Iterable[Field] = {
     tpe.typeSymbol match {
       case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => {
@@ -238,9 +244,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
         names.zip(tpe.typeArgs) map Field.apply
       }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Field.apply
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Field.tupled
 
-      case _ => Nil
+      case _ => Iterable.empty[Field]
     }
   }
 
@@ -316,6 +322,19 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     })
   }
 
+  /**
+    * Extracts the name of the table that will be generated and used in Cassandra.
+    * This can be changed at runtime by the user by overriding [[CassandraTable.tableName]].
+    * This mechanism is incompatible with the historical way we used to do this, effectively using
+    * the type inferred by the final database object.
+    *
+    * Instead, at present times, it is the type hierarchy that dictates what a table will be called,
+    * and the first member of the type hierarchy of a table type with columns defined will dictate the name.
+    *
+    * @param source The source table type to extract the name from. We rely on this to be the first in the hierarchy to
+    *               contain column definitions, determined by [[determineReferenceTable()]] above.
+    * @return
+    */
   def extractTableName(source: Type): String =  {
     val value = source.typeSymbol.name.toTermName.decodedName.toString
     value.charAt(0).toLower + value.drop(1)
@@ -347,7 +366,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             $tableTerm.insert()
           }
 
-          def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
+          def tableKey($tableTerm: $tableType): $strTpe = {
+            ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
+          }
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
