@@ -23,7 +23,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.0.13"
+    version := "2.0.0"
   )
 
   lazy val noPublishSettings = Seq(
@@ -76,7 +76,7 @@ object Publishing {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
 
-  lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
+  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
