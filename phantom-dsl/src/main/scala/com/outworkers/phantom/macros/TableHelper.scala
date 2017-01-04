@@ -50,18 +50,18 @@ object TableHelper {
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
-
   import c.universe._
 
-  case class ColumnMember(
-    name: TermName,
+  case class Field(
+    name: Name,
     tpe: Type
   ) {
     def symbol: Symbol = tpe.typeSymbol
   }
 
-  object ColumnMember {
-    def apply(tp: (TermName, Type)): ColumnMember = ColumnMember(tp._1, tp._2)
+  object Field {
+    def apply(tp: (TermName, Type)): Field = Field(tp._1, tp._2)
+    def apply(tp: (Name, Type)): Field = Field(tp._1, tp._2)
   }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
@@ -148,7 +148,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   trait TableMatchResult
 
   case class Match(
-    results: List[ColumnMember],
+    results: List[Field],
     partition: Boolean
   ) extends TableMatchResult
 
@@ -162,7 +162,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     list map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
-  private[this] def predicate(source: (ColumnMember, ColumnMember)): Boolean = {
+  private[this] def predicate(source: (Field, Field)): Boolean = {
     val (col, rec) = source
     (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
   }
@@ -179,8 +179,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     */
   def findMatchingSubset(
     tableName: Name,
-    members: List[ColumnMember],
-    recordMembers: Iterable[ColumnMember]
+    members: List[Field],
+    recordMembers: Iterable[Field]
   ): TableMatchResult = {
     if (members.isEmpty) {
       NoMatch
@@ -195,7 +195,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
-  def extractColumnMembers(table: Type, columns: List[Symbol]): List[ColumnMember] = {
+  def extractColumnMembers(table: Type, columns: List[Symbol]): List[Field] = {
     /**
       * We filter for the members of the table type that
       * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
@@ -216,7 +216,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             // We use the special API to see what type was passed through to AbstractColumn[_]
             // with special thanks to https://github.com/joroKr21 for helping me not rip
             // the remainder of my hair off while uncovering this marvelous macro API method.
-            case head :: Nil => ColumnMember(
+            case head :: Nil => Field(
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
@@ -227,7 +227,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
-  def extractRecordMembers(tpe: Type): List[ColumnMember] = {
+  def extractRecordMembers(tpe: Type): Iterable[Field] = {
     tpe.typeSymbol match {
       case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => {
 
@@ -235,10 +235,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           index => TermName("_" + index)
         }
 
-        names.zip(tpe.typeArgs)
+        names.zip(tpe.typeArgs) map Field.apply
       }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(recordTpe) map ColumnMember.apply
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Field.apply
 
       case _ => Nil
     }
