@@ -20,7 +20,7 @@ notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
-  - dev@websudos.co.uk
+  - dev@outworkers.com
 
 branches:
   only:
