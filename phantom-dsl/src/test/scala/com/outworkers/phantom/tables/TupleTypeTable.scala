@@ -26,9 +26,12 @@ abstract class TupleTypeTable extends CassandraTable[TupleTypeTable, (UUID, Stri
   object description extends StringColumn(this)
 
   def store(tp: (UUID, String, String)): InsertQuery.Default[TupleTypeTable, (UUID, String, String)] = {
-    insert.value(_.id, tp._1)
-      .value(_.name, tp._2)
-      .value(_.description, tp._3)
+
+    val (id, name, desc) = tp
+
+    insert.value(_.id, id)
+      .value(_.name, name)
+      .value(_.description, desc)
   }
 
   def findById(id: UUID): Future[Option[(UUID, String, String)]] = {

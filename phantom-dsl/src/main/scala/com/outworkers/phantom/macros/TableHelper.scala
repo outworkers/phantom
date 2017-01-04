@@ -55,8 +55,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   }
 
   object Field {
-    def apply(tp: (TermName, Type)): Field = Field(tp._1, tp._2)
-    def tupled(tp: (Name, Type)): Field = Field(tp._1.toTermName, tp._2)
+    def apply(tp: (TermName, Type)): Field = {
+      val (name, tpe) = tp
+      Field(name, tpe)
+    }
+
+    def tupled(tp: (Name, Type)): Field = {
+      val (name, tpe) = tp
+      Field(name.toTermName, tpe)
+    }
   }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"

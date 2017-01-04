@@ -30,10 +30,11 @@ class TableHelperRuntimeTests extends PhantomSuite {
 
   it should "automatically generate an extractor for a tuple type" in {
     val sample = (gen[UUID], gen[String], gen[String])
+    val (id, _, _) = sample
 
     val chain = for {
       store <- database.tableTypeTuple.store(sample).future()
-      find <- database.tableTypeTuple.findById(sample._1)
+      find <- database.tableTypeTuple.findById(id)
     } yield find
 
     whenReady(chain) { res =>
