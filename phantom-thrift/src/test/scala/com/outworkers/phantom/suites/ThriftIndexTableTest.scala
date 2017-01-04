@@ -27,11 +27,6 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
 
   val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    ThriftIndexedTable.insertSchema()
-  }
-
   implicit object SamplePrimitive extends ThriftPrimitive[ThriftTest] {
     val serializer = CompactThriftSerializer(ThriftTest)
   }

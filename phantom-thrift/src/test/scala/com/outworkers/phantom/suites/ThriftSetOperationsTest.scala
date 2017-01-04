@@ -24,10 +24,6 @@ import org.scalatest.time.SpanSugar._
 
 class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
-  override def beforeAll(): Unit = {
-    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
-  }
-
   it should "add an item to a thrift set column" in {
 
     val id = gen[UUID]

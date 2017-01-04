@@ -29,7 +29,13 @@ trait ThriftTestSuite extends Suite
   with Matchers
   with OptionValues
   with ThriftDatabase.connector.Connector {
+
   implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    ThriftDatabase.create()
+  }
 
   type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
   val ThriftTest = com.outworkers.phantom.thrift.ThriftTest

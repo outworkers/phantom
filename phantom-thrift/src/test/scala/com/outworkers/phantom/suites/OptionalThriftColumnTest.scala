@@ -24,10 +24,6 @@ import org.scalatest.time.SpanSugar._
 
 class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
-  override def beforeAll(): Unit = {
-    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
-  }
-
   it should "find an item if it was defined" in {
 
     val id = UUIDs.timeBased()

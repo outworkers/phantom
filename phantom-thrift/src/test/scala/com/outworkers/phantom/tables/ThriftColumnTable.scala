@@ -138,8 +138,8 @@ abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootCo
 }
 
 class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {
-  object thriftColumnTable extends ConcreteThriftColumnTable with connector.Connector
-  object thriftIndexedTable extends ConcreteThriftIndexedTable with connector.Connector
+  object thriftColumnTable extends ConcreteThriftColumnTable with Connector
+  object thriftIndexedTable extends ConcreteThriftIndexedTable with Connector
 }
 
 object ThriftDatabase extends ThriftDatabase(connectors.ContactPoint.local.keySpace("phantom"))
