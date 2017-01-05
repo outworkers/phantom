@@ -252,16 +252,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
-
-    val keyTpe = tpe.typeArgs.headOption
-    val valueType = tpe.typeArgs.drop(1).headOption
-
-    (keyTpe, valueType) match {
-      case (Some(key), Some(value)) => {
-        q"""$prefix.Primitives.map[$key, $value]"""
-      }
-      case _ => c.abort(c.enclosingPosition, "Expected inner type to be defined")
+    weakTypeOf[T].typeArgs match {
+      case k :: v :: Nil => q"""$prefix.Primitives.map[$k, $v]"""
+      case _ => c.abort(c.enclosingPosition, "Expected exactly two type arguments to be provided to map")
     }
   }
 

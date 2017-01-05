@@ -1,66 +1,31 @@
 phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-=============================================================================================================
 Reactive type-safe Scala driver for Apache Cassandra/Datastax Enterprise
-
-![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
 To stay up-to-date with our latest releases and news, follow us on Twitter: [@outworkers](https://twitter.com/outworkers_uk).
 
-If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be completely free and open source, under the Apache V2 license. Adopters encourage further adoption and a wider community around the project, which is quid pro quo for everyone involved.
+If you use phantom, please consider adding your company to our list of adopters. Phantom is and will always be open source, but the more adopters our projects have, the more people from our company will actively work to make them better.
+
+![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
 Roadmap
 ========
 
-### Phantom OSS
+#### Phantom 1.x.x
 
-While dates are not fixed, we will use this list to tell you about our plans for the future. If you have great ideas about what could benefit all phantom 
-adopters, please get in touch. We are very happy and eager to listen.
+In maintenance mode, users are actively encouraged to upgrade to 2.0.x series.
 
-- [x] Prepared statements(available as of 1.15.0)
-
-- [x] A new QueryBuilder(available as of 1.6.0)
-
-- [x] Zookeeper support(available as of 1.1.0).
-
-- [x] Reactive streams support(available as of 1.15.0)
-
-- [x] Improved DSL, complete separation of reactive streams into separate module(available as of 1.26.0)
-
-- [x] Further cleanup of build, making project more lightweight, separating Twitter primitives support into `phantom-finagle`. (1.26.0)
-
-
-#### Phantom 1.30.x
-
-- [x] Comparison of Phantom versus other established tools. 
+#### Phantom 2.0.x series
 
 - [ ] Support for case sensitive Cassandra tables and keyspace names.
 
 - [ ] Support for tuple columns and collection columns
 
-- [x] Support for frozen collection columns as primary columns.
-
 - [ ] SASI Index support.
 
-- [x] A `KeySpaceBuilder` that allows type safe specification of keyspace creation properties.(available as of 1.29.4)
-
-
-#### Phantom 2.0.0
-
-- [x] Remove `scala-reflect.jar` from `build.sbt`, replacing the DSL mechanism with a macro based one.
-
-- [ ] Allow using collection columns as primary keys.
-
 - [ ] Use `QueryPart` as a building block for schema inference during table auto-generation.
-
-- [ ] Stabilise tracing and discovery of inheritance patterns via macros. 
-
-- [ ] Add Scala 2.12 support.
-
-- [x] Add native support for `TupleColumn`, with implicit macro generation.
-
-- [x] Add support for `TimeWindowCompactionStrategy`.
 
 - [ ] Deeper integration of CQL features, such as advanced `USING` clauses, `GROUP BY` and `PER PARTITION LIMIT`.(2.0.0)
 
@@ -70,7 +35,7 @@ adopters, please get in touch. We are very happy and eager to listen.
 
 - [ ] Bring test coverage to 100%(2.0.0)
 
-- [ ] Add ability to specify application wide configuration, such as case sensitive column names.
+- [ ] Add ability to specify compile time implicit configuration, such as case sensitive column names.
 
 - [ ] A new website with highly improved documentation, as well as a per version docs browser.
 
@@ -80,7 +45,7 @@ adopters, please get in touch. We are very happy and eager to listen.
 
 ### Phantom Pro
 
-#### v.1.0
+#### v0.1.0
 
 - [x] Full support for UDTs.
 - [x] Support for UDT collection types.
@@ -90,7 +55,7 @@ adopters, please get in touch. We are very happy and eager to listen.
 - [ ] Materialised views.
 - [ ] Development automated schema migrations.
 
-#### 1.1.0
+#### v0.3.0
 - [ ] Auto-tables, ability to generate queries entirely of out `case class` definitions.
 - [ ] Advanced table migrations.
 
