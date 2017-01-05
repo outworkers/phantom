@@ -32,8 +32,8 @@ class PartialSelectTest extends PhantomSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      truncate <- TestDatabase.primitives.truncate.future()
-      insertDone <- TestDatabase.primitives.store(row).future()
+      _ <- TestDatabase.primitives.truncate.future()
+      _ <- TestDatabase.primitives.store(row).future()
       listSelect <- TestDatabase.primitives.select(_.pkey).fetch
       oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
     } yield (listSelect, oneSelect)
