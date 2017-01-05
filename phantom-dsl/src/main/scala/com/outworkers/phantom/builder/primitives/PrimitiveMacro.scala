@@ -65,10 +65,10 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     * Adds a caching layer for subsequent requests to materialise the same primitive type.
     * This adds a simplistic caching layer that computes primitives based on types.
     */
-  val treeCache = TrieMap.empty[Symbol, Tree]
+  val treeCache: TrieMap[Symbol, Tree] = TrieMap.empty[Symbol, Tree]
 
   object Symbols {
-    val intSymbol = typed[Int]
+    val intSymbol: c.universe.Symbol = typed[Int]
     val byteSymbol = typed[Byte]
     val stringSymbol = typed[String]
     val boolSymbol = typed[Boolean]
