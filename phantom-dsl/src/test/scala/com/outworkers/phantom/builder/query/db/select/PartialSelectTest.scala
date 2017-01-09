@@ -21,6 +21,7 @@ import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 import shapeless._
 import shapeless.ops.hlist.Take
+import shapeless.o
 
 class PartialSelectTest extends PhantomSuite {
 
@@ -29,11 +30,13 @@ class PartialSelectTest extends PhantomSuite {
     TestDatabase.primitives.insertSchema()
   }
 
-  /*
+
+
   def takeN[Source, N <: Nat, HL <: HList, Output](instance: Source, n: N)(
     implicit gen: Generic.Aux[Source, HL],
-    taker: Take.Aux[HL, N, Output]
-  ): Output = (gen to instance).take(n)*/
+    taker: Take.Aux[HL, N, Output],
+    ev: Mod.Aux
+  ): Output = (gen to instance).take(n)
 
   "Partially selecting 2 fields" should "correctly select the fields" in {
     val row = gen[Primitive]
