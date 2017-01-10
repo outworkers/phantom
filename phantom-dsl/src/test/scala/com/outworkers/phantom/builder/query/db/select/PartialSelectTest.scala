@@ -20,8 +20,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 import shapeless._
-import shapeless.ops.hlist.Take
-import shapeless.o
+import shapeless.ops.hlist.{Length, Take}
+import shapeless.ops.nat.{GT, Mod}
 
 class PartialSelectTest extends PhantomSuite {
 
@@ -32,10 +32,11 @@ class PartialSelectTest extends PhantomSuite {
 
 
 
-  def takeN[Source, N <: Nat, HL <: HList, Output](instance: Source, n: N)(
+  def takeN[Source, N <: Nat, HL <: HList, HLenght <: Nat, Output](instance: Source, n: N)(
     implicit gen: Generic.Aux[Source, HL],
     taker: Take.Aux[HL, N, Output],
-    ev: Mod.Aux
+    len: Length.Aux[HL, HLenght],
+    greater: GT[HLenght, N]
   ): Output = (gen to instance).take(n)
 
   "Partially selecting 2 fields" should "correctly select the fields" in {
