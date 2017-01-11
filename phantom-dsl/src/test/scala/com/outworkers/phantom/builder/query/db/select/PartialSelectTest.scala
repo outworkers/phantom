@@ -30,147 +30,313 @@ class PartialSelectTest extends PhantomSuite {
     TestDatabase.primitives.insertSchema()
   }
 
-
-
-  def takeN[Source, N <: Nat, HL <: HList, HLenght <: Nat, Output](instance: Source, n: N)(
+  /*
+  def takeN[Source <: Product, N <: Nat, HL <: HList, HLength <: Nat, Output](instance: Source, n: N)(
     implicit gen: Generic.Aux[Source, HL],
     taker: Take.Aux[HL, N, Output],
-    len: Length.Aux[HL, HLenght],
-    greater: GT[HLenght, N]
-  ): Output = (gen to instance).take(n)
+    len: Length.Aux[HL, HLength],
+    greater: GT[HLength, N]
+  ): Output = (gen to instance).take(n)*/
 
-  "Partially selecting 2 fields" should "correctly select the fields" in {
+  "Partially selecting 1 fields" should "select 1 field" in {
     val row = gen[Primitive]
 
     val chain = for {
-      _ <- TestDatabase.primitives.truncate.future()
       _ <- TestDatabase.primitives.store(row).future()
-      listSelect <- TestDatabase.primitives.select(_.pkey).fetch
       oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
-    } yield (listSelect, oneSelect)
+    } yield oneSelect
 
-    chain successful {
-      case (res, res2) => {
-        res shouldEqual List(row.pkey)
-        res2.value shouldEqual Tuple2(row.long, row.boolean)
-      }
+    chain successful { res =>
+      res.value shouldEqual row.long -> row.boolean
     }
+  }
 
-    "Partial selects" should "select 2 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long)
+  "Partial selects" should "select 2 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future
-        get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future
+      get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        res => res.value shouldEqual expected
-      }
+    whenReady(chain) {
+      res => res.value shouldEqual expected
     }
+  }
 
-    "Partial selects" should "select 3 columns" in {
+  "Partial selects" should "select 3 columns" in {
 
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean)
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldEqual expected
-      }
+    whenReady(chain) {
+      r => r.value shouldEqual expected
     }
+  }
 
-    "Partial selects" should "select 4 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
+  "Partial selects" should "select 4 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
+  }
 
-    "Partial selects" should "select 5 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
+  "Partial selects" should "select 5 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
+  }
 
-    "Partial selects" should "select 6 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
+  "Partial selects" should "select 6 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
+  }
 
-    "Partial selects" should "select 7 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
+  "Partial selects" should "select 7 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
+  }
 
-    "Partial selects" should "select 8 columns" in {
-      val row = gen[Primitive]
-      val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
+  "Partial selects" should "select 8 columns" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
-      val chain = for {
-        _ <- TestDatabase.primitives.store(row).future()
-        get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
-          .where(_.pkey eqs row.pkey).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.primitives.store(row).future()
+      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+        .where(_.pkey eqs row.pkey).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
+  }
 
-    "Partial selects" should "select 9 columns" in {
-      val row = gen[WideRow]
+  "Partial selects" should "select 9 columns" in {
+    val row = gen[WideRow]
 
-      val expected = takeN(row, Nat._9)
+    val expected = (
+      row.id,
+      row.field,
+      row.field1,
+      row.field2,
+      row.field3,
+      row.field4,
+      row.field5,
+      row.field6,
+      row.field7
+    )
 
-      val chain = for {
-        _ <- TestDatabase.wideTable.store(row).future()
-        get <- TestDatabase.wideTable
-          .select(_.id, _.field, _.field1, _.field2, _.field3, _.field4, _.field5, _.field6, _.field7)
-          .where(_.id eqs row.id).one()
-      } yield get
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(_.id, _.field, _.field1, _.field2, _.field3, _.field4, _.field5, _.field6, _.field7)
+        .where(_.id eqs row.id).one()
+    } yield get
 
-      whenReady(chain) {
-        r => r.value shouldBe expected
-      }
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 10 columns" in {
+    val row = gen[WideRow]
+
+    val expected = (
+      row.id,
+      row.field,
+      row.field1,
+      row.field2,
+      row.field3,
+      row.field4,
+      row.field5,
+      row.field6,
+      row.field7,
+      row.field8
+    )
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 10 columns" in {
+    val row = gen[WideRow]
+
+    val expected = (
+      row.id,
+      row.field,
+      row.field1,
+      row.field2,
+      row.field3,
+      row.field4,
+      row.field5,
+      row.field6,
+      row.field7,
+      row.field8
+    )
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 11 columns" in {
+    val row = gen[WideRow]
+
+    val expected = (
+      row.id,
+      row.field,
+      row.field1,
+      row.field2,
+      row.field3,
+      row.field4,
+      row.field5,
+      row.field6,
+      row.field7,
+      row.field8,
+      row.field9
+    )
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 12 columns" in {
+    val row = gen[WideRow]
+
+    val expected = (
+      row.id,
+      row.field,
+      row.field1,
+      row.field2,
+      row.field3,
+      row.field4,
+      row.field5,
+      row.field6,
+      row.field7,
+      row.field8,
+      row.field9,
+      row.field10
+    )
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
     }
   }
 }
