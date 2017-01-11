@@ -20,23 +20,15 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 import shapeless._
-import shapeless.ops.hlist.{Length, Take}
-import shapeless.ops.nat.{GT, Mod}
+import syntax.std.tuple._
 
 class PartialSelectTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
+    database.primitives.insertSchema()
+    database.wideTable.insertSchema()
   }
-
-  /*
-  def takeN[Source <: Product, N <: Nat, HL <: HList, HLength <: Nat, Output](instance: Source, n: N)(
-    implicit gen: Generic.Aux[Source, HL],
-    taker: Take.Aux[HL, N, Output],
-    len: Length.Aux[HL, HLength],
-    greater: GT[HLength, N]
-  ): Output = (gen to instance).take(n)*/
 
   "Partially selecting 1 fields" should "select 1 field" in {
     val row = gen[Primitive]
@@ -154,45 +146,7 @@ class PartialSelectTest extends PhantomSuite {
   "Partial selects" should "select 9 columns" in {
     val row = gen[WideRow]
 
-    val expected = (
-      row.id,
-      row.field,
-      row.field1,
-      row.field2,
-      row.field3,
-      row.field4,
-      row.field5,
-      row.field6,
-      row.field7
-    )
-
-    val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
-        .select(_.id, _.field, _.field1, _.field2, _.field3, _.field4, _.field5, _.field6, _.field7)
-        .where(_.id eqs row.id).one()
-    } yield get
-
-    whenReady(chain) {
-      r => r.value shouldBe expected
-    }
-  }
-
-  "Partial selects" should "select 10 columns" in {
-    val row = gen[WideRow]
-
-    val expected = (
-      row.id,
-      row.field,
-      row.field1,
-      row.field2,
-      row.field3,
-      row.field4,
-      row.field5,
-      row.field6,
-      row.field7,
-      row.field8
-    )
+    val expected = row.take(Nat._9)
 
     val chain = for {
       _ <- TestDatabase.wideTable.store(row).future()
@@ -206,8 +160,7 @@ class PartialSelectTest extends PhantomSuite {
           _.field4,
           _.field5,
           _.field6,
-          _.field7,
-          _.field8
+          _.field7
         )
         .where(_.id eqs row.id).one()
     } yield get
@@ -220,18 +173,7 @@ class PartialSelectTest extends PhantomSuite {
   "Partial selects" should "select 10 columns" in {
     val row = gen[WideRow]
 
-    val expected = (
-      row.id,
-      row.field,
-      row.field1,
-      row.field2,
-      row.field3,
-      row.field4,
-      row.field5,
-      row.field6,
-      row.field7,
-      row.field8
-    )
+    val expected = row.take(Nat._10)
 
     val chain = for {
       _ <- TestDatabase.wideTable.store(row).future()
@@ -258,20 +200,7 @@ class PartialSelectTest extends PhantomSuite {
 
   "Partial selects" should "select 11 columns" in {
     val row = gen[WideRow]
-
-    val expected = (
-      row.id,
-      row.field,
-      row.field1,
-      row.field2,
-      row.field3,
-      row.field4,
-      row.field5,
-      row.field6,
-      row.field7,
-      row.field8,
-      row.field9
-    )
+    val expected = row.take(Nat._11)
 
     val chain = for {
       _ <- TestDatabase.wideTable.store(row).future()
@@ -300,20 +229,7 @@ class PartialSelectTest extends PhantomSuite {
   "Partial selects" should "select 12 columns" in {
     val row = gen[WideRow]
 
-    val expected = (
-      row.id,
-      row.field,
-      row.field1,
-      row.field2,
-      row.field3,
-      row.field4,
-      row.field5,
-      row.field6,
-      row.field7,
-      row.field8,
-      row.field9,
-      row.field10
-    )
+    val expected = row.take(Nat._12)
 
     val chain = for {
       _ <- TestDatabase.wideTable.store(row).future()
@@ -331,6 +247,321 @@ class PartialSelectTest extends PhantomSuite {
           _.field8,
           _.field9,
           _.field10
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 13 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._13)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 14 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._14)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 15 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._15)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 16 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._16)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 17 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._17)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14,
+          _.field15
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 18 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._18)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14,
+          _.field15,
+          _.field16
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 19 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._19)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14,
+          _.field15,
+          _.field16,
+          _.field17
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 20 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._20)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14,
+          _.field15,
+          _.field16,
+          _.field17,
+          _.field18
+        )
+        .where(_.id eqs row.id).one()
+    } yield get
+
+    whenReady(chain) {
+      r => r.value shouldBe expected
+    }
+  }
+
+  "Partial selects" should "select 21 columns" in {
+    val row = gen[WideRow]
+
+    val expected = row.take(Nat._21)
+
+    val chain = for {
+      _ <- TestDatabase.wideTable.store(row).future()
+      get <- TestDatabase.wideTable
+        .select(
+          _.id,
+          _.field,
+          _.field1,
+          _.field2,
+          _.field3,
+          _.field4,
+          _.field5,
+          _.field6,
+          _.field7,
+          _.field8,
+          _.field9,
+          _.field10,
+          _.field11,
+          _.field12,
+          _.field13,
+          _.field14,
+          _.field15,
+          _.field16,
+          _.field17,
+          _.field18,
+          _.field19
         )
         .where(_.id eqs row.id).one()
     } yield get
