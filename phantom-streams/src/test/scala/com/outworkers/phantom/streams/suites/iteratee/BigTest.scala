@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.suites.iteratee
+package com.outworkers.phantom.streams.suites.iteratee
 
 import com.datastax.driver.core.{Session, SocketOptions}
 import com.outworkers.phantom.PhantomSuite

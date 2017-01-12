@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.suites
+package com.outworkers.phantom.streams.suites
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import com.outworkers.phantom.batch.BatchType
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.reactivestreams._
-import com.outworkers.phantom.reactivestreams.suites.iteratee.OperaPublisher
+import com.outworkers.phantom.streams._
+import com.outworkers.phantom.streams.suites.iteratee.OperaPublisher
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.tagobjects.Retryable
 import org.scalatest.{FlatSpec, Retries}

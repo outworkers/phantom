@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.iteratee
+package com.outworkers.phantom.streams.iteratee
 
 import com.datastax.driver.core.{ResultSet, Row}
 import play.api.libs.iteratee.Execution.{defaultExecutionContext => dec}
@@ -26,9 +26,8 @@ private[phantom] object Enumerator {
   def enumerator(resultSet: ResultSet)(implicit ctx: scala.concurrent.ExecutionContext): PlayEnum[Row] = {
 
     new PlayEnum[Row] {
-
-      val rs = resultSet
-      val it = rs.iterator
+      private[this] val rs = resultSet
+      private[this] val it = rs.iterator
 
       def apply[A](iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
 

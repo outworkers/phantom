@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.suites
+package com.outworkers.phantom.streams.suites
 
 import akka.actor.ActorSystem
 import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
 import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.reactivestreams.RequestBuilder
+import com.outworkers.phantom.streams.RequestBuilder
 import com.outworkers.util.testing._
 import org.scalatest._
 
