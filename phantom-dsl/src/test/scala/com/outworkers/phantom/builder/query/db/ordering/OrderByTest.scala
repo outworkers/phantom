@@ -40,7 +40,7 @@ class OrderByTest extends PhantomSuite {
     val records = genList[TimeUUIDRecord]().map(_.copy(user = user))
 
     val chain = for {
-      store <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
+      _ <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
       get <- database.timeuuidTable.retrieve(user)
       desc <- database.timeuuidTable.retrieveDescending(user)
     } yield (get, desc)
