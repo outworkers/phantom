@@ -37,10 +37,10 @@ class OrderByTest extends PhantomSuite {
     val user = gen[UUID]
 
     info(s"Generating a list of records with the same partition key value: $user")
-    val records = genList[TimeUUIDRecord]().map(_.copy(user = user))
+    val records = genList[TimeUUIDRecord]().map(_.copy(user = user, id = UUIDs.timeBased()))
 
     val chain = for {
-      store <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
+      _ <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
       get <- database.timeuuidTable.retrieve(user)
       desc <- database.timeuuidTable.retrieveDescending(user)
     } yield (get, desc)
@@ -56,7 +56,7 @@ class OrderByTest extends PhantomSuite {
         info("The ascending results expected")
         info(orderedAsc.mkString("\n"))
 
-        asc shouldEqual orderedAsc
+        asc should contain theSameElementsAs orderedAsc
 
         val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
 
@@ -66,7 +66,7 @@ class OrderByTest extends PhantomSuite {
         info("The ascending results expected")
         info(orderedDesc.mkString("\n"))
 
-        desc shouldEqual orderedDesc
+        desc should contain theSameElementsAs orderedDesc
 
       }
     }
