@@ -75,6 +75,8 @@ class PrimitivesTest extends FlatSpec with Matchers {
     object EnumTest extends Enumeration {
       val one = Value("one")
     }
+
+    //val test = Primitive[EnumTest.type#Value]
   }
 
 }
