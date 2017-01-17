@@ -85,7 +85,7 @@ The latest versions are available here. The badges automatically update when a n
 
 ### What got completed in Phantom 2.0.0
 
-With the rapidly evolving requirements, Cassansdra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
+With the rapidly evolving requirements, Cassandra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
 
 - Go back to the flexible licensing model everyone knows and loves(especially your legal department). No one wants to go through corporate litigation and licensing compliance to a `build.sbt` dependency, and if you've ever worked in a bank we all know it's not happening.
 
