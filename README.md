@@ -112,7 +112,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Enforce primary key restrictions on a table using a macro.
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
 - [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
-- [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
+- [ ] Generate the `fromRow` if the fields match, they are in arbitrary order, but there are no duplicate types.
 - [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 #### Tech debt
