@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _}
-import com.outworkers.phantom.reactivestreams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
+import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
 import play.api.libs.streams.Streams
@@ -45,7 +45,7 @@ import scala.concurrent.duration.FiniteDuration
  * @see [[http://www.reactive-streams.org/]]
  * @see [[https://github.com/websudos/phantom]]
  */
-package object reactivestreams {
+package object streams {
 
   private[this] final val DEFAULT_CONCURRENT_REQUESTS = 5
 

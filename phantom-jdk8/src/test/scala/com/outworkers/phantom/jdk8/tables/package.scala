@@ -19,28 +19,32 @@ import java.time._
 
 import com.outworkers.util.testing.{Sample, _}
 
+import scala.util.Random
+
 package object tables {
 
   implicit object Jdk8RowSampler extends Sample[Jdk8Row] {
+    private[this] val sampling = 150
     def sample: Jdk8Row = {
       Jdk8Row(
         gen[String],
-        OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
-        ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
-        LocalDate.now().plusDays(gen[Long]),
-        LocalDateTime.now().plusSeconds(gen[Long])
+        OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(Random.nextInt(sampling).toLong),
+        ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(Random.nextInt(sampling).toLong),
+        LocalDate.now().plusDays(Random.nextInt(sampling)),
+        LocalDateTime.now().plusSeconds(Random.nextInt(sampling))
       )
     }
   }
 
   implicit object OptionalJdk8RowSampler extends Sample[OptionalJdk8Row] {
+    private[this] val sampling = 150
     def sample: OptionalJdk8Row = {
       OptionalJdk8Row(
         gen[String],
-        Some(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
-        Some(ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
-        Some(LocalDate.now().plusDays(gen[Long])),
-        Some(LocalDateTime.now().plusSeconds(gen[Long]))
+        Some(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(Random.nextInt(sampling).toLong)),
+        Some(ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(Random.nextInt(sampling).toLong)),
+        Some(LocalDate.now().plusDays(Random.nextInt(sampling).toLong)),
+        Some(LocalDateTime.now().plusSeconds(Random.nextInt(sampling).toLong))
       )
     }
   }

@@ -19,7 +19,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.26.4"
+  val util = "0.27.8"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
@@ -40,35 +40,35 @@ lazy val Versions = new {
 
   val twitterUtilVersion: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 12 => "6.39.0"
+      case Some((_, minor)) if minor >= 12 => "6.39.0"
       case _ => "6.34.0"
     }
   }
 
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.14"
+      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.14"
       case _ => "2.3.15"
     }
   }
 
   val lift: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 => "3.0"
+      case Some((_, minor)) if minor >= 11 => "3.0"
       case _ => "3.0-M1"
     }
   }
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 => "4.7.0"
+      case Some((_, minor)) if minor >= 11 => "4.7.0"
       case _ => "4.7.0"
     }
   }
 
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((major, minor)) if minor >= 11 => "2.5.8"
+      case Some((_, minor)) if minor >= 11 => "2.5.8"
       case _ => "2.4.8"
     }
   }
@@ -77,10 +77,10 @@ lazy val Versions = new {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
-        case Some((major, minor)) if minor >= 11 && Publishing.isJdk8 => {
+        case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => {
           "com.typesafe.play" %% "play-streams" % v
         }
-        case Some((major, minor)) if minor >= 11  && !Publishing.isJdk8 => {
+        case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
           "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
         }
         case _ => "com.typesafe.play" %% "play-streams-experimental" % v

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.suites
+package com.outworkers.phantom.streams.suites
 
 import com.outworkers.phantom.batch.BatchType
-import com.outworkers.phantom.reactivestreams.BatchSubscriber
+import com.outworkers.phantom.streams.BatchSubscriber
 import com.outworkers.util.testing._
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}
 import org.reactivestreams.tck.{SubscriberWhiteboxVerification, TestEnvironment}

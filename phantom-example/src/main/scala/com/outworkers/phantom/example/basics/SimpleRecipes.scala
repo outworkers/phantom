@@ -22,7 +22,7 @@ import org.joda.time.DateTime
 import com.datastax.driver.core.{ResultSet, Row}
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.reactivestreams._
+import com.outworkers.phantom.streams._
 import com.twitter.conversions.time._
 
 /**

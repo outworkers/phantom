@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.iteratee
+package com.outworkers.phantom.streams.iteratee
 
 import play.api.libs.iteratee.{Iteratee => PlayIteratee}
 

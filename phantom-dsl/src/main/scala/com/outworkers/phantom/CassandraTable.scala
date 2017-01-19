@@ -20,9 +20,8 @@ import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import com.outworkers.phantom.macros.TableHelper
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
@@ -53,7 +52,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def instance: T = self.asInstanceOf[T]
 
-  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
+  lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   type ListColumn[RR] = com.outworkers.phantom.column.ListColumn[T, R, RR]
   type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
@@ -65,6 +64,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]
   type JsonMapColumn[KK,VV] = com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV]
   type TupleColumn[RR] =  com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type PrimitiveColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type CustomColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type Col[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
 
   def insertSchema()(
     implicit session: Session,

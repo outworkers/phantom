@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams
+package com.outworkers.phantom.streams
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
@@ -30,9 +30,9 @@ import scala.util.{Failure, Success}
 /**
  * The [[Subscriber]] internal implementation based on Akka actors.
  *
- * @see [[com.outworkers.phantom.reactivestreams.StreamedCassandraTable.subscriber()]]
+ * @see [[com.outworkers.phantom.streams.StreamedCassandraTable.subscriber()]]
  */
-class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[reactivestreams] (
+class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[streams] (
   table: CT,
   builder: RequestBuilder[CT, T],
   batchSize: Int,

@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.exceptions
+package com.outworkers.phantom.streams.suites.iteratee
 
-import scala.util.control.NoStackTrace
+import com.datastax.driver.core.{Session, SocketOptions}
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.connectors.ContactPoint
 
-case class InvalidClusteringKeyException(table: String) extends
-  RuntimeException(s"Table $table: When using CLUSTERING ORDER all PrimaryKey" +
-    s" definitions must become a ClusteringKey definition and specify order."
-  ) with NoStackTrace
+trait BigTest extends PhantomSuite {
 
-case class InvalidPrimaryKeyException(
-  table: String
-) extends RuntimeException(s"You need to define at least one PartitionKey for the table $table") with NoStackTrace
+  val connectionTimeoutMillis = 1000
 
-case class InvalidTableException(msg: String) extends RuntimeException(msg) with NoStackTrace
+  override implicit lazy val session: Session = {
+    ContactPoint.local.withClusterBuilder(
+      _.withSocketOptions(new SocketOptions()
+        .setReadTimeoutMillis(connectionTimeoutMillis)
+        .setConnectTimeoutMillis(connectionTimeoutMillis)
+      )
+    ).noHeartbeat().keySpace(keySpace).session
+  }
+}

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.reactivestreams.suites.iteratee
+package com.outworkers.phantom.streams.suites.iteratee
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.reactivestreams._
+import com.outworkers.phantom.streams._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.testing._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}

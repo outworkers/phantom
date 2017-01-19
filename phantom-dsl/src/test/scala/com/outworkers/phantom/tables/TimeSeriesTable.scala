@@ -19,8 +19,9 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+import com.outworkers.util.testing.Sample
 import org.joda.time.{DateTime, DateTimeZone}
-
+import com.outworkers.util.testing._
 import scala.concurrent.Future
 
 case class TimeSeriesRecord(
@@ -35,6 +36,19 @@ case class TimeUUIDRecord(
   name: String,
   timestamp: DateTime
 )
+
+object TimeUUIDRecord {
+  implicit object TimeUUIDRecordSampler extends Sample[TimeUUIDRecord] {
+    override def sample: TimeUUIDRecord = {
+      TimeUUIDRecord(
+        UUIDs.timeBased(),
+        gen[UUID],
+        gen[ShortString].value,
+        gen[DateTime]
+      )
+    }
+  }
+}
 
 sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn(this) with PartitionKey

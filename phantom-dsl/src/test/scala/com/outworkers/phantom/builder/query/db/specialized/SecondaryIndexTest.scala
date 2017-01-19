@@ -31,7 +31,7 @@ class SecondaryIndexTest extends PhantomSuite {
   it should "allow fetching a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- database.secondaryIndexTable.store(sample).future()
+      _ <- database.secondaryIndexTable.store(sample).future()
       select <- database.secondaryIndexTable.select.where(_.id eqs sample.primary).one
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
     } yield (select, select2)
@@ -52,9 +52,9 @@ class SecondaryIndexTest extends PhantomSuite {
     val updated = gen[UUID]
 
     val chain = for {
-      insert <- database.secondaryIndexTable.store(sample).future()
+      _ <- database.secondaryIndexTable.store(sample).future()
       selected <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
-      select <- database.secondaryIndexTable.update.where(_.id eqs sample.primary).modify(_.secondary setTo updated).future()
+      _ <- database.secondaryIndexTable.update.where(_.id eqs sample.primary).modify(_.secondary setTo updated).future()
       updated <- database.secondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
     } yield (selected, updated)
 
@@ -73,7 +73,7 @@ class SecondaryIndexTest extends PhantomSuite {
   it should "not throw an error if filtering is not enabled when querying by secondary keys" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- database.secondaryIndexTable.store(sample).future()
+      _ <- database.secondaryIndexTable.store(sample).future()
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield select2
 
@@ -86,9 +86,9 @@ class SecondaryIndexTest extends PhantomSuite {
     val sample = gen[SecondaryIndexRecord]
     val updatedName = gen[String]
     val chain = for {
-      insert <- database.secondaryIndexTable.store(sample).future()
+      _ <- database.secondaryIndexTable.store(sample).future()
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
-      update <- database.secondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).future()
+      _ <- database.secondaryIndexTable.update.where(_.secondary eqs sample.secondary).modify(_.name setTo updatedName).future()
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
@@ -98,9 +98,9 @@ class SecondaryIndexTest extends PhantomSuite {
   it should "throw an error when deleting a record by its secondary index" in {
     val sample = gen[SecondaryIndexRecord]
     val chain = for {
-      insert <- database.secondaryIndexTable.store(sample).future()
+      _ <- database.secondaryIndexTable.store(sample).future()
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
-      delete <- database.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
+      _ <- database.secondaryIndexTable.delete.where(_.secondary eqs sample.secondary).future()
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 

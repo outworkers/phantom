@@ -42,7 +42,7 @@ CassandraConnector`.
 - `Database` now requires an f-bounded type argument: `class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector)`.
 - Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
 This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
-
+- `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`.
 
 Available modules
 =================
@@ -83,9 +83,9 @@ The latest versions are available here. The badges automatically update when a n
 - Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
 - Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
-### Roadmap to Phantom 2.0.0
+### What got completed in Phantom 2.0.0
 
-With the rapidly evolving requirements, Cassansdra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
+With the rapidly evolving requirements, Cassandra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
 
 - Go back to the flexible licensing model everyone knows and loves(especially your legal department). No one wants to go through corporate litigation and licensing compliance to a `build.sbt` dependency, and if you've ever worked in a bank we all know it's not happening.
 
@@ -93,11 +93,7 @@ With the rapidly evolving requirements, Cassansdra releases, and competition, it
 
 - From type parameters to keys, table class cake patterns, having to define `fromRow`, and a whole lot of other boilerplatey items, we have eliminated them one by one, reducing the amount of code you need to type to make it all work. The future looks even brighter, as we plan on fully eliminating the mapping DSL very shortly in favour of even more lightweight techniques.
 
-Phantom's next major release is slowly approaching completion, and if you would like to know more about what's to come and about what we have in store for you next, have a look at the below list. Feedback and contributions are welcome, and we are happy to prioritise any crucial features Phantom may currently be lacking.
-
-If the boxes are checked it means this is already complete on the gigantic [2.0.0 pull request](https://github.com/outworkers/phantom/pull/576). This is initial "in progres" [migration guide](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide) to Phantom 2.0.0 that should give you some more detail into the changes made.
-
-Intermediary releases of phantom 2.0.x are already available via `Resolver.bintrayRepo("outworkers", "oss-releases")` and the latest version is [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion).
+Feedback and contributions are welcome, and we are happy to prioritise any crucial features Phantom may currently be lacking.
 
 #### Licensing and distribution
 
@@ -116,7 +112,7 @@ Intermediary releases of phantom 2.0.x are already available via `Resolver.bintr
 - [x] Enforce primary key restrictions on a table using a macro.
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
 - [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
-- [ ] Generate the `fromRow` if the fields match, they are in abitrary order, but there are no duplicate types.
+- [ ] Generate the `fromRow` if the fields match, they are in arbitrary order, but there are no duplicate types.
 - [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 #### Tech debt

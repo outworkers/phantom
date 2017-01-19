@@ -15,6 +15,10 @@
  */
 package com.outworkers.phantom.tables
 
+import java.net.InetAddress
+import java.util.Date
+
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.{InsertQuery, UpdateQuery}
 import com.outworkers.phantom.dsl._
@@ -30,7 +34,7 @@ case class OptionalPrimitive(
   bDecimal: Option[BigDecimal],
   double: Option[Double],
   float: Option[Float],
-  inet: Option[java.net.InetAddress],
+  inet: Option[InetAddress],
   int: Option[Int],
   date: Option[java.util.Date],
   uuid: Option[java.util.UUID],
@@ -39,6 +43,26 @@ case class OptionalPrimitive(
 )
 
 object OptionalPrimitive {
+
+  implicit object OptionalPrimitiveSampler extends Sample[OptionalPrimitive] {
+    override def sample: OptionalPrimitive = {
+      OptionalPrimitive(
+        gen[ShortString].value,
+        genOpt[String],
+        genOpt[Long],
+        genOpt[Boolean],
+        genOpt[BigDecimal],
+        genOpt[Double],
+        genOpt[Float],
+        genOpt[InetAddress],
+        genOpt[Int],
+        genOpt[Date],
+        genOpt[UUID],
+        Some(UUIDs.timeBased),
+        genOpt[BigInt]
+      )
+    }
+  }
 
   def empty: OptionalPrimitive = {
     OptionalPrimitive(
