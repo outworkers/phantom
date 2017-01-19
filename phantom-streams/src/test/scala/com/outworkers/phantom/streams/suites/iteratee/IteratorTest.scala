@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.streams.suites.iteratee
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import com.outworkers.util.testing._
@@ -32,7 +33,7 @@ class IteratorTest extends BigTest with ScalaFutures {
   it should "correctly retrieve the right number of records using scala iterator" in {
     val generationSize = 100
     val user = gen[UUID]
-    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user))
+    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
 
     val chain = for {
       store <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
