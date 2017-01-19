@@ -40,8 +40,7 @@ case class WideRow(
   field17: String,
   field18: String,
   field19: String,
-  field20: String,
-  field21: String
+  field20: String
 )
 
 abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootConnector {
@@ -67,8 +66,6 @@ abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootCon
   object field18 extends StringColumn(this)
   object field19 extends StringColumn(this)
   object field20 extends StringColumn(this)
-  object field21 extends StringColumn(this)
-
 
   def store(row: WideRow): InsertQuery.Default[WideTable, WideRow] = {
     insert.value(_.id, row.id)
@@ -93,7 +90,6 @@ abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootCon
       .value(_.field18, row.field18)
       .value(_.field19, row.field19)
       .value(_.field20, row.field20)
-      .value(_.field21, row.field21)
   }
 }
 

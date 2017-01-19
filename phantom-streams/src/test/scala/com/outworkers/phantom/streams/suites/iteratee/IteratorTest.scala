@@ -17,7 +17,7 @@ package com.outworkers.phantom.streams.suites.iteratee
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
+import com.outworkers.phantom.tables.TimeUUIDRecord
 import com.outworkers.util.testing._
 import org.scalatest.concurrent.ScalaFutures
 
@@ -36,7 +36,7 @@ class IteratorTest extends BigTest with ScalaFutures {
     val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
 
     val chain = for {
-      store <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
+      _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
       iterator <- database.timeuuidTable.select.where(_.user eqs user).iterator()
     } yield iterator
 
@@ -49,13 +49,13 @@ class IteratorTest extends BigTest with ScalaFutures {
   }
 
   ignore should "correctly paginate a query using an iterator" in {
-    val generationSize = 100
+    val generationSize = 300
     val fetchSize = generationSize / 2
     val user = gen[UUID]
-    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user))
+    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
 
     val chain = for {
-      store <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
+      _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
       firstHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(_.setFetchSize(fetchSize))
       secondHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(firstHalf.pagingState)
     } yield (firstHalf, secondHalf)
