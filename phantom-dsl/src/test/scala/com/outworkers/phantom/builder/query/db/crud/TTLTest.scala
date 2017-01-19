@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Primitive, TestDatabase}
+import com.outworkers.phantom.tables.Primitive
 import com.outworkers.util.testing._
 import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
@@ -30,7 +30,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
+    database.primitives.insertSchema()
   }
 
   override def withFixture(test: NoArgTest): Outcome = {
@@ -48,8 +48,8 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).ttl(ttl).future()
-      get <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).ttl(ttl).future()
+      get <- database.primitives.select.where(_.pkey eqs row.pkey).one()
     } yield get
 
     chain.successful { record =>
@@ -57,7 +57,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
     }
 
     eventually(timeout(ttl + granularity)) {
-      val futureRecord = TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one()
+      val futureRecord = database.primitives.select.where(_.pkey eqs row.pkey).one()
       futureRecord.successful { record =>
         record shouldBe empty
       }
@@ -67,11 +67,11 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
   it should "expire inserted records after TTL with prepared statement" taggedAs Retryable in {
     val row = gen[Primitive]
 
-    val fetchQuery = TestDatabase.primitives.select
+    val fetchQuery = database.primitives.select
       .where(_.pkey eqs ?)
       .prepare()
 
-    val insertQuery = TestDatabase.primitives.insert
+    val insertQuery = database.primitives.insert
       .p_value(_.pkey, ?)
       .p_value(_.long, ?)
       .p_value(_.boolean, ?)
@@ -102,7 +102,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
     }
 
     val chain = for {
-      store <- preparedInsert(row).future()
+      _ <- preparedInsert(row).future()
       get <- fetchQuery.bind(row.pkey).one()
     } yield get
 
