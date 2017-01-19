@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
@@ -34,7 +35,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
 
     val chain = for {
-      store <- database.recipes.store(record).future()
+      _ <- database.recipes.store(record).future()
       timestamp <- database.recipes.select.function(t => writetime(t.description))
         .where(_.url eqs record.url).one()
     } yield timestamp
@@ -51,10 +52,10 @@ class SelectFunctionsTesting extends PhantomSuite {
   }
 
   it should "retrieve the dateOf of a field from Cassandra" in {
-    val record = gen[TimeUUIDRecord]
+    val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
 
     val chain = for {
-      store <- database.timeuuidTable.store(record).future()
+      _ <- database.timeuuidTable.store(record).future()
       timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id)).where(_.user eqs record.user)
         .and(_.id eqs record.id).one()
     } yield timestamp
@@ -70,10 +71,10 @@ class SelectFunctionsTesting extends PhantomSuite {
   }
 
   it should "retrieve the unixTimestamp of a field from Cassandra" in {
-    val record = gen[TimeUUIDRecord]
+    val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
 
     val chain = for {
-      store <- database.timeuuidTable.store(record).future()
+      _ <- database.timeuuidTable.store(record).future()
       timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id)).where(_.user eqs record.user)
         .and(_.id eqs record.id).one()
     } yield timestamp
@@ -89,11 +90,11 @@ class SelectFunctionsTesting extends PhantomSuite {
   }
 
   it should "retrieve the TTL of a field from Cassandra" in {
-    val record = gen[TimeUUIDRecord]
+    val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
     val timeToLive = 20
 
     val chain = for {
-      store <- database.timeuuidTable.store(record).ttl(timeToLive).future()
+      _ <- database.timeuuidTable.store(record).ttl(timeToLive).future()
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)

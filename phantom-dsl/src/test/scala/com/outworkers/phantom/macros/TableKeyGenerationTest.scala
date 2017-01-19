@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.tables._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}

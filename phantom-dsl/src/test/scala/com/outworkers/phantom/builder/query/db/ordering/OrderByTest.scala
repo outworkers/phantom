@@ -22,6 +22,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
+import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.concurrent.Future
 
@@ -33,11 +34,13 @@ class OrderByTest extends PhantomSuite {
   }
 
   it should "store a series of records and retrieve them in the right order" in {
-
     val user = gen[UUID]
 
     info(s"Generating a list of records with the same partition key value: $user")
-    val records = genList[TimeUUIDRecord]().map(_.copy(user = user, id = UUIDs.timeBased()))
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      val id = UUIDs.timeBased()
+      rec.copy(user = user, id = id, timestamp = new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC))
+    }
 
     val chain = for {
       _ <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
@@ -47,7 +50,7 @@ class OrderByTest extends PhantomSuite {
 
 
     whenReady(chain) {
-      case (asc, desc) => {
+      case (asc, desc) =>
         val orderedAsc = records.sortWith((a, b) => { a.id.compareTo(b.id) <= 0 })
 
         info("The ascending results retrieved from the DB")
@@ -58,17 +61,18 @@ class OrderByTest extends PhantomSuite {
 
         asc should contain theSameElementsAs orderedAsc
 
+
+        //implicit val timeUUIDRecordOrdering = Ordering.fromLessThan[TimeUUIDRecord] { case (a, b) => a.id.compareTo(b.id) >= 0 }
+
         val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
 
-        info("The ascending results retrieved from the DB")
+        info("The descending results retrieved from the DB")
         info(desc.mkString("\n"))
 
-        info("The ascending results expected")
+        info("The descending results expected")
         info(orderedDesc.mkString("\n"))
 
         desc should contain theSameElementsAs orderedDesc
-
-      }
     }
   }
 
