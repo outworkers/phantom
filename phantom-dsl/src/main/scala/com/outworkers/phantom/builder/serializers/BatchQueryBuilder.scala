@@ -25,6 +25,8 @@ private[phantom] class BatchQueryBuilder {
   }
 
   def applyBatch(qb: CQLQuery): CQLQuery = {
-    qb.forcePad.append(CQLSyntax.Batch.apply).forcePad.append(CQLSyntax.Batch.batch).append(CQLSyntax.Symbols.`;`)
+    qb.forcePad.append(CQLSyntax.Batch.apply)
+      .forcePad.append(CQLSyntax.Batch.batch)
+      .append(CQLSyntax.Symbols.`;`)
   }
 }
