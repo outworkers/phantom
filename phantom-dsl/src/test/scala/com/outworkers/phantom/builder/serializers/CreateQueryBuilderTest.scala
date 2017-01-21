@@ -31,11 +31,11 @@ import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
-  val BasicTable = TestDatabase.basicTable
+  private[this] val BasicTable = TestDatabase.basicTable
   final val DefaultTtl = 500
   final val OneDay = 86400
 
-  val root = BasicTable.create.qb.queryString
+  private[this] val root = BasicTable.create.qb.queryString
 
   "The CREATE query builder" - {
 

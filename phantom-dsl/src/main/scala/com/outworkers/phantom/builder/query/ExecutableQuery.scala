@@ -15,13 +15,15 @@
  */
 package com.outworkers.phantom.builder.query
 
-import java.util.{List => JavaList, Iterator => JavaIterator}
+import java.util.{Iterator => JavaIterator, List => JavaList}
+
 import com.datastax.driver.core._
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.connectors.KeySpace
 
 import scala.collection.JavaConverters._
+import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 trait RecordResult[R] {
@@ -146,8 +148,21 @@ private[phantom] trait RootExecutableQuery[R] {
     if (Option(row).isDefined) Some(fromRow(row)) else None
   }
 
-  protected[this] def directMapper(results: JavaList[Row]): List[R] = {
-    List.tabulate(results.size())(index => fromRow(results.get(index)))
+  protected[this] def directMapper(results: JavaList[Row])(implicit cbf: CanBuildFrom[Nothing, R, List[R]]): List[R] = {
+
+    val builder = cbf()
+    val resultSize = results.size()
+
+    builder.sizeHint(resultSize)
+
+    var i = 0
+
+    while (i < resultSize) {
+      builder += fromRow(results.get(i))
+      i += 1
+    }
+
+    builder.result()
   }
 
   protected[this] def directMapper(results: JavaIterator[Row]): List[R] = {
@@ -170,10 +185,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   protected[this] def greedyEval(
     f: ScalaFuture[ResultSet]
   )(implicit ex: ExecutionContextExecutor): ScalaFuture[ListResult[R]] = {
-    f map { r =>
-      val records = if (r.isFullyFetched) directMapper(r.all()) else directMapper(r.iterator())
-      ListResult(records, r)
-    }
+    f map { r => ListResult(directMapper(r.iterator()), r) }
   }
 
   protected[this] def lazyEval(
