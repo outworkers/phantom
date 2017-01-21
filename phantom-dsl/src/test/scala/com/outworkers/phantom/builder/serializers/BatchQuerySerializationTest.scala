@@ -44,7 +44,7 @@ class BatchQuerySerializationTest extends QueryBuilderTest {
       }
     }
 
-    "should serialize an APPLY batch query" in {
+    "should serialize an APPLY batch query" - {
 
       "should produce an applied batch query given a LOGGED batch type" in {
         val qb = QueryBuilder.Batch.batch(Batch.Logged)
