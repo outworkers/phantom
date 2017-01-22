@@ -36,17 +36,4 @@ trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider
     super.beforeAll()
     database.create()
   }
-
-  implicit object RecipeSampler extends Sample[Recipe] {
-    override def sample: Recipe = Recipe(
-      id = gen[UUID],
-      name = gen[ShortString].value,
-      title = gen[ShortString].value,
-      author = gen[ShortString].value,
-      description = gen[ShortString].value,
-      ingredients = genList[String]().toSet,
-      props = genMap[String](),
-      timestamp = gen[DateTime]
-    )
-  }
 }

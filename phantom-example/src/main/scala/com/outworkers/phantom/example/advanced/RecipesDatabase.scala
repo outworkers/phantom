@@ -61,7 +61,7 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
   // Non blocking, 3 lines of code, 15 seconds of typing effort. Done.
   def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
     for {
-      insert <- AdvancedRecipes.insertRecipe(recipe)
+      _ <- AdvancedRecipes.insertRecipe(recipe)
       byTitle <- AdvancedRecipesByTitle.insertRecipe(Tuple2(recipe.title, recipe.id))
     } yield byTitle
   }

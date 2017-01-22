@@ -41,4 +41,36 @@ class DatabaseTest extends PhantomSuite {
 
     queries should contain (target)
   }
+
+  it should "automatically drop a table using the autodrop method" in {
+    val chain = for {
+      _ <- db.createAsync()
+      _ <- db.autodrop().future()
+      exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
+        cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      }
+    } yield exists
+
+    whenReady(chain) { res =>
+      Option(res.one()) shouldBe empty
+    }
+  }
+
+  it should "automatically drop a table using the dropAsync method" in {
+    val chain = for {
+      _ <- db.createAsync()
+      _ <- db.dropAsync()
+      exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
+        cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      }
+    } yield exists
+
+    whenReady(chain) { res =>
+      Option(res.one()) shouldBe empty
+    }
+  }
 }
