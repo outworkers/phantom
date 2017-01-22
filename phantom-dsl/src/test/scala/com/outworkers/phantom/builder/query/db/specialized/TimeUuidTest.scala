@@ -53,7 +53,11 @@ class TimeUuidTest extends PhantomSuite {
     val recordList = List(
       record,
       record.copy(timestamp = record.timestamp.plusMillis(1)),
-      record.copy(timestamp = record.timestamp.plusMillis(-1))
+      record.copy(timestamp = record.timestamp.plusMillis(2)),
+      record.copy(timestamp = record.timestamp.plusMillis(3)),
+      record.copy(timestamp = record.timestamp.plusMillis(-1)),
+      record.copy(timestamp = record.timestamp.plusMillis(-2)),
+      record.copy(timestamp = record.timestamp.plusMillis(-3))
     )
 
     val minuteOffset = start.plusMinutes(-1).timeuuid()
