@@ -48,7 +48,7 @@ before_script: travis_retry sbt "plz $TRAVIS_SCALA_VERSION update"
 install:
   - pip install 'requests[security]'
   - pip install ccm
-  - ccm create test -v 2.2.8 -n 3 -s
+  - ccm create test -v 3.0.0 -n 3 -s
 
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh

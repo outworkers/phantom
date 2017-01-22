@@ -25,13 +25,44 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.AdvancedRecipes.insertRecipe(sample)
+      _ <- database.AdvancedRecipes.insertRecipe(sample)
       rec <- database.AdvancedRecipes.findById(sample.id)
     } yield rec
 
     whenReady(chain) { res =>
       res shouldBe defined
       res.value shouldEqual sample
+    }
+  }
+
+  it should "insert a new record in both tables using the pre-existing database method" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      _ <- database.insertRecipe(sample)
+      rec <- database.AdvancedRecipes.findById(sample.id)
+    } yield rec
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "allow indexing recipes by title" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      _ <- database.AdvancedRecipesByTitle.insertRecipe(sample.title -> sample.id)
+      rec <- database.AdvancedRecipesByTitle.findRecipeByTitle(sample.title)
+    } yield rec
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      val (title, id) = res.value
+
+      title shouldEqual sample.title
+      id shouldEqual sample.id
     }
   }
 }
