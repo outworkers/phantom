@@ -47,9 +47,9 @@ class DatabaseTest extends PhantomSuite {
       _ <- db.createAsync()
       _ <- db.autodrop().future()
       exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
-        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
-      } else {
         cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
       }
     } yield exists
 
@@ -63,9 +63,9 @@ class DatabaseTest extends PhantomSuite {
       _ <- db.createAsync()
       _ <- db.dropAsync()
       exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
-        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
-      } else {
         cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${db.enumTable.tableName}' LIMIT 1").future()
       }
     } yield exists
 
