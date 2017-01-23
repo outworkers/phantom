@@ -296,7 +296,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   ): ListResult[R] = {
     val builder = cbf()
     val count = res.getAvailableWithoutFetching
-    Console.println(s"Count $count")
     builder.sizeHint(count)
     var i = 0
     while (i < count) {
