@@ -48,7 +48,7 @@ class IteratorTest extends BigTest with ScalaFutures {
     }
   }
 
-  ignore should "correctly paginate a query using an iterator" in {
+  it should "correctly paginate a query using an iterator" in {
     val generationSize = 300
     val fetchSize = generationSize / 2
     val user = gen[UUID]
@@ -56,17 +56,17 @@ class IteratorTest extends BigTest with ScalaFutures {
 
     val chain = for {
       _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
-      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(_.setFetchSize(fetchSize))
-      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(firstHalf.pagingState)
+      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(_.setFetchSize(fetchSize))
+      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(firstHalf.pagingState)
     } yield (firstHalf, secondHalf)
 
     whenReady(chain) {
       case (firstBatch, secondBatch) => {
         firstBatch.records.size shouldEqual fetchSize
-        firstBatch.records.forall(rows contains _)
+        //firstBatch.records should contain theSameElementsAs (rows take fetchSize)
 
         secondBatch.records.size shouldEqual fetchSize
-        secondBatch.records.forall(rows contains _)
+        //secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
       }
     }
   }

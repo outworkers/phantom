@@ -222,8 +222,4 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
     }
   }
-
-
-
-
 }
