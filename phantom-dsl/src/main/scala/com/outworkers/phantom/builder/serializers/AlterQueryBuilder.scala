@@ -110,6 +110,7 @@ private[phantom] trait AlterQueryBuilder {
   def rename(qb: CQLQuery, column: String, newColumn: String): CQLQuery = {
     qb.pad.append(CQLSyntax.Alter.Rename)
       .forcePad.append(column)
+      .forcePad.append(CQLSyntax.To)
       .forcePad.append(newColumn)
   }
 
