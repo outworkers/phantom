@@ -158,8 +158,8 @@ object AlterQuery {
   def alterType[
     T <: CassandraTable[T, _],
     R,
-    NewType : Primitive
-  ](table: T, select: T => AbstractColumn[R])(
+    NewType
+  ](table: T, select: T => AbstractColumn[R], newType: Primitive[NewType])(
     implicit keySpace: KeySpace
   ): AlterQuery.Default[T, R] = {
 
@@ -169,7 +169,7 @@ object AlterQuery {
 
     new AlterQuery(
       table,
-      QueryBuilder.Alter.alter(qb, select(table).name, implicitly[Primitive[NewType]].cassandraType),
+      QueryBuilder.Alter.alter(qb, select(table).name, newType.cassandraType),
       QueryOptions.empty
     )
   }

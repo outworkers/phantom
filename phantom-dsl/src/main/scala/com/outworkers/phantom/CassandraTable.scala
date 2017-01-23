@@ -95,9 +95,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def alter[
     RR,
-    NewType : Primitive
-  ](columnSelect: T => AbstractColumn[RR])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
-    AlterQuery.alterType[T, RR, NewType](instance, columnSelect)
+    NewType
+  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+    AlterQuery.alterType[T, RR, NewType](instance, columnSelect, newType)
   }
 
   final def alter[RR](

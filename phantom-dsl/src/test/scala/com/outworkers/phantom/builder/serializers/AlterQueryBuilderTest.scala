@@ -17,12 +17,12 @@ package com.outworkers.phantom.builder.serializers
 
 import java.util.concurrent.TimeUnit
 
-import com.twitter.conversions.storage._
-import com.twitter.util.{Duration => TwitterDuration}
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
+import java.nio.ByteBuffer
 import org.joda.time.Seconds
 
 import scala.concurrent.duration._
@@ -208,11 +208,18 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
     }
 
     "should allow altering the type of a column" - {
-      "alter column type from text to blob" in {
-        val qb = basicTable.alter(_.placeholder, "test").queryString
 
+      "alter column type from text to blob" in {
+        val qb = basicTable.alter(_.placeholder)(Primitive[ByteBuffer]).queryString
+        qb shouldEqual s"ALTER TABLE phantom.basicTable ALTER placeholder TYPE ${Primitive[ByteBuffer].cassandraType};"
+      }
+
+      "alter a column type from placedholder to test" in {
+
+        val qb = basicTable.alter(_.placeholder, "test").queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable RENAME placeholder TO test;"
       }
+
     }
   }
 
