@@ -54,17 +54,14 @@ class IteratorTest extends BigTest with ScalaFutures {
     val user = gen[UUID]
 
     val rows = genList[TimeUUIDRecord](generationSize).map {
-
-      val id = UUIDs.timeBased()
-
-      rec => rec.copy(user = user, id = id)
-    }
+      rec => rec.copy(user = user, id = UUIDs.timeBased())
+    } sortBy(_.id) reverse
 
     val chain = for {
       _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
       count <- database.timeuuidTable.select.count().where(_.user eqs user).one()
-      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(_.setFetchSize(fetchSize))
-      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(firstHalf.pagingState)
+      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(_.setFetchSize(fetchSize))
+      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(firstHalf.pagingState)
     } yield (count, firstHalf, secondHalf)
 
     whenReady(chain) { case (count, firstBatch, secondBatch) =>

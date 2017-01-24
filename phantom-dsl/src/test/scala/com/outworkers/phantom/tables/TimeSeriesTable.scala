@@ -15,13 +15,11 @@
  */
 package com.outworkers.phantom.tables
 
-import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing.Sample
-import org.joda.time.{DateTime, DateTimeZone}
-import com.outworkers.util.testing._
+import org.joda.time.DateTime
+
 import scala.concurrent.Future
 
 case class TimeSeriesRecord(
