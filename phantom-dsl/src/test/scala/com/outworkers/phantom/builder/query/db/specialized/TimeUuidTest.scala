@@ -34,14 +34,12 @@ class TimeUuidTest extends PhantomSuite {
     val start = gen[DateTime].plusMinutes(-60)
     val end = gen[DateTime].plusMinutes(60)
 
-    val id = UUIDs.timeBased()
     val user = UUIDs.random()
 
     val record = TimeUUIDRecord(
       user,
       UUIDs.timeBased(),
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC)
+      gen[String]
     )
 
     /**
@@ -50,15 +48,7 @@ class TimeUuidTest extends PhantomSuite {
       * list is added to make sure at least one of t, t minus 1 millisecond, or t plus 1 millisecond
       * is found in the expected list of records.
       */
-    val recordList = List(
-      record,
-      record.copy(timestamp = record.timestamp.plusMillis(1)),
-      record.copy(timestamp = record.timestamp.plusMillis(2)),
-      record.copy(timestamp = record.timestamp.plusMillis(3)),
-      record.copy(timestamp = record.timestamp.plusMillis(-1)),
-      record.copy(timestamp = record.timestamp.plusMillis(-2)),
-      record.copy(timestamp = record.timestamp.plusMillis(-3))
-    )
+    val recordList = List(record)
 
     val minuteOffset = start.plusMinutes(-1).timeuuid()
     val secondOffset = start.plusSeconds(-15).timeuuid()
@@ -66,22 +56,20 @@ class TimeUuidTest extends PhantomSuite {
     val record1 = TimeUUIDRecord(
       user,
       minuteOffset,
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(minuteOffset), DateTimeZone.UTC)
+      gen[String]
     )
 
     val record2 = TimeUUIDRecord(
       user,
       secondOffset,
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(secondOffset), DateTimeZone.UTC)
+      gen[String]
     )
 
     val chain = for {
-      empty <- TestDatabase.timeuuidTable.truncate().future()
-      store <- TestDatabase.timeuuidTable.store(record).future()
-      store2 <- TestDatabase.timeuuidTable.store(record1).future()
-      store3 <- TestDatabase.timeuuidTable.store(record2).future()
+      _ <- TestDatabase.timeuuidTable.truncate().future()
+      _ <- TestDatabase.timeuuidTable.store(record).future()
+      _ <- TestDatabase.timeuuidTable.store(record1).future()
+      _ <- TestDatabase.timeuuidTable.store(record2).future()
       get <- TestDatabase.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id <= maxTimeuuid(end))
@@ -122,14 +110,12 @@ class TimeUuidTest extends PhantomSuite {
     val start = gen[DateTime].plusMinutes(intervalOffset * -1)
     val end = gen[DateTime].plusMinutes(intervalOffset)
 
-    val id = UUIDs.timeBased()
     val user = UUIDs.random()
 
     val record = TimeUUIDRecord(
       user,
       UUIDs.timeBased(),
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC)
+      gen[String]
     )
 
     val minuteOffset = start.plusMinutes(-1).timeuuid()
@@ -138,22 +124,20 @@ class TimeUuidTest extends PhantomSuite {
     val record1 = TimeUUIDRecord(
       user,
       minuteOffset,
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(minuteOffset), DateTimeZone.UTC)
+      gen[String]
     )
 
     val record2 = TimeUUIDRecord(
       user,
       secondOffset,
-      gen[String],
-      new DateTime(UUIDs.unixTimestamp(secondOffset), DateTimeZone.UTC)
+      gen[String]
     )
 
     val chain = for {
-      empty <- TestDatabase.timeuuidTable.truncate().future()
-      store <- TestDatabase.timeuuidTable.store(record).future()
-      store2 <- TestDatabase.timeuuidTable.store(record1).future()
-      store3 <- TestDatabase.timeuuidTable.store(record2).future()
+      _ <- TestDatabase.timeuuidTable.truncate().future()
+      _ <- TestDatabase.timeuuidTable.store(record).future()
+      _ <- TestDatabase.timeuuidTable.store(record1).future()
+      _ <- TestDatabase.timeuuidTable.store(record2).future()
       get <- TestDatabase.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id >= minTimeuuid(start.plusMinutes(-3)))
@@ -161,9 +145,7 @@ class TimeUuidTest extends PhantomSuite {
         .fetch()
     } yield get
 
-    whenReady(chain) {
-      res => res.size shouldEqual 0
-    }
+    whenReady(chain) { _.size shouldEqual 0}
   }
 
 }

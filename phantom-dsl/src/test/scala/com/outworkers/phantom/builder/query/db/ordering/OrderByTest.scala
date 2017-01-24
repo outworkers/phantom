@@ -38,8 +38,7 @@ class OrderByTest extends PhantomSuite {
 
     info(s"Generating a list of records with the same partition key value: $user")
     val records = genList[TimeUUIDRecord]().map { rec =>
-      val id = UUIDs.timeBased()
-      rec.copy(user = user, id = id, timestamp = new DateTime(UUIDs.unixTimestamp(id), DateTimeZone.UTC))
+      rec.copy(user = user, id = UUIDs.timeBased())
     }
 
     val chain = for {
