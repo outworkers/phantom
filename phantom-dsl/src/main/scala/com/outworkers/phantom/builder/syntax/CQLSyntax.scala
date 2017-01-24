@@ -24,6 +24,7 @@ object CQLSyntax {
   val Or = "OR"
   val On = "ON"
   val IF = "IF"
+  val To = "TO"
   val index = "INDEX"
 
   val ignoreNulls = "IGNORE_NULLS"

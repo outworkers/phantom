@@ -48,26 +48,33 @@ class IteratorTest extends BigTest with ScalaFutures {
     }
   }
 
-  ignore should "correctly paginate a query using an iterator" in {
-    val generationSize = 300
+  it should "correctly paginate a query using an iterator" in {
+    val generationSize = 100
     val fetchSize = generationSize / 2
     val user = gen[UUID]
-    val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val rows = genList[TimeUUIDRecord](generationSize).map {
+      rec => rec.copy(user = user, id = UUIDs.timeBased())
+    } sortBy(_.id) reverse
 
     val chain = for {
       _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
-      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(_.setFetchSize(fetchSize))
-      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).iterator(firstHalf.pagingState)
-    } yield (firstHalf, secondHalf)
+      count <- database.timeuuidTable.select.count().where(_.user eqs user).one()
+      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(_.setFetchSize(fetchSize))
+      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(firstHalf.pagingState)
+    } yield (count, firstHalf, secondHalf)
 
-    whenReady(chain) {
-      case (firstBatch, secondBatch) => {
-        firstBatch.records.size shouldEqual fetchSize
-        firstBatch.records.forall(rows contains _)
+    whenReady(chain) { case (count, firstBatch, secondBatch) =>
 
-        secondBatch.records.size shouldEqual fetchSize
-        secondBatch.records.forall(rows contains _)
-      }
+      count shouldBe defined
+      count.value shouldEqual generationSize
+
+      Option(firstBatch.pagingState) shouldBe defined
+      firstBatch.records.size shouldEqual fetchSize
+      firstBatch.records should contain theSameElementsAs (rows take fetchSize)
+
+      secondBatch.records.size shouldEqual fetchSize
+      secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
     }
   }
 }

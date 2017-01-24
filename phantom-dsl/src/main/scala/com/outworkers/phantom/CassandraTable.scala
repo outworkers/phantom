@@ -16,7 +16,9 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.{Row, Session}
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
@@ -90,6 +92,20 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
   final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(instance)
+
+  final def alter[
+    RR,
+    NewType
+  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+    AlterQuery.alterType[T, RR, NewType](instance, columnSelect, newType)
+  }
+
+  final def alter[RR](
+    columnSelect: T => AbstractColumn[RR],
+    newName: String
+  )(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+    AlterQuery.alterName[T, RR](instance, columnSelect, newName)
+  }
 
   final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 

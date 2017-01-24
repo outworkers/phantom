@@ -202,6 +202,27 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     future() map { res => singleResult(res.one) }
   }
 
+  private[phantom] def pagination[M[X] <: TraversableOnce[X]](res: ResultSet)(
+    implicit cbf: CanBuildFrom[Nothing, R, M[R]]
+  ): (M[R], ResultSet) = {
+    val builder = cbf()
+    val count = res.getAvailableWithoutFetching
+    builder.sizeHint(count)
+    var i = 0
+    while (i < count) {
+      builder += fromRow(res.one())
+      i += 1
+    }
+    builder.result() -> res
+  }
+
+  private[phantom] def paginate(res: ResultSet)(
+    implicit cbf: CanBuildFrom[Nothing, R, List[R]]
+  ): ListResult[R] = {
+    val (pag, set) = pagination[List](res)
+    ListResult(pag, set)
+  }
+
   /**
    * Returns the first row from the select ignoring everything else
    *
@@ -232,7 +253,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[List[R]] = {
-    future() map { resultSet => directMapper(resultSet.all) }
+    future() map { r => directMapper(r.all) }
   }
 
   /**
@@ -249,7 +270,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[List[R]] = {
-    future(modifyStatement) map { resultSet => directMapper(resultSet.all) }
+    future(modifyStatement) map { r => directMapper(r.all) }
   }
 
   /**
@@ -269,7 +290,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ListResult[R]] = {
-    future() map (resultSet => ListResult(directMapper(resultSet.all), resultSet))
+    future() map (r => ListResult(directMapper(r.all), r))
   }
 
   /**
@@ -304,10 +325,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   def paginateRecord()(
     implicit session: Session,
     keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ListResult[R]] = {
-    greedyEval(future())
-  }
+    ec: ExecutionContextExecutor,
+    cbf: CanBuildFrom[Nothing, R, List[R]]
+  ): ScalaFuture[ListResult[R]] = future() map paginate
 
   /**
     * Returns a parsed sequence of [R]ows.
@@ -325,10 +345,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   def paginateRecord(state: PagingState)(
     implicit session: Session,
     keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ListResult[R]] = {
-    greedyEval(future(_.setPagingState(state)))
-  }
+    ec: ExecutionContextExecutor,
+    cbf: CanBuildFrom[Nothing, R, Iterator[R]]
+  ): ScalaFuture[ListResult[R]] = future(_.setPagingState(state)) map paginate
 
   /**
     * Returns a parsed sequence of [R]ows
@@ -342,12 +361,11 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   def paginateRecord(state: Option[PagingState])(
     implicit session: Session,
     keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ListResult[R]] = {
-    state match {
-      case None => greedyEval(future())
-      case Some(defined) => greedyEval(future(_.setPagingState(defined)))
-    }
+    ec: ExecutionContextExecutor,
+    cbf: CanBuildFrom[Nothing, R, List[R]]
+  ): ScalaFuture[ListResult[R]] = state match {
+      case None => paginateRecord()
+      case Some(defined) => paginateRecord(defined)
   }
 
   /**
@@ -366,10 +384,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
   def paginateRecord(modifier: Modifier)(
     implicit session: Session,
     keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ListResult[R]] = {
-    greedyEval(future(modifier))
-  }
+    ec: ExecutionContextExecutor,
+    cbf: CanBuildFrom[Nothing, R, List[R]]
+  ): ScalaFuture[ListResult[R]] = future(modifier) map paginate
 
   /**
     * Returns a parsed iterator of [R]ows lazily evaluated. This will respect the fetch size setting
@@ -404,7 +421,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[IteratorResult[R]] = {
-    future(modifier) map { res => IteratorResult(res.iterator().asScala.map(fromRow), res) }
+    future(modifier) map (r => IteratorResult(r.iterator().asScala.map(fromRow), r))
   }
 
   /**

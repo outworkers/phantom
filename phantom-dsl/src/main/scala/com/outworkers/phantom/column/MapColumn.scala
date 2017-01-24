@@ -15,7 +15,10 @@
  */
 package com.outworkers.phantom.column
 
-import com.datastax.driver.core.Row
+import java.nio.{BufferUnderflowException, ByteBuffer}
+
+import com.datastax.driver.core.exceptions.InvalidTypeException
+import com.datastax.driver.core.{CodecUtils, ProtocolVersion, Row}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
@@ -24,6 +27,7 @@ import com.outworkers.phantom.builder.query.CQLQuery
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
+import scala.collection.generic.CanBuildFrom
 import scala.util.{Failure, Success, Try}
 
 private[phantom] abstract class AbstractMapColumn[
@@ -61,16 +65,52 @@ private[phantom] abstract class AbstractMapColumn[
 class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V : Primitive](table: CassandraTable[Owner, Record])
     extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
 
-  val keyPrimitive = Primitive[K]
+  private[this] val keyPrimitive = Primitive[K]
 
   override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
 
-  override val valuePrimitive = Primitive[V]
+  override val valuePrimitive: Primitive[V] = Primitive[V]
 
-  override val cassandraType = QueryBuilder.Collections.mapType(
+  override val cassandraType: String = QueryBuilder.Collections.mapType(
     keyPrimitive.cassandraType,
     valuePrimitive.cassandraType
   ).queryString
+
+  /*
+  protected[this] def parseMap(bytes: ByteBuffer, protocolVersion: ProtocolVersion)(
+    implicit cbf: CanBuildFrom[Nothing, (K, V), Map[K, V]]
+  ): Try[Map[K, V]] = {
+
+    if (bytes == null || bytes.remaining == 0) Success(cbf().result())
+
+    try
+      val input = bytes.duplicate
+      val n = CodecUtils.readSize(input, protocolVersion)
+      val builder = cbf()
+      builder.sizeHint(n)
+
+      val m = builder
+      var i = 0
+      while (i < n) {
+        {
+          val kbb = CodecUtils.readValue(input, protocolVersion)
+          val vbb = CodecUtils.readValue(input, protocolVersion)
+
+          m += (keyCodec.deserialize(kbb, protocolVersion), valueCodec.deserialize(vbb, protocolVersion))
+        }
+        {
+          i += 1;
+          i - 1
+        }
+      }
+      m
+
+    catch {
+      case e: BufferUnderflowException => {
+        throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
+      }
+    }
+  }*/
 
   override def qb: CQLQuery = {
     if (shouldFreeze) {

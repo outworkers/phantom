@@ -10,6 +10,45 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
+Available modules
+=================
+
+This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
+
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
+| ------------          | ------------------- | ------------------| ----------------- |
+| phantom-connectors    | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
+| phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>   |
+| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+
+Using phantom
+=============
+
+### Scala 2.10, 2.11 and 2.12 releases ###
+
+We publish phantom in 2 formats, stable releases and bleeding edge.
+
+- The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
+
+- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+
+### How phantom compares
+
+To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/blob/develop/comparison.md).
+
+### Latest versions
+
+The latest versions are available here. The badges automatically update when a new version is released.
+
+- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
+- Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
+
+
 2.0.0 Migration guide
 =====================
 
@@ -43,45 +82,6 @@ CassandraConnector`.
 - Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
 This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
 - `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`.
-
-Available modules
-=================
-
-This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
-
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
-| ------------          | ------------------- | ------------------| ----------------- |
-| phantom-connectors    | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
-| phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
-| phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
-| phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>   |
-| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-
-Using phantom
-=============
-
-### Scala 2.10, 2.11 and 2.12 releases ###
-
-We publish phantom in 2 formats, stable releases and bleeding edge.
-
-- The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
-
-- Intermediary releases are available through our managed Bintray repository available at `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
-
-
-### How phantom compares
-
-To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/blob/develop/comparison.md).
-
-### Latest versions
-
-The latest versions are available here. The badges automatically update when a new version is released.
-
-- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
-- Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
 ### What got completed in Phantom 2.0.0
 
@@ -117,7 +117,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 
 #### Tech debt
 
-- [ ] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
+- [x] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
 - [ ] Add a build matrix that will test phantom against multiple versions of Cassandra in Travis for Scala 2.11, with support for all major releases of Cassandra.
 - [ ] Bump code coverage up to 100%
 
