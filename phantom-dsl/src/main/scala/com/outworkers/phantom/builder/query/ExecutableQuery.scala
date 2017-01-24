@@ -202,6 +202,27 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     future() map { res => singleResult(res.one) }
   }
 
+  private[phantom] def pagination[M[X] <: TraversableOnce[X]](res: ResultSet)(
+    implicit cbf: CanBuildFrom[Nothing, R, M[R]]
+  ): (M[R], ResultSet) = {
+    val builder = cbf()
+    val count = res.getAvailableWithoutFetching
+    builder.sizeHint(count)
+    var i = 0
+    while (i < count) {
+      builder += fromRow(res.one())
+      i += 1
+    }
+    builder.result() -> res
+  }
+
+  private[phantom] def paginate(res: ResultSet)(
+    implicit cbf: CanBuildFrom[Nothing, R, List[R]]
+  ): ListResult[R] = {
+    val (pag, set) = pagination[List](res)
+    ListResult(pag, set)
+  }
+
   /**
    * Returns the first row from the select ignoring everything else
    *
@@ -291,20 +312,6 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     }
   }
 
-  private[phantom] def paginate(res: ResultSet)(
-    implicit cbf: CanBuildFrom[Nothing, R, List[R]]
-  ): ListResult[R] = {
-    val builder = cbf()
-    val count = res.getAvailableWithoutFetching
-    builder.sizeHint(count)
-    var i = 0
-    while (i < count) {
-      builder += fromRow(res.one())
-      i += 1
-    }
-    ListResult(builder.result(), res)
-  }
-
   /**
     * Returns a parsed sequence of [R]ows but paginates the results using paging state.
     * This will not consume or return the entire set of available results, it will
@@ -320,9 +327,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[Nothing, R, List[R]]
-  ): ScalaFuture[ListResult[R]] = {
-    future() map paginate
-  }
+  ): ScalaFuture[ListResult[R]] = future() map paginate
 
   /**
     * Returns a parsed sequence of [R]ows.
@@ -342,9 +347,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[Nothing, R, Iterator[R]]
-  ): ScalaFuture[ListResult[R]] = {
-    future(_.setPagingState(state)) map paginate
-  }
+  ): ScalaFuture[ListResult[R]] = future(_.setPagingState(state)) map paginate
 
   /**
     * Returns a parsed sequence of [R]ows
@@ -360,11 +363,9 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[Nothing, R, List[R]]
-  ): ScalaFuture[ListResult[R]] = {
-    state match {
+  ): ScalaFuture[ListResult[R]] = state match {
       case None => paginateRecord()
       case Some(defined) => paginateRecord(defined)
-    }
   }
 
   /**
@@ -385,9 +386,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[Nothing, R, List[R]]
-  ): ScalaFuture[ListResult[R]] = {
-    future(modifier) map paginate
-  }
+  ): ScalaFuture[ListResult[R]] = future(modifier) map paginate
 
   /**
     * Returns a parsed iterator of [R]ows lazily evaluated. This will respect the fetch size setting
