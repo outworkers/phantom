@@ -49,7 +49,7 @@ class IteratorTest extends BigTest with ScalaFutures {
   }
 
   it should "correctly paginate a query using an iterator" in {
-    val generationSize = 300
+    val generationSize = 5
     val fetchSize = generationSize / 2
     val user = gen[UUID]
     val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
@@ -57,17 +57,17 @@ class IteratorTest extends BigTest with ScalaFutures {
     val chain = for {
       _ <- database.timeuuidTable.truncate().future()
       _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
-      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(_.setFetchSize(fetchSize))
-      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).paginateRecord(firstHalf.pagingState)
+      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(_.setFetchSize(fetchSize))
+      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(firstHalf.pagingState)
     } yield (firstHalf, secondHalf)
 
     whenReady(chain) {
       case (firstBatch, secondBatch) => {
         firstBatch.records.size shouldEqual fetchSize
-        //firstBatch.records should contain theSameElementsAs (rows take fetchSize)
+        firstBatch.records should contain theSameElementsAs (rows take fetchSize)
 
         secondBatch.records.size shouldEqual fetchSize
-        //secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
+        secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
       }
     }
   }
