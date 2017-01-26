@@ -18,7 +18,7 @@ package com.outworkers.phantom.jdk8
 import java.time._
 import java.util.Date
 
-import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData}
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData}
 import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.CQLQuery
@@ -28,27 +28,13 @@ import scala.util.Try
 
 trait DefaultJava8Primitives {
 
-  implicit object OffsetDateTimeIsPrimitive extends Primitive[OffsetDateTime] {
-
-    override type PrimitiveType = java.util.Date
-
-    val cassandraType = CQLSyntax.Types.Timestamp
-
-    override def asCql(value: OffsetDateTime): String = {
-      value.toInstant.toEpochMilli.toString
+  implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
+    Primitive.derive[OffsetDateTime, (Long, String)](
+      offsetDt =>
+        offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
+    ) { case (timestamp, zone) =>
+      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
     }
-
-    override def fromRow(column: String, row: GettableByNameData): Try[OffsetDateTime] = nullCheck(column, row) {
-      r => OffsetDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
-    }
-
-    override def fromRow(index: Int, row: GettableByIndexData): Try[OffsetDateTime] = nullCheck(index, row) {
-      r => OffsetDateTime.ofInstant(r.getTimestamp(index).toInstant, ZoneOffset.UTC)
-    }
-
-    override def fromString(value: String): OffsetDateTime = OffsetDateTime.parse(value)
-
-    override def clz: Class[Date] = classOf[Date]
   }
 
   implicit object ZonedDateTimeIsPrimitive extends Primitive[ZonedDateTime] {
