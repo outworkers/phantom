@@ -47,18 +47,24 @@ class MyDb(override val connector: CassandraConnection) extends Database[MyDb](c
 ```
 
 In the past, when the table was nested within a `Database`, such as as above, the reflection mechanism
-would essentially "traverse" the entire type hierarchy and work out that the last thing in the chain
+would "traverse" the type hierarchy and work out that the last thing in the chain
 was the `recipes` object, and as a result it would use that as the name of the table within Cassandra.
 
-However, the macro based engine is not capable of replicating that functionality, because unlike the reflection mechanism
-it does not have a way to know how many types you will be extending the type of the table. As a result,
-the macro engine will instead try to figure out the last type in the type hierarchy that directly defines
+However, the macro engine will instead try to figure out the last type in the type hierarchy that directly defines
 columns.
 
-This is done to support inheritance, but it does not support singletons and objects, so as a result, in an identical
-scenario, the macro engine will infer the table name as "Recipes", based on the type information. This is usually
-not a problem in any way, but if you hit trouble upgrading because names no longer match, it is worth understanding
-where such pains originate.
+This enables inheritance, but it does not support singletons/objects, so as a result, in an identical
+scenario, the macro engine will infer the table name as "Recipes", based on the type information. If you hit trouble upgrading because names no longer match, simply
+override the table name manually inside the table definition.
+
+```scala
+class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+  object recipes extends Recipes with Connector {
+    override def tableName: String = "recipes"
+  }
+}
+```
+
 
 
 <a id="data-modeling">Data modeling with phantom</a>
@@ -66,8 +72,6 @@ where such pains originate.
 <a href="#table-of-contents">back to top</a>
 
 ```scala
-
-import java.util.Date
 import com.outworkers.phantom.dsl._
 
 case class ExampleModel (
