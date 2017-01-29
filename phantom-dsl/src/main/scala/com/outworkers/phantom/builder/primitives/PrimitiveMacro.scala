@@ -285,9 +285,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }"""
   }
 
-  def enumValuePrimitive[T]()(implicit tag: WeakTypeTag[T]): Tree = {
-    val tpe = tag.tpe
-    val comp = c.parse(s"${tag.tpe.toString.replace("#Value", "")}")
+  def enumValuePrimitive(tpe: Type): Tree = {
+
+    val comp = c.parse(s"${tpe.toString.replace("#Value", "").replace(".Value", "")}")
 
     q"""new $prefix.Primitive[$tpe] {
       val strP = implicitly[$prefix.Primitive[$strType]]
@@ -350,7 +350,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case Symbols.bigDecimal => bigDecimalPrimitive
       case Symbols.buffer => bufferPrimitive
       case Symbols.enum => treeCache.getOrElseUpdate(typed[T], enumPrimitive(wkType))
-      case Symbols.enumValue => treeCache.getOrElseUpdate(typed[T], enumValuePrimitive[T]())
+      case Symbols.enumValue => treeCache.getOrElseUpdate(typed[T], enumValuePrimitive(wkType))
       case Symbols.listSymbol => treeCache.getOrElseUpdate(typed[T], listPrimitive[T]())
       case Symbols.setSymbol => treeCache.getOrElseUpdate(typed[T], setPrimitive[T]())
       case Symbols.mapSymbol => treeCache.getOrElseUpdate(typed[T], mapPrimitive[T]())

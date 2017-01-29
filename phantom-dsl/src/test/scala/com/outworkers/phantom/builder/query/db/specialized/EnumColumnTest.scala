@@ -19,6 +19,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
+import com.outworkers.util.testing._
 
 import scala.concurrent.Await
 
@@ -31,68 +32,78 @@ class EnumColumnTest extends PhantomSuite {
   }
 
   it should "store a simple record and parse an Enumeration value back from the stored value" in {
-    val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, None)
+    val sample = EnumRecord(
+      UUIDs.timeBased().toString,
+      Records.TypeOne,
+      None,
+      SingletonEnum.One
+    )
 
     val chain = for {
-      insert <- database.enumTable.store(sample).future()
-      get <- database.enumTable.select.where(_.id eqs sample.name).one()
-    } yield get
+      _ <- database.enumTable.store(sample).future()
+      rec <- database.enumTable.select.where(_.id eqs sample.name).one()
+    } yield rec
 
-    whenReady(chain) {
-      res => {
-        res.value.enum shouldEqual sample.enum
-        res.value.optEnum shouldBe empty
-      }
+    whenReady(chain) { res =>
+      res.value.enum shouldEqual sample.enum
+      res.value.optEnum shouldBe empty
     }
   }
 
   it should "store a simple record and parse an Enumeration value and an Optional value back from the stored value" in {
-    val sample = EnumRecord(UUIDs.timeBased().toString, Records.TypeOne, Some(Records.TypeTwo))
+    val sample = EnumRecord(
+      name = UUIDs.timeBased().toString,
+      enum = Records.TypeOne,
+      optEnum = Some(Records.TypeTwo),
+      singleton = SingletonEnum.One
+    )
 
     val chain = for {
-      insert <- database.enumTable.store(sample).future()
-      get <- database.enumTable.select.where(_.id eqs sample.name).one()
-    } yield get
+      _ <- database.enumTable.store(sample).future()
+      rec <- database.enumTable.select.where(_.id eqs sample.name).one()
+    } yield rec
 
-    whenReady(chain) {
-      res => {
-        res.value.enum shouldEqual sample.enum
-        res.value.optEnum shouldBe defined
-        res.value.optEnum.value shouldBe Records.TypeTwo
-      }
+    whenReady(chain) { res =>
+      res.value.enum shouldEqual sample.enum
+      res.value.optEnum shouldBe defined
+      res.value.optEnum shouldEqual sample.optEnum
     }
   }
 
   it should "store a named record and parse an Enumeration value back from the stored value" in {
-    val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, None)
+    val sample = NamedEnumRecord(
+      UUIDs.timeBased().toString,
+      NamedRecords.One,
+      None
+    )
 
     val chain = for {
-      insert <- database.namedEnumTable.store(sample).future()
-      get <- database.namedEnumTable.select.where(_.id eqs sample.name).one()
-    } yield get
+      _ <- database.namedEnumTable.store(sample).future()
+      rec <- database.namedEnumTable.select.where(_.id eqs sample.name).one()
+    } yield rec
 
-    whenReady(chain) {
-      res => {
-        res.value.enum shouldEqual sample.enum
-        res.value.optEnum shouldBe empty
-      }
+    whenReady(chain) { res =>
+      res.value.enum shouldEqual sample.enum
+      res.value.optEnum shouldBe empty
     }
   }
 
   it should "store a named record and parse an Enumeration value and an Optional value back from the stored value" in {
-    val sample = NamedEnumRecord(UUIDs.timeBased().toString, NamedRecords.One, Some(NamedRecords.Two))
+    val sample = NamedEnumRecord(
+      UUIDs.timeBased().toString,
+      NamedRecords.One,
+      Some(NamedRecords.One)
+    )
 
     val chain = for {
-      insert <- database.namedEnumTable.store(sample).future()
+      _ <- database.namedEnumTable.store(sample).future()
       get <- database.namedEnumTable.select.where(_.id eqs sample.name).one()
     } yield get
 
-    whenReady(chain) {
-      res => {
-        res.value.enum shouldEqual sample.enum
-        res.value.optEnum shouldBe defined
-        res.value.optEnum shouldEqual sample.optEnum
-      }
+    whenReady(chain) { res =>
+      res.value.enum shouldEqual sample.enum
+      res.value.optEnum shouldBe defined
+      res.value.optEnum shouldEqual sample.optEnum
     }
   }
 
@@ -103,8 +114,8 @@ class EnumColumnTest extends PhantomSuite {
     )
 
     val chain = for {
-      store <- database.indexedEnumTable.truncate().future()
-      store <- database.indexedEnumTable.store(sample).future()
+      _ <- database.indexedEnumTable.truncate().future()
+      _ <- database.indexedEnumTable.store(sample).future()
       get <- database.indexedEnumTable.select.where(_.enum eqs NamedRecords.One).one()
     } yield get
 
