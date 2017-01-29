@@ -187,6 +187,11 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
+![Starbucks](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/starbucks.png "Starbucks")
+![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
+![CreditSuisse](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/creditsuisse.png "CreditSuisse")
+![ING](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ing.png "ING")
+
 The following are just some of the biggest phantom adopters, though the full list
 is far more comprehensive.
 
