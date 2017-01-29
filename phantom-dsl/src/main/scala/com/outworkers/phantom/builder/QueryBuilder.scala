@@ -105,9 +105,8 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     }
   }
 
-  def limit(value: Int): CQLQuery = {
-    CQLQuery(CQLSyntax.limit)
-      .forcePad.append(value.toString)
+  def limit(value: String): CQLQuery = {
+    CQLQuery(CQLSyntax.limit).forcePad.append(value.toString)
   }
 
   def limit(qb: CQLQuery, value: Int): CQLQuery = {

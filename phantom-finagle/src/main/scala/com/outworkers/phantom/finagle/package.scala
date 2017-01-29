@@ -365,7 +365,7 @@ package object finagle {
       ev: Limit =:= Unlimited,
       executor: Executor
     ): Future[Option[Record]] = {
-      val enforceLimit = if (select.count) LimitedPart.empty else select.limitedPart append QueryBuilder.limit(1)
+      val enforceLimit = if (select.count) LimitedPart.empty else select.limitedPart append QueryBuilder.limit("1")
 
       new SelectQuery(
         table = select.table,

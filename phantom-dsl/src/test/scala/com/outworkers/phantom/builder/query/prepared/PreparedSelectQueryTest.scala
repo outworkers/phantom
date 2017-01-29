@@ -25,10 +25,11 @@ class PreparedSelectQueryTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
-    TestDatabase.recipes.insertSchema()
-    TestDatabase.articlesByAuthor.insertSchema()
-    TestDatabase.primitives.insertSchema()
-    if(session.v4orNewer) {
+
+    database.recipes.insertSchema()
+    database.articlesByAuthor.insertSchema()
+    database.primitives.insertSchema()
+    if (session.v4orNewer) {
       TestDatabase.primitivesCassandra22.insertSchema()
     }
   }
@@ -36,13 +37,13 @@ class PreparedSelectQueryTest extends PhantomSuite {
   it should "serialise and execute a prepared select with the same clause as a normal one" in {
     val recipe = gen[Recipe]
 
-    val query = TestDatabase.recipes.select.where(_.url eqs ?).prepare()
+    val query = database.recipes.select.where(_.url eqs ?).prepare()
 
     val operation = for {
-      truncate <- TestDatabase.recipes.truncate.future
-      insertDone <- TestDatabase.recipes.store(recipe).future()
+      _ <- database.recipes.truncate.future
+      _ <- database.recipes.store(recipe).future()
       select <- query.bind(recipe.url).one()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select, select2)
 
     operation.successful {
@@ -56,14 +57,38 @@ class PreparedSelectQueryTest extends PhantomSuite {
     }
   }
 
+  it should "allow setting a limit using a prepared statement" in {
+    val recipe = gen[Recipe]
+    val limit = 1
+
+    val query = database.recipes.select.where(_.url eqs ?).limit(?).prepare()
+
+    val operation = for {
+      _ <- database.recipes.truncate.future
+      _ <- database.recipes.store(recipe).future()
+      select <- query.bind(recipe.url, limit).fetch()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (select, select2)
+
+    operation.successful {
+      case (items, items2) => {
+        items.size shouldEqual limit
+        items should contain (recipe)
+
+        items2 shouldBe defined
+        items2.value shouldEqual recipe
+      }
+    }
+  }
+
   it should "serialise and execute a prepared select statement with the correct number of arguments" in {
     val recipe = gen[Recipe]
 
-    val query = TestDatabase.recipes.select.where(_.url eqs ?).prepare()
+    val query = database.recipes.select.where(_.url eqs ?).prepare()
 
     val operation = for {
-      truncate <- TestDatabase.recipes.truncate.future
-      insertDone <- TestDatabase.recipes.store(recipe).future()
+      _ <- database.recipes.truncate.future
+      _ <- database.recipes.store(recipe).future()
       select <- query.bind(recipe.url).one()
     } yield select
 
@@ -82,14 +107,14 @@ class PreparedSelectQueryTest extends PhantomSuite {
     val category = gen[UUID]
     val category2 = gen[UUID]
 
-    val query = TestDatabase.articlesByAuthor.select
+    val query = database.articlesByAuthor.select
       .where(_.author_id eqs ?)
       .and(_.category eqs ?)
       .prepare()
 
     val op = for {
-      store <- TestDatabase.articlesByAuthor.store(owner, category, sample).future()
-      store2 <- TestDatabase.articlesByAuthor.store(owner, category2, sample2).future()
+      _ <- database.articlesByAuthor.store(owner, category, sample).future()
+      _ <- database.articlesByAuthor.store(owner, category2, sample2).future()
       get <- query.bind(owner, category).one()
       get2 <- query.bind(owner, category2).one()
     } yield (get, get2)
@@ -108,11 +133,11 @@ class PreparedSelectQueryTest extends PhantomSuite {
   it should "serialise and execute a primitives prepared select statement with the correct number of arguments" in {
     val primitive = gen[Primitive]
 
-    val query = TestDatabase.primitives.select.where(_.pkey eqs ?).prepare()
+    val query = database.primitives.select.where(_.pkey eqs ?).prepare()
 
     val operation = for {
-      truncate <- TestDatabase.primitives.truncate.future
-      insertDone <- TestDatabase.primitives.store(primitive).future()
+      _ <- database.primitives.truncate.future
+      _ <- database.primitives.store(primitive).future()
       select <- query.bind(primitive.pkey).one()
     } yield select
 
@@ -124,15 +149,15 @@ class PreparedSelectQueryTest extends PhantomSuite {
     }
   }
 
-  if(session.v4orNewer) {
+  if (session.v4orNewer) {
     it should "serialise and execute a primitives cassandra 2.2 prepared select statement with the correct number of arguments" in {
       val primitive = gen[PrimitiveCassandra22]
 
-      val query = TestDatabase.primitivesCassandra22.select.where(_.pkey eqs ?).prepare()
+      val query = database.primitivesCassandra22.select.where(_.pkey eqs ?).prepare()
 
       val operation = for {
-        truncate <- TestDatabase.primitivesCassandra22.truncate.future
-        insertDone <- TestDatabase.primitivesCassandra22.store(primitive).future()
+        _ <- database.primitivesCassandra22.truncate.future
+        _ <- database.primitivesCassandra22.store(primitive).future()
         select <- query.bind(primitive.pkey).one()
       } yield select
 
