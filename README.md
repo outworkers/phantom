@@ -10,6 +10,16 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
+Migrating to phantom 2.0.x series
+=================================
+
+The new series of phantom introduces several key backwards incompatible changes with previous versions.
+ This was done to obtain massive performance boosts and to thoroughly improve user experience with
+ phantom.
+
+Read the [MIGRATION GUIDE](docs/migrate.md) for more information on how to upgrade.
+
+
 Available modules
 =================
 
