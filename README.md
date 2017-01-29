@@ -143,7 +143,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 
 #### Documentation
 
-- [x] Offer a complete migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
+- [x] Migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
 - [x] Move documentation back to the docs folder.
 - [ ] Add a documentation website on the main page.
 - [ ] Create a navigator that allows viewing the documentation at a particular point in time.
@@ -187,35 +187,25 @@ We are very happy to help implement missing features in phantom, answer question
 Adopters
 ========
 
+Here are a few of the biggest phantom adopters, though the full list is far more comprehensive.
+
 ![Starbucks](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/starbucks.png "Starbucks")
-![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 ![CreditSuisse](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/creditsuisse.png "CreditSuisse")
 ![ING](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ing.png "ING")
-
-The following are just some of the biggest phantom adopters, though the full list
-is far more comprehensive.
-
-- [Starbucks Corporation](https://www.starbucks.com/)
-- [Microsoft](https://www.microsoft.com/en-gb/)
-- [CreditSuisse](https://www.credit-suisse.com/global/en/)
-- [ING](http://www.ing.com/en.htm)
-- [UBS](https://www.ubs.com/global/en.html)
-- [Wincor Nixdorf](http://www.wincor-nixdorf.com/internet/site_EN/EN/Home/homepage_node.html)
-- [Paddy Power](http://www.paddypower.com/)
-- [Strava](https://www.strava.com/)
-- [Mobli](https://www.mobli.com/)
-- [Pellucid Analytics](http://www.pellucid.com/)
-- [Equens](http://www.equens.com/)
-- [outworkers](https://www.outworkers.com/)
-- [VictorOps](http://www.victorops.com/)
-- [Socrata](http://www.socrata.com)
-- [Sphonic](http://www.sphonic.com/)
-- [Anomaly42](http://www.anomaly42.com/)
-- [Tecsisa](http://www.tecsisa.com/en/)
-- [Tuplejump](http://www.tuplejump.com/)
-- [FiloDB](http://www.github.com/tuplejump/FiloDB) - the fast analytics database built on Cassandra and Spark
-- [Chartboost](https://www.chartboost.com)
-
+![UBS](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ubs.png "UBS")
+![Wincor Nixdorf](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/wincornixdorf.png "Wincor Nixdorf")
+![Paddy Power](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/paddypower.png "Paddy Power")
+![Strava](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/strava.png "Strava")
+![Equens](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/equens.png "Equens")
+![Pellucid Analytics](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/pellucid.png "Pellucid Analytics")
+![Anomaly42](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/anomaly42.png "Anomaly42")
+![ChartBoost](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/chartboost.png "Chartboost")
+![Tecsisa](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/tecsisa.png "Tecsisa")
+![Mobli](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/mobli.png "Mobli")
+![VictorOps](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/victorops.png "Mobli")
+![Socrata](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/socrata.png "Socrata")
+![Sphonic](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/sphonic.png "Sphonic")
+![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 
 License and copyright
 ======================
