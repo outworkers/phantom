@@ -142,6 +142,7 @@ object CQLSyntax {
   }
 
   object Selection {
+    val count = "count"
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
     val TTL = "TTL"
