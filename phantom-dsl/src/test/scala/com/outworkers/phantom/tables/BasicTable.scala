@@ -44,10 +44,16 @@ trait NamedRecords extends Enumeration {
 
 object NamedRecords extends NamedRecords
 
+object SingletonEnum extends Enumeration {
+  val One = Value("one")
+  val Two = Value("two")
+}
+
 case class EnumRecord(
   name: String,
   enum: Records#Value,
-  optEnum: Option[Records#Value]
+  optEnum: Option[Records#Value],
+  singleton: SingletonEnum.Value
 )
 
 case class NamedEnumRecord(
@@ -65,12 +71,14 @@ abstract class EnumTable extends CassandraTable[EnumTable, EnumRecord] with Root
   object id extends StringColumn(this) with PartitionKey
   object enum extends EnumColumn[Records#Value](this)
   object optEnum extends OptionalEnumColumn[Records#Value](this)
+  object singleton extends EnumColumn[SingletonEnum.Value](this)
 
   def store(sample: EnumRecord): InsertQuery.Default[EnumTable, EnumRecord] = {
     insert
       .value(_.id, sample.name)
       .value(_.enum, sample.enum)
       .value(_.optEnum, sample.optEnum)
+      .value(_.singleton, sample.singleton)
   }
 }
 

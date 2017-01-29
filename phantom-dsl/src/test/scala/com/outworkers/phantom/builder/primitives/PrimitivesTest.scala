@@ -71,12 +71,12 @@ class PrimitivesTest extends FlatSpec with Matchers {
     """val test = Primitive[Map[String, String]]""" should compile
   }
 
-  ignore should "automatically generate a primitive for an enumeration" in {
+  it should "automatically generate a primitive for an enumeration" in {
     object EnumTest extends Enumeration {
       val one = Value("one")
     }
 
-    //val test = Primitive[EnumTest.type#Value]
+    val test = Primitive[EnumTest.Value]
   }
 
 }
