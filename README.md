@@ -15,6 +15,8 @@ Available modules
 
 This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
 
+#### Phantom OSS
+
 | Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
 | ------------          | ------------------- | ------------------| ----------------- |
 | phantom-connectors    | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
@@ -25,6 +27,18 @@ This is a table of the available modules for the various Scala versions. Not all
 | phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 | phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 | phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+
+#### Phantom Pro subscription edition
+
+Modules marked with "x" are still in beta or pre-publishing mode.
+
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
+| ------------          | ------------------- | ------------------| ----------------- |
+| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
+| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
+| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | 
+| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
+| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
 
 Using phantom
 =============
