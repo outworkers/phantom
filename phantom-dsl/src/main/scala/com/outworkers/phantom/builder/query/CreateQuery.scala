@@ -85,7 +85,7 @@ class CreateQuery[
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-) extends ExecutableStatement {
+)(implicit keySpace: KeySpace) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
@@ -176,7 +176,6 @@ class CreateQuery[
 
   override def future()(
     implicit session: Session,
-    keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     if (table.secondaryKeys.isEmpty) {
