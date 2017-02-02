@@ -54,7 +54,6 @@ Limit <: LimitBound
 
   override def future()(
     implicit session: Session,
-    keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(st)
@@ -71,7 +70,6 @@ Limit <: LimitBound
     */
   override def one()(
     implicit session: Session,
-    keySpace: KeySpace,
     ev: =:=[Limit, Unlimited],
     ec: ExecutionContextExecutor
   ): ScalaFuture[Option[R]] = {

@@ -43,7 +43,6 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   override def future()(
     implicit session: Session,
-    keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringExecuteToFuture(makeBatch())

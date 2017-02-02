@@ -287,7 +287,6 @@ class SelectQuery[
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
@@ -295,7 +294,6 @@ class SelectQuery[
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def one()(
     implicit session: Session,
-    keySpace: KeySpace,
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor
   ): ScalaFuture[Option[Record]] = {
