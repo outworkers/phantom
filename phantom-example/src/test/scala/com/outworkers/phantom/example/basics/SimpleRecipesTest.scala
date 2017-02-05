@@ -51,22 +51,6 @@ class SimpleRecipesTest extends ExampleSuite {
     }
   }
 
-  it should "retrieve an entire table in a single fetch" in {
-    val sample = genList[Recipe]()
-
-    val chain = for {
-      store <- database.Recipes.truncate().future()
-      store <- Future.sequence(
-        sample.map(s => database.Recipes.insertNewRecord(s).future)
-      )
-      res <- database.Recipes.retrieveEntireTable
-    } yield res
-
-    whenReady(chain) { res =>
-      res should contain theSameElementsAs sample
-    }
-  }
-
   it should "update the author of a recipe" in {
     val sample = gen[Recipe]
     val newAuthor = gen[ShortString].value

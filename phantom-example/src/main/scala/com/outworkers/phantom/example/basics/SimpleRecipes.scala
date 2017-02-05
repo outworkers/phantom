@@ -18,12 +18,7 @@ package com.outworkers.phantom.example.basics
 import java.util.UUID
 
 import scala.concurrent.{Future => ScalaFuture}
-import org.joda.time.DateTime
-import com.datastax.driver.core.{ResultSet, Row}
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.streams._
-import com.twitter.conversions.time._
 
 /**
  * In this example we will create a simple table storing recipes.
@@ -113,29 +108,9 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   // That's it, a really cool one liner.
   // The fetch method will collect an asynchronous lazy iterator into a Seq.
   // It's a good way to avoid boilerplate when retrieving a small number of items.
-  def findRecipesPage(start: UUID, limit: Int): ScalaFuture[Seq[Recipe]] = {
-    select.where(_.id gtToken start).limit(limit).fetch()
+  def findRecipesPage(start: UUID, limit: Int): ScalaFuture[ListResult[Recipe]] = {
+    select.where(_.id gtToken start).limit(limit).paginateRecord(_.setFetchSize(50))
   }
-
-  // The fetchEnumerator method is the real power behind the scenes.
-  // You can retrieve a whole table, even with billions of records, in a single query.
-  // Phantom will collect them into an asynchronous, lazy iterator with very low memory foot print.
-  // Enumerators, iterators and iteratees are based on Play iteratees.
-  // You can keep the async behaviour or collect through the Iteratee.
-  def retrieveEntireTable: ScalaFuture[List[Recipe]] = {
-    select.fetchEnumerator() run Iteratee.collect()
-  }
-
-
-  // phantom supports a few more Iteratee methods.
-  // However, if you are looking to guarantee ordering and paginate "the old way"
-  // You need an OrderPreservingPartitioner.
-  // You can also use automated Cassandra pagination and fetchRecord
-  // to use native PagingState objects for this.
-  def fetchRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {
-    select.fetchEnumerator() run Iteratee.slice(start, limit)
-  }
-
 
   // Updating records is also really easy.
   // Updating one record is done like this
