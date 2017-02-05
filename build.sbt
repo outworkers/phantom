@@ -26,7 +26,7 @@ lazy val Versions = new {
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.42.0"
-  val twitterUtil = "6.34.0"
+  val twitterUtil = "6.41.0"
   val scalameter = "0.8+"
   val diesel = "0.5.0"
   val scalacheck = "1.13.4"
@@ -40,7 +40,7 @@ lazy val Versions = new {
 
   val twitterUtilVersion: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 12 => "6.39.0"
+      case Some((_, minor)) if minor >= 12 => twitterUtil
       case _ => "6.34.0"
     }
   }

@@ -35,6 +35,10 @@ resolvers ++= Seq(
   Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
 
+lazy val Versions = new {
+  val scroogeVersion = if (sys.props("java.specification.version") == "1.8") "4.14.0" else "4.7.0"
+}
+
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
@@ -55,7 +59,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
-addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.14.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scroogeVersion)
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
