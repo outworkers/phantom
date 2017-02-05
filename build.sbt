@@ -62,7 +62,7 @@ lazy val Versions = new {
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 11 => "4.14.0"
-      case _ => "4.14.0"
+      case _ => "4.7.0"
     }
   }
 
@@ -288,6 +288,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     moduleName := "phantom-streams",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
+      Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
