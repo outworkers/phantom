@@ -19,13 +19,13 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.1.7"
-  val util = "0.27.8"
+  val util = "0.28.0"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
-  val finagle = "6.37.0"
+  val finagle = "6.42.0"
   val twitterUtil = "6.34.0"
   val scalameter = "0.8+"
   val diesel = "0.5.0"
@@ -61,14 +61,15 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 => "4.7.0"
+      case Some((_, minor)) if minor >= 11 => "4.14.0"
       case _ => "4.7.0"
     }
   }
 
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 => "2.5.8"
+      case Some((_, minor)) if minor == 12 => "2.6.1"
+      case Some((_, minor)) if minor == 11 => "2.5.8"
       case _ => "2.4.8"
     }
   }
@@ -77,7 +78,10 @@ lazy val Versions = new {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
-        case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => {
+        case Some((_, minor)) if minor == 12=> {
+          "com.typesafe.play" %% "play-reactive-streams" % v
+        }
+        case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
           "com.typesafe.play" %% "play-streams" % v
         }
         case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
@@ -177,7 +181,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "macro-compat" % "1.1.1",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -204,7 +208,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
@@ -220,7 +224,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -231,7 +235,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .configs(PerformanceTest).settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtilVersion(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
@@ -247,7 +251,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
@@ -282,10 +286,9 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
-      Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
@@ -307,7 +310,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
       "com.outworkers"               %% "util-lift"                         % Versions.util % Test,

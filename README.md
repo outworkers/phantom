@@ -33,10 +33,10 @@ This is a table of the available modules for the various Scala versions. Not all
 | phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
 | phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
 | phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>   |
-| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
-| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
 
 #### Phantom Pro subscription edition
 
@@ -59,7 +59,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 - The stable release is always available on Maven Central and will be indicated by the badge at the top of this readme. The Maven Central badge is pointing at the latest version
 
-- Intermediary releases are available through our OSS Bintray repo available at `Resolver.bintrayRepo("outworkers", "oss-releases")` or `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
+- Intermediary releases are available through our Bintray repo available at `Resolver.bintrayRepo("outworkers", "oss-releases")` or `https://dl.bintray.com/outworkers/oss-releases/`. The latest version available on our Bintray repository is indicated by the Bintray badge at the top of this readme.
 
 ### How phantom compares
 
