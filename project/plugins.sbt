@@ -59,4 +59,4 @@ addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.14.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M15")
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
