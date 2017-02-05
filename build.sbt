@@ -286,7 +286,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -310,7 +310,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
       "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
@@ -320,6 +320,5 @@ lazy val phantomExample = (project in file("phantom-example"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
-    phantomStreams,
     phantomThrift
   ).enablePlugins(CrossPerProjectPlugin)

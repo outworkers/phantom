@@ -36,7 +36,7 @@ This is a table of the available modules for the various Scala versions. Not all
 | phantom-example       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
 | phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
 | phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 
 #### Phantom Pro subscription edition
 

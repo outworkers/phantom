@@ -55,8 +55,8 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
-
-addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.14.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M15")
