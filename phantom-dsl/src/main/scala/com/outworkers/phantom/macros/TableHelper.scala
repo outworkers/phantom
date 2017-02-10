@@ -187,7 +187,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     if (members.isEmpty) {
       NoMatch
     } else {
-
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
         Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
@@ -343,6 +342,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     * @return
     */
   def extractTableName(source: Type): String =  {
+    val bound = c.inferImplicitValue()
+
     val value = source.typeSymbol.name.toTermName.decodedName.toString
     value.charAt(0).toLower + value.drop(1)
   }
