@@ -17,7 +17,7 @@ package com.outworkers.phantom.example.advanced
 
 import java.util.UUID
 
-import com.datastax.driver.core.{ResultSet, Row}
+import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 

@@ -33,6 +33,7 @@ import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.DefaultVersions
+import com.outworkers.phantom.macros.NamingStrategy
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
@@ -119,6 +120,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
+
+  implicit def strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
 
   object ? extends PrepareMark

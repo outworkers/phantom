@@ -109,7 +109,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *
     * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
     */
-  def inferPrimaryKey(tableName: String, table: Type, columns: Seq[Type]): Tree = {
+  def inferPrimaryKey(tableName: Tree, table: Type, columns: Seq[Type]): Tree = {
     val partitionKeys = filterColumns[PartitionKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
@@ -156,12 +156,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
-  private[this] def show(list: List[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
-  }
-
-  private[this] def show(list: Iterable[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def show[M[X] <: TraversableOnce[X]](traversable: M[Type]): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
   private[this] def predicate(source: (Field, Field)): Boolean = {
@@ -341,11 +337,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *               contain column definitions, determined by [[determineReferenceTable()]] above.
     * @return
     */
-  def extractTableName(source: Type): String =  {
-    val bound = c.inferImplicitValue()
+  def extractTableName(source: Type): Tree = {
+    val bound = c.inferImplicitValue(typeOf[NamingStrategy.CamelCase]) match {
+      case EmptyTree => c.abort(c.enclosingPosition, "Define a naming strategy in scope")
+      case x: Tree => x
+    }
 
     val value = source.typeSymbol.name.toTermName.decodedName.toString
     value.charAt(0).toLower + value.drop(1)
+    q"$bound.inferName($value)"
   }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {

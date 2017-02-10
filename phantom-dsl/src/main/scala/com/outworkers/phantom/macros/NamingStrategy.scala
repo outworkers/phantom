@@ -18,23 +18,29 @@ package com.outworkers.phantom.macros
 import com.google.common.base.CaseFormat
 import com.outworkers.phantom.builder.query.CQLQuery
 
-trait NamingStrategy[T <: NamingStrategy[T]] {
+trait NamingStrategy {
   def strategy: String
+
+  type NameType <: NamingStrategy
 
   def inferName(name: String): String
 
   protected[this] def isCaseSensitive: Boolean = false
 
-  def caseSensitive(): T
+  def caseSensitive: NameType
+  def caseInsensitive: NameType
 }
 
 object NamingStrategy {
 
-  class CamelCase extends NamingStrategy[CamelCase] {
+  class CamelCase extends NamingStrategy {
+
+    override type NameType = CamelCase
+
     override def strategy: String = "camel_case"
 
     override def inferName(name: String): String = {
-      val source = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, name)
+      val source = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, name)
 
       if (isCaseSensitive) {
         CQLQuery.escape(source)
@@ -43,16 +49,22 @@ object NamingStrategy {
       }
     }
 
-    override def caseSensitive(): CamelCase = new CamelCase {
+    override def caseSensitive: CamelCase = new CamelCase {
       override protected[this] def isCaseSensitive: Boolean = true
+    }
+
+    override def caseInsensitive: CamelCase = new CamelCase {
+      override protected[this] def isCaseSensitive: Boolean = false
     }
   }
 
-  class SankeCase extends NamingStrategy[CamelCase] {
+  object CamelCase extends CamelCase
+
+  class SnakeCase extends NamingStrategy {
     override def strategy: String = "snake_case"
 
     override def inferName(name: String): String = {
-      val source = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_UNDERSCORE, name)
+      val source = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
 
       if (isCaseSensitive) {
         CQLQuery.escape(source)
@@ -61,8 +73,16 @@ object NamingStrategy {
       }
     }
 
-    override def caseSensitive(): CamelCase = new CamelCase {
+    override type NameType = SnakeCase
+
+    override def caseSensitive: SnakeCase = new SnakeCase {
       override protected[this] def isCaseSensitive: Boolean = true
     }
+
+    override def caseInsensitive: SnakeCase = new SnakeCase {
+      override protected[this] def isCaseSensitive: Boolean = false
+    }
   }
+
+  object SnakeCase extends SnakeCase
 }
