@@ -338,14 +338,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     * @return
     */
   def extractTableName(source: Type): Tree = {
-    val bound = c.inferImplicitValue(typeOf[NamingStrategy.CamelCase]) match {
-      case EmptyTree => c.abort(c.enclosingPosition, "Define a naming strategy in scope")
-      case x: Tree => x
-    }
-
+    val tpe = weakTypeOf[NamingStrategy]
     val value = source.typeSymbol.name.toTermName.decodedName.toString
     value.charAt(0).toLower + value.drop(1)
-    q"$bound.inferName($value)"
+    q"""
+      implicitly[$tpe].inferName($value)
+    """
   }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
