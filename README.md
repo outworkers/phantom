@@ -83,6 +83,7 @@ highlighting all the possible features in phantom and how to use them.
 
 This is a list of resources to help you learn phantom and Cassandra:
 
+- [ ] [Official documentation](docs/README.md)
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/outworkers/phantom/wiki)
