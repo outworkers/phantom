@@ -21,17 +21,8 @@ import com.outworkers.phantom.dsl._
 case class CustomRecord(name: String, mp: Map[String, String])
 
 trait TestTableNames extends CassandraTable[TestTableNames, CustomRecord] {
-
-
   object rec extends StringColumn(this) with PartitionKey
   object sampleLongTextColumnDefinition extends MapColumn[String, String](this)
-
-  override def fromRow(r: Row): CustomRecord = {
-    CustomRecord(
-      rec(r),
-      sampleLongTextColumnDefinition(r)
-    )
-  }
 }
 
 object TestTableNames extends TestTableNames
