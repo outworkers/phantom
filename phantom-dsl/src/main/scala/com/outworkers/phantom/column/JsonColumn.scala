@@ -58,7 +58,7 @@ abstract class OptionalJsonColumn[
 
   val cassandraType = CQLSyntax.Types.Text
 
-  def parse(row: Row): Try[Option[ValueType]] = Try(fromJson(row.getString(name)))
+  def parse(row: Row): Try[Option[ValueType]] = Try(Some(fromJson(row.getString(name))))
 }
 
 abstract class JsonListColumn[
