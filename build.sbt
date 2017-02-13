@@ -18,8 +18,8 @@ import sbt._
 import com.twitter.sbt._
 
 lazy val Versions = new {
-  val logback = "1.1.7"
-  val util = "0.27.8"
+  val logback = "1.2.1"
+  val util = "0.28.3"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
