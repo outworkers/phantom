@@ -117,6 +117,7 @@ Adopters
 Here are a few of the biggest phantom adopters, though the full list is far more comprehensive.
 
 ![Starbucks](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/starbucks.png "Starbucks")
+![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 ![CreditSuisse](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/creditsuisse.png "CreditSuisse")
 ![ING](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ing.png "ING")
 ![UBS](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ubs.png "UBS")
@@ -132,7 +133,6 @@ Here are a few of the biggest phantom adopters, though the full list is far more
 ![VictorOps](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/victorops.png "Mobli")
 ![Socrata](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/socrata.png "Socrata")
 ![Sphonic](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/sphonic.png "Sphonic")
-![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 
 License and copyright
 ======================
