@@ -121,8 +121,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
 
-  implicit def strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
-
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   object ? extends PrepareMark
   case object Batch extends Batcher
