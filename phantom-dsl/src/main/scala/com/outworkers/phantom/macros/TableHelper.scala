@@ -346,10 +346,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
       case strategy => strategy
     }
     val value = source.typeSymbol.name.toTermName.decodedName.toString
-    value.charAt(0).toLower + value.drop(1)
 
     q"""
-      $namingStrategy.inferName($value)
+      $namingStrategy.inferName(${value.charAt(0).toLower + value.drop(1)})
     """
   }
 

@@ -42,13 +42,15 @@ This is a table of the available modules for the various Scala versions. Not all
 
 Modules marked with "x" are still in beta or pre-publishing mode.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
-| ------------          | ------------------- | ------------------| ----------------- |
-| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
-| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
-| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | 
-| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
-| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Release date   | 
+| ------------          | ------------------- | ------------------| ----------------- | -------------- |
+| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2017       |
+| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
+| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
+| phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
+| phantom-migrations    | <span>x</span>      | <span>x</span>    | <span>x</span>    | September 2017 |
 
 Using phantom
 =============

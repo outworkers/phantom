@@ -31,7 +31,7 @@ case class OptionalJdk8Row(
   localDateTime: Option[LocalDateTime]
 )
 
-sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] {
+abstract class OptionalPrimitivesJdk8 extends CassandraTable[OptionalPrimitivesJdk8, OptionalJdk8Row] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
 
@@ -42,11 +42,8 @@ sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimi
   object localDate extends OptionalJdkLocalDateColumn(this)
 
   object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
-}
 
-abstract class ConcreteOptionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 with RootConnector {
-
-  def store(primitive: OptionalJdk8Row): InsertQuery.Default[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] = {
+  def store(primitive: OptionalJdk8Row): InsertQuery.Default[OptionalPrimitivesJdk8, OptionalJdk8Row] = {
     insert.value(_.pkey, primitive.pkey)
       .value(_.offsetDateTime, primitive.offsetDateTime)
       .value(_.zonedDateTime, primitive.zonedDateTime)
