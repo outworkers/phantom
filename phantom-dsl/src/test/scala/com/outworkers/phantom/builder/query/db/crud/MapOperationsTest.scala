@@ -32,7 +32,7 @@ class MapOperationsTest extends PhantomSuite {
 
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
-    val item = gen[String, String]
+    val item = gen[(String, String)]
 
     val operation = for {
       insertDone <- database.recipes.store(recipe).future()
