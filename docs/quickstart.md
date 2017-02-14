@@ -51,7 +51,7 @@ def baseResolverPattern = {
 }
 
 resolvers ++= Seq(
-  Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(outworkersPattern)
+  Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(baseResolverPattern)
 )
 
 addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
