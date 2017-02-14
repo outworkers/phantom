@@ -37,7 +37,7 @@ abstract class Database[
 
   implicit lazy val session: Session = connector.session
 
-  implicit val namingStrategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
+  implicit val naming: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
 
