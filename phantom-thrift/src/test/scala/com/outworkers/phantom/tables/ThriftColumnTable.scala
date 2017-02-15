@@ -70,8 +70,6 @@ sealed class ThriftColumnTable extends CassandraTable[ConcreteThriftColumnTable,
 }
 
 abstract class ConcreteThriftColumnTable extends ThriftColumnTable with RootConnector {
-  override val tableName = "thrift_column_table"
-
   def store(sample: Output): InsertQuery.Default[ConcreteThriftColumnTable, Output] = {
     insert
       .value(_.id, sample.id)
@@ -120,7 +118,6 @@ sealed class ThriftIndexedTable extends CassandraTable[ConcreteThriftIndexedTabl
 }
 
 abstract class ConcreteThriftIndexedTable extends ThriftIndexedTable with RootConnector {
-  override val tableName = "thrift_indexed_table"
 
   def store(sample: Output): InsertQuery.Default[ConcreteThriftIndexedTable, Output] = {
     insert

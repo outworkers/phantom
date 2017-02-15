@@ -131,7 +131,7 @@ sealed class OptionalPrimitives extends CassandraTable[ConcreteOptionalPrimitive
 
 abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootConnector {
 
-  override val tableName = "OptionalPrimitives"
+  override def tableName(implicit strategy: NamingStrategy): String = "OptionalPrimitives"
 
   def findByKey(pkey: String): Future[Option[OptionalPrimitive]] = {
     select.where(_.pkey eqs pkey).one()

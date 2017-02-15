@@ -25,6 +25,8 @@ trait NamingStrategy {
 
   def inferName(name: String): String
 
+  def apply(name: String): String = inferName(name)
+
   protected[this] def isCaseSensitive: Boolean = false
 
   def caseSensitive: NameType

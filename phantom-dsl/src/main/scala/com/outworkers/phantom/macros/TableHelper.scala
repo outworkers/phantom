@@ -340,15 +340,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     * @return
     */
   def extractTableName(source: Type): Tree = {
-    val tpe = typeOf[NamingStrategy]
-    val namingStrategy = c.inferImplicitValue(tpe) match {
-      case EmptyTree => c.abort(c.enclosingPosition, s"Unable to find an implicit ${showCode(tq"$tpe")} in scope.")
-      case strategy => strategy
-    }
     val value = source.typeSymbol.name.toTermName.decodedName.toString
 
     q"""
-      $namingStrategy.inferName(${value.charAt(0).toLower + value.drop(1)})
+      ${value.charAt(0).toLower + value.drop(1)}
     """
   }
 

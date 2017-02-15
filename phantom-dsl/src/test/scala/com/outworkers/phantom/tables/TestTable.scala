@@ -29,7 +29,7 @@ case class TestRow(
   mapIntToInt: Map[Int, Int]
 )
 
-sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
+abstract class TestTable extends CassandraTable[TestTable, TestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
@@ -44,12 +44,8 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
   object mapIntToText extends MapColumn[Int, String](this)
 
   object mapIntToInt extends MapColumn[Int, Int](this)
-}
 
-abstract class ConcreteTestTable extends TestTable with RootConnector {
-  override val tableName = "TestTable"
-
-  def store(row: TestRow): InsertQuery.Default[ConcreteTestTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[TestTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)

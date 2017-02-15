@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.macros.TableHelper
+import com.outworkers.phantom.macros.{NamingStrategy, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
@@ -79,7 +79,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     Await.result(autocreate(keySpace).future(), 10.seconds)
   }
 
-  def tableName: String = helper.tableName
+  def tableName(implicit strategy: NamingStrategy): String = strategy(helper.tableName)
 
   def fromRow(r: Row): R = helper.fromRow(instance, r)
 

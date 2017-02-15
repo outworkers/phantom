@@ -40,7 +40,7 @@ sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecip
 }
 
 abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
-  override lazy val tableName = "recipes_by_title"
+  override def tableName(implicit strategy: NamingStrategy): String = "recipes_by_title"
 
   def insertRecipe(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
     insert.value(_.title, recipe._1).value(_.id, recipe._2).future()

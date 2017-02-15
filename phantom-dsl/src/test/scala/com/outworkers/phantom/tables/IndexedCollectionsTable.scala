@@ -37,7 +37,7 @@ abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollections
 
   object mapIntToInt extends MapColumn[Int, Int](this)
 
-  override val tableName = "indexed_collections"
+  override def tableName(implicit strategy: NamingStrategy): String = "indexed_collections"
 
   def store(row: TestRow): InsertQuery.Default[IndexedCollectionsTable, TestRow] = {
     insert
@@ -69,7 +69,7 @@ abstract class IndexedEntriesTable extends CassandraTable[IndexedEntriesTable, T
 
   object mapIntToInt extends MapColumn[Int, Int](this) with Index with Entries
 
-  override val tableName = "indexed_collections"
+  override def tableName(implicit strategy: NamingStrategy): String = "indexed_collections"
 
   def store(row: TestRow): InsertQuery.Default[IndexedEntriesTable, TestRow] = {
     insert

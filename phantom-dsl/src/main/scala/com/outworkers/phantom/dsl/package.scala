@@ -47,6 +47,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
+  type NamingStrategy = phantom.macros.NamingStrategy
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]

@@ -16,10 +16,9 @@
 package com.outworkers.phantom.database
 
 import com.outworkers.phantom.connectors.CassandraConnection
-import com.outworkers.phantom.tables.{IndexedCollectionsTable, ListCollectionTable, Recipes}
+import com.outworkers.phantom.tables.{Connector, IndexedCollectionsTable, ListCollectionTable, Recipes}
 
 class CaseDatabase(override val connector: CassandraConnection) extends Database[CaseDatabase](connector) {
-  object recipes extends Recipes with Connector
   object indexedCollections extends IndexedCollectionsTable with Connector
   object listCollections extends ListCollectionTable with Connector
 }
