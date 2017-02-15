@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.macros.NamingStrategy
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
@@ -48,7 +49,7 @@ class SelectQuery[
   protected[phantom] val usingPart: UsingPart = UsingPart.empty,
   protected[phantom] val count: Boolean = false,
   override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](
+)(implicit strategy: NamingStrategy) extends Query[Table, Record, Limit, Order, Status, Chain, PS](
   table, qb = init,
   rowFunc,
   usingPart,
@@ -318,25 +319,25 @@ class SelectQuery[
 private[phantom] class RootSelectBlock[
   T <: CassandraTable[T, _],
   R
-](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None) {
+](table: T, val rowFunc: Row => R, columns: List[String], clause: Option[CQLQuery] = None)(
+  implicit strategy: NamingStrategy
+) {
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     clause match {
-      case Some(opt) => {
+      case Some(opt) =>
         new SelectQuery(
           table,
           rowFunc,
           QueryBuilder.Select.select(table.tableName, keySpace.name, opt)
         )
-      }
-      case None => {
+      case None =>
         new SelectQuery(
           table,
           rowFunc,
           QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*)
         )
-      }
     }
   }
 
@@ -406,7 +407,9 @@ private[phantom] class RootSelectBlock[
 
 object RootSelectBlock {
 
-  def apply[T <: CassandraTable[T, _], R](table: T, columns: List[String], row: Row => R): RootSelectBlock[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T, columns: List[String], row: Row => R)(
+    implicit strategy: NamingStrategy
+  ): RootSelectBlock[T, R] = {
     new RootSelectBlock(table, row, columns)
   }
 }
@@ -415,7 +418,9 @@ object SelectQuery {
 
   type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
-  def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R)(
+    implicit strategy: NamingStrategy
+  ): SelectQuery.Default[T, R] = {
     new SelectQuery(table, row, qb)
   }
 }
@@ -426,7 +431,10 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[
     T <: CassandraTable[T, _],
     R
-  ]( root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
+  ]( root: RootSelectBlock[T, R])(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): SelectQuery.Default[T, R] = {
     root.all
   }
 }

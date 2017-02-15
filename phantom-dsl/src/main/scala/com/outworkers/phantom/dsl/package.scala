@@ -46,6 +46,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with KeySpaceConstruction
   with DeleteImplicits {
 
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
+
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
   type NamingStrategy = phantom.macros.NamingStrategy
 
@@ -121,8 +123,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
-
-  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   object ? extends PrepareMark
   case object Batch extends Batcher

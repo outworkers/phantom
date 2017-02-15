@@ -87,6 +87,4 @@ object NamingStrategy {
   }
 
   object SnakeCase extends SnakeCase
-
-  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 }

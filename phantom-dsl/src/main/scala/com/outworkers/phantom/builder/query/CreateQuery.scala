@@ -19,8 +19,8 @@ import com.datastax.driver.core._
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.macros.NamingStrategy
 import com.outworkers.phantom.{CassandraTable, Manager}
 
 import scala.annotation.implicitNotFound
@@ -29,14 +29,14 @@ import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
   Record
-](val table: Table) {
+](val table: Table)(implicit strategy: NamingStrategy) {
 
   private[phantom] def default()(implicit keySpace: KeySpace): CQLQuery = {
     QueryBuilder.Create.defaultCreateQuery(
       keySpace.name,
       table.tableName,
       table.tableKey,
-      table.columns.map(_.qb).toSeq
+      table.columns.map(_.qb)
     )
   }
 
@@ -45,7 +45,7 @@ class RootCreateQuery[
       keySpace.name,
       table.tableName,
       table.tableKey,
-      table.columns.map(_.qb).toSeq
+      table.columns.map(_.qb)
     )
   }
 
@@ -58,7 +58,7 @@ class RootCreateQuery[
    * @param keySpace The name of the keySpace to target.
    * @return A create query executed with a lightweight transactions.
    */
-  def ifNotExists()(implicit keySpace: KeySpace): CreateQuery.Default[Table, Record] = {
+  def ifNotExists()(implicit keySpace: KeySpace, strategy: NamingStrategy): CreateQuery.Default[Table, Record] = {
     if (table.clusteringColumns.nonEmpty) {
       new CreateQuery(
         table,
@@ -85,7 +85,7 @@ class CreateQuery[
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-)(implicit keySpace: KeySpace) extends ExecutableStatement {
+)(implicit keySpace: KeySpace, strategy: NamingStrategy) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
@@ -206,7 +206,10 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
   def apply[
     T <: CassandraTable[T, _],
     R
-  ](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = {
+  ](root: RootCreateQuery[T, R])(
+    implicit keySpace: KeySpace,
+    namingStrategy: NamingStrategy
+  ): CreateQuery.Default[T, R] = {
     if (root.table.clusteringColumns.nonEmpty) {
       new CreateQuery[T, R, Unspecified](
         root.table,
@@ -223,5 +226,8 @@ private[phantom] trait CreateImplicits extends TablePropertyClauses {
   implicit def rootCreateQueryToCreateQuery[
     T <: CassandraTable[T, _],
     R
-  ](root: RootCreateQuery[T, R])(implicit keySpace: KeySpace): CreateQuery.Default[T, R] = apply(root)
+  ](root: RootCreateQuery[T, R])(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): CreateQuery.Default[T, R] = apply(root)
 }

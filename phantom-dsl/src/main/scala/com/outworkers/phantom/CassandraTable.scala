@@ -74,9 +74,10 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
+    strategy: NamingStrategy,
     ec: ExecutionContextExecutor
   ): Unit = {
-    Await.result(autocreate(keySpace).future(), 10.seconds)
+    Await.result(autocreate(keySpace, strategy).future(), 10.seconds)
   }
 
   def tableName(implicit strategy: NamingStrategy): String = strategy(helper.tableName)
@@ -88,37 +89,54 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
    * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
    * @return A root create block, with full support for all CQL Create query options.
    */
-  final def create: RootCreateQuery[T, R] = new RootCreateQuery(instance)
+  final def create(implicit strategy: NamingStrategy): RootCreateQuery[T, R] = new RootCreateQuery(instance)
 
-  def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
+  def autocreate(keySpace: KeySpace, strategy: NamingStrategy): CreateQuery.Default[T, R] = {
+    create(strategy).ifNotExists()(keySpace, strategy)
+  }
 
-  final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(instance)
+  final def alter()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): AlterQuery.Default[T, R] = AlterQuery(instance)
 
   final def alter[
     RR,
     NewType
-  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): AlterQuery.Default[T, RR] = {
     AlterQuery.alterType[T, RR, NewType](instance, columnSelect, newType)
   }
 
   final def alter[RR](
     columnSelect: T => AbstractColumn[RR],
     newName: String
-  )(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+  )(implicit keySpace: KeySpace, strategy: NamingStrategy): AlterQuery.Default[T, RR] = {
     AlterQuery.alterName[T, RR](instance, columnSelect, newName)
   }
 
-  final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
+  final def update()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 
-  final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
+  final def insert()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): InsertQuery.Default[T, R] = InsertQuery(instance)
 
   //final def store()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = helper.store(instance)
 
-  final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
+  final def delete()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
   final def delete(
     conditions: (T => DeleteClause.Condition)*
-  )(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+  )(implicit keySpace: KeySpace, strategy: NamingStrategy): DeleteQuery.Default[T, R] = {
     DeleteQuery[T, R](instance, conditions.map(_(instance).qb): _*)
   }
 
