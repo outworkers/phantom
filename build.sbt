@@ -35,8 +35,11 @@ lazy val Versions = new {
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
   val typesafeConfig = "1.3.1"
+  val scalamock = "3.4.2"
   val joda = "2.9.4"
+  val paradise = "2.1.0"
   val jodaConvert = "1.8.1"
+  val macroCompat = "1.1.1"
 
   val twitterUtilVersion: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -179,9 +182,9 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   ),
   crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "macro-compat" % "1.1.1",
+    "org.typelevel" %% "macro-compat" % Versions.macroCompat,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    compilerPlugin("org.scalamacros" % "paradise" % Versions.paradise cross CrossVersion.full),
     "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % Versions.joda,
@@ -189,6 +192,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.json4s"                   %% "json4s-native"                     % Versions.json4s                 % Test,
+    "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock              % Test,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
     "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
