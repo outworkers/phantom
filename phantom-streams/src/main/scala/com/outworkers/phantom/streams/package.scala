@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _}
+import com.outworkers.phantom.macros.NamingStrategy
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
@@ -120,6 +121,7 @@ package object streams {
     def publisher()(
       implicit session: Session,
       keySpace: KeySpace,
+      strategy: NamingStrategy,
       ctx: ExecutionContextExecutor
     ): Publisher[T] = {
       Streams.enumeratorToPublisher(ct.select.all().fetchEnumerator())

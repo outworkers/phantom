@@ -18,7 +18,6 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.PhantomSuite
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
-import org.scalamock.scalatest.MockFactory
 import com.outworkers.util.testing._
 
 case class Ev2(
@@ -46,7 +45,7 @@ class ClusteredTable extends CassandraTable[ClusteredTable, ClusteredRecord] {
   object id3 extends UUIDColumn(this) with ClusteringOrder with Ascending
 }
 
-class TableHelperTest extends PhantomSuite with MockFactory {
+class TableHelperTest extends PhantomSuite {
 
   it should "not generate a fromRow if a normal type is different" in {
 

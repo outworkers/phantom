@@ -141,6 +141,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   }
 
   final def truncate()(
-    implicit keySpace: KeySpace
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
   ): TruncateQuery.Default[T, R] = TruncateQuery[T, R](instance)
 }
