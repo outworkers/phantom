@@ -33,7 +33,7 @@ import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.DefaultVersions
-import com.outworkers.phantom.macros.NamingStrategy
+import com.outworkers.phantom.macros.{LowPriorityNamingImplicits, NamingStrategy}
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
@@ -44,9 +44,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with Operators
   with UsingClauseOperations
   with KeySpaceConstruction
-  with DeleteImplicits {
-
-  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
+  with DeleteImplicits
+  with LowPriorityNamingImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
   type NamingStrategy = phantom.macros.NamingStrategy
@@ -115,6 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
+  type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
 

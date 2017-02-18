@@ -15,12 +15,8 @@
  */
 package com.outworkers.phantom.example.basics
 
-import java.util.UUID
-
-import scala.concurrent.{Future => ScalaFuture}
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
+import scala.concurrent.Future
 
 /**
  * In this example we will create a table storing recipes with a SecondaryKey.
@@ -30,7 +26,7 @@ import com.outworkers.phantom.dsl._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyRecipes, Recipe] {
+sealed class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Recipe] with RootConnector {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
@@ -51,18 +47,14 @@ sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyReci
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
-}
-
-
-abstract class ConcreteSecondaryKeyRecipes extends SecondaryKeyRecipes with RootConnector {
 
   // Now say you want to get a Recipe by author.
-  // author is a Index, you can now use it in a "where" clause.
+  // author is an Index, you can now use it in a "where" clause.
   // Performance is unpredictable for such queries, so you need to allow filtering.
   // Note this is not the best practice.
   // In a real world environment, you create a RecipesByTitle mapping table.
   // Check out the example.
-  def findRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
+  def findRecipeByAuthor(author: String): Future[Option[Recipe]] = {
     select.allowFiltering().where(_.author eqs author).one()
   }
 }

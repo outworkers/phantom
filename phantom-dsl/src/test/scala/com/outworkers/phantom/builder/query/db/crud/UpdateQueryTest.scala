@@ -298,14 +298,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
         .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual updatedRow.copy(double = row.double, long = row.long)
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual updatedRow.copy(double = row.double, long = row.long)
     }
   }
 
@@ -334,11 +332,9 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual updatedRow.copy(double = row.double)
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual updatedRow.copy(double = row.double)
     }
   }
 }

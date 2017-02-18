@@ -40,6 +40,7 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
   object ThriftTable extends ConcreteThriftTable with connector.Connector
   object SecondaryKeyRecipes extends ConcreteSecondaryKeyRecipes with connector.Connector
 
+
   /**
    * Right now you can go for a really neat trick of the trade.
    * You can automatically initialise all your tables using phantom's schema auto-generation capabilities.

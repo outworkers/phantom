@@ -36,7 +36,8 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
-  val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
+  private[this] val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
+  private[this] val namingTerm = TermName("naming")
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
@@ -51,7 +52,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
       q"""db.$name"""
     })
 
-    val queryList = tableList.map { tb => q"""$tb.autocreate(space)""" }
+    val queryList = tableList.map { tb => q"""$tb.autocreate(space, db.$namingTerm)""" }
 
     val listType = tq"$prefix.ExecutableCreateStatementsList"
 

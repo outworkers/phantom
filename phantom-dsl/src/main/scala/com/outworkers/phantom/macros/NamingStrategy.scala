@@ -88,3 +88,8 @@ object NamingStrategy {
 
   object SnakeCase extends SnakeCase
 }
+
+
+trait LowPriorityNamingImplicits {
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
+}
