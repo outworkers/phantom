@@ -83,26 +83,20 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
   }
 
   it should "put several items to a thrift map column with Twitter Futures" in {
-    val id = gen[UUID]
-
     val sample = gen[ThriftRecord]
 
-    val sample2 = gen[ThriftTest]
-    val sample3 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
-    val expected = map ++ toAdd
+    val map = genMap[String, ThriftTest]()
+    val toAdd = genMap[String, ThriftTest]()
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
     } yield select
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
-      items.value shouldBe expected
+      items.value shouldBe (map ++ toAdd)
     }
   }
 }
