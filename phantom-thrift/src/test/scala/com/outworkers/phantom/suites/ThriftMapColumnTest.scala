@@ -26,9 +26,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
   it should "put an item to a thrift map column" in {
     val sample = gen[ThriftRecord]
-    val map = genMap[String, ThriftTest]()
     val toAdd = gen[(String, ThriftTest)]
-    val expected = map + toAdd
+    val expected = sample.thriftMap + toAdd
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
@@ -41,6 +40,7 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
+
       items.value shouldBe expected
     }
   }
@@ -71,12 +71,18 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+      update <- ThriftDatabase.thriftColumnTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.thriftMap putAll toAdd).future()
+      select <- ThriftDatabase.thriftColumnTable
+        .select(_.thriftMap)
+        .where(_.id eqs sample.id)
+        .one
     } yield select
 
     whenReady(operation) { items =>
       items shouldBe defined
+      Console.println(s"Original: ${sample.thriftMap.size} elements. Added ${toAdd.size} elements. Found ${items.value.size} elements")
       items.value should contain theSameElementsAs (sample.thriftMap ++ toAdd)
     }
   }
@@ -94,6 +100,7 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
+      Console.println(s"Original: ${sample.thriftMap.size} elements. Added ${toAdd.size} elements. Found ${items.value.size} elements")
       items.value should contain theSameElementsAs (sample.thriftMap ++ toAdd)
     }
   }
