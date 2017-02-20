@@ -19,6 +19,7 @@ import java.util.UUID
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
@@ -100,7 +101,10 @@ object Connector {
         .setConnectTimeoutMillis(20000)
         .setReadTimeoutMillis(20000)
       )
-    ).noHeartbeat().keySpace("phantom")
+    ).noHeartbeat().keySpace(
+      "phantom",
+      KeySpaceSerializer("phantom").ifNotExists().`with`(replication eqs SimpleStrategy)
+    )
 
 }
 
