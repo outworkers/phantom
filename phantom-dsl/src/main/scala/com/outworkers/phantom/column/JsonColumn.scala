@@ -55,12 +55,12 @@ abstract class OptionalJsonColumn[
 
   def asCql(value: Option[ValueType]): String = value match {
     case Some(json) => CQLQuery.empty.singleQuote(toJson(json))
-    case None => None.orNull
+    case None => CQLQuery.empty.queryString
   }
 
   val cassandraType = CQLSyntax.Types.Text
 
-  def parse(row: Row): Try[Option[ValueType]] = Try(Some(fromJson(row.getString(name))))
+  def parse(row: Row): Try[Option[ValueType]] = Try(fromJson(row.getString(name))).map(Some(_))
 }
 
 abstract class JsonListColumn[

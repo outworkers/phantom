@@ -17,9 +17,9 @@ package com.outworkers.phantom.tables
 
 import java.util.UUID
 
-import com.datastax.driver.core.{PoolingOptions, SocketOptions}
-import com.outworkers.phantom.connectors
+import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._

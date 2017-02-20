@@ -18,27 +18,25 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class JsonColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.jsonTable.insertSchema()
+    database.jsonTable.insertSchema()
   }
 
   it should "allow storing a JSON record" in {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).future()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
+      done <- database.jsonTable.store(sample).future()
+      select <- database.jsonTable.select.where(_.id eqs sample.id).one
     } yield select
 
-    chain.successful {
-      res => {
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual sample
     }
   }
 
@@ -47,17 +45,33 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).future()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
+      done <- database.jsonTable.store(sample).future()
+      select <- database.jsonTable.select.where(_.id eqs sample.id).one
+      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
+      select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
-    chain.successful {
-      case (initial, updated) => {
-        initial.value.json shouldEqual sample.json
-        updated.value.json shouldEqual sample2.json
-      }
+    whenReady(chain) { case (initial, updated) =>
+      initial.value.json shouldEqual sample.json
+      updated.value.json shouldEqual sample2.json
+    }
+  }
+
+  it should "allow updating an optional JSON column" in {
+    val sample = gen[JsonClass].copy(optionalJson = None)
+    val updated = genOpt[JsonTest]
+
+    val chain = for {
+      done <- database.jsonTable.store(sample).future()
+      select <- database.jsonTable.select.where(_.id eqs sample.id).one
+      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.optionalJson setTo updated).future()
+      select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
+    } yield (select, select2)
+
+    whenReady(chain) { case (initial, afterUpdate) =>
+      initial.value.optionalJson shouldBe empty
+      afterUpdate.value.optionalJson shouldBe defined
+      afterUpdate.value.optionalJson shouldEqual updated
     }
   }
 
@@ -66,17 +80,15 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).future()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
+      done <- database.jsonTable.store(sample).future()
+      select <- database.jsonTable.select.where(_.id eqs sample.id).one
+      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
+      select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
-    chain.successful {
-      case (initial, updated) => {
-        initial.value shouldEqual sample
-        updated.value.jsonList.headOption.value shouldEqual sample2.json
-      }
+    whenReady(chain) { case (initial, updated) =>
+      initial.value shouldEqual sample
+      updated.value.jsonList.headOption.value shouldEqual sample2.json
     }
   }
 
@@ -85,17 +97,15 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- TestDatabase.jsonTable.store(sample).future()
-      select <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one
-      update <- TestDatabase.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
-      select2 <- TestDatabase.jsonTable.select.where(_.id eqs sample.id).one()
+      done <- database.jsonTable.store(sample).future()
+      select <- database.jsonTable.select.where(_.id eqs sample.id).one
+      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
+      select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
-    chain.successful {
-      case (initial, updated) => {
-        initial.value shouldEqual sample
-        updated.value.jsonSet should contain (sample2.json)
-      }
+    whenReady(chain) { case (initial, updated) =>
+      initial.value shouldEqual sample
+      updated.value.jsonSet should contain (sample2.json)
     }
   }
 }

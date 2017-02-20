@@ -34,7 +34,7 @@ lazy val Versions = new {
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
   val typesafeConfig = "1.3.1"
-  val joda = "2.9.4"
+  val joda = "2.9.7"
   val jodaConvert = "1.8.1"
   val scalamock = "3.4.2"
   val macrocompat = "1.1.1"
@@ -179,7 +179,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "macro-compat" % Versions.macrocompat,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -206,7 +206,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
@@ -222,7 +222,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test

@@ -19,10 +19,10 @@ import java.net.InetAddress
 import java.util.Date
 
 import com.datastax.driver.core.utils.UUIDs
+import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.{InsertQuery, UpdateQuery}
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.concurrent.Future
 
@@ -83,7 +83,7 @@ object OptionalPrimitive {
   }
 }
 
-sealed class OptionalPrimitives extends CassandraTable[ConcreteOptionalPrimitives, OptionalPrimitive] {
+abstract class OptionalPrimitives extends CassandraTable[OptionalPrimitives, OptionalPrimitive] with RootConnector {
   object pkey extends StringColumn(this) with PartitionKey
 
   object string extends OptionalStringColumn(this)
@@ -110,34 +110,11 @@ sealed class OptionalPrimitives extends CassandraTable[ConcreteOptionalPrimitive
 
   object bi extends OptionalBigIntColumn(this)
 
-  override def fromRow(r: Row): OptionalPrimitive = {
-    OptionalPrimitive(
-      pkey = pkey(r),
-      string = string(r),
-      long = long(r),
-      boolean = boolean(r),
-      bDecimal = bDecimal(r),
-      double = double(r),
-      float = float(r),
-      inet = inet(r),
-      int = int(r),
-      date = date(r),
-      uuid = uuid(r),
-      timeuuid = timeuuid(r),
-      bi = bi(r)
-    )
-  }
-}
-
-abstract class ConcreteOptionalPrimitives extends OptionalPrimitives with RootConnector {
-
-  override val tableName = "OptionalPrimitives"
-
   def findByKey(pkey: String): Future[Option[OptionalPrimitive]] = {
     select.where(_.pkey eqs pkey).one()
   }
 
-  def store(row: OptionalPrimitive): InsertQuery.Default[ConcreteOptionalPrimitives, OptionalPrimitive] = {
+  def store(row: OptionalPrimitive): InsertQuery.Default[OptionalPrimitives, OptionalPrimitive] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)
