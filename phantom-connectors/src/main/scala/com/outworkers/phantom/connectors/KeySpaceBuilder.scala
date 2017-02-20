@@ -55,7 +55,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   def keySpace(
     name: String,
     autoinit: Boolean = true,
-    query: Option[(Session, KeySpace) => String] = None,
+    query: Option[KeySpaceCQLQuery] = None,
     errorHandler: Throwable => Throwable = identity
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, autoinit, query)
@@ -71,7 +71,19 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     */
   def keySpace(
     name: String,
-    query: (Session, KeySpace) => String
+    query: KeySpaceCQLQuery
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, true, Some(query))
-  }}
+  }
+}
+
+/**
+  * This exists to prevent a dependency on the diesel engine
+  * or any kind of specific query implementation from within the connectors framework.
+  * This allows connectors to be used in isolation from the rest of phantom DSL.
+  */
+trait KeySpaceCQLQuery {
+  def queryString: String
+}
+
+
