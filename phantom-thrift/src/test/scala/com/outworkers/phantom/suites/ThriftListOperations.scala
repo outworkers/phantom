@@ -159,7 +159,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      items.value shouldEqual (sample2 ::: sample.thriftList)
+      items.value shouldEqual (sample.thriftList ::: sample2)
     }
   }
 
@@ -178,7 +178,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
-      items.value shouldEqual (sample2 ::: sample.thriftList)
+      items.value shouldEqual (sample.thriftList ::: sample2)
     }
   }
 
@@ -282,7 +282,8 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      items.value.drop(2).headOption.value shouldEqual sample2
+      items.value.isDefinedAt(2) shouldEqual true
+      items.value should contain (sample2)
     }
   }
 
@@ -302,7 +303,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
-      items.value.drop(2).headOption.value shouldEqual sample2
+      items.value should contain (sample2)
     }
   }
 

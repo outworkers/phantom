@@ -174,7 +174,8 @@ Phantom was developed at outworkers as an in-house project. All Cassandra integr
 ===============================
 <a href="#table-of-contents">back to top</a>
 
-Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
+Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea, and special thanks to Miles Sabin and team behind
+Shapeless, where we shamelessly stole all the good patterns from.
 
 Copyright &copy; 2013 - 2017 outworkers.
 
