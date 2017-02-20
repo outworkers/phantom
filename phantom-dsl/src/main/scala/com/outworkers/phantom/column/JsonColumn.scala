@@ -35,8 +35,11 @@ sealed trait JsonDefinition[T] {
   def fromString(c: String): T = fromJson(c)
 }
 
-abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: CassandraTable[T, R]) extends Column[T, R,
-  ValueType](table) with JsonDefinition[ValueType] {
+abstract class JsonColumn[
+  T <: CassandraTable[T, R],
+  R,
+  ValueType
+](table: CassandraTable[T, R]) extends Column[T, R, ValueType](table) with JsonDefinition[ValueType] {
 
   def asCql(value: ValueType): String = CQLQuery.empty.singleQuote(toJson(value))
 
@@ -51,16 +54,17 @@ abstract class OptionalJsonColumn[
   T <: CassandraTable[T, R],
   R,
   ValueType
-](table: CassandraTable[T, R]) extends Column[T, R, Option[ValueType]](table) with JsonDefinition[ValueType] {
+](table: CassandraTable[T, R]) extends OptionalColumn[T, R, ValueType](table) with JsonDefinition[ValueType] {
 
   def asCql(value: Option[ValueType]): String = value match {
     case Some(json) => CQLQuery.empty.singleQuote(toJson(json))
-    case None => CQLQuery.empty.queryString
+    case None => CQLQuery.empty.singleQuote("")
   }
 
   val cassandraType = CQLSyntax.Types.Text
 
-  def parse(row: Row): Try[Option[ValueType]] = Try(fromJson(row.getString(name))).map(Some(_))
+  override def optional(r: Row): Try[ValueType] = Try(fromJson(r.getString(name)))
+
 }
 
 abstract class JsonListColumn[
