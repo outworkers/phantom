@@ -15,11 +15,12 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.{Output, ThriftDatabase}
+import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.util.testing._
+import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
@@ -52,11 +53,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select
     }
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample2, sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample2, sample)
     }
   }
 
@@ -81,16 +80,14 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample2, sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample2, sample)
     }
   }
 
   it should "prepend several items to a thrift list column" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val appendable = genList[ThriftTest]()
 
@@ -100,20 +97,16 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList prepend appendable).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual prependedValues ::: sample.thriftList
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual prependedValues ::: sample.thriftList
     }
   }
 
   it should "prepend several items to a thrift list column with Twitter Futures" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val appendable = genList[ThriftTest]()
 
@@ -127,11 +120,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
         select
       }
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual prependedValues ::: sample.thriftList
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual prependedValues ::: sample.thriftList
     }
   }
 
@@ -157,11 +148,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select
     }
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample, sample2)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample, sample2)
     }
   }
 
@@ -186,11 +175,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample, sample2)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample, sample2)
     }
   }
 
@@ -217,15 +204,11 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList append toAppend).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample, sample2, sample3)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample, sample2, sample3)
     }
   }
 
@@ -254,11 +237,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample, sample2, sample3)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample, sample2, sample3)
     }
   }
 
@@ -281,15 +262,11 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard sample2).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample)
     }
   }
 
@@ -314,11 +291,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample)
     }
   }
 
@@ -345,11 +320,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample)
     }
   }
 
@@ -372,15 +345,14 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
     val operation = for {
       insertDone <- insert
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftList discard List(sample2, sample3)).execute()
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id)
+        .modify(_.thriftList discard List(sample2, sample3)).execute()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual List(sample)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value shouldEqual List(sample)
     }
   }
 
@@ -407,11 +379,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value.headOption.value shouldEqual sample3
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value.headOption.value shouldEqual sample3
     }
   }
 
@@ -438,11 +408,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value.drop(2).headOption.value shouldEqual sample3
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value.drop(2).headOption.value shouldEqual sample3
     }
   }
 
@@ -469,11 +437,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.isDefined shouldEqual true
-        items.value should contain (sample3)
-      }
+    operation.successful { items =>
+      items.isDefined shouldEqual true
+      items.value should contain (sample3)
     }
   }
 
@@ -500,11 +466,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftList).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value should contain (sample3)
-      }
+    operation.successful { items =>
+      items shouldBe defined
+      items.value should contain (sample3)
     }
   }
 }

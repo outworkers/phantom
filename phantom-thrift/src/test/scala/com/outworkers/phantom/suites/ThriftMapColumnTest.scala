@@ -15,135 +15,77 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.ThriftDatabase
+import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.util.testing._
+import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
-import org.scalatest.time.SpanSugar._
 
 class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
   it should "put an item to a thrift map column" in {
-    val id = gen[UUID]
-
-    val sample = gen[ThriftTest]
-
-    val sample2 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = gen[String] -> sample2
+    val sample = gen[ThriftRecord]
+    val map = genMap[String, ThriftTest]()
+    val toAdd = gen[(String, ThriftTest)]
     val expected = map + toAdd
 
-
-    val insert = ThriftDatabase.thriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-
-      .future()
-
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
       update <- ThriftDatabase.thriftColumnTable.update
-        .where(_.id eqs id).modify(_.thriftMap put toAdd).future()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
-    } yield {
-      select
-    }
+        .where(_.id eqs sample.id)
+        .modify(_.thriftMap put toAdd)
+        .future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe expected
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe expected
     }
   }
 
   it should "put an item to a thrift map column with Twitter Futures" in {
-    val id = gen[UUID]
+    val sample = gen[ThriftRecord]
 
-    val sample = gen[ThriftTest]
-
-    val sample2 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = gen[String] -> sample2
-    val expected = map + toAdd
-
-
-    val insert = ThriftDatabase.thriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-      .execute()
-
+    val map = genMap[String, ThriftTest]()
+    val toAdd = gen[(String, ThriftTest)]
 
     val operation = for {
-      insertDone <- insert
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).execute()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe expected
-      }
+    whenReady(operation.asScala) { items =>
+      items shouldBe defined
+      items.value shouldBe (map + toAdd)
     }
   }
 
 
   it should "put several items to a thrift map column" in {
-    val id = gen[UUID]
+    val sample = gen[ThriftRecord]
 
-    val sample = gen[ThriftTest]
-
-    val sample2 = gen[ThriftTest]
-
-    val sample3 = gen[ThriftTest]
-
-    val map = Map(gen[String] -> sample)
-    val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
-    val expected = map ++ toAdd
-
-
-    val insert = ThriftDatabase.thriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-      .future()
+    val toAdd = genMap[String, ThriftTest]()
+    val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
-      insertDone <- insert
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).one
-    } yield {
-      select
-    }
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future
+      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
+      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe expected
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe expected
     }
   }
 
   it should "put several items to a thrift map column with Twitter Futures" in {
     val id = gen[UUID]
 
-    val sample = gen[ThriftTest]
+    val sample = gen[ThriftRecord]
 
     val sample2 = gen[ThriftTest]
     val sample3 = gen[ThriftTest]
@@ -152,27 +94,15 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val toAdd = Map(gen[String] -> sample2, gen[String] -> sample3)
     val expected = map ++ toAdd
 
-
-    val insert = ThriftDatabase.thriftColumnTable.insert
-      .value(_.id, id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample)
-      .value(_.thriftSet, Set(sample))
-      .value(_.thriftList, List(sample))
-      .value(_.thriftMap, map)
-      .execute()
-
     val operation = for {
-      insertDone <- insert
+      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftMap putAll toAdd).execute()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs id).get
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe expected
-      }
+    whenReady(operation.asScala) { items =>
+      items shouldBe defined
+      items.value shouldBe expected
     }
   }
 }

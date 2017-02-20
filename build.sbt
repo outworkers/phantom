@@ -254,7 +254,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
     )
   ).settings(
     sharedSettings: _*

@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.{Output, ThriftDatabase}
+import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
 import com.outworkers.util.testing._
 import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
@@ -32,7 +32,7 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
   }
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val chain = for {
       store <- ThriftIndexedTable.store(sample).future()
@@ -55,7 +55,7 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
   }
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct with Twitter futures" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val chain = for {
       store <- ThriftIndexedTable.store(sample).execute()
