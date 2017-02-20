@@ -20,7 +20,6 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.testing._
-import com.twitter.conversions.time._
 
 class SelectFunctionsTesting extends PhantomSuite {
 
@@ -40,13 +39,10 @@ class SelectFunctionsTesting extends PhantomSuite {
         .where(_.url eqs record.url).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-          new DateTime(res.value.microseconds.inMillis)
-        }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      shouldNotThrow {
+        new DateTime(res.value / 1000)
       }
     }
   }
@@ -60,13 +56,8 @@ class SelectFunctionsTesting extends PhantomSuite {
         .and(_.id eqs record.id).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 
@@ -79,13 +70,8 @@ class SelectFunctionsTesting extends PhantomSuite {
         .and(_.id eqs record.id).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 
@@ -101,13 +87,10 @@ class SelectFunctionsTesting extends PhantomSuite {
         .one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-          res.value.value shouldEqual timeToLive
-        }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      shouldNotThrow {
+        res.value.value shouldEqual timeToLive
       }
     }
   }

@@ -47,7 +47,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object indexedEntriesTable extends ConcreteIndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with Connector
-  object optionalPrimitives extends ConcreteOptionalPrimitives with Connector
+  object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
   object primitivesJoda extends PrimitivesJoda with Connector

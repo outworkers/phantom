@@ -37,8 +37,8 @@ case class OptionalPrimitive(
   inet: Option[InetAddress],
   int: Option[Int],
   date: Option[java.util.Date],
-  uuid: Option[java.util.UUID],
-  timeuuid: Option[java.util.UUID],
+  uuid: Option[UUID],
+  timeuuid: Option[UUID],
   bi: Option[BigInt]
 )
 
