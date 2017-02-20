@@ -36,7 +36,7 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   import c.universe._
 
-  val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
+  private[this] val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]

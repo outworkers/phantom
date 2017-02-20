@@ -47,6 +47,22 @@ abstract class JsonColumn[T <: CassandraTable[T, R], R, ValueType](table: Cassan
   }
 }
 
+abstract class OptionalJsonColumn[
+  T <: CassandraTable[T, R],
+  R,
+  ValueType
+](table: CassandraTable[T, R]) extends Column[T, R, Option[ValueType]](table) with JsonDefinition[ValueType] {
+
+  def asCql(value: Option[ValueType]): String = value match {
+    case Some(json) => CQLQuery.empty.singleQuote(toJson(json))
+    case None => None.orNull
+  }
+
+  val cassandraType = CQLSyntax.Types.Text
+
+  def parse(row: Row): Try[Option[ValueType]] = Try(Some(fromJson(row.getString(name))))
+}
+
 abstract class JsonListColumn[
   T <: CassandraTable[T, R],
   R,

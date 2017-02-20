@@ -158,12 +158,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
-  private[this] def show(list: List[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
-  }
-
-  private[this] def show(list: Iterable[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def show[M[X] <: TraversableOnce[X]](traversable: M[Type]): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
   private[this] def predicate(source: (Field, Field)): Boolean = {

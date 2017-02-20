@@ -42,10 +42,8 @@ class MapOperationsTest extends PhantomSuite {
       select
     }
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props + item
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.props + item
     }
   }
 

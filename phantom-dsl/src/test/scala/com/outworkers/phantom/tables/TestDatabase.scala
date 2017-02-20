@@ -50,7 +50,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object optionalPrimitives extends ConcreteOptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
-  object primitivesJoda extends ConcretePrimitivesJoda with Connector
+  object primitivesJoda extends PrimitivesJoda with Connector
 
   object primitivesCassandra22 extends PrimitivesCassandra22 with Connector
   object optionalPrimitivesCassandra22 extends OptionalPrimitivesCassandra22 with Connector
