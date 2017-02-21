@@ -34,7 +34,7 @@ class CassandraConnection(
   val name: String,
   clusterBuilder: ClusterBuilder,
   autoinit: Boolean,
-  keyspaceFn: Option[(Session, KeySpace) => String] = None,
+  keyspaceFn: Option[KeySpaceCQLQuery] = None,
   errorHander: Throwable => Throwable = identity
 ) { outer =>
 

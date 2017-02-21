@@ -17,8 +17,6 @@ package com.outworkers.phantom.builder.serializers
 
 import java.util.concurrent.TimeUnit
 
-import com.twitter.conversions.storage._
-import com.twitter.util.{Duration => TwitterDuration}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax

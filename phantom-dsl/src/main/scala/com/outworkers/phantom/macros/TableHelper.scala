@@ -21,6 +21,7 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
+import org.slf4j.LoggerFactory
 
 import scala.reflect.macros.blackbox
 
@@ -46,6 +47,9 @@ object TableHelper {
 
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+
+
+  private[this] val logger = LoggerFactory.getLogger(this.getClass)
 
   import c.universe._
 
@@ -158,12 +162,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
-  private[this] def show(list: List[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
-  }
-
-  private[this] def show(list: Iterable[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def show[M[X] <: TraversableOnce[X]](traversable: M[Type]): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
   private[this] def predicate(source: (Field, Field)): Boolean = {
@@ -191,7 +191,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     } else {
 
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
-        Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
+        logger.info(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
       } else {
         findMatchingSubset(tableName, members.tail, recordMembers)
