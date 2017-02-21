@@ -103,7 +103,9 @@ object Connector {
       )
     ).noHeartbeat().keySpace(
       "phantom",
-      KeySpaceSerializer("phantom").ifNotExists().`with`(replication eqs SimpleStrategy)
+      KeySpaceSerializer("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
     )
 
 }

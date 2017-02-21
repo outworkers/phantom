@@ -58,7 +58,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     query: Option[KeySpaceCQLQuery] = None,
     errorHandler: Throwable => Throwable = identity
   ): CassandraConnection = {
-    new CassandraConnection(name, clusterBuilder, autoinit, query)
+    new CassandraConnection(name, clusterBuilder, autoinit, query, errorHandler)
   }
 
   /**

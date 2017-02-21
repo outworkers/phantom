@@ -40,15 +40,12 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-
-      items.value shouldBe expected
+      items.value shouldEqual expected
     }
   }
 
   it should "put an item to a thrift map column with Twitter Futures" in {
     val sample = gen[ThriftRecord]
-
-    val map = genMap[String, ThriftTest]()
     val toAdd = gen[(String, ThriftTest)]
 
     val operation = for {
@@ -59,7 +56,7 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
-      items.value shouldBe (map + toAdd)
+      items.value shouldEqual (sample.thriftMap + toAdd)
     }
   }
 
@@ -68,6 +65,7 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val sample = gen[ThriftRecord]
 
     val toAdd = genMap[String, ThriftTest]()
+    val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future
@@ -82,8 +80,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      Console.println(s"Original: ${sample.thriftMap.size} elements. Added ${toAdd.size} elements. Found ${items.value.size} elements")
-      items.value should contain theSameElementsAs (sample.thriftMap ++ toAdd)
+      items.value.size shouldEqual expected.size
+      items.value shouldEqual expected
     }
   }
 
@@ -91,6 +89,7 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val sample = gen[ThriftRecord]
 
     val toAdd = genMap[String, ThriftTest]()
+    val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
       insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
@@ -100,8 +99,8 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation.asScala) { items =>
       items shouldBe defined
-      Console.println(s"Original: ${sample.thriftMap.size} elements. Added ${toAdd.size} elements. Found ${items.value.size} elements")
-      items.value should contain theSameElementsAs (sample.thriftMap ++ toAdd)
+      items.value.size shouldEqual expected.size
+      items.value shouldEqual expected
     }
   }
 }
