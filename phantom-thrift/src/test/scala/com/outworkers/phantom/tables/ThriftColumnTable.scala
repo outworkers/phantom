@@ -75,6 +75,7 @@ abstract class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Thrif
       .value(_.ref, sample.struct)
       .value(_.thriftSet, sample.thriftSet)
       .value(_.thriftList, sample.thriftList)
+      .value(_.thriftMap, sample.thriftMap)
   }
 }
 
