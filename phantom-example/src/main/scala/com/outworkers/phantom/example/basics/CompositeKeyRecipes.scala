@@ -35,7 +35,6 @@ sealed class CompositeKeyRecipes extends CassandraTable[ConcreteCompositeKeyReci
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
   }
-  strategy
   // Now we define a column for each field in our case class.
   // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
   object name extends StringColumn(this) with PrimaryKey // and you're done

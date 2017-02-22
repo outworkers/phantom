@@ -38,7 +38,7 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
   object AdvancedRecipesByTitle extends ConcreteAdvancedRecipesByTitle with connector.Connector
   object CompositeKeyRecipes extends ConcreteCompositeKeyRecipes with connector.Connector
   object ThriftTable extends ConcreteThriftTable with connector.Connector
-  object SecondaryKeyRecipes extends ConcreteSecondaryKeyRecipes with connector.Connector
+  object SecondaryKeyRecipes extends SecondaryKeyRecipes with connector.Connector
 
 
   /**

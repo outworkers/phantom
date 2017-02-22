@@ -44,6 +44,8 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
 
     val accessors = filterMembers[T, CassandraTable[_, _]]()
 
+    val namingTerm = TermName("naming")
+
     val prefix = q"com.outworkers.phantom.database"
 
     val tableList = accessors.map(sym => {

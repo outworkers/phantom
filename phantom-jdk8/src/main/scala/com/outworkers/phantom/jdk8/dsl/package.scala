@@ -16,7 +16,9 @@
 package com.outworkers.phantom.jdk8
 
 import java.time.LocalDateTime
+import java.util.{Random, UUID}
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl.CassandraTable
 
 package object dsl extends DefaultJava8Primitives {
@@ -65,5 +67,12 @@ package object dsl extends DefaultJava8Primitives {
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
+
+  implicit class OffsetDateTimeOps(val date: OffsetDateTime) extends AnyVal {
+    def timeuuid: UUID = {
+      val random = scala.util.Random.nextLong()
+      new UUID(UUIDs.startOf(date.toInstant.toEpochMilli).getMostSignificantBits, random)
+    }
+  }
 
 }

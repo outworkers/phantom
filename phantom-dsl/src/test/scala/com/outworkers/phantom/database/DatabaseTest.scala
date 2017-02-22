@@ -17,9 +17,10 @@ package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.NamingStrategy
 import com.outworkers.util.testing._
 
-object db extends TestDatabase
+object db extends SimpleDatabase
 
 class DatabaseTest extends PhantomSuite {
 
@@ -37,7 +38,7 @@ class DatabaseTest extends PhantomSuite {
     val space = KeySpace("phantom_test")
     val queries = db.autocreate().queries(space).map(_.qb)
 
-    val target = db.recipes.autocreate(space).qb
+    val target = db.recipes.autocreate(space, NamingStrategy.CamelCase.caseInsensitive).qb
 
     queries should contain (target)
   }

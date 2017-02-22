@@ -24,6 +24,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.NamingStrategy
 
 class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
 
@@ -44,10 +45,10 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
   object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with Connector
 
-  object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with Connector
-  object indexedEntriesTable extends ConcreteIndexedEntriesTable with Connector
+  object indexedCollectionsTable extends IndexedCollectionsTable with Connector
+  object indexedEntriesTable extends IndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
-  object listCollectionTable extends ConcreteListCollectionTable with Connector
+  object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
@@ -57,8 +58,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object optionalPrimitivesCassandra22 extends OptionalPrimitivesCassandra22 with Connector
 
   object recipes extends Recipes with Connector {
-    override def autocreate(space: KeySpace): CreateQuery.Default[Recipes, Recipe] = {
-      create.ifNotExists()(space).`with`(comment eqs "This is a test string")
+    override def autocreate(space: KeySpace, strategy: NamingStrategy): CreateQuery.Default[Recipes, Recipe] = {
+      create.ifNotExists()(space, strategy).`with`(comment eqs "This is a test string")
     }
   }
 
@@ -70,7 +71,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
-  object testTable extends ConcreteTestTable with Connector
+  object testTable extends TestTable with Connector
   object timeSeriesTable extends ConcreteTimeSeriesTable with Connector {
     val testUUID = UUID.randomUUID()
   }

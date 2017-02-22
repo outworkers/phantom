@@ -17,13 +17,11 @@ package com.outworkers.phantom.example.advanced
 
 import java.util.UUID
 
-import com.datastax.driver.core.{ResultSet, Row}
+import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.connectors.RootConnector
-import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics.Recipe
-import com.outworkers.phantom.{CassandraTable => _, _}
-import org.joda.time.DateTime
+import com.outworkers.phantom.{CassandraTable => _}
 
 import scala.concurrent.{Future => ScalaFuture}
 
