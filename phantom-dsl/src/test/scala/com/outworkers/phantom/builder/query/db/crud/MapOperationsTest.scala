@@ -42,10 +42,8 @@ class MapOperationsTest extends PhantomSuite {
       select
     }
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.props + item
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.props + item
     }
   }
 
@@ -60,8 +58,8 @@ class MapOperationsTest extends PhantomSuite {
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
-    whenReady(operation) {
-      items => items.value shouldEqual recipe.props ++ mapItems
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.props ++ mapItems
     }
   }
 
@@ -122,11 +120,9 @@ class MapOperationsTest extends PhantomSuite {
       get2 <- database.scalaPrimitivesTable.findById(sample.id)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeUpdate, afterUpdate) => {
-        beforeUpdate.value shouldEqual sample
-        afterUpdate.value shouldEqual sample.copy(map = sample.map + (updateKey -> BigDecimal(updatedValue)))
-      }
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate.value shouldEqual sample
+      afterUpdate.value shouldEqual sample.copy(map = sample.map + (updateKey -> BigDecimal(updatedValue)))
     }
   }
 }

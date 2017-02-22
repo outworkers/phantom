@@ -16,15 +16,13 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.twitter.util.{Future => TwitterFuture}
 import com.outworkers.phantom.builder.query.db.ordering.TimeSeriesTest
-import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{Future => ScalaFuture}
+import scala.concurrent.Future
 
 class RelationalOperatorsTest extends PhantomSuite {
   val logger = LoggerFactory.getLogger(this.getClass)
@@ -188,14 +186,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     verifyResults(futureResults, expected)
   }
 
-  def verifyResults(futureResults: ScalaFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
-      results.toSet shouldEqual expected.toSet
-    }
-  }
-
-  def verifyResults(futureResults: TwitterFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
+  def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
+    whenReady(futureResults) { results =>
       results.toSet shouldEqual expected.toSet
     }
   }

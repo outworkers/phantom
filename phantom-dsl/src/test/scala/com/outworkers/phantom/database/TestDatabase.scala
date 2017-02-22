@@ -15,12 +15,7 @@
  */
 package com.outworkers.phantom.database
 
-import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.tables._
-
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
-}
 
 class TestDatabase extends Database[TestDatabase](Connector.default) {
   object enumTable extends EnumTable with Connector

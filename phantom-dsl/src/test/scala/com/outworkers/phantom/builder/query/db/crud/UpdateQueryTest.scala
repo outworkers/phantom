@@ -16,15 +16,15 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
-import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.concurrent.{AsyncAssertions, Waiters}
+import org.scalatest.concurrent.Waiters
 import org.scalatest.{Assertions, Inside, Matchers}
 
-class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Waiters with Inside {
+class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Inside {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -55,14 +55,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
         .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual updatedRow
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual updatedRow
     }
   }
 
@@ -91,11 +89,9 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       a2 <- database.testTable.select.where(_.key eqs row.key).one
     } yield (a, a2)
 
-    chain successful {
-      case (res1, res2) => {
-        res1.value shouldEqual row
-        res2.value shouldEqual updatedRow
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual updatedRow
     }
   }
 
@@ -110,14 +106,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeRecord, afterRecord) => {
-        beforeRecord shouldBe defined
-        beforeRecord.value shouldEqual sample
+    whenReady(chain) { case (beforeRecord, afterRecord) =>
+      beforeRecord shouldBe defined
+      beforeRecord.value shouldEqual sample
 
-        afterRecord shouldBe defined
-        afterRecord.value shouldBe updated
-      }
+      afterRecord shouldBe defined
+      afterRecord.value shouldBe updated
     }
   }
 
@@ -132,14 +126,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeRecord, afterRecord) => {
-        beforeRecord shouldBe defined
-        beforeRecord.value shouldEqual sample
+    whenReady(chain) { case (beforeRecord, afterRecord) =>
+      beforeRecord shouldBe defined
+      beforeRecord.value shouldEqual sample
 
-        afterRecord shouldBe defined
-        afterRecord.value shouldBe updated
-      }
+      afterRecord shouldBe defined
+      afterRecord.value shouldBe updated
     }
   }
 
@@ -155,14 +147,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeRecord, afterRecord) => {
-        beforeRecord shouldBe defined
-        beforeRecord.value shouldEqual sample
+    whenReady(chain) { case (beforeRecord, afterRecord) =>
+      beforeRecord shouldBe defined
+      beforeRecord.value shouldEqual sample
 
-        afterRecord shouldBe defined
-        afterRecord.value shouldBe sample.copy(boolean = Some(false))
-      }
+      afterRecord shouldBe defined
+      afterRecord.value shouldBe sample.copy(boolean = Some(false))
     }
   }
 
@@ -187,14 +177,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeRecord, afterRecord) => {
-        beforeRecord shouldBe defined
-        beforeRecord.value shouldEqual sample
+    whenReady(chain) { case (beforeRecord, afterRecord) =>
+      beforeRecord shouldBe defined
+      beforeRecord.value shouldEqual sample
 
-        afterRecord shouldBe defined
-        afterRecord.value shouldBe sample.copy(boolean = Some(false))
-      }
+      afterRecord shouldBe defined
+      afterRecord.value shouldBe sample.copy(boolean = Some(false))
     }
   }
 
@@ -222,14 +210,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (beforeRecord, afterRecord) => {
-        beforeRecord shouldBe defined
-        beforeRecord.value shouldEqual sample
+    whenReady(chain) { case (beforeRecord, afterRecord) =>
+      beforeRecord shouldBe defined
+      beforeRecord.value shouldEqual sample
 
-        afterRecord shouldBe defined
-        afterRecord.value shouldBe sample.copy(boolean = Some(false))
-      }
+      afterRecord shouldBe defined
+      afterRecord.value shouldBe sample.copy(boolean = Some(false))
     }
   }
 
@@ -256,7 +242,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
         .and(_.bi setTo sample.bi)
         .timestamp(t2)
         .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
 
     whenReady(chain) {
@@ -329,7 +315,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Wa
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
         .future()
-      a2 <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
 
     whenReady(chain) { case (res1, res2) =>

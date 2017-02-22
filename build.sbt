@@ -19,14 +19,13 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.2.1"
-  val util = "0.28.3"
+  val util = "0.30.1"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.37.0"
-  val twitterUtil = "6.34.0"
   val scalameter = "0.8+"
   val diesel = "0.5.0"
   val scalacheck = "1.13.4"
@@ -35,13 +34,13 @@ lazy val Versions = new {
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
   val typesafeConfig = "1.3.1"
-  val scalamock = "3.4.2"
-  val joda = "2.9.4"
-  val paradise = "2.1.0"
+  val joda = "2.9.7"
   val jodaConvert = "1.8.1"
-  val macroCompat = "1.1.1"
+  val scalamock = "3.4.2"
+  val macrocompat = "1.1.1"
+  val macroParadise = "2.1.0"
 
-  val twitterUtilVersion: String => String = {
+  val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 12 => "6.39.0"
       case _ => "6.34.0"
@@ -180,23 +179,23 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
   ),
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "macro-compat" % Versions.macroCompat,
+    "org.typelevel" %% "macro-compat" % Versions.macrocompat,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % Versions.paradise cross CrossVersion.full),
+    compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
     "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % Versions.joda,
     "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
     "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
-    "org.json4s"                   %% "json4s-native"                     % Versions.json4s                 % Test,
-    "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock              % Test,
-    "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck             % Test,
-    "com.outworkers"               %% "util-testing"                      % Versions.util                   % Test,
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter             % Test,
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback                % Test
+    "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+    "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
+    "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
+    "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
+    "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
   )
 ).dependsOn(
   phantomConnectors
@@ -207,7 +206,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     )
@@ -223,7 +222,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -236,7 +235,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     moduleName := "phantom-finagle",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
-      "com.twitter"                  %% "util-core"                         % Versions.twitterUtilVersion(scalaVersion.value),
+      "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     )
@@ -255,7 +254,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
     )
   ).settings(
     sharedSettings: _*

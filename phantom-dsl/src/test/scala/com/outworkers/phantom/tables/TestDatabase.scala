@@ -19,7 +19,10 @@ import java.util.UUID
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
+import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
+import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 
 class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
@@ -41,14 +44,14 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
   object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with Connector
 
-  object indexedCollectionsTable extends IndexedCollectionsTable with Connector
-  object indexedEntriesTable extends IndexedEntriesTable with Connector
+  object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with Connector
+  object indexedEntriesTable extends ConcreteIndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
-  object listCollectionTable extends ListCollectionTable with Connector
-  object optionalPrimitives extends ConcreteOptionalPrimitives with Connector
+  object listCollectionTable extends ConcreteListCollectionTable with Connector
+  object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
-  object primitivesJoda extends ConcretePrimitivesJoda with Connector
+  object primitivesJoda extends PrimitivesJoda with Connector
 
   object primitivesCassandra22 extends PrimitivesCassandra22 with Connector
   object optionalPrimitivesCassandra22 extends OptionalPrimitivesCassandra22 with Connector
@@ -67,7 +70,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
-  object testTable extends TestTable with Connector
+  object testTable extends ConcreteTestTable with Connector
   object timeSeriesTable extends ConcreteTimeSeriesTable with Connector {
     val testUUID = UUID.randomUUID()
   }
@@ -98,7 +101,12 @@ object Connector {
         .setConnectTimeoutMillis(20000)
         .setReadTimeoutMillis(20000)
       )
-    ).noHeartbeat().keySpace("phantom")
+    ).noHeartbeat().keySpace(
+      "phantom",
+      KeySpaceSerializer("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
 
 }
 
