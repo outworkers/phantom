@@ -27,6 +27,22 @@ and how up to date they are.
 | Spark Connector | Scala | yes | yes | yes | no | EDSL | 3.0 | High | 2014 |
 | Quill | Scala | no | yes | no | yes | QDSL | 3.8.0 | 2015 |
 
+### Feature comparison table
+
+
+
+|Feature | Datastax Java Driver | Phantom | Quill |
+|------- | -------------------- | ------- | ----- |
+| Typesafe queries | [-] | [x] | [x] |
+| Automated schema generation | [-] | [x] | [x] |
+| Compile time  | [-] | [x] | [x] |
+| Query pagination | [x] | [x] | [-] |
+| Query execution methods | [x] | [x] | [-] |
+| Collections support | [x] | [x] | [-] |
+| Compile time error assist | [-] | [x] | [-] |
+| Secondary indexes | [-] | [x] | [-] |
+| Lightweight transactions | [x] | [x] | [-] |
+| Batch queries | [x] | [x] | [-] |
 
 ### An overview of the various drivers and using them from Scala
 
@@ -117,9 +133,9 @@ case class Recipe(
   side_id: UUID
 )
 
-class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+class Recipes extends CassandraTable[Recipes, Recipe] {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn(this) with PartitionKey
 
   object description extends OptionalStringColumn(this)
 
@@ -132,19 +148,6 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object side_id extends UUIDColumn(this)
-
-
-  override def fromRow(r: Row): Recipe = {
-    Recipe(
-      url(r),
-      description(r),
-      ingredients(r),
-      servings(r),
-      lastcheckedat(r),
-      props(r),
-      side_id(r)
-    )
-  }
 }
 ```
 
@@ -239,7 +242,7 @@ A few things to remember:
 
 - You do not need to create new column types to support new datatypes.
 - Phantom internally offers the `Primitive` type class for this very reason.
-- As of phantom 1.30.x, phantom offers `Primitive.derive[T, String](CaseClass.apply)` to offer you a custom datatype for `case class County(str: String)`.
+- As of phantom 2.x.x, phantom offers `Primitive.derive[T, String](CaseClass.apply)` to offer you a custom datatype for `case class County(str: String)`.
 - In fact, `Primitive.derive[CaseClass]` will natively work with any `case class` that is built of `Primitive` types.
 
 #### Dependencies
@@ -285,6 +288,7 @@ set helping you develop and integrate Cassandra even faster. Spark support with 
 are made possible in phantom-pro, as well as automated table migrations, DSE Graph support, and some other really cool
 toys such as auto-tables, which will be in some respect similar to Quill as the mapping DSL will not be necessary anymore,
 but at the same time retain the powerful embedded query EDSL.
+
 
 
 #### Conclusion

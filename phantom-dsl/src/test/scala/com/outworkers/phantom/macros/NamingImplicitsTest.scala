@@ -24,7 +24,7 @@ class NamingImplicitsTest extends PhantomSuite {
 
   it should "change the casing of tables if the implicit configuration is overridden" in {
     implicit val naming: NamingStrategy = NamingStrategy.SnakeCase.caseInsensitive
-    
+
     val snakeCaseDb = new CaseDatabase(Connector.default)
 
     snakeCaseDb.indexedCollections.tableName shouldEqual "indexed_collections"
