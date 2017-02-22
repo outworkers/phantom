@@ -21,21 +21,22 @@ import com.outworkers.phantom.tables.Connector
 
 class NamingImplicitsTest extends PhantomSuite {
 
+
   it should "change the casing of tables if the implicit configuration is overridden" in {
-    val snakeCaseDb = new CaseDatabase(Connector.default) {
-      override implicit val naming = NamingStrategy.SnakeCase.caseInsensitive
-    }
+    implicit val naming: NamingStrategy = NamingStrategy.SnakeCase.caseInsensitive
+    
+    val snakeCaseDb = new CaseDatabase(Connector.default)
 
     snakeCaseDb.indexedCollections.tableName shouldEqual "indexed_collections"
-    snakeCaseDb.listCollections.tableName shouldEqual "list_collections"
+    snakeCaseDb.listCollections.tableName shouldEqual "list_collection_table"
   }
 
   it should "use snake casing and case sensitivity" in {
-    val snakeCaseDb = new CaseDatabase(Connector.default) {
-      override implicit val naming = NamingStrategy.SnakeCase.caseSensitive
-    }
+    val snakeCaseDb = new CaseDatabase(Connector.default)
 
-    snakeCaseDb.indexedCollections.tableName shouldEqual "'indexed_collections'"
-    snakeCaseDb.listCollections.tableName shouldEqual "'list_collections'"
+    implicit val naming = NamingStrategy.SnakeCase.caseSensitive
+
+    snakeCaseDb.indexedCollections.tableName(naming) shouldEqual "'indexed_collections'"
+    snakeCaseDb.listCollections.tableName(naming) shouldEqual "'list_collections'"
   }
 }

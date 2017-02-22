@@ -67,7 +67,6 @@ object NamingStrategy {
 
     override def inferName(name: String): String = {
       val source = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-
       if (isCaseSensitive) {
         CQLQuery.escape(source)
       } else {
