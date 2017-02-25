@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.serializers
 
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[phantom] class BatchQueryBuilder {
