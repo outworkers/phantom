@@ -45,7 +45,7 @@ private[phantom] abstract class AbstractMapColumn[
   override def fromString(c: String): V
 
   def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
-    case (a, b) => (keyAsCql(a), valueAsCql(b))
+    case (a, b) => keyAsCql(a) -> valueAsCql(b)
   }).queryString
 
   override def apply(r: Row): Map[K, V] = {
@@ -75,42 +75,6 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
     keyPrimitive.cassandraType,
     valuePrimitive.cassandraType
   ).queryString
-
-  /*
-  protected[this] def parseMap(bytes: ByteBuffer, protocolVersion: ProtocolVersion)(
-    implicit cbf: CanBuildFrom[Nothing, (K, V), Map[K, V]]
-  ): Try[Map[K, V]] = {
-
-    if (bytes == null || bytes.remaining == 0) Success(cbf().result())
-
-    try
-      val input = bytes.duplicate
-      val n = CodecUtils.readSize(input, protocolVersion)
-      val builder = cbf()
-      builder.sizeHint(n)
-
-      val m = builder
-      var i = 0
-      while (i < n) {
-        {
-          val kbb = CodecUtils.readValue(input, protocolVersion)
-          val vbb = CodecUtils.readValue(input, protocolVersion)
-
-          m += (keyCodec.deserialize(kbb, protocolVersion), valueCodec.deserialize(vbb, protocolVersion))
-        }
-        {
-          i += 1;
-          i - 1
-        }
-      }
-      m
-
-    catch {
-      case e: BufferUnderflowException => {
-        throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
-      }
-    }
-  }*/
 
   override def qb: CQLQuery = {
     if (shouldFreeze) {

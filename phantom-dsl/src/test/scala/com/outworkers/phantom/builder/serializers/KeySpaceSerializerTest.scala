@@ -17,9 +17,6 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.dsl._
-import shapeless.{Generic, HList, HNil, LabelledGeneric}
-
-import scala.util.{Failure, Success, Try}
 
 class KeySpaceSerializerTest extends QuerySerializationTest {
 

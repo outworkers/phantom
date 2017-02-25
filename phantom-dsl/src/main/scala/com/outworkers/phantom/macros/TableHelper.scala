@@ -21,6 +21,7 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
+import org.slf4j.LoggerFactory
 
 import scala.reflect.macros.blackbox
 
@@ -32,18 +33,23 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableKey(table: T): String
 
-  def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
+  def fields(table: T): Seq[AbstractColumn[_]]
 
   def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
+
+  def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 }
 
 
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+
+
+  private[this] val logger = LoggerFactory.getLogger(this.getClass)
 
   import c.universe._
 
@@ -156,12 +162,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
   case object NoMatch extends TableMatchResult
 
-  private[this] def show(list: List[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
-  }
-
-  private[this] def show(list: Iterable[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def show[M[X] <: TraversableOnce[X]](traversable: M[Type]): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
   private[this] def predicate(source: (Field, Field)): Boolean = {
@@ -189,7 +191,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     } else {
 
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
-        Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
+        logger.info(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
       } else {
         findMatchingSubset(tableName, members.tail, recordMembers)
@@ -352,8 +354,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val rTpe = weakTypeOf[R]
 
-    val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
-
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
@@ -363,7 +363,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val fromRowDefinition = materializeExtractor(tableType, rTpe, referenceColumns) getOrElse q"???"
 
-    val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
+    val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
     val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
@@ -379,8 +379,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
-          def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colType] = {
-            scala.collection.immutable.Set.apply[$colType](..$accessors)
+          def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
+            scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
        }
     """

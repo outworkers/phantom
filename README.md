@@ -42,13 +42,15 @@ This is a table of the available modules for the various Scala versions. Not all
 
 Modules marked with "x" are still in beta or pre-publishing mode.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
-| ------------          | ------------------- | ------------------| ----------------- |
-| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
-| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  |
-| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | 
-| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
-| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    |
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Release date   | 
+| ------------          | ------------------- | ------------------| ----------------- | -------------- |
+| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2017       |
+| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
+| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
+| phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
+| phantom-migrations    | <span>x</span>      | <span>x</span>    | <span>x</span>    | September 2017 |
 
 Using phantom
 =============
@@ -83,6 +85,8 @@ highlighting all the possible features in phantom and how to use them.
 
 This is a list of resources to help you learn phantom and Cassandra:
 
+- [ ] [Quickstart](docs/quickstart.md)
+- [ ] [Official documentation](docs/README.md)
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/outworkers/phantom/wiki)
@@ -114,6 +118,7 @@ Adopters
 Here are a few of the biggest phantom adopters, though the full list is far more comprehensive.
 
 ![Starbucks](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/starbucks.png "Starbucks")
+![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 ![CreditSuisse](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/creditsuisse.png "CreditSuisse")
 ![ING](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ing.png "ING")
 ![UBS](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/ubs.png "UBS")
@@ -129,7 +134,6 @@ Here are a few of the biggest phantom adopters, though the full list is far more
 ![VictorOps](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/victorops.png "Mobli")
 ![Socrata](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/socrata.png "Socrata")
 ![Sphonic](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/sphonic.png "Sphonic")
-![Microsoft](https://s3-eu-west-1.amazonaws.com/websudos/oss/adopters/microsoft.png "Microsoft")
 
 License and copyright
 ======================
@@ -170,7 +174,8 @@ Phantom was developed at outworkers as an in-house project. All Cassandra integr
 ===============================
 <a href="#table-of-contents">back to top</a>
 
-Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea.
+Special thanks to Viktor Taranenko from WhiskLabs, who gave us the original idea, and special thanks to Miles Sabin and team behind
+Shapeless, where we shamelessly stole all the good patterns from.
 
 Copyright &copy; 2013 - 2017 outworkers.
 

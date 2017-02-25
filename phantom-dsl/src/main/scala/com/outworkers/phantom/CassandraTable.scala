@@ -37,15 +37,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
 
-  def columns: Set[AbstractColumn[_]] = helper.fields(self)
+  def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
-  def secondaryKeys: Set[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
+  def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
-  def primaryKeys: Set[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
+  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
 
-  def partitionKeys: Set[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
+  def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
-  def clusteringColumns: Set[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
+  def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def tableKey: String = helper.tableKey(instance)
 
@@ -60,6 +60,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
   type MapColumn[KK, VV] =  com.outworkers.phantom.column.MapColumn[T, R, KK, VV]
   type JsonColumn[RR] = com.outworkers.phantom.column.JsonColumn[T, R, RR]
+  type OptionalJsonColumn[RR] = com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR]
   type EnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
   type OptionalEnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR]
   type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]

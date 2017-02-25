@@ -35,6 +35,20 @@ class Events2 extends CassandraTable[Events2, Ev2] {
   object map extends SetColumn[String](this)
 }
 
+case class ClusteredRecord(
+  partition: UUID,
+  id: UUID,
+  id2: UUID,
+  id3: UUID
+)
+
+class ClusteredTable extends CassandraTable[ClusteredTable, ClusteredRecord] {
+  object partition extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with ClusteringOrder with Descending
+  object id2 extends UUIDColumn(this) with ClusteringOrder with Descending
+  object id3 extends UUIDColumn(this) with ClusteringOrder with Ascending
+}
+
 class TableHelperTest extends PhantomSuite with MockFactory {
 
   it should "not generate a fromRow if a normal type is different" in {
@@ -129,6 +143,12 @@ class TableHelperTest extends PhantomSuite with MockFactory {
     intercept[NotImplementedError] {
       ev.fromRow(null.asInstanceOf[Row])
     }
+  }
+
+  it should "correctly retrieve a list of keys" in {
+    val table = new ClusteredTable
+    val fields = TableHelper[ClusteredTable, ClusteredRecord].fields(table)
+    fields shouldEqual Seq(table.partition, table.id, table.id2, table.id3)
   }
 
   it should "generate a fromRow method from a partial table definition" in {

@@ -17,15 +17,13 @@ package com.outworkers.phantom.builder.query.db.ordering
 
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.PhantomSuite
-import com.twitter.util.{Future => TwitterFuture}
 import com.outworkers.phantom.builder.query.db.ordering.TimeSeriesTest._
-import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.testing._
 
-import scala.concurrent.{Future => ScalaFuture}
+import scala.concurrent.Future
 
 class TimeSeriesTest extends PhantomSuite {
 
@@ -130,14 +128,8 @@ class TimeSeriesTest extends PhantomSuite {
     verifyResults(chain, records.reverse.take(limit))
   }
 
-  def verifyResults(futureResults: ScalaFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
-      results shouldEqual expected
-    }
-  }
-
-  def verifyResults(futureResults: TwitterFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
+  def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
+    whenReady(futureResults) { results =>
       results shouldEqual expected
     }
   }
@@ -160,7 +152,7 @@ object TimeSeriesTest {
   )(
     implicit space: KeySpace,
     session: Session
-  ): ScalaFuture[Seq[ResultSet]] = {
+  ): Future[Seq[ResultSet]] = {
 
     val futures = records map {
       record => {
@@ -171,6 +163,6 @@ object TimeSeriesTest {
           .future()
       }
     }
-    ScalaFuture.sequence(futures)
+    Future.sequence(futures)
   }
 }

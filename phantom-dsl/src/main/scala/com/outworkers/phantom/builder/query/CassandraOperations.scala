@@ -72,7 +72,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
       }
 
       def onFailure(err: Throwable): Unit = {
-        Manager.logger.error(err.getMessage)
+        Manager.logger.error(s"Failed to execute query $st", err)
         promise failure err
       }
     }

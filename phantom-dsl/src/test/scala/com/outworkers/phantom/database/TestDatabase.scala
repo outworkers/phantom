@@ -15,14 +15,9 @@
  */
 package com.outworkers.phantom.database
 
-import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.tables._
 
-private[this] object DefaultKeyspace {
-  lazy val local = ContactPoint.local.keySpace("phantom")
-}
-
-class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
+class TestDatabase extends Database[TestDatabase](Connector.default) {
   object enumTable extends EnumTable with Connector
   object basicTable extends BasicTable with Connector
   object jsonTable extends JsonTable with Connector
@@ -30,11 +25,3 @@ class TestDatabase extends Database[TestDatabase](DefaultKeyspace.local) {
 }
 
 object TestDatabase extends TestDatabase
-
-/*
-class ValueInitDatabase extends Database[ValueInitDatabase](DefaultKeyspace.local) {
-  val basicTable = new BasicTable with connector.Connector
-  val enumTable = new EnumTable with connector.Connector
-  val jsonTable = new JsonTable with connector.Connector
-  val recipes = new Recipes with connector.Connector
-}*/

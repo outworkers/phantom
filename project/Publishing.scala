@@ -23,7 +23,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.1.2"
+    version := "2.2.0"
   )
 
   lazy val noPublishSettings = Seq(
@@ -84,7 +84,7 @@ object Publishing {
     pgpPassphrase in ThisBuild := {
       if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
-        println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
+        println(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
         pgpPass
       } else {
         println("Could not find settings for a PGP passphrase.")

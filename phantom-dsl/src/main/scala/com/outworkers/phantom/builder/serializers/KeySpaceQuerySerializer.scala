@@ -19,7 +19,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.{CQLQuery, OptionPart}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, KeySpaceCQLQuery}
 
 private object Strategies {
   final val networkTopology = "NetworkTopologyStrategy"
@@ -116,7 +116,10 @@ sealed trait TopologyStrategies {
 }
 
 
-sealed class KeySpaceSerializer(val keySpace: KeySpace, val qb: CQLQuery = CQLQuery.empty) {
+sealed class KeySpaceSerializer(
+  val keySpace: KeySpace,
+  val qb: CQLQuery = CQLQuery.empty
+) extends KeySpaceCQLQuery {
 
   def `with`(clause: BuilderClause): KeySpaceSerializer = {
     new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
@@ -125,6 +128,8 @@ sealed class KeySpaceSerializer(val keySpace: KeySpace, val qb: CQLQuery = CQLQu
   def and(clause: BuilderClause): KeySpaceSerializer = {
     new KeySpaceSerializer(keySpace, QueryBuilder.Where.and(qb, clause.qb))
   }
+
+  override def queryString: String = qb.queryString
 }
 
 class RootSerializer(val keySpace: KeySpace) {
