@@ -52,10 +52,10 @@ trait ExecutableStatement extends CassandraOperations {
 
   def qb: CQLQuery
 
-  def queryString: String = qb.terminate().queryString
+  def queryString: String = qb.terminate.queryString
 
   def statement()(implicit session: Session): Statement = {
-    new SimpleStatement(qb.terminate().queryString)
+    new SimpleStatement(qb.terminate.queryString)
       .setConsistencyLevel(options.consistencyLevel.orNull)
   }
 
@@ -131,7 +131,7 @@ class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOpera
     ec: ExecutionContextExecutor
   ): ScalaFuture[Seq[ResultSet]] = {
     ScalaFuture.sequence(queries.map(item => {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
+      scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))
     }))
   }
 }

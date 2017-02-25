@@ -180,7 +180,7 @@ class CreateQuery[
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
     } else {
       super.future() flatMap {
         res => {

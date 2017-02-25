@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.engine
 
-import com.outworkers.diesel.engine.syntax.DefaultSyntax._
+import com.outworkers.phantom.builder.syntax.CQLSyntax.Symbols
 
 abstract class AbstractQuery[QT <: AbstractQuery[QT]](val queryString: String) {
 
@@ -25,7 +25,8 @@ abstract class AbstractQuery[QT <: AbstractQuery[QT]](val queryString: String) {
 
   def append(st: String): QT = instance(queryString + st)
   def append(st: QT): QT = append(st.queryString)
-  def appen[M[X] <: TraversableOnce[X]](list: M[String], sep: String = ", "): QT = {
+
+  def append[M[X] <: TraversableOnce[X]](list: M[String], sep: String = ", "): QT = {
     instance(queryString + list.mkString(sep))
   }
 
