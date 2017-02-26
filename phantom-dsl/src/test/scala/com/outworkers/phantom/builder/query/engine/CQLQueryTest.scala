@@ -46,10 +46,6 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
     CQLQuery.escape(test) shouldEqual "'test'''"
   }
 
-  it should "create an empty CQL query using the empty method on the companion object" in {
-    CQLQuery.empty.queryString shouldEqual ""
-  }
-
   it should "correctly identify if a CQL query is empty" in {
     forAll {(q1: String) =>
       whenever(q1.nonEmpty) {
