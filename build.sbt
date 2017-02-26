@@ -34,12 +34,18 @@ lazy val Versions = new {
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
-  val typesafeConfig = "1.3.1"
+
   val joda = "2.9.7"
   val jodaConvert = "1.8.1"
   val scalamock = "3.4.2"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.0"
+
+  val typesafeConfig: String = if (Publishing.isJdk8) {
+    "1.3.1"
+  } else {
+    "1.2.0"
+  }
 
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -292,6 +298,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     moduleName := "phantom-streams",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
+      "com.typesafe" % "config" % Versions.typesafeConfig force(),
       Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -299,13 +306,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    ) ++ {
-      if (Publishing.isJdk8) {
-        Seq("com.typesafe" % "config" % Versions.typesafeConfig)
-      } else {
-        Seq.empty
-      }
-    }
+    )
   ).settings(
     sharedSettings: _*
   ).dependsOn(
