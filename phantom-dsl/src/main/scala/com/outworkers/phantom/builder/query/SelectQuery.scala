@@ -19,6 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace

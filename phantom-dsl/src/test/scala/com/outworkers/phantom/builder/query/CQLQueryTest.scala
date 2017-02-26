@@ -15,7 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
-import org.scalatest.{Matchers, FlatSpec}
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import org.scalatest.{FlatSpec, Matchers}
 import com.outworkers.util.testing._
 
 class CQLQueryTest extends FlatSpec with Matchers {

@@ -20,12 +20,12 @@ import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
-import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, Row}
 import com.outworkers.phantom.CassandraTable
 import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct, ThriftStructSerializer}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.column.{AbstractListColumn, AbstractMapColumn, AbstractSetColumn, CollectionValueDefinition, Column, OptionalColumn}
 
 trait ThriftColumnDefinition[ValueType <: ThriftStruct] {

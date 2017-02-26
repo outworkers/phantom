@@ -21,7 +21,7 @@ import java.util.Date
 import com.datastax.driver.core.{GettableByIndexData, GettableByNameData}
 import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.util.Try
