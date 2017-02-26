@@ -71,16 +71,14 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
   object testTable extends ConcreteTestTable with Connector
-  object timeSeriesTable extends ConcreteTimeSeriesTable with Connector {
-    val testUUID = UUID.randomUUID()
-  }
+  object timeSeriesTable extends TimeSeriesTable with Connector
 
   object primaryCollectionsTable extends ConcretePrimaryCollectionTable with Connector
 
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector
   object multipleKeysTable$ extends ConcreteMultipleKeys with Connector
-  object timeuuidTable extends ConcreteTimeUUIDTable with Connector
+  object timeuuidTable extends TimeUUIDTable with Connector
 
   object events extends ConcreteEvents with Connector
 

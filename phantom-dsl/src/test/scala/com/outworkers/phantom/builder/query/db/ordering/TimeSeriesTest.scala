@@ -51,7 +51,8 @@ class TimeSeriesTest extends PhantomSuite {
     val number = 10
     val limit = 5
 
-    val records = genSequentialRecords(number)
+    val ref = gen[UUID]
+    val records = genSequentialRecords(number, ref)
 
     val query = database.timeSeriesTable.select
       .where(_.id eqs ?)
@@ -61,7 +62,7 @@ class TimeSeriesTest extends PhantomSuite {
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
       insert <- storeRecords(records)
-      chunks <- query.bind(database.timeSeriesTable.testUUID).fetch()
+      chunks <- query.bind(ref).fetch()
     } yield chunks
 
     verifyResults(chain, records.reverse.take(limit))
@@ -71,14 +72,15 @@ class TimeSeriesTest extends PhantomSuite {
     val number = 10
     val limit = 5
 
-    val records = genSequentialRecords(number)
+    val ref = gen[UUID]
+    val records = genSequentialRecords(number, ref)
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
       insert <- storeRecords(records)
       chunks <- {
         database.timeSeriesTable.select
-          .where(_.id eqs database.timeSeriesTable.testUUID)
+          .where(_.id eqs ref)
           .orderBy(_.timestamp.asc)
           .limit(limit)
           .fetch()
@@ -92,7 +94,8 @@ class TimeSeriesTest extends PhantomSuite {
     val number = 10
     val limit = 5
 
-    val records = genSequentialRecords(number)
+    val ref = gen[UUID]
+    val records = genSequentialRecords(number, ref)
 
     val query = database.timeSeriesTable.select
       .where(_.id eqs ?)
@@ -103,7 +106,7 @@ class TimeSeriesTest extends PhantomSuite {
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
       insert <- storeRecords(records)
-      chunks <- query.bind(database.timeSeriesTable.testUUID).fetch()
+      chunks <- query.bind(ref).fetch()
     } yield chunks
 
     verifyResults(chain, records.take(limit))
@@ -113,13 +116,14 @@ class TimeSeriesTest extends PhantomSuite {
     val number = 10
     val limit = 5
 
-    val records = genSequentialRecords(number)
+    val ref = gen[UUID]
+    val records = genSequentialRecords(number, ref)
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
       insert <- storeRecords(records)
       chunks <- database.timeSeriesTable.select
-        .where(_.id eqs database.timeSeriesTable.testUUID)
+        .where(_.id eqs ref)
         .orderBy(_.timestamp.descending)
         .limit(limit)
         .fetch()
@@ -136,33 +140,21 @@ class TimeSeriesTest extends PhantomSuite {
 }
 
 object TimeSeriesTest {
-  def genSequentialRecords(number: Int): Seq[TimeSeriesRecord] = {
+  def genSequentialRecords(number: Int, ref: UUID = gen[UUID]): Seq[TimeSeriesRecord] = {
     val durationOffset = 1000
 
     (1 to number).map { i =>
       val record = gen[TimeSeriesRecord]
       record.copy(
-        id = TestDatabase.timeSeriesTable.testUUID,
+        id = ref,
         timestamp = record.timestamp.withDurationAdded(durationOffset, i))
     }
   }
 
-  def storeRecords(
-    records: Seq[TimeSeriesRecord]
-  )(
+  def storeRecords(records: Seq[TimeSeriesRecord])(
     implicit space: KeySpace,
     session: Session
   ): Future[Seq[ResultSet]] = {
-
-    val futures = records map {
-      record => {
-        TestDatabase.timeSeriesTable.insert
-          .value(_.id, record.id)
-          .value(_.name, record.name)
-          .value(_.timestamp, record.timestamp)
-          .future()
-      }
-    }
-    Future.sequence(futures)
+    Future.sequence(records map (TestDatabase.timeSeriesTable.store(_).future))
   }
 }
