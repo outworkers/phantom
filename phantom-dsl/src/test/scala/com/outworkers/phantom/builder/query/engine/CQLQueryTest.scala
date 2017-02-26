@@ -197,9 +197,25 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
     }
   }
 
+
   it should "append and wrap a CQLQuery with ()" in {
     forAll { (q1: String, q2: String) =>
       CQLQuery(q1).wrap(CQLQuery(q2)).queryString shouldEqual s"$q1 ($q2)"
+    }
+  }
+
+
+  it should "append, pad and  wrap a list of query strings" in {
+    forAll {(q1: String, queries: List[String]) =>
+      val qb = queries.mkString(", ")
+      CQLQuery(q1).wrap(queries).queryString shouldEqual s"$q1 ($qb)"
+    }
+  }
+
+  it should "append, not pad and  wrap a list of query strings" in {
+    forAll {(q1: String, queries: List[String]) =>
+      val qb = queries.mkString(", ")
+      CQLQuery(q1).wrapn(queries).queryString shouldEqual s"$q1($qb)"
     }
   }
 }

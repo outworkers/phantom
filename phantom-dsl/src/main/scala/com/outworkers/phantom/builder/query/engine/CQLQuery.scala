@@ -24,6 +24,7 @@ case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQ
 }
 
 object CQLQuery {
+
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"

@@ -15,9 +15,12 @@
  */
 package com.outworkers.phantom.builder.query.engine
 
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.syntax.CQLSyntax.Symbols
 
 abstract class AbstractQuery[QT <: AbstractQuery[QT]](val queryString: String) {
+
+  val defaultSep = ", "
 
   def instance(st: String): QT
 
@@ -26,14 +29,14 @@ abstract class AbstractQuery[QT <: AbstractQuery[QT]](val queryString: String) {
   def append(st: String): QT = instance(queryString + st)
   def append(st: QT): QT = append(st.queryString)
 
-  def append[M[X] <: TraversableOnce[X]](list: M[String], sep: String = ", "): QT = {
+  def append[M[X] <: TraversableOnce[X]](list: M[String], sep: String = defaultSep): QT = {
     instance(queryString + list.mkString(sep))
   }
 
   def appendEscape(st: String): QT = append(escape(st))
   def appendEscape(st: QT): QT = appendEscape(st.queryString)
 
-  def terminate: QT = appendIfAbsent(";")
+  def terminate: QT = appendIfAbsent(CQLSyntax.Symbols.semicolon)
 
   def appendSingleQuote(st: String): QT = append(singleQuote(st))
   def appendSingleQuote(st: QT): QT = append(singleQuote(st.queryString))
@@ -59,11 +62,9 @@ abstract class AbstractQuery[QT <: AbstractQuery[QT]](val queryString: String) {
 
   def wrapn(str: String): QT = append(Symbols.`(`).append(str).append(Symbols.`)`)
   def wrapn(query: QT): QT = wrapn(query.queryString)
-  def wrap(str: String): QT = pad.append(Symbols.`(`).append(str).append(Symbols.`)`)
+  def wrap(str: String): QT = pad.wrapn(str)
   def wrap(query: QT): QT = wrap(query.queryString)
 
-  def wrapn[M[X] <: TraversableOnce[X]](list: M[_]): QT = wrapn(list.mkString(", "))
-  def wrap[M[X] <: TraversableOnce[X]](list: M[String]): QT = wrap(list.mkString(", "))
-  def wrapEscape(list: List[String]): QT = wrap(list.map(escape).mkString(", "))
-
+  def wrapn[M[X] <: TraversableOnce[X]](col: M[String], sep: String = defaultSep): QT = wrapn(col.mkString(sep))
+  def wrap[M[X] <: TraversableOnce[X]](col: M[String], sep: String = defaultSep): QT = wrap(col.mkString(sep))
 }
