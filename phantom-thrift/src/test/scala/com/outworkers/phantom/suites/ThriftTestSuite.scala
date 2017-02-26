@@ -29,8 +29,8 @@ trait ThriftTestSuite extends PhantomSuite {
     ThriftDatabase.create()
   }
 
-  type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
-  val ThriftTest = com.outworkers.phantom.thrift.ThriftTest
+  type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
+  val ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
 
   implicit object OutputSample extends Sample[ThriftRecord] {
     def sample: ThriftRecord = {

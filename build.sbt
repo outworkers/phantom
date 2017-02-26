@@ -267,7 +267,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
-    )
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(

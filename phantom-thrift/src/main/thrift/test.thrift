@@ -1,4 +1,4 @@
-namespace java com.outworkers.phantom.thrift
+namespace java com.outworkers.phantom.thrift.models
 
 struct ThriftTest {
     1: required i32 id,

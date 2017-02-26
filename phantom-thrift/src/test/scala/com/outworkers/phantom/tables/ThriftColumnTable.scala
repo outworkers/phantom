@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.models._
 import com.outworkers.phantom.thrift._
 
 case class ThriftRecord(
