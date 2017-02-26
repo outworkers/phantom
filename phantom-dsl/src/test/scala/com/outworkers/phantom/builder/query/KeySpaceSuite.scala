@@ -20,9 +20,7 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
 import org.scalatest.{FreeSpec, Matchers, Suite}
 
-trait KeySpaceSuite {
-
-  self: Suite =>
+trait KeySpaceSuite { self: Suite =>
 
   implicit val keySpace = KeySpace("phantom")
 }
