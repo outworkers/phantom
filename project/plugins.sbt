@@ -13,18 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-def outworkersPattern: Patterns = {
-  val pList = List(
-    "[organisation]/[module](_[scalaVersion])(_[sbtVersion])/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-  )
-
-  Patterns(
-    pList,
-    pList,
-    isMavenCompatible = true
-  )
-}
-
 resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",

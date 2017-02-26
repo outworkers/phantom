@@ -16,9 +16,11 @@
 import sbt.Keys._
 import sbt._
 import com.twitter.sbt._
+import sbt.Defaults._
 
 lazy val Versions = new {
   val logback = "1.2.1"
+  val sbt = "0.13.11"
   val util = "0.30.1"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
@@ -76,7 +78,7 @@ lazy val Versions = new {
     }
   }
 
-  val playStreams: String => sbt.ModuleID = {
+  val playStreams: String => ModuleID = {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
@@ -293,7 +295,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
       Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
-      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
+      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value) exclude ("com.typesafe", "config"),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
