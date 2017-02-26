@@ -19,6 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.{QueryCondition, WhereClause}
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import shapeless.HList
 import shapeless.ops.hlist.Prepend
 

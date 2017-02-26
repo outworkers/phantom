@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.query.options
 
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 

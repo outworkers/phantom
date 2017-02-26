@@ -17,6 +17,7 @@ package com.outworkers.phantom.batch
 
 import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.KeySpace

@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core._
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
@@ -179,7 +180,7 @@ class CreateQuery[
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
     } else {
       super.future() flatMap {
         res => {

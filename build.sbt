@@ -27,7 +27,6 @@ lazy val Versions = new {
   val thrift = "0.8.0"
   val finagle = "6.37.0"
   val scalameter = "0.8+"
-  val diesel = "0.5.0"
   val scalacheck = "1.13.4"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
@@ -184,7 +183,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.typelevel" %% "macro-compat" % Versions.macrocompat,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-    "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % Versions.joda,
     "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,

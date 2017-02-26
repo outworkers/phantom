@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime

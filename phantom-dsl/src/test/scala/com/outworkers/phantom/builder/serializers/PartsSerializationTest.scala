@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.scalatest.FreeSpec
 
 class PartsSerializationTest extends FreeSpec with SerializationTest {
