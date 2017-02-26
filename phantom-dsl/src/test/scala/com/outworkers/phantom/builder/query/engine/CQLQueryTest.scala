@@ -36,6 +36,18 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
     }
   }
 
+  it should "prepend one query to another using CQLQuery.prepend" in {
+    forAll {(q1: String, q2: String) =>
+      CQLQuery(q1).prepend(CQLQuery(q2)).queryString shouldEqual s"$q2$q1"
+    }
+  }
+
+  it should "prepend a string to a CQLQuery using CQLQuery.prepend" in {
+    forAll {(q1: String, q2: String) =>
+      CQLQuery(q1).prepend(q2).queryString shouldEqual s"$q2$q1"
+    }
+  }
+
   it should "append one query to another using CQLQuery.append" in {
     forAll {(q1: String, q2: String) =>
       CQLQuery(q1).append(CQLQuery(q2)).queryString shouldEqual s"$q1$q2"
@@ -60,6 +72,110 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
     }
   }
 
+  it should "prepend a string to another if the first string doesn't end with the other" in {
+    forAll {(q1: String, q2: String) =>
+      if(!q1.startsWith(q2)) {
+        CQLQuery(q1).prependIfAbsent(q2).queryString shouldEqual s"$q2$q1"
+      } else {
+        CQLQuery(q1).prependIfAbsent(q2).queryString shouldEqual s"$q1"
+      }
+    }
+  }
+
+  it should "escape a CQL query by surrounding it with ` pairs" in {
+    forAll { q1: String =>
+      CQLQuery.empty.escape(q1) shouldEqual s"`$q1`"
+    }
+  }
+
+  it should "correctly bpad a query if it doesn't end with a space" in {
+    forAll { q1: String =>
+      val q = CQLQuery(q1)
+      if (q1.startsWith(" ")) {
+        q.bpad.queryString shouldEqual q.queryString
+      } else {
+        q.bpad.queryString shouldEqual s" ${q.queryString}"
+      }
+    }
+  }
+
+  it should "correctly pad a query if it doesn't end with a space" in {
+    forAll { q1: String =>
+      val q = CQLQuery(q1)
+      if (q1.endsWith(" ")) {
+        q.pad.queryString shouldEqual q.queryString
+      } else {
+        q.pad.queryString shouldEqual s"${q.queryString} "
+      }
+    }
+  }
+
+  it should "correctly forcePad pad a query if it DOES end with a space" in {
+    forAll { q1: String =>
+      CQLQuery(q1).forcePad.queryString shouldEqual s"$q1 "
+    }
+  }
+
+  it should "correctly trim a CQLQuery" in {
+    forAll { q1: String =>
+      CQLQuery(q1).trim.queryString shouldEqual s"${q1.trim}"
+    }
+  }
+
+  it should "correctly identify if a query ends with a space" in {
+    forAll { q1: String =>
+      CQLQuery(q1).spaced shouldEqual q1.endsWith(" ")
+    }
+  }
+
+  it should "single quote a CQL query by surrounding it with ' pairs" in {
+    forAll { q1: String =>
+      CQLQuery.empty.singleQuote(q1) shouldEqual s"'$q1'"
+    }
+  }
+
+  it should "prepend a query to another if the first string doesn't end with the other" in {
+    forAll {(q1: String, q2: String) =>
+      if (!q1.startsWith(q2)) {
+        CQLQuery(q1).prependIfAbsent(CQLQuery(q2)).queryString shouldEqual s"$q2$q1"
+      } else {
+        CQLQuery(q1).prependIfAbsent(CQLQuery(q2)).queryString shouldEqual s"$q1"
+      }
+    }
+  }
+
+  it should "append a string to another if the first string doesn't end with the other" in {
+    forAll {(q1: String, q2: String) =>
+      if(!q1.endsWith(q2)) {
+        CQLQuery(q1).appendIfAbsent(q2).queryString shouldEqual s"$q1$q2"
+      } else {
+        CQLQuery(q1).appendIfAbsent(q2).queryString shouldEqual s"$q1"
+      }
+    }
+  }
+
+  it should "append a query to another if the first string doesn't end with the other" in {
+    forAll {(q1: String, q2: String) =>
+      if (!q1.endsWith(q2)) {
+        CQLQuery(q1).appendIfAbsent(CQLQuery(q2)).queryString shouldEqual s"$q1$q2"
+      } else {
+        CQLQuery(q1).appendIfAbsent(CQLQuery(q2)).queryString shouldEqual s"$q1"
+      }
+    }
+  }
+
+  it should "append an single quoted string to a CQLQuery using CQLQuery.append" in {
+    forAll {(q1: String, q2: String) =>
+      CQLQuery(q1).appendSingleQuote(q2).queryString shouldEqual s"$q1'$q2'"
+    }
+  }
+
+  it should "append an singlequoted query to another using CQLQuery.append" in {
+    forAll {(q1: String, q2: String) =>
+      CQLQuery(q1).appendSingleQuote(CQLQuery(q2)).queryString shouldEqual s"$q1'$q2'"
+    }
+  }
+
   it should "append a list of query strings to a CQLQuery" in {
     forAll {(q1: String, queries: List[String]) =>
       val qb = queries.mkString(", ")
@@ -72,6 +188,18 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
       whenever(!q1.endsWith(CQLSyntax.Symbols.semicolon)) {
         CQLQuery(q1).terminate.queryString shouldEqual s"$q1;"
       }
+    }
+  }
+
+  it should "append and wrap a string with ()" in {
+    forAll { (q1: String, q2: String) =>
+      CQLQuery(q1).wrap(q2).queryString shouldEqual s"$q1 ($q2)"
+    }
+  }
+
+  it should "append and wrap a CQLQuery with ()" in {
+    forAll { (q1: String, q2: String) =>
+      CQLQuery(q1).wrap(CQLQuery(q2)).queryString shouldEqual s"$q1 ($q2)"
     }
   }
 }
