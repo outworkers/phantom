@@ -23,8 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
 
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
-
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 300)
 
   it should "create an empty CQL query using the empty method on the companion object" in {
     CQLQuery.empty.queryString shouldEqual ""
@@ -184,13 +183,17 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   it should "append an single quoted string to a CQLQuery using CQLQuery.append" in {
     forAll {(q1: String, q2: String) =>
-      CQLQuery(q1).appendSingleQuote(q2).queryString shouldEqual s"$q1'$q2'"
+      whenever(!q2.contains("'")) {
+        CQLQuery(q1).appendSingleQuote(q2).queryString shouldEqual s"$q1'$q2'"
+      }
     }
   }
 
   it should "append an singlequoted query to another using CQLQuery.append" in {
     forAll {(q1: String, q2: String) =>
-      CQLQuery(q1).appendSingleQuote(CQLQuery(q2)).queryString shouldEqual s"$q1'$q2'"
+      whenever(!q2.contains("'")) {
+        CQLQuery(q1).appendSingleQuote(CQLQuery(q2)).queryString shouldEqual s"$q1'$q2'"
+      }
     }
   }
 
