@@ -360,7 +360,7 @@ sealed class ConditionalQuery[
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
 
-  val qb: CQLQuery = {
+  override def qb: CQLQuery = {
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
@@ -427,10 +427,7 @@ sealed class ConditionalQuery[
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Rev2],
     prepend: Prepend[Rev2, Rev]
-  ): PreparedBlock[prepend.Out] = {
-    new PreparedBlock(qb, options)
-  }
-
+  ): PreparedBlock[prepend.Out] = new PreparedBlock(qb, options)
 }
 
 object UpdateQuery {

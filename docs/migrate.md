@@ -54,10 +54,10 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Add support for Scala 2.12 in the `diesel-engine`.
 - [x] Add support for Scala 2.12 in `phantom-dsl`
 - [x] Add support for Scala 2.12 in `phantom-connectors`
-- [ ] Add support for Scala 2.12 in `phantom-example`
+- [x] Add support for Scala 2.12 in `phantom-example`
 - [ ] Add support for Scala 2.12 in `phantom-streams`
-- [ ] Add support for Scala 2.12 in `phantom-thrift`
-- [ ] Add support for Scala 2.12 in `phantom-finagle`
+- [x] Add support for Scala 2.12 in `phantom-thrift`
+- [x] Add support for Scala 2.12 in `phantom-finagle`
 
 #### Documentation
 
