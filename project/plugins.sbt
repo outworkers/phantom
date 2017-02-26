@@ -37,9 +37,14 @@ resolvers ++= Seq(
 
 lazy val scalaTravisEnv = sys.env.get("TRAVIS_SCALA_VERSION")
 def isScala210: Boolean = scalaTravisEnv.exists("2.10.6" ==)
+lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
-  val scrooge = if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.14.0" else "4.7.0"
+  val scrooge = if (isCi) {
+    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.14.0" else "4.7.0"
+  } else {
+    if (sys.props("java.specification.version") == "1.8") "4.14.0" else "4.7.0"
+  }
 }
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
