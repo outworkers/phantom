@@ -39,7 +39,7 @@ import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 
-package object dsl extends ImplicitMechanism with CreateImplicits
+object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with UsingClauseOperations
@@ -211,8 +211,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class CounterOperations[
-    Owner <: CassandraTable[Owner, Record],
-    Record
+  Owner <: CassandraTable[Owner, Record],
+  Record
   ](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
