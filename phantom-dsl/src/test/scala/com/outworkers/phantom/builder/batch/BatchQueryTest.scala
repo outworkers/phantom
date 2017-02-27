@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.batch
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.joda.time.DateTime
 
 class BatchQueryTest extends PhantomSuite {
@@ -56,10 +56,8 @@ class BatchQueryTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 3
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 3
     }
   }
 
@@ -79,10 +77,8 @@ class BatchQueryTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 1
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 1
     }
   }
 
@@ -102,10 +98,8 @@ class BatchQueryTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 1
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 1
     }
   }
 
@@ -142,14 +136,11 @@ class BatchQueryTest extends PhantomSuite {
       deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
 
-    w successful {
-      case (updated, deleted) => {
-        updated.value shouldEqual row2
-        deleted shouldNot be (defined)
-      }
+    whenReady(w) { case (updated, deleted) =>
+      updated.value shouldEqual row2
+      deleted shouldNot be (defined)
     }
   }
-
 
   ignore should "prioritise batch updates in a last first order" in {
     val row = gen[JodaRow]
@@ -184,17 +175,14 @@ class BatchQueryTest extends PhantomSuite {
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
-    chain.successful {
-      res => {
-        res.value.intColumn shouldEqual (row.intColumn + 20)
-      }
+    whenReady(chain) { res =>
+      res.value.intColumn shouldEqual (row.intColumn + 20)
     }
   }
 
   ignore should "prioritise batch updates based on a timestamp" in {
     val row = gen[JodaRow]
-
-    val last = new DateTime()
+    val last = gen[DateTime]
     val last1 = last.withDurationAdded(100, 5)
     val last2 = last.withDurationAdded(1000, 5)
 
@@ -205,19 +193,21 @@ class BatchQueryTest extends PhantomSuite {
 
     val batch = Batch.logged
       .add(statement1.timestamp(last.getMillis))
-      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.intColumn + 10)).timestamp(last1.getMillis))
-      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey).modify(_.intColumn setTo (row.intColumn + 15))).timestamp(last2.getMillis)
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey)
+        .modify(_.intColumn setTo (row.intColumn + 10))
+        .timestamp(last1.getMillis))
+      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey)
+        .modify(_.intColumn setTo (row.intColumn + 15)))
+        .timestamp(last2.getMillis)
 
     val chain = for {
       done <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
-    chain.successful {
-      res => {
-        res shouldEqual defined
-        res.value.intColumn shouldEqual (row.intColumn + 15)
-      }
+    whenReady(chain) { res =>
+      res shouldEqual defined
+      res.value.intColumn shouldEqual (row.intColumn + 15)
     }
   }
 }

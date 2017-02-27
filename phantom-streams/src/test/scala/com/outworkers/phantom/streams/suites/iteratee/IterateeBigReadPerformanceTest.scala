@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.concurrent.ScalaFutures
 
 class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {

@@ -18,6 +18,8 @@ package com.outworkers.phantom.builder.query
 import com.outworkers.phantom.PhantomBaseSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
+import com.outworkers.util.samplers.Sample
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.{FreeSpec, Matchers, Suite}
 
 trait KeySpaceSuite { self: Suite =>
@@ -27,6 +29,10 @@ trait KeySpaceSuite { self: Suite =>
 
 trait SerializationTest extends Matchers with TestDatabase.connector.Connector {
   self: Suite =>
+
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
 }
 
 trait QueryBuilderTest extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector

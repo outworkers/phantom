@@ -19,31 +19,30 @@ import com.datastax.driver.core.exceptions.SyntaxError
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.json4s.native.JsonParser
+import shapeless.Nat
+import shapeless.syntax.std.tuple._
 
 class SelectJsonTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
+    database.primitives.insertSchema()
   }
 
   "A JSON selection clause" should "select an entire row as JSON" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      b <- TestDatabase.primitives.select.json().where(_.pkey eqs row.pkey).one
+      store <- database.primitives.store(row).future()
+      b <- database.primitives.select.json().where(_.pkey eqs row.pkey).one
     } yield b
 
-
     if (cassandraVersion.value >= Version.`2.2.0`) {
-      chain successful {
-        res => {
-          res shouldBe defined
-          val parsed = JsonParser.parse(res.value)
-          parsed.children.size shouldEqual row.productArity
-        }
+      whenReady(chain) { res =>
+        res shouldBe defined
+        val parsed = JsonParser.parse(res.value)
+        parsed.children.size shouldEqual row.productArity
       }
     } else {
       chain.failing[SyntaxError]
@@ -52,22 +51,20 @@ class SelectJsonTest extends PhantomSuite {
 
   "A JSON selection clause" should "8 columns as JSON" in {
     val row = gen[Primitive]
-    val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
+    val expected = row.take(Nat._8)
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+      store <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .json()
         .where(_.pkey eqs row.pkey).one()
     } yield get
 
     if (cassandraVersion.value >= Version.`2.2.0`) {
-      chain successful {
-        res => {
-          res shouldBe defined
-          val parsed = JsonParser.parse(res.value)
-          parsed.children.size shouldEqual expected.productArity
-        }
+      whenReady(chain) { res =>
+        res shouldBe defined
+        val parsed = JsonParser.parse(res.value)
+        parsed.children.size shouldEqual expected.productArity
       }
     } else {
       chain.failing[SyntaxError]

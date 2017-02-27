@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Primitive
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.tagobjects.Retryable
@@ -52,13 +52,13 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
       get <- database.primitives.select.where(_.pkey eqs row.pkey).one()
     } yield get
 
-    chain.successful { record =>
+    whenReady(chain) { record =>
       record shouldEqual Some(row)
     }
 
     eventually(timeout(ttl + granularity)) {
       val futureRecord = database.primitives.select.where(_.pkey eqs row.pkey).one()
-      futureRecord.successful { record =>
+      whenReady(futureRecord) { record =>
         record shouldBe empty
       }
     }
@@ -86,33 +86,20 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
       .ttl(ttl)
       .prepare()
 
-    def preparedInsert(row: Primitive): ExecutablePreparedQuery = {
-      insertQuery.bind(
-        row.pkey,
-        row.long,
-        row.boolean,
-        row.bDecimal,
-        row.double,
-        row.float,
-        row.inet,
-        row.int,
-        row.date,
-        row.uuid,
-        row.bi)
-    }
+    def preparedInsert(row: Primitive): ExecutablePreparedQuery = insertQuery.bind(row)
 
     val chain = for {
       _ <- preparedInsert(row).future()
       get <- fetchQuery.bind(row.pkey).one()
     } yield get
 
-    chain.successful { result =>
+    whenReady(chain) { result =>
       result shouldEqual Some(row)
     }
 
     eventually(timeout(ttl + granularity)) {
       val futureResults = fetchQuery.bind(row.pkey).one()
-      futureResults.successful { results =>
+      whenReady(futureResults) { results =>
         results.isEmpty shouldBe true
       }
     }

@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.json4s.Extraction
 import org.json4s.native._
 
@@ -26,27 +26,27 @@ class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.listCollectionTable.insertSchema()
-    TestDatabase.primitives.insertSchema()
-    if(session.v4orNewer) {
-      TestDatabase.primitivesCassandra22.insertSchema()
+    database.listCollectionTable.insertSchema()
+    database.primitives.insertSchema()
+
+    if (session.v4orNewer) {
+      database.primitivesCassandra22.insertSchema()
     }
-    TestDatabase.testTable.insertSchema()
-    TestDatabase.recipes.insertSchema()
+
+    database.testTable.insertSchema()
+    database.recipes.insertSchema()
   }
 
   "Insert" should "work fine for primitives columns" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      store <- database.primitives.store(row).future()
+      one <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield one
 
-    chain successful {
-      res => {
-        res shouldBe defined
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 
@@ -55,14 +55,12 @@ class InsertTest extends PhantomSuite {
       val row = gen[PrimitiveCassandra22]
 
       val chain = for {
-        store <- TestDatabase.primitivesCassandra22.store(row).future()
-        one <- TestDatabase.primitivesCassandra22.select.where(_.pkey eqs row.pkey).one
+        store <- database.primitivesCassandra22.store(row).future()
+        one <- database.primitivesCassandra22.select.where(_.pkey eqs row.pkey).one
       } yield one
 
-      chain successful {
-        res => {
-          res shouldBe defined
-        }
+      whenReady(chain) { res =>
+        res shouldBe defined
       }
     }
   }
@@ -71,14 +69,12 @@ class InsertTest extends PhantomSuite {
     val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
-      store <- TestDatabase.testTable.store(row).future()
-      one <- TestDatabase.testTable.select.where(_.key eqs row.key).one
+      store <- database.testTable.store(row).future()
+      one <- database.testTable.select.where(_.key eqs row.key).one
     } yield one
 
-    chain successful {
-      res => {
-        res.value shouldEqual row
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual row
     }
   }
 
@@ -86,14 +82,12 @@ class InsertTest extends PhantomSuite {
     val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
-      store <- TestDatabase.testTable.store(row).future()
-      one <- TestDatabase.testTable.select.where(_.key eqs row.key).one
+      store <- database.testTable.store(row).future()
+      one <- database.testTable.select.where(_.key eqs row.key).one
     } yield one
 
-    chain successful {
-      res => {
-        res.value shouldEqual row
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual row
     }
   }
 
@@ -101,20 +95,18 @@ class InsertTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- TestDatabase.recipes.store(recipe).future()
-      get <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one
-    } yield get
+      store <- database.recipes.store(recipe).future()
+      one <- database.recipes.select.where(_.url eqs recipe.url).one
+    } yield one
 
-    chain successful {
-      res => {
-        res shouldBe defined
-        res.value.url shouldEqual recipe.url
-        res.value.description shouldEqual recipe.description
-        res.value.props shouldEqual recipe.props
-        res.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        res.value.ingredients shouldEqual recipe.ingredients
-        res.value.servings shouldEqual recipe.servings
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.url shouldEqual recipe.url
+      res.value.description shouldEqual recipe.description
+      res.value.props shouldEqual recipe.props
+      res.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      res.value.ingredients shouldEqual recipe.ingredients
+      res.value.servings shouldEqual recipe.servings
     }
   }
 
@@ -122,15 +114,13 @@ class InsertTest extends PhantomSuite {
     val row = gen[MyTestRow].copy(stringlist = List.empty)
 
     val chain = for {
-      store <- TestDatabase.listCollectionTable.store(row).future()
-      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
-    } yield get
+      store <- database.listCollectionTable.store(row).future()
+      one <- database.listCollectionTable.select.where(_.key eqs row.key).one
+    } yield one
 
-    chain successful  {
-      res => {
-        res.value shouldEqual row
-        res.value.stringlist.isEmpty shouldEqual true
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual row
+      res.value.stringlist.isEmpty shouldEqual true
     }
   }
 
@@ -138,12 +128,12 @@ class InsertTest extends PhantomSuite {
     val row = gen[MyTestRow]
 
     val chain = for {
-      store <- TestDatabase.listCollectionTable.store(row).future()
-      get <- TestDatabase.listCollectionTable.select.where(_.key eqs row.key).one
+      store <- database.listCollectionTable.store(row).future()
+      get <- database.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
-    chain successful {
-      res => res.value shouldEqual row
+    whenReady(chain) { res =>
+      res.value shouldEqual row
     }
   }
 
@@ -151,19 +141,17 @@ class InsertTest extends PhantomSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- TestDatabase.recipes.insert.json(compactJson(renderJValue(Extraction.decompose(sample)))).future()
-      get <- TestDatabase.recipes.select.where(_.url eqs sample.url).one()
+      store <- database.recipes.insert.json(compactJson(renderJValue(Extraction.decompose(sample)))).future()
+      get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
     if (cassandraVersion.value >= Version.`2.2.0`) {
-      whenReady(chain) {
-        res => {
-          res shouldBe defined
-          res.value shouldEqual sample
-        }
+      whenReady(chain) { res =>
+        res shouldBe defined
+        res.value shouldEqual sample
       }
     } else {
-      chain.failing[Exception]
+      chain.failed.futureValue
     }
   }
 

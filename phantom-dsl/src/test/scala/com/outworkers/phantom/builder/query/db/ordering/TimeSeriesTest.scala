@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.query.db.ordering.TimeSeriesTest._
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.concurrent.Future
 

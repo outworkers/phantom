@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.engine
 
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 

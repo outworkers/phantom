@@ -24,6 +24,11 @@ import org.json4s.Formats
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
+import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone}
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
@@ -44,6 +49,10 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
 
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
+
   override implicit val patienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
@@ -53,6 +62,10 @@ trait PhantomBaseSuite extends Suite with Matchers
     def asCql()(implicit primitive: com.outworkers.phantom.builder.primitives.Primitive[T]): String = {
       primitive.asCql(obj)
     }
+  }
+
+  implicit class BlockHelper[T](val f: Future[T]) {
+    def block(timeout: Duration): T = Await.result(f, timeout)
   }
 }
 

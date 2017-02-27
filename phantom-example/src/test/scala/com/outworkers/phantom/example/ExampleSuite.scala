@@ -21,7 +21,7 @@ import com.outworkers.phantom.PhantomBaseSuite
 import com.outworkers.phantom.dsl.DatabaseProvider
 import com.outworkers.phantom.example.advanced.RecipesDatabase
 import com.outworkers.phantom.example.basics.Recipe
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 import com.outworkers.phantom.dsl.context

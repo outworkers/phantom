@@ -19,7 +19,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import org.joda.time.{DateTime, DateTimeZone}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 
 class TimeUuidTest extends PhantomSuite {

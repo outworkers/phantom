@@ -18,7 +18,7 @@ package com.outworkers.phantom.streams.suites.iteratee
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 

@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class JodaDateTimeColumnTest extends PhantomSuite {
 

@@ -204,7 +204,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
     "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
-    "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+    "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
   )
@@ -323,8 +323,8 @@ lazy val phantomExample = (project in file("phantom-example"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
-      "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
+      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     ),
     coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(

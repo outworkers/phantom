@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Recipe, SampleEvent, ScalaPrimitiveMapRecord}
 import org.joda.time.DateTime

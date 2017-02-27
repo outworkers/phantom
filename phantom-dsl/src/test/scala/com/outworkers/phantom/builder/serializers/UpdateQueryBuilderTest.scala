@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.QueryBuilderTest
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class UpdateQueryBuilderTest extends QueryBuilderTest {
 

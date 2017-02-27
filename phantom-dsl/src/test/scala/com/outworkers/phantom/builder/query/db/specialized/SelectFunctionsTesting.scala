@@ -19,7 +19,7 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class SelectFunctionsTesting extends PhantomSuite {
 

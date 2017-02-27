@@ -16,31 +16,27 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.dsl.Batch
-import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
-
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables._
+import com.outworkers.util.samplers._
 
 class CountTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitivesJoda.insertSchema()
+    database.primitivesJoda.insertSchema()
   }
 
 
   it should "retrieve a count of 0 if the table has been truncated" in {
 
     val chain = for {
-      truncate <- TestDatabase.primitivesJoda.truncate.future()
-      count <- TestDatabase.primitivesJoda.select.count.one()
+      truncate <- database.primitivesJoda.truncate.future()
+      count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain successful {
-      res => {
-        res.value shouldEqual 0L
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 0L
     }
   }
 
@@ -54,15 +50,13 @@ class CountTest extends PhantomSuite {
     })
 
     val chain = for {
-      truncate <- TestDatabase.primitivesJoda.truncate.future()
+      truncate <- database.primitivesJoda.truncate.future()
       batch <- batch.future()
-      count <- TestDatabase.primitivesJoda.select.count.one()
+      count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain successful {
-      res => {
-        res.value shouldEqual limit.toLong
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual limit.toLong
     }
   }
 }

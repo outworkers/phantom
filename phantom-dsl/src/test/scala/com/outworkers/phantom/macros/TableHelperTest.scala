@@ -20,7 +20,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
 import org.scalamock.scalatest.MockFactory
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.collection.JavaConverters._
 

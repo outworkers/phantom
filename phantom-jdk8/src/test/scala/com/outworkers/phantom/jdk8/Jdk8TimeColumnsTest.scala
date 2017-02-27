@@ -18,7 +18,7 @@ package com.outworkers.phantom.jdk8
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8.tables.{Jdk8Row, TestDatabase, _}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class Jdk8TimeColumnsTest extends PhantomSuite {
 

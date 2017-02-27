@@ -19,7 +19,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.OptionalSecondaryRecord
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class OptionalIndexesTest extends PhantomSuite {
 

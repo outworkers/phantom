@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.codec.JodaLocalDateCodec
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class PreparedInsertQueryTest extends PhantomSuite {
 
