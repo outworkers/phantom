@@ -262,6 +262,9 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
@@ -322,7 +325,8 @@ lazy val phantomExample = (project in file("phantom-example"))
     libraryDependencies ++= Seq(
       "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
-    )
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(

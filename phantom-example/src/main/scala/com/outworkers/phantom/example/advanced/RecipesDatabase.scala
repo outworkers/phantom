@@ -33,12 +33,12 @@ import scala.concurrent.{Future => ScalaFuture}
 
 class RecipesDatabase(override val connector: CassandraConnection) extends Database[RecipesDatabase](connector) {
 
-  object Recipes extends ConcreteRecipes with connector.Connector
-  object AdvancedRecipes extends ConcreteAdvancedRecipes with connector.Connector
-  object AdvancedRecipesByTitle extends ConcreteAdvancedRecipesByTitle with connector.Connector
-  object CompositeKeyRecipes extends ConcreteCompositeKeyRecipes with connector.Connector
-  object ThriftTable extends ConcreteThriftTable with connector.Connector
-  object SecondaryKeyRecipes extends ConcreteSecondaryKeyRecipes with connector.Connector
+  object Recipes extends Recipes with Connector
+  object AdvancedRecipes extends AdvancedRecipes with Connector
+  object AdvancedRecipesByTitle extends AdvancedRecipesByTitle with Connector
+  object CompositeKeyRecipes extends CompositeKeyRecipes with Connector
+  object ThriftTable extends ThriftTable with connector.Connector
+  object SecondaryKeyRecipes extends SecondaryKeyRecipes with Connector
 
   /**
    * Right now you can go for a really neat trick of the trade.
@@ -59,10 +59,10 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
 
   // This is a trivial example showing how you can map and flatMap your path to glory.
   // Non blocking, 3 lines of code, 15 seconds of typing effort. Done.
-  def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
     for {
-      _ <- AdvancedRecipes.insertRecipe(recipe)
-      byTitle <- AdvancedRecipesByTitle.insertRecipe(Tuple2(recipe.title, recipe.id))
+      _ <- AdvancedRecipes.store(recipe)
+      byTitle <- AdvancedRecipesByTitle.store(recipe.title -> recipe.id)
     } yield byTitle
   }
 }

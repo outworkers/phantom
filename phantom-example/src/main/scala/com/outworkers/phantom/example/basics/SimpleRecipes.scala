@@ -43,7 +43,8 @@ case class Recipe(
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class Recipes extends CassandraTable[Recipes, Recipe] {
+abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+
   object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
@@ -63,10 +64,7 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object timestamp extends DateTimeColumn(this)
-}
 
-
-abstract class ConcreteRecipes extends Recipes with RootConnector {
   // you can even rename the table in the schema to whatever you like.
   override lazy val tableName = "my_custom_table"
 

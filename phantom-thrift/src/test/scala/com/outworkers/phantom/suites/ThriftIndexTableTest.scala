@@ -15,22 +15,20 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
+import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.util.testing._
 import com.outworkers.util.testing.twitter._
-import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.thrift.ThriftPrimitive
+import com.outworkers.phantom.thrift._
+import com.outworkers.phantom.thrift.models.ThriftTest
 import org.scalatest.FlatSpec
 
 class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
 
   val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
 
-  implicit object SamplePrimitive extends ThriftPrimitive[ThriftTest] {
-    val serializer = CompactThriftSerializer(ThriftTest)
-  }
+  implicit val samplePrimitive = thriftPrimitive[ThriftTest]
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
     val sample = gen[ThriftRecord]

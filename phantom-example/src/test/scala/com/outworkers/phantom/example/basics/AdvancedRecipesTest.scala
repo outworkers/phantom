@@ -25,7 +25,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.AdvancedRecipes.insertRecipe(sample)
+      _ <- database.AdvancedRecipes.store(sample)
       rec <- database.AdvancedRecipes.findById(sample.id)
     } yield rec
 
@@ -39,7 +39,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.insertRecipe(sample)
+      _ <- database.store(sample)
       rec <- database.AdvancedRecipes.findById(sample.id)
     } yield rec
 
@@ -53,7 +53,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.AdvancedRecipesByTitle.insertRecipe(sample.title -> sample.id)
+      _ <- database.AdvancedRecipesByTitle.store(sample.title -> sample.id)
       rec <- database.AdvancedRecipesByTitle.findRecipeByTitle(sample.title)
     } yield rec
 

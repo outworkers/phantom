@@ -39,35 +39,15 @@ abstract class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Thrif
 
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
-  object ref extends ThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object ref extends ThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
 
-  object thriftSet extends ThriftSetColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftSet extends ThriftSetColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
 
-  object thriftList extends ThriftListColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftList extends ThriftListColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
 
-  object thriftMap extends ThriftMapColumn[ThriftColumnTable, ThriftRecord, String, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftMap extends ThriftMapColumn[ThriftColumnTable, ThriftRecord, String, ThriftTest](this)
 
-  object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
 
   def store(sample: ThriftRecord): InsertQuery.Default[ThriftColumnTable, ThriftRecord] = {
     insert
@@ -86,35 +66,15 @@ abstract class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, Thr
   object id extends UUIDColumn(this)
   object name extends StringColumn(this)
 
-  object ref extends ThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) with PartitionKey {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object ref extends ThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) with PartitionKey
 
-  object thriftSet extends ThriftSetColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftSet extends ThriftSetColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
 
-  object thriftList extends ThriftListColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftList extends ThriftListColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
 
-  object thriftMap extends ThriftMapColumn[ThriftIndexedTable, ThriftRecord, String, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object thriftMap extends ThriftMapColumn[ThriftIndexedTable, ThriftRecord, String, ThriftTest](this)
 
-  object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) {
-    val serializer = new CompactThriftSerializer[ThriftTest] {
-      val codec = ThriftTest
-    }
-  }
+  object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
 
   def store(sample: ThriftRecord): InsertQuery.Default[ThriftIndexedTable, ThriftRecord] = {
     insert
