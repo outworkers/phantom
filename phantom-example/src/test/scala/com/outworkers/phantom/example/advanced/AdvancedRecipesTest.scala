@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.example.basics
+package com.outworkers.phantom.example.advanced
 
-import com.outworkers.phantom.example.ExampleSuite
-import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.example.ExampleSuite
+import com.outworkers.phantom.example.basics.Recipe
+import com.outworkers.util.samplers._
 
 class AdvancedRecipesTest extends ExampleSuite {
 

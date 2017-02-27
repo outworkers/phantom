@@ -20,6 +20,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Future
+
 class TruncateTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -28,18 +30,11 @@ class TruncateTest extends PhantomSuite {
   }
 
   it should "truncate all records in a table" in {
-    val article1 = gen[Article]
-    val article2 = gen[Article]
-    val article3 = gen[Article]
-    val article4 = gen[Article]
+    val articles = genList[Article]()
 
     val result = for {
       truncateBefore <- database.articles.truncate.future()
-      i1 <- database.articles.store(article1).future()
-      i2 <- database.articles.store(article2).future()
-      i3 <- database.articles.store(article3).future()
-      i4 <- database.articles.store(article4).future()
-
+      store <- Future.sequence(articles.map(database.articles.store(_).future()))
       records <- database.articles.select.fetch
       truncate <- database.articles.truncate.future()
       records1 <- database.articles.select.fetch
@@ -47,7 +42,28 @@ class TruncateTest extends PhantomSuite {
 
 
     whenReady(result) { case (init, updated) =>
-      init should have size 4
+      init should have size articles.size
+      info (s"inserted exactly ${init.size} records")
+
+      updated should have size 0
+      info (s"got exactly ${updated.size} records")
+    }
+  }
+
+  it should "allow setting a consistency level on a truncate query" in {
+    val articles = genList[Article]()
+
+    val result = for {
+      truncateBefore <- database.articles.truncate.future()
+      i1 <- Future.sequence(articles.map(database.articles.store(_).future()))
+      records <- database.articles.select.fetch
+      truncate <- database.articles.truncate.consistencyLevel_=(ConsistencyLevel.ONE).future()
+      records1 <- database.articles.select.fetch
+    } yield (records, records1)
+
+
+    whenReady(result) { case (init, updated) =>
+      init should have size articles.size
       info (s"inserted exactly ${init.size} records")
 
       updated should have size 0

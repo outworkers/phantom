@@ -48,20 +48,12 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
 
   case object Insert extends InsertQueryBuilder
 
-  def ifNotExists(qb: CQLQuery): CQLQuery = {
-    qb.forcePad.append(CQLSyntax.ifNotExists)
-  }
-
   def truncate(table: String): CQLQuery = {
     CQLQuery(CQLSyntax.truncate).forcePad.append(table)
   }
 
   def using(qb: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.using)
-  }
-
-  def ttl(qb: CQLQuery, seconds: String): CQLQuery = {
-    using(qb).forcePad.append(CQLSyntax.CreateOptions.ttl).forcePad.append(seconds)
   }
 
   def ttl(seconds: String): CQLQuery = {
@@ -107,11 +99,6 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
 
   def limit(value: String): CQLQuery = {
     CQLQuery(CQLSyntax.limit).forcePad.append(value.toString)
-  }
-
-  def limit(qb: CQLQuery, value: Int): CQLQuery = {
-    qb.pad.append(CQLSyntax.limit)
-      .forcePad.append(value.toString)
   }
 
   def keyspace(space: String): RootSerializer = KeySpaceSerializer(space)

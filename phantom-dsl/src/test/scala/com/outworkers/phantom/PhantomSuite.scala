@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.database.DatabaseProvider
 import com.outworkers.phantom.tables.TestDatabase
 import org.json4s.Formats
 import org.scalatest._
@@ -73,9 +74,11 @@ trait PhantomBaseSuite extends Suite with Matchers
   }
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.Connector {
-  val database = TestDatabase
+trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
+  override val database: TestDatabase = TestDatabase
+}
 
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.Connector with TestDatabaseProvider {
   def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
 }
 
