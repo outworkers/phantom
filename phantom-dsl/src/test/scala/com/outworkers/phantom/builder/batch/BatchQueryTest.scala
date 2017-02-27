@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.batch
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
+import com.outworkers.phantom.tables.JodaRow
 import com.outworkers.util.samplers._
 import org.joda.time.DateTime
 
@@ -53,6 +53,39 @@ class BatchQueryTest extends PhantomSuite {
     val chain = for {
       ex <- database.primitivesJoda.truncate.future()
       batchDone <- batch.future()
+      count <- database.primitivesJoda.select.count.one()
+    } yield count
+
+    whenReady(chain) { res =>
+      res.value shouldEqual 3
+    }
+  }
+
+  it should "correctly execute a chain of queries with a ConsistencyLevel set" in {
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow]
+    val row3 = gen[JodaRow]
+
+    val statement1 = database.primitivesJoda.insert
+      .value(_.pkey, row.pkey)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
+
+    val statement2 = database.primitivesJoda.insert
+      .value(_.pkey, row2.pkey)
+      .value(_.intColumn, row2.intColumn)
+      .value(_.timestamp, row2.timestamp)
+
+    val statement3 = database.primitivesJoda.insert
+      .value(_.pkey, row3.pkey)
+      .value(_.intColumn, row3.intColumn)
+      .value(_.timestamp, row3.timestamp)
+
+    val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
+
+    val chain = for {
+      ex <- database.primitivesJoda.truncate.future()
+      batchDone <- batch.consistencyLevel_=(ConsistencyLevel.ALL).future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
