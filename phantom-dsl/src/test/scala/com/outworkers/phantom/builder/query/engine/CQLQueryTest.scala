@@ -147,7 +147,9 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   it should "single quote a CQL query by surrounding it with ' pairs" in {
     forAll { q1: String =>
-      CQLQuery.empty.singleQuote(q1) shouldEqual s"'$q1'"
+      whenever(!q1.contains("'")) {
+        CQLQuery.empty.singleQuote(q1) shouldEqual s"'$q1'"
+      }
     }
   }
 
