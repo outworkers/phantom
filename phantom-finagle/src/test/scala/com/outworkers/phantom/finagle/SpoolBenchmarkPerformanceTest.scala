@@ -41,7 +41,7 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ =>println(s"step $step has succeed") )
+    f = w map (_ => println(s"step $step has succeed") )
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 
