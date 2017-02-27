@@ -92,7 +92,9 @@ class SecondaryIndexTest extends PhantomSuite {
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain.failed) { r =>
+      r shouldBe an [InvalidQueryException]
+    }
   }
 
   it should "throw an error when deleting a record by its secondary index" in {
@@ -104,7 +106,9 @@ class SecondaryIndexTest extends PhantomSuite {
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain.failed) { r =>
+      r shouldBe an [InvalidQueryException]
+    }
   }
 
 }

@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.db.crud
 
-import com.datastax.driver.core.exceptions.SyntaxError
+import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
@@ -45,7 +45,9 @@ class SelectJsonTest extends PhantomSuite {
         parsed.children.size shouldEqual row.productArity
       }
     } else {
-      chain.failing[SyntaxError]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [SyntaxError]
+      }
     }
   }
 
@@ -67,7 +69,9 @@ class SelectJsonTest extends PhantomSuite {
         parsed.children.size shouldEqual expected.productArity
       }
     } else {
-      chain.failing[SyntaxError]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [SyntaxError]
+      }
     }
   }
 }

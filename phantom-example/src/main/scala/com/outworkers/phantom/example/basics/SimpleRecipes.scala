@@ -71,8 +71,9 @@ abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnecto
   // Inserting has a bit of boilerplate on its on.
   // But it's almost always a once per table thing, hopefully bearable.
   // Whatever values you leave out will be inserted as nulls into Cassandra.
-  def insertNewRecord(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert.value(_.id, recipe.id)
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
+    insert
+      .value(_.id, recipe.id)
       .value(_.author, recipe.author)
       .value(_.title, recipe.title)
       .value(_.description, recipe.description)

@@ -52,6 +52,7 @@ class InsertTest extends PhantomSuite {
 
   if (session.v4orNewer) {
     "Insert" should "work fine for primitives cassandra 2.2 columns" in {
+      JodaTimeSampler
       val row = gen[PrimitiveCassandra22]
 
       val chain = for {

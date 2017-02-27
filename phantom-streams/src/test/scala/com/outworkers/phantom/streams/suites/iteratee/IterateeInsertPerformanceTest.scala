@@ -63,11 +63,9 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
        }
     }
 
-    (result flatMap (_ => combinedFuture)) successful {
-      r => {
-        info(s"done, reading: ${counter.addAndGet(0)}")
-        counter.get() shouldEqual r
-      }
+    whenReady(result flatMap (_ => combinedFuture)) { r =>
+      info(s"done, reading: ${counter.addAndGet(0)}")
+      counter.get() shouldEqual r
     }
   }
 }

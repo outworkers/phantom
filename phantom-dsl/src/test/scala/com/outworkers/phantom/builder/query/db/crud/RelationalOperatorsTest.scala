@@ -28,7 +28,19 @@ class RelationalOperatorsTest extends PhantomSuite {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val numRecords = 100
-  val records: Seq[TimeSeriesRecord] = TimeSeriesTest.genSequentialRecords(numRecords)
+  val records: Seq[TimeSeriesRecord] = genSequentialRecords(numRecords)
+
+
+  def genSequentialRecords(number: Int, ref: UUID = gen[UUID]): Seq[TimeSeriesRecord] = {
+    val durationOffset = 1000
+
+    (1 to number).map { i =>
+      val record = gen[TimeSeriesRecord]
+      record.copy(
+        id = ref,
+        timestamp = record.timestamp.withDurationAdded(durationOffset, i))
+    }
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -37,7 +49,7 @@ class RelationalOperatorsTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      inserts <- TimeSeriesTest.storeRecords(records)
+      inserts <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
     } yield inserts
 
     whenReady(chain) { inserts =>

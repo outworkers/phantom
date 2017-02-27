@@ -17,7 +17,7 @@ package com.outworkers.phantom.jdk8
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8.tables.{Jdk8Row, TestDatabase, _}
+import com.outworkers.phantom.jdk8.tables.{Jdk8Row, Jdk8Database, _}
 import com.outworkers.util.samplers._
 
 class Jdk8TimeColumnsTest extends PhantomSuite {
@@ -25,8 +25,8 @@ class Jdk8TimeColumnsTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     if (session.v4orNewer) {
-      TestDatabase.primitivesJdk8.insertSchema()
-      TestDatabase.optionalPrimitivesJdk8.insertSchema()
+      Jdk8Database.primitivesJdk8.insertSchema()
+      Jdk8Database.optionalPrimitivesJdk8.insertSchema()
     }
   }
 
@@ -35,11 +35,11 @@ class Jdk8TimeColumnsTest extends PhantomSuite {
       val row = gen[Jdk8Row]
 
       val chain = for {
-        store <- TestDatabase.primitivesJdk8.store(row).future()
-        select <- TestDatabase.primitivesJdk8.select.where(_.pkey eqs row.pkey).one()
+        store <- Jdk8Database.primitivesJdk8.store(row).future()
+        select <- Jdk8Database.primitivesJdk8.select.where(_.pkey eqs row.pkey).one()
       } yield select
 
-      chain successful {
+      whenReady(chain) {
         res => res.value shouldEqual row
       }
     }
@@ -48,12 +48,12 @@ class Jdk8TimeColumnsTest extends PhantomSuite {
       val row = gen[OptionalJdk8Row]
 
       val chain = for {
-        store <- TestDatabase.optionalPrimitivesJdk8.store(row).future()
-        select <- TestDatabase.optionalPrimitivesJdk8.select.where(_.pkey eqs row.pkey).one()
+        store <- Jdk8Database.optionalPrimitivesJdk8.store(row).future()
+        select <- Jdk8Database.optionalPrimitivesJdk8.select.where(_.pkey eqs row.pkey).one()
       } yield select
 
-      chain successful {
-        res => res.value shouldEqual row
+      whenReady(chain) { res =>
+        res.value shouldEqual row
       }
     }
   }

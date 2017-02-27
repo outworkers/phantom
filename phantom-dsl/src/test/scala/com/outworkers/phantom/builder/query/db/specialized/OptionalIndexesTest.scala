@@ -29,42 +29,36 @@ class OptionalIndexesTest extends PhantomSuite {
   }
 
   it should "store a record and then retrieve it using an optional index" in {
-    val sample = OptionalSecondaryRecord(
-      gen[UUID],
-      genOpt[Int]
-    )
+    val sample = gen[OptionalSecondaryRecord]
 
     val chain = for {
       store <- database.optionalIndexesTable.store(sample)
-      get <- database.optionalIndexesTable.findById(sample.id)
-      get2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
-    } yield (get, get2)
+      select <- database.optionalIndexesTable.findById(sample.id)
+      select2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+    } yield (select, select2)
 
-    whenReady(chain) {
-      case (byId, byIndex) => {
-        byId shouldBe defined
-        byId.value shouldEqual sample
+    whenReady(chain) { case (byId, byIndex) =>
+      byId shouldBe defined
+      byId.value shouldEqual sample
 
-        byIndex shouldBe defined
-        byIndex.value shouldEqual sample
-      }
+      byIndex shouldBe defined
+      byIndex.value shouldEqual sample
     }
   }
 
   it should "not be able to delete records by their secondary index" in {
-    val sample = OptionalSecondaryRecord(
-      gen[UUID],
-      genOpt[Int]
-    )
+    val sample = gen[OptionalSecondaryRecord]
 
     val chain = for {
       store <- database.optionalIndexesTable.store(sample)
-      get <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+      select <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
       delete <- database.optionalIndexesTable.delete.where(_.secondary eqs sample.secondary.value).future()
-      get2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
-    } yield (get, get2)
+      select2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
+    } yield (select, select2)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain.failed) { r =>
+      r shouldBe an [InvalidQueryException]
+    }
   }
 
 }

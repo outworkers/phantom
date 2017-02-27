@@ -44,10 +44,8 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      res => {
-        res.value shouldBe Some(sample)
-      }
+    whenReady(operation) { res =>
+      res.value shouldBe Some(sample)
     }
   }
 
@@ -70,10 +68,8 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      res => {
-        res.value.isDefined shouldBe false
-      }
+    whenReady(operation) { res =>
+      res.value.isDefined shouldBe false
     }
   }
 }

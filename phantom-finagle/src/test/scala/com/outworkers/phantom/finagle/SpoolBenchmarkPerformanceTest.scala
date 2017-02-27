@@ -19,6 +19,7 @@ import com.twitter.util.{Await => TwitterAwait}
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
@@ -28,6 +29,10 @@ import scala.concurrent.{Await, Future}
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.insertSchema()
+
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
 
   val fs: IndexedSeq[Future[Unit]] = for {
     step <- 1 to 3

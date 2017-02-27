@@ -43,15 +43,11 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe Set(sample, sample2)
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe Set(sample, sample2)
     }
   }
 
@@ -73,15 +69,11 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       insertDone <- insert
       update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe Set(sample, sample2, sample3)
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe Set(sample, sample2, sample3)
     }
   }
 
@@ -105,14 +97,11 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe Set(sample, sample2)
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe Set(sample, sample2)
     }
   }
-
 
   it should "remove several items from thrift set column" in {
     val id = gen[UUID]
@@ -134,15 +123,11 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
         .modify(_.thriftSet removeAll Set(sample2, sample3))
         .future()
       select <- ThriftDatabase.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
-    } yield {
-      select
-    }
+    } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldBe Set(sample)
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldBe Set(sample)
     }
   }
 }

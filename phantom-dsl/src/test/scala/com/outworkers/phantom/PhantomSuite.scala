@@ -25,7 +25,7 @@ import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import com.outworkers.util.samplers._
-import org.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -51,6 +51,10 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   implicit object JodaTimeSampler extends Sample[DateTime] {
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
+
+  implicit object JodaLocalDateSampler extends Sample[LocalDate] {
+    override def sample: LocalDate = LocalDate.now(DateTimeZone.UTC)
   }
 
   override implicit val patienceConfig = PatienceConfig(

@@ -83,7 +83,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object events extends ConcreteEvents with Connector
 
   object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with Connector
-  object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with Connector
+  object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
   object tuple2Table extends ConcreteTupleColumnTable with Connector
   object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
   object tupleCollectionsTable extends ConcreteTupleCollectionsTable with Connector

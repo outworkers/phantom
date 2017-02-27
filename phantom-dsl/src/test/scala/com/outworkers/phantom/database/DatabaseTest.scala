@@ -28,8 +28,8 @@ class DatabaseTest extends PhantomSuite {
   }
 
   it should "automatically generate the CQL schema and initialise tables " in {
-    db.createAsync().successful {
-      res => res.nonEmpty shouldEqual true
+    whenReady(db.createAsync()) { res =>
+      res.nonEmpty shouldEqual true
     }
   }
 

@@ -20,6 +20,9 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
+import org.joda.time.DateTimeZone
+
+import scala.util.Try
 
 class SelectFunctionsTesting extends PhantomSuite {
 
@@ -41,9 +44,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      shouldNotThrow {
-        new DateTime(res.value / 1000)
-      }
+      Try(new DateTime(res.value / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
     }
   }
 

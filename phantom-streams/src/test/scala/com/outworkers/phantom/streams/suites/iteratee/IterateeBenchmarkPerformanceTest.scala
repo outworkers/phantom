@@ -19,6 +19,7 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
@@ -27,6 +28,10 @@ import scala.concurrent.{Await, Future}
 class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.insertSchema()
+
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
 
   val limit = 10000
   val sampleGenLimit = 30000

@@ -15,10 +15,10 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
-import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
+import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{TestDatabase, TestRow}
+import com.outworkers.phantom.tables.TestRow
 import com.outworkers.util.samplers._
 
 class IndexedCollectionsTest extends PhantomSuite {
@@ -39,20 +39,20 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- database.indexedCollectionsTable.store(record).future()
-      get <- database.indexedCollectionsTable.select
+      one <- database.indexedCollectionsTable.select
         .where(_.setText contains record.setText.headOption.value)
         .fetch()
-    } yield get
+    } yield one
 
     if (cassandraVersion.value > Version.`2.3.0`) {
-      whenReady(chain) {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
       }
     } else {
-      chain.failing[InvalidQueryException]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
     }
 
   }
@@ -62,20 +62,20 @@ class IndexedCollectionsTest extends PhantomSuite {
 
     val chain = for {
       store <- database.indexedCollectionsTable.store(record).future()
-      get <- database.indexedCollectionsTable.select
+      one <- database.indexedCollectionsTable.select
         .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
         .fetch()
-    } yield get
+    } yield one
 
     if (cassandraVersion.value > Version.`2.3.0`) {
-      whenReady(chain) {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
       }
     } else {
-      chain.failing[InvalidQueryException]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
     }
   }
 
@@ -91,14 +91,14 @@ class IndexedCollectionsTest extends PhantomSuite {
     } yield get
 
     if (cassandraVersion.value > Version.`2.3.0`) {
-      whenReady(chain) {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
       }
     } else {
-      chain.failing[InvalidQueryException]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
     }
   }
 
@@ -111,14 +111,14 @@ class IndexedCollectionsTest extends PhantomSuite {
     } yield result
 
     if (cassandraVersion.value > Version.`2.3.0`) {
-      whenReady(chain) {
-        res => {
-          res.nonEmpty shouldEqual true
-          res should contain (record)
-        }
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
       }
     } else {
-      chain.failing[InvalidQueryException]
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
     }
   }
 

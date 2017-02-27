@@ -31,12 +31,10 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       r => counter.incrementAndGet()
     }
 
-    result.successful {
-      query => {
-        val count = counter.getAndIncrement()
-        info(s"Done, reading: $count elements from the table.")
-        count shouldEqual 2000000
-      }
+    whenReady(result) { query =>
+      val count = counter.getAndIncrement()
+      info(s"Done, reading: $count elements from the table.")
+      count shouldEqual 2000000
     }
   }
 }
