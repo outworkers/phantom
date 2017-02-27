@@ -15,9 +15,7 @@
  */
 package com.outworkers.phantom.thrift
 
-import com.outworkers.phantom.thrift.models.ThriftTest
 import com.twitter.scrooge.CompactThriftSerializer
-
 import scala.reflect.macros.blackbox
 
 trait ThriftHelper[ValueType <: ThriftStruct] {
