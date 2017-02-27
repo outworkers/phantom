@@ -18,6 +18,7 @@ package com.outworkers.phantom.example.basics
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift._
+import com.outworkers.phantom.example.basics.thrift.SampleModel
 
 // Sample model here comes from the Thrift struct definition.
 // The IDL is available in phantom-example/src/main/thrift.

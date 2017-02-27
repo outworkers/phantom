@@ -320,7 +320,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
       "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
