@@ -87,4 +87,18 @@ class SimpleRecipesTest extends ExampleSuite {
     }
   }
 
+  it should "retrieve a recipe by its autho using a secondary index" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.SecondaryKeyRecipes.store(sample)
+      res <- database.SecondaryKeyRecipes.findRecipeByAuthor(sample.author)
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
 }
