@@ -16,16 +16,33 @@
 package com.outworkers.phantom.builder.query.engine
 
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.util.samplers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
 
 class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
 
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 300)
 
   it should "create an empty CQL query using the empty method on the companion object" in {
     CQLQuery.empty.queryString shouldEqual ""
+  }
+
+  it should "automatically serialize a list of strings using the apply method from the companion object" in {
+    val list = List("test", "test2")
+
+    CQLQuery(list).queryString shouldEqual "test, test2"
+  }
+
+  it should "escape strings without single quotes inside them by wrapping the string in single quotes" in {
+    val test = gen[String]
+    CQLQuery.escape(test) shouldEqual s"'$test'"
+  }
+
+  it should "escape single quotes inside a string using the scape method of the companion" in {
+    val test = "test'"
+    CQLQuery.escape(test) shouldEqual "'test'''"
   }
 
   it should "correctly identify if a CQL query is empty" in {
@@ -130,7 +147,9 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   it should "single quote a CQL query by surrounding it with ' pairs" in {
     forAll { q1: String =>
-      CQLQuery.empty.singleQuote(q1) shouldEqual s"'$q1'"
+      whenever(!q1.contains("'")) {
+        CQLQuery.empty.singleQuote(q1) shouldEqual s"'$q1'"
+      }
     }
   }
 
@@ -166,13 +185,17 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   it should "append an single quoted string to a CQLQuery using CQLQuery.append" in {
     forAll {(q1: String, q2: String) =>
-      CQLQuery(q1).appendSingleQuote(q2).queryString shouldEqual s"$q1'$q2'"
+      whenever(!q2.contains("'")) {
+        CQLQuery(q1).appendSingleQuote(q2).queryString shouldEqual s"$q1'$q2'"
+      }
     }
   }
 
   it should "append an singlequoted query to another using CQLQuery.append" in {
     forAll {(q1: String, q2: String) =>
-      CQLQuery(q1).appendSingleQuote(CQLQuery(q2)).queryString shouldEqual s"$q1'$q2'"
+      whenever(!q2.contains("'")) {
+        CQLQuery(q1).appendSingleQuote(CQLQuery(q2)).queryString shouldEqual s"$q1'$q2'"
+      }
     }
   }
 

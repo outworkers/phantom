@@ -249,7 +249,7 @@ class SelectQuery[
 
 
   @implicitNotFound("A limit was already specified for this query.")
-  override def limit(limit: Int)(
+  def limit(limit: Int)(
     implicit ev: Limit =:= Unlimited
   ): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
     new SelectQuery(

@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.concurrent.duration._
 
@@ -43,7 +43,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
@@ -74,7 +74,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
@@ -105,7 +105,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined
@@ -136,7 +136,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
 
         info("The first record should not be empty")
@@ -170,7 +170,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
 
         info("The first record should not be empty")
@@ -204,7 +204,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
 
         info("The first record should not be empty")
@@ -238,7 +238,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
 
         info("The first record should not be empty")
@@ -273,7 +273,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (initial, second) => {
         info("The first record should not be empty")
         initial shouldBe defined

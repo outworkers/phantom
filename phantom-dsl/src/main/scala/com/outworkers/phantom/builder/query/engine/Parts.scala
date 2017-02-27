@@ -31,7 +31,7 @@ abstract class QueryPart[T <: QueryPart[T, QT], QT <: AbstractQuery[QT]](val lis
 
   def append(q: QT): T = instance(list ::: (q :: Nil))
 
-  def append(q: QT*): T = instance(q.toList ::: list)
+  def append(q: QT*): T = instance(list ::: q.toList)
 
   def append(q: List[QT]): T = instance(q ::: list)
 

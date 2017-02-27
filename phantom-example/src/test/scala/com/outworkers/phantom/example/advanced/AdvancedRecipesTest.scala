@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.example.basics
+package com.outworkers.phantom.example.advanced
 
-import com.outworkers.phantom.example.ExampleSuite
-import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.example.ExampleSuite
+import com.outworkers.phantom.example.basics.Recipe
+import com.outworkers.util.samplers._
 
 class AdvancedRecipesTest extends ExampleSuite {
 
@@ -25,7 +26,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.AdvancedRecipes.insertRecipe(sample)
+      _ <- database.AdvancedRecipes.store(sample)
       rec <- database.AdvancedRecipes.findById(sample.id)
     } yield rec
 
@@ -39,7 +40,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.insertRecipe(sample)
+      _ <- database.store(sample)
       rec <- database.AdvancedRecipes.findById(sample.id)
     } yield rec
 
@@ -53,7 +54,7 @@ class AdvancedRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      _ <- database.AdvancedRecipesByTitle.insertRecipe(sample.title -> sample.id)
+      _ <- database.AdvancedRecipesByTitle.store(sample.title -> sample.id)
       rec <- database.AdvancedRecipesByTitle.findRecipeByTitle(sample.title)
     } yield rec
 

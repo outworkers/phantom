@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class SetOperationsTest extends PhantomSuite {
 
@@ -37,7 +37,7 @@ class SetOperationsTest extends PhantomSuite {
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    chain.successful {
+    whenReady(chain) {
       items => {
         items.value shouldBe item.setText + someItem
       }
@@ -54,7 +54,7 @@ class SetOperationsTest extends PhantomSuite {
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    chain.successful {
+    whenReady(chain) {
       items => {
         items.value shouldBe item.setText ++ someItems
       }
@@ -72,7 +72,7 @@ class SetOperationsTest extends PhantomSuite {
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    chain.successful {
+    whenReady(chain) {
       items => {
         items.value shouldBe someItems.diff(Set(removal))
       }
@@ -90,7 +90,7 @@ class SetOperationsTest extends PhantomSuite {
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    chain.successful {
+    whenReady(chain) {
       items => {
         items.value shouldBe someItems.diff(removal)
       }

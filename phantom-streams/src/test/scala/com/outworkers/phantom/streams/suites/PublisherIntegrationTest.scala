@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually

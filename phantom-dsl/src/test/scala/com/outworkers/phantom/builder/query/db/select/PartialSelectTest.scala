@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.select
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import shapeless._
 import syntax.std.tuple._
 
@@ -34,11 +34,11 @@ class PartialSelectTest extends PhantomSuite {
     val row = gen[Primitive]
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      oneSelect <- TestDatabase.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
+      _ <- database.primitives.store(row).future()
+      oneSelect <- database.primitives.select(_.long, _.boolean).where(_.pkey eqs row.pkey).one
     } yield oneSelect
 
-    chain successful { res =>
+    whenReady(chain) { res =>
       res.value shouldEqual row.long -> row.boolean
     }
   }
@@ -48,8 +48,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future
-      get <- TestDatabase.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future
+      get <- database.primitives.select(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -63,8 +63,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -77,8 +77,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -91,8 +91,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -105,8 +105,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -119,8 +119,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet).where(_.pkey eqs row.pkey).one()
     } yield get
 
     whenReady(chain) {
@@ -133,8 +133,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {
-      _ <- TestDatabase.primitives.store(row).future()
-      get <- TestDatabase.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+      _ <- database.primitives.store(row).future()
+      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .where(_.pkey eqs row.pkey).one()
     } yield get
 
@@ -149,8 +149,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._9)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -176,8 +176,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._10)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -203,8 +203,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._11)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -232,8 +232,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._12)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -262,8 +262,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._13)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -293,8 +293,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._14)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -325,8 +325,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._15)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -358,8 +358,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._16)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -392,8 +392,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._17)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -427,8 +427,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._18)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -463,8 +463,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._19)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -500,8 +500,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._20)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,
@@ -538,8 +538,8 @@ class PartialSelectTest extends PhantomSuite {
     val expected = row.take(Nat._21)
 
     val chain = for {
-      _ <- TestDatabase.wideTable.store(row).future()
-      get <- TestDatabase.wideTable
+      _ <- database.wideTable.store(row).future()
+      get <- database.wideTable
         .select(
           _.id,
           _.field,

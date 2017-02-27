@@ -16,10 +16,9 @@
 package com.outworkers.phantom.example.basics
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.twitter.scrooge.CompactThriftSerializer
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift._
-import com.outworkers.phantom.thrift.columns.ThriftColumn
+import com.outworkers.phantom.example.basics.thrift.SampleModel
 
 // Sample model here comes from the Thrift struct definition.
 // The IDL is available in phantom-example/src/main/thrift.
@@ -29,19 +28,12 @@ case class SampleRecord(
   thriftModel: SampleModel
 )
 
-sealed class ThriftTable extends CassandraTable[ConcreteThriftTable, SampleRecord] {
+abstract class ThriftTable extends CassandraTable[ThriftTable, SampleRecord] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object stuff extends StringColumn(this)
   object someList extends ListColumn[String](this)
 
-
-  // As you can see, com.outworkers.phantom will use a compact Thrift serializer.
+  // By default, com.outworkers.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ConcreteThriftTable, SampleRecord, SampleModel](this) {
-    def serializer = new CompactThriftSerializer[SampleModel] {
-      override def codec = SampleModel
-    }
-  }
+  object thriftModel extends ThriftColumn[ThriftTable, SampleRecord, SampleModel](this)
 }
-
-abstract class ConcreteThriftTable extends ThriftTable with RootConnector

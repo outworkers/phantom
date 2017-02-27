@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.primitives
+package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.util.samplers._
+import com.outworkers.phantom.tables.TestDatabase
 
-case class Record(value: String)
+class DatabaseProviderTest extends PhantomSuite {
+  it should "maintain a reference to the singleton object using the shorthand syntax" in {
+    (db eq TestDatabase) shouldEqual true
+  }
 
-object Record {
-  implicit val recordPrimitive: Primitive[Record] = Primitive.derive[Record, String](_.value)(Record.apply)
-}
-
-class DerivedPrimitivesTest extends PhantomSuite {
-
-  it should "derive a primitive for a custom wrapper type" in {
-    val str = gen[String]
-
-    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
+  it should "maintain a reference to the singleton object injected" in {
+    (database eq TestDatabase) shouldEqual true
   }
 }

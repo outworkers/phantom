@@ -18,7 +18,7 @@ package com.outworkers.phantom.macros
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl.context
 
 class TableHelperRuntimeTests extends PhantomSuite {

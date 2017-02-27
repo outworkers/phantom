@@ -20,7 +20,7 @@ import java.util.UUID
 import com.outworkers.phantom.builder.query.KeySpaceSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.{FlatSpec, Matchers}
 
 class QuerySerializationTest extends FlatSpec with Matchers with KeySpaceSuite {

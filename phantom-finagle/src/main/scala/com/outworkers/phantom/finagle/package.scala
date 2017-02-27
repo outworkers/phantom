@@ -193,7 +193,6 @@ package object finagle {
       * This is not suitable for big results set
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */

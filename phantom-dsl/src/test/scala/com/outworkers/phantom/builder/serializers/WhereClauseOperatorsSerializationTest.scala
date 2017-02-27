@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.{FlatSpec, Matchers}
 
 class WhereClauseOperatorsSerializationTest extends FlatSpec with Matchers {

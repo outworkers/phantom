@@ -20,7 +20,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class CounterColumnTest extends PhantomSuite {
 
@@ -40,7 +40,7 @@ class CounterColumnTest extends PhantomSuite {
     } yield (select, select2)
 
 
-    chain.successful {
+    whenReady(chain) {
       case (res1, res2) => {
         res1.value.count shouldEqual 0
         res2.value.count shouldEqual 1
@@ -59,7 +59,7 @@ class CounterColumnTest extends PhantomSuite {
     } yield (select, select2)
 
 
-    chain.successful {
+    whenReady(chain) {
       case (res1, res2) => {
         res1.value.count shouldEqual 500
         res2.value shouldEqual 501
@@ -79,7 +79,7 @@ class CounterColumnTest extends PhantomSuite {
     } yield (select, select2)
 
 
-    chain.successful {
+    whenReady(chain) {
       case (res, res1) => {
         res.value.count shouldEqual 0
         res1.value.count shouldEqual diff
@@ -98,7 +98,7 @@ class CounterColumnTest extends PhantomSuite {
     } yield (select, select2)
 
 
-    chain.successful {
+    whenReady(chain) {
       case (res, res1) => {
         res.value.count shouldEqual 1
         res1.value.count shouldEqual 0
@@ -119,7 +119,7 @@ class CounterColumnTest extends PhantomSuite {
     } yield (select, select2)
 
 
-    chain.successful {
+    whenReady(chain) {
       case (res1, res2) => {
         res2.value.count shouldEqual (initial - diff)
       }

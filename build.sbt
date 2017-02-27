@@ -204,7 +204,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
     "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
-    "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+    "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
   )
@@ -262,12 +262,16 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     moduleName := "phantom-thrift",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
-    )
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(
@@ -316,12 +320,13 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
-      "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
-    )
+      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(

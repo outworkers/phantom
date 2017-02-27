@@ -21,7 +21,7 @@ import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams.RequestBuilder
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest._
 
 import scala.concurrent.Await

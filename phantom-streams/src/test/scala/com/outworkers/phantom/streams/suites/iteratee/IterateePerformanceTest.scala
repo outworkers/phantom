@@ -21,7 +21,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
 
@@ -46,40 +46,34 @@ class IterateePerformanceTest extends PhantomSuite {
     })
 
     val w = batch.future() map (_ => TestDatabase.primitivesJoda.select.fetchEnumerator)
-    w successful {
-      en => {
-        val result = en run Iteratee.collect()
-        result successful {
-          seqR =>
-            for (row <- seqR)
-              rows.contains(row) shouldEqual true
-            assert(seqR.size === rows.size)
-        }
+    whenReady(w) { en =>
+      val result = en run Iteratee.collect()
+      whenReady(result) { seqR =>
+        for (row <- seqR) rows.contains(row) shouldEqual true
+        seqR.size shouldEqual rows.size
       }
     }
   }
 
   it should "get correctly retrieve the right number of records using asynchronous iterators" in {
-
     val rows = for (i <- 1 to 100) yield gen[Primitive]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(TestDatabase.primitives.store(row))
+      b.add(database.primitives.store(row))
     })
 
-    val w = TestDatabase.primitives.truncate.future().flatMap {
+    val w = database.primitives.truncate.future().flatMap {
       _ => batch.future().map(_ => TestDatabase.primitives.select.fetchEnumerator())
     }
 
     val counter: AtomicInteger = new AtomicInteger(0)
     val m = w flatMap {
-      en => en run Iteratee.forEach(x => {
+      _ run Iteratee.forEach(x => {
         counter.incrementAndGet(); assert(rows.contains(x))
       })
     }
 
-    m successful {
-      _ =>
-        assert(counter.intValue() === rows.size)
+    whenReady(m) { _ =>
+      counter.intValue() shouldEqual rows.size
     }
   }
 }

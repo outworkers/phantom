@@ -36,34 +36,28 @@ case class TimeUUIDRecord(
   def timestamp: DateTime = id.datetime
 }
 
-sealed class TimeSeriesTable extends CassandraTable[ConcreteTimeSeriesTable, TimeSeriesRecord] {
+abstract class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending {
     override val name = "unixTimestamp"
   }
+
+  def store(rec: TimeSeriesRecord): InsertQuery.Default[TimeSeriesTable, TimeSeriesRecord] = {
+    insert
+      .value(_.id, rec.id)
+      .value(_.name, rec.name)
+      .value(_.timestamp, rec.timestamp)
+  }
 }
 
-abstract class ConcreteTimeSeriesTable extends TimeSeriesTable with RootConnector
-
-sealed class TimeUUIDTable extends CassandraTable[ConcreteTimeUUIDTable, TimeUUIDRecord] {
+abstract class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeUUIDRecord] with RootConnector {
 
   object user extends UUIDColumn(this) with PartitionKey
   object id extends TimeUUIDColumn(this) with ClusteringOrder with Descending
   object name extends StringColumn(this)
 
-  override def fromRow(row: Row): TimeUUIDRecord = {
-    TimeUUIDRecord(
-      user(row),
-      id(row),
-      name(row)
-    )
-  }
-}
-
-abstract class ConcreteTimeUUIDTable extends TimeUUIDTable with RootConnector {
-
-  def store(rec: TimeUUIDRecord): InsertQuery.Default[ConcreteTimeUUIDTable, TimeUUIDRecord] = {
+  def store(rec: TimeUUIDRecord): InsertQuery.Default[TimeUUIDTable, TimeUUIDRecord] = {
     insert
       .value(_.user, rec.user)
       .value(_.id, rec.id)
