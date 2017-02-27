@@ -36,7 +36,6 @@ class CreateTest extends PhantomFreeSuite {
         whenReady(chain) {
           res => res.wasApplied() shouldEqual true
         }
-
       }
     }
 
