@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 
-object db extends TestDatabase
+object db extends BasicDatabase
 
 class DatabaseTest extends PhantomSuite {
 

@@ -16,6 +16,7 @@
 package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.tables.TestDatabase
 
 class DatabaseProviderTest extends PhantomSuite {
   it should "maintain a reference to the singleton object using the shorthand syntax" in {
