@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.Waiters
 import org.scalatest.{Assertions, Inside, Matchers}

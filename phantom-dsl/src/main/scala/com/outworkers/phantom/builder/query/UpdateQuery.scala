@@ -19,6 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime
@@ -360,7 +361,7 @@ sealed class ConditionalQuery[
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
 
-  val qb: CQLQuery = {
+  override def qb: CQLQuery = {
     usingPart merge setPart merge wherePart merge casPart build init
   }
 
@@ -427,10 +428,7 @@ sealed class ConditionalQuery[
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Rev2],
     prepend: Prepend[Rev2, Rev]
-  ): PreparedBlock[prepend.Out] = {
-    new PreparedBlock(qb, options)
-  }
-
+  ): PreparedBlock[prepend.Out] = new PreparedBlock(qb, options)
 }
 
 object UpdateQuery {

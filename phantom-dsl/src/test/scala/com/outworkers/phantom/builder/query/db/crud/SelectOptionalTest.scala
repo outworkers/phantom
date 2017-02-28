@@ -18,15 +18,15 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class SelectOptionalTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.optionalPrimitives.insertSchema()
-    if(session.v4orNewer) {
-      TestDatabase.optionalPrimitivesCassandra22.insertSchema()
+    database.optionalPrimitives.insertSchema()
+    if (session.v4orNewer) {
+      database.optionalPrimitivesCassandra22.insertSchema()
     }
   }
 
@@ -51,42 +51,38 @@ class SelectOptionalTest extends PhantomSuite {
 
   private[this] def checkRow(row: OptionalPrimitive): Unit = {
     val rcp = for {
-      store <- TestDatabase.optionalPrimitives.store(row).future()
-      b <- TestDatabase.optionalPrimitives.select.where(_.pkey eqs row.pkey).one
+      store <- database.optionalPrimitives.store(row).future()
+      b <- database.optionalPrimitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
-    rcp successful {
-      r => {
-        r shouldBe defined
-        r.value.bDecimal shouldEqual row.bDecimal
-        r.value.bi shouldEqual row.bi
-        r.value.boolean shouldEqual row.boolean
-        r.value.date shouldEqual row.date
-        r.value.double shouldEqual row.double
-        r.value.float shouldEqual row.float
-        r.value.inet shouldEqual row.inet
-        r.value.int shouldEqual row.int
-        r.value.long shouldEqual row.long
-        r.value.pkey shouldEqual row.pkey
-        r.value.string shouldEqual row.string
-        r.value.timeuuid shouldEqual row.timeuuid
-        r.value.uuid shouldEqual row.uuid
-      }
+    whenReady(rcp) { r =>
+      r shouldBe defined
+      r.value.bDecimal shouldEqual row.bDecimal
+      r.value.bi shouldEqual row.bi
+      r.value.boolean shouldEqual row.boolean
+      r.value.date shouldEqual row.date
+      r.value.double shouldEqual row.double
+      r.value.float shouldEqual row.float
+      r.value.inet shouldEqual row.inet
+      r.value.int shouldEqual row.int
+      r.value.long shouldEqual row.long
+      r.value.pkey shouldEqual row.pkey
+      r.value.string shouldEqual row.string
+      r.value.timeuuid shouldEqual row.timeuuid
+      r.value.uuid shouldEqual row.uuid
     }
   }
 
   private[this] def checkRow(row: OptionalPrimitiveCassandra22): Unit = {
     val rcp = for {
-      store <- TestDatabase.optionalPrimitivesCassandra22.store(row).future()
-      b <- TestDatabase.optionalPrimitivesCassandra22.select.where(_.pkey eqs row.pkey).one
+      store <- database.optionalPrimitivesCassandra22.store(row).future()
+      b <- database.optionalPrimitivesCassandra22.select.where(_.pkey eqs row.pkey).one
     } yield b
 
-    rcp successful {
-      r => {
-        r shouldBe defined
-        r.value.short shouldEqual row.short
-        r.value.byte shouldEqual row.byte
-      }
+    whenReady(rcp) { r =>
+      r shouldBe defined
+      r.value.short shouldEqual row.short
+      r.value.byte shouldEqual row.byte
     }
   }
 }

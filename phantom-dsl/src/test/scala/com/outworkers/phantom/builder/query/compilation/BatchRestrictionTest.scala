@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.compilation
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 

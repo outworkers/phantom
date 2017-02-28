@@ -18,25 +18,25 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class SelectTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
+    database.primitives.insertSchema()
   }
 
   "Selecting the whole row" should "work fine" in {
     val row = gen[Primitive]
 
     val chain = for {
-      store <- TestDatabase.primitives.store(row).future()
-      b <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
+      store <- database.primitives.store(row).future()
+      b <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
-    chain successful {
-      res => res.value shouldEqual row
+    whenReady(chain) { res =>
+      res.value shouldEqual row
     }
   }
 }

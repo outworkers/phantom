@@ -15,16 +15,10 @@
  */
 package com.outworkers.phantom.example
 
-import java.util.UUID
-
 import com.outworkers.phantom.PhantomBaseSuite
-import com.outworkers.phantom.dsl.DatabaseProvider
+import com.outworkers.phantom.dsl.{DatabaseProvider, context}
 import com.outworkers.phantom.example.advanced.RecipesDatabase
-import com.outworkers.phantom.example.basics.Recipe
-import com.outworkers.util.testing._
-import org.joda.time.DateTime
 import org.scalatest.FlatSpec
-import com.outworkers.phantom.dsl.context
 
 trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
   override def database: RecipesDatabase = RecipesDatabase

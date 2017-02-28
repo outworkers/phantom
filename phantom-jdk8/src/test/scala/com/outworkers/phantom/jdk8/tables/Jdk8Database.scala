@@ -15,7 +15,8 @@
  */
 package com.outworkers.phantom.jdk8.tables
 
-import com.outworkers.phantom.jdk8.OptionalPrimitivesJdk8
+import com.outworkers.phantom.connectors.ContactPoint
+import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.NamingStrategy

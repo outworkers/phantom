@@ -16,33 +16,40 @@
 import sbt.Keys._
 import sbt._
 import com.twitter.sbt._
+import sbt.Defaults._
 
 lazy val Versions = new {
   val logback = "1.2.1"
+  val sbt = "0.13.11"
   val util = "0.30.1"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
-  val finagle = "6.37.0"
+  val finagle = "6.42.0"
   val scalameter = "0.8+"
-  val diesel = "0.5.0"
   val scalacheck = "1.13.4"
   val slf4j = "1.7.21"
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
-  val typesafeConfig = "1.3.1"
+
   val joda = "2.9.7"
   val jodaConvert = "1.8.1"
   val scalamock = "3.4.2"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.0"
 
+  val typesafeConfig: String = if (Publishing.isJdk8) {
+    "1.3.1"
+  } else {
+    "1.2.0"
+  }
+
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 12 => "6.39.0"
+      case Some((_, minor)) if minor >= 12 => "6.41.0"
       case _ => "6.34.0"
     }
   }
@@ -63,23 +70,28 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 => "4.7.0"
+      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.14.0"
+      case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
       case _ => "4.7.0"
     }
   }
 
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 => "2.5.8"
+      case Some((_, minor)) if minor == 12 => "2.6.1"
+      case Some((_, minor)) if minor == 11 => "2.5.8"
       case _ => "2.4.8"
     }
   }
 
-  val playStreams: String => sbt.ModuleID = {
+  val playStreams: String => ModuleID = {
     s => {
       val v = play(s)
       CrossVersion.partialVersion(s) match {
-        case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => {
+        case Some((_, minor)) if minor == 12=> {
+          "com.typesafe.play" %% "play-reactive-streams" % v
+        }
+        case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
           "com.typesafe.play" %% "play-streams" % v
         }
         case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
@@ -184,7 +196,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.typelevel" %% "macro-compat" % Versions.macrocompat,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-    "com.outworkers"               %% "diesel-engine"                     % Versions.diesel,
     "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
     "joda-time"                    %  "joda-time"                         % Versions.joda,
     "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -193,7 +204,7 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
     "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
-    "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+    "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
     "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
     "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
   )
@@ -233,7 +244,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .configs(PerformanceTest).settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
@@ -249,14 +260,18 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
-    )
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(
@@ -287,20 +302,15 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     moduleName := "phantom-streams",
     crossScalaVersions := Seq("2.10.6", "2.11.8"),
     libraryDependencies ++= Seq(
+      "com.typesafe" % "config" % Versions.typesafeConfig force(),
+      Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
-      Versions.playStreams(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
-      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value),
+      "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value) exclude ("com.typesafe", "config"),
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    ) ++ {
-      if (Publishing.isJdk8) {
-        Seq("com.typesafe" % "config" % Versions.typesafeConfig)
-      } else {
-        Seq.empty
-      }
-    }
+    )
   ).settings(
     sharedSettings: _*
   ).dependsOn(
@@ -310,16 +320,16 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
-      "com.outworkers"               %% "util-lift"                         % Versions.util % Test,
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
-    )
+      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
+    ),
+    coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
-    phantomStreams,
     phantomThrift
   ).enablePlugins(CrossPerProjectPlugin)

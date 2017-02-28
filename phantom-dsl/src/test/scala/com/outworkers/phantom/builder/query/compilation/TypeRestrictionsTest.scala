@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.compilation
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.dsl.UUID
 import com.outworkers.phantom.tables.TestDatabase
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
 class TypeRestrictionsTest extends FlatSpec with SerializationTest {

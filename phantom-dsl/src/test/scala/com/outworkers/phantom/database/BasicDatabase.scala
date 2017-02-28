@@ -17,11 +17,11 @@ package com.outworkers.phantom.database
 
 import com.outworkers.phantom.tables._
 
-class SimpleDatabase extends Database[SimpleDatabase](Connector.default) {
+class BasicDatabase extends Database[BasicDatabase](Connector.default) {
   object enumTable extends EnumTable with Connector
   object basicTable extends BasicTable with Connector
   object jsonTable extends JsonTable with Connector
   object recipes extends Recipes with Connector
 }
 
-object SimpleDatabase extends SimpleDatabase
+object BasicDatabase extends BasicDatabase

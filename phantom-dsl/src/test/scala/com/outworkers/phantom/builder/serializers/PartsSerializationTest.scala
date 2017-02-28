@@ -17,7 +17,9 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.scalatest.FreeSpec
+import com.outworkers.util.samplers._
 
 class PartsSerializationTest extends FreeSpec with SerializationTest {
 
@@ -32,6 +34,13 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
         part.list.isEmpty shouldEqual true
       }
 
+      "correctly identify the parts lit as non empty" in {
+        val list = genList[CQLQuery]()
+        val part = new WherePart(list)
+
+        part.list.nonEmpty shouldEqual true
+      }
+
       "append a query to the inner list while preserving order" in {
         val part = new WherePart()
 
@@ -43,6 +52,22 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
         appended.list shouldEqual List(l1, l2)
       }
+
+      "append a sequence of queries to the inner list using varags" in {
+        val part = new WherePart()
+
+        val l1 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("a", "b"))
+
+        val l2 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("c", "d"))
+
+        val l3 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("e", "f"))
+        val l4 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("g", "h"))
+
+        val appended = part.append(l1).append(l2, l3, l4)
+
+        appended.list shouldEqual List(l1, l2, l3, l4)
+      }
+
 
       "build to a CQLQuery clause with an empty init" in {
         val part = new WherePart()

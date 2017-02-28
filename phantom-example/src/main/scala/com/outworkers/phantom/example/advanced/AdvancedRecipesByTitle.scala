@@ -30,19 +30,18 @@ import scala.concurrent.{Future => ScalaFuture}
 
 // Instead, you create mapping tables and ensure consistency from the application level.
 // This will illustrate just how easy it is to do that with com.outworkers.phantom.
-sealed class AdvancedRecipesByTitle extends CassandraTable[ConcreteAdvancedRecipesByTitle, (String, UUID)] {
+abstract class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitle, (String, UUID)] with RootConnector {
 
   // In this table, the author will be PrimaryKey and PartitionKey.
   object title extends StringColumn(this) with PartitionKey
 
   // The id is just another normal field.
   object id extends UUIDColumn(this)
-}
 
 abstract class ConcreteAdvancedRecipesByTitle extends AdvancedRecipesByTitle with RootConnector {
   override def tableName(implicit strategy: NamingStrategy): String = "recipes_by_title"
 
-  def insertRecipe(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
+  def store(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
     insert.value(_.title, recipe._1).value(_.id, recipe._2).future()
   }
 

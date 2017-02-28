@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class DeleteQuerySerialisationTest extends QueryBuilderTest {
 

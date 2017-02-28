@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.batch
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
 class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {

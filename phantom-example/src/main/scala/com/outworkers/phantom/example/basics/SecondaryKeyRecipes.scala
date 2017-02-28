@@ -15,6 +15,11 @@
  */
 package com.outworkers.phantom.example.basics
 
+import java.util.UUID
+
+import scala.concurrent.{Future => ScalaFuture}
+import com.datastax.driver.core.Row
+import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import scala.concurrent.Future
 
@@ -47,6 +52,20 @@ abstract class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, R
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
+
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
+    insert
+      .value(_.id, recipe.id)
+      .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.name, recipe.name)
+      .value(_.props, recipe.props)
+      .value(_.timestamp, recipe.timestamp)
+      .future()
+  }
+
 
   // Now say you want to get a Recipe by author.
   // author is an Index, you can now use it in a "where" clause.

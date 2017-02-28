@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Primitive
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.tagobjects.Retryable
@@ -99,7 +99,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
 
     eventually(timeout(ttl + granularity)) {
       val futureResults = fetchQuery.bind(row.pkey).one()
-      futureResults.successful { results =>
+      whenReady(futureResults) { results =>
         results.isEmpty shouldBe true
       }
     }

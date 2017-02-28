@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.query
+package com.outworkers.phantom.builder.query.engine
 
-import com.outworkers.diesel.engine.query.AbstractQuery
 import com.outworkers.phantom.connectors.KeySpaceCQLQuery
 
 case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) with KeySpaceCQLQuery {
-  def create(str: String): CQLQuery = CQLQuery(str)
+  def instance(str: String): CQLQuery = CQLQuery(str)
 
   override def toString: String = queryString
 }
 
 object CQLQuery {
+
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"

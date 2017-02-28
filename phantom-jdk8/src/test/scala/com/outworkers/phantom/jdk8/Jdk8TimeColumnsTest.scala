@@ -17,8 +17,8 @@ package com.outworkers.phantom.jdk8
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8.tables.{Jdk8Row, Jdk8Database$, _}
-import com.outworkers.util.testing._
+import com.outworkers.phantom.jdk8.tables.{Jdk8Row, Jdk8Database, _}
+import com.outworkers.util.samplers._
 
 class Jdk8TimeColumnsTest extends PhantomSuite {
 
@@ -39,7 +39,7 @@ class Jdk8TimeColumnsTest extends PhantomSuite {
         select <- Jdk8Database.primitivesJdk8.select.where(_.pkey eqs row.pkey).one()
       } yield select
 
-      chain successful {
+      whenReady(chain) {
         res => res.value shouldEqual row
       }
     }
@@ -52,8 +52,8 @@ class Jdk8TimeColumnsTest extends PhantomSuite {
         select <- Jdk8Database.optionalPrimitivesJdk8.select.where(_.pkey eqs row.pkey).one()
       } yield select
 
-      chain successful {
-        res => res.value shouldEqual row
+      whenReady(chain) { res =>
+        res.value shouldEqual row
       }
     }
   }

@@ -194,7 +194,6 @@ package object finagle {
       * This is not suitable for big results set
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-      * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
@@ -280,7 +279,7 @@ package object finagle {
   implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList) extends AnyVal {
     def execute()(implicit session: Session, executor: Executor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
-        twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate().queryString))
+        twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))
       }))
     }
   }
@@ -298,7 +297,7 @@ package object finagle {
       namingStrategy: NamingStrategy
     ): Future[ResultSet] = {
       if (query.table.secondaryKeys.isEmpty) {
-        twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate().queryString))
+        twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
       } else {
         query.execute() flatMap {
           res => query.indexList(keySpace.name).execute() map { _ =>

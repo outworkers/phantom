@@ -19,7 +19,10 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
+import org.joda.time.DateTimeZone
+
+import scala.util.Try
 
 class SelectFunctionsTesting extends PhantomSuite {
 
@@ -41,9 +44,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      shouldNotThrow {
-        new DateTime(res.value / 1000)
-      }
+      Try(new DateTime(res.value / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
     }
   }
 
@@ -79,6 +80,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
     val timeToLive = 20
 
+    val potentialList = List(timeToLive - 2, timeToLive - 1, timeToLive)
+
     val chain = for {
       _ <- database.timeuuidTable.store(record).ttl(timeToLive).future()
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
@@ -89,9 +92,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      shouldNotThrow {
-        res.value.value shouldEqual timeToLive
-      }
+      potentialList should contain (res.value.value)
     }
   }
 }

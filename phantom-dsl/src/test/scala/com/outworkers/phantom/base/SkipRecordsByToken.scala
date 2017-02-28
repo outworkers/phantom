@@ -18,7 +18,7 @@ package com.outworkers.phantom.base
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Article, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.concurrent.{Future, blocking}
 
@@ -65,11 +65,9 @@ class SkipRecordsByToken extends PhantomSuite {
       next <- Articles.select.where(_.id gtToken one.value.id).fetch
     } yield next
 
-    result successful {
-      r => {
-        info (s"got exactly ${r.size} records")
-        r.size shouldEqual 3
-      }
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual 3
     }
   }
 
@@ -83,12 +81,9 @@ class SkipRecordsByToken extends PhantomSuite {
       next <- Articles.select.where(_.id eqsToken articles.headOption.value.id).fetch
     } yield next
 
-
-    result successful {
-      r => {
-        info (s"got exactly ${r.size} records")
-        r.size shouldEqual 1
-      }
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual 1
     }
   }
 
@@ -103,11 +98,9 @@ class SkipRecordsByToken extends PhantomSuite {
     } yield next
 
 
-    result successful {
-      r => {
-        info (s"got exactly ${r.size} records")
-        r.size shouldEqual 3
-      }
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual 3
     }
   }
 
@@ -122,11 +115,9 @@ class SkipRecordsByToken extends PhantomSuite {
     } yield next
 
 
-    result successful {
-      r => {
-        info (s"got exactly ${r.size} records")
-        r.size shouldEqual (articles.size - 1)
-      }
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual (articles.size - 1)
     }
   }
 
@@ -140,11 +131,9 @@ class SkipRecordsByToken extends PhantomSuite {
     } yield next
 
 
-    result successful {
-      r => {
-        info (s"got exactly ${r.size} records")
-        r.size shouldEqual (articles.size - 1)
-      }
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual (articles.size - 1)
     }
   }
 

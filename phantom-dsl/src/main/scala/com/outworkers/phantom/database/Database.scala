@@ -18,9 +18,9 @@ package com.outworkers.phantom.database
 import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{CQLQuery, CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
-import com.outworkers.phantom.macros.{DatabaseHelper, NamingStrategy}
+import com.outworkers.phantom.builder.query.{CreateQuery, ExecutableStatementList}
+import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
+import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
@@ -36,8 +36,6 @@ abstract class Database[
   implicit val space: KeySpace = KeySpace(connector.name)
 
   implicit lazy val session: Session = connector.session
-
-  implicit def naming: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
 

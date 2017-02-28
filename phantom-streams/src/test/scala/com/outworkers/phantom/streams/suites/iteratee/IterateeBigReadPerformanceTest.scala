@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.concurrent.ScalaFutures
 
 class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
@@ -31,12 +31,10 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       r => counter.incrementAndGet()
     }
 
-    result.successful {
-      query => {
-        val count = counter.getAndIncrement()
-        info(s"Done, reading: $count elements from the table.")
-        count shouldEqual 2000000
-      }
+    whenReady(result) { query =>
+      val count = counter.getAndIncrement()
+      info(s"Done, reading: $count elements from the table.")
+      count shouldEqual 2000000
     }
   }
 }

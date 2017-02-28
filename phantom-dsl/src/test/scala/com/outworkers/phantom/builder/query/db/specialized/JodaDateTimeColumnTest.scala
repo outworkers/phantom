@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class JodaDateTimeColumnTest extends PhantomSuite {
 
@@ -31,16 +31,14 @@ class JodaDateTimeColumnTest extends PhantomSuite {
     val row = gen[JodaRow]
 
     val chain = for {
-      store <- TestDatabase.primitivesJoda.store(row).future()
-      select <- TestDatabase.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      store <- database.primitivesJoda.store(row).future()
+      select <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield select
 
-    chain successful {
-      res => {
-        res.value.pkey shouldEqual row.pkey
-        res.value.intColumn shouldEqual row.intColumn
-        res.value.timestamp shouldEqual row.timestamp
-      }
+    whenReady(chain) { res =>
+      res.value.pkey shouldEqual row.pkey
+      res.value.intColumn shouldEqual row.intColumn
+      res.value.timestamp shouldEqual row.timestamp
     }
   }
 }

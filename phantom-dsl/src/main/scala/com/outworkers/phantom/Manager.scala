@@ -23,9 +23,7 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object Manager {
 
-  private[this] lazy val taskExecutor = Executors.newCachedThreadPool()
-
-  implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
+  implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
   val logger = LoggerFactory.getLogger("com.outworkers.phantom")
 
@@ -35,6 +33,5 @@ object Manager {
     */
   def shutdown(): Unit = {
     logger.info("Shutting down executors")
-    taskExecutor.shutdown()
   }
 }
