@@ -115,7 +115,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *
     * We could auto-generate this order but we wouldn't be making false assumptions about the desired ordering.
     */
-  def inferPrimaryKey(tableName: String, table: Type, columns: Seq[Type]): Tree = {
+  def inferPrimaryKey(tableName: Tree, table: Type, columns: Seq[Type]): Tree = {
     val partitionKeys = filterColumns[PartitionKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
@@ -189,7 +189,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     if (members.isEmpty) {
       NoMatch
     } else {
-
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
         logger.info(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
@@ -344,9 +343,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     *               contain column definitions, determined by [[determineReferenceTable()]] above.
     * @return
     */
-  def extractTableName(source: Type): String =  {
+  def extractTableName(source: Type): Tree = {
     val value = source.typeSymbol.name.toTermName.decodedName.toString
-    value.charAt(0).toLower + value.drop(1)
+
+    q"""
+      ${value.charAt(0).toLower + value.drop(1)}
+    """
   }
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {

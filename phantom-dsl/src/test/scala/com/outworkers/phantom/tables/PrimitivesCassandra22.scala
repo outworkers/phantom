@@ -37,8 +37,6 @@ abstract class PrimitivesCassandra22 extends CassandraTable[PrimitivesCassandra2
 
   object date extends LocalDateColumn(this)
 
-  override val tableName = "PrimitivesCassandra22"
-
   def store(row: PrimitiveCassandra22): InsertQuery.Default[PrimitivesCassandra22, PrimitiveCassandra22] = {
     insert
       .value(_.pkey, row.pkey)

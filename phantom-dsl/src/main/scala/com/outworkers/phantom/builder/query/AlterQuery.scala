@@ -23,6 +23,7 @@ import com.outworkers.phantom.builder.query.options.{TablePropertyClause, WithBo
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.macros.NamingStrategy
 
 class AlterQuery[
   Table <: CassandraTable[Table, _],
@@ -77,11 +78,17 @@ class AlterQuery[
    * @param keySpace The implicit keyspace definition to use.
    * @return An alter query with a DROP TABLE instruction encoded in the query string.
    */
-  final def drop()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
+  final def drop()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): AlterQuery[Table, Record, Status, Chain] = {
     new AlterQuery(table, QueryBuilder.Alter.dropTable(table.tableName, keySpace.name), options)
   }
 
-  final def dropIfExists()(implicit keySpace: KeySpace): AlterQuery[Table, Record, Status, Chain] = {
+  final def dropIfExists()(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): AlterQuery[Table, Record, Status, Chain] = {
     new AlterQuery(table, QueryBuilder.Alter.dropTableIfExist(table.tableName, keySpace.name), options)
   }
 
@@ -147,7 +154,8 @@ object AlterQuery {
    * @return A raw ALTER query, without any further options set on it.
    */
   def apply[T <: CassandraTable[T, _], R](table: T)(
-    implicit keySpace: KeySpace
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
   ): AlterQuery.Default[T, R] = {
     new AlterQuery[T, R, Unspecified, WithUnchainned](
       table,
@@ -161,7 +169,8 @@ object AlterQuery {
     R,
     NewType
   ](table: T, select: T => AbstractColumn[R], newType: Primitive[NewType])(
-    implicit keySpace: KeySpace
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
   ): AlterQuery.Default[T, R] = {
 
     val qb = QueryBuilder.Alter.alter(
@@ -179,7 +188,8 @@ object AlterQuery {
     T <: CassandraTable[T, _],
     R
   ](table: T, select: T => AbstractColumn[R], newName: String)(
-    implicit keySpace: KeySpace
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
   ): AlterQuery.Default[T, R] = {
 
     val qb = QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)

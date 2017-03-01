@@ -33,9 +33,9 @@ This is a table of the available modules for the various Scala versions. Not all
 | phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
 | phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>  |
 | phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>   |
-| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
+| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 | phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>no</span>   |
 
 #### Phantom Pro subscription edition

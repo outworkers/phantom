@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.{ListColumn, MapColumn, SetColumn}
 import com.outworkers.phantom.dsl._
 
-sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedCollectionsTable, TestRow] {
+abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
@@ -36,12 +36,10 @@ sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedColle
   object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this)
-}
 
-abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable with RootConnector {
-  override val tableName = "indexed_collections"
+  override def tableName(implicit strategy: NamingStrategy): String = "indexed_collections"
 
-  def store(row: TestRow): InsertQuery.Default[ConcreteIndexedCollectionsTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[IndexedCollectionsTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)
@@ -55,7 +53,7 @@ abstract class ConcreteIndexedCollectionsTable extends IndexedCollectionsTable w
 }
 
 
-sealed class IndexedEntriesTable extends CassandraTable[ConcreteIndexedEntriesTable, TestRow] {
+abstract class IndexedEntriesTable extends CassandraTable[IndexedEntriesTable, TestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
@@ -70,12 +68,10 @@ sealed class IndexedEntriesTable extends CassandraTable[ConcreteIndexedEntriesTa
   object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this) with Index with Entries
-}
 
-abstract class ConcreteIndexedEntriesTable extends IndexedEntriesTable with RootConnector {
-  override val tableName = "indexed_collections"
+  override def tableName(implicit strategy: NamingStrategy): String = "indexed_collections"
 
-  def store(row: TestRow): InsertQuery.Default[ConcreteIndexedEntriesTable, TestRow] = {
+  def store(row: TestRow): InsertQuery.Default[IndexedEntriesTable, TestRow] = {
     insert
       .value(_.key, row.key)
       .value(_.list, row.list)

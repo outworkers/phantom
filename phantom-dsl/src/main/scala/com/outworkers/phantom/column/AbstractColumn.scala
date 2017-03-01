@@ -20,6 +20,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import scala.reflect.runtime.{currentMirror => cm}
 
 trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
+  self =>
 
   /**
     * Provides the serialisation mechanism of a value to a CQL string.

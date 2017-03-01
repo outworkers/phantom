@@ -30,6 +30,7 @@ import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQue
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
+import com.outworkers.phantom.macros.NamingStrategy
 import org.joda.time.Seconds
 import shapeless.HList
 
@@ -289,7 +290,12 @@ package object finagle {
     Status <: ConsistencyBound
   ](val query: CreateQuery[Table, Record, Status]) extends AnyVal {
 
-    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
+    def execute()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: Executor,
+      namingStrategy: NamingStrategy
+    ): Future[ResultSet] = {
       if (query.table.secondaryKeys.isEmpty) {
         twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
       } else {
@@ -336,6 +342,7 @@ package object finagle {
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param ev The implicit limit for the query.
+      * @param strategy The naming strategy to use.
       * @param executor The implicit Java executor.
       * @return
       */
@@ -344,6 +351,7 @@ package object finagle {
       implicit session: Session,
       keySpace: KeySpace,
       ev: Limit =:= Unlimited,
+      strategy: NamingStrategy,
       executor: Executor
     ): Future[Option[Record]] = {
       val enforceLimit = if (select.count) LimitedPart.empty else select.limitedPart append QueryBuilder.limit("1")

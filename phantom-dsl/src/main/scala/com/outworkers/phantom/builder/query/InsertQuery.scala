@@ -25,6 +25,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.?
+import com.outworkers.phantom.macros.NamingStrategy
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
@@ -42,7 +43,7 @@ class InsertQuery[
   private[this] val usingPart: UsingPart = UsingPart.empty,
   private[this] val lightweightPart: LightweightPart = LightweightPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-) extends ExecutableStatement with Batchable {
+)(implicit strategy: NamingStrategy) extends ExecutableStatement with Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
     new InsertJsonQuery(
@@ -243,7 +244,10 @@ object InsertQuery {
 
   type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified, HNil]
 
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T)(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): InsertQuery.Default[T, R] = {
     new InsertQuery(
       table,
       QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName))

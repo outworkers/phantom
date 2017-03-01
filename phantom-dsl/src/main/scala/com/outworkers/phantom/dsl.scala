@@ -34,12 +34,13 @@ import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.DefaultVersions
+import com.outworkers.phantom.macros.NamingStrategy
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 
-package object dsl extends ImplicitMechanism with CreateImplicits
+object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with UsingClauseOperations
@@ -47,6 +48,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -112,6 +114,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
+  type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
 
@@ -120,7 +123,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
-
 
   object ? extends PrepareMark
   case object Batch extends Batcher
@@ -210,8 +212,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class CounterOperations[
-    Owner <: CassandraTable[Owner, Record],
-    Record
+  Owner <: CassandraTable[Owner, Record],
+  Record
   ](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
@@ -252,4 +254,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
+
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 }

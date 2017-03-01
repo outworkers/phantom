@@ -27,7 +27,7 @@ class CounterTableTest extends CassandraTable[ConcreteCounterTableTest, CounterR
 }
 
 abstract class ConcreteCounterTableTest extends CounterTableTest with RootConnector {
-  override val tableName = "counter_column_tests"
+  override def tableName(implicit strategy: NamingStrategy): String = "counter_column_tests"
 }
 
 class SecondaryCounterTable extends CassandraTable[ConcreteSecondaryCounterTable, CounterRecord] {
@@ -36,7 +36,7 @@ class SecondaryCounterTable extends CassandraTable[ConcreteSecondaryCounterTable
 }
 
 abstract class ConcreteSecondaryCounterTable extends SecondaryCounterTable with RootConnector {
-  override val tableName = "secondary_column_tests"
+  override def tableName(implicit strategy: NamingStrategy): String = "secondary_column_tests"
 }
 
 class BrokenCounterTableTest extends CassandraTable[ConcreteBrokenCounterTableTest, CounterRecord] {
@@ -47,6 +47,6 @@ class BrokenCounterTableTest extends CassandraTable[ConcreteBrokenCounterTableTe
 }
 
 abstract class ConcreteBrokenCounterTableTest extends BrokenCounterTableTest with RootConnector {
-  override val tableName = "counter_column_tests"
+  override def tableName(implicit strategy: NamingStrategy): String = "counter_column_tests"
 }
 
