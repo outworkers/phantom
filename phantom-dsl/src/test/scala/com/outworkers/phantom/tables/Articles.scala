@@ -18,6 +18,7 @@ package com.outworkers.phantom.tables
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.NamingStrategy
 
 case class Article(
   id: UUID,

@@ -49,7 +49,10 @@ object TruncateQuery {
 
   type Default[T <: CassandraTable[T, _], R] = TruncateQuery[T, R, Unspecified]
 
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T)(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): TruncateQuery.Default[T, R] = {
     new TruncateQuery(
       table,
       QueryBuilder.truncate(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),

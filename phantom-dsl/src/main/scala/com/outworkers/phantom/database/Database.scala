@@ -19,8 +19,8 @@ import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.{CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
-import com.outworkers.phantom.macros.DatabaseHelper
+import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
+import com.outworkers.phantom.macros.{DatabaseHelper, NamingStrategy}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
@@ -97,7 +97,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autodrop(): ExecutableStatementList = {
+  private[phantom] def autodrop()(implicit strategy: NamingStrategy): ExecutableStatementList = {
     new ExecutableStatementList(tables.toSeq.map {
       table => table.alter().drop().qb
     })
@@ -109,7 +109,10 @@ abstract class Database[
  *
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
-  def dropAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+  def dropAsync()(
+    implicit ex: ExecutionContextExecutor,
+    strategy: NamingStrategy
+  ): Future[Seq[ResultSet]] = {
     autodrop().future()
   }
 
@@ -121,7 +124,10 @@ abstract class Database[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
-  def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def drop(timeout: FiniteDuration = defaultTimeout)(
+    implicit ex: ExecutionContextExecutor,
+    strategy: NamingStrategy
+  ): Seq[ResultSet] = {
     Await.result(dropAsync(), timeout)
   }
 
@@ -137,7 +143,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autotruncate(): ExecutableStatementList = {
+  private[phantom] def autotruncate()(implicit strategy: NamingStrategy): ExecutableStatementList = {
     new ExecutableStatementList(tables.toSeq.map(_.truncate().qb))
   }
 
@@ -149,7 +155,10 @@ abstract class Database[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
-  def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def truncate(timeout: FiniteDuration = defaultTimeout)(
+    implicit ex: ExecutionContextExecutor,
+    strategy: NamingStrategy
+  ): Seq[ResultSet] = {
     Await.result(truncateAsync(), timeout)
   }
 
@@ -159,7 +168,10 @@ abstract class Database[
  *
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
-  def truncateAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+  def truncateAsync()(
+    implicit ex: ExecutionContextExecutor,
+    strategy: NamingStrategy
+  ): Future[Seq[ResultSet]] = {
     autotruncate().future()
   }
 }

@@ -34,22 +34,21 @@ import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.DefaultVersions
-import com.outworkers.phantom.macros.{LowPriorityNamingImplicits, NamingStrategy}
+import com.outworkers.phantom.macros.NamingStrategy
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 
-package object dsl extends ImplicitMechanism with CreateImplicits
+object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with UsingClauseOperations
   with KeySpaceConstruction
-  with DeleteImplicits
-  with LowPriorityNamingImplicits {
+  with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
-  type NamingStrategy = phantom.macros.NamingStrategy
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -213,8 +212,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class CounterOperations[
-    Owner <: CassandraTable[Owner, Record],
-    Record
+  Owner <: CassandraTable[Owner, Record],
+  Record
   ](val col: CounterColumn[Owner, Record]) extends AnyVal {
     final def +=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))

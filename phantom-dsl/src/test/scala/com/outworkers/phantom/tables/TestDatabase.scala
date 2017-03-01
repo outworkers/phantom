@@ -71,7 +71,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
-  object testTable extends ConcreteTestTable with Connector
+  object testTable extends TestTable with Connector
   object timeSeriesTable extends TimeSeriesTable with Connector
 
   object primaryCollectionsTable extends ConcretePrimaryCollectionTable with Connector
