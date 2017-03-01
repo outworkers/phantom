@@ -17,13 +17,11 @@ package com.outworkers.phantom.example.advanced
 
 import java.util.UUID
 
-import com.datastax.driver.core.{ResultSet, Row}
+import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.connectors.RootConnector
-import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics.Recipe
-import com.outworkers.phantom.{CassandraTable => _, _}
-import org.joda.time.DateTime
+import com.outworkers.phantom.{CassandraTable => _}
 
 import scala.concurrent.{Future => ScalaFuture}
 
@@ -34,9 +32,9 @@ import scala.concurrent.{Future => ScalaFuture}
 // You can seal the class and only allow importing the companion object.
 // It's not directly meant for end user consumption anyway, the correct approach
 // Keep reading for examples.
-sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Recipe] {
+abstract class AdvancedRecipes extends CassandraTable[AdvancedRecipes, Recipe] with RootConnector {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey {
+  object id extends UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -53,12 +51,8 @@ sealed class AdvancedRecipes extends CassandraTable[ConcreteAdvancedRecipes, Rec
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder
-}
 
-
-abstract class ConcreteAdvancedRecipes extends AdvancedRecipes with RootConnector {
-
-  def insertRecipe(recipe: Recipe): ScalaFuture[ResultSet] = {
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
     insert.value(_.id, recipe.id)
       .value(_.author, recipe.author)
       .value(_.title, recipe.title)

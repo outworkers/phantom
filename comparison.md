@@ -291,13 +291,11 @@ but at the same time retain the powerful embedded query EDSL.
 
 Let's sum up the points that we tried to make here in two key paragraphs.
 
-- Phantom does indeed make it slightly less verbose to extend things like TypeCodec. But how often do you find yourself dealing with that at application level layer? TypeCodec is not really the valid approach anyway, you have to think more in terms of Cassandra data types, why would you register a TypeCodec when you could use a simple map?
-Phantom requires minimal boilerplate around defining the table DSL and by nature doesn't really work well with sharing table columns. It can be done, but it's not the most beautiful code, nor is it the worst.
-Overall
+- Phantom used to make it less interesting to extend support for custom types, however this is now trivially
+done with `Primitive.derive`, which allows users to support new types by leveraging existing primitives.
 
-- Quill is an excellence piece of  software.
-It's better than phantom strictly at query generation, there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
-It's a vastly inferior tool at the application layer, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
-Phantom is far more mature, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
+- Quill is an excellence piece of software and it has theoretically less boilerplate than phantom. there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
+It's a vastly inferior tool at the application layer, and in supports such a small subset of Cassandra features it's barely usable for anything real world, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
+Phantom is far more mature, feature rich, battle tested, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
 
-- Phantom is a lot easier to adopt and learn, simply as it doesn't introduce any new terminology. The mapping DSL and the `Database` object are all you need to know.
+- Phantom is a lot easier to adopt and learn, simply as it doesn't introduce any new terminology. The mapping DSL and the `Database` object are all you need to know, so the learning curve is minimal.

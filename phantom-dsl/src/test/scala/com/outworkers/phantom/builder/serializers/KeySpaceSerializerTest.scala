@@ -17,9 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.dsl._
-import shapeless.{Generic, HList, HNil, LabelledGeneric}
-
-import scala.util.{Failure, Success, Try}
+import com.outworkers.util.samplers._
 
 class KeySpaceSerializerTest extends QuerySerializationTest {
 
@@ -33,6 +31,11 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
       " AND DURABLE_WRITES = true"
 
     query shouldEqual expected
+  }
+
+  it should "create a keyspace query using QueryBuilder.keyspace" in {
+    val sample = gen[KeySpace]
+    QueryBuilder.keyspace(sample).ifNotExists().queryString shouldEqual s"CREATE KEYSPACE IF NOT EXISTS ${sample.name}"
   }
 
   it should "create allow specifying a simple strategy " in {

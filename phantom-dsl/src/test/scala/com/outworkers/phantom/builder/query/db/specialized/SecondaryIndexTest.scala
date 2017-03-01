@@ -19,7 +19,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class SecondaryIndexTest extends PhantomSuite {
 
@@ -36,7 +36,7 @@ class SecondaryIndexTest extends PhantomSuite {
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
     } yield (select, select2)
 
-    chain.successful {
+    whenReady(chain) {
       case (primary, secondary) => {
         info("Querying by primary key should return the record")
         primary.value shouldEqual sample
@@ -58,7 +58,7 @@ class SecondaryIndexTest extends PhantomSuite {
       updated <- database.secondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
     } yield (selected, updated)
 
-    chain.successful {
+    whenReady(chain) {
       case (primary, secondary) => {
 
         info("Querying by primary key should return the record")
@@ -77,7 +77,7 @@ class SecondaryIndexTest extends PhantomSuite {
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield select2
 
-    chain.successful {
+    whenReady(chain) {
       res => res.value shouldEqual sample
     }
   }
@@ -92,7 +92,9 @@ class SecondaryIndexTest extends PhantomSuite {
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain.failed) { r =>
+      r shouldBe an [InvalidQueryException]
+    }
   }
 
   it should "throw an error when deleting a record by its secondary index" in {
@@ -104,7 +106,9 @@ class SecondaryIndexTest extends PhantomSuite {
       select3 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield (select2, select3)
 
-    chain.failing[InvalidQueryException]
+    whenReady(chain.failed) { r =>
+      r shouldBe an [InvalidQueryException]
+    }
   }
 
 }

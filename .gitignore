@@ -37,3 +37,7 @@ project/plugins/project/
 
 # MacOS X specific
 .DS_Store
+
+# Atom editor specific
+_config.yml
+project/project/

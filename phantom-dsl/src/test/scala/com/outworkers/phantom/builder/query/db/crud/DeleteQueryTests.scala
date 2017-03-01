@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class DeleteQueryTests extends PhantomSuite {
 
@@ -37,11 +37,9 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
-      }
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
+      r2 shouldBe empty
     }
   }
 
@@ -55,11 +53,9 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
-        r2 shouldBe empty
-      }
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
+      r2 shouldBe empty
     }
   }
 
@@ -73,13 +69,11 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    chain successful {
-      case (r1, r2) => {
-        r1.value shouldEqual row
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
 
-        info("The row should not have been deleted as the condition was not met")
-        r2 shouldBe defined
-      }
+      info("The row should not have been deleted as the condition was not met")
+      r2 shouldBe defined
     }
   }
 
@@ -96,13 +90,11 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    whenReady(chain) {
-      case (r1, r2) => {
-        r1.value shouldEqual row
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
 
-        info("The row should not have been deleted as the condition was not met")
-        r2 shouldBe empty
-      }
+      info("The row should not have been deleted as the condition was not met")
+      r2 shouldBe empty
     }
   }
 
@@ -117,13 +109,11 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    whenReady(chain) {
-      case (r1, r2) => {
-        r1.value shouldEqual row
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
 
-        info("The row should have been deleted as the delete timestamp was higher than the insert ")
-        r2 shouldBe empty
-      }
+      info("The row should have been deleted as the delete timestamp was higher than the insert ")
+      r2 shouldBe empty
     }
   }
 
@@ -138,13 +128,11 @@ class DeleteQueryTests extends PhantomSuite {
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
-    whenReady(chain) {
-      case (r1, r2) => {
-        r1.value shouldEqual row
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
 
-        info("The row should not have been deleted as the delete timestamp was lower than the insert timestamp")
-        r2.value shouldBe row
-      }
+      info("The row should not have been deleted as the delete timestamp was lower than the insert timestamp")
+      r2.value shouldBe row
     }
   }
 

@@ -16,8 +16,8 @@
 package com.outworkers.phantom.builder.primitives
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.query.CQLQuery
-import com.outworkers.util.testing._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.util.samplers._
 
 case class Record(value: String)
 

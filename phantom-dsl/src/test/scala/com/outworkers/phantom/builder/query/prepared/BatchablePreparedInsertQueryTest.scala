@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class BatchablePreparedInsertQueryTest extends PhantomSuite {
 

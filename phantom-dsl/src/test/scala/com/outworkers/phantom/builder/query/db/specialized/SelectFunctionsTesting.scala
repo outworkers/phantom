@@ -19,8 +19,10 @@ import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
-import com.twitter.conversions.time._
+import com.outworkers.util.samplers._
+import org.joda.time.DateTimeZone
+
+import scala.util.Try
 
 class SelectFunctionsTesting extends PhantomSuite {
 
@@ -40,14 +42,9 @@ class SelectFunctionsTesting extends PhantomSuite {
         .where(_.url eqs record.url).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-          new DateTime(res.value.microseconds.inMillis)
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      Try(new DateTime(res.value / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
     }
   }
 
@@ -60,13 +57,8 @@ class SelectFunctionsTesting extends PhantomSuite {
         .and(_.id eqs record.id).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 
@@ -79,19 +71,16 @@ class SelectFunctionsTesting extends PhantomSuite {
         .and(_.id eqs record.id).one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 
   it should "retrieve the TTL of a field from Cassandra" in {
     val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
     val timeToLive = 20
+
+    val potentialList = List(timeToLive - 2, timeToLive - 1, timeToLive)
 
     val chain = for {
       _ <- database.timeuuidTable.store(record).ttl(timeToLive).future()
@@ -101,14 +90,9 @@ class SelectFunctionsTesting extends PhantomSuite {
         .one()
     } yield timestamp
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        shouldNotThrow {
-          info(res.value.toString)
-          res.value.value shouldEqual timeToLive
-        }
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      potentialList should contain (res.value.value)
     }
   }
 }

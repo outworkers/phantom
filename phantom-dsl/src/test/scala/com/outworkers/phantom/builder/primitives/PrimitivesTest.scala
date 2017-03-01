@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.{FlatSpec, Matchers}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class PrimitivesTest extends FlatSpec with Matchers {
 

@@ -19,6 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
@@ -248,7 +249,7 @@ class SelectQuery[
 
 
   @implicitNotFound("A limit was already specified for this query.")
-  override def limit(limit: Int)(
+  def limit(limit: Int)(
     implicit ev: Limit =:= Unlimited
   ): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
     new SelectQuery(

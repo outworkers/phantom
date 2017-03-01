@@ -18,9 +18,9 @@ package com.outworkers.phantom.suites
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{Output, ThriftDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
 import com.outworkers.phantom.dsl.context
+import com.outworkers.util.samplers._
 
 trait ThriftTestSuite extends PhantomSuite {
 
@@ -29,12 +29,12 @@ trait ThriftTestSuite extends PhantomSuite {
     ThriftDatabase.create()
   }
 
-  type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
-  val ThriftTest = com.outworkers.phantom.thrift.ThriftTest
+  type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
+  val ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
 
-  implicit object OutputSample extends Sample[Output] {
-    def sample: Output = {
-      Output(
+  implicit object OutputSample extends Sample[ThriftRecord] {
+    def sample: ThriftRecord = {
+      ThriftRecord(
         id = gen[UUID],
         name = gen[String],
         struct = gen[ThriftTest],

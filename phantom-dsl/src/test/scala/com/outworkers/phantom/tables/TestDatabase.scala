@@ -17,9 +17,10 @@ package com.outworkers.phantom.tables
 
 import java.util.UUID
 
-import com.datastax.driver.core.{PoolingOptions, SocketOptions}
-import com.outworkers.phantom.connectors
+import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
+import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
@@ -47,10 +48,10 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object indexedEntriesTable extends ConcreteIndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with Connector
-  object optionalPrimitives extends ConcreteOptionalPrimitives with Connector
+  object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
-  object primitivesJoda extends ConcretePrimitivesJoda with Connector
+  object primitivesJoda extends PrimitivesJoda with Connector
 
   object primitivesCassandra22 extends PrimitivesCassandra22 with Connector
   object optionalPrimitivesCassandra22 extends OptionalPrimitivesCassandra22 with Connector
@@ -70,21 +71,19 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
   object testTable extends ConcreteTestTable with Connector
-  object timeSeriesTable extends ConcreteTimeSeriesTable with Connector {
-    val testUUID = UUID.randomUUID()
-  }
+  object timeSeriesTable extends TimeSeriesTable with Connector
 
   object primaryCollectionsTable extends ConcretePrimaryCollectionTable with Connector
 
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector
   object multipleKeysTable$ extends ConcreteMultipleKeys with Connector
-  object timeuuidTable extends ConcreteTimeUUIDTable with Connector
+  object timeuuidTable extends TimeUUIDTable with Connector
 
   object events extends ConcreteEvents with Connector
 
   object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with Connector
-  object optionalIndexesTable extends ConcreteOptionalSecondaryIndexTable with Connector
+  object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
   object tuple2Table extends ConcreteTupleColumnTable with Connector
   object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
   object tupleCollectionsTable extends ConcreteTupleCollectionsTable with Connector
@@ -100,7 +99,12 @@ object Connector {
         .setConnectTimeoutMillis(20000)
         .setReadTimeoutMillis(20000)
       )
-    ).noHeartbeat().keySpace("phantom")
+    ).noHeartbeat().keySpace(
+      "phantom",
+      KeySpaceSerializer("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
 
 }
 

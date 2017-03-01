@@ -16,21 +16,31 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.twitter.util.{Future => TwitterFuture}
 import com.outworkers.phantom.builder.query.db.ordering.TimeSeriesTest
-import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{Future => ScalaFuture}
+import scala.concurrent.Future
 
 class RelationalOperatorsTest extends PhantomSuite {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val numRecords = 100
-  val records: Seq[TimeSeriesRecord] = TimeSeriesTest.genSequentialRecords(numRecords)
+  val records: Seq[TimeSeriesRecord] = genSequentialRecords(numRecords)
+
+
+  def genSequentialRecords(number: Int, ref: UUID = gen[UUID]): Seq[TimeSeriesRecord] = {
+    val durationOffset = 1000
+
+    (1 to number).map { i =>
+      val record = gen[TimeSeriesRecord]
+      record.copy(
+        id = ref,
+        timestamp = record.timestamp.withDurationAdded(durationOffset, i))
+    }
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -39,7 +49,7 @@ class RelationalOperatorsTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      inserts <- TimeSeriesTest.storeRecords(records)
+      inserts <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
     } yield inserts
 
     whenReady(chain) { inserts =>
@@ -188,14 +198,8 @@ class RelationalOperatorsTest extends PhantomSuite {
     verifyResults(futureResults, expected)
   }
 
-  def verifyResults(futureResults: ScalaFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
-      results.toSet shouldEqual expected.toSet
-    }
-  }
-
-  def verifyResults(futureResults: TwitterFuture[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
-    futureResults.successful { results =>
+  def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
+    whenReady(futureResults) { results =>
       results.toSet shouldEqual expected.toSet
     }
   }

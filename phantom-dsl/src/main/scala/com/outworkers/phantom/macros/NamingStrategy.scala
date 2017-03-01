@@ -16,7 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.google.common.base.CaseFormat
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 trait NamingStrategy {
   def strategy: String
@@ -85,6 +85,4 @@ object NamingStrategy {
   }
 
   object SnakeCase extends SnakeCase
-
-  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 }

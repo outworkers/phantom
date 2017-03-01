@@ -15,65 +15,60 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.{Output, ThriftDatabase}
-import com.outworkers.util.testing._
-import com.twitter.scrooge.CompactThriftSerializer
+import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
+import com.outworkers.util.samplers._
+import com.outworkers.util.testing.twitter._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.thrift.ThriftPrimitive
+import com.outworkers.phantom.thrift._
+import com.outworkers.phantom.thrift.models.ThriftTest
 import org.scalatest.FlatSpec
 
 class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
 
   val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
 
-  implicit object SamplePrimitive extends ThriftPrimitive[ThriftTest] {
-    val serializer = CompactThriftSerializer(ThriftTest)
-  }
+  implicit val samplePrimitive = thriftPrimitive[ThriftTest]
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val chain = for {
       store <- ThriftIndexedTable.store(sample).future()
       get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
-    chain.successful {
-      res => {
-        res.value.id shouldEqual sample.id
-        res.value.name shouldEqual sample.name
-        res.value.struct shouldEqual sample.struct
-        res.value.optThrift shouldEqual sample.optThrift
-        res.value.thriftList shouldEqual sample.thriftList
-        res.value.thriftMap shouldEqual sample.thriftMap
-        res.value.thriftSet shouldEqual sample.thriftSet
+    whenReady(chain) { res =>
+      res.value.id shouldEqual sample.id
+      res.value.name shouldEqual sample.name
+      res.value.struct shouldEqual sample.struct
+      res.value.optThrift shouldEqual sample.optThrift
+      res.value.thriftList shouldEqual sample.thriftList
+      res.value.thriftMap shouldEqual sample.thriftMap
+      res.value.thriftSet shouldEqual sample.thriftSet
 
-        res.value shouldEqual sample
-      }
+      res.value shouldEqual sample
     }
   }
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct with Twitter futures" in {
-    val sample = gen[Output]
+    val sample = gen[ThriftRecord]
 
     val chain = for {
       store <- ThriftIndexedTable.store(sample).execute()
       get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).get()
     } yield get
 
-    chain.successful {
-      res => {
-        res.value.id shouldEqual sample.id
-        res.value.name shouldEqual sample.name
-        res.value.struct shouldEqual sample.struct
-        res.value.optThrift shouldEqual sample.optThrift
-        res.value.thriftList shouldEqual sample.thriftList
-        res.value.thriftMap shouldEqual sample.thriftMap
-        res.value.thriftSet shouldEqual sample.thriftSet
+    whenReady(chain.asScala) { res =>
+      res.value.id shouldEqual sample.id
+      res.value.name shouldEqual sample.name
+      res.value.struct shouldEqual sample.struct
+      res.value.optThrift shouldEqual sample.optThrift
+      res.value.thriftList shouldEqual sample.thriftList
+      res.value.thriftMap shouldEqual sample.thriftMap
+      res.value.thriftSet shouldEqual sample.thriftSet
 
-        res.value shouldEqual sample
-      }
+      res.value shouldEqual sample
     }
   }
 }

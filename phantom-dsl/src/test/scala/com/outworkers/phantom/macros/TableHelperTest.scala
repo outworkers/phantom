@@ -19,7 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
 import org.scalamock.scalatest.MockFactory
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 case class Ev2(
   id: UUID,

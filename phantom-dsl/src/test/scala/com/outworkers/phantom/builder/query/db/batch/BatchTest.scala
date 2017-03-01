@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.db.batch
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
 import org.joda.time.DateTime
@@ -113,10 +113,8 @@ class BatchTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 3
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 3
     }
   }
 
@@ -136,10 +134,8 @@ class BatchTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 1
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 1
     }
   }
 
@@ -159,10 +155,8 @@ class BatchTest extends PhantomSuite {
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
-    chain.successful {
-      res => {
-        res.value shouldEqual 1
-      }
+    whenReady(chain) { res =>
+      res.value shouldEqual 1
     }
   }
 
@@ -181,7 +175,7 @@ class BatchTest extends PhantomSuite {
 
     val batch = Batch.logged.add(statement3).add(statement4)
 
-    val w = for {
+    val chain = for {
       s1 <- database.primitivesJoda.store(row).future()
       s3 <- database.primitivesJoda.store(row3).future()
       b <- batch.future()
@@ -189,11 +183,9 @@ class BatchTest extends PhantomSuite {
       deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
 
-    w successful {
-      case (res1, res2) => {
-        res1.value shouldEqual row2
-        res2 shouldBe empty
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row2
+      res2 shouldBe empty
     }
   }
 
@@ -217,10 +209,8 @@ class BatchTest extends PhantomSuite {
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
-    chain.successful {
-      res => {
-        res.value.intColumn shouldEqual (row.intColumn + 20)
-      }
+    whenReady(chain) { res =>
+      res.value.intColumn shouldEqual (row.intColumn + 20)
     }
   }
 
@@ -250,10 +240,8 @@ class BatchTest extends PhantomSuite {
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
-    chain.successful {
-      res => {
-        res.value.intColumn shouldEqual (row.intColumn + 15)
-      }
+    whenReady(chain) { res =>
+      res.value.intColumn shouldEqual (row.intColumn + 15)
     }
   }
 

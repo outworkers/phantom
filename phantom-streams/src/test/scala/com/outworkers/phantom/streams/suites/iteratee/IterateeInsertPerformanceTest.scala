@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.Matchers
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.SpanSugar._
@@ -63,11 +63,9 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
        }
     }
 
-    (result flatMap (_ => combinedFuture)) successful {
-      r => {
-        info(s"done, reading: ${counter.addAndGet(0)}")
-        counter.get() shouldEqual r
-      }
+    whenReady(result flatMap (_ => combinedFuture)) { r =>
+      info(s"done, reading: ${counter.addAndGet(0)}")
+      counter.get() shouldEqual r
     }
   }
 }

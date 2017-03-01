@@ -17,7 +17,7 @@ package com.outworkers.phantom.jdk8
 
 import java.time._
 
-import com.outworkers.util.testing.{Sample, _}
+import com.outworkers.util.samplers._
 
 import scala.util.Random
 

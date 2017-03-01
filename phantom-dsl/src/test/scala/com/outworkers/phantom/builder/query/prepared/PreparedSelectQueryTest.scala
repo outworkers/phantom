@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class PreparedSelectQueryTest extends PhantomSuite {
 
@@ -30,7 +30,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
     database.articlesByAuthor.insertSchema()
     database.primitives.insertSchema()
     if (session.v4orNewer) {
-      TestDatabase.primitivesCassandra22.insertSchema()
+      database.primitivesCassandra22.insertSchema()
     }
   }
 
@@ -46,14 +46,12 @@ class PreparedSelectQueryTest extends PhantomSuite {
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select, select2)
 
-    operation.successful {
-      case (items, items2) => {
-        items shouldBe defined
-        items.value shouldEqual recipe
+    whenReady(operation) { case (items, items2) =>
+      items shouldBe defined
+      items.value shouldEqual recipe
 
-        items2 shouldBe defined
-        items2.value shouldEqual recipe
-      }
+      items2 shouldBe defined
+      items2.value shouldEqual recipe
     }
   }
 
@@ -70,14 +68,12 @@ class PreparedSelectQueryTest extends PhantomSuite {
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select, select2)
 
-    operation.successful {
-      case (items, items2) => {
-        items.size shouldEqual limit
-        items should contain (recipe)
+    whenReady(operation) { case (items, items2) =>
+      items.size shouldEqual limit
+      items should contain (recipe)
 
-        items2 shouldBe defined
-        items2.value shouldEqual recipe
-      }
+      items2 shouldBe defined
+      items2.value shouldEqual recipe
     }
   }
 
@@ -92,11 +88,9 @@ class PreparedSelectQueryTest extends PhantomSuite {
       select <- query.bind(recipe.url).one()
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual recipe
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldEqual recipe
     }
   }
 
@@ -119,14 +113,12 @@ class PreparedSelectQueryTest extends PhantomSuite {
       get2 <- query.bind(owner, category2).one()
     } yield (get, get2)
 
-    whenReady(op) {
-      case (res, res2) => {
-        res shouldBe defined
-        res.value shouldEqual sample
+    whenReady(op) { case (res, res2) =>
+      res shouldBe defined
+      res.value shouldEqual sample
 
-        res2 shouldBe defined
-        res2.value shouldEqual sample2
-      }
+      res2 shouldBe defined
+      res2.value shouldEqual sample2
     }
   }
 
@@ -141,11 +133,9 @@ class PreparedSelectQueryTest extends PhantomSuite {
       select <- query.bind(primitive.pkey).one()
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value shouldEqual primitive
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value shouldEqual primitive
     }
   }
 
@@ -161,11 +151,9 @@ class PreparedSelectQueryTest extends PhantomSuite {
         select <- query.bind(primitive.pkey).one()
       } yield select
 
-      operation.successful {
-        items => {
-          items shouldBe defined
-          items.value shouldEqual primitive
-        }
+      whenReady(operation) { items =>
+        items shouldBe defined
+        items.value shouldEqual primitive
       }
     }
   }

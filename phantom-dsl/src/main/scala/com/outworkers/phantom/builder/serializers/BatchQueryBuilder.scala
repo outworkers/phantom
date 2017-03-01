@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.serializers
 
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[phantom] class BatchQueryBuilder {
@@ -27,6 +27,6 @@ private[phantom] class BatchQueryBuilder {
   def applyBatch(qb: CQLQuery): CQLQuery = {
     qb.forcePad.append(CQLSyntax.Batch.apply)
       .forcePad.append(CQLSyntax.Batch.batch)
-      .append(CQLSyntax.Symbols.`;`)
+      .append(CQLSyntax.Symbols.semicolon)
   }
 }

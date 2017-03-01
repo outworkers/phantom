@@ -18,7 +18,7 @@ package com.outworkers.phantom.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._
 
@@ -36,7 +36,7 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
       _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
-    insert.successful {
+    whenReady(insert) {
       result => result.value.struct shouldEqual sample
     }
   }
@@ -56,11 +56,9 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
         _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
       }
 
-    insert.successful {
-      result => {
-        result.value.struct shouldEqual sample
-        result.value.thriftSet shouldEqual sampleList
-      }
+    whenReady(insert) { result =>
+      result.value.struct shouldEqual sample
+      result.value.thriftSet shouldEqual sampleList
     }
   }
 }

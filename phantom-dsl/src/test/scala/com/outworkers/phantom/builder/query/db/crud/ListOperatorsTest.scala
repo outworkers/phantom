@@ -18,28 +18,26 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class ListOperatorsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.insertSchema()
+    database.recipes.insertSchema()
   }
 
   it should "store items in a list in the same order" in {
     val recipe = gen[Recipe]
 
     val operation = for {
-      truncate <- TestDatabase.recipes.truncate.future
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      truncate <- database.recipes.truncate.future
+      insertDone <- database.recipes.store(recipe).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.ingredients
     }
   }
 
@@ -47,103 +45,93 @@ class ListOperatorsTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients
-        items.value should have size recipe.ingredients.size
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.ingredients
+      items.value should have size recipe.ingredients.size
     }
   }
 
   it should "append an item to a list" in {
     val recipe = gen[Recipe]
+    val appendable = gen[ShortString].value
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append "test").future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients ::: List("test")
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.ingredients ::: List(appendable)
     }
   }
 
   it should "append several items to a list" in {
     val recipe = gen[Recipe]
 
-    val appendable = List("test", "test2")
+    val appendable = genList[String]()
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual recipe.ingredients ::: appendable
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.ingredients ::: appendable
     }
   }
 
   it should "prepend an item to a list" in {
     val recipe = gen[Recipe]
+    val value = gen[ShortString].value
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend "test").future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend value).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual List("test") :::  recipe.ingredients
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual List(value) ::: recipe.ingredients
     }
   }
 
   it should "prepend several items to a list" in {
     val recipe = gen[Recipe]
 
-    val appendable = List("test", "test2")
+    val appendable = genList[String]()
 
     val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients prepend appendable).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual prependedValues ::: recipe.ingredients
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual prependedValues ::: recipe.ingredients
     }
   }
 
   it should "remove an item from a list" in {
     val list = genList[String]()
-    val droppable = list(0)
+    val droppable = list.headOption.value
     val recipe = gen[Recipe].copy(ingredients = list)
 
     val operation = for {
-      insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).future()
-      select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual list.tail
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual list.tail
     }
   }
 
@@ -157,44 +145,41 @@ class ListOperatorsTest extends PhantomSuite {
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value shouldEqual List(list.head)
-      }
+    whenReady(operation) { items =>
+      items.value shouldEqual List(list.head)
     }
   }
 
   it should "set a 0 index inside a List" in {
     val list = genList[String]()
     val recipe = gen[Recipe].copy(ingredients = list)
+    val updatedValue = gen[ShortString].value
 
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, "updated")).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (0, updatedValue)).future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
-    operation.successful {
-      items => {
-        items.value.headOption.value shouldEqual "updated"
-      }
+    whenReady(operation) { items =>
+      items.value.headOption.value shouldEqual updatedValue
     }
   }
 
   it should "set the third index inside a List" in {
     val recipe = gen[Recipe]
 
+    val updatedValue = gen[ShortString].value
+
     val operation = for {
       insertDone <- TestDatabase.recipes.store(recipe).future()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, "updated")).future()
+      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updatedValue)).future()
       select <- TestDatabase.recipes.select(_.ingredients).where(_.url eqs recipe.url).one()
     } yield select
 
-    operation.successful {
-      items => {
-        items shouldBe defined
-        items.value(3) shouldEqual "updated"
-      }
+    whenReady(operation) { items =>
+      items shouldBe defined
+      items.value(3) shouldEqual updatedValue
     }
   }
 }

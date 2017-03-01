@@ -13,18 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-def outworkersPattern: Patterns = {
-  val pList = List(
-    "[organisation]/[module](_[scalaVersion])(_[sbtVersion])/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-  )
-
-  Patterns(
-    pList,
-    pList,
-    isMavenCompatible = true
-  )
-}
-
 resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",
@@ -71,6 +59,4 @@ addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
-libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
-
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M15")
+addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")

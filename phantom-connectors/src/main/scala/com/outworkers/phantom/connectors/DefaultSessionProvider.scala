@@ -32,7 +32,7 @@ class DefaultSessionProvider(
   val space: KeySpace,
   builder: ClusterBuilder,
   autoinit: Boolean = true,
-  keyspaceQuery: Option[(Session, KeySpace) => String] = None,
+  keyspaceQuery: Option[KeySpaceCQLQuery] = None,
   errorHandler: Throwable => Throwable = identity
 ) extends SessionProvider {
 
@@ -50,7 +50,7 @@ class DefaultSessionProvider(
    */
   protected[this] def initKeySpace(session: Session, space: String): Session = blocking {
     blocking {
-      val query = keyspaceQuery.map(_.apply(session, KeySpace(space))).getOrElse(defaultKeyspaceCreationQuery(session, space))
+      val query = keyspaceQuery.map(_.queryString).getOrElse(defaultKeyspaceCreationQuery(session, space))
       logger.info(s"Automatically initialising keyspace $space with query $query")
       session.execute(query)
     }

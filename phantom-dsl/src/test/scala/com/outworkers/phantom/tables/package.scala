@@ -19,7 +19,7 @@ import java.net.InetAddress
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
 
 package object tables {

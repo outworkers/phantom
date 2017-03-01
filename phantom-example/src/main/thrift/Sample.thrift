@@ -1,4 +1,4 @@
-namespace java com.outworkers.phantom.example.basics
+namespace java com.outworkers.phantom.example.basics.thrift
 
 struct SampleModel {
     1: required string id,

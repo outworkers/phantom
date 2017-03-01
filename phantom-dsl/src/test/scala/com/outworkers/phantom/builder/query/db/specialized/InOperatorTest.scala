@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class InOperatorTest extends PhantomSuite {
 
@@ -35,7 +35,7 @@ class InOperatorTest extends PhantomSuite {
       select <- TestDatabase.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res.value.url shouldEqual recipe.url
       }
@@ -50,7 +50,7 @@ class InOperatorTest extends PhantomSuite {
       select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
     } yield select
 
-    chain.successful {
+    whenReady(chain) {
       res => {
         res shouldBe empty
       }

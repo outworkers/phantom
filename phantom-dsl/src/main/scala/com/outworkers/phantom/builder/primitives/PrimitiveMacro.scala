@@ -51,7 +51,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bufferType = tq"java.nio.ByteBuffer"
 
   val builder = q"com.outworkers.phantom.builder"
-  val cql = q"com.outworkers.phantom.builder.query.CQLQuery"
+  val cql = q"com.outworkers.phantom.builder.query.engine.CQLQuery"
   val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
 
   val prefix = q"com.outworkers.phantom.builder.primitives"

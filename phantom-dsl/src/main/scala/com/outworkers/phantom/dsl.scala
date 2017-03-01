@@ -29,6 +29,7 @@ import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
@@ -120,8 +121,6 @@ object dsl extends ImplicitMechanism with CreateImplicits
   type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
-
-  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   object ? extends PrepareMark
   case object Batch extends Batcher
@@ -253,4 +252,6 @@ object dsl extends ImplicitMechanism with CreateImplicits
   implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
+
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 }

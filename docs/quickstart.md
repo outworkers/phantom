@@ -6,11 +6,20 @@
 <a href="#table-of-contents">back to top</a>
 
 There are no additional resolvers required for any version of phantom newer than 2.0.0. All Outworkers libraries are open source,
+<<<<<<< HEAD
 licensed via Apache V2.
+=======
+licensed via Apache V2. As of version 2.2.1, phantom has no external transitive dependencies other than shapeless
+and the Java driver.
+>>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 
 #### For must things, all you need is a dependency on the phantom-dsl module.
 
 For most things, all you need is the main ```phantom-dsl``` module. This will bring in the default module with all the query generation ability, as well as `phantom-connectors` and database objects that help you manage your entire database layer on the fly. All other modules implement enhanced integration with other tools, but you don't need them to get started.
+<<<<<<< HEAD
+=======
+This module only depends on the `datastax-java-driver` and the `shapeless-library`.
+>>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 
 ```scala
 libraryDependencies ++= Seq(
@@ -51,7 +60,11 @@ def baseResolverPattern = {
 }
 
 resolvers ++= Seq(
+<<<<<<< HEAD
   Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(outworkersPattern)
+=======
+  Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(baseResolverPattern)
+>>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 )
 
 addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
@@ -67,4 +80,8 @@ Spray users will probably be affected by a conflict in shapeless versions. To fi
 libraryDependencies ++= Seq(
   "io.spray" %% "spray-routing-shapeless2" % SprayVersion
 )
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82

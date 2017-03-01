@@ -16,7 +16,8 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.{CQLQuery, QueryBuilderTest}
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.tables.TestDatabase
 
 class SelectQueryBuilderTest extends QueryBuilderTest {
