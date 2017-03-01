@@ -44,6 +44,8 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
 
     val accessors = filterMembers[T, CassandraTable[_, _]]()
 
+    val namingTerm = TermName("naming")
+
     val prefix = q"com.outworkers.phantom.database"
 
     val tableList = accessors.map(sym => {
@@ -51,7 +53,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c
       q"""db.$name"""
     })
 
-    val queryList = tableList.map { tb => q"""$tb.autocreate(space)""" }
+    val queryList = tableList.map { tb => q"""$tb.autocreate(space, db.$namingTerm)""" }
 
     val listType = tq"$prefix.ExecutableCreateStatementsList"
 

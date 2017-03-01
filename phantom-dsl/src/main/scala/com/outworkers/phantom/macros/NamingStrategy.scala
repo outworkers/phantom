@@ -25,6 +25,8 @@ trait NamingStrategy {
 
   def inferName(name: String): String
 
+  def apply(name: String): String = inferName(name)
+
   protected[this] def isCaseSensitive: Boolean = false
 
   def caseSensitive: NameType
@@ -65,7 +67,6 @@ object NamingStrategy {
 
     override def inferName(name: String): String = {
       val source = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-
       if (isCaseSensitive) {
         CQLQuery.escape(source)
       } else {

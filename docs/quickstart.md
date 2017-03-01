@@ -1,3 +1,4 @@
+
 [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
@@ -6,20 +7,13 @@
 <a href="#table-of-contents">back to top</a>
 
 There are no additional resolvers required for any version of phantom newer than 2.0.0. All Outworkers libraries are open source,
-<<<<<<< HEAD
-licensed via Apache V2.
-=======
 licensed via Apache V2. As of version 2.2.1, phantom has no external transitive dependencies other than shapeless
 and the Java driver.
->>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 
 #### For must things, all you need is a dependency on the phantom-dsl module.
 
 For most things, all you need is the main ```phantom-dsl``` module. This will bring in the default module with all the query generation ability, as well as `phantom-connectors` and database objects that help you manage your entire database layer on the fly. All other modules implement enhanced integration with other tools, but you don't need them to get started.
-<<<<<<< HEAD
-=======
 This module only depends on the `datastax-java-driver` and the `shapeless-library`.
->>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 
 ```scala
 libraryDependencies ++= Seq(
@@ -60,11 +54,7 @@ def baseResolverPattern = {
 }
 
 resolvers ++= Seq(
-<<<<<<< HEAD
-  Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(outworkersPattern)
-=======
   Resolver.url("Maven Ivy Outworkers", url(Resolver.DefaultMavenRepositoryRoot))(baseResolverPattern)
->>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82
 )
 
 addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
@@ -80,8 +70,4 @@ Spray users will probably be affected by a conflict in shapeless versions. To fi
 libraryDependencies ++= Seq(
   "io.spray" %% "spray-routing-shapeless2" % SprayVersion
 )
-<<<<<<< HEAD
 ```
-=======
-```
->>>>>>> b576d25de5a215f31816df308fdcdd78415ccf82

@@ -48,6 +48,7 @@ object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
+  implicit val strategy: NamingStrategy = NamingStrategy.CamelCase.caseInsensitive
 
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
   type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
@@ -113,6 +114,7 @@ object dsl extends ImplicitMechanism with CreateImplicits
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
+  type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
 

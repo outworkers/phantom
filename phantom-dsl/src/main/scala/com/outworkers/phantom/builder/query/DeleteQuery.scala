@@ -25,6 +25,7 @@ import com.outworkers.phantom.builder.query.prepared.PreparedBlock
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime
+import com.outworkers.phantom.macros.NamingStrategy
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
 
@@ -213,11 +214,17 @@ object DeleteQuery {
 
   type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T)(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 
-  def apply[T <: CassandraTable[T, _], R](table: T, conds: CQLQuery*)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T, conds: CQLQuery*)(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString, conds))
   }
 }

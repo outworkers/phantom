@@ -35,5 +35,5 @@ class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleK
 }
 
 abstract class ConcreteMultipleKeys extends MultipleKeys with RootConnector {
-  override val tableName = "AJ"
+  override def tableName(implicit strategy: NamingStrategy): String = "AJ"
 }

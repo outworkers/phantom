@@ -50,7 +50,4 @@ abstract class OptionalPrimitivesJdk8 extends CassandraTable[OptionalPrimitivesJ
       .value(_.localDate, primitive.localDate)
       .value(_.localDateTime, primitive.localDateTime)
   }
-
-  override val tableName = "OptionalPrimitivesJdk8"
-
 }

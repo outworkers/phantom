@@ -18,6 +18,7 @@ package com.outworkers.phantom.tables
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.NamingStrategy
 
 case class Article(
   id: UUID,
@@ -31,7 +32,7 @@ abstract class Articles extends CassandraTable[Articles, Article] with RootConne
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
 
-  override def tableName: String = "articles"
+  override def tableName(implicit strategy: NamingStrategy): String = "articles"
 
   def store(article: Article): InsertQuery.Default[Articles, Article] = {
     insert

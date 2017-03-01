@@ -17,38 +17,45 @@ package com.outworkers.phantom
 
 import com.outworkers.phantom.builder.ops.SelectColumn
 import com.outworkers.phantom.builder.query.RootSelectBlock
+import com.outworkers.phantom.macros.NamingStrategy
+import shapeless.{Generic, HList, Poly1}
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
 
-  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](this.asInstanceOf[T], Nil, fromRow)
+  def select()(implicit strategy: NamingStrategy): RootSelectBlock[T, R] = RootSelectBlock[T, R](instance, Nil, fromRow)
 
-  def select[A](f1: T => SelectColumn[A]): RootSelectBlock[T, A] = {
-    val t = this.asInstanceOf[T]
+  def select[A](f1: T => SelectColumn[A])(implicit strategy: NamingStrategy): RootSelectBlock[T, A] = {
+    val t = instance
     val c = f1(t)
     RootSelectBlock(t, List(c.col.name), c.apply)
   }
 
-  def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): RootSelectBlock[T, (A, B)] = {
-    val t = this.asInstanceOf[T]
+  def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B])(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     RootSelectBlock[T, (A, B)](t, List(c1.col.name, c2.col.name), r => (c1(r), c2(r)))
   }
 
-  def select[A, B, C](f1: T => SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C]): RootSelectBlock[T, (A, B, C)] = {
-    val t = this.asInstanceOf[T]
+  def select[A, B, C](
+    f1: T => SelectColumn[A],
+    f2: T => SelectColumn[B],
+    f3: T => SelectColumn[C]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
     RootSelectBlock[T, (A, B, C)](t, List(c1.col.name, c2.col.name, c3.col.name), r => (c1(r), c2(r), c3(r)))
   }
 
-  def select[A, B, C, D](f1: T =>SelectColumn[A],
+  def select[A, B, C, D](f1: T => SelectColumn[A],
    f2: T => SelectColumn[B],
    f3: T => SelectColumn[C],
-   f4: T => SelectColumn[D]): RootSelectBlock[T, (A, B, C, D)] = {
-    val t = this.asInstanceOf[T]
+   f4: T => SelectColumn[D]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -59,8 +66,14 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     )
   }
 
-  def select[A, B, C, D, E](f1: T =>SelectColumn[A], f2: T => SelectColumn[B], f3: T => SelectColumn[C], f4: T => SelectColumn[D], f5: T => SelectColumn[E]): RootSelectBlock[T, (A, B, C, D, E)] = {
-    val t = this.asInstanceOf[T]
+  def select[A, B, C, D, E](
+    f1: T => SelectColumn[A],
+    f2: T => SelectColumn[B],
+    f3: T => SelectColumn[C],
+    f4: T => SelectColumn[D],
+    f5: T => SelectColumn[E]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D, E)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -75,8 +88,9 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     f3: T => SelectColumn[C],
     f4: T => SelectColumn[D],
     f5: T => SelectColumn[E],
-    f6: T => SelectColumn[F]): RootSelectBlock[T, (A, B, C, D, E, F)] = {
-    val t = this.asInstanceOf[T]
+    f6: T => SelectColumn[F]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D, E, F)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -102,8 +116,8 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     f5: T => SelectColumn[E],
     f6: T => SelectColumn[F],
     f7: T => SelectColumn[G]
-  ): RootSelectBlock[T, (A, B, C, D, E, F, G)] = {
-    val t = this.asInstanceOf[T]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D, E, F, G)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -135,8 +149,8 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     f6: T => SelectColumn[F],
     f7: T => SelectColumn[G],
     f8: T => SelectColumn[H]
-    ): RootSelectBlock[T, (A, B, C, D, E, F, G, H)] = {
-    val t = this.asInstanceOf[T]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D, E, F, G, H)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -162,7 +176,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
    * Select method for 9 records.
    */
   def select[A, B, C, D, E, F, G, H, I](
-    f1: T =>SelectColumn[A],
+    f1: T => SelectColumn[A],
     f2: T => SelectColumn[B],
     f3: T => SelectColumn[C],
     f4: T => SelectColumn[D],
@@ -171,8 +185,8 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     f7: T => SelectColumn[G],
     f8: T => SelectColumn[H],
     f9: T => SelectColumn[I]
-    ): RootSelectBlock[T, (A, B, C, D, E, F, G, H, I)] = {
-    val t = this.asInstanceOf[T]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A, B, C, D, E, F, G, H, I)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -200,7 +214,7 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
    * Select method for 10 records.
    */
   def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10](
-    f1: T =>SelectColumn[A1],
+    f1: T => SelectColumn[A1],
     f2: T => SelectColumn[A2],
     f3: T => SelectColumn[A3],
     f4: T => SelectColumn[A4],
@@ -210,8 +224,8 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     f8: T => SelectColumn[A8],
     f9: T => SelectColumn[A9],
     f10: T => SelectColumn[A10]
-    ): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)] = {
-    val t = this.asInstanceOf[T]
+  )(implicit strategy: NamingStrategy): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)] = {
+    val t = instance
     val c1 = f1(t)
     val c2 = f2(t)
     val c3 = f3(t)
@@ -251,8 +265,9 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11](
   f8: T => SelectColumn[A8],
   f9: T => SelectColumn[A9],
   f10: T => SelectColumn[A10],
-  f11: T => SelectColumn[A11]): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)] = {
-  val t = this.asInstanceOf[T]
+  f11: T => SelectColumn[A11]
+)(implicit strategy: NamingStrategy): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -282,19 +297,20 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11](
  * Select method for 12 records.
  */
 def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12](
-f1: T => SelectColumn[A1],
-f2: T => SelectColumn[A2],
-f3: T => SelectColumn[A3],
-f4: T => SelectColumn[A4],
-f5: T => SelectColumn[A5],
-f6: T => SelectColumn[A6],
-f7: T => SelectColumn[A7],
-f8: T => SelectColumn[A8],
-f9: T => SelectColumn[A9],
-f10: T => SelectColumn[A10],
-f11: T => SelectColumn[A11],
-f12: T => SelectColumn[A12]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)] = {
-  val t = this.asInstanceOf[T]
+  f1: T => SelectColumn[A1],
+  f2: T => SelectColumn[A2],
+  f3: T => SelectColumn[A3],
+  f4: T => SelectColumn[A4],
+  f5: T => SelectColumn[A5],
+  f6: T => SelectColumn[A6],
+  f7: T => SelectColumn[A7],
+  f8: T => SelectColumn[A8],
+  f9: T => SelectColumn[A9],
+  f10: T => SelectColumn[A10],
+  f11: T => SelectColumn[A11],
+  f12: T => SelectColumn[A12]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -340,8 +356,9 @@ f9: T => SelectColumn[A9],
 f10: T => SelectColumn[A10],
 f11: T => SelectColumn[A11],
 f12: T => SelectColumn[A12],
-f13: T => SelectColumn[A13]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)] = {
-  val t = this.asInstanceOf[T]
+f13: T => SelectColumn[A13]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -391,8 +408,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14](
   f12: T => SelectColumn[A12],
   f13: T => SelectColumn[A13],
   f14: T => SelectColumn[A14]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -444,8 +461,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15](
   f13: T => SelectColumn[A13],
   f14: T => SelectColumn[A14],
   f15: T => SelectColumn[A15]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -499,8 +516,9 @@ f12: T => SelectColumn[A12],
 f13: T => SelectColumn[A13],
 f14: T => SelectColumn[A14],
 f15: T => SelectColumn[A15],
-f16: T => SelectColumn[A16]): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)] = {
-  val t = this.asInstanceOf[T]
+f16: T => SelectColumn[A16]
+)(implicit strategy: NamingStrategy): RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -541,24 +559,25 @@ r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r), c10(r), c11
  * Select method for 17 records.
  */
 def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17](
-f1: T => SelectColumn[A1],
-f2: T => SelectColumn[A2],
-f3: T => SelectColumn[A3],
-f4: T => SelectColumn[A4],
-f5: T => SelectColumn[A5],
-f6: T => SelectColumn[A6],
-f7: T => SelectColumn[A7],
-f8: T => SelectColumn[A8],
-f9: T => SelectColumn[A9],
-f10: T => SelectColumn[A10],
-f11: T => SelectColumn[A11],
-f12: T => SelectColumn[A12],
-f13: T => SelectColumn[A13],
-f14: T => SelectColumn[A14],
-f15: T => SelectColumn[A15],
-f16: T => SelectColumn[A16],
-f17: T => SelectColumn[A17]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)] = {
-  val t = this.asInstanceOf[T]
+  f1: T => SelectColumn[A1],
+  f2: T => SelectColumn[A2],
+  f3: T => SelectColumn[A3],
+  f4: T => SelectColumn[A4],
+  f5: T => SelectColumn[A5],
+  f6: T => SelectColumn[A6],
+  f7: T => SelectColumn[A7],
+  f8: T => SelectColumn[A8],
+  f9: T => SelectColumn[A9],
+  f10: T => SelectColumn[A10],
+  f11: T => SelectColumn[A11],
+  f12: T => SelectColumn[A12],
+  f13: T => SelectColumn[A13],
+  f14: T => SelectColumn[A14],
+  f15: T => SelectColumn[A15],
+  f16: T => SelectColumn[A16],
+  f17: T => SelectColumn[A17]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -619,8 +638,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   f16: T => SelectColumn[A16],
   f17: T => SelectColumn[A17],
   f18: T => SelectColumn[A18]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -683,8 +702,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   f17: T => SelectColumn[A17],
   f18: T => SelectColumn[A18],
   f19: T => SelectColumn[A19]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -751,8 +770,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   f18: T => SelectColumn[A18],
   f19: T => SelectColumn[A19],
   f20: T => SelectColumn[A20]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)
@@ -822,8 +841,8 @@ def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16
   f19: T => SelectColumn[A19],
   f20: T => SelectColumn[A20],
   f21: T => SelectColumn[A21]
-) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)] = {
-  val t = this.asInstanceOf[T]
+)(implicit strategy: NamingStrategy) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)] = {
+  val t = instance
   val c1 = f1(t)
   val c2 = f2(t)
   val c3 = f3(t)

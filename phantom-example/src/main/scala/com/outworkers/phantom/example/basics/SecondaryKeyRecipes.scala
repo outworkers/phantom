@@ -21,6 +21,7 @@ import scala.concurrent.{Future => ScalaFuture}
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
+import scala.concurrent.Future
 
 /**
  * In this example we will create a table storing recipes with a SecondaryKey.
@@ -67,12 +68,12 @@ abstract class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, R
 
 
   // Now say you want to get a Recipe by author.
-  // author is a Index, you can now use it in a "where" clause.
+  // author is an Index, you can now use it in a "where" clause.
   // Performance is unpredictable for such queries, so you need to allow filtering.
   // Note this is not the best practice.
   // In a real world environment, you create a RecipesByTitle mapping table.
   // Check out the example.
-  def findRecipeByAuthor(author: String): ScalaFuture[Option[Recipe]] = {
+  def findRecipeByAuthor(author: String): Future[Option[Recipe]] = {
     select.allowFiltering().where(_.author eqs author).one()
   }
 }

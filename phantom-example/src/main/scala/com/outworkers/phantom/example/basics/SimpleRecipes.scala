@@ -66,7 +66,7 @@ abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnecto
   object timestamp extends DateTimeColumn(this)
 
   // you can even rename the table in the schema to whatever you like.
-  override lazy val tableName = "my_custom_table"
+  override def tableName(implicit strategy: NamingStrategy): String = "my_custom_table"
 
   // Inserting has a bit of boilerplate on its on.
   // But it's almost always a once per table thing, hopefully bearable.

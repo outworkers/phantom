@@ -25,20 +25,15 @@ case class MyTestRow(
   stringlist: List[String]
 )
 
-sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
+abstract class ListCollectionTable extends CassandraTable[ListCollectionTable, MyTestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
   object optionA extends OptionalIntColumn(this)
 
   object stringlist extends ListColumn[String](this)
-}
 
-abstract class ConcreteListCollectionTable extends ListCollectionTable with RootConnector {
-
-  override val tableName = "mytest"
-
-  def store(row: MyTestRow): InsertQuery.Default[ConcreteListCollectionTable, MyTestRow] = {
+  def store(row: MyTestRow): InsertQuery.Default[ListCollectionTable, MyTestRow] = {
     insert().value(_.key, row.key)
       .value(_.stringlist, row.stringlist)
       .value(_.optionA, row.optionA)

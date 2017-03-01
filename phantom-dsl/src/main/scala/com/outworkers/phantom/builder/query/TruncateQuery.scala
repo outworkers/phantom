@@ -20,6 +20,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.macros.NamingStrategy
 
 class TruncateQuery[
   Table <: CassandraTable[Table, _],
@@ -48,7 +49,10 @@ object TruncateQuery {
 
   type Default[T <: CassandraTable[T, _], R] = TruncateQuery[T, R, Unspecified]
 
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): TruncateQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T)(
+    implicit keySpace: KeySpace,
+    strategy: NamingStrategy
+  ): TruncateQuery.Default[T, R] = {
     new TruncateQuery(
       table,
       QueryBuilder.truncate(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
