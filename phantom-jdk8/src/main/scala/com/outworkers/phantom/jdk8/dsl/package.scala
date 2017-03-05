@@ -15,8 +15,10 @@
  */
 package com.outworkers.phantom.jdk8
 
-import java.time.LocalDateTime
+import java.time._
+import java.util.UUID
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl.CassandraTable
 
 package object dsl extends DefaultJava8Primitives {
@@ -65,5 +67,59 @@ package object dsl extends DefaultJava8Primitives {
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
+
+  def instantToTimeuuid(instant: Instant): UUID = {
+    new UUID(
+      UUIDs.startOf(instant.toEpochMilli).getMostSignificantBits,
+      scala.util.Random.nextLong()
+    )
+  }
+
+  implicit class OffsetDateTimeHelper(val date: OffsetDateTime) extends AnyVal {
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
+  }
+
+  implicit class ZonedDateTimeHelper(val date: ZonedDateTime) extends AnyVal {
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
+  }
+
+  implicit class TimeUUIDAugmenter(val uuid: UUID) extends AnyVal {
+
+    /**
+      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * @param zone A [[String]] that is meant to contain a valid [[ZoneId]]. This method will not
+      *             check if the string provided is a valid [[ZoneId]], it will just pass this through
+      *             to [[ZoneId.of]].
+      * @return A [[ZonedDateTime]], which contains a time instant and information about a [[ZoneId]].
+      */
+    def zonedDateTime(zone: String): ZonedDateTime = zonedDateTime(ZoneId.of(zone))
+
+    /**
+      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * @param zone A [[ZoneId]] representing a temporal zone from Java 8 API.
+      * @return A [[ZonedDateTime]], which contains a time instant and information about a [[ZoneId]].
+      */
+    def zonedDateTime(zone: ZoneId): ZonedDateTime = {
+      ZonedDateTime.ofInstant(Instant.ofEpochMilli(UUIDs.unixTimestamp(uuid)), zone)
+    }
+
+    /**
+      * Converts this [[UUID]] to an [[OffsetDateTime]] given a zone argument.
+      * @param zone A [[String]] that is meant to contain a valid [[ZoneId]]. This method will not
+      *             check if the string provided is a valid [[ZoneId]], it will just pass this through
+      *             to [[ZoneId.of]].
+      * @return A [[OffsetDateTime]], which contains a time instant and offset information based on a [[ZoneId]].
+      */
+    def offsetDateTime(zone: String): OffsetDateTime = offsetDateTime(ZoneId.of(zone))
+
+    /**
+      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * @param zone A [[ZoneId]] representing a temporal zone from Java 8 API.
+      * @return A [[ZonedDateTime]], which contains a time instant and information about a [[ZoneId]].
+      */
+    def offsetDateTime(zone: ZoneId): OffsetDateTime = {
+      OffsetDateTime.ofInstant(Instant.ofEpochMilli(UUIDs.unixTimestamp(uuid)), zone)
+    }
+  }
 
 }

@@ -37,27 +37,12 @@ trait DefaultJava8Primitives {
     }
   }
 
-  implicit object ZonedDateTimeIsPrimitive extends Primitive[ZonedDateTime] {
+  implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-    override type PrimitiveType = java.util.Date
-
-    val cassandraType = CQLSyntax.Types.Timestamp
-
-    override def asCql(value: ZonedDateTime): String = {
-      value.toInstant.toEpochMilli.toString
+  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
+    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
+      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
     }
-
-    override def fromRow(column: String, row: GettableByNameData): Try[ZonedDateTime] = nullCheck(column, row) {
-      r => ZonedDateTime.ofInstant(r.getTimestamp(column).toInstant, ZoneOffset.UTC)
-    }
-
-    override def fromRow(index: Int, row: GettableByIndexData): Try[ZonedDateTime] = nullCheck(index, row) {
-      r => ZonedDateTime.ofInstant(r.getTimestamp(index).toInstant, ZoneOffset.UTC)
-    }
-
-    override def fromString(value: String): ZonedDateTime = ZonedDateTime.parse(value)
-
-    override def clz: Class[Date] = classOf[Date]
   }
 
   implicit object JdkLocalDateIsPrimitive extends Primitive[JdkLocalDate] {

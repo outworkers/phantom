@@ -16,42 +16,41 @@
 package com.outworkers.phantom.jdk8
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8.tables.{Jdk8Row, Jdk8Database, _}
-import com.outworkers.util.samplers._
+import com.outworkers.phantom.dsl.context
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{Matchers, OptionValues}
+import com.outworkers.phantom.jdk8.tables._
 
-class Jdk8TimeColumnsTest extends PhantomSuite {
+class Jdk8PrimitivesTest extends PhantomSuite with Matchers with OptionValues with GeneratorDrivenPropertyChecks {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (session.v4orNewer) {
-      Jdk8Database.create()
-    }
+    Jdk8Database.create()
   }
 
-  if (session.v4orNewer) {
-    it should "correctly insert and extract java.time columns" in {
-      val row = gen[Jdk8Row]
-
+  it should "correctly convert a ZonedDateTime to a tuple and back" in {
+    forAll { row: Jdk8Row =>
       val chain = for {
         store <- Jdk8Database.primitivesJdk8.store(row).future()
-        select <- Jdk8Database.primitivesJdk8.select.where(_.pkey eqs row.pkey).one()
-      } yield select
+        one <- Jdk8Database.primitivesJdk8.findByPkey(row.pkey)
+      } yield one
 
       whenReady(chain) { res =>
+        res shouldBe defined
         res.value shouldEqual row
       }
     }
+  }
 
-    it should "correctly insert and extract optional java.time columns" in {
-      val row = gen[OptionalJdk8Row]
-
+  it should "correctly convert a optional datetime types to Cassandra and back" in {
+    forAll { row: OptionalJdk8Row =>
       val chain = for {
         store <- Jdk8Database.optionalPrimitivesJdk8.store(row).future()
-        select <- Jdk8Database.optionalPrimitivesJdk8.select.where(_.pkey eqs row.pkey).one()
-      } yield select
+        one <- Jdk8Database.optionalPrimitivesJdk8.findByPkey(row.pkey)
+      } yield one
 
       whenReady(chain) { res =>
+        res shouldBe defined
         res.value shouldEqual row
       }
     }

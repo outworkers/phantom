@@ -44,7 +44,6 @@ object TableHelper {
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 }
 
-
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
@@ -314,7 +313,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
         Some(q"""new $recordTpe(..$columnNames)""")
       }
       case _ => {
-        Console.println(s"Couldn't automatically infer an extractor for $tableSymbolName")
+        Console.println(s"Couldn't automatically infer a fromRow method definition for $tableSymbolName")
         None
       }
     }

@@ -13,40 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.jdk8
+package com.outworkers.phantom.jdk8.tables
 
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.jdk8.dsl._
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.jdk8.dsl._
 
-case class OptionalJdk8Row(
+import scala.concurrent.Future
+
+case class Jdk8Row(
   pkey: String,
-  offsetDateTime: Option[OffsetDateTime],
-  zonedDateTime: Option[ZonedDateTime],
-  localDate: Option[LocalDate],
-  localDateTime: Option[LocalDateTime]
+  offsetDateTime: OffsetDateTime,
+  zonedDateTime: ZonedDateTime,
+  localDate: LocalDate,
+  localDateTime: LocalDateTime
 )
 
-sealed class OptionalPrimitivesJdk8 extends CassandraTable[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] {
+abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
 
-  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
+  object offsetDateTime extends OffsetDateTimeColumn(this)
 
-  object zonedDateTime extends OptionalZonedDateTimeColumn(this)
+  object zonedDateTime extends ZonedDateTimeColumn(this)
 
-  object localDate extends OptionalJdkLocalDateColumn(this)
+  object localDate extends JdkLocalDateColumn(this)
 
-  object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
-}
+  object localDateTime extends JdkLocalDateTimeColumn(this)
 
-abstract class ConcreteOptionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 with RootConnector {
-
-  def store(primitive: OptionalJdk8Row): InsertQuery.Default[ConcreteOptionalPrimitivesJdk8, OptionalJdk8Row] = {
+  def store(primitive: Jdk8Row): InsertQuery.Default[PrimitivesJdk8, Jdk8Row] = {
     insert.value(_.pkey, primitive.pkey)
       .value(_.offsetDateTime, primitive.offsetDateTime)
       .value(_.zonedDateTime, primitive.zonedDateTime)
@@ -54,6 +53,8 @@ abstract class ConcreteOptionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 wit
       .value(_.localDateTime, primitive.localDateTime)
   }
 
-  override val tableName = "OptionalPrimitivesJdk8"
+  def findByPkey(pkey: String): Future[Option[Jdk8Row]] = {
+    select.where(_.pkey eqs pkey).one()
+  }
 
 }
