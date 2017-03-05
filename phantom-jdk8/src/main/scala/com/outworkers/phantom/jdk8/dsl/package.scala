@@ -19,6 +19,7 @@ import java.time.{Instant, LocalDateTime, OffsetDateTime, ZoneId}
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.dsl.CassandraTable
 
 package object dsl extends DefaultJava8Primitives {
@@ -86,4 +87,9 @@ package object dsl extends DefaultJava8Primitives {
     }
   }
 
+  implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
+
+  implicit val offsetDateTimePritimive: Primitive[OffsetDateTime] = {
+    Primitive.derive[OffsetDateTime, (Long, ZoneId)](_.toZonedDateTime)
+  }
 }
