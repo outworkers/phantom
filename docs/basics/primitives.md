@@ -56,7 +56,6 @@ is defined in the companion object of a class, and this is only because in Scala
 here for any implicit for type `Test`. This is a default characteristic of the implicit resolution mechanism
 in the language itself, so we are not doing anything special per say other than leveraging Scala features.
  
- 
 ```scala
 
 import com.outworkers.phantom.dsl._
@@ -82,3 +81,7 @@ class MyTable extends CassandraTable[MyTable, Wrapper] {
 
 So because of the implicit primitive, it is now safe and possible to use a `Test` instance everywhere in phantom,
 including a `where` clause, an `insert`, a `set` or `update` clause, you name it.
+
+### JDK8 Primitives
+
+Phantom also natively supports some `java.time.*` JDK8 specific primitives as native types, though with a couple notable observations. `OffsetDateTime` and `ZonedDateTime` are natively supported via `"com.outworkers" %% "phantom-jdk8" % version`, and all you have to do is `import com.outworkers.phantom.jdk8.dsl._`.
