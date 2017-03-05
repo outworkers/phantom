@@ -15,18 +15,13 @@
  */
 package com.outworkers.phantom.jdk8.tables
 
-import com.outworkers.phantom.connectors.ContactPoint
-import com.outworkers.phantom.jdk8.ConcreteOptionalPrimitivesJdk8
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
-
+import com.outworkers.phantom.tables.Connector
 
 class Jdk8Database(override val connector: CassandraConnection) extends Database[Jdk8Database](connector) {
-
-  object primitivesJdk8 extends ConcretePrimitivesJdk8 with connector.Connector
-
-  object optionalPrimitivesJdk8 extends ConcreteOptionalPrimitivesJdk8 with connector.Connector
-
+  object primitivesJdk8 extends PrimitivesJdk8 with Connector
+  object optionalPrimitivesJdk8 extends OptionalPrimitivesJdk8 with Connector
 }
 
-object Jdk8Database extends Jdk8Database(ContactPoint.local.keySpace("phantom"))
+object Jdk8Database extends Jdk8Database(Connector.default)

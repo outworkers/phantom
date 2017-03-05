@@ -18,35 +18,37 @@ package com.outworkers.phantom.jdk8.tables
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8.dsl._
 
-case class Jdk8Row(
+import scala.concurrent.Future
+
+case class OptionalJdk8Row(
   pkey: String,
-  offsetDateTime: OffsetDateTime,
-  zonedDateTime: ZonedDateTime,
-  localDate: LocalDate,
-  localDateTime: LocalDateTime
+  offsetDateTime: Option[OffsetDateTime],
+  zonedDateTime: Option[ZonedDateTime],
+  localDate: Option[LocalDate],
+  localDateTime: Option[LocalDateTime]
 )
 
-sealed class PrimitivesJdk8 extends CassandraTable[ConcretePrimitivesJdk8, Jdk8Row] {
+abstract class OptionalPrimitivesJdk8 extends CassandraTable[
+  OptionalPrimitivesJdk8,
+  OptionalJdk8Row
+] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
 
-  object offsetDateTime extends OffsetDateTimeColumn(this)
+  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
 
-  object zonedDateTime extends ZonedDateTimeColumn(this)
+  object zonedDateTime extends OptionalZonedDateTimeColumn(this)
 
-  object localDate extends JdkLocalDateColumn(this)
+  object localDate extends OptionalJdkLocalDateColumn(this)
 
-  object localDateTime extends JdkLocalDateTimeColumn(this)
-}
+  object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
 
-abstract class ConcretePrimitivesJdk8 extends PrimitivesJdk8 with RootConnector {
-
-  def store(primitive: Jdk8Row): InsertQuery.Default[ConcretePrimitivesJdk8, Jdk8Row] = {
+  def store(primitive: OptionalJdk8Row): InsertQuery.Default[OptionalPrimitivesJdk8, OptionalJdk8Row] = {
     insert.value(_.pkey, primitive.pkey)
       .value(_.offsetDateTime, primitive.offsetDateTime)
       .value(_.zonedDateTime, primitive.zonedDateTime)
@@ -54,6 +56,7 @@ abstract class ConcretePrimitivesJdk8 extends PrimitivesJdk8 with RootConnector 
       .value(_.localDateTime, primitive.localDateTime)
   }
 
-  override val tableName = "PrimitivesJdk8"
-
+  def findByPkey(pkey: String): Future[Option[OptionalJdk8Row]] = {
+    select.where(_.pkey eqs pkey).one()
+  }
 }
