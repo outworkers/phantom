@@ -17,7 +17,6 @@ package com.outworkers.phantom.jdk8
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl.context
-import com.outworkers.phantom.jdk8.tables.{Jdk8Database, Jdk8Row}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, OptionValues}
 import com.outworkers.phantom.jdk8.tables._
