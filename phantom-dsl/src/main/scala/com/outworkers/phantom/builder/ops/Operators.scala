@@ -26,7 +26,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 import shapeless.{=:!=, HList}
 
 sealed class CqlFunction extends SessionAugmenterImplicits
@@ -92,42 +92,23 @@ sealed class NowCqlFunction extends CqlFunction {
   }
 }
 
-sealed class MaxTimeUUID extends CqlFunction {
-
-  def apply(date: Date): OperatorClause.Condition = {
-    new Condition(
-      QueryBuilder.Select.maxTimeuuid(
-        CQLQuery.escape(new DateTime(date).toString())
-      )
-    )
-  }
+private[phantom] trait TimeUUIDOperator {
+  def apply(date: Date): OperatorClause.Condition = apply(new DateTime(date, DateTimeZone.UTC))
 
   def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(
-      QueryBuilder.Select.maxTimeuuid(
-        CQLQuery.escape(new DateTime(date).toString())
-      )
-    )
+    new Condition(fn(CQLQuery.escape(new DateTime(date).toString())))
   }
+
+  def fn: String => CQLQuery
 }
 
-sealed class MinTimeUUID extends CqlFunction {
+private[phantom] class MaxTimeUUID extends CqlFunction with TimeUUIDOperator {
+  override def fn: (String) => CQLQuery = QueryBuilder.Select.maxTimeuuid
+}
 
-  def apply(date: Date): OperatorClause.Condition = {
-    new Condition(
-      QueryBuilder.Select.minTimeuuid(
-        CQLQuery.escape(new DateTime(date).toString())
-      )
-    )
-  }
 
-  def apply(date: DateTime): OperatorClause.Condition = {
-    new Condition(
-      QueryBuilder.Select.minTimeuuid(
-        CQLQuery.escape(date.toString())
-      )
-    )
-  }
+private[phantom] class MinTimeUUID extends CqlFunction with TimeUUIDOperator {
+  override def fn: (String) => CQLQuery = QueryBuilder.Select.minTimeuuid
 }
 
 sealed class WritetimeCqlFunction extends CqlFunction {
