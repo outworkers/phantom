@@ -18,15 +18,11 @@ package com.outworkers.phantom.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.ThriftDatabase
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._
 
 class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
-
-  override def beforeAll(): Unit = {
-    ThriftDatabase.thriftColumnTable.create.ifNotExists().future().block(5.seconds)
-  }
 
   it should "find an item if it was defined" in {
 
@@ -48,10 +44,8 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      res => {
-        res.value shouldBe Some(sample)
-      }
+    whenReady(operation) { res =>
+      res.value shouldBe Some(sample)
     }
   }
 
@@ -74,10 +68,8 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
       select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
-    operation.successful {
-      res => {
-        res.value.isDefined shouldBe false
-      }
+    whenReady(operation) { res =>
+      res.value.isDefined shouldBe false
     }
   }
 }

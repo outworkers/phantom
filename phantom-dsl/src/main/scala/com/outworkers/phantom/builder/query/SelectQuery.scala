@@ -19,7 +19,8 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.builder.clauses._
-import com.outworkers.phantom.builder.query.prepared.PreparedSelectBlock
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 import shapeless.ops.hlist.{Prepend, Reverse}
@@ -115,7 +116,7 @@ class SelectQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev]
   ): PreparedSelectBlock[Table, Record, Limit, Rev] = {
-    new PreparedSelectBlock(qb, rowFunc, options)
+    new PreparedSelectBlock[Table, Record, Limit, Rev] (qb, rowFunc, options)
   }
 
   /**
@@ -228,7 +229,27 @@ class SelectQuery[
 
 
   @implicitNotFound("A limit was already specified for this query.")
-  override def limit(limit: Int)(
+  final def limit(ps: PrepareMark)(
+    implicit ev: Limit =:= Unlimited
+  ): QueryType[Table, Record, Limited, Order, Status, Chain, Int ::PS] = {
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = limitedPart append QueryBuilder.limit(ps.qb.queryString),
+      filteringPart = filteringPart,
+      usingPart = usingPart,
+      count = count,
+      options = options
+    )
+  }
+
+
+
+  @implicitNotFound("A limit was already specified for this query.")
+  def limit(limit: Int)(
     implicit ev: Limit =:= Unlimited
   ): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
     new SelectQuery(
@@ -237,7 +258,7 @@ class SelectQuery[
       init = init,
       wherePart = wherePart,
       orderPart = orderPart,
-      limitedPart = limitedPart append QueryBuilder.limit(limit),
+      limitedPart = limitedPart append QueryBuilder.limit(limit.toString),
       filteringPart = filteringPart,
       usingPart = usingPart,
       count = count,
@@ -267,7 +288,6 @@ class SelectQuery[
   /**
    * Returns the first row from the select ignoring everything else
    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-   * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
    * @param ec The implicit Scala execution context.
    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
@@ -275,11 +295,10 @@ class SelectQuery[
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def one()(
     implicit session: Session,
-    keySpace: KeySpace,
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor
   ): ScalaFuture[Option[Record]] = {
-    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1)
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1.toString)
 
     new SelectQuery(
       table = table,
@@ -328,22 +347,16 @@ private[phantom] class RootSelectBlock[
   }
 
   private[this] def extractCount(r: Row): Long = {
-    Try(r.getLong("count")).getOrElse(0L)
-  }
-
-
-  private[this] def extractWritetime(r: Row): Long = {
-    Try(r.getLong("writetime")).getOrElse(0L)
+    Try(r.getLong(CQLSyntax.Selection.count)).getOrElse(0L)
   }
 
   def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
-
     val jsonParser: (Row) => String = row => {
       row.getString(CQLSyntax.JSON_EXTRACTOR)
     }
 
     clause match {
-      case Some(opt) => {
+      case Some(_) => {
         new SelectQuery(
           table,
           jsonParser,
@@ -360,7 +373,9 @@ private[phantom] class RootSelectBlock[
     }
   }
 
-  def function[RR](f1: T => TypedClause.Condition[RR])(implicit keySpace: KeySpace): SelectQuery.Default[T, RR] = {
+  def function[RR](f1: T => TypedClause.Condition[RR])(
+    implicit keySpace: KeySpace
+  ): SelectQuery.Default[T, RR] = {
     new SelectQuery(
       table,
       f1(table).extractor,

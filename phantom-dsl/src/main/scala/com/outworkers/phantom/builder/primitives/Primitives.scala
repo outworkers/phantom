@@ -22,7 +22,7 @@ import java.util.{Date, UUID}
 import com.datastax.driver.core.utils.Bytes
 import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 

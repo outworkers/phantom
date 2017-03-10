@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 - 2017 Outworkers Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.outworkers.phantom
 
 import com.outworkers.phantom.builder.ops.SelectColumn
@@ -80,14 +95,14 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
   }
 
   def select[A, B, C, D, E, F, G](
-    f1: T =>SelectColumn[A],
+    f1: T => SelectColumn[A],
     f2: T => SelectColumn[B],
     f3: T => SelectColumn[C],
     f4: T => SelectColumn[D],
     f5: T => SelectColumn[E],
     f6: T => SelectColumn[F],
     f7: T => SelectColumn[G]
-    ): RootSelectBlock[T, (A, B, C, D, E, F, G)] = {
+  ): RootSelectBlock[T, (A, B, C, D, E, F, G)] = {
     val t = this.asInstanceOf[T]
     val c1 = f1(t)
     val c2 = f2(t)
@@ -786,27 +801,28 @@ r => (c1(r), c2(r), c3(r), c4(r), c5(r), c6(r), c7(r), c8(r), c9(r), c10(r), c11
  * Select method for 21 records.
  */
 def select[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21](
-f1: T => SelectColumn[A1],
-f2: T => SelectColumn[A2],
-f3: T => SelectColumn[A3],
-f4: T => SelectColumn[A4],
-f5: T => SelectColumn[A5],
-f6: T => SelectColumn[A6],
-f7: T => SelectColumn[A7],
-f8: T => SelectColumn[A8],
-f9: T => SelectColumn[A9],
-f10: T => SelectColumn[A10],
-f11: T => SelectColumn[A11],
-f12: T => SelectColumn[A12],
-f13: T => SelectColumn[A13],
-f14: T => SelectColumn[A14],
-f15: T => SelectColumn[A15],
-f16: T => SelectColumn[A16],
-f17: T => SelectColumn[A17],
-f18: T => SelectColumn[A18],
-f19: T => SelectColumn[A19],
-f20: T => SelectColumn[A20],
-f21: T => SelectColumn[A21]) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)] = {
+  f1: T => SelectColumn[A1],
+  f2: T => SelectColumn[A2],
+  f3: T => SelectColumn[A3],
+  f4: T => SelectColumn[A4],
+  f5: T => SelectColumn[A5],
+  f6: T => SelectColumn[A6],
+  f7: T => SelectColumn[A7],
+  f8: T => SelectColumn[A8],
+  f9: T => SelectColumn[A9],
+  f10: T => SelectColumn[A10],
+  f11: T => SelectColumn[A11],
+  f12: T => SelectColumn[A12],
+  f13: T => SelectColumn[A13],
+  f14: T => SelectColumn[A14],
+  f15: T => SelectColumn[A15],
+  f16: T => SelectColumn[A16],
+  f17: T => SelectColumn[A17],
+  f18: T => SelectColumn[A18],
+  f19: T => SelectColumn[A19],
+  f20: T => SelectColumn[A20],
+  f21: T => SelectColumn[A21]
+) : RootSelectBlock[T, (A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21)] = {
   val t = this.asInstanceOf[T]
   val c1 = f1(t)
   val c2 = f2(t)

@@ -17,8 +17,6 @@ package com.outworkers.phantom.builder.serializers
 
 import java.util.concurrent.TimeUnit
 
-import com.twitter.conversions.storage._
-import com.twitter.util.{Duration => TwitterDuration}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -31,11 +29,11 @@ import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
-  val BasicTable = TestDatabase.basicTable
+  private[this] val BasicTable = TestDatabase.basicTable
   final val DefaultTtl = 500
   final val OneDay = 86400
 
-  val root = BasicTable.create.qb.queryString
+  private[this] val root = BasicTable.create.qb.queryString
 
   "The CREATE query builder" - {
 

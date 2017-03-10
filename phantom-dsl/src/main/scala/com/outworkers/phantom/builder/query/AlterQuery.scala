@@ -17,12 +17,12 @@ package com.outworkers.phantom.builder.query
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.ops.DropColumn
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options.{TablePropertyClause, WithBound, WithChainned, WithUnchainned}
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-
-import scala.annotation.implicitNotFound
 
 class AlterQuery[
   Table <: CassandraTable[Table, _],
@@ -146,10 +146,46 @@ object AlterQuery {
    * @tparam R The record held in the table.
    * @return A raw ALTER query, without any further options set on it.
    */
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, _], R](table: T)(
+    implicit keySpace: KeySpace
+  ): AlterQuery.Default[T, R] = {
     new AlterQuery[T, R, Unspecified, WithUnchainned](
       table,
       QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
+      QueryOptions.empty
+    )
+  }
+
+  def alterType[
+    T <: CassandraTable[T, _],
+    R,
+    NewType
+  ](table: T, select: T => AbstractColumn[R], newType: Primitive[NewType])(
+    implicit keySpace: KeySpace
+  ): AlterQuery.Default[T, R] = {
+
+    val qb = QueryBuilder.Alter.alter(
+      QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
+    )
+
+    new AlterQuery(
+      table,
+      QueryBuilder.Alter.alter(qb, select(table).name, newType.cassandraType),
+      QueryOptions.empty
+    )
+  }
+
+  def alterName[
+    T <: CassandraTable[T, _],
+    R
+  ](table: T, select: T => AbstractColumn[R], newName: String)(
+    implicit keySpace: KeySpace
+  ): AlterQuery.Default[T, R] = {
+
+    val qb = QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
+    new AlterQuery(
+      table,
+      QueryBuilder.Alter.rename(qb, select(table).name, newName),
       QueryOptions.empty
     )
   }

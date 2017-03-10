@@ -17,7 +17,6 @@ package com.outworkers.phantom.tables
 
 import com.datastax.driver.core.PagingState
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.util.testing.sample
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
@@ -30,17 +29,12 @@ case class JodaRow(
   timestamp: DateTime
 )
 
-sealed class PrimitivesJoda extends CassandraTable[ConcretePrimitivesJoda, JodaRow] {
+abstract class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] with RootConnector {
   object pkey extends StringColumn(this) with PartitionKey
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  override def fromRow(r: Row): JodaRow = JodaRow(pkey(r), intColumn(r), timestamp(r))
-}
-
-abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector {
-
-  def store(primitive: JodaRow): InsertQuery.Default[ConcretePrimitivesJoda, JodaRow] = {
+  def store(primitive: JodaRow): InsertQuery.Default[PrimitivesJoda, JodaRow] = {
     insert.value(_.pkey, primitive.pkey)
       .value(_.intColumn, primitive.intColumn)
       .value(_.timestamp, primitive.timestamp)
@@ -49,8 +43,5 @@ abstract class ConcretePrimitivesJoda extends PrimitivesJoda with RootConnector 
   def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
     select.limit(limit).paginateRecord(paging)
   }
-
-  override val tableName = "PrimitivesJoda"
-
 }
 

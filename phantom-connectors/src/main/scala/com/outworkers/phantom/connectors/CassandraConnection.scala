@@ -34,7 +34,7 @@ class CassandraConnection(
   val name: String,
   clusterBuilder: ClusterBuilder,
   autoinit: Boolean,
-  keyspaceFn: Option[(Session, KeySpace) => String] = None,
+  keyspaceFn: Option[KeySpaceCQLQuery] = None,
   errorHander: Throwable => Throwable = identity
 ) { outer =>
 
@@ -88,9 +88,9 @@ class CassandraConnection(
    */
   trait Connector extends com.outworkers.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider = outer.provider
+    lazy val provider: DefaultSessionProvider = outer.provider
 
-    lazy val keySpace = outer.name
+    lazy val keySpace: String = outer.name
 
     implicit val space: KeySpace = KeySpace(outer.name)
 

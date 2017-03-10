@@ -18,7 +18,8 @@ package com.outworkers.phantom.finagle
 import com.twitter.util.{Await => TwitterAwait}
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
 import org.scalatest.time.SpanSugar._
 
@@ -28,6 +29,10 @@ import scala.concurrent.{Await, Future}
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.insertSchema()
+
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
 
   val fs: IndexedSeq[Future[Unit]] = for {
     step <- 1 to 3
@@ -41,7 +46,7 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
       b.add(statement)
     })
     w = batch.future()
-    f = w map (_ =>println(s"step $step has succeed") )
+    f = w map (_ => println(s"step $step has succeed") )
     r = Await.result(f, 200 seconds)
   } yield f map (_ => r)
 

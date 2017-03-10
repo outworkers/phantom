@@ -17,30 +17,62 @@ package com.outworkers.phantom.jdk8
 
 import java.time._
 
-import com.outworkers.util.testing.{Sample, _}
+import com.outworkers.util.samplers._
+import org.scalacheck.Arbitrary
+
+import scala.collection.JavaConverters._
+import scala.util.Random
 
 package object tables {
 
+  implicit object ZoneIdSampler extends Sample[ZoneId] {
+    override def sample: ZoneId = ZoneId.of(Generators.oneOf(ZoneId.getAvailableZoneIds.asScala.toSeq))
+  }
+
+  implicit object InstantSampler extends Sample[Instant] {
+    private[this] val sampling = 150000
+
+    override def sample: Instant = {
+      val now = Instant.now().toEpochMilli
+      val offset = Random.nextInt(sampling)
+      val direction = Random.nextBoolean()
+      Instant.ofEpochMilli(if (direction) now + offset else now - offset)
+    }
+  }
+
+  implicit object OffsetDateTimeSampler extends Sample[OffsetDateTime] {
+    override def sample: OffsetDateTime = OffsetDateTime.ofInstant(gen[Instant], gen[ZoneId])
+  }
+
+  implicit object ZonedDateTimeSampler extends Sample[ZonedDateTime] {
+    override def sample: ZonedDateTime = ZonedDateTime.ofInstant(gen[Instant], gen[ZoneId])
+  }
+
+  implicit val primitivesJdk8Gen: Arbitrary[Jdk8Row] = Sample.arbitrary[Jdk8Row]
+  implicit val optionalPrimitivesJdk8Gen: Arbitrary[OptionalJdk8Row] = Sample.arbitrary[OptionalJdk8Row]
+
   implicit object Jdk8RowSampler extends Sample[Jdk8Row] {
+    private[this] val sampling = 150
     def sample: Jdk8Row = {
       Jdk8Row(
-        gen[String],
-        OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
-        ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long]),
-        LocalDate.now().plusDays(gen[Long]),
-        LocalDateTime.now().plusSeconds(gen[Long])
+        pkey = gen[String],
+        offsetDateTime = gen[OffsetDateTime],
+        zonedDateTime = gen[ZonedDateTime],
+        localDate = LocalDate.now().plusDays(Random.nextInt(sampling)),
+        localDateTime = LocalDateTime.now().plusSeconds(Random.nextInt(sampling))
       )
     }
   }
 
   implicit object OptionalJdk8RowSampler extends Sample[OptionalJdk8Row] {
+    private[this] val sampling = 150
     def sample: OptionalJdk8Row = {
       OptionalJdk8Row(
-        gen[String],
-        Some(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
-        Some(ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(gen[Long])),
-        Some(LocalDate.now().plusDays(gen[Long])),
-        Some(LocalDateTime.now().plusSeconds(gen[Long]))
+        pkey = gen[String],
+        offsetDateTime = genOpt[OffsetDateTime],
+        zonedDateTime = genOpt[ZonedDateTime],
+        localDate = Some(LocalDate.now().plusDays(Random.nextInt(sampling).toLong)),
+        localDateTime = Some(LocalDateTime.now().plusSeconds(Random.nextInt(sampling).toLong))
       )
     }
   }

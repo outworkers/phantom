@@ -17,7 +17,7 @@ package com.outworkers.phantom.example.basics
 
 import com.outworkers.phantom.dsl.context
 import com.outworkers.phantom.example.ExampleSuite
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 import scala.concurrent.Future
 
@@ -27,7 +27,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.insertNewRecord(sample).future
+      store <- database.Recipes.store(sample)
       res <- database.Recipes.findRecipeById(sample.id)
     } yield res
 
@@ -41,7 +41,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.insertNewRecord(sample).future
+      store <- database.Recipes.store(sample)
       res <- database.Recipes.findRecipeIngredients(sample.id)
     } yield res
 
@@ -51,28 +51,12 @@ class SimpleRecipesTest extends ExampleSuite {
     }
   }
 
-  it should "retrieve an entire table in a single fetch" in {
-    val sample = genList[Recipe]()
-
-    val chain = for {
-      store <- database.Recipes.truncate().future()
-      store <- Future.sequence(
-        sample.map(s => database.Recipes.insertNewRecord(s).future)
-      )
-      res <- database.Recipes.retrieveEntireTable
-    } yield res
-
-    whenReady(chain) { res =>
-      res should contain theSameElementsAs sample
-    }
-  }
-
   it should "update the author of a recipe" in {
     val sample = gen[Recipe]
     val newAuthor = gen[ShortString].value
 
     val chain = for {
-      store <- database.Recipes.insertNewRecord(sample).future
+      store <- database.Recipes.store(sample)
       res <- database.Recipes.findRecipeById(sample.id)
       updateAuthor <- database.Recipes.updateRecipeAuthor(sample.id, newAuthor)
       res2 <- database.Recipes.findRecipeById(sample.id)
@@ -90,7 +74,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.insertNewRecord(sample).future
+      store <- database.Recipes.store(sample)
       res <- database.Recipes.findRecipeById(sample.id)
       updateAuthor <- database.Recipes.deleteRecipeById(sample.id)
       res2 <- database.Recipes.findRecipeById(sample.id)
@@ -100,6 +84,20 @@ class SimpleRecipesTest extends ExampleSuite {
       res shouldBe defined
       res.value shouldEqual sample
       res2 shouldBe empty
+    }
+  }
+
+  it should "retrieve a recipe by its autho using a secondary index" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      store <- database.SecondaryKeyRecipes.store(sample)
+      res <- database.SecondaryKeyRecipes.findRecipeByAuthor(sample.author)
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 

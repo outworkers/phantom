@@ -17,10 +17,12 @@ package com.outworkers.phantom.builder.primitives
 
 import java.nio.ByteBuffer
 
+import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.{FlatSpec, Matchers}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 class PrimitivesTest extends FlatSpec with Matchers {
 
@@ -60,15 +62,37 @@ class PrimitivesTest extends FlatSpec with Matchers {
   }
 
   it should "generate a primitive for a collection of tuples" in {
-    val primitive = Primitive[List[(String, Int)]]
-    val strPrimitive = Primitive[List[String]]
+    """
+      val primitive = Primitive[List[(String, Int)]]
+      val strPrimitive = Primitive[List[String]]
 
-    val samples = genList[Int]() map (i => gen[String] -> i)
-    val strSamples = genList[String]()
+      val samples = genList[Int]() map (i => gen[String] -> i)
+      val strSamples = genList[String]()
+    """ should compile
   }
 
   it should "autogenerate set primitives for Map types" in {
     """val test = Primitive[Map[String, String]]""" should compile
   }
 
+  it should "automatically generate a primitive for an enumeration" in {
+    object EnumTest extends Enumeration {
+      val one = Value("one")
+    }
+
+    val test = Primitive[EnumTest.Value]
+    test.asCql(EnumTest.one) shouldEqual CQLQuery.escape("one")
+  }
+
+  it should "derive a primitive for a custom wrapper type" in {
+    val str = gen[String]
+
+    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
+  }
+}
+
+case class Record(value: String)
+
+object Record {
+  implicit val recordPrimitive: Primitive[Record] = Primitive.derive[Record, String](_.value)(Record.apply)
 }

@@ -24,6 +24,7 @@ object CQLSyntax {
   val Or = "OR"
   val On = "ON"
   val IF = "IF"
+  val To = "TO"
   val index = "INDEX"
 
   val ignoreNulls = "IGNORE_NULLS"
@@ -108,7 +109,7 @@ object CQLSyntax {
 
     val dot = "."
     val colon = ":"
-    val `;` = ";"
+    val semicolon = ";"
     val `(` = "("
     val `)` = ")"
     val `,` = ","
@@ -141,6 +142,7 @@ object CQLSyntax {
   }
 
   object Selection {
+    val count = "count"
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
     val TTL = "TTL"

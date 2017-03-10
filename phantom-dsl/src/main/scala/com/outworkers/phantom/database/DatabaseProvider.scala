@@ -17,4 +17,10 @@ package com.outworkers.phantom.database
 
 trait DatabaseProvider[T <: Database[T]] {
   def database: T
+
+  /**
+    * A helper shorthand method.
+    * @return A reference to the database object.
+    */
+  def db: T = database
 }

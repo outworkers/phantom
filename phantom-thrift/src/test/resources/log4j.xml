@@ -15,10 +15,6 @@
         <level value="error" />
     </logger>
 
-    <logger name="com.outworkers.phantom.zookeeper">
-        <level value="info" />
-    </logger>
-
     <logger name="com.datastax.driver.core">
         <level value="error" />
     </logger>

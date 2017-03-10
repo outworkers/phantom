@@ -28,7 +28,8 @@ import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperatio
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
-import com.outworkers.phantom.builder.query.{CQLQuery, CreateImplicits, DeleteImplicits, SelectImplicits}
+import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.serializers.KeySpaceConstruction
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
@@ -137,6 +138,14 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val LOCAL_ONE = CLevel.LOCAL_ONE
     val SERIAL = CLevel.SERIAL
   }
+
+  def cql(str: CQLQuery): ExecutableStatement = new ExecutableStatement {
+    override def options: QueryOptions = QueryOptions.empty
+
+    override def qb: CQLQuery = str
+  }
+
+  def cql(str: String): ExecutableStatement = cql(CQLQuery(str))
 
   type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint

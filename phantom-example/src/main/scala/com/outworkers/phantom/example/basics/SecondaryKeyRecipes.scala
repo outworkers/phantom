@@ -30,7 +30,7 @@ import com.outworkers.phantom.dsl._
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyRecipes, Recipe] {
+abstract class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, Recipe] with RootConnector {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
@@ -51,10 +51,20 @@ sealed class SecondaryKeyRecipes extends CassandraTable[ConcreteSecondaryKeyReci
   object ingredients extends SetColumn[String](this)
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
-}
 
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
+    insert
+      .value(_.id, recipe.id)
+      .value(_.author, recipe.author)
+      .value(_.title, recipe.title)
+      .value(_.description, recipe.description)
+      .value(_.ingredients, recipe.ingredients)
+      .value(_.name, recipe.name)
+      .value(_.props, recipe.props)
+      .value(_.timestamp, recipe.timestamp)
+      .future()
+  }
 
-abstract class ConcreteSecondaryKeyRecipes extends SecondaryKeyRecipes with RootConnector {
 
   // Now say you want to get a Recipe by author.
   // author is a Index, you can now use it in a "where" clause.

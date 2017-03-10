@@ -19,7 +19,7 @@ import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{PreparedWhereClause, UpdateClause}
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
@@ -183,9 +183,10 @@ trait CollectionOperators {
 
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Default = {
       new UpdateClause.Condition(
-        QueryBuilder.Collections.put(col.name, values.map { case (key, value) => {
-          Tuple2(col.keyAsCql(key).toString, col.valueAsCql(value).toString)
-        }}.toSeq : _*))
+        QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
+          col.keyAsCql(key) -> col.valueAsCql(value)
+        }.toSeq : _*)
+      )
     }
   }
 }

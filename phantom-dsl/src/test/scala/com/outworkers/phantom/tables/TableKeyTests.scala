@@ -23,15 +23,13 @@ case class StubRecord(
   name: String
 )
 
-sealed class TableWithSingleKey extends CassandraTable[ConcreteTableWithSingleKey, StubRecord] {
+abstract class TableWithSingleKey extends CassandraTable[TableWithSingleKey, StubRecord] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
 }
 
-abstract class ConcreteTableWithSingleKey extends TableWithSingleKey with RootConnector
-
-class TableWithCompoundKey extends CassandraTable[ConcreteTableWithCompoundKey, StubRecord] {
+abstract class TableWithCompoundKey extends CassandraTable[TableWithCompoundKey, StubRecord] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object second extends UUIDColumn(this) with PrimaryKey
@@ -40,10 +38,7 @@ class TableWithCompoundKey extends CassandraTable[ConcreteTableWithCompoundKey, 
   override def fromRow(r: Row): StubRecord = StubRecord(id(r), name(r))
 }
 
-abstract class ConcreteTableWithCompoundKey extends TableWithCompoundKey with RootConnector
-
-
-sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompositeKey, StubRecord] {
+abstract class TableWithCompositeKey extends CassandraTable[TableWithCompositeKey, StubRecord] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object second_part extends UUIDColumn(this) with PartitionKey
@@ -57,7 +52,3 @@ sealed class TableWithCompositeKey extends CassandraTable[ConcreteTableWithCompo
     )
   }
 }
-
-abstract class ConcreteTableWithCompositeKey extends TableWithCompositeKey with RootConnector
-
-

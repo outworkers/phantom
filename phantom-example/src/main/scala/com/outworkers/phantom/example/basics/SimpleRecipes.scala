@@ -18,12 +18,7 @@ package com.outworkers.phantom.example.basics
 import java.util.UUID
 
 import scala.concurrent.{Future => ScalaFuture}
-import org.joda.time.DateTime
-import com.datastax.driver.core.{ResultSet, Row}
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.reactivestreams._
-import com.twitter.conversions.time._
 
 /**
  * In this example we will create a simple table storing recipes.
@@ -48,7 +43,8 @@ case class Recipe(
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-sealed class Recipes extends CassandraTable[Recipes, Recipe] {
+abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+
   object id extends  UUIDColumn(this) with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
@@ -68,18 +64,16 @@ sealed class Recipes extends CassandraTable[Recipes, Recipe] {
   object props extends MapColumn[String, String](this)
 
   object timestamp extends DateTimeColumn(this)
-}
 
-
-abstract class ConcreteRecipes extends Recipes with RootConnector {
   // you can even rename the table in the schema to whatever you like.
   override lazy val tableName = "my_custom_table"
 
   // Inserting has a bit of boilerplate on its on.
   // But it's almost always a once per table thing, hopefully bearable.
   // Whatever values you leave out will be inserted as nulls into Cassandra.
-  def insertNewRecord(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert.value(_.id, recipe.id)
+  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
+    insert
+      .value(_.id, recipe.id)
       .value(_.author, recipe.author)
       .value(_.title, recipe.title)
       .value(_.description, recipe.description)
@@ -113,29 +107,9 @@ abstract class ConcreteRecipes extends Recipes with RootConnector {
   // That's it, a really cool one liner.
   // The fetch method will collect an asynchronous lazy iterator into a Seq.
   // It's a good way to avoid boilerplate when retrieving a small number of items.
-  def findRecipesPage(start: UUID, limit: Int): ScalaFuture[Seq[Recipe]] = {
-    select.where(_.id gtToken start).limit(limit).fetch()
+  def findRecipesPage(start: UUID, limit: Int): ScalaFuture[ListResult[Recipe]] = {
+    select.where(_.id gtToken start).limit(limit).paginateRecord(_.setFetchSize(50))
   }
-
-  // The fetchEnumerator method is the real power behind the scenes.
-  // You can retrieve a whole table, even with billions of records, in a single query.
-  // Phantom will collect them into an asynchronous, lazy iterator with very low memory foot print.
-  // Enumerators, iterators and iteratees are based on Play iteratees.
-  // You can keep the async behaviour or collect through the Iteratee.
-  def retrieveEntireTable: ScalaFuture[List[Recipe]] = {
-    select.fetchEnumerator() run Iteratee.collect()
-  }
-
-
-  // phantom supports a few more Iteratee methods.
-  // However, if you are looking to guarantee ordering and paginate "the old way"
-  // You need an OrderPreservingPartitioner.
-  // You can also use automated Cassandra pagination and fetchRecord
-  // to use native PagingState objects for this.
-  def fetchRecipePage(start: Int, limit: Int): ScalaFuture[Iterator[Recipe]] = {
-    select.fetchEnumerator() run Iteratee.slice(start, limit)
-  }
-
 
   // Updating records is also really easy.
   // Updating one record is done like this

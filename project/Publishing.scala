@@ -23,7 +23,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.0.12"
+    version := "2.3.1"
   )
 
   lazy val noPublishSettings = Seq(
@@ -76,7 +76,7 @@ object Publishing {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
 
-  lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
+  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -84,7 +84,7 @@ object Publishing {
     pgpPassphrase in ThisBuild := {
       if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
-        println(s"Password longer than five characters: ${pgpPass.map(_.length > 5).getOrElse(false)}")
+        println(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
         pgpPass
       } else {
         println("Could not find settings for a PGP passphrase.")

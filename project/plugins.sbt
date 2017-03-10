@@ -13,18 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-def outworkersPattern: Patterns = {
-  val pList = List(
-    "[organisation]/[module](_[scalaVersion])(_[sbtVersion])/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-  )
-
-  Patterns(
-    pList,
-    pList,
-    isMavenCompatible = true
-  )
-}
-
 resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",
@@ -34,6 +22,18 @@ resolvers ++= Seq(
   Resolver.url("bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.mavenStylePatterns),
   Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
 )
+
+lazy val scalaTravisEnv = sys.env.get("TRAVIS_SCALA_VERSION")
+def isScala210: Boolean = scalaTravisEnv.exists("2.10.6" ==)
+lazy val isCi = sys.env.get("CI").exists("true" == )
+
+lazy val Versions = new {
+  val scrooge = if (isCi) {
+    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.14.0" else "4.7.0"
+  } else {
+    if (sys.props("java.specification.version") == "1.8") "4.14.0" else "4.7.0"
+  }
+}
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
@@ -55,8 +55,8 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
 addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "2.0.4")
-
-addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "4.7.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"

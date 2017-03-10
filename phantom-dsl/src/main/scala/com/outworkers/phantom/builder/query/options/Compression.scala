@@ -16,7 +16,8 @@
 package com.outworkers.phantom.builder.query.options
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.{CQLQuery, OptionPart}
+import com.outworkers.phantom.builder.query.OptionPart
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 sealed abstract class CompressionStrategy[

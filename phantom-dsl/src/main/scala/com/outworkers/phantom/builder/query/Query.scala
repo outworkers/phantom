@@ -19,6 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.{QueryCondition, WhereClause}
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import shapeless.HList
 import shapeless.ops.hlist.Prepend
 
@@ -44,13 +45,7 @@ abstract class RootQuery[
 
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified] = {
-    if (session.protocolConsistency) {
-      create(table, qb, options.consistencyLevel_=(level))
-    } else {
-      create(table, QueryBuilder.consistencyLevel(qb, level.toString), options)
-    }
-  }
+  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified]
 }
 
 
@@ -110,17 +105,6 @@ abstract class Query[
         options
       )
     }
-  }
-
-  @implicitNotFound("A limit was already specified for this query.")
-  def limit(limit: Int)(implicit ev: Limit =:= Unlimited): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
-    create[Table, Record, Limited, Order, Status, Chain, PS](
-      table,
-      QueryBuilder.limit(qb, limit),
-      row,
-      usingPart,
-      options
-    )
   }
 
   /**

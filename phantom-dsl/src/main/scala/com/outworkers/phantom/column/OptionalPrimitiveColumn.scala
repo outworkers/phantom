@@ -21,7 +21,7 @@ import scala.annotation.implicitNotFound
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.util.Try
 

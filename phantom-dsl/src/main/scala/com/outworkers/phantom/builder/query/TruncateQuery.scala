@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.KeySpace
 
@@ -24,15 +25,22 @@ class TruncateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
+](
+  table: Table,
+  val init: CQLQuery,
+  override val options: QueryOptions,
+  protected[phantom] val usingPart: UsingPart = UsingPart.empty
+) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
-      new TruncateQuery(table, qb, options.consistencyLevel_=(level))
+      new TruncateQuery(table, init, options.consistencyLevel_=(level))
     } else {
-      new TruncateQuery(table, QueryBuilder.consistencyLevel(qb, level.toString), options)
+      new TruncateQuery(table, init, options, usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
+
+  override def qb: CQLQuery = usingPart build init
 }
 
 

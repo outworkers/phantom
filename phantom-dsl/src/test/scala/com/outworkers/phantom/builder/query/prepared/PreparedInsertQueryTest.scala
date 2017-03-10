@@ -15,12 +15,11 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{BoundStatement, PreparedStatement}
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.codec.JodaLocalDateCodec
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe, TestDatabase}
-import com.outworkers.util.testing._
+import com.outworkers.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe}
+import com.outworkers.util.samplers._
 
 class PreparedInsertQueryTest extends PhantomSuite {
 
@@ -63,11 +62,9 @@ class PreparedInsertQueryTest extends PhantomSuite {
       get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 
@@ -107,11 +104,9 @@ class PreparedInsertQueryTest extends PhantomSuite {
       get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield get
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 
@@ -135,14 +130,12 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
       val chain = for {
         store <- exec
-        get <- selectQuery.bind(sample.pkey).one()
-      } yield get
+        res <- selectQuery.bind(sample.pkey).one()
+      } yield res
 
-      whenReady(chain) {
-        res => {
-          res shouldBe defined
-          res.value shouldEqual sample
-        }
+      whenReady(chain) { res =>
+        res shouldBe defined
+        res.value shouldEqual sample
       }
     }
   }
@@ -176,14 +169,12 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
     val chain = for {
       store <- exec.future()
-      get <- database.recipes.select.where(_.url eqs sample.url).one()
-    } yield get
+      res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 
@@ -206,14 +197,12 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
     val chain = for {
       store <- query.bind(sample).future()
-      get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
-    } yield get
+      res <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
+    } yield res
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 }

@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.util.testing.sample
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
@@ -34,7 +33,7 @@ case class Primitive(
   bi: BigInt
 )
 
-sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
+abstract class Primitives extends CassandraTable[Primitives, Primitive] with RootConnector {
   object pkey extends StringColumn(this) with PartitionKey
 
   object long extends LongColumn(this)
@@ -57,26 +56,9 @@ sealed class Primitives extends CassandraTable[ConcretePrimitives, Primitive] {
 
   object bi extends BigIntColumn(this)
 
-  override def fromRow(r: Row): Primitive = Primitive(
-    pkey(r),
-    long(r),
-    boolean(r),
-    bDecimal(r),
-    double(r),
-    float(r),
-    inet(r),
-    int(r),
-    date(r),
-    uuid(r),
-    bi(r)
-  )
-}
-
-abstract class ConcretePrimitives extends Primitives with RootConnector {
-
   override val tableName = "Primitives"
 
-  def store(row: Primitive): InsertQuery.Default[ConcretePrimitives, Primitive] = {
+  def store(row: Primitive): InsertQuery.Default[Primitives, Primitive] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.long, row.long)

@@ -16,13 +16,14 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.{Row, Session}
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.exceptions.{InvalidClusteringKeyException, InvalidPrimaryKeyException}
 import com.outworkers.phantom.macros.TableHelper
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
@@ -36,15 +37,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
 
-  def columns: Set[AbstractColumn[_]] = helper.fields(self)
+  def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
-  def secondaryKeys: Set[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
+  def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)
 
-  def primaryKeys: Set[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
+  def primaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPrimary).filterNot(_.isPartitionKey)
 
-  def partitionKeys: Set[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
+  def partitionKeys: Seq[AbstractColumn[_]] = columns.filter(_.isPartitionKey)
 
-  def clusteringColumns: Set[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
+  def clusteringColumns: Seq[AbstractColumn[_]] = columns.filter(_.isClusteringKey)
 
   def tableKey: String = helper.tableKey(instance)
 
@@ -53,18 +54,22 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def instance: T = self.asInstanceOf[T]
 
-  lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
+  lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   type ListColumn[RR] = com.outworkers.phantom.column.ListColumn[T, R, RR]
   type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
   type MapColumn[KK, VV] =  com.outworkers.phantom.column.MapColumn[T, R, KK, VV]
   type JsonColumn[RR] = com.outworkers.phantom.column.JsonColumn[T, R, RR]
+  type OptionalJsonColumn[RR] = com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR]
   type EnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
   type OptionalEnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR]
   type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]
   type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]
   type JsonMapColumn[KK,VV] = com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV]
   type TupleColumn[RR] =  com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type PrimitiveColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type CustomColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
+  type Col[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
 
   def insertSchema()(
     implicit session: Session,
@@ -89,11 +94,25 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def alter()(implicit keySpace: KeySpace): AlterQuery.Default[T, R] = AlterQuery(instance)
 
+  final def alter[
+    RR,
+    NewType
+  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+    AlterQuery.alterType[T, RR, NewType](instance, columnSelect, newType)
+  }
+
+  final def alter[RR](
+    columnSelect: T => AbstractColumn[RR],
+    newName: String
+  )(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+    AlterQuery.alterName[T, RR](instance, columnSelect, newName)
+  }
+
   final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  final def store()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = helper.store(instance)
+  //final def store()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = helper.store(instance)
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

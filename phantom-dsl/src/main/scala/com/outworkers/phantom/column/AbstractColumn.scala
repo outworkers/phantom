@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.column
 
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.reflect.runtime.{currentMirror => cm}
 

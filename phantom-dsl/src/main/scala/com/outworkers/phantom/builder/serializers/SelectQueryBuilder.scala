@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 sealed class OrderingModifier {
@@ -71,7 +71,7 @@ private[builder] class SelectQueryBuilder {
    * Will return a query in the following format:
    *
    * {{{
-   *   SELECT * FROM $keyspace.$tableName
+   *   SELECT * FROM keyspace.tableName
    * }}}
    *
    * @param tableName The name of the table.

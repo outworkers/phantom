@@ -19,7 +19,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
 case class OptionalPrimitiveCassandra22(
   pkey: String,
@@ -40,7 +40,10 @@ object OptionalPrimitiveCassandra22 {
   }
 }
 
-sealed class OptionalPrimitivesCassandra22 extends CassandraTable[ConcreteOptionalPrimitivesCassandra22, OptionalPrimitiveCassandra22] {
+abstract class OptionalPrimitivesCassandra22 extends CassandraTable[
+  OptionalPrimitivesCassandra22,
+  OptionalPrimitiveCassandra22
+] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
 
@@ -50,21 +53,9 @@ sealed class OptionalPrimitivesCassandra22 extends CassandraTable[ConcreteOption
 
   object localDate extends OptionalLocalDateColumn(this)
 
-  override def fromRow(r: Row): OptionalPrimitiveCassandra22 = {
-    OptionalPrimitiveCassandra22(
-      pkey = pkey(r),
-      short = short(r),
-      byte = byte(r),
-      localDate = localDate(r)
-    )
-  }
-}
-
-abstract class ConcreteOptionalPrimitivesCassandra22 extends OptionalPrimitivesCassandra22 with RootConnector {
-
   override val tableName = "OptionalPrimitivesCassandra22"
 
-  def store(row: OptionalPrimitiveCassandra22): InsertQuery.Default[ConcreteOptionalPrimitivesCassandra22, OptionalPrimitiveCassandra22] = {
+  def store(row: OptionalPrimitiveCassandra22): InsertQuery.Default[OptionalPrimitivesCassandra22, OptionalPrimitiveCassandra22] = {
     insert
       .value(_.pkey, row.pkey)
       .value(_.short, row.short)

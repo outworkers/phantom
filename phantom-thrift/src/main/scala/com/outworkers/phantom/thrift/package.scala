@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.thrift.columns.RootThriftPrimitive
+import com.outworkers.phantom.builder.primitives.Primitive
 
 package object thrift {
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
@@ -50,7 +50,10 @@ package object thrift {
     Model <: ThriftStruct
   ] = com.outworkers.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
 
-  type ThriftPrimitive[T <: ThriftStruct] = RootThriftPrimitive[T]
+  def thriftPrimitive[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
+    val sz = hp.serializer
+    Primitive.derive[T, String](sz.toString)(sz.fromString)
+  }
 }
 
 

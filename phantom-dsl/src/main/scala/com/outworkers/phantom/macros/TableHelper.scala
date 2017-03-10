@@ -17,10 +17,11 @@ package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
+import com.outworkers.phantom.{CassandraTable, SelectTable}
+import org.slf4j.LoggerFactory
 
 import scala.reflect.macros.blackbox
 
@@ -32,27 +33,41 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableKey(table: T): String
 
-  def fields(table: CassandraTable[T, R]): Set[AbstractColumn[_]]
+  def fields(table: T): Seq[AbstractColumn[_]]
 
   def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
-}
 
+  def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
+}
 
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
+  private[this] val logger = LoggerFactory.getLogger(this.getClass)
 
   import c.universe._
 
-  case class ColumnMember(
+  case class Field(
     name: TermName,
     tpe: Type
   ) {
     def symbol: Symbol = tpe.typeSymbol
+  }
+
+  object Field {
+    def apply(tp: (TermName, Type)): Field = {
+      val (name, tpe) = tp
+      Field(name, tpe)
+    }
+
+    def tupled(tp: (Name, Type)): Field = {
+      val (name, tpe) = tp
+      Field(name.toTermName, tpe)
+    }
   }
 
   private[this] val rowType = tq"com.datastax.driver.core.Row"
@@ -139,18 +154,19 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   trait TableMatchResult
 
   case class Match(
-    results: List[ColumnMember],
+    results: List[Field],
     partition: Boolean
   ) extends TableMatchResult
 
   case object NoMatch extends TableMatchResult
 
-  def show(list: List[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def show[M[X] <: TraversableOnce[X]](traversable: M[Type]): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString ", "
   }
 
-  def show(list: Iterable[Type]): String = {
-    list map(tpe => showCode(tq"$tpe")) mkString ", "
+  private[this] def predicate(source: (Field, Field)): Boolean = {
+    val (col, rec) = source
+    (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
   }
 
   /**
@@ -165,17 +181,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     */
   def findMatchingSubset(
     tableName: Name,
-    members: List[ColumnMember],
-    recordMembers: Iterable[ColumnMember]
+    members: List[Field],
+    recordMembers: Iterable[Field]
   ): TableMatchResult = {
     if (members.isEmpty) {
       NoMatch
     } else {
 
-      if (members.size >= recordMembers.size && members.zip(recordMembers).forall { case (rec, col) =>
-        rec.tpe =:= col.tpe
-      }) {
-        Console.println(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
+      if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
+        logger.info(s"Successfully derived extractor for $tableName using columns: ${members.map(_.name.decodedName.toString).mkString(", ")}")
         Match(members, recordMembers.size != members.size)
       } else {
         findMatchingSubset(tableName, members.tail, recordMembers)
@@ -183,7 +197,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     }
   }
 
-  def extractColumnMembers(table: Type, columns: List[Symbol]): List[ColumnMember] = {
+  def extractColumnMembers(table: Type, columns: List[Symbol]): List[Field] = {
     /**
       * We filter for the members of the table type that
       * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
@@ -204,7 +218,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             // We use the special API to see what type was passed through to AbstractColumn[_]
             // with special thanks to https://github.com/joroKr21 for helping me not rip
             // the remainder of my hair off while uncovering this marvelous macro API method.
-            case head :: Nil => ColumnMember(
+            case head :: Nil => Field(
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
@@ -212,6 +226,34 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
           }
         case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
       }
+    }
+  }
+
+  /**
+    * A "generic" type extractor that's meant to produce a list of fields from a record type.
+    * We support a narrow domain of types for automated generation, currently including:
+    * - Case classes
+    * - Tuples
+    *
+    * To achieve this, we simply have specific ways of extracting the types from the underlying records,
+    * and producing a [[Field]] for each of the members in the product type,
+    * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
+    * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
+    */
+  def extractRecordMembers(tpe: Type): Iterable[Field] = {
+    tpe.typeSymbol match {
+      case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => {
+
+        val names = List.tabulate(tpe.typeArgs.size)(identity) map {
+          index => TermName("_" + index)
+        }
+
+        names.zip(tpe.typeArgs) map Field.apply
+      }
+
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Field.tupled
+
+      case _ => Iterable.empty[Field]
     }
   }
 
@@ -252,9 +294,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
   def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     /**
       * First we create a set of ordered types corresponding to the type signatures
-      * found in the case class arguments.
+      * found in the record. These types are extracted differently based on the specific
+      * type passed as an argument to the table.
       */
-    val recordMembers = caseFields(recordTpe) map { case (nm, tp) => ColumnMember(nm.toTermName, tp) }
+    val recordMembers = extractRecordMembers(recordTpe)
 
     val colMembers = extractColumnMembers(tableTpe, columns)
 
@@ -269,7 +312,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
         Some(q"""new $recordTpe(..$columnNames)""")
       }
       case _ => {
-        Console.println(s"Couldn't automatically infer an extractor for $tableSymbolName")
+        Console.println(s"Couldn't automatically infer a fromRow method definition for $tableSymbolName")
         None
       }
     }
@@ -286,6 +329,19 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
     })
   }
 
+  /**
+    * Extracts the name of the table that will be generated and used in Cassandra.
+    * This can be changed at runtime by the user by overriding [[CassandraTable.tableName]].
+    * This mechanism is incompatible with the historical way we used to do this, effectively using
+    * the type inferred by the final database object.
+    *
+    * Instead, at present times, it is the type hierarchy that dictates what a table will be called,
+    * and the first member of the type hierarchy of a table type with columns defined will dictate the name.
+    *
+    * @param source The source table type to extract the name from. We rely on this to be the first in the hierarchy to
+    *               contain column definitions, determined by [[determineReferenceTable()]] above.
+    * @return
+    */
   def extractTableName(source: Type): String =  {
     val value = source.typeSymbol.name.toTermName.decodedName.toString
     value.charAt(0).toLower + value.drop(1)
@@ -296,9 +352,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val rTpe = weakTypeOf[R]
 
-    val colTpe = tq"com.outworkers.phantom.column.AbstractColumn[_]"
-    val tableTpe = tq"com.outworkers.phantom.CassandraTable[$tableType, $rTpe]"
-
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
@@ -308,7 +361,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
     val fromRowDefinition = materializeExtractor(tableType, rTpe, referenceColumns) getOrElse q"???"
 
-    val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}")
+    val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
     val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
@@ -318,12 +371,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
             $tableTerm.insert()
           }
 
-          def tableKey($tableTerm: $tableType): $strTpe = ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
+          def tableKey($tableTerm: $tableType): $strTpe = {
+            ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
+          }
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
 
-          def fields($tableTerm: $tableTpe): scala.collection.immutable.Set[$colTpe] = {
-            scala.collection.immutable.Set.apply[$colTpe](..$accessors)
+          def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
+            scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
        }
     """

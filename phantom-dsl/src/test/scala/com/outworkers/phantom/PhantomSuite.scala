@@ -19,10 +19,17 @@ import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.connectors.RootConnector
+import com.outworkers.phantom.database.DatabaseProvider
 import com.outworkers.phantom.tables.TestDatabase
+import org.json4s.Formats
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
+import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
@@ -31,7 +38,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   with JsonFormats
   with OptionValues {
 
-  implicit val formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
+  implicit val formats: Formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 
@@ -43,6 +50,14 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
 
+  implicit object JodaTimeSampler extends Sample[DateTime] {
+    override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
+  }
+
+  implicit object JodaLocalDateSampler extends Sample[LocalDate] {
+    override def sample: LocalDate = LocalDate.now(DateTimeZone.UTC)
+  }
+
   override implicit val patienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
@@ -53,15 +68,21 @@ trait PhantomBaseSuite extends Suite with Matchers
       primitive.asCql(obj)
     }
   }
+
+  implicit class BlockHelper[T](val f: Future[T]) {
+    def block(timeout: Duration): T = Await.result(f, timeout)
+  }
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
-  val database = TestDatabase
+trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
+  override val database: TestDatabase = TestDatabase
+}
 
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.Connector with TestDatabaseProvider {
   def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
 }
 
 
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.connector.Connector {
+trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.Connector {
   val database = TestDatabase
 }

@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 
@@ -114,11 +114,10 @@ private[builder] class CreateTableBuilder {
     val stage2 = if (primaries.nonEmpty) {
       // This only works because the macro prevents the user from defining both primaries and clustering keys
       // in the same table.
-      val finalKeys = primaries.toSet
-      root.append(CQLSyntax.comma)
-        .forcePad
-          .append(finalKeys)
-          .append(CQLSyntax.`)`)
+      val finalKeys = primaries.distinct
+      root.append(CQLSyntax.comma).forcePad
+        .append(finalKeys)
+        .append(CQLSyntax.`)`)
     } else {
       root.append(CQLSyntax.`)`)
     }

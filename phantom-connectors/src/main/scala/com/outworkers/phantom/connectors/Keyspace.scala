@@ -15,10 +15,7 @@
  */
 package com.outworkers.phantom.connectors
 
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ProtocolVersion, Session}
-
-import scala.util.control.NoStackTrace
 
 trait SessionAugmenter {
 
@@ -42,7 +39,5 @@ trait SessionAugmenter {
 trait SessionAugmenterImplicits {
   implicit class RichSession(val session: Session) extends SessionAugmenter
 }
-
-
 
 case class KeySpace(name: String)

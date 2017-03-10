@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core._
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
@@ -85,7 +86,7 @@ class CreateQuery[
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-) extends ExecutableStatement {
+)(implicit keySpace: KeySpace) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
@@ -176,11 +177,10 @@ class CreateQuery[
 
   override def future()(
     implicit session: Session,
-    keySpace: KeySpace,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate().queryString))
+      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
     } else {
       super.future() flatMap {
         res => {

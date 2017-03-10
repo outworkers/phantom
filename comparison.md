@@ -53,7 +53,7 @@ Libraries such as phantom and quill are designed to abstract away many of the in
 
 #### Phantom
 
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Phantom is designed to be a one stop destination. It is built exclusively to cater to the app level integration of Scala and Cassandra, meaning it is a lot more than a simple driver.
 
@@ -291,13 +291,11 @@ but at the same time retain the powerful embedded query EDSL.
 
 Let's sum up the points that we tried to make here in two key paragraphs.
 
-- Phantom does indeed make it slightly less verbose to extend things like TypeCodec. But how often do you find yourself dealing with that at application level layer? TypeCodec is not really the valid approach anyway, you have to think more in terms of Cassandra data types, why would you register a TypeCodec when you could use a simple map?
-Phantom requires minimal boilerplate around defining the table DSL and by nature doesn't really work well with sharing table columns. It can be done, but it's not the most beautiful code, nor is it the worst.
-Overall
+- Phantom used to make it less interesting to extend support for custom types, however this is now trivially
+done with `Primitive.derive`, which allows users to support new types by leveraging existing primitives.
 
-- Quill is an excellence piece of  software.
-It's better than phantom strictly at query generation, there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
-It's a vastly inferior tool at the application layer, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
-Phantom is far more mature, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
+- Quill is an excellence piece of software and it has theoretically less boilerplate than phantom. there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
+It's a vastly inferior tool at the application layer, and in supports such a small subset of Cassandra features it's barely usable for anything real world, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
+Phantom is far more mature, feature rich, battle tested, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
 
-- Phantom is a lot easier to adopt and learn, simply as it doesn't introduce any new terminology. The mapping DSL and the `Database` object are all you need to know.
+- Phantom is a lot easier to adopt and learn, simply as it doesn't introduce any new terminology. The mapping DSL and the `Database` object are all you need to know, so the learning curve is minimal.

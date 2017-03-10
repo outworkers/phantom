@@ -17,28 +17,60 @@ package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 
-object db extends TestDatabase
+object basicDb extends BasicDatabase
 
 class DatabaseTest extends PhantomSuite {
 
   it should "instantiate a database and collect references to the tables" in {
-    db.tables.size shouldEqual 4
+    basicDb.tables.size shouldEqual 4
   }
 
   it should "automatically generate the CQL schema and initialise tables " in {
-    db.createAsync().successful {
-      res => res.nonEmpty shouldEqual true
+    whenReady(basicDb.createAsync()) { res =>
+      res.nonEmpty shouldEqual true
     }
   }
 
   it should "respect any auto-creation options specified for the particular table" in {
     val space = KeySpace("phantom_test")
-    val queries = db.autocreate().queries(space).map(_.qb)
+    val queries = basicDb.autocreate().queries(space).map(_.qb)
 
-    val target = db.recipes.autocreate(space).qb
+    val target = basicDb.recipes.autocreate(space).qb
 
     queries should contain (target)
+  }
+
+  it should "automatically drop a table using the autodrop method" in {
+    val chain = for {
+      _ <- basicDb.createAsync()
+      _ <- basicDb.autodrop().future()
+      exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
+        cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${basicDb.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${basicDb.enumTable.tableName}' LIMIT 1").future()
+      }
+    } yield exists
+
+    whenReady(chain) { res =>
+      Option(res.one()) shouldBe empty
+    }
+  }
+
+  it should "automatically drop a table using the dropAsync method" in {
+    val chain = for {
+      _ <- basicDb.createAsync()
+      _ <- basicDb.dropAsync()
+      exists <- if (cassandraVersion.value >= Version.`3.0.0`) {
+        cql(s"SELECT table_name FROM system_schema.tables WHERE keyspace_name ='${basicDb.enumTable.tableName}' LIMIT 1").future()
+      } else {
+        cql(s"SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name ='${basicDb.enumTable.tableName}' LIMIT 1").future()
+      }
+    } yield exists
+
+    whenReady(chain) { res =>
+      Option(res.one()) shouldBe empty
+    }
   }
 }

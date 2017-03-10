@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.query
 
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options._
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 

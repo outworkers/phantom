@@ -17,26 +17,24 @@ package com.outworkers.phantom.suites
 
 import java.util.UUID
 
-import com.outworkers.phantom.tables.{Output, ThriftDatabase}
-import com.outworkers.util.testing._
-import org.scalatest.concurrent.PatienceConfiguration
+import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
+import com.outworkers.phantom.dsl.context
+import com.outworkers.util.samplers._
 
-import scala.concurrent.duration._
-import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
+trait ThriftTestSuite extends PhantomSuite {
 
-trait ThriftTestSuite extends Suite
-  with BeforeAndAfterAll
-  with Matchers
-  with OptionValues
-  with ThriftDatabase.connector.Connector {
-  implicit val s: PatienceConfiguration.Timeout = timeout(10 seconds)
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    ThriftDatabase.create()
+  }
 
-  type ThriftTest = com.outworkers.phantom.thrift.ThriftTest
-  val ThriftTest = com.outworkers.phantom.thrift.ThriftTest
+  type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
+  val ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
 
-  implicit object OutputSample extends Sample[Output] {
-    def sample: Output = {
-      Output(
+  implicit object OutputSample extends Sample[ThriftRecord] {
+    def sample: ThriftRecord = {
+      ThriftRecord(
         id = gen[UUID],
         name = gen[String],
         struct = gen[ThriftTest],
