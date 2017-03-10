@@ -47,7 +47,6 @@ object TableHelper {
 @macrocompat.bundle
 class TableHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
 
-
   private[this] val logger = LoggerFactory.getLogger(this.getClass)
 
   import c.universe._

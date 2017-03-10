@@ -62,7 +62,7 @@ trait JsonFormats {
           } match {
             case Success(dt) => dt
             case Failure(err) => {
-              val exception =  new MappingException(s"Couldn't extract a DateTime from $value")
+              val exception = new MappingException(s"Couldn't extract a DateTime from $value")
               exception.initCause(err)
               throw exception
             }
@@ -71,7 +71,7 @@ trait JsonFormats {
           Try(new DateTime(value.toLong, DateTimeZone.UTC)) match {
             case Success(dt) => dt
             case Failure(err) => {
-              val exception =  new MappingException(s"Couldn't extract a DateTime from $value")
+              val exception = new MappingException(s"Couldn't extract a DateTime from $value")
               exception.initCause(err)
               throw exception
             }

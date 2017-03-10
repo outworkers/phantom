@@ -29,26 +29,9 @@ class BatchQueryTest extends PhantomSuite {
   }
 
   it should "correctly execute a chain of INSERT queries" in {
-    val row = gen[JodaRow]
-    val row2 = gen[JodaRow]
-    val row3 = gen[JodaRow]
+    val rows = genList[JodaRow]()
 
-    val statement1 = database.primitivesJoda.insert
-      .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.intColumn)
-      .value(_.timestamp, row.timestamp)
-
-    val statement2 = database.primitivesJoda.insert
-      .value(_.pkey, row2.pkey)
-      .value(_.intColumn, row2.intColumn)
-      .value(_.timestamp, row2.timestamp)
-
-    val statement3 = database.primitivesJoda.insert
-      .value(_.pkey, row3.pkey)
-      .value(_.intColumn, row3.intColumn)
-      .value(_.timestamp, row3.timestamp)
-
-    val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
+    val batch = Batch.logged.add(rows.map(r => database.primitivesJoda.store(r)): _*)
 
     val chain = for {
       ex <- database.primitivesJoda.truncate.future()
@@ -57,40 +40,23 @@ class BatchQueryTest extends PhantomSuite {
     } yield count
 
     whenReady(chain) { res =>
-      res.value shouldEqual 3
+      res.value shouldEqual rows.size
     }
   }
 
   it should "correctly execute a chain of queries with a ConsistencyLevel set" in {
-    val row = gen[JodaRow]
-    val row2 = gen[JodaRow]
-    val row3 = gen[JodaRow]
+    val rows = genList[JodaRow]()
 
-    val statement1 = database.primitivesJoda.insert
-      .value(_.pkey, row.pkey)
-      .value(_.intColumn, row.intColumn)
-      .value(_.timestamp, row.timestamp)
-
-    val statement2 = database.primitivesJoda.insert
-      .value(_.pkey, row2.pkey)
-      .value(_.intColumn, row2.intColumn)
-      .value(_.timestamp, row2.timestamp)
-
-    val statement3 = database.primitivesJoda.insert
-      .value(_.pkey, row3.pkey)
-      .value(_.intColumn, row3.intColumn)
-      .value(_.timestamp, row3.timestamp)
-
-    val batch = Batch.logged.add(statement1).add(statement2).add(statement3)
+    val batch = Batch.logged.add(rows.map(r => database.primitivesJoda.store(r)): _*)
 
     val chain = for {
       ex <- database.primitivesJoda.truncate.future()
-      batchDone <- batch.consistencyLevel_=(ConsistencyLevel.ALL).future()
+      batchDone <- batch.consistencyLevel_=(ConsistencyLevel.ONE).future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
     whenReady(chain) { res =>
-      res.value shouldEqual 3
+      res.value shouldEqual rows.size
     }
   }
 

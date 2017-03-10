@@ -24,50 +24,26 @@ import scala.concurrent.{Future, blocking}
 
 class SkipRecordsByToken extends PhantomSuite {
 
-  val Articles = TestDatabase.articles
+  val Articles = database.articles
 
   override def beforeAll(): Unit = {
-    blocking {
-      super.beforeAll()
-      Articles.insertSchema()
-    }
+    super.beforeAll()
+    Articles.insertSchema()
   }
 
   it should "allow skipping records using gtToken" in {
-    val article1 = gen[Article]
-    val article2 = gen[Article]
-    val article3 = gen[Article]
-    val article4 = gen[Article]
+    val articles = genList[Article]()
 
     val result = for {
-      truncate <- Articles.truncate.future()
-      i1 <- Articles.insert
-        .value(_.name, article1.name).value(_.id, article1.id)
-        .value(_.orderId, article1.orderId)
-        .future()
-      i2 <- Articles.insert
-        .value(_.name, article2.name)
-        .value(_.id, article2.id)
-        .value(_.orderId, article2.orderId)
-        .future()
-      i3 <- Articles.insert
-        .value(_.name, article3.name)
-        .value(_.id, article3.id)
-        .value(_.orderId, article3.orderId)
-        .future()
-
-      i4 <- Articles.insert
-        .value(_.name, article4.name)
-        .value(_.id, article4.id)
-        .value(_.orderId, article4.orderId)
-        .future()
+      _ <- Articles.truncate().future()
+      _ <- Future.sequence(articles.map(Articles.store(_).future()))
       one <- Articles.select.one
       next <- Articles.select.where(_.id gtToken one.value.id).fetch
     } yield next
 
     whenReady(result) { r =>
       info (s"got exactly ${r.size} records")
-      r.size shouldEqual 3
+      r.size shouldEqual (articles.size - 1)
     }
   }
 

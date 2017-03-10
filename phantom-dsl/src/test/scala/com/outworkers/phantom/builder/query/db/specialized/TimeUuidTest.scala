@@ -17,10 +17,13 @@ package com.outworkers.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
+import com.outworkers.phantom.tables.TimeUUIDRecord
 import org.joda.time.{DateTime, DateTimeZone}
 import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
+import org.scalacheck.Gen
+
+import scala.concurrent.Future
 
 class TimeUuidTest extends PhantomSuite {
 
@@ -31,9 +34,9 @@ class TimeUuidTest extends PhantomSuite {
 
   it should "be able to store and retrieve a time slice of records based on a combination of minTimeuuid and maxTimeuuid" in {
 
-    val start = gen[DateTime].plusMinutes(-60)
-    val end = gen[DateTime].plusMinutes(60)
-
+    val interval = 60
+    val start = gen[DateTime].plusMinutes(-interval)
+    val end = gen[DateTime].plusMinutes(interval)
     val user = UUIDs.random()
 
     val record = TimeUUIDRecord(
@@ -65,87 +68,71 @@ class TimeUuidTest extends PhantomSuite {
       gen[String]
     )
 
+    val records = List(record, record1, record2)
+
     val chain = for {
-      _ <- TestDatabase.timeuuidTable.truncate().future()
-      _ <- TestDatabase.timeuuidTable.store(record).future()
-      _ <- TestDatabase.timeuuidTable.store(record1).future()
-      _ <- TestDatabase.timeuuidTable.store(record2).future()
-      get <- TestDatabase.timeuuidTable.select
+      _ <- Future.sequence(records.map(r => database.timeuuidTable.store(r).future()))
+      one <- database.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id <= maxTimeuuid(end))
         .and(_.id >= minTimeuuid(start))
         .fetch()
 
-      get2 <- TestDatabase.timeuuidTable.select
+      get2 <- database.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id >= minTimeuuid(start.plusMinutes(-2)))
         .and(_.id <= maxTimeuuid(end))
         .fetch()
-    } yield (get, get2)
+    } yield (one, get2)
 
-    whenReady(chain) {
-      case (res, res2) => {
+    whenReady(chain) { case (res, res2) =>
+      info("At least one timestamp value, including potential time skewes, should be included here")
+      recordList exists(res contains) shouldEqual true
 
-        info("At least one timestamp value, including potential time skewes, should be included here")
-        recordList exists(res contains) shouldEqual true
+      info("Should not contain record with a timestamp 1 minute before the selection window")
+      res should not contain record1
 
-        info("Should not contain record with a timestamp 1 minute before the selection window")
-        res should not contain record1
+      info("Should not contain record with a timestamp 15 seconds before the selection window")
+      res should not contain record2
 
-        info("Should not contain record with a timestamp 15 seconds before the selection window")
-        res should not contain record2
-
-        info("Should contain all elements if we expand the selection window by 1 minute")
-        res2.find(_.id == record.id) shouldBe defined
-        res2.find(_.id == record1.id) shouldBe defined
-        res2.find(_.id == record2.id) shouldBe defined
-      }
+      info("Should contain all elements if we expand the selection window by 1 minute")
+      res2.find(_.id == record.id) shouldBe defined
+      res2.find(_.id == record1.id) shouldBe defined
+      res2.find(_.id == record2.id) shouldBe defined
     }
   }
 
-  ignore should "not retrieve anything for a mismatched selection time window" in {
+  it should "not retrieve anything for a mismatched selection time window" in {
 
     val intervalOffset = 60
-
-    val start = gen[DateTime].plusMinutes(intervalOffset * -1)
-    val end = gen[DateTime].plusMinutes(intervalOffset)
-
+    val now = DateTime.now(DateTimeZone.UTC)
+    val start = now.plusSeconds(-intervalOffset)
     val user = UUIDs.random()
 
-    val record = TimeUUIDRecord(
-      user,
-      UUIDs.timeBased(),
-      gen[String]
-    )
-
-    val minuteOffset = start.plusMinutes(-1).timeuuid()
-    val secondOffset = start.plusSeconds(-15).timeuuid()
-
-    val record1 = TimeUUIDRecord(
-      user,
-      minuteOffset,
-      gen[String]
-    )
-
-    val record2 = TimeUUIDRecord(
-      user,
-      secondOffset,
-      gen[String]
-    )
+    // I will repent for my sins in the future, I'm sorry Ben.
+    val records = genList[TimeUUIDRecord]()
+      .map(_.copy(
+        user = user,
+        id = now.plusSeconds(
+          Gen.choose(
+            -intervalOffset,
+            intervalOffset
+          ).sample.get
+        ).timeuuid())
+      )
 
     val chain = for {
-      _ <- TestDatabase.timeuuidTable.truncate().future()
-      _ <- TestDatabase.timeuuidTable.store(record).future()
-      _ <- TestDatabase.timeuuidTable.store(record1).future()
-      _ <- TestDatabase.timeuuidTable.store(record2).future()
-      get <- TestDatabase.timeuuidTable.select
-        .where(_.user eqs record.user)
-        .and(_.id >= minTimeuuid(start.plusMinutes(-3)))
-        .and(_.id <= maxTimeuuid(end.plusMinutes(-2)))
+      _ <- Future.sequence(records.map(r => database.timeuuidTable.store(r).future()))
+      get <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id >= minTimeuuid(start.plusSeconds(-3 * intervalOffset)))
+        .and(_.id <= maxTimeuuid(start.plusSeconds(-2 * intervalOffset)))
         .fetch()
     } yield get
 
-    whenReady(chain) { _.size shouldEqual 0}
+    whenReady(chain) { res =>
+      res.size shouldEqual 0
+    }
   }
 
 }
