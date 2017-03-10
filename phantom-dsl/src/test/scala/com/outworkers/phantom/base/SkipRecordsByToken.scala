@@ -35,6 +35,7 @@ class SkipRecordsByToken extends PhantomSuite {
     val articles = genList[Article]()
 
     val result = for {
+      _ <- Articles.truncate().future()
       _ <- Future.sequence(articles.map(Articles.store(_).future()))
       one <- Articles.select.one
       next <- Articles.select.where(_.id gtToken one.value.id).fetch
@@ -42,7 +43,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     whenReady(result) { r =>
       info (s"got exactly ${r.size} records")
-      r.size shouldEqual articles.size
+      r.size shouldEqual (articles.size - 1)
     }
   }
 

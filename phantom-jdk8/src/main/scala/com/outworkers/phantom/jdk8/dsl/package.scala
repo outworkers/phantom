@@ -82,15 +82,15 @@ package object dsl extends DefaultJava8Primitives {
   }
 
   implicit class OffsetDateTimeHelper(val date: OffsetDateTime) extends AnyVal {
-    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class ZonedDateTimeHelper(val date: ZonedDateTime) extends AnyVal {
-    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class TimeUUIDAugmenter(val uuid: UUID) extends AnyVal {

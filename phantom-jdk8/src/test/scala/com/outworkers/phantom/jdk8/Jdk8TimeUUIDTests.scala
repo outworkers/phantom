@@ -37,11 +37,9 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
   it should "be able to store and retrieve a time slice of records based on an OffsetDateTime" in {
 
     val interval = 60
-
     val now = OffsetDateTime.now()
     val start = now.plusMinutes(-interval)
     val end = now.plusMinutes(interval)
-
     val user = UUIDs.random()
 
     val record = TimeUUIDRecord(
@@ -58,8 +56,8 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
       */
     val recordList = record :: Nil
 
-    val minuteOffset = start.plusMinutes(-1).timeuuid
-    val secondOffset = start.plusSeconds(-15).timeuuid
+    val minuteOffset = start.plusMinutes(-1).timeuuid()
+    val secondOffset = start.plusSeconds(-15).timeuuid()
 
     val record1 = TimeUUIDRecord(
       user,
@@ -110,11 +108,9 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
   it should "be able to store and retrieve a time slice of records based on ZonedDateTime" in {
 
     val interval = 60
-
     val now = ZonedDateTime.now()
     val start = now.plusMinutes(-interval)
     val end = now.plusMinutes(interval)
-
     val user = UUIDs.random()
 
     val record = TimeUUIDRecord(
@@ -131,8 +127,8 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
       */
     val recordList = record :: Nil
 
-    val minuteOffset = start.plusMinutes(-1).timeuuid
-    val secondOffset = start.plusSeconds(-15).timeuuid
+    val minuteOffset = start.plusMinutes(-1).timeuuid()
+    val secondOffset = start.plusSeconds(-15).timeuuid()
 
     val record1 = TimeUUIDRecord(
       user,
@@ -150,18 +146,18 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
       _ <- database.timeuuidTable.store(record).future()
       _ <- database.timeuuidTable.store(record1).future()
       _ <- database.timeuuidTable.store(record2).future()
-      get <- database.timeuuidTable.select
+      one <- database.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id <= maxTimeuuid(end))
         .and(_.id >= minTimeuuid(start))
         .fetch()
 
-      get2 <- database.timeuuidTable.select
+      one2 <- database.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id >= minTimeuuid(start.plusMinutes(-2)))
         .and(_.id <= maxTimeuuid(end))
         .fetch()
-    } yield (get, get2)
+    } yield (one, one2)
 
     whenReady(chain) { case (res, res2) =>
       info("At least one timestamp value, including potential time skewes, should be included here")
@@ -183,7 +179,6 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
   it should "not retrieve anything for a mismatched selection time window using ZonedDateTime" in {
 
     val intervalOffset = 60
-
     val now = ZonedDateTime.now()
     val start = now.plusSeconds(-intervalOffset)
     val user = UUIDs.random()
@@ -197,27 +192,26 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
             -intervalOffset,
             intervalOffset
           ).sample.get
-        ).timeuuid)
+        ).timeuuid())
       )
 
     val chain = for {
       _ <- Future.sequence(records.map(r => database.timeuuidTable.store(r).future()))
-      get <- database.timeuuidTable.select
+      one <- database.timeuuidTable.select
         .where(_.user eqs user)
         .and(_.id >= minTimeuuid(start.plusSeconds(-3 * intervalOffset)))
         .and(_.id <= maxTimeuuid(start.plusSeconds(-2 * intervalOffset)))
         .fetch()
-    } yield get
+    } yield one
 
-    whenReady(chain) { _.size shouldEqual 0}
+    whenReady(chain) { res =>
+      res.size shouldEqual 0
+    }
   }
-
-
 
   it should "not retrieve anything for a mismatched selection time window using OffsetDateTime" in {
 
     val intervalOffset = 60
-
     val now = OffsetDateTime.now()
     val start = now.plusSeconds(-intervalOffset)
     val user = UUIDs.random()
@@ -231,7 +225,7 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
             -intervalOffset,
             intervalOffset
           ).sample.get
-        ).timeuuid)
+        ).timeuuid())
       )
 
     val chain = for {
@@ -243,7 +237,9 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
         .fetch()
     } yield get
 
-    whenReady(chain) { _.size shouldEqual 0}
+    whenReady(chain) { res =>
+      res.size shouldEqual 0
+    }
   }
 
 }
