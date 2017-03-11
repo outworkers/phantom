@@ -57,33 +57,28 @@ sealed class TTLOfFunction extends CqlFunction {
 
 sealed class DateOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(
+  protected[this] def apply(nm: String)(
     implicit ev: Primitive[DateTime],
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = {
-    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf.name), row => {
-      if (row.getColumnDefinitions.contains(s"system.dateof(${pf.name})")) {
-        ev.fromRow(s"system.dateof(${pf.name})", row).toOption
+    new TypedClause.Condition(QueryBuilder.Select.dateOf(nm), row => {
+      if (row.getColumnDefinitions.contains(s"system.dateof($nm)")) {
+        ev.fromRow(s"system.dateof($nm)", row).toOption
       } else {
-        ev.fromRow(s"dateof(${pf.name})", row).toOption
+        ev.fromRow(s"dateof($nm)", row).toOption
       }
     })
   }
+
+  def apply(pf: TimeUUIDColumn[_, _])(
+    implicit ev: Primitive[DateTime],
+    session: Session
+  ): TypedClause.Condition[Option[DateTime]] = apply(pf.name)
 
   def apply(op: OperatorClause.Condition)(
     implicit ev: Primitive[DateTime],
     session: Session
-  ): TypedClause.Condition[Option[DateTime]] = {
-    val pf = op.qb.queryString
-
-    new TypedClause.Condition(QueryBuilder.Select.dateOf(pf), row => {
-      if (row.getColumnDefinitions.contains(s"system.dateof(${pf})")) {
-        ev.fromRow(s"system.dateof($pf)", row).toOption
-      } else {
-        ev.fromRow(s"dateof($pf)", row).toOption
-      }
-    })
-  }
+  ): TypedClause.Condition[Option[DateTime]] = apply(op.qb.queryString)
 }
 
 sealed class NowCqlFunction extends CqlFunction {
@@ -142,23 +137,33 @@ sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Se
     * @tparam VL
     * @return
     */
-  def eqs[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+  def eqs[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(
+    implicit ev: TT =:!= TP
+  ): WhereClause.Condition = {
     joinOp(tk.mapper, CQLSyntax.Operators.eqs)
   }
 
-  def <[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+  def <[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(
+    implicit ev: TT =:!= TP
+  ): WhereClause.Condition = {
     joinOp(tk.mapper, CQLSyntax.Operators.lt)
   }
 
-  def <=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+  def <=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(
+    implicit ev: TT =:!= TP
+  ): WhereClause.Condition = {
     joinOp(tk.mapper, CQLSyntax.Operators.lte)
   }
 
-  def >[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+  def >[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(
+    implicit ev: TT =:!= TP
+  ): WhereClause.Condition = {
     joinOp(tk.mapper, CQLSyntax.Operators.gt)
   }
 
-  def >=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(implicit ev: TT =:!= TP): WhereClause.Condition = {
+  def >=[VL <: HList, TT <: TokenTypes.Root](tk: TokenConstructor[VL, TT])(
+    implicit ev: TT =:!= TP
+  ): WhereClause.Condition = {
     joinOp(tk.mapper, CQLSyntax.Operators.gte)
   }
 }
