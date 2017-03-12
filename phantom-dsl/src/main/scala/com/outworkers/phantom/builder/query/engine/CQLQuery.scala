@@ -15,10 +15,66 @@
  */
 package com.outworkers.phantom.builder.query.engine
 
+import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.syntax.CQLSyntax.Symbols
 import com.outworkers.phantom.connectors.KeySpaceCQLQuery
 
-case class CQLQuery(override val queryString: String) extends AbstractQuery[CQLQuery](queryString) with KeySpaceCQLQuery {
-  def instance(str: String): CQLQuery = CQLQuery(str)
+case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
+
+  val defaultSep = ", "
+
+  def instance(st: String): CQLQuery
+
+  def nonEmpty: Boolean = queryString.nonEmpty
+
+  def append(st: String): CQLQuery = instance(queryString + st)
+  def append(st: CQLQuery): CQLQuery = append(st.queryString)
+
+  def append[M[X] <: TraversableOnce[X]](list: M[String], sep: String = defaultSep): CQLQuery = {
+    instance(queryString + list.mkString(sep))
+  }
+
+  def appendEscape(st: String): CQLQuery = append(escape(st))
+  def appendEscape(st: CQLQuery): CQLQuery = appendEscape(st.queryString)
+
+  def terminate: CQLQuery = appendIfAbsent(CQLSyntax.Symbols.semicolon)
+
+  def appendSingleQuote(st: String): CQLQuery = append(singleQuote(st))
+  def appendSingleQuote(st: CQLQuery): CQLQuery = append(singleQuote(st.queryString))
+
+  def appendIfAbsent(st: String): CQLQuery = if (queryString.endsWith(st)) instance(queryString) else append(st)
+  def appendIfAbsent(st: CQLQuery): CQLQuery = appendIfAbsent(st.queryString)
+
+  def prepend(st: String): CQLQuery = instance(st + queryString)
+  def prepend(st: CQLQuery): CQLQuery = prepend(st.queryString)
+
+  def prependIfAbsent(st: String): CQLQuery = if (queryString.startsWith(st)) instance(queryString) else prepend(st)
+  def prependIfAbsent(st: CQLQuery): CQLQuery = prependIfAbsent(st.queryString)
+
+  def escape(st: String): String = "`" + st + "`"
+  def singleQuote(st: String): String = "'" + st.replaceAll("'", "''") + "'"
+
+  def spaced: Boolean = queryString.endsWith(" ")
+  def pad: CQLQuery = if (spaced) this.asInstanceOf[CQLQuery] else instance(queryString + " ")
+  def bpad: CQLQuery = prependIfAbsent(" ")
+
+  def forcePad: CQLQuery = instance(queryString + " ")
+  def trim: CQLQuery = instance(queryString.trim)
+
+  def wrapn(str: String): CQLQuery = append(Symbols.`(`).append(str).append(Symbols.`)`)
+  def wrapn(query: CQLQuery): CQLQuery = wrapn(query.queryString)
+  def wrap(str: String): CQLQuery = pad.wrapn(str)
+  def wrap(query: CQLQuery): CQLQuery = wrap(query.queryString)
+
+  def wrapn[M[X] <: TraversableOnce[X]](
+    col: M[String],
+    sep: String = defaultSep
+  ): CQLQuery = wrapn(col.mkString(sep))
+
+  def wrap[M[X] <: TraversableOnce[X]](
+    col: M[String],
+    sep: String = defaultSep
+  ): CQLQuery = wrap(col.mkString(sep))
 
   override def toString: String = queryString
 }
