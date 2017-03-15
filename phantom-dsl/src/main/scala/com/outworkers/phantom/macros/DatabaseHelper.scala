@@ -33,7 +33,7 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(override val c: blackbox.Context) extends MacroUtils(c) {
+class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   import c.universe._
 
   private[this] val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"

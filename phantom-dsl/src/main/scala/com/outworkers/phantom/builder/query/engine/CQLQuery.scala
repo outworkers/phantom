@@ -23,7 +23,7 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
 
   val defaultSep = ", "
 
-  def instance(st: String): CQLQuery
+  def instance(st: String): CQLQuery = CQLQuery(st)
 
   def nonEmpty: Boolean = queryString.nonEmpty
 
