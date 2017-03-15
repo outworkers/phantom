@@ -29,6 +29,8 @@ class RootMacro(val c: blackbox.Context) {
 
   protected[this] val rowType = tq"com.datastax.driver.core.Row"
   protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
+  protected[this] val macroPkg = q"com.outworkers.phantom.macros"
+  protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"
   protected[this] val strTpe = tq"java.lang.String"
   protected[this] val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
   protected[this] val collections = q"scala.collection.immutable"

@@ -38,9 +38,7 @@ class MapOperationsTest extends PhantomSuite {
       insertDone <- database.recipes.store(recipe).future()
       update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
-    } yield {
-      select
-    }
+    } yield select
 
     whenReady(operation) { items =>
       items.value shouldEqual recipe.props + item

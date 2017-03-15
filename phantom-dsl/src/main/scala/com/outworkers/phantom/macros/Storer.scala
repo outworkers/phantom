@@ -32,4 +32,6 @@ object Storer {
   def apply[T <: CassandraTable[T, R], R](
     implicit storer: Storer[T, R]
   ): Aux[T, R, storer.Repr] = storer
+
+  implicit def materializer[T <: CassandraTable[T, R], R]: Storer[T, R] = macro StoreMacro.materialize[T, R]
 }

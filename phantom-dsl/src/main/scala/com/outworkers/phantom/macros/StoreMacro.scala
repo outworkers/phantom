@@ -15,9 +15,30 @@
  */
 package com.outworkers.phantom.macros
 
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.InsertQuery
+
 import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
-class StoreMacro(val c: blackbox.Context) {
+class StoreMacro(override val c: blackbox.Context) extends RootMacro(c) {
+  import c.universe._
 
+  def materialize[T <: CassandraTable[T, R] : c.WeakTypeTag, R : c.WeakTypeTag]: Tree = {
+
+    val tableTpe = weakTypeOf[T]
+    val recordType = weakTypeOf[R]
+
+    val storeTpe = typeOf[Unit]
+
+    /*
+    q"""
+        new $macroPkg.Storer[T, R] {
+          override type Repr = $storeTpe
+          override def store($tableTerm: $tableTpe): $builderPkg.InsertQuery.Default[$tableTpe, $recordType] = {
+          }
+        }
+    """*/
+    EmptyTree
+  }
 }
