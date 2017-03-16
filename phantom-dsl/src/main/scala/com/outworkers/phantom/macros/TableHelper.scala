@@ -116,7 +116,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   trait TableMatchResult
 
   case class Match(
-    results: List[Field],
+    results: List[Column.Field],
     partition: Boolean
   ) extends TableMatchResult
 
@@ -124,11 +124,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
   /**
     * Predicate that checks two fields refer to the same type.
-    * @param source The source, which is a tuple of two [[Field]] values.
+    * @param source The source, which is a tuple of two [[Record.Field]] values.
     * @return True if the left hand side of te tuple is equal to the right hand side
     *         or if there is an implicit conversion from the left field type to the right field type.
     */
-  private[this] def predicate(source: (Field, Field)): Boolean = {
+  private[this] def predicate(source: (RootField, RootField)): Boolean = {
     val (col, rec) = source
     (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
   }
@@ -145,15 +145,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     */
   def findMatchingSubset(
     tableName: Name,
-    members: List[Field],
-    recordMembers: Iterable[Field]
+    members: List[Column.Field],
+    recordMembers: Iterable[Record.Field]
   ): TableMatchResult = {
     if (members.isEmpty) {
       NoMatch
     } else {
 
       if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
-        logger.info(s"Successfully derived extractor for $tableName using columns: ${showCollection(members.map(_.tpe))}")
+        logger.info(s"Successfully derived extractor for $tableName using columns: ${showCollection(members.map(_.tpe.dealias))}")
         Match(members, recordMembers.size != members.size)
       } else {
         findMatchingSubset(tableName, members.tail, recordMembers)
@@ -163,21 +163,49 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
   def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val recordMembers = extractRecordMembers(recordTpe)
-    val recordTypeMap = recordMembers.typeMap
     val recordFieldMap = recordMembers.fieldMap
-
     val colMembers = extractColumnMembers(tableTpe, columns)
     val colTypeMap = colMembers.typeMap
 
-    val matches = recordTypeMap.map { case (tp, list) =>
-      colTypeMap.get(tp) match {
-        case None => c.abort(c.enclosingPosition, s"Failed to find a matching type for ${showCode(tq"$tp")}")
-        case Some(head :: Nil) => Some(head)
-        case Some(l @ head :: tail) => l.find()
+    val matches: Iterable[RecordMatch] = recordFieldMap.map { case (recordName, recordType) =>
+      val rec = Record.Field(recordName, recordType)
+
+      colTypeMap.find(field => recordType =:= field._1).map(_._2) match {
+        case None | Some(Nil) => Unmatched(rec, s"Table doesn't contain a column of type ${tq"${recordType.dealias}"}")
+
+        case Some(head :: Nil) =>
+          logger.info(s"Found direct match for ${printType(recordType)} with table.${q"$head"}")
+          MatchedField(rec, Column.Field(head, recordType))
+
+        case Some(l @ head :: tail) => l.find(recordName ==) match {
+          case Some(matchingName) => MatchedField(rec, Column.Field(matchingName, recordType))
+
+          case None => Unmatched(
+            rec,
+            s"Table contained ${l.size} columns of inner type ${printType(recordType)}, but name record field name ${q"$recordName"} was not matched"
+          )
+        }
       }
     }
 
-    None
+    val unmatched = matches.collect {
+      case u @ Unmatched(records, reason) => u
+    }
+
+    val matchingFields = matches.collect {
+      case m @ MatchedField(left, right) => m
+    }
+
+    val unmatchedRecordFields = unmatched.map(u =>
+      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
+    ) mkString ", "
+
+    if (unmatched.nonEmpty) {
+      c.abort(c.enclosingPosition, s"Failed to automatically infer an extractor for ${printType(tableTpe)}, no match found for $unmatchedRecordFields")
+      None
+    } else {
+      Some(matchingFields.fromRowDefinition(recordTpe))
+    }
   }
 
   /**
@@ -279,15 +307,16 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
-    val fromRowDefinition = materializeExtractor(tableType, rTpe, referenceColumns) getOrElse q"???"
+    val fromRowDefinition = extractor(tableType, rTpe, referenceColumns)
 
     // If the table does not have an existing implementation of a fromRow method.
-    if (notImplemented == tableType.member(fromRowName)) {
-      if (fromRowDefinition.isEmpty) {
-        c.abort(c.enclosingPosition, s"Could not infer a fromRow for $tableType, you must implement one manually")
-      } else {
-        logger.info(s"Successfully inferred a fromRow for $tableType")
-      }
+
+    val abstractFromRow = tableType.member(fromRowName).asMethod.isAbstract
+
+    if (fromRowDefinition.isEmpty) {
+      c.abort(c.enclosingPosition, s"Could not infer a fromRow for $tableType, you must implement one manually")
+    } else {
+      logger.info(s"Successfully inferred a fromRow for $tableType")
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
@@ -304,7 +333,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowDefinition
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowDefinition.get}
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)

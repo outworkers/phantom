@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory
 
 import scala.reflect.macros.blackbox
 import scala.reflect.NameTransformer
-import scala.collection.mutable.{ Map => MutableMap }
 
 @macrocompat.bundle
 class RootMacro(val c: blackbox.Context) {
@@ -51,9 +50,31 @@ class RootMacro(val c: blackbox.Context) {
   val fromRowName: TermName = NameTransformer.encode("fromRow")
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
 
+  def printType(tpe: Type): String = {
+    showCode(tq"${tpe.dealias}")
+  }
+
   def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
     traversable map(tpe => showCode(tq"$tpe")) mkString sep
   }
+
+  trait RootField {
+
+    def name: TermName
+
+    def tpe: Type
+
+    def symbol: Symbol = tpe.typeSymbol
+  }
+
+  object Record {
+    case class Field(name: TermName, tpe: Type) extends RootField
+  }
+
+  object Column {
+    case class Field(name: TermName, tpe: Type) extends RootField
+  }
+
 
   def caseFields(tpe: Type): Iterable[(Name, Type)] = {
     object CaseField {
@@ -69,7 +90,7 @@ class RootMacro(val c: blackbox.Context) {
     tpe.decls.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  implicit class FieldOps[M[X] <: TraversableOnce[X]](val col: M[Field]) {
+  implicit class FieldOps(val col: Iterable[RootField]) {
     def typeMap: Map[Type, List[TermName]] = {
       col.foldLeft(Map.empty[Type, List[TermName]]) { case (acc, f) =>
         acc + (f.tpe -> (f.name :: acc.getOrElse(f.tpe, Nil)))
@@ -83,6 +104,25 @@ class RootMacro(val c: blackbox.Context) {
     }
   }
 
+  trait RecordMatch
+
+  case class Unmatched(
+    field: Record.Field,
+    reason: String = ""
+  ) extends RecordMatch
+
+  case class MatchedField(
+    left: Record.Field,
+    right: Column.Field
+  ) extends RecordMatch
+
+  implicit class MatchedFieldOps(col: Iterable[MatchedField]) {
+    def fromRowDefinition(recordType: Type): Tree = {
+      val columnNames = col.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+      q"""new $recordType(..$columnNames)"""
+    }
+  }
+
   /**
     * A "generic" type extractor that's meant to produce a list of fields from a record type.
     * We support a narrow domain of types for automated generation, currently including:
@@ -90,11 +130,11 @@ class RootMacro(val c: blackbox.Context) {
     * - Tuples
     *
     * To achieve this, we simply have specific ways of extracting the types from the underlying records,
-    * and producing a [[Field]] for each of the members in the product type,
+    * and producing a [[Record.Field]] for each of the members in the product type,
     * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
     * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
     */
-  def extractRecordMembers(tpe: Type): Iterable[Field] = {
+  def extractRecordMembers(tpe: Type): Iterable[Record.Field] = {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") => {
 
@@ -102,12 +142,12 @@ class RootMacro(val c: blackbox.Context) {
           index => TermName("_" + index)
         }
 
-        names.zip(tpe.typeArgs) map Field.apply
+        names.zip(tpe.typeArgs) map (x => Record.Field(x._1, x._2))
       }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Field.tupled
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map (x => Record.Field(x._1.toTermName, x._2))
 
-      case _ => Iterable.empty[Field]
+      case _ => Iterable.empty[Record.Field]
     }
   }
 
@@ -125,26 +165,7 @@ class RootMacro(val c: blackbox.Context) {
       )(collection.breakOut) distinct
   }
 
-  case class Field(
-    name: TermName,
-    tpe: Type
-  ) {
-    def symbol: Symbol = tpe.typeSymbol
-  }
-
-  object Field {
-    def apply(tp: (TermName, Type)): Field = {
-      val (name, tpe) = tp
-      Field(name, tpe)
-    }
-
-    def tupled(tp: (Name, Type)): Field = {
-      val (name, tpe) = tp
-      Field(name.toTermName, tpe)
-    }
-  }
-
-  def extractColumnMembers(table: Type, columns: List[Symbol]): List[Field] = {
+  def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {
     /**
       * We filter for the members of the table type that
       * directly subclass [[AbstractColumn[_]]. For every one of those methods, we
@@ -165,7 +186,7 @@ class RootMacro(val c: blackbox.Context) {
             // We use the special API to see what type was passed through to AbstractColumn[_]
             // with special thanks to https://github.com/joroKr21 for helping me not rip
             // the remainder of my hair off while uncovering this marvelous macro API method.
-            case head :: Nil => Field(
+            case head :: Nil => Column.Field(
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
