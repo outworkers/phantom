@@ -24,7 +24,6 @@ trait Storer[T <: CassandraTable[T, R], R] {
   def store(table: T, input: Repr): InsertQuery.Default[T, R]
 }
 
-
 object Storer {
   //noinspection ScalaStyle
   type Aux[T <: CassandraTable[T, R], R, Computed] = Storer[T, R] { type Repr = Computed }
