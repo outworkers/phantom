@@ -122,6 +122,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
   case object NoMatch extends TableMatchResult
 
+  /**
+    * Predicate that checks two fields refer to the same type.
+    * @param source The source, which is a tuple of two [[Field]] values.
+    * @return True if the left hand side of te tuple is equal to the right hand side
+    *         or if there is an implicit conversion from the left field type to the right field type.
+    */
   private[this] def predicate(source: (Field, Field)): Boolean = {
     val (col, rec) = source
     (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
@@ -155,6 +161,24 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     }
   }
 
+  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
+    val recordMembers = extractRecordMembers(recordTpe)
+    val recordTypeMap = recordMembers.typeMap
+    val recordFieldMap = recordMembers.fieldMap
+
+    val colMembers = extractColumnMembers(tableTpe, columns)
+    val colTypeMap = colMembers.typeMap
+
+    val matches = recordTypeMap.map { case (tp, list) =>
+      colTypeMap.get(tp) match {
+        case None => c.abort(c.enclosingPosition, s"Failed to find a matching type for ${showCode(tq"$tp")}")
+        case Some(head :: Nil) => Some(head)
+        case Some(l @ head :: tail) => l.find()
+      }
+    }
+
+    None
+  }
 
   /**
     * Materializes an extractor method for a table, the so called "fromRow" method.
@@ -210,10 +234,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
         Some(q"""new $recordTpe(..$columnNames)""")
       }
-      case _ => {
-        Console.println(s"Couldn't automatically infer a fromRow method definition for $tableSymbolName")
-        None
-      }
+      case _ => None
     }
   }
 
@@ -259,6 +280,15 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
 
     val fromRowDefinition = materializeExtractor(tableType, rTpe, referenceColumns) getOrElse q"???"
+
+    // If the table does not have an existing implementation of a fromRow method.
+    if (notImplemented == tableType.member(fromRowName)) {
+      if (fromRowDefinition.isEmpty) {
+        c.abort(c.enclosingPosition, s"Could not infer a fromRow for $tableType, you must implement one manually")
+      } else {
+        logger.info(s"Successfully inferred a fromRow for $tableType")
+      }
+    }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 

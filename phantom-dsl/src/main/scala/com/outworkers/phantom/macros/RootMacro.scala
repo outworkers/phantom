@@ -20,6 +20,8 @@ import com.outworkers.phantom.column.AbstractColumn
 import org.slf4j.LoggerFactory
 
 import scala.reflect.macros.blackbox
+import scala.reflect.NameTransformer
+import scala.collection.mutable.{ Map => MutableMap }
 
 @macrocompat.bundle
 class RootMacro(val c: blackbox.Context) {
@@ -45,8 +47,11 @@ class RootMacro(val c: blackbox.Context) {
   val rootConn: Symbol = typeOf[SelectTable[_, _]].typeSymbol
   val colSymbol: Symbol = typeOf[AbstractColumn[_]].typeSymbol
 
+  val notImplementedName: TermName = NameTransformer.encode("???")
+  val fromRowName: TermName = NameTransformer.encode("fromRow")
+  val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
 
-   def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
+  def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
     traversable map(tpe => showCode(tq"$tpe")) mkString sep
   }
 
@@ -64,6 +69,20 @@ class RootMacro(val c: blackbox.Context) {
     tpe.decls.collect { case CaseField(name, fType) => name -> fType }
   }
 
+  implicit class FieldOps[M[X] <: TraversableOnce[X]](val col: M[Field]) {
+    def typeMap: Map[Type, List[TermName]] = {
+      col.foldLeft(Map.empty[Type, List[TermName]]) { case (acc, f) =>
+        acc + (f.tpe -> (f.name :: acc.getOrElse(f.tpe, Nil)))
+      }
+    }
+
+    def fieldMap: Map[TermName, Type] = {
+      col.foldLeft(Map.empty[TermName, Type]) { case (acc, f) =>
+        acc + (f.name -> f.tpe)
+      }
+    }
+  }
+
   /**
     * A "generic" type extractor that's meant to produce a list of fields from a record type.
     * We support a narrow domain of types for automated generation, currently including:
@@ -77,7 +96,7 @@ class RootMacro(val c: blackbox.Context) {
     */
   def extractRecordMembers(tpe: Type): Iterable[Field] = {
     tpe.typeSymbol match {
-      case sym if sym.name.toTypeName.decodedName.toString.contains("Tuple") => {
+      case sym if sym.fullName.startsWith("scala.Tuple") => {
 
         val names = List.tabulate(tpe.typeArgs.size)(identity) map {
           index => TermName("_" + index)
