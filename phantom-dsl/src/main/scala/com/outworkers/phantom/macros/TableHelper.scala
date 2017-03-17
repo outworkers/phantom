@@ -137,7 +137,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   case class TableDescriptor(
     tpe: Type,
     members: Seq[Column.Field],
-    unmachedColumns: Seq[Column.Field],
+    unmachedColumns: Seq[Column.Field] = Seq.empty,
     matches: Seq[RecordMatch] = Nil
   ) {
 
@@ -152,6 +152,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     def matched: Seq[MatchedField] = matches.collect {
       case m @ MatchedField(left, right) => m
     }
+
+    def debugList: Seq[String] = unmatched.map(u =>
+      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
+    )
   }
 
   object TableDescriptor {
@@ -194,6 +198,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   }
 
   def extractorRec[T](
+    columnFields: List[Column.Field],
     columnMembers: ListMap[Type, List[TermName]],
     recordMembers: List[Record.Field],
     descriptor: TableDescriptor
@@ -208,6 +213,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           // for the next recursive call.
           case None | Some(Nil) =>
             extractorRec(
+              columnFields,
               columnMembers,
               tail,
               descriptor withMatch Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
@@ -221,6 +227,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             logger.info(s"Found direct match for ${printType(recField.tpe)} with table.${q"$h"}")
 
             extractorRec(
+              columnFields,
               columnMembers - recField.tpe,
               tail,
               descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
@@ -229,6 +236,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           case Some(l @ head :: t) => l.find(recField.name ==) match {
             case Some(matchingName) =>
               extractorRec(
+                columnFields,
                 columnMembers remove (recField.tpe, matchingName),
                 tail,
                 descriptor withMatch MatchedField(recField, Column.Field(matchingName, recField.tpe))
@@ -236,6 +244,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
             case None =>
               extractorRec(
+                columnFields,
                 columnMembers remove (recField.tpe, head),
                 tail,
                 descriptor withMatch MatchedField(recField, Column.Field(head, recField.tpe))
@@ -243,30 +252,33 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
         }
 
-      case Nil => descriptor
+      // return a descriptor where the sequence of unmatched table columns
+      // is the original list minus all the elements missing
+      case Nil => descriptor.copy(
+        unmachedColumns = columnFields.filter(f => columnMembers.contains(f.tpe))
+      )
     }
   }
 
   def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val recordMembers = extractRecordMembers(recordTpe)
-    val colMembers = extractColumnMembers(tableTpe, columns)
-    val colTypeMap = colMembers.typeMap
+    val colFields = extractColumnMembers(tableTpe, columns)
 
     val descriptor = extractorRec(
-      colTypeMap,
+      colFields,
+      colFields.typeMap,
       recordMembers.toList,
-      TableDescriptor(tableTpe, colMembers, colMembers)
+      TableDescriptor(tableTpe, colFields)
     )
-
-    val unmatchedRecordFields = descriptor.unmatched.map(u =>
-      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
-    ) mkString ", "
 
     if (descriptor.unmatched.nonEmpty) {
       /*
       c.abort(
         c.enclosingPosition,
-        s"Failed to automatically infer an extractor for ${printType(tableTpe)}, no match found for $unmatchedRecordFields"
+        s"""
+          Failed to automatically infer an extractor for ${printType(tableTpe)},
+          no match found for ${descriptor.debugList.mkString(", ")}
+        """
       )*/
       None
     } else {
