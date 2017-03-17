@@ -23,6 +23,7 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 import org.slf4j.LoggerFactory
 
+import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
 
 trait TableHelper[T <: CassandraTable[T, R], R] {
@@ -133,6 +134,37 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
   }
 
+  case class TableDescriptor(
+    tpe: Type,
+    members: Seq[Column.Field],
+    unmachedColumns: Seq[Column.Field],
+    matches: Seq[RecordMatch] = Nil
+  ) {
+
+    def withMatch(m: RecordMatch): TableDescriptor = {
+      this.copy(matches = matches :+ m)
+    }
+
+    def unmatched: Seq[Unmatched] = matches.collect {
+      case u @ Unmatched(records, reason) => u
+    }
+
+    def matched: Seq[MatchedField] = matches.collect {
+      case m @ MatchedField(left, right) => m
+    }
+  }
+
+  object TableDescriptor {
+    def empty(tpe: Type): TableDescriptor = {
+      TableDescriptor(
+        tpe = tpe,
+        members = List.empty[Column.Field],
+        unmachedColumns = List.empty[Column.Field],
+        matches = List.empty[RecordMatch]
+      )
+    }
+  }
+
   /**
     * Finds a matching subset of columns inside a table definition where the extracted
     * type from a table does not need to include all of the columns inside a table.
@@ -161,50 +193,84 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     }
   }
 
+  def extractorRec[T](
+    columnMembers: ListMap[Type, List[TermName]],
+    recordMembers: List[Record.Field],
+    descriptor: TableDescriptor
+  ): TableDescriptor = {
+    recordMembers match {
+      case recField :: tail =>
+        columnMembers.find(field => recField.tpe =:= field._1).map(_._2) match {
+
+          // We look through the map of types inside the table
+          // And if we don't find any term names associated with the record type.
+          // we return the record field as unmatched and we remove it from the list of matches
+          // for the next recursive call.
+          case None | Some(Nil) =>
+            extractorRec(
+              columnMembers,
+              tail,
+              descriptor withMatch Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
+            )
+
+          // If there is a single term name associated with a Type
+          // Then we don't need to find the best matching term name so we just proceed.
+          // We remove the key from the source dictionary completely because there are no more terms left that could
+          // match the given type.
+          case Some(h :: Nil) =>
+            logger.info(s"Found direct match for ${printType(recField.tpe)} with table.${q"$h"}")
+
+            extractorRec(
+              columnMembers - recField.tpe,
+              tail,
+              descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
+            )
+
+          case Some(l @ head :: t) => l.find(recField.name ==) match {
+            case Some(matchingName) =>
+              extractorRec(
+                columnMembers remove (recField.tpe, matchingName),
+                tail,
+                descriptor withMatch MatchedField(recField, Column.Field(matchingName, recField.tpe))
+              )
+
+            case None =>
+              extractorRec(
+                columnMembers remove (recField.tpe, head),
+                tail,
+                descriptor withMatch MatchedField(recField, Column.Field(head, recField.tpe))
+              )
+          }
+        }
+
+      case Nil => descriptor
+    }
+  }
+
   def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val recordMembers = extractRecordMembers(recordTpe)
-    val recordFieldMap = recordMembers.fieldMap
     val colMembers = extractColumnMembers(tableTpe, columns)
     val colTypeMap = colMembers.typeMap
 
-    val matches: Iterable[RecordMatch] = recordFieldMap.map { case (recordName, recordType) =>
-      val rec = Record.Field(recordName, recordType)
+    val descriptor = extractorRec(
+      colTypeMap,
+      recordMembers.toList,
+      TableDescriptor(tableTpe, colMembers, colMembers)
+    )
 
-      colTypeMap.find(field => recordType =:= field._1).map(_._2) match {
-        case None | Some(Nil) => Unmatched(rec, s"Table doesn't contain a column of type ${tq"${recordType.dealias}"}")
-
-        case Some(head :: Nil) =>
-          logger.info(s"Found direct match for ${printType(recordType)} with table.${q"$head"}")
-          MatchedField(rec, Column.Field(head, recordType))
-
-        case Some(l @ head :: tail) => l.find(recordName ==) match {
-          case Some(matchingName) => MatchedField(rec, Column.Field(matchingName, recordType))
-
-          case None => Unmatched(
-            rec,
-            s"Table contained ${l.size} columns of inner type ${printType(recordType)}, but name record field name ${q"$recordName"} was not matched"
-          )
-        }
-      }
-    }
-
-    val unmatched = matches.collect {
-      case u @ Unmatched(records, reason) => u
-    }
-
-    val matchingFields = matches.collect {
-      case m @ MatchedField(left, right) => m
-    }
-
-    val unmatchedRecordFields = unmatched.map(u =>
+    val unmatchedRecordFields = descriptor.unmatched.map(u =>
       s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
     ) mkString ", "
 
-    if (unmatched.nonEmpty) {
-      c.abort(c.enclosingPosition, s"Failed to automatically infer an extractor for ${printType(tableTpe)}, no match found for $unmatchedRecordFields")
+    if (descriptor.unmatched.nonEmpty) {
+      /*
+      c.abort(
+        c.enclosingPosition,
+        s"Failed to automatically infer an extractor for ${printType(tableTpe)}, no match found for $unmatchedRecordFields"
+      )*/
       None
     } else {
-      Some(matchingFields.fromRowDefinition(recordTpe))
+      Some(descriptor.matched.fromRowDefinition(recordTpe))
     }
   }
 
@@ -313,11 +379,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val abstractFromRow = tableType.member(fromRowName).asMethod.isAbstract
 
+    /*
     if (fromRowDefinition.isEmpty) {
       c.abort(c.enclosingPosition, s"Could not infer a fromRow for $tableType, you must implement one manually")
     } else {
       logger.info(s"Successfully inferred a fromRow for $tableType")
-    }
+    }*/
+
+    val fromRowFn = fromRowDefinition.getOrElse(q"""???""")
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
@@ -333,7 +402,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowDefinition.get}
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowFn
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)

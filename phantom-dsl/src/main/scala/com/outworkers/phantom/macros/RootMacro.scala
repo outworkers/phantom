@@ -19,6 +19,8 @@ import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
 import org.slf4j.LoggerFactory
 
+import scala.collection.generic.CanBuildFrom
+import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
 import scala.reflect.NameTransformer
 
@@ -47,8 +49,8 @@ class RootMacro(val c: blackbox.Context) {
   val colSymbol: Symbol = typeOf[AbstractColumn[_]].typeSymbol
 
   val notImplementedName: TermName = NameTransformer.encode("???")
-  val fromRowName: TermName = NameTransformer.encode("fromRow")
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
+  val fromRowName: TermName = NameTransformer.encode("fromRow")
 
   def printType(tpe: Type): String = {
     showCode(tq"${tpe.dealias}")
@@ -76,7 +78,7 @@ class RootMacro(val c: blackbox.Context) {
   }
 
 
-  def caseFields(tpe: Type): Iterable[(Name, Type)] = {
+  def caseFields(tpe: Type): Seq[(Name, Type)] = {
     object CaseField {
       def unapply(arg: TermSymbol): Option[(Name, Type)] = {
         if (arg.isVal && arg.isCaseAccessor) {
@@ -87,18 +89,18 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
-    tpe.decls.collect { case CaseField(name, fType) => name -> fType }
+    tpe.decls.toSeq.collect { case CaseField(name, fType) => name -> fType }
   }
 
-  implicit class FieldOps(val col: Iterable[RootField]) {
-    def typeMap: Map[Type, List[TermName]] = {
-      col.foldLeft(Map.empty[Type, List[TermName]]) { case (acc, f) =>
+  implicit class FieldOps(val col: Seq[RootField]) {
+    def typeMap: ListMap[Type, List[TermName]] = {
+      col.foldLeft(ListMap.empty[Type, List[TermName]]) { case (acc, f) =>
         acc + (f.tpe -> (f.name :: acc.getOrElse(f.tpe, Nil)))
       }
     }
 
-    def fieldMap: Map[TermName, Type] = {
-      col.foldLeft(Map.empty[TermName, Type]) { case (acc, f) =>
+    def fieldMap: ListMap[TermName, Type] = {
+      col.foldLeft(ListMap.empty[TermName, Type]) { case (acc, f) =>
         acc + (f.name -> f.tpe)
       }
     }
@@ -116,10 +118,20 @@ class RootMacro(val c: blackbox.Context) {
     right: Column.Field
   ) extends RecordMatch
 
-  implicit class MatchedFieldOps(col: Iterable[MatchedField]) {
+  implicit class MatchedFieldOps(col: Seq[MatchedField]) {
     def fromRowDefinition(recordType: Type): Tree = {
       val columnNames = col.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
       q"""new $recordType(..$columnNames)"""
+    }
+  }
+
+  implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
+    val lm: ListMap[K, M[V]]
+  )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
+
+    def remove(key: K, elem: V): ListMap[K, M[V]] = {
+      val col = lm.getOrElse(key, cbf().result())
+      lm + (key -> col.filterNot(elem ==).to[M])
     }
   }
 
@@ -134,7 +146,7 @@ class RootMacro(val c: blackbox.Context) {
     * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
     * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
     */
-  def extractRecordMembers(tpe: Type): Iterable[Record.Field] = {
+  def extractRecordMembers(tpe: Type): Seq[Record.Field] = {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") => {
 
@@ -147,7 +159,7 @@ class RootMacro(val c: blackbox.Context) {
 
       case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map (x => Record.Field(x._1.toTermName, x._2))
 
-      case _ => Iterable.empty[Record.Field]
+      case _ => Seq.empty[Record.Field]
     }
   }
 
