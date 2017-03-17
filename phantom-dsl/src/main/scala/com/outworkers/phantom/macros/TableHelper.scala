@@ -16,12 +16,11 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
-import com.outworkers.phantom.{CassandraTable, SelectTable}
-import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
@@ -30,7 +29,10 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def tableName: String
 
-  def fromRow(table: T, row: Row): R
+  def fromRow(
+    table: T,
+    row: Row
+  ): R
 
   def tableKey(table: T): String
 
@@ -59,9 +61,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     }
   }
 
-  def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
-    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
-  }
 
   def insertQueryType(table: Type, record: Type): Tree = {
     tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
@@ -114,15 +113,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
   }
 
-  trait TableMatchResult
-
-  case class Match(
-    results: List[Column.Field],
-    partition: Boolean
-  ) extends TableMatchResult
-
-  case object NoMatch extends TableMatchResult
-
   /**
     * Predicate that checks two fields refer to the same type.
     * @param source The source, which is a tuple of two [[Record.Field]] values.
@@ -169,34 +159,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     }
   }
 
-  /**
-    * Finds a matching subset of columns inside a table definition where the extracted
-    * type from a table does not need to include all of the columns inside a table.
-    *
-    * This addresses [[https://websudos.atlassian.net/browse/PHANTOM-237]].
-    *
-    * @param recordMembers The type members of the record type.
-    * @param members The type members of the table.
-    * @return
-    */
-  def findMatchingSubset(
-    tableName: Name,
-    members: List[Column.Field],
-    recordMembers: Iterable[Record.Field]
-  ): TableMatchResult = {
-    if (members.isEmpty) {
-      NoMatch
-    } else {
-
-      if (members.size >= recordMembers.size && members.zip(recordMembers).forall(predicate)) {
-        logger.info(s"Successfully derived extractor for $tableName using columns: ${showCollection(members.map(_.tpe.dealias))}")
-        Match(members, recordMembers.size != members.size)
-      } else {
-        findMatchingSubset(tableName, members.tail, recordMembers)
-      }
-    }
-  }
-
   def extractorRec[T](
     columnFields: List[Column.Field],
     columnMembers: ListMap[Type, List[TermName]],
@@ -224,8 +186,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           // We remove the key from the source dictionary completely because there are no more terms left that could
           // match the given type.
           case Some(h :: Nil) =>
-            logger.info(s"Found direct match for ${printType(recField.tpe)} with table.${q"$h"}")
-
             extractorRec(
               columnFields,
               columnMembers - recField.tpe,
@@ -257,32 +217,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       case Nil => descriptor.copy(
         unmachedColumns = columnFields.filter(f => columnMembers.contains(f.tpe))
       )
-    }
-  }
-
-  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
-    val recordMembers = extractRecordMembers(recordTpe)
-    val colFields = extractColumnMembers(tableTpe, columns)
-
-    val descriptor = extractorRec(
-      colFields,
-      colFields.typeMap,
-      recordMembers.toList,
-      TableDescriptor(tableTpe, colFields)
-    )
-
-    if (descriptor.unmatched.nonEmpty) {
-      /*
-      c.abort(
-        c.enclosingPosition,
-        s"""
-          Failed to automatically infer an extractor for ${printType(tableTpe)},
-          no match found for ${descriptor.debugList.mkString(", ")}
-        """
-      )*/
-      None
-    } else {
-      Some(descriptor.matched.fromRowDefinition(recordTpe))
     }
   }
 
@@ -320,27 +254,29 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def materializeExtractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
-    /**
-      * First we create a set of ordered types corresponding to the type signatures
-      * found in the record. These types are extracted differently based on the specific
-      * type passed as an argument to the table.
-      */
+  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
     val recordMembers = extractRecordMembers(recordTpe)
+    val colFields = extractColumnMembers(tableTpe, columns)
 
-    val colMembers = extractColumnMembers(tableTpe, columns)
+    val descriptor = extractorRec(
+      colFields,
+      colFields.typeMap,
+      recordMembers.toList,
+      TableDescriptor(tableTpe, colFields)
+    )
 
-    val tableSymbolName = tableTpe.typeSymbol.name
-
-    findMatchingSubset(tableSymbolName, colMembers, recordMembers) match {
-      case Match(results, _) if recordTpe.typeSymbol.isClass && recordTpe.typeSymbol.asClass.isCaseClass => {
-        val columnNames = results.map { member =>
-          q"$tableTerm.${member.name}.apply($rowTerm)"
-        }
-
-        Some(q"""new $recordTpe(..$columnNames)""")
-      }
-      case _ => None
+    if (descriptor.unmatched.nonEmpty) {
+      /*
+      c.abort(
+        c.enclosingPosition,
+        s"""
+          Failed to automatically infer an extractor for ${printType(tableTpe)},
+          no match found for ${descriptor.debugList.mkString(", ")}
+        """
+      )*/
+      None
+    } else {
+      Some(descriptor.matched.fromRowDefinition(recordTpe))
     }
   }
 
@@ -389,20 +325,25 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     // If the table does not have an existing implementation of a fromRow method.
 
-    val abstractFromRow = tableType.member(fromRowName).asMethod.isAbstract
+    val abstractFromRow = refTable.member(fromRowName)
+    val fromRowTpe = abstractFromRow.infoIn(tableType)
 
-    /*
     if (fromRowDefinition.isEmpty) {
-      c.abort(c.enclosingPosition, s"Could not infer a fromRow for $tableType, you must implement one manually")
-    } else {
-      logger.info(s"Successfully inferred a fromRow for $tableType")
-    }*/
-
-    val fromRowFn = fromRowDefinition.getOrElse(q"""???""")
+      logger.info(s"""
+      Table: ${printType(tableType)}
+      Type info: ${printType(fromRowTpe)}
+      fromRowDefined: ${fromRowDefinition.isDefined}
+      fromRow == ???: ${abstractFromRow.asMethod}
+      abstract: ${abstractFromRow.asMethod.isAbstract}
+      abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
+      body: ${showCode(q"$fromRowTpe")}
+      """
+      )
+    }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
@@ -414,14 +355,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = $fromRowFn
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowDefinition.getOrElse(q"""???""")}
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
        }
     """
-    tree
   }
 
 }

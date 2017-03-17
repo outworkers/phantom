@@ -177,6 +177,10 @@ class RootMacro(val c: blackbox.Context) {
       )(collection.breakOut) distinct
   }
 
+  def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
+    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
+  }
+
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {
     /**
       * We filter for the members of the table type that
@@ -208,6 +212,4 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
   }
-
-
 }
