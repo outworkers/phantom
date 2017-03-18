@@ -138,6 +138,8 @@ class RootMacro(val c: blackbox.Context) {
       val col = lm.getOrElse(key, cbf().result())
       lm + (key -> col.filterNot(elem ==).to[M])
     }
+
+    def remove(key: K, elem: Option[V]): ListMap[K, M[V]] = elem.fold(lm)(x => remove(key, x))
   }
 
   case class TableDescriptor(

@@ -130,62 +130,46 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     recordMembers: List[Record.Field],
     descriptor: TableDescriptor
   ): TableDescriptor = {
+    recordMembers match { case recField :: tail =>
+      columnMembers.find(f => predicate(recField.tpe -> f._1)).map(_._2) match {
+        // We look through the map of types inside the table
+        // And if we don't find any term names associated with the record type.
+        // we return the record field as unmatched and we remove it from the list of matches
+        // for the next recursive call.
+        case None =>
+          val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
+          extractorRec(columnFields, columnMembers, tail, descriptor withMatch un)
 
-    recordMembers match {
-      case recField :: tail =>
-        logger.debug(s"Table looking for ${recField.debugString}")
-        columnMembers.find(f => predicate(recField.tpe -> f._1)).map(_._2) match {
+        // If there is a single term name associated with a Type
+        // Then we don't need to find the best matching term name so we just proceed.
+        // We remove the key from the source dictionary completely because there are no more terms left that could
+        // match the given type.
+        case Some(Seq(h)) =>
+          extractorRec(columnFields, columnMembers - recField.tpe, tail,
+            descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
+          )
 
-          // We look through the map of types inside the table
-          // And if we don't find any term names associated with the record type.
-          // we return the record field as unmatched and we remove it from the list of matches
-          // for the next recursive call.
+        case Some(seq) => seq.find(recField.name ==) match {
+          case Some(matchingName) =>
+            logger.debug(s"Found multiple possible matches for ${recField.debugString}")
+            val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+
+            extractorRec(columnFields, columnMembers remove (recField.tpe, matchingName), tail, descriptor withMatch m)
+
           case None =>
-            extractorRec(
-              columnFields,
-              columnMembers,
-              tail,
-              descriptor withMatch Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
+            val nm: TermName = seq.headOption.getOrElse(
+              c.abort(c.enclosingPosition, "This should never happen")
             )
 
-          // If there is a single term name associated with a Type
-          // Then we don't need to find the best matching term name so we just proceed.
-          // We remove the key from the source dictionary completely because there are no more terms left that could
-          // match the given type.
-          case Some(Seq(h)) =>
-            extractorRec(
-              columnFields,
-              columnMembers - recField.tpe,
-              tail,
-              descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
-            )
+            val f = MatchedField(recField, Column.Field(nm, recField.tpe))
 
-          case Some(seq) => seq.find(recField.name ==) match {
-            case Some(matchingName) =>
-              logger.debug(s"Found multiple possible matches for ${recField.debugString}")
-
-              extractorRec(
-                columnFields,
-                columnMembers remove (recField.tpe, matchingName),
-                tail,
-                descriptor withMatch MatchedField(recField, Column.Field(matchingName, recField.tpe))
-              )
-
-            case None =>
-              extractorRec(
-                columnFields,
-                columnMembers remove (recField.tpe, seq.head),
-                tail,
-                descriptor withMatch MatchedField(recField, Column.Field(seq.head, recField.tpe))
-              )
+            extractorRec(columnFields, columnMembers remove (recField.tpe, nm), tail, descriptor withMatch f)
           }
         }
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => descriptor.copy(
-        unmatchedColumns = columnFields.filter(f => columnMembers.contains(f.tpe))
-      )
+      case Nil => descriptor.copy(unmatchedColumns = columnFields.filter(f => columnMembers.contains(f.tpe)))
     }
   }
 
