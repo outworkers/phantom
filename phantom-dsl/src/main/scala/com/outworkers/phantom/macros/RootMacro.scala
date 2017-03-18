@@ -61,7 +61,6 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   trait RootField {
-
     def name: TermName
 
     def tpe: Type
@@ -73,12 +72,25 @@ class RootMacro(val c: blackbox.Context) {
 
   object Record {
     case class Field(name: TermName, tpe: Type) extends RootField
+
+    object Field {
+      def apply(tp: (TermName, Type)): Field = {
+        val (nm, t) = tp
+        Field(nm, t)
+      }
+    }
   }
 
   object Column {
     case class Field(name: TermName, tpe: Type) extends RootField
-  }
 
+    object Field {
+      def apply(tp: (Name, Type)): Field = {
+        val (nm, t) = tp
+        Field(nm.toTermName, t)
+      }
+    }
+  }
 
   def caseFields(tpe: Type): Seq[(Name, Type)] = {
     object CaseField {

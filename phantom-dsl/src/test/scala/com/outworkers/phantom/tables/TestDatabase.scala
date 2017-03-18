@@ -62,7 +62,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
     }
   }
 
-  object secondaryIndexTable extends ConcreteSecondaryIndexTable with Connector
+  object secondaryIndexTable extends SecondaryIndexTable with Connector
   object staticTable extends ConcreteStaticTableTest with Connector
   object staticCollectionTable extends ConcreteStaticCollectionTableTest with Connector
 

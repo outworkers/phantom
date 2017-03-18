@@ -133,7 +133,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     recordMembers match {
       case recField :: tail =>
-        logger.info(s"Table looking for ${recField.debugString}")
+        logger.debug(s"Table looking for ${recField.debugString}")
         columnMembers.find(f => predicate(recField.tpe -> f._1)).map(_._2) match {
 
           // We look through the map of types inside the table
@@ -162,8 +162,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
           case Some(seq) => seq.find(recField.name ==) match {
             case Some(matchingName) =>
-
-              logger.info(s"Found multiple possible matches for ${recField.debugString}")
+              logger.debug(s"Found multiple possible matches for ${recField.debugString}")
 
               extractorRec(
                 columnFields,
@@ -281,39 +280,34 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tableType = weakTypeOf[T]
-
     val rTpe = weakTypeOf[R]
-
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
 
     val tableName = extractTableName(refTable)
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
-
     val fromRowDefinition = extractor(tableType, rTpe, referenceColumns)
-
-    // If the table does not have an existing implementation of a fromRow method.
-
     val abstractFromRow = refTable.member(fromRowName)
     val fromRowTpe = abstractFromRow.infoIn(tableType)
 
     if (fromRowDefinition.isEmpty) {
-      logger.info(s"""
-      Table: ${printType(tableType)}
-      Type info: ${printType(fromRowTpe)}
-      fromRowDefined: ${fromRowDefinition.isDefined}
-      fromRow == ???: ${abstractFromRow.asMethod}
-      abstract: ${abstractFromRow.asMethod.isAbstract}
-      abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
-      body: ${showCode(q"$fromRowTpe")}
-      """
+      logger.debug(
+        s"""
+          Table: ${printType(tableType)}
+          Type info: ${printType(fromRowTpe)}
+          fromRowDefined: ${fromRowDefinition.isDefined}
+          fromRow == ???: ${abstractFromRow.asMethod}
+          abstract: ${abstractFromRow.asMethod.isAbstract}
+          abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
+          body: ${showCode(q"$fromRowTpe")}
+        """
       )
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
@@ -332,8 +326,5 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
-
-    println(showCode(tree))
-    tree
   }
 }
