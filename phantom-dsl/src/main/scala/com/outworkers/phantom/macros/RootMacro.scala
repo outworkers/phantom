@@ -48,9 +48,9 @@ class RootMacro(val c: blackbox.Context) {
   val rootConn: Symbol = typeOf[SelectTable[_, _]].typeSymbol
   val colSymbol: Symbol = typeOf[AbstractColumn[_]].typeSymbol
 
-  val notImplementedName: TermName = NameTransformer.encode("???")
+  val notImplementedName: TermName = TermName("???")
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
-  val fromRowName: TermName = NameTransformer.encode("fromRow")
+  val fromRowName: TermName = TermName("fromRow")
 
   def printType(tpe: Type): String = {
     showCode(tq"${tpe.dealias}")
@@ -78,18 +78,16 @@ class RootMacro(val c: blackbox.Context) {
         val (nm, t) = tp
         Field(nm, t)
       }
+
+      def tupled(tp: (Name, Type)): Field = {
+        val (nm, t) = tp
+        Field(nm.toTermName, t)
+      }
     }
   }
 
   object Column {
     case class Field(name: TermName, tpe: Type) extends RootField
-
-    object Field {
-      def apply(tp: (Name, Type)): Field = {
-        val (nm, t) = tp
-        Field(nm.toTermName, t)
-      }
-    }
   }
 
   def caseFields(tpe: Type): Seq[(Name, Type)] = {
@@ -201,10 +199,10 @@ class RootMacro(val c: blackbox.Context) {
           index => TermName("_" + index)
         }
 
-        names.zip(tpe.typeArgs) map (x => Record.Field(x._1, x._2))
+        names.zip(tpe.typeArgs) map Record.Field.apply
       }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map (x => Record.Field(x._1.toTermName, x._2))
+      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
 
       case _ => Seq.empty[Record.Field]
     }
