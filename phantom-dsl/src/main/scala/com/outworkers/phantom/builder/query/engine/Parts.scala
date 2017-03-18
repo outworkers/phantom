@@ -35,9 +35,9 @@ abstract class QueryPart[T <: QueryPart[T]](val list: List[CQLQuery] = Nil) {
 
   def append(q: List[CQLQuery]): T = instance(q ::: list)
 
-  def mergeList(list: List[CQLQuery]): MergedQueryList
+  def mergeList(list: List[CQLQuery]): MergeList
 
-  def merge[X <: QueryPart[X]](part: X): MergedQueryList = {
+  def merge[X <: QueryPart[X]](part: X): MergeList = {
     val list = if (part.qb.nonEmpty) List(qb, part.qb) else List(qb)
 
     mergeList(list)
@@ -45,13 +45,15 @@ abstract class QueryPart[T <: QueryPart[T]](val list: List[CQLQuery] = Nil) {
 }
 
 
-case class MergedQueryList(list: List[CQLQuery]) {
+case class MergeList(list: List[CQLQuery]) {
 
-  def this(query: CQLQuery) = this(query :: Nil)
+  def this(query: CQLQuery) = this(List(query))
 
-  def apply(str: String): CQLQuery = CQLQuery(str)
+  def nonEmpty: Boolean = list.nonEmpty
 
-  def build: CQLQuery = apply(list.map(_.queryString).mkString(" "))
+  def apply(list: List[CQLQuery]): MergeList = new MergeList(list)
+
+  def build: CQLQuery = CQLQuery(list.map(_.queryString).mkString(" "))
 
   /**
     * This will build a merge list into a final executable query.
@@ -69,13 +71,17 @@ case class MergedQueryList(list: List[CQLQuery]) {
     init
   }
 
-  def merge[X <: QueryPart[X]](part: X, init: CQLQuery = CQLQuery.empty): MergedQueryList = {
+  def merge[X <: QueryPart[X]](part: X, init: CQLQuery = CQLQuery.empty): MergeList = {
     val appendable = part build init
 
     if (appendable.nonEmpty) {
-      MergedQueryList(appendable +: list)
+      apply(list ::: List(appendable))
     } else {
       this
     }
   }
+}
+
+object MergeList {
+  def empty: MergeList = new MergeList(Nil)
 }

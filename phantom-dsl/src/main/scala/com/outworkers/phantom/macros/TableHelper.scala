@@ -119,61 +119,28 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     * @return True if the left hand side of te tuple is equal to the right hand side
     *         or if there is an implicit conversion from the left field type to the right field type.
     */
-  private[this] def predicate(source: (RootField, RootField)): Boolean = {
+  private[this] def predicate(source: (Type, Type)): Boolean = {
     val (col, rec) = source
-    (col.tpe =:= rec.tpe) || (c.inferImplicitView(EmptyTree, col.tpe, rec.tpe) != EmptyTree)
-  }
-
-  case class TableDescriptor(
-    tpe: Type,
-    members: Seq[Column.Field],
-    unmachedColumns: Seq[Column.Field] = Seq.empty,
-    matches: Seq[RecordMatch] = Nil
-  ) {
-
-    def withMatch(m: RecordMatch): TableDescriptor = {
-      this.copy(matches = matches :+ m)
-    }
-
-    def unmatched: Seq[Unmatched] = matches.collect {
-      case u @ Unmatched(records, reason) => u
-    }
-
-    def matched: Seq[MatchedField] = matches.collect {
-      case m @ MatchedField(left, right) => m
-    }
-
-    def debugList: Seq[String] = unmatched.map(u =>
-      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
-    )
-  }
-
-  object TableDescriptor {
-    def empty(tpe: Type): TableDescriptor = {
-      TableDescriptor(
-        tpe = tpe,
-        members = List.empty[Column.Field],
-        unmachedColumns = List.empty[Column.Field],
-        matches = List.empty[RecordMatch]
-      )
-    }
+    (col =:= rec) || (c.inferImplicitView(EmptyTree, col, rec) != EmptyTree)
   }
 
   def extractorRec[T](
     columnFields: List[Column.Field],
-    columnMembers: ListMap[Type, List[TermName]],
+    columnMembers: ListMap[Type, Seq[TermName]],
     recordMembers: List[Record.Field],
     descriptor: TableDescriptor
   ): TableDescriptor = {
+
     recordMembers match {
       case recField :: tail =>
-        columnMembers.find(field => recField.tpe =:= field._1).map(_._2) match {
+        logger.info(s"Table looking for ${recField.debugString}")
+        columnMembers.find(f => predicate(recField.tpe -> f._1)).map(_._2) match {
 
           // We look through the map of types inside the table
           // And if we don't find any term names associated with the record type.
           // we return the record field as unmatched and we remove it from the list of matches
           // for the next recursive call.
-          case None | Some(Nil) =>
+          case None =>
             extractorRec(
               columnFields,
               columnMembers,
@@ -185,7 +152,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           // Then we don't need to find the best matching term name so we just proceed.
           // We remove the key from the source dictionary completely because there are no more terms left that could
           // match the given type.
-          case Some(h :: Nil) =>
+          case Some(Seq(h)) =>
             extractorRec(
               columnFields,
               columnMembers - recField.tpe,
@@ -193,8 +160,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
               descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
             )
 
-          case Some(l @ head :: t) => l.find(recField.name ==) match {
+          case Some(seq) => seq.find(recField.name ==) match {
             case Some(matchingName) =>
+
+              logger.info(s"Found multiple possible matches for ${recField.debugString}")
+
               extractorRec(
                 columnFields,
                 columnMembers remove (recField.tpe, matchingName),
@@ -205,9 +175,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             case None =>
               extractorRec(
                 columnFields,
-                columnMembers remove (recField.tpe, head),
+                columnMembers remove (recField.tpe, seq.head),
                 tail,
-                descriptor withMatch MatchedField(recField, Column.Field(head, recField.tpe))
+                descriptor withMatch MatchedField(recField, Column.Field(seq.head, recField.tpe))
               )
           }
         }
@@ -215,7 +185,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
       case Nil => descriptor.copy(
-        unmachedColumns = columnFields.filter(f => columnMembers.contains(f.tpe))
+        unmatchedColumns = columnFields.filter(f => columnMembers.contains(f.tpe))
       )
     }
   }
@@ -276,7 +246,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       )*/
       None
     } else {
-      Some(descriptor.matched.fromRowDefinition(recordTpe))
+      Some(descriptor.fromRowDefinition(recordTpe))
     }
   }
 
@@ -343,7 +313,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    q"""
+    val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
@@ -362,6 +332,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
-  }
 
+    println(showCode(tree))
+    tree
+  }
 }

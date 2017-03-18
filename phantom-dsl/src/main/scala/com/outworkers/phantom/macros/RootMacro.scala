@@ -67,6 +67,8 @@ class RootMacro(val c: blackbox.Context) {
     def tpe: Type
 
     def symbol: Symbol = tpe.typeSymbol
+
+    def debugString: String = s"${q"$name"} : ${printType(tpe)}"
   }
 
   object Record {
@@ -93,9 +95,9 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   implicit class FieldOps(val col: Seq[RootField]) {
-    def typeMap: ListMap[Type, List[TermName]] = {
-      col.foldLeft(ListMap.empty[Type, List[TermName]]) { case (acc, f) =>
-        acc + (f.tpe -> (f.name :: acc.getOrElse(f.tpe, Nil)))
+    def typeMap: ListMap[Type, Seq[TermName]] = {
+      col.foldLeft(ListMap.empty[Type, Seq[TermName]]) { case (acc, f) =>
+        acc + (f.tpe -> (acc.getOrElse(f.tpe, Seq.empty[TermName]) :+ f.name))
       }
     }
 
@@ -118,13 +120,6 @@ class RootMacro(val c: blackbox.Context) {
     right: Column.Field
   ) extends RecordMatch
 
-  implicit class MatchedFieldOps(col: Seq[MatchedField]) {
-    def fromRowDefinition(recordType: Type): Tree = {
-      val columnNames = col.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
-      q"""new $recordType(..$columnNames)"""
-    }
-  }
-
   implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
     val lm: ListMap[K, M[V]]
   )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
@@ -132,6 +127,46 @@ class RootMacro(val c: blackbox.Context) {
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       val col = lm.getOrElse(key, cbf().result())
       lm + (key -> col.filterNot(elem ==).to[M])
+    }
+  }
+
+  case class TableDescriptor(
+    tpe: Type,
+    members: Seq[Column.Field],
+    unmatchedColumns: Seq[Column.Field] = Seq.empty,
+    matches: Seq[RecordMatch] = Nil
+  ) {
+
+    def withMatch(m: RecordMatch): TableDescriptor = {
+      this.copy(matches = matches :+ m)
+    }
+
+    def unmatched: Seq[Unmatched] = matches.collect {
+      case u @ Unmatched(records, reason) => u
+    }
+
+    def matched: Seq[MatchedField] = matches.collect {
+      case m @ MatchedField(left, right) => m
+    }
+
+    def fromRowDefinition(recordType: Type): Tree = {
+      val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+      q"""new $recordType(..$columnNames)"""
+    }
+
+    def debugList: Seq[String] = unmatched.map(u =>
+      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
+    )
+  }
+
+  object TableDescriptor {
+    def empty(tpe: Type): TableDescriptor = {
+      TableDescriptor(
+        tpe = tpe,
+        members = List.empty[Column.Field],
+        unmatchedColumns = List.empty[Column.Field],
+        matches = List.empty[RecordMatch]
+      )
     }
   }
 
@@ -150,7 +185,7 @@ class RootMacro(val c: blackbox.Context) {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") => {
 
-        val names = List.tabulate(tpe.typeArgs.size)(identity) map {
+        val names = Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => TermName("_" + index)
         }
 
