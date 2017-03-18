@@ -131,7 +131,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     descriptor: TableDescriptor
   ): TableDescriptor = {
     recordMembers match { case recField :: tail =>
-      columnMembers.find(f => predicate(recField.tpe -> f._1)).map(_._2) match {
+      columnMembers.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
         // We look through the map of types inside the table
         // And if we don't find any term names associated with the record type.
         // we return the record field as unmatched and we remove it from the list of matches
