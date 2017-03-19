@@ -69,12 +69,12 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
   def wrapn[M[X] <: TraversableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrapn(col.mkString(sep))
+  ): CQLQuery = wrapn(col mkString sep)
 
   def wrap[M[X] <: TraversableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrap(col.mkString(sep))
+  ): CQLQuery = wrap(col mkString sep)
 
   override def toString: String = queryString
 }

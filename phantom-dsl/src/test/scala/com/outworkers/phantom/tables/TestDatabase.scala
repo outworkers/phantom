@@ -77,7 +77,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector
-  object multipleKeysTable$ extends MultipleKeys with Connector
+  object multipleKeysTable extends MultipleKeys with Connector
   object timeuuidTable extends TimeUUIDTable with Connector
 
   object events extends ConcreteEvents with Connector

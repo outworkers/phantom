@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.tables.TestDatabase
+import com.outworkers.util.samplers._
 
 class SelectQueryBuilderTest extends QueryBuilderTest {
 
@@ -82,6 +83,32 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
         val qb = QueryBuilder.Select.Ordering.orderBy(orderings: _*).queryString
 
         qb shouldEqual "ORDER BY test ASC, test_2 ASC, test_3 DESC"
+      }
+    }
+
+    "should correctly serialise token operations" - {
+      "should serialise a single token op" in {
+        val sample = genList[String](1)
+        val qs = sample.mkString(", ")
+
+        val query = QueryBuilder.Where.token(sample: _*).queryString
+        query shouldEqual s"TOKEN ($qs)"
+      }
+
+      "should serialise a two token op" in {
+        val sample = genList[String](2)
+        val qs = sample.mkString(", ")
+
+        val query = QueryBuilder.Where.token(sample: _*).queryString
+        query shouldEqual s"TOKEN ($qs)"
+      }
+
+      "should serialise a three token op" in {
+        val sample = genList[String](3)
+        val qs = sample.mkString(", ")
+
+        val query = QueryBuilder.Where.token(sample: _*).queryString
+        query shouldEqual s"TOKEN ($qs)"
       }
     }
 

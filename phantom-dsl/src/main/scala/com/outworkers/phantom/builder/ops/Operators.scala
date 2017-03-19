@@ -118,16 +118,12 @@ sealed class WritetimeCqlFunction extends CqlFunction {
 
 sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Seq[String]) {
 
-  type Out = P
-
   private[this] def joinOp(comp: Seq[String], op: String): WhereClause.Condition = {
-    val qb = QueryBuilder.Where.token(mapper: _*)
-      .pad
-      .append(op)
-      .pad
-      .append(QueryBuilder.Where.token(comp: _*))
-
-    new WhereClause.Condition(qb)
+    new WhereClause.Condition(
+      QueryBuilder.Where.token(mapper: _*)
+        .pad.append(op)
+        .pad.append(QueryBuilder.Where.token(comp: _*))
+    )
   }
 
   /**
