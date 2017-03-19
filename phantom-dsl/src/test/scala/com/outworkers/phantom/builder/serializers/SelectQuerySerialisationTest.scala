@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import java.util.Date
 
 import com.datastax.driver.core.utils.UUIDs
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
@@ -29,6 +30,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
 
   val BasicTable = TestDatabase.basicTable
   val ArticlesByAuthor = TestDatabase.articlesByAuthor
+  val MultipleKeys = TestDatabase.multipleKeysTable
   val TimeSeriesTable = TestDatabase.timeSeriesTable
 
   protected[this] val limit = 5
@@ -82,6 +84,32 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
         val qb = BasicTable.select.where(_.id eqs id).using(ignoreNulls).queryString
 
         qb shouldEqual s"SELECT * FROM phantom.basicTable WHERE id = ${id.toString} USING IGNORE_NULLS;"
+      }
+    }
+
+    "should correctly serialize token functions" - {
+      "should serialize a two value token apply" in {
+        val (s1, s2) = gen[(Int, Int)]
+        val primitive = Primitive[Int]
+        token(s1, s2).mapper shouldEqual Seq(primitive.asCql(s1), primitive.asCql(s2))
+      }
+
+      "should serialize a three value token apply" in {
+        val (s1, s2, s3) = gen[(Int, Int, Int)]
+        val primitive = Primitive[Int]
+        token(s1, s2, s3).mapper shouldEqual Seq(primitive.asCql(s1), primitive.asCql(s2), primitive.asCql(s3))
+      }
+
+      "should serialize a four value token apply" in {
+        val (s1, s2, s3, s4) = gen[(Int, Int, Int, Int)]
+        val primitive = Primitive[Int]
+
+        token(s1, s2, s3, s4).mapper shouldEqual Seq(
+          primitive.asCql(s1),
+          primitive.asCql(s2),
+          primitive.asCql(s3),
+          primitive.asCql(s4)
+        )
       }
     }
 
@@ -152,10 +180,35 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
       }
 
       "a multiple column token clause" in {
+        val (id1, id2) = gen[(UUID, UUID)]
+
         val qb = ArticlesByAuthor.select.where(t => {
-          token(gen[UUID], gen[UUID]) > token(t.author_id, t.category)
+          token(id1, id2) > token(t.author_id, t.category)
         }).queryString
-        info(qb)
+
+        qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN ($id1, $id2) > TOKEN (author_id, category);"
+      }
+
+      "a three column token clause" in {
+        val (id1, id2, id3) = gen[(Int, Int, Int)]
+
+        val qb = MultipleKeys.select.where(t =>
+          token(id1, id2, id3) > token(t.intColumn1, t.intColumn2, t.intColumn3)
+        ).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.multipleKeys WHERE TOKEN ($id1, $id2, $id3) > TOKEN (intColumn1, intColumn2, intColumn3);"
+      }
+
+
+      "a four column token clause" in {
+        val (id1, id2, id3, id4) = gen[(Int, Int, Int, Int)]
+
+        val qb = MultipleKeys.select.where(t =>
+          token(id1, id2, id3, id4) > token(t.intColumn1, t.intColumn2, t.intColumn3, t.intColumn4)
+        ).queryString
+
+        qb shouldEqual s"SELECT * FROM phantom.multipleKeys WHERE TOKEN" +
+          s" ($id1, $id2, $id3, $id4) > TOKEN (intColumn1, intColumn2, intColumn3, intColumn4);"
       }
 
       "a single column token clause" in {

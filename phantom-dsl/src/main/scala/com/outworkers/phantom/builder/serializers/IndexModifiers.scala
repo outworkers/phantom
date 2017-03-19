@@ -71,7 +71,7 @@ private[builder] class IndexModifiers extends BaseModifiers {
   }
 
   def token(clauses: String*): CQLQuery = {
-    CQLQuery(CQLSyntax.token).pad.wrapn(CQLQuery(clauses))
+    CQLQuery(CQLSyntax.token).pad.wrapn(clauses)
   }
 
   /**

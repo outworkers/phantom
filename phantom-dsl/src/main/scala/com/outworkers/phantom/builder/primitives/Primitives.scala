@@ -123,7 +123,7 @@ object Primitives {
 
       override def cassandraType: String = CQLSyntax.Types.Double
 
-      override def fromString(value: String): Double = value.toDouble
+      override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
 
       override def fromRow(column: String, row: GettableByNameData): Try[Double] = {
         nullCheck(column, row)(_.getDouble(column))
@@ -144,7 +144,7 @@ object Primitives {
 
       override def cassandraType: String = CQLSyntax.Types.BigInt
 
-      override def fromString(value: String): Long = value.toLong
+      override def fromString(value: String): Long = java.lang.Long.parseLong(value)
 
       override def fromRow(column: String, row: GettableByNameData): Try[Long] = {
         nullCheck(column, row)(_.getLong(column))
@@ -165,7 +165,7 @@ object Primitives {
 
       override def cassandraType: String = CQLSyntax.Types.Float
 
-      override def fromString(value: String): Float = value.toFloat
+      override def fromString(value: String): Float = java.lang.Float.parseFloat(value)
 
       override def fromRow(column: String, row: GettableByNameData): Try[Float] = {
         nullCheck(column, row)(r => r.getFloat(column))

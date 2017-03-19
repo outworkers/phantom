@@ -25,19 +25,18 @@ import com.outworkers.phantom.dsl._
   name: String
 )
 
-sealed class SecondaryIndexTable extends CassandraTable[ConcreteSecondaryIndexTable, SecondaryIndexRecord] {
+abstract class SecondaryIndexTable extends CassandraTable[
+  SecondaryIndexTable,
+  SecondaryIndexRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object secondary extends UUIDColumn(this) with Index
   object name extends StringColumn(this)
-}
 
-abstract class ConcreteSecondaryIndexTable extends SecondaryIndexTable with RootConnector {
-
-  def store(sample: SecondaryIndexRecord): InsertQuery.Default[ConcreteSecondaryIndexTable, SecondaryIndexRecord] = {
+  def store(sample: SecondaryIndexRecord): InsertQuery.Default[SecondaryIndexTable, SecondaryIndexRecord] = {
     insert
       .value(_.id, sample.primary)
       .value(_.secondary, sample.secondary)
       .value(_.name, sample.name)
   }
-
 }

@@ -16,19 +16,12 @@
 package com.outworkers.phantom.builder.query
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.engine.{CQLQuery, MergedQueryList, QueryPart}
-
-sealed class CQLMergeList(override val list: List[CQLQuery]) extends MergedQueryList[CQLQuery](list) {
-
-  override def apply(list: List[CQLQuery]): MergedQueryList[CQLQuery] = new CQLMergeList(list)
-
-  override def apply(str: String): CQLQuery = CQLQuery(str)
-}
+import com.outworkers.phantom.builder.query.engine.{CQLQuery, MergeList, QueryPart}
 
 sealed abstract class CQLQueryPart[Part <: CQLQueryPart[Part]](
   override val list: List[CQLQuery]
-) extends QueryPart[Part, CQLQuery](list) {
-  override def mergeList(list: List[CQLQuery]): MergedQueryList[CQLQuery] = new CQLMergeList(list)
+) extends QueryPart[Part](list) {
+  override def mergeList(list: List[CQLQuery]): MergeList = new MergeList(list)
 }
 
 sealed class UsingPart(override val list: List[CQLQuery] = Nil) extends CQLQueryPart[UsingPart](list) {

@@ -75,7 +75,7 @@ class MyDb(override val connector: CassandraConnection) extends Database[MyDb](c
 import com.outworkers.phantom.dsl._
 
 case class ExampleModel (
-  id: Int,
+  id: UUID,
   name: String,
   props: Map[String, String],
   timestamp: Int,
@@ -88,6 +88,72 @@ abstract class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel]
   object name extends StringColumn(this)
   object props extends MapColumn[ExampleRecord, ExampleModel, String, String](this)
   object test extends OptionalIntColumn(this)
-}
-
 ```
+
+
+<a id="extractors">Extractors and how they get generateed</a>
+====================================================
+<a href="#table-of-contents">back to top</a>
+
+As of phantom 2.0.0, phantom attempts to automatically derive an appropriate extractor for your record type. In plain
+English, let's take the above example with `ExampleModel` and `ExampleRecord`. In the olden days, there was no automation,
+so you would've had to manually tell phantom how to produce an `ExampleModel` from `com.datastax.driver.core.Row`.
+
+It would look kind of like this:
+
+```scala
+  def fromRow(row: Row): ExampleModel = {
+    new ExampleModel(
+      id(row),
+      name(row),
+      props(row),
+      timestamp(row),
+      test(row)
+    )
+  }
+```
+
+Which is just boilerplate, because you already have the schema defined using the modelling DSL, so you don't
+really want another layer of manual work. 
+
+#### Extractor derivation and limitations
+
+In 2.0.0, we have addressed this using macros, specifically a macro called `com.outworkers.phantom.macros.TableHelper`.
+This class is automatically "computed" using the macro framework, at compile time, and invisibly summoned using implicit
+macros. You don't really need to know the inner workings here all the time, as it's designed to be an invsible
+background part of the toolkit, but sometimes you may run into trouble, as it's not perfect.
+
+#### How the macro works
+
+The macro is capable of matching columns based on their type, regardless of which order they are written in. So
+even if your record types match the table column types in an arbitrary order, the macro can figure that out. It's just
+like in the above example, where `ExampleModel` doesn't follow the same order as `ExampleRecord`.
+
+So the algorithm for the match is very trivial and it works like this:
+
+- First we extract a `Seq[(TermName -> Type)]` from both the record and the table. This basically lists
+every field and their type, again for both table and record.
+
+- We then build a type map of kind `ListMap[Type -> Seq[TermName]` for the table. This basically deals with problems
+where we may have multiple term names of the same type, so in effect we do a `groupBy(_type)`.
+
+- For every type of the `Record`, we look for it in the table. If found, a 
+
+
+##### Field arity 
+
+- The macro will successfully derive an extractor if your table contains all the types in your record and will fail if there
+is at least one record type it couldn't find in a table. It looks for direct matches as well as existing implicit conversions
+from A to B simultaneously. If your table has more fields than your record, the macro will also succeed, it will use only
+those fields 
+ 
+
+##### Limitations
+
+The macro will attempt to match multiple fields of the same type based on their name. So if you have two `uuids` in both
+your table and your record, they are matched perfectly if their names are identical. At this point in time, phantom 2.4.0,
+no attempt is made to match fields using string distance algorithms, but we do anticipate this coming to a future version.
+At this point in time, if a direct match for the field name is not found, then the "next" field in the order written
+by the user is selected. Most of the time, this is the desired behaviour, but it can fail at runtime because it will mix up your
+columns
+

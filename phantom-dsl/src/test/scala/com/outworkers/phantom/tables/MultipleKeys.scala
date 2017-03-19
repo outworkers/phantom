@@ -15,11 +15,22 @@
  */
 package com.outworkers.phantom.tables
 
-import com.datastax.driver.core.Row
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
-class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleKeys]] {
+case class MultipleKeyRecord(
+  pkey: String,
+  int1: Int,
+  int2: Int,
+  int3: Int,
+  int4: Int,
+  int5: Int,
+  int6: Int,
+  int7: Int,
+  timestamp: DateTime
+)
+
+abstract class MultipleKeys extends CassandraTable[MultipleKeys, MultipleKeyRecord] with RootConnector {
 
   object pkey extends StringColumn(this) with PartitionKey
   object intColumn1 extends IntColumn(this) with PrimaryKey with Index
@@ -30,10 +41,4 @@ class MultipleKeys extends CassandraTable[ConcreteMultipleKeys, Option[MultipleK
   object intColumn6 extends IntColumn(this) with PrimaryKey
   object intColumn7 extends IntColumn(this) with PrimaryKey
   object timestamp8 extends DateTimeColumn(this)
-
-  override def fromRow(r: Row): Option[MultipleKeys] = None
-}
-
-abstract class ConcreteMultipleKeys extends MultipleKeys with RootConnector {
-  override val tableName = "AJ"
 }

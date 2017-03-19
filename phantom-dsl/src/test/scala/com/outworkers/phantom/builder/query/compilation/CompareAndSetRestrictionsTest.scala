@@ -26,7 +26,7 @@ class CompareAndSetRestrictionsTest extends FlatSpec with Matchers with KeySpace
   val Primitives = TestDatabase.primitives
   val TimeSeriesTable = TestDatabase.timeSeriesTable
   val SecondaryIndexTable = TestDatabase.secondaryIndexTable
-  val TwoKeys = TestDatabase.multipleKeysTable$
+  val TwoKeys = TestDatabase.multipleKeysTable
   val b = Batch
 
   it should "allow using a non-index column in a conditional update clause" in {
