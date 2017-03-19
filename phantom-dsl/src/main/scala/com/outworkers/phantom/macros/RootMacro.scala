@@ -161,14 +161,22 @@ class RootMacro(val c: blackbox.Context) {
       case m @ MatchedField(left, right) => m
     }
 
-    def fromRowDefinition(recordType: Type): Tree = {
-      val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
-      q"""new $recordType(..$columnNames)"""
+    def fromRow(recordType: Type): Option[Tree] = {
+      if (unmatched.isEmpty) {
+        val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+        Some(q"""new $recordType(..$columnNames)""")
+      } else {
+        None
+      }
     }
 
     def debugList: Seq[String] = unmatched.map(u =>
       s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
     )
+
+    def showExtractor: String = matched.map(f =>
+      s"rec.${f.left.name}: ${printType(f.left.tpe)} -> table.${f.right.name}: ${printType(f.right.tpe)}"
+    ) mkString "\n"
   }
 
   object TableDescriptor {

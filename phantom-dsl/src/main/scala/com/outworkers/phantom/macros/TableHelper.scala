@@ -19,7 +19,7 @@ import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
@@ -207,30 +207,16 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): Option[Tree] = {
+  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): TableDescriptor = {
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 
-    val descriptor = extractorRec(
+    extractorRec(
       colFields,
       colFields.typeMap,
       recordMembers.toList,
       TableDescriptor(tableTpe, colFields)
     )
-
-    if (descriptor.unmatched.nonEmpty) {
-      /*
-      c.abort(
-        c.enclosingPosition,
-        s"""
-          Failed to automatically infer an extractor for ${printType(tableTpe)},
-          no match found for ${descriptor.debugList.mkString(", ")}
-        """
-      )*/
-      None
-    } else {
-      Some(descriptor.fromRowDefinition(recordTpe))
-    }
   }
 
   /**
@@ -267,26 +253,28 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val rTpe = weakTypeOf[R]
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
-
     val tableName = extractTableName(refTable)
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
-    val fromRowDefinition = extractor(tableType, rTpe, referenceColumns)
+    val descriptor = extractor(tableType, rTpe, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName)
     val fromRowTpe = abstractFromRow.infoIn(tableType)
+    val fromRowFn = descriptor.fromRow(rTpe)
 
-    if (fromRowDefinition.isEmpty) {
+    if (fromRowFn.isEmpty) {
       logger.debug(
         s"""
           Table: ${printType(tableType)}
           Type info: ${printType(fromRowTpe)}
-          fromRowDefined: ${fromRowDefinition.isDefined}
+          fromRowDefined: ${descriptor.fromRow(rTpe).isDefined}
           fromRow == ???: ${abstractFromRow.asMethod}
           abstract: ${abstractFromRow.asMethod.isAbstract}
           abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
           body: ${showCode(q"$fromRowTpe")}
         """
       )
+    } else {
+      logger.debug(descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
@@ -303,7 +291,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowDefinition.getOrElse(q"""???""")}
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowFn.getOrElse(q"""???""")}
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
