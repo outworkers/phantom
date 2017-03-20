@@ -119,6 +119,10 @@ class RootMacro(val c: blackbox.Context) {
     }
   }
 
+  def tupleTerm(index: Int, aug: Int = 1): TermName = {
+    TermName("_" + (index + aug).toString)
+  }
+
   trait RecordMatch
 
   case class Unmatched(
@@ -173,10 +177,6 @@ class RootMacro(val c: blackbox.Context) {
       } else {
         None
       }
-    }
-
-    def tupleTerm(index: Int, aug: Int = 1): TermName = {
-      TermName("_" + (index + aug).toString)
     }
 
     def debugList(fields: Seq[RootField]): Seq[String] = fields.map(u =>
@@ -295,7 +295,7 @@ class RootMacro(val c: blackbox.Context) {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
         Seq.tabulate(tpe.typeArgs.size)(identity) map {
-          index => TermName("_" + (index + 1))
+          index => tupleTerm(index)
         } zip tpe.typeArgs map Record.Field.apply
 
       case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
