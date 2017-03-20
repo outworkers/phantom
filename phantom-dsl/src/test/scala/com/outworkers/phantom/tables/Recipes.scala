@@ -47,32 +47,13 @@ abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnecto
   object props extends MapColumn[String, String](this)
 
   object uid extends UUIDColumn(this)
-
-  def store(recipe: Recipe): InsertQuery.Default[Recipes, Recipe] = {
-    insert
-      .value(_.url, recipe.url)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.lastcheckedat, recipe.lastCheckedAt)
-      .value(_.props, recipe.props)
-      .value(_.uid, recipe.uid)
-      .value(_.servings, recipe.servings)
-  }
 }
 
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
-sealed class Events extends CassandraTable[ConcreteEvents, SampleEvent]  {
+abstract class Events extends CassandraTable[Events, SampleEvent] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object map extends MapColumn[Long, DateTime](this)
-}
-
-abstract class ConcreteEvents extends Events with RootConnector {
-
-  def store(event: SampleEvent): InsertQuery.Default[ConcreteEvents, SampleEvent] = {
-    insert.value(_.id, event.id)
-      .value(_.map, event.map)
-  }
 
   def findById(id: UUID): Future[Option[SampleEvent]] = {
     select.where(_.id eqs id).one()

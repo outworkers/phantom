@@ -28,17 +28,17 @@ import com.outworkers.phantom.dsl._
 class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
 
   object articles extends Articles with Connector
-  object articlesByAuthor extends ConcreteArticlesByAuthor with Connector
+  object articlesByAuthor extends ArticlesByAuthor with Connector
 
   object basicTable extends BasicTable with Connector
   object enumTable extends EnumTable with Connector
-  object namedEnumTable extends ConcreteNamedEnumTable with Connector
-  object indexedEnumTable extends ConcreteNamedPartitionEnumTable with Connector
+  object namedEnumTable extends NamedEnumTable with Connector
+  object indexedEnumTable extends NamedPartitionEnumTable with Connector
 
-  object clusteringTable extends ConcreteClusteringTable with Connector
-  object complexClusteringTable extends ConcreteComplexClusteringTable with Connector
-  object simpleCompoundKeyTable extends ConcreteSimpleCompoundKeyTable with Connector
-  object complexCompoundKeyTable extends ConcreteComplexCompoundKeyTable with Connector
+  object clusteringTable extends ClusteringTable with Connector
+  object complexClusteringTable extends ComplexClusteringTable with Connector
+  object simpleCompoundKeyTable extends SimpleCompoundKeyTable with Connector
+  object complexCompoundKeyTable extends ComplexCompoundKeyTable with Connector
 
   object counterTableTest extends ConcreteCounterTableTest with Connector
   object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
@@ -47,7 +47,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object indexedCollectionsTable extends IndexedCollectionsTable with Connector
   object indexedEntriesTable extends IndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
-  object listCollectionTable extends ConcreteListCollectionTable with Connector
+  object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends Primitives with Connector
 
@@ -80,9 +80,9 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object multipleKeysTable extends MultipleKeys with Connector
   object timeuuidTable extends TimeUUIDTable with Connector
 
-  object events extends ConcreteEvents with Connector
+  object events extends Events with Connector
 
-  object scalaPrimitivesTable extends ConcreteScalaTypesMapTable with Connector
+  object scalaPrimitivesTable extends ScalaTypesMapTable with Connector
   object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
   object tuple2Table extends ConcreteTupleColumnTable with Connector
   object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
