@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class WideRow(

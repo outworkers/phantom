@@ -170,7 +170,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => descriptor.copy(unmatchedColumns = columnFields.filter(f => columnMembers.contains(f.tpe)))
+      case Nil => descriptor
     }
   }
 
@@ -275,12 +275,12 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
         """
       )
     } else {
-      logger.info(descriptor.showExtractor)
+      logger.debug(descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
@@ -299,7 +299,5 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
-    Console.println(showCode(tree))
-    tree
   }
 }

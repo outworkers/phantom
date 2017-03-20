@@ -44,8 +44,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
   object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with Connector
 
-  object indexedCollectionsTable extends ConcreteIndexedCollectionsTable with Connector
-  object indexedEntriesTable extends ConcreteIndexedEntriesTable with Connector
+  object indexedCollectionsTable extends IndexedCollectionsTable with Connector
+  object indexedEntriesTable extends IndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ConcreteListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
@@ -64,16 +64,16 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
   object staticTable extends ConcreteStaticTableTest with Connector
-  object staticCollectionTable extends ConcreteStaticCollectionTableTest with Connector
+  object staticCollectionTable extends StaticCollectionTableTest with Connector
 
   object tableWithSingleKey extends TableWithSingleKey with Connector
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
   object tableWithCompositeKey extends TableWithCompositeKey with Connector
 
-  object testTable extends ConcreteTestTable with Connector
+  object testTable extends TestTable with Connector
   object timeSeriesTable extends TimeSeriesTable with Connector
 
-  object primaryCollectionsTable extends ConcretePrimaryCollectionTable with Connector
+  object primaryCollectionsTable extends PrimaryCollectionTable with Connector
 
   object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
   object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector

@@ -147,9 +147,12 @@ class RootMacro(val c: blackbox.Context) {
     tableTpe: Type,
     recordType: Type,
     members: Seq[Column.Field],
-    unmatchedColumns: Seq[Column.Field] = Seq.empty,
     matches: Seq[RecordMatch] = Nil
   ) {
+
+    def unmatchedColumns: Seq[Column.Field] = {
+      members.filterNot(m => matched.exists(r => r.right.name == m.name))
+    }
 
     def withMatch(m: RecordMatch): TableDescriptor = {
       this.copy(matches = matches :+ m)
@@ -231,7 +234,7 @@ class RootMacro(val c: blackbox.Context) {
            $tableTerm.insert.values(..$insertions)
          }
       """
-      logger.info(s"Inferred store method ${showCode(tree)} for ${printType(tableTpe)}")
+      logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
       tree
     }
 
@@ -239,7 +242,7 @@ class RootMacro(val c: blackbox.Context) {
       if (unmatchedColumns.isEmpty) {
         tq"$recordType"
       } else {
-        logger.info(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
         tq"(..$cols)"
       }
@@ -256,7 +259,6 @@ class RootMacro(val c: blackbox.Context) {
         tableTpe = tpe,
         recordType = recordType,
         members = List.empty[Column.Field],
-        unmatchedColumns = List.empty[Column.Field],
         matches = List.empty[RecordMatch]
       )
     }

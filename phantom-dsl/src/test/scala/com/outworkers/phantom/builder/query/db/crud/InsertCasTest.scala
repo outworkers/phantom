@@ -25,10 +25,10 @@ class InsertCasTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.primitives.insertSchema()
-    TestDatabase.primitives.truncate().future().block(defaultScalaTimeout)
-    TestDatabase.testTable.insertSchema()
-    TestDatabase.recipes.insertSchema()
+    database.primitives.insertSchema()
+    database.primitives.truncate().future().block(defaultScalaTimeout)
+    database.testTable.insertSchema()
+    database.recipes.insertSchema()
   }
 
   "Standard inserts" should "not create multiple database entries and perform upserts instead" in {
@@ -36,19 +36,19 @@ class InsertCasTest extends PhantomSuite {
 
     val insertion = new ExecutableStatementList(
       List(
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb
       )
     )
 
     val chain = for {
-      truncate <- TestDatabase.primitives.truncate.future()
+      truncate <- database.primitives.truncate.future()
       store <- insertion.future()
-      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
+      one <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- database.primitives.select.where(_.pkey eqs row.pkey).fetch()
     } yield (one, multi)
 
     whenReady(chain) {
@@ -71,32 +71,30 @@ class InsertCasTest extends PhantomSuite {
 
     val insertion = new ExecutableStatementList(
       List(
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb,
-        TestDatabase.primitives.store(row).ifNotExists().qb
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb,
+        database.primitives.store(row).ifNotExists().qb
       )
     )
 
     val chain = for {
-      truncate <- TestDatabase.primitives.truncate.future()
+      truncate <- database.primitives.truncate.future()
       store <- insertion.future()
-      one <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).one
-      multi <- TestDatabase.primitives.select.where(_.pkey eqs row.pkey).fetch()
+      one <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      multi <- database.primitives.select.where(_.pkey eqs row.pkey).fetch()
     } yield (one, multi)
 
-    whenReady(chain) {
-      case (res1, res3) => {
-        info("The one query should return a record")
-        res1 shouldBe defined
+    whenReady(chain) { case (res1, res3) =>
+      info("The one query should return a record")
+      res1 shouldBe defined
 
-        info("And the record should equal the inserted record")
-        res1.value shouldEqual row
+      info("And the record should equal the inserted record")
+      res1.value shouldEqual row
 
-        info("And only one record should be retrieved from a range fetch")
-        res3 should have size 1
-      }
+      info("And only one record should be retrieved from a range fetch")
+      res3 should have size 1
     }
   }
 }
