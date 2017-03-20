@@ -112,6 +112,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
+  /**
+    * Automatically generated store method for the record type.
+    * @param input The input which will be auto-tupled and compared.
+    * @param keySpace The keyspace in which the query will be executed.
+    * @tparam V1 The type of the input.
+    * @return A default input query.
+    */
   def store[V1](input: V1)(
     implicit keySpace: KeySpace
   ): InsertQuery.Default[T, R] = helper.store(instance, input.asInstanceOf[helper.Repr])
