@@ -16,7 +16,6 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.{Row, Session}
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
@@ -24,6 +23,7 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.Typeable
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
@@ -112,12 +112,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  def store[V1 <: Product, Stored](v1: V1)(
-    implicit helper: TableHelper.Aux[T, R, Stored], ev: V1 =:= Stored,
-    keySpace: KeySpace
-  ): InsertQuery.Default[T, R] = {
-    helper.store(instance, v1)
-  }
+  def store[V1](v1: V1)(
+    implicit keySpace: KeySpace,
+    ev: V1 =:= helper.Repr,
+    td: Typeable[helper.Repr]
+  ): InsertQuery.Default[T, R] = helper.store(instance, v1)
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

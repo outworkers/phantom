@@ -25,16 +25,13 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
 
-trait TableHelper[T <: CassandraTable[T, R], R] {
+trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr
 
   def tableName: String
 
-  def fromRow(
-    table: T,
-    row: Row
-  ): R
+  def fromRow(table: T, row: Row): R
 
   def tableKey(table: T): String
 
