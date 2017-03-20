@@ -24,9 +24,8 @@ import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.?
 import org.joda.time.DateTime
-import shapeless.ops.hlist.{Prepend, Reverse}
+import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 class InsertQuery[
@@ -81,6 +80,22 @@ class InsertQuery[
       init,
       columnsPart append CQLQuery(col(table).name),
       valuePart append value.qb,
+      usingPart,
+      lightweightPart,
+      options
+    )
+  }
+
+  def values[RR](insertions: (CQLQuery, CQLQuery)*): InsertQuery[Table, Record, Status, PS] = {
+    val (appendedCols, appendedVals) = (insertions :\ columnsPart -> valuePart) {
+      case ((columnRef, valueRef), (cols, vals)) => Tuple2(cols append columnRef, vals append valueRef)
+    }
+
+    new InsertQuery(
+      table,
+      init,
+      appendedCols,
+      appendedVals,
       usingPart,
       lightweightPart,
       options

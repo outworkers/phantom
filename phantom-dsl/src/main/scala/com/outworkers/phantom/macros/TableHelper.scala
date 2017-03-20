@@ -27,6 +27,8 @@ import scala.reflect.macros.blackbox
 
 trait TableHelper[T <: CassandraTable[T, R], R] {
 
+  type Repr
+
   def tableName: String
 
   def fromRow(
@@ -38,13 +40,15 @@ trait TableHelper[T <: CassandraTable[T, R], R] {
 
   def fields(table: T): Seq[AbstractColumn[_]]
 
-  def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
+  def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
+
+  type Aux[T <: CassandraTable[T, R], R, Out] = TableHelper[T, R] { type Repr = Out }
 }
 
 @macrocompat.bundle
@@ -274,7 +278,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
         """
       )
     } else {
-      logger.debug(descriptor.showExtractor)
+      logger.info(descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
@@ -283,8 +287,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           def tableName: $strTpe = $tableName
 
-          def store($tableTerm: $tableType)(implicit space: $keyspaceType): ${insertQueryType(tableType, rTpe)} = {
-            $tableTerm.insert()
+          def store(
+            $tableTerm: $tableType,
+            $inputTerm: ${descriptor.storeType(rTpe)}
+           )(implicit space: $keyspaceType): ${insertQueryType(tableType, rTpe)} = {
+            ${descriptor.storeMethod(rTpe)}
           }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
