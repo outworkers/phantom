@@ -104,13 +104,7 @@ sealed class NamedPartitionEnumTable extends CassandraTable[ConcreteNamedPartiti
   object id extends UUIDColumn(this) with PrimaryKey
 }
 
-abstract class ConcreteNamedPartitionEnumTable extends NamedPartitionEnumTable with RootConnector {
-  def store(sample: NamedPartitionRecord): InsertQuery.Default[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] = {
-    insert
-      .value(_.id, sample.id)
-      .value(_.enum, sample.enum)
-  }
-}
+abstract class ConcreteNamedPartitionEnumTable extends NamedPartitionEnumTable with RootConnector
 
 sealed class ClusteringTable extends CassandraTable[ConcreteClusteringTable, String] {
 

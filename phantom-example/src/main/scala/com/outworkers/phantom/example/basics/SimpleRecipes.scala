@@ -68,22 +68,6 @@ abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnecto
   // you can even rename the table in the schema to whatever you like.
   override lazy val tableName = "my_custom_table"
 
-  // Inserting has a bit of boilerplate on its on.
-  // But it's almost always a once per table thing, hopefully bearable.
-  // Whatever values you leave out will be inserted as nulls into Cassandra.
-  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert
-      .value(_.id, recipe.id)
-      .value(_.author, recipe.author)
-      .value(_.title, recipe.title)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.name, recipe.name)
-      .value(_.props, recipe.props)
-      .value(_.timestamp, recipe.timestamp)
-      .future()
-  }
-
   // now you have the full power of Cassandra in really cool one liners.
   // The future will do all the heavy lifting for you.
   // If there is an error you get a failed Future.

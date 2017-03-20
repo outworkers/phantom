@@ -15,10 +15,7 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-
-import scala.concurrent.Future
 
 case class PrimaryCollectionRecord(
   index: List[String],
@@ -28,22 +25,10 @@ case class PrimaryCollectionRecord(
   value: Int
 )
 
-class PrimaryCollectionTable extends CassandraTable[ConcretePrimaryCollectionTable, PrimaryCollectionRecord] {
+class PrimaryCollectionTable extends CassandraTable[PrimaryCollectionTable, PrimaryCollectionRecord] {
   object listIndex extends ListColumn[String](this) with PartitionKey
   object setCol extends SetColumn[String](this) with PrimaryKey
   object mapCol extends MapColumn[String, String](this) with PrimaryKey
   object name extends StringColumn(this) with PrimaryKey
   object value extends IntColumn(this)
-}
-
-abstract class ConcretePrimaryCollectionTable extends PrimaryCollectionTable with RootConnector {
-
-  def store(rec: PrimaryCollectionRecord): Future[ResultSet] = {
-    insert.value(_.listIndex, rec.index)
-      .value(_.setCol, rec.set)
-      .value(_.mapCol, rec.map)
-      .value(_.name, rec.name)
-      .value(_.value, rec.value)
-      .future()
-  }
 }

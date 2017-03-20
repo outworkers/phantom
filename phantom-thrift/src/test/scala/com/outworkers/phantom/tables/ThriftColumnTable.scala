@@ -47,16 +47,6 @@ abstract class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Thrif
   object thriftMap extends ThriftMapColumn[ThriftColumnTable, ThriftRecord, String, ThriftTest](this)
 
   object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
-
-  def store(sample: ThriftRecord): InsertQuery.Default[ThriftColumnTable, ThriftRecord] = {
-    insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample.struct)
-      .value(_.thriftSet, sample.thriftSet)
-      .value(_.thriftList, sample.thriftList)
-      .value(_.thriftMap, sample.thriftMap)
-  }
 }
 
 
@@ -74,17 +64,6 @@ abstract class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, Thr
   object thriftMap extends ThriftMapColumn[ThriftIndexedTable, ThriftRecord, String, ThriftTest](this)
 
   object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
-
-  def store(sample: ThriftRecord): InsertQuery.Default[ThriftIndexedTable, ThriftRecord] = {
-    insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.ref, sample.struct)
-      .value(_.thriftSet, sample.thriftSet)
-      .value(_.thriftList, sample.thriftList)
-      .value(_.optionalThrift, sample.optThrift)
-      .value(_.thriftMap, sample.thriftMap)
-  }
 }
 
 class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {

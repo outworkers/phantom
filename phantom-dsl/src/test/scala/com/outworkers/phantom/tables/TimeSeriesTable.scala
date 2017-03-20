@@ -42,13 +42,6 @@ abstract class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSerie
   object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending {
     override val name = "unixTimestamp"
   }
-
-  def store(rec: TimeSeriesRecord): InsertQuery.Default[TimeSeriesTable, TimeSeriesRecord] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.name, rec.name)
-      .value(_.timestamp, rec.timestamp)
-  }
 }
 
 abstract class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeUUIDRecord] with RootConnector {
@@ -56,13 +49,6 @@ abstract class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeUUIDRecor
   object user extends UUIDColumn(this) with PartitionKey
   object id extends TimeUUIDColumn(this) with ClusteringOrder with Descending
   object name extends StringColumn(this)
-
-  def store(rec: TimeUUIDRecord): InsertQuery.Default[TimeUUIDTable, TimeUUIDRecord] = {
-    insert
-      .value(_.user, rec.user)
-      .value(_.id, rec.id)
-      .value(_.name, rec.name)
-  }
 
   def retrieve(user: UUID): Future[List[TimeUUIDRecord]] = {
     select.where(_.user eqs user).orderBy(_.id ascending).fetch()

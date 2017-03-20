@@ -31,12 +31,6 @@ class TupleColumnTable extends CassandraTable[ConcreteTupleColumnTable, TupleRec
 
 abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnector {
 
-  def store(rec: TupleRecord): InsertQuery.Default[ConcreteTupleColumnTable, TupleRecord] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.tp, rec.tp)
-  }
-
   def findById(id: UUID): Future[Option[TupleRecord]] = {
     select.where(_.id eqs id).one()
   }
@@ -50,12 +44,6 @@ class NestedTupleColumnTable extends CassandraTable[ConcreteNestedTupleColumnTab
 }
 
 abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable with RootConnector {
-
-  def store(rec: NestedTupleRecord): InsertQuery.Default[ConcreteNestedTupleColumnTable, NestedTupleRecord] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.tp, rec.tp)
-  }
 
   def findById(id: UUID): Future[Option[NestedTupleRecord]] = {
     select.where(_.id eqs id).one()
@@ -71,12 +59,6 @@ class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable
 }
 
 abstract class ConcreteTupleCollectionsTable extends TupleCollectionsTable with RootConnector {
-
-  def store(rec: TupleCollectionRecord): InsertQuery.Default[ConcreteTupleCollectionsTable, TupleCollectionRecord] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.tuples, rec.tuples)
-  }
 
   def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
     select.where(_.id eqs id).one()

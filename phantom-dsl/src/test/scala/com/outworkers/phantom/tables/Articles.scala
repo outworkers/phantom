@@ -32,13 +32,6 @@ abstract class Articles extends CassandraTable[Articles, Article] with RootConne
   object orderId extends LongColumn(this)
 
   override def tableName: String = "articles"
-
-  def store(article: Article): InsertQuery.Default[Articles, Article] = {
-    insert
-      .value(_.id, article.id)
-      .value(_.name, article.name)
-      .value(_.orderId, article.orderId)
-  }
 }
 
 

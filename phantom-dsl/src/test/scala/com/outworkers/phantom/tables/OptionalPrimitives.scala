@@ -114,23 +114,6 @@ abstract class OptionalPrimitives extends CassandraTable[OptionalPrimitives, Opt
     select.where(_.pkey eqs pkey).one()
   }
 
-  def store(row: OptionalPrimitive): InsertQuery.Default[OptionalPrimitives, OptionalPrimitive] = {
-    insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
-      .value(_.string, row.string)
-      .value(_.timeuuid, row.timeuuid)
-  }
-
   def updateColumns(row: OptionalPrimitive): Future[ResultSet] = {
     update.where(_.pkey eqs row.pkey)
       .modify(_.long setTo row.long)

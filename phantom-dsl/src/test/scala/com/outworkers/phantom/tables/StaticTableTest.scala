@@ -37,17 +37,12 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-sealed class StaticCollectionTableTest extends CassandraTable[ConcreteStaticCollectionTableTest, StaticCollectionRecord] {
-
+abstract class StaticCollectionTableTest extends CassandraTable[
+  StaticCollectionTableTest,
+  StaticCollectionRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
   object staticList extends ListColumn[String](this) with StaticColumn
 }
 
-abstract class ConcreteStaticCollectionTableTest extends StaticCollectionTableTest with RootConnector {
-  def store(record: StaticCollectionRecord): InsertQuery.Default[ConcreteStaticCollectionTableTest, StaticCollectionRecord] = {
-    insert.value(_.id, record.id)
-      .value(_.clusteringId, record.clustering)
-      .value(_.staticList, record.list)
-  }
-}

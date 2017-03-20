@@ -77,13 +77,4 @@ abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootC
     }
   }
 
-  def store(sample: JsonClass): InsertQuery.Default[JsonTable, JsonClass] = {
-    insert
-      .value(_.id, sample.id)
-      .value(_.name, sample.name)
-      .value(_.json, sample.json)
-      .value(_.optionalJson, sample.optionalJson)
-      .value(_.jsonList, sample.jsonList)
-      .value(_.jsonSet, sample.jsonSet)
-  }
 }

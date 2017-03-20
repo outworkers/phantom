@@ -66,31 +66,6 @@ abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootCon
   object field18 extends StringColumn(this)
   object field19 extends StringColumn(this)
   object field20 extends StringColumn(this)
-
-  def store(row: WideRow): InsertQuery.Default[WideTable, WideRow] = {
-    insert.value(_.id, row.id)
-      .value(_.field, row.field)
-      .value(_.field1, row.field1)
-      .value(_.field2, row.field2)
-      .value(_.field3, row.field3)
-      .value(_.field4, row.field4)
-      .value(_.field5, row.field5)
-      .value(_.field6, row.field6)
-      .value(_.field7, row.field7)
-      .value(_.field8, row.field8)
-      .value(_.field9, row.field9)
-      .value(_.field10, row.field10)
-      .value(_.field11, row.field11)
-      .value(_.field12, row.field12)
-      .value(_.field13, row.field13)
-      .value(_.field14, row.field14)
-      .value(_.field15, row.field15)
-      .value(_.field16, row.field16)
-      .value(_.field17, row.field17)
-      .value(_.field18, row.field18)
-      .value(_.field19, row.field19)
-      .value(_.field20, row.field20)
-  }
 }
 
 

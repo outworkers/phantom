@@ -119,8 +119,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     helper.store(instance, v1)
   }
 
-  //final def store()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = helper.store(instance)
-
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
   final def delete(

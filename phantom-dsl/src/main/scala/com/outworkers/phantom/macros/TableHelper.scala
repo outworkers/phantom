@@ -219,7 +219,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       colFields,
       colFields.typeMap,
       recordMembers.toList,
-      TableDescriptor(tableTpe, colFields)
+      TableDescriptor(tableTpe, recordTpe, colFields)
     )
   }
 
@@ -263,14 +263,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val descriptor = extractor(tableType, rTpe, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName)
     val fromRowTpe = abstractFromRow.infoIn(tableType)
-    val fromRowFn = descriptor.fromRow(rTpe)
+    val fromRowFn = descriptor.fromRow
 
     if (fromRowFn.isEmpty) {
       logger.debug(
         s"""
           Table: ${printType(tableType)}
           Type info: ${printType(fromRowTpe)}
-          fromRowDefined: ${descriptor.fromRow(rTpe).isDefined}
+          fromRowDefined: ${descriptor.fromRow.isDefined}
           fromRow == ???: ${abstractFromRow.asMethod}
           abstract: ${abstractFromRow.asMethod.isAbstract}
           abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
@@ -283,16 +283,13 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    q"""
+    val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
+          type Repr = ${descriptor.storeType}
+
           def tableName: $strTpe = $tableName
 
-          def store(
-            $tableTerm: $tableType,
-            $inputTerm: ${descriptor.storeType(rTpe)}
-           )(implicit space: $keyspaceType): ${insertQueryType(tableType, rTpe)} = {
-            ${descriptor.storeMethod(rTpe)}
-          }
+          ${descriptor.storeMethod}
 
           def tableKey($tableTerm: $tableType): $strTpe = {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
@@ -305,5 +302,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
+    Console.println(showCode(tree))
+    tree
   }
 }

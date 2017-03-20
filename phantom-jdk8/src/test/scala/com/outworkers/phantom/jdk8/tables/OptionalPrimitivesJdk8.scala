@@ -48,14 +48,6 @@ abstract class OptionalPrimitivesJdk8 extends CassandraTable[
 
   object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
 
-  def store(primitive: OptionalJdk8Row): InsertQuery.Default[OptionalPrimitivesJdk8, OptionalJdk8Row] = {
-    insert.value(_.pkey, primitive.pkey)
-      .value(_.offsetDateTime, primitive.offsetDateTime)
-      .value(_.zonedDateTime, primitive.zonedDateTime)
-      .value(_.localDate, primitive.localDate)
-      .value(_.localDateTime, primitive.localDateTime)
-  }
-
   def findByPkey(pkey: String): Future[Option[OptionalJdk8Row]] = {
     select.where(_.pkey eqs pkey).one()
   }

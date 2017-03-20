@@ -34,12 +34,6 @@ abstract class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] wi
   object intColumn extends IntColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  def store(primitive: JodaRow): InsertQuery.Default[PrimitivesJoda, JodaRow] = {
-    insert.value(_.pkey, primitive.pkey)
-      .value(_.intColumn, primitive.intColumn)
-      .value(_.timestamp, primitive.timestamp)
-  }
-
   def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
     select.limit(limit).paginateRecord(paging)
   }
