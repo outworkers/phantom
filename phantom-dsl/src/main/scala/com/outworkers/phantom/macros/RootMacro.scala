@@ -175,6 +175,10 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
+    def tupleTerm(index: Int, aug: Int = 1): TermName = {
+      TermName("_" + (index + aug).toString)
+    }
+
     def debugList(fields: Seq[RootField]): Seq[String] = fields.map(u =>
       s"${u.name.decodedName}: ${printType(u.tpe)}"
     )
@@ -205,12 +209,16 @@ class RootMacro(val c: blackbox.Context) {
       * itself and another to compensate for tuples being indexed from 1 instead of 0.
       * @return An optional [[TermName]] of the form [[TermName]]
       */
-    def referenceTerm: Option[TermName] = {
+    val referenceTerm: Option[TermName] = {
       if (unmatchedColumns.isEmpty) {
         None
       } else {
-        Some(TermName("_" + (unmatchedColumns.size + 1)))
+        Some(tupleTerm(unmatchedColumns.size))
       }
+    }
+
+    protected[this] def unmatchedValue(field: Column.Field, ref: TermName) = {
+      q"$enginePkg.CQLQuery($tableTerm.${field.name}.asCql($inputTerm.$ref))"
     }
 
     protected[this] def valueTerm(field: MatchedField, refTerm: Option[TermName]) = {
@@ -220,18 +228,26 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
+    def tableField(fieldName: TermName): Tree = {
+      q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
+    }
+
     def storeMethod: Tree = {
-      val ref = referenceTerm
+      val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
+        q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+      }
 
       val insertions = matched map { field =>
-        q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.name) -> ${valueTerm(field, ref)}"
+        q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
       }
+
+      val finalDefinitions = unmatchedColumnInserts ++ insertions
 
       val tree = q"""
          override def store($tableTerm: $tableTpe, $inputTerm: $storeType)(
            implicit space: $keyspaceType
          ): $builderPkg.InsertQuery.Default[$tableTpe, $recordType] = {
-           $tableTerm.insert.values(..$insertions)
+           $tableTerm.insert.values(..$finalDefinitions)
          }
       """
       logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
