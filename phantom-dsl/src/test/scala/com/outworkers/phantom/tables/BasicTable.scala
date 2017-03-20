@@ -72,71 +72,40 @@ abstract class EnumTable extends CassandraTable[EnumTable, EnumRecord] with Root
   object enum extends EnumColumn[Records#Value](this)
   object optEnum extends OptionalEnumColumn[Records#Value](this)
   object singleton extends EnumColumn[SingletonEnum.Value](this)
-
-  def store(sample: EnumRecord): InsertQuery.Default[EnumTable, EnumRecord] = {
-    insert
-      .value(_.id, sample.name)
-      .value(_.enum, sample.enum)
-      .value(_.optEnum, sample.optEnum)
-      .value(_.singleton, sample.singleton)
-  }
 }
 
 
-sealed class NamedEnumTable extends CassandraTable[ConcreteNamedEnumTable, NamedEnumRecord] {
+abstract class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumRecord] with RootConnector {
   object id extends StringColumn(this) with PartitionKey
   object enum extends EnumColumn[NamedRecords#Value](this)
   object optEnum extends OptionalEnumColumn[NamedRecords#Value](this)
 }
 
-abstract class ConcreteNamedEnumTable extends NamedEnumTable with RootConnector {
-  def store(sample: NamedEnumRecord): InsertQuery.Default[ConcreteNamedEnumTable, NamedEnumRecord] = {
-    insert
-      .value(_.id, sample.name)
-      .value(_.enum, sample.enum)
-      .value(_.optEnum, sample.optEnum)
-  }
-}
-
-
-sealed class NamedPartitionEnumTable extends CassandraTable[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] {
+abstract class NamedPartitionEnumTable extends CassandraTable[
+  NamedPartitionEnumTable,
+  NamedPartitionRecord
+] with RootConnector {
   object enum extends EnumColumn[NamedRecords#Value](this) with PartitionKey
   object id extends UUIDColumn(this) with PrimaryKey
 }
 
-abstract class ConcreteNamedPartitionEnumTable extends NamedPartitionEnumTable with RootConnector {
-  def store(sample: NamedPartitionRecord): InsertQuery.Default[ConcreteNamedPartitionEnumTable, NamedPartitionRecord] = {
-    insert
-      .value(_.id, sample.id)
-      .value(_.enum, sample.enum)
-  }
-}
-
-sealed class ClusteringTable extends CassandraTable[ConcreteClusteringTable, String] {
+abstract class ClusteringTable extends CassandraTable[ClusteringTable, String] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object id2 extends UUIDColumn(this) with ClusteringOrder with Ascending
   object id3 extends UUIDColumn(this) with ClusteringOrder with Descending
   object placeholder extends StringColumn(this)
-
-  override def fromRow(r: Row): String = placeholder(r)
 }
 
-abstract class ConcreteClusteringTable extends ClusteringTable with RootConnector
-
-sealed class ComplexClusteringTable extends CassandraTable[ConcreteComplexClusteringTable, String] {
+abstract class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey
   object id2 extends UUIDColumn(this) with ClusteringOrder with Ascending
   object id3 extends UUIDColumn(this) with ClusteringOrder with Descending
   object placeholder extends StringColumn(this) with ClusteringOrder with Descending
-
-  override def fromRow(r: Row): String = placeholder(r)
 }
 
-abstract class ConcreteComplexClusteringTable extends ComplexClusteringTable with RootConnector
-
-sealed class ComplexCompoundKeyTable extends CassandraTable[ConcreteComplexCompoundKeyTable, String] {
+abstract class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
 
   object id extends UUIDColumn(this) with PartitionKey
   object id2 extends UUIDColumn(this) with PrimaryKey
@@ -148,22 +117,13 @@ sealed class ComplexCompoundKeyTable extends CassandraTable[ConcreteComplexCompo
   object id8 extends UUIDColumn(this) with PrimaryKey
   object id9 extends UUIDColumn(this) with PrimaryKey
   object placeholder extends StringColumn(this)
-
-  override def fromRow(r: Row): String = placeholder(r)
 }
 
-abstract class ConcreteComplexCompoundKeyTable extends ComplexCompoundKeyTable with RootConnector
-
-sealed class SimpleCompoundKeyTable extends CassandraTable[ConcreteSimpleCompoundKeyTable, String] {
-
+abstract class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTable, String] {
   object id extends UUIDColumn(this) with PartitionKey
   object id2 extends UUIDColumn(this) with PrimaryKey
   object id3 extends UUIDColumn(this) with PrimaryKey
   object placeholder extends StringColumn(this)
-
-  override def fromRow(r: Row): String = placeholder(r)
 }
-
-abstract class ConcreteSimpleCompoundKeyTable extends SimpleCompoundKeyTable with RootConnector
 
 

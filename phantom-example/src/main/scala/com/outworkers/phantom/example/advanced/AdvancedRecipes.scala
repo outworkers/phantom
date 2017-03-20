@@ -54,18 +54,6 @@ abstract class AdvancedRecipes extends CassandraTable[AdvancedRecipes, Recipe] w
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this) with ClusteringOrder
 
-  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert.value(_.id, recipe.id)
-      .value(_.author, recipe.author)
-      .value(_.title, recipe.title)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.name, recipe.name)
-      .value(_.props, recipe.props)
-      .value(_.timestamp, recipe.timestamp)
-      .future()
-  }
-
   // Like in the real world, you have now planned your queries ahead.
   // You know what you can do and what you can't based on the schema limitations.
   def findById(id: UUID): ScalaFuture[Option[Recipe]] = {

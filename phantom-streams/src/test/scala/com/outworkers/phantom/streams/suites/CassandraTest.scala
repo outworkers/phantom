@@ -30,14 +30,12 @@ import scala.concurrent.duration._
 trait TestImplicits {
   implicit val system = ActorSystem()
 
-  implicit object OperaRequestBuilder extends RequestBuilder[ConcreteOperaTable, Opera] {
+  implicit object OperaRequestBuilder extends RequestBuilder[OperaTable, Opera] {
 
-    override def request(ct: ConcreteOperaTable, t: Opera)(
+    override def request(ct: OperaTable, t: Opera)(
       implicit session: Session,
       keySpace: KeySpace
-    ): ExecutableStatement with Batchable = {
-      ct.insert.value(_.name, t.name)
-    }
+    ): ExecutableStatement with Batchable = ct.store(t)
   }
 
 }
@@ -74,23 +72,16 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 
 case class Opera(name: String)
 
-class OperaTable extends CassandraTable[ConcreteOperaTable, Opera] {
+class OperaTable extends CassandraTable[OperaTable, Opera] {
   object name extends StringColumn(this) with PartitionKey
 }
-
-abstract class ConcreteOperaTable extends OperaTable with RootConnector {
-  def store(item: Opera): InsertQuery.Default[ConcreteOperaTable, Opera] = {
-    insert.value(_.name, item.name)
-  }
-}
-
 
 object StreamConnector {
   val connector: CassandraConnection = ContactPoint.local.keySpace("phantom")
 }
 
 class StreamDatabase extends Database[StreamDatabase](StreamConnector.connector) {
-  object operaTable extends ConcreteOperaTable with connector.Connector
+  object operaTable extends OperaTable with connector.Connector
 }
 
 object StreamDatabase extends StreamDatabase

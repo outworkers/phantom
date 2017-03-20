@@ -32,11 +32,4 @@ abstract class SecondaryIndexTable extends CassandraTable[
   object id extends UUIDColumn(this) with PartitionKey
   object secondary extends UUIDColumn(this) with Index
   object name extends StringColumn(this)
-
-  def store(sample: SecondaryIndexRecord): InsertQuery.Default[SecondaryIndexTable, SecondaryIndexRecord] = {
-    insert
-      .value(_.id, sample.primary)
-      .value(_.secondary, sample.secondary)
-      .value(_.name, sample.name)
-  }
 }

@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class MyTestRow(
@@ -25,7 +24,7 @@ case class MyTestRow(
   stringlist: List[String]
 )
 
-sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTable, MyTestRow] {
+abstract class ListCollectionTable extends CassandraTable[ListCollectionTable, MyTestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
@@ -33,17 +32,3 @@ sealed class ListCollectionTable extends CassandraTable[ConcreteListCollectionTa
 
   object stringlist extends ListColumn[String](this)
 }
-
-abstract class ConcreteListCollectionTable extends ListCollectionTable with RootConnector {
-
-  override val tableName = "mytest"
-
-  def store(row: MyTestRow): InsertQuery.Default[ConcreteListCollectionTable, MyTestRow] = {
-    insert().value(_.key, row.key)
-      .value(_.stringlist, row.stringlist)
-      .value(_.optionA, row.optionA)
-  }
-
-}
-
-

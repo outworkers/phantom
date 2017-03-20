@@ -91,7 +91,7 @@ abstract class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel]
 ```
 
 
-<a id="extractors">Extractors and how they get generateed</a>
+<a id="extractors">Extractors and how they get generated</a>
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
@@ -137,7 +137,14 @@ every field and their type, again for both table and record.
 - We then build a type map of kind `ListMap[Type -> Seq[TermName]` for the table. This basically deals with problems
 where we may have multiple term names of the same type, so in effect we do a `groupBy(_type)`.
 
-- For every type of the `Record`, we look for it in the table. If found, a 
+- For every field type inside `Record`, we look for it in the type map and retrieve the column names
+which could match that field type. If the names are identical, a direct match is found. We proceed
+to the next step and we remove both the matched field and column from the dictionary ahead of the next lookup
+
+- If a direct match is not found, **the next field column field matching the type is used**. In practice, this means
+write order is respected, which coincides with the majority of use cases we have seen, but **can be wrong**. You can
+either enable `debug` logging for `com.outworkers.phantom` or alternatively call `table.helper.showExtractor` and print
+that to see a debug output of how phantom thinks your record maps to your table.
 
 
 ##### Field arity 
@@ -157,3 +164,22 @@ At this point in time, if a direct match for the field name is not found, then t
 by the user is selected. Most of the time, this is the desired behaviour, but it can fail at runtime because it will mix up your
 columns
 
+
+<a id="store-methods">Automatically derived "store" method</a>
+====================================================
+<a href="#table-of-contents">back to top</a>
+
+As of phantom 2.5.0, phantom will automatically infer the appropiate `store` method definition for a combination
+of `Table` and `Record` type arguments. This means you no longer have to manually do anything at all and you can
+just insert records ad-hoc using pre-generated things.
+
+The inner workings of this generation are non trivial, but the TLDR is quite simple. Know how you
+`extends CassandraTable[TableType, RecordType]`?`
+
+- If the `TableType` has as many fields as your `RecordType`, the store method will take as an argument
+an instance of the `RecordType`.
+
+- If your `TableType` has more fields than the `RecordType`, your input looks like this: 
+`def store(input: (Field1Type, Field2Type, ..., RecordType))`, so basically the columns that were found
+in the table but not in the `RecordType` will be added to the front of the tuple in the order they were
+ written.

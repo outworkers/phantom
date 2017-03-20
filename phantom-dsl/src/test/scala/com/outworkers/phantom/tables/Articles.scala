@@ -26,48 +26,16 @@ case class Article(
 )
 
 abstract class Articles extends CassandraTable[Articles, Article] with RootConnector {
-
   object id extends UUIDColumn(this) with PartitionKey
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
-
-  override def tableName: String = "articles"
-
-  def store(article: Article): InsertQuery.Default[Articles, Article] = {
-    insert
-      .value(_.id, article.id)
-      .value(_.name, article.name)
-      .value(_.orderId, article.orderId)
-  }
 }
 
 
-sealed class ArticlesByAuthor extends CassandraTable[ConcreteArticlesByAuthor, Article] {
-
+abstract class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] with RootConnector {
   object author_id extends UUIDColumn(this) with PartitionKey
   object category extends UUIDColumn(this) with PartitionKey
   object id extends UUIDColumn(this) with PrimaryKey
-
   object name extends StringColumn(this)
   object orderId extends LongColumn(this)
-
-  override def fromRow(row: Row): Article = {
-    Article(
-      name = name(row),
-      id = id(row),
-      orderId = orderId(row)
-    )
-  }
-}
-
-abstract class ConcreteArticlesByAuthor extends ArticlesByAuthor with RootConnector {
-
-  def store(author: UUID, category: UUID, article: Article): InsertQuery.Default[ConcreteArticlesByAuthor, Article] = {
-    insert
-      .value(_.author_id, author)
-      .value(_.category, category)
-      .value(_.id, article.id)
-      .value(_.name, article.name)
-      .value(_.orderId, article.orderId)
-  }
 }

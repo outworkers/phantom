@@ -57,20 +57,4 @@ abstract class Primitives extends CassandraTable[Primitives, Primitive] with Roo
   object bi extends BigIntColumn(this)
 
   override val tableName = "Primitives"
-
-  def store(row: Primitive): InsertQuery.Default[Primitives, Primitive] = {
-    insert
-      .value(_.pkey, row.pkey)
-      .value(_.long, row.long)
-      .value(_.boolean, row.boolean)
-      .value(_.bDecimal, row.bDecimal)
-      .value(_.double, row.double)
-      .value(_.float, row.float)
-      .value(_.inet, row.inet)
-      .value(_.int, row.int)
-      .value(_.date, row.date)
-      .value(_.uuid, row.uuid)
-      .value(_.bi, row.bi)
-  }
-
 }

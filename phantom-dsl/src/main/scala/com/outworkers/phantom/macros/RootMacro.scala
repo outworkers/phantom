@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
-import scala.reflect.NameTransformer
 
 @macrocompat.bundle
 class RootMacro(val c: blackbox.Context) {
@@ -34,11 +33,13 @@ class RootMacro(val c: blackbox.Context) {
   protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"com.outworkers.phantom.macros"
   protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"
+  protected[this] val enginePkg = q"com.outworkers.phantom.builder.query.engine"
   protected[this] val strTpe = tq"java.lang.String"
   protected[this] val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
   protected[this] val collections = q"scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")
+  protected[this] val inputTerm = TermName("input")
   protected[this] val keyspaceType = tq"com.outworkers.phantom.connectors.KeySpace"
 
   val knownList = List("Any", "Object", "RootConnector")
@@ -143,11 +144,15 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   case class TableDescriptor(
-    tpe: Type,
+    tableTpe: Type,
+    recordType: Type,
     members: Seq[Column.Field],
-    unmatchedColumns: Seq[Column.Field] = Seq.empty,
     matches: Seq[RecordMatch] = Nil
   ) {
+
+    def unmatchedColumns: Seq[Column.Field] = {
+      members.filterNot(m => matched.exists(r => r.right.name == m.name))
+    }
 
     def withMatch(m: RecordMatch): TableDescriptor = {
       this.copy(matches = matches :+ m)
@@ -161,7 +166,7 @@ class RootMacro(val c: blackbox.Context) {
       case m @ MatchedField(left, right) => m
     }
 
-    def fromRow(recordType: Type): Option[Tree] = {
+    def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
         val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
         Some(q"""new $recordType(..$columnNames)""")
@@ -170,21 +175,106 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
-    def debugList: Seq[String] = unmatched.map(u =>
-      s"${u.field.name.decodedName}: ${printType(u.field.tpe)}"
+    def tupleTerm(index: Int, aug: Int = 1): TermName = {
+      TermName("_" + (index + aug).toString)
+    }
+
+    def debugList(fields: Seq[RootField]): Seq[String] = fields.map(u =>
+      s"${u.name.decodedName}: ${printType(u.tpe)}"
     )
 
+    /**
+      * The reference term is a tuple field pointing to the tuple index found on a store type.
+      * If the Cassandra table has more columns than the record field, such as when users
+      * chose to store a denormalised variant of a record indexed by a new ID, the store
+      * input type will become a tuple of that ID and the record type.
+      *
+      * So in effect: {{{
+      *   case class Record(name: String, timestamp: DateTime)
+      *
+      *   class Records extends CassandraTable[Records, Record] {
+      *
+      *     object id extends UUIDColumn(this) with PartitionKey
+      *     object name extends StringColumn(this) with PrimaryKey
+      *     object timestamp extends DateTimeColumn(this)
+      *
+      *     // Will end up with a store method that has the following type signature.
+      *     def store(input: (UUID, Record)): InsertQuery.Default[Records, Record]
+      *   }
+      * }}}
+      *
+      * In these scenarios, we need a way to refer to [[input._index]] as part of the generated
+      * store method, where the numerical value of the tuple index is equal to the number of
+      * unmatched columns(found in the table but not the record) plus one more for the record type
+      * itself and another to compensate for tuples being indexed from 1 instead of 0.
+      * @return An optional [[TermName]] of the form [[TermName]]
+      */
+    val referenceTerm: Option[TermName] = {
+      if (unmatchedColumns.isEmpty) {
+        None
+      } else {
+        Some(tupleTerm(unmatchedColumns.size))
+      }
+    }
+
+    protected[this] def unmatchedValue(field: Column.Field, ref: TermName) = {
+      q"$enginePkg.CQLQuery($tableTerm.${field.name}.asCql($inputTerm.$ref))"
+    }
+
+    protected[this] def valueTerm(field: MatchedField, refTerm: Option[TermName]) = {
+      refTerm match {
+        case Some(ref) => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($inputTerm.$ref.${field.left.name}))"
+        case None => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($inputTerm.${field.left.name}))"
+      }
+    }
+
+    def tableField(fieldName: TermName): Tree = {
+      q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
+    }
+
+    def storeMethod: Tree = {
+      val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
+        q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+      }
+
+      val insertions = matched map { field =>
+        q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
+      }
+
+      val finalDefinitions = unmatchedColumnInserts ++ insertions
+
+      val tree = q"""
+         override def store($tableTerm: $tableTpe, $inputTerm: $storeType)(
+           implicit space: $keyspaceType
+         ): $builderPkg.InsertQuery.Default[$tableTpe, $recordType] = {
+           $tableTerm.insert.values(..$finalDefinitions)
+         }
+      """
+      logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
+      tree
+    }
+
+    def storeType: Tree = {
+      if (unmatchedColumns.isEmpty) {
+        tq"$recordType"
+      } else {
+        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        val cols = unmatchedColumns.map(_.tpe) :+ recordType
+        tq"(..$cols)"
+      }
+    }
+
     def showExtractor: String = matched.map(f =>
-      s"rec.${f.left.name}: ${printType(f.left.tpe)} -> table.${f.right.name}: ${printType(f.right.tpe)}"
+      s"rec.${f.left.name} -> table.${f.right.name} | ${printType(f.right.tpe)}"
     ) mkString "\n"
   }
 
   object TableDescriptor {
-    def empty(tpe: Type): TableDescriptor = {
+    def empty(tpe: Type, recordType: Type): TableDescriptor = {
       TableDescriptor(
-        tpe = tpe,
+        tableTpe = tpe,
+        recordType = recordType,
         members = List.empty[Column.Field],
-        unmatchedColumns = List.empty[Column.Field],
         matches = List.empty[RecordMatch]
       )
     }
@@ -203,14 +293,10 @@ class RootMacro(val c: blackbox.Context) {
     */
   def extractRecordMembers(tpe: Type): Seq[Record.Field] = {
     tpe.typeSymbol match {
-      case sym if sym.fullName.startsWith("scala.Tuple") => {
-
-        val names = Seq.tabulate(tpe.typeArgs.size)(identity) map {
-          index => TermName("_" + index)
-        }
-
-        names.zip(tpe.typeArgs) map Record.Field.apply
-      }
+      case sym if sym.fullName.startsWith("scala.Tuple") =>
+        Seq.tabulate(tpe.typeArgs.size)(identity) map {
+          index => TermName("_" + (index + 1))
+        } zip tpe.typeArgs map Record.Field.apply
 
       case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
 

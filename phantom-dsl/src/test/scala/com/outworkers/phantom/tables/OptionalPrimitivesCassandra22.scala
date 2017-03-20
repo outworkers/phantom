@@ -54,12 +54,4 @@ abstract class OptionalPrimitivesCassandra22 extends CassandraTable[
   object localDate extends OptionalLocalDateColumn(this)
 
   override val tableName = "OptionalPrimitivesCassandra22"
-
-  def store(row: OptionalPrimitiveCassandra22): InsertQuery.Default[OptionalPrimitivesCassandra22, OptionalPrimitiveCassandra22] = {
-    insert
-      .value(_.pkey, row.pkey)
-      .value(_.short, row.short)
-      .value(_.byte, row.byte)
-      .value(_.localDate, row.localDate)
-  }
 }

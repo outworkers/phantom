@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class TestRow(
@@ -29,7 +28,7 @@ case class TestRow(
   mapIntToInt: Map[Int, Int]
 )
 
-sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
+abstract class TestTable extends CassandraTable[TestTable, TestRow] with RootConnector {
 
   object key extends StringColumn(this) with PartitionKey
 
@@ -45,20 +44,3 @@ sealed class TestTable extends CassandraTable[ConcreteTestTable, TestRow] {
 
   object mapIntToInt extends MapColumn[Int, Int](this)
 }
-
-abstract class ConcreteTestTable extends TestTable with RootConnector {
-  override val tableName = "TestTable"
-
-  def store(row: TestRow): InsertQuery.Default[ConcreteTestTable, TestRow] = {
-    insert
-      .value(_.key, row.key)
-      .value(_.list, row.list)
-      .value(_.setText, row.setText)
-      .value(_.mapTextToText, row.mapTextToText)
-      .value(_.setInt, row.setInt)
-      .value(_.mapIntToText, row.mapIntToText)
-      .value(_.mapIntToInt, row.mapIntToInt)
-  }
-
-}
-

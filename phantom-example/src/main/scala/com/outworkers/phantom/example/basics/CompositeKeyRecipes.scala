@@ -53,18 +53,6 @@ abstract class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, R
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
 
-  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert.value(_.id, recipe.id)
-      .value(_.author, recipe.author)
-      .value(_.title, recipe.title)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.name, recipe.name)
-      .value(_.props, recipe.props)
-      .value(_.timestamp, recipe.timestamp)
-      .future()
-  }
-
   // now you can use composite keys in the normal way.
   // If you would select only by id,
   // Cassandra will tell you a part of the primary is missing from the where clause.

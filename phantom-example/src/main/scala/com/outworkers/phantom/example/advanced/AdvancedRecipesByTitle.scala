@@ -40,10 +40,6 @@ abstract class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTi
 
   override lazy val tableName = "recipes_by_title"
 
-  def store(recipe: (String, UUID)): ScalaFuture[ResultSet] = {
-    insert.value(_.title, recipe._1).value(_.id, recipe._2).future()
-  }
-
   // now you can have the tile in a where clause
   // without the performance impact of a secondary index.
   def findRecipeByTitle(title: String): ScalaFuture[Option[(String, UUID)]] = {

@@ -25,26 +25,27 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.blackbox
 
-trait TableHelper[T <: CassandraTable[T, R], R] {
+trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
+
+  type Repr
 
   def tableName: String
 
-  def fromRow(
-    table: T,
-    row: Row
-  ): R
+  def fromRow(table: T, row: Row): R
 
   def tableKey(table: T): String
 
   def fields(table: T): Seq[AbstractColumn[_]]
 
-  def store(table: T)(implicit space: KeySpace): InsertQuery.Default[T, R]
+  def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
 
 object TableHelper {
   implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
+
+  type Aux[T <: CassandraTable[T, R], R, Out] = TableHelper[T, R] { type Repr = Out }
 }
 
 @macrocompat.bundle
@@ -169,7 +170,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => descriptor.copy(unmatchedColumns = columnFields.filter(f => columnMembers.contains(f.tpe)))
+      case Nil => descriptor
     }
   }
 
@@ -215,7 +216,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       colFields,
       colFields.typeMap,
       recordMembers.toList,
-      TableDescriptor(tableTpe, colFields)
+      TableDescriptor(tableTpe, recordTpe, colFields)
     )
   }
 
@@ -259,14 +260,14 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val descriptor = extractor(tableType, rTpe, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName)
     val fromRowTpe = abstractFromRow.infoIn(tableType)
-    val fromRowFn = descriptor.fromRow(rTpe)
+    val fromRowFn = descriptor.fromRow
 
     if (fromRowFn.isEmpty) {
       logger.debug(
         s"""
           Table: ${printType(tableType)}
           Type info: ${printType(fromRowTpe)}
-          fromRowDefined: ${descriptor.fromRow(rTpe).isDefined}
+          fromRowDefined: ${descriptor.fromRow.isDefined}
           fromRow == ???: ${abstractFromRow.asMethod}
           abstract: ${abstractFromRow.asMethod.isAbstract}
           abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
@@ -281,11 +282,11 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
+          type Repr = ${descriptor.storeType}
+
           def tableName: $strTpe = $tableName
 
-          def store($tableTerm: $tableType)(implicit space: $keyspaceType): ${insertQueryType(tableType, rTpe)} = {
-            $tableTerm.insert()
-          }
+          ${descriptor.storeMethod}
 
           def tableKey($tableTerm: $tableType): $strTpe = {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}

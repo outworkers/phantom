@@ -16,7 +16,6 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.{Row, Session}
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
@@ -24,6 +23,7 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.Typeable
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
@@ -112,7 +112,16 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  //final def store()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = helper.store(instance)
+  /**
+    * Automatically generated store method for the record type.
+    * @param input The input which will be auto-tupled and compared.
+    * @param keySpace The keyspace in which the query will be executed.
+    * @tparam V1 The type of the input.
+    * @return A default input query.
+    */
+  def store[V1](input: V1)(
+    implicit keySpace: KeySpace
+  ): InsertQuery.Default[T, R] = helper.store(instance, input.asInstanceOf[helper.Repr])
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

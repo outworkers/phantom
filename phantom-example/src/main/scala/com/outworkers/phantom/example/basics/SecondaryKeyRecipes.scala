@@ -52,20 +52,6 @@ abstract class SecondaryKeyRecipes extends CassandraTable[SecondaryKeyRecipes, R
   object props extends MapColumn[String, String](this)
   object timestamp extends DateTimeColumn(this)
 
-  def store(recipe: Recipe): ScalaFuture[ResultSet] = {
-    insert
-      .value(_.id, recipe.id)
-      .value(_.author, recipe.author)
-      .value(_.title, recipe.title)
-      .value(_.description, recipe.description)
-      .value(_.ingredients, recipe.ingredients)
-      .value(_.name, recipe.name)
-      .value(_.props, recipe.props)
-      .value(_.timestamp, recipe.timestamp)
-      .future()
-  }
-
-
   // Now say you want to get a Recipe by author.
   // author is a Index, you can now use it in a "where" clause.
   // Performance is unpredictable for such queries, so you need to allow filtering.

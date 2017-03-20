@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future
@@ -26,20 +25,10 @@ case class ScalaPrimitiveMapRecord(
   map: Map[DateTime, BigDecimal]
 )
 
-class ScalaTypesMapTable extends CassandraTable[ConcreteScalaTypesMapTable, ScalaPrimitiveMapRecord] {
+abstract class ScalaTypesMapTable extends CassandraTable[ScalaTypesMapTable, ScalaPrimitiveMapRecord] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
   object map extends MapColumn[DateTime, BigDecimal](this)
-}
-
-abstract class ConcreteScalaTypesMapTable extends ScalaTypesMapTable with RootConnector {
-  def store(
-    rec: ScalaPrimitiveMapRecord
-  ): InsertQuery.Default[ConcreteScalaTypesMapTable, ScalaPrimitiveMapRecord] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.map, rec.map)
-  }
 
   def findById(id: UUID): Future[Option[ScalaPrimitiveMapRecord]] = {
     select.where(_.id eqs id).one()
