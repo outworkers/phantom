@@ -30,14 +30,12 @@ import scala.concurrent.duration._
 trait TestImplicits {
   implicit val system = ActorSystem()
 
-  implicit object OperaRequestBuilder extends RequestBuilder[ConcreteOperaTable, Opera] {
+  implicit object OperaRequestBuilder extends RequestBuilder[OperaTable, Opera] {
 
-    override def request(ct: ConcreteOperaTable, t: Opera)(
+    override def request(ct: OperaTable, t: Opera)(
       implicit session: Session,
       keySpace: KeySpace
-    ): ExecutableStatement with Batchable = {
-      ct.insert.value(_.name, t.name)
-    }
+    ): ExecutableStatement with Batchable = ct.store(t)
   }
 
 }

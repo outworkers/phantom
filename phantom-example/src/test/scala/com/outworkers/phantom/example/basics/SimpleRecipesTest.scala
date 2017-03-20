@@ -27,7 +27,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.store(sample)
+      store <- database.Recipes.store(sample).future()
       res <- database.Recipes.findRecipeById(sample.id)
     } yield res
 
@@ -41,7 +41,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.store(sample)
+      store <- database.Recipes.store(sample).future()
       res <- database.Recipes.findRecipeIngredients(sample.id)
     } yield res
 
@@ -56,7 +56,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val newAuthor = gen[ShortString].value
 
     val chain = for {
-      store <- database.Recipes.store(sample)
+      store <- database.Recipes.store(sample).future()
       res <- database.Recipes.findRecipeById(sample.id)
       updateAuthor <- database.Recipes.updateRecipeAuthor(sample.id, newAuthor)
       res2 <- database.Recipes.findRecipeById(sample.id)
@@ -74,7 +74,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.Recipes.store(sample)
+      store <- database.Recipes.store(sample).future()
       res <- database.Recipes.findRecipeById(sample.id)
       updateAuthor <- database.Recipes.deleteRecipeById(sample.id)
       res2 <- database.Recipes.findRecipeById(sample.id)
@@ -91,7 +91,7 @@ class SimpleRecipesTest extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.SecondaryKeyRecipes.store(sample)
+      store <- database.SecondaryKeyRecipes.store(sample).future()
       res <- database.SecondaryKeyRecipes.findRecipeByAuthor(sample.author)
     } yield res
 

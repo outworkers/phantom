@@ -25,7 +25,7 @@ class CompositeKeyTests extends ExampleSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.CompositeKeyRecipes.store(sample)
+      store <- database.CompositeKeyRecipes.store(sample).future()
       rec <- database.CompositeKeyRecipes.findRecipeByIdAndName(sample.id, sample.name)
     } yield rec
 
