@@ -277,14 +277,10 @@ class RootMacro(val c: blackbox.Context) {
     */
   def extractRecordMembers(tpe: Type): Seq[Record.Field] = {
     tpe.typeSymbol match {
-      case sym if sym.fullName.startsWith("scala.Tuple") => {
-
-        val names = Seq.tabulate(tpe.typeArgs.size)(identity) map {
+      case sym if sym.fullName.startsWith("scala.Tuple") =>
+        Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => TermName("_" + (index + 1))
-        }
-
-        names.zip(tpe.typeArgs) map Record.Field.apply
-      }
+        } zip tpe.typeArgs map Record.Field.apply
 
       case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
 
