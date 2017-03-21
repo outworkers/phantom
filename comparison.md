@@ -151,7 +151,7 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 As of version 2.0.0, phantom is capable of auto-generating the `fromRow` method, so the mapping DSL is reduced to:
 
 ```
-class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+abstract class Recipes extends CassandraTable[ConcreteRecipes, Recipe] with RootConnector {
 
   object url extends StringColumn(this) with PartitionKey[String]
 
@@ -169,11 +169,12 @@ class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 }
 ```
 
-It's definitely more boilerplate than Quill, there's no doubt about that, however, this simple DSL can help us to great
+It's marginally more boilerplate than something like Quill, however, this simple DSL can help us to great
 things:
 
 - Control the name we want to use for our columns. Not the most interesting feature,
-but it helps avoid collisions with known Cassandra types. Currently this doesn't look possible in Quill.
+but it helps avoid collisions with known Cassandra types. Quill also allows specifying a context
+ for its field name generation, so users can opt between `SnakeCase` or `CamelCase`.
 
 - Generate the CQL schema on the fly. Every phantom table has a `.create` method, that will yield a `CreateQuery`,
 where you can set the creation properties in minute details. The schema is then inferred from the DSL.
@@ -182,10 +183,14 @@ where you can set the creation properties in minute details. The schema is then 
 `autocreate`, `createAsync` and other convenience methods for automatically creating, truncating or dropping
 an entire database in a single method call. Look ma', no manual CQL.
 
+- Generate a `store` method on the fly that is chainable, meaning you can further add clauses to your standard
+insert query. This is available as of phantom 2.5.0 via `database.table.store(record)`.
+
 - Phantom is schema aware. Using an advanced implicit mechanism powered by the Shapeless library, phantom is
 capable of "knowing" what queries are possible and what queries aren't. Let's take for example the `Recipes` above:
 
-The following query is invalid, because we have not defined any index for the `side_id` column.
+The following query is invalid, because we have not defined any index for the `side_id` column. This is currently
+not possible in either of quill or the Java driver, because they do not operate in a schema safe way.
 
 ```scala
 database.recipes.select.where(_.uid eqs someid)
