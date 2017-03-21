@@ -301,7 +301,7 @@ So the new type of the generated store method will now be:
   ): InsertQuery.Default[RecordsByCountry, Record]   
 ```
 
-The new type of the generated store method is 
+The new table definition to store the above is:
 
 ```scala
 
