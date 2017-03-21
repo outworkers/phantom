@@ -315,7 +315,7 @@ case class Record(
   email: String
 )
 
-abstract class RecordsByCountry extends CassandraTable[RecordsByCountry, Record] {
+abstract class RecordsByCountryAndRegion extends CassandraTable[RecordsByCountryAndRegion, Record] {
   object countryCode extends StringColumn(this) with PartitionKey
   object region extends StringColumn(this) with PartitionKey
   object id extends UUIDColumn(this) with PrimaryKey
