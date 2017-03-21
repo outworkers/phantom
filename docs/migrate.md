@@ -134,7 +134,7 @@ abstract class MyTable extends CassandraTable[MyTable, Record] {
   object firstName extends StringColumn(this)
   object email extends StringColumn(this)
 
-  // Phantom now auto-generates the blow method
+  // Phantom now auto-generates the below method
   def store(record: Record): InsertQuery.Default[MyTable, Record] = {
     insert.value(_.id, record.id)
       .value(_.name, record.name)

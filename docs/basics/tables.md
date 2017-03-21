@@ -183,3 +183,156 @@ an instance of the `RecordType`.
 `def store(input: (Field1Type, Field2Type, ..., RecordType))`, so basically the columns that were found
 in the table but not in the `RecordType` will be added to the front of the tuple in the order they were
  written.
+
+Let's analyse the most common examples and see how this would work.
+ 
+#### The simple case
+
+This is the most standard use case, where your table has the exact same number of columns as your
+ record and there is a perfect mapping(bijection) between your table and your record. In this case,
+ the generated `store` method will simply take a single argument of type `Record`, as illustrated below.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class MyTable extends CassandraTable[MyTable, Record] {
+
+  object id extends UUIDColumn(this) with PartitionKey
+  object name extends StringColumn(this)
+  object firstName extends StringColumn(this)
+  object email extends StringColumn(this)
+
+  // Phantom now auto-generates the below method
+  def store(record: Record): InsertQuery.Default[MyTable, Record] = {
+    insert.value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+
+}
+```
+
+#### The complicated use case
+
+Sometimes we need to store a given `Record` in more than one table to achieve denormalisation. This is
+fairly trivial and standard in Cassandra, but it introduces a subtle problem, namely that the new table
+needs to store a `Record` and at least one more column representing an index. 
+
+We refer to the columns that exist in the `Table` but not in the `Record` as unmatched columns, both in the
+documentation as well as the schema.
+
+Let's picture we are trying to store `Record` grouped by `countryCode`, because we want to be able to query
+records belonging to a particular `countryCode`. The macro will pick up on the fact that
+our table now has more columns than our `Record` type needs, which means they need to somehow
+be mapped.
+
+So the new type of the generated store method will now be:
+
+```
+  def store(
+    countryCode: String,
+    record: Record
+  ): InsertQuery.Default[RecordsByCountry, Record]   
+```
+
+This is better visible below, where both the body of the new `store` method as well as the Cassandra table DSL
+schema we might use for it are clearly visible.
+
+**Warning!!**, the order in which the columns are written inside the table is irrelevant, by design the macro
+will take all that columns that exist in the table but not in the `Record` and put them **in front** of the 
+`Record` type inside the `store` method input type signature.
+
+The macro will always create a `Tuple` as described initially, of all the types of unmatched columns, succeeded
+by the `Record` type.
+
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class RecordsByCountry extends CassandraTable[RecordsByCountry, Record] {
+  object countryCode extends StringColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PrimaryKey
+  object name extends StringColumn(this)
+  object firstName extends StringColumn(this)
+  object email extends StringColumn(this)
+
+  // Phantom now auto-generates the below method
+  def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+    insert
+      .value(_.countryCode, countryCode)
+      .value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_.firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+
+}
+```
+
+To see how this logic might be further extended, let's add a `region` partition key to create a `Compound` primary
+key that would allow us to retrieve all records by both `country` and `region`.
+
+So the new type of the generated store method will now be:
+
+```
+  def store(
+    countryCode: String,
+    region: String,
+    record: Record
+  ): InsertQuery.Default[RecordsByCountry, Record]   
+```
+
+The new type of the generated store method is 
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class RecordsByCountry extends CassandraTable[RecordsByCountry, Record] {
+  object countryCode extends StringColumn(this) with PartitionKey
+  object region extends StringColumn(this) with PartitionKey
+  object id extends UUIDColumn(this) with PrimaryKey
+  object name extends StringColumn(this)
+  object firstName extends StringColumn(this)
+  object email extends StringColumn(this)
+
+  // Phantom now auto-generates the below method
+  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+    insert
+      .value(_.countryCode, countryCode)
+      .value(_.region, region)
+      .value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_.firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+
+}
+```
