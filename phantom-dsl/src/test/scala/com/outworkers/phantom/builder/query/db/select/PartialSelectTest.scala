@@ -57,6 +57,21 @@ class PartialSelectTest extends PhantomSuite {
     }
   }
 
+
+  "Partial selects" should "select 2 columns with macro inference" in {
+    val row = gen[Primitive]
+    val expected = (row.pkey, row.long)
+
+    val chain = for {
+      _ <- database.primitives.store(row).future
+      get <- database.primitives.tester(_.pkey, _.long).where(_.pkey eqs row.pkey).one()
+    } yield get
+
+    whenReady(chain) {
+      res => res.value shouldEqual expected
+    }
+  }
+
   "Partial selects" should "select 3 columns" in {
 
     val row = gen[Primitive]

@@ -17,6 +17,7 @@ package com.outworkers.phantom
 
 import com.outworkers.phantom.builder.ops.SelectColumn
 import com.outworkers.phantom.builder.query.RootSelectBlock
+import com.outworkers.phantom.macros.SelectClause
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
@@ -27,6 +28,10 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     val t = this.asInstanceOf[T]
     val c = f1(t)
     RootSelectBlock(t, List(c.col.name), c.apply)
+  }
+
+  def tester[In, Out](input: In)(implicit ev: SelectClause.Aux[In, Out]): RootSelectBlock[T, Out] = {
+    RootSelectBlock(instance, ev.names(input), ev.extractor(input, instance))
   }
 
   def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): RootSelectBlock[T, (A, B)] = {
