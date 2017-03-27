@@ -21,6 +21,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.tables.TestDatabase
 import org.joda.time.Seconds
 import org.scalatest.{FreeSpec, Matchers}
