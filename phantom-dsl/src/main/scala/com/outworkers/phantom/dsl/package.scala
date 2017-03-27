@@ -152,7 +152,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
-    def percentile: CQLQuery = CQLQuery(percent.toString).append(CQLSyntax.CreateOptions.percentile)
+    def percentile: CQLQuery = CQLQuery(percent.toString).pad.append(CQLSyntax.CreateOptions.percentile)
   }
 
   implicit def primitiveToTokenOp[RR : Primitive](value: RR): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {

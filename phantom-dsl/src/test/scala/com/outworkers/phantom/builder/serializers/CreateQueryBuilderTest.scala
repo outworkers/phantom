@@ -88,7 +88,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       "using the augmented number strings" in {
         val num = gen[Int]
         val qb = num.percentile.queryString
-        qb shouldEqual "$num${CQLSyntax.CreateOptions.percentile}"
+        qb shouldEqual s"$num ${CQLSyntax.CreateOptions.percentile}"
       }
     }
 
