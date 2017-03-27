@@ -72,17 +72,17 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   object Record {
-    case class Field(name: TermName, tpe: Type) extends RootField
+    case class Field(name: TermName, tpe: Type, index: Int) extends RootField
 
     object Field {
-      def apply(tp: (TermName, Type)): Field = {
-        val (nm, t) = tp
-        Field(nm, t)
+      def apply(tp: (TermName, Type, Int)): Record.Field = {
+        val (nm, t, index) = tp
+        Record.Field(nm, t, index)
       }
 
-      def tupled(tp: (Name, Type)): Field = {
-        val (nm, t) = tp
-        Field(nm.toTermName, t)
+      def tupled(tp: (Name, Type, Int)): Record.Field = {
+        val (nm, t, index) = tp
+        Record.Field(nm.toTermName, t, index)
       }
     }
   }
@@ -139,9 +139,18 @@ class RootMacro(val c: blackbox.Context) {
     val lm: ListMap[K, M[V]]
   )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
 
+    /**
+     * Every entry in this ordered map is a traversable of type [[M]].
+     * That means every key holds a sequence of elements.
+     * This function will remove the element [[elem]] from that sequence
+     * for the provided key.
+     */
+
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
-      val col = lm.getOrElse(key, cbf().result())
-      lm + (key -> col.filterNot(elem ==).to[M])
+      lm.get(key) match {
+        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
+        case None => lm
+      }
     }
 
     def remove(key: K, elem: Option[V]): ListMap[K, M[V]] = elem.fold(lm)(x => remove(key, x))
@@ -181,7 +190,7 @@ class RootMacro(val c: blackbox.Context) {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+        val columnNames = matched.sortBy(_.left.index).map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
         Some(q"""new $recordType(..$columnNames)""")
       } else {
         None
@@ -237,6 +246,13 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
+    /**
+     * Short cut method to create a full CQL query using the a particular column
+     * inside a table. This will create something like the folloing:
+     * {{{
+     *  com.outworkers.phantom.
+     * }}}
+     */
     def tableField(fieldName: TermName): Tree = {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
@@ -303,11 +319,12 @@ class RootMacro(val c: blackbox.Context) {
   def extractRecordMembers(tpe: Type): Seq[Record.Field] = {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
-        Seq.tabulate(tpe.typeArgs.size)(identity) map {
+        (Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => tupleTerm(index)
-        } zip tpe.typeArgs map Record.Field.apply
+        } zip tpe.typeArgs).zipWithIndex map { case ((term, tpe), index) => Record.Field(term, tpe, index) }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
+      case sym if sym.isClass && sym.asClass.isCaseClass =>
+        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) => Record.Field(nm.toTermName, tp, i) }
 
       case _ => Seq.empty[Record.Field]
     }

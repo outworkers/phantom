@@ -421,7 +421,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
@@ -440,7 +440,5 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
-    Console.println(showCode(tree))
-    tree
   }
 }
