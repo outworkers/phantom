@@ -162,7 +162,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
               descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
             )
 
-
           case Some(seq) => seq.find(recField.name ==) match {
             // In theory this case should not re-occur because we only add elements
             // to the unprocessed if no direct term name matches were found.
@@ -256,7 +255,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
       columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
         case None =>
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
-          extractorRec(columnFields, tail, descriptor withMatch un, unprocessed)
+          extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
 
         case Some(Seq(h)) =>
           extractorRec(

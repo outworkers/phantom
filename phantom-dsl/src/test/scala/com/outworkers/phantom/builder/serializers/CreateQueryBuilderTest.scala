@@ -83,6 +83,14 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
     }
 
+    "should create a simple percentile clause" - {
+      "using the augmented number strings" in {
+        val num = gen[Int]
+        val qb = num.percentile.queryString
+        qb shouldEqual "$num${CQLSyntax.CreateOptions.percentile}"
+      }
+    }
+
     "should allow using DateTieredCompactionStrategy and its options" - {
       "serialise a create query with a DateTieredCompactionStrategy" in {
         val qb = BasicTable.create.`with`(

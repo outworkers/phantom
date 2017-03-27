@@ -66,25 +66,11 @@ class RootMacro(val c: blackbox.Context) {
 
     def tpe: Type
 
-    def symbol: Symbol = tpe.typeSymbol
-
     def debugString: String = s"${q"$name"} : ${printType(tpe)}"
   }
 
   object Record {
     case class Field(name: TermName, tpe: Type, index: Int) extends RootField
-
-    object Field {
-      def apply(tp: (TermName, Type, Int)): Record.Field = {
-        val (nm, t, index) = tp
-        Record.Field(nm, t, index)
-      }
-
-      def tupled(tp: (Name, Type, Int)): Record.Field = {
-        val (nm, t, index) = tp
-        Record.Field(nm.toTermName, t, index)
-      }
-    }
   }
 
   object Column {
@@ -109,12 +95,6 @@ class RootMacro(val c: blackbox.Context) {
     def typeMap: ListMap[Type, Seq[TermName]] = {
       col.foldLeft(ListMap.empty[Type, Seq[TermName]]) { case (acc, f) =>
         acc + (f.tpe -> (acc.getOrElse(f.tpe, Seq.empty[TermName]) :+ f.name))
-      }
-    }
-
-    def fieldMap: ListMap[TermName, Type] = {
-      col.foldLeft(ListMap.empty[TermName, Type]) { case (acc, f) =>
-        acc + (f.name -> f.tpe)
       }
     }
   }
@@ -152,8 +132,6 @@ class RootMacro(val c: blackbox.Context) {
         case None => lm
       }
     }
-
-    def remove(key: K, elem: Option[V]): ListMap[K, M[V]] = elem.fold(lm)(x => remove(key, x))
   }
 
   case class TableDescriptor(
@@ -294,17 +272,6 @@ class RootMacro(val c: blackbox.Context) {
     ) mkString "\n"
   }
 
-  object TableDescriptor {
-    def empty(tpe: Type, recordType: Type): TableDescriptor = {
-      TableDescriptor(
-        tableTpe = tpe,
-        recordType = recordType,
-        members = List.empty[Column.Field],
-        matches = List.empty[RecordMatch]
-      )
-    }
-  }
-
   /**
     * A "generic" type extractor that's meant to produce a list of fields from a record type.
     * We support a narrow domain of types for automated generation, currently including:
@@ -321,7 +288,7 @@ class RootMacro(val c: blackbox.Context) {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
         (Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => tupleTerm(index)
-        } zip tpe.typeArgs).zipWithIndex map { case ((term, tpe), index) => Record.Field(term, tpe, index) }
+        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) => Record.Field(term, tp, index) }
 
       case sym if sym.isClass && sym.asClass.isCaseClass =>
         caseFields(tpe).zipWithIndex map { case ((nm, tp), i) => Record.Field(nm.toTermName, tp, i) }

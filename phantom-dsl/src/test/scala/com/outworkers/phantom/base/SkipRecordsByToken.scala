@@ -47,13 +47,28 @@ class SkipRecordsByToken extends PhantomSuite {
     }
   }
 
+  it should "allow skipping records using ltToken" in {
+    val articles = genList[Article]()
+
+    val result = for {
+      _ <- Articles.truncate().future()
+      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      list <- Articles.select.fetch
+      next <- Articles.select.where(_.id ltToken list.last.id).fetch
+    } yield next
+
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual (articles.size - 1)
+    }
+  }
+
   it should "allow skipping records using eqsToken" in {
     val articles = genList[Article]()
 
     val result = for {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
-
       next <- Articles.select.where(_.id eqsToken articles.headOption.value.id).fetch
     } yield next
 
