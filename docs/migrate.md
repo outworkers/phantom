@@ -99,7 +99,7 @@ CassandraConnector`.
 - `Database` now requires an f-bounded type argument: `class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector)`.
 - Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
 This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
-- `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`.
+- `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`. This now has the type `ExecutionContextExecutor` which allows us to use the same context for both Scala and Java futures(which are used internally as part of the Datastax Java driver).
 
 
 #### You can remove manual `fromRow` method definitions
