@@ -24,7 +24,7 @@ import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
@@ -46,11 +46,11 @@ object TableHelper {
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
-  type Aux[T <: CassandraTable[T, R], R, Out] = TableHelper[T, R] { type Repr = Out }
+  type Aux[T <: CassandraTable[T, R], R, Repr0] = TableHelper[T, R] { type Repr = Repr0 }
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -62,7 +62,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       Some(s)
     }
   }
-
 
   def insertQueryType(table: Type, record: Type): Tree = {
     tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
@@ -422,7 +421,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
     q"""
-       new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
+       new $macroPkg.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
           def tableName: $strTpe = $tableName
