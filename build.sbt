@@ -20,7 +20,7 @@ import sbt.Defaults._
 
 lazy val Versions = new {
   val logback = "1.2.1"
-  val sbt = "0.13.11"
+  val sbt = "0.13.13"
   val util = "0.30.1"
   val json4s = "3.5.0"
   val datastax = "3.1.0"
@@ -84,21 +84,19 @@ lazy val Versions = new {
     }
   }
 
-  val playStreams: String => ModuleID = {
-    s => {
-      val v = play(s)
-      CrossVersion.partialVersion(s) match {
-        case Some((_, minor)) if minor == 12=> {
-          "com.typesafe.play" %% "play-reactive-streams" % v
-        }
-        case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
-          "com.typesafe.play" %% "play-streams" % v
-        }
-        case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
-          "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
-        }
-        case _ => "com.typesafe.play" %% "play-streams-experimental" % v
+  val playStreams: String => ModuleID = s => {
+    val v = play(s)
+    CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor == 12=> {
+        "com.typesafe.play" %% "play-reactive-streams" % v
       }
+      case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
+        "com.typesafe.play" %% "play-streams" % v
+      }
+      case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
+        "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
+      }
+      case _ => "com.typesafe.play" %% "play-streams-experimental" % v
     }
   }
 }
@@ -112,7 +110,12 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
-  scalaOrganization in ThisBuild := "org.typelevel",
+  scalaOrganization in ThisBuild := {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((_, minor)) if minor >= 11 => "org.typelevel"
+      case _ => scalaOrganization.value
+    }
+  },
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
