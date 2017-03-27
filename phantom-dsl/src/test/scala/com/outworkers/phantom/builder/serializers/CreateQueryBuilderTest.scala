@@ -21,6 +21,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
+import com.outworkers.util.samplers._
 import com.outworkers.phantom.tables.TestDatabase
 import org.joda.time.Seconds
 import org.scalatest.{FreeSpec, Matchers}
@@ -80,6 +81,14 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val key = QueryBuilder.Create.primaryKey(partitions, primaries, clustering).queryString
 
         key shouldEqual "PRIMARY KEY ((partition1, partition2), primary1, primary2) WITH CLUSTERING ORDER BY (primary1 ASC, primary2 ASC)"
+      }
+    }
+
+    "should create a simple percentile clause" - {
+      "using the augmented number strings" in {
+        val num = gen[Int]
+        val qb = num.percentile.queryString
+        qb shouldEqual s"$num ${CQLSyntax.CreateOptions.percentile}"
       }
     }
 

@@ -47,13 +47,44 @@ class SkipRecordsByToken extends PhantomSuite {
     }
   }
 
+  it should "allow skipping records using ltToken" in {
+    val articles = genList[Article]()
+
+    val result = for {
+      _ <- Articles.truncate().future()
+      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      list <- Articles.select.fetch
+      next <- Articles.select.where(_.id ltToken list.last.id).fetch
+    } yield next
+
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual (articles.size - 1)
+    }
+  }
+
+  it should "allow skipping records using lteToken" in {
+    val articles = genList[Article]()
+
+    val result = for {
+      _ <- Articles.truncate().future()
+      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      list <- Articles.select.fetch
+      next <- Articles.select.where(_.id lteToken list.last.id).fetch
+    } yield next
+
+    whenReady(result) { r =>
+      info (s"got exactly ${r.size} records")
+      r.size shouldEqual articles.size
+    }
+  }
+
   it should "allow skipping records using eqsToken" in {
     val articles = genList[Article]()
 
     val result = for {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
-
       next <- Articles.select.where(_.id eqsToken articles.headOption.value.id).fetch
     } yield next
 
@@ -63,53 +94,20 @@ class SkipRecordsByToken extends PhantomSuite {
     }
   }
 
-  ignore should "allow skipping records using gteToken" in {
+  it should "allow skipping records using gteToken" in {
     val articles = genList[Article]()
 
     val result = for {
       truncate <- Articles.truncate.future()
       store <- Future.sequence(articles.map(Articles.store(_).future()))
-
-      next <- Articles.select.where(_.id gteToken articles.headOption.value.id).fetch
+      list <- Articles.select.fetch
+      next <- Articles.select.where(_.id gteToken list.headOption.value.id).fetch
     } yield next
 
 
     whenReady(result) { r =>
       info (s"got exactly ${r.size} records")
-      r.size shouldEqual 3
-    }
-  }
-
-  ignore should "allow skipping records using ltToken" in {
-    val articles = genList[Article]()
-
-    val result = for {
-      truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store(_).future()))
-
-      next <- Articles.select.where(_.id ltToken articles.lastOption.value.id).fetch
-    } yield next
-
-
-    whenReady(result) { r =>
-      info (s"got exactly ${r.size} records")
-      r.size shouldEqual (articles.size - 1)
-    }
-  }
-
-  ignore should "allow skipping records using lteToken" in {
-    val articles = genList[Article]()
-
-    val result = for {
-      truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store(_).future()))
-      next <- Articles.select.where(_.id lteToken articles.lastOption.value.id).fetch
-    } yield next
-
-
-    whenReady(result) { r =>
-      info (s"got exactly ${r.size} records")
-      r.size shouldEqual (articles.size - 1)
+      r.size shouldEqual articles.size
     }
   }
 

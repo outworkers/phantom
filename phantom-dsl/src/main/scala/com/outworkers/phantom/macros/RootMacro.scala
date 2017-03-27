@@ -66,25 +66,11 @@ class RootMacro(val c: blackbox.Context) {
 
     def tpe: Type
 
-    def symbol: Symbol = tpe.typeSymbol
-
     def debugString: String = s"${q"$name"} : ${printType(tpe)}"
   }
 
   object Record {
-    case class Field(name: TermName, tpe: Type) extends RootField
-
-    object Field {
-      def apply(tp: (TermName, Type)): Field = {
-        val (nm, t) = tp
-        Field(nm, t)
-      }
-
-      def tupled(tp: (Name, Type)): Field = {
-        val (nm, t) = tp
-        Field(nm.toTermName, t)
-      }
-    }
+    case class Field(name: TermName, tpe: Type, index: Int) extends RootField
   }
 
   object Column {
@@ -111,12 +97,10 @@ class RootMacro(val c: blackbox.Context) {
         acc + (f.tpe -> (acc.getOrElse(f.tpe, Seq.empty[TermName]) :+ f.name))
       }
     }
+  }
 
-    def fieldMap: ListMap[TermName, Type] = {
-      col.foldLeft(ListMap.empty[TermName, Type]) { case (acc, f) =>
-        acc + (f.name -> f.tpe)
-      }
-    }
+  def tupleTerm(index: Int, aug: Int = 1): TermName = {
+    TermName("_" + (index + aug).toString)
   }
 
   trait RecordMatch
@@ -135,12 +119,19 @@ class RootMacro(val c: blackbox.Context) {
     val lm: ListMap[K, M[V]]
   )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
 
-    def remove(key: K, elem: V): ListMap[K, M[V]] = {
-      val col = lm.getOrElse(key, cbf().result())
-      lm + (key -> col.filterNot(elem ==).to[M])
-    }
+    /**
+     * Every entry in this ordered map is a traversable of type [[M]].
+     * That means every key holds a sequence of elements.
+     * This function will remove the element [[elem]] from that sequence
+     * for the provided key.
+     */
 
-    def remove(key: K, elem: Option[V]): ListMap[K, M[V]] = elem.fold(lm)(x => remove(key, x))
+    def remove(key: K, elem: V): ListMap[K, M[V]] = {
+      lm.get(key) match {
+        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
+        case None => lm
+      }
+    }
   }
 
   case class TableDescriptor(
@@ -158,6 +149,15 @@ class RootMacro(val c: blackbox.Context) {
       this.copy(matches = matches :+ m)
     }
 
+    /**
+      * This is just done for the naming convenience, but the functionality of distinguishing between
+      * matched and unmatched is implemented
+      * using an ADT and collect, so it doesn't actually matter if we append to the same place.
+      * @param m The record match.
+      * @return An immutable copy of the table descriptor with one extra unmatched record.
+      */
+    def withoutMatch(m: RecordMatch): TableDescriptor = withMatch(m)
+
     def unmatched: Seq[Unmatched] = matches.collect {
       case u @ Unmatched(records, reason) => u
     }
@@ -168,15 +168,11 @@ class RootMacro(val c: blackbox.Context) {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+        val columnNames = matched.sortBy(_.left.index).map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
         Some(q"""new $recordType(..$columnNames)""")
       } else {
         None
       }
-    }
-
-    def tupleTerm(index: Int, aug: Int = 1): TermName = {
-      TermName("_" + (index + aug).toString)
     }
 
     def debugList(fields: Seq[RootField]): Seq[String] = fields.map(u =>
@@ -228,6 +224,13 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
 
+    /**
+     * Short cut method to create a full CQL query using the a particular column
+     * inside a table. This will create something like the folloing:
+     * {{{
+     *  com.outworkers.phantom.
+     * }}}
+     */
     def tableField(fieldName: TermName): Tree = {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
@@ -269,17 +272,6 @@ class RootMacro(val c: blackbox.Context) {
     ) mkString "\n"
   }
 
-  object TableDescriptor {
-    def empty(tpe: Type, recordType: Type): TableDescriptor = {
-      TableDescriptor(
-        tableTpe = tpe,
-        recordType = recordType,
-        members = List.empty[Column.Field],
-        matches = List.empty[RecordMatch]
-      )
-    }
-  }
-
   /**
     * A "generic" type extractor that's meant to produce a list of fields from a record type.
     * We support a narrow domain of types for automated generation, currently including:
@@ -294,11 +286,12 @@ class RootMacro(val c: blackbox.Context) {
   def extractRecordMembers(tpe: Type): Seq[Record.Field] = {
     tpe.typeSymbol match {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
-        Seq.tabulate(tpe.typeArgs.size)(identity) map {
-          index => TermName("_" + (index + 1))
-        } zip tpe.typeArgs map Record.Field.apply
+        (Seq.tabulate(tpe.typeArgs.size)(identity) map {
+          index => tupleTerm(index)
+        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) => Record.Field(term, tp, index) }
 
-      case sym if sym.isClass && sym.asClass.isCaseClass => caseFields(tpe) map Record.Field.tupled
+      case sym if sym.isClass && sym.asClass.isCaseClass =>
+        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) => Record.Field(nm.toTermName, tp, i) }
 
       case _ => Seq.empty[Record.Field]
     }

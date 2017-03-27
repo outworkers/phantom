@@ -75,8 +75,6 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
     col: M[String],
     sep: String = defaultSep
   ): CQLQuery = wrap(col mkString sep)
-
-  override def toString: String = queryString
 }
 
 object CQLQuery {
@@ -84,8 +82,6 @@ object CQLQuery {
   def empty: CQLQuery = CQLQuery("")
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
-
-  def escaped(str: String): CQLQuery = CQLQuery("'" + str.replaceAll("'", "''") + "'")
 
   def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
 }

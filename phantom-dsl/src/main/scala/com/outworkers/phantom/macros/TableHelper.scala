@@ -16,6 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
+import com.google.common.base.CaseFormat
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
@@ -23,7 +24,7 @@ import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
@@ -45,11 +46,11 @@ object TableHelper {
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
-  type Aux[T <: CassandraTable[T, R], R, Out] = TableHelper[T, R] { type Repr = Out }
+  type Aux[T <: CassandraTable[T, R], R, Repr0] = TableHelper[T, R] { type Repr = Repr0 }
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -61,7 +62,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
       Some(s)
     }
   }
-
 
   def insertQueryType(table: Type, record: Type): Tree = {
     tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
@@ -125,29 +125,144 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     (col =:= rec) || (c.inferImplicitView(EmptyTree, col, rec) != EmptyTree)
   }
 
-  def extractorRec[T](
-    columnFields: List[Column.Field],
-    columnMembers: ListMap[Type, Seq[TermName]],
-    recordMembers: List[Record.Field],
+  def variations(term: TermName): List[TermName] = {
+    val str = term.decodedName.toString.toLowerCase
+
+    List(
+      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, str),
+      CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str),
+      CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str)
+    ).distinct.map(TermName(_))
+  }
+
+  def lowercased(term: TermName): TermName = {
+    TermName(term.decodedName.toString.trim.toLowerCase)
+  }
+
+  def processHardMatches(
+    columnFields: ListMap[Type, Seq[TermName]],
+    unprocessed: List[Record.Field],
     descriptor: TableDescriptor
   ): TableDescriptor = {
-    recordMembers match { case recField :: tail =>
-      columnMembers.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
-        // We look through the map of types inside the table
-        // And if we don't find any term names associated with the record type.
-        // we return the record field as unmatched and we remove it from the list of matches
-        // for the next recursive call.
+    unprocessed match {
+      case recField :: tail =>
+        columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
+          // It's possible that after all easy matches have been exhausted, no column fields are left to match
+          // with remaining record fields for the given type.
+          case None =>
+            val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
+            processHardMatches(columnFields, tail, descriptor withoutMatch un)
+
+          // We once again repeat the case, because we may under some circumstances find a single remaining
+          // column term to match with after all direct and easy matches have happened for a given type.
+          case Some(Seq(h)) =>
+            processHardMatches(
+              columnFields - recField.tpe,
+              tail,
+              descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
+            )
+
+          case Some(seq) => seq.find(recField.name ==) match {
+            // In theory this case should not re-occur because we only add elements
+            // to the unprocessed if no direct term name matches were found.
+            case Some(matchingName) =>
+              logger.warn(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
+              val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+
+              processHardMatches(
+                columnFields remove (recField.tpe, matchingName),
+                tail,
+                descriptor withMatch m
+              )
+            // The real case we are attempting to handle here is when we have no clue which one
+            // of multiple record strings matches which column field.
+            case None =>
+              // we now attempt to match a few variations of the term name.
+              // and check if the column members contain some possible variations.
+              val possibilities = variations(recField.name)
+
+              seq.find(colTerm => possibilities.exists(lowercased(colTerm) ==)) match {
+                case Some(matchingName) =>
+                  val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+                  processHardMatches(
+                    columnFields remove (recField.tpe, matchingName),
+                    tail,
+                    descriptor withMatch m
+                  )
+
+                  case None =>
+                    // This is still our worst case scenario, where no variation of a term name
+                    // was found and we still have multiple potential matches for a record field.
+                    // Under such circumstances we use the first available column term name
+                    // with respect to the write order.
+                    val firstName = seq.headOption.getOrElse(
+                      c.abort(c.enclosingPosition, "Found empty term sequence which should never happen!!!")
+                    )
+
+                    val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
+
+                    processHardMatches(
+                      columnFields remove (recField.tpe, firstName),
+                      tail,
+                      descriptor withMatch m
+                    )
+
+              }
+          }
+        }
+
+
+
+      case Nil => descriptor
+    }
+  }
+
+  /**
+    * This works by recursively parsing a list of fields extracted here as record members.
+    * The algorithm will take every fiel from the record and:
+    * - If there are record fields to address left, we will search within the available columns
+    * for a type that either matches or can be implicitly converted to the record type.
+    * - If a single match is found, we declare that as a match, without comparing the field names.
+    * - If there is more than one match found, we look for a column with a name that matches the record
+    * field name.
+    * - If a matching name is found, it means we have both a matching type and name and we consider that
+    * a correct match.
+    * - If no matching name is found, this is appended to the unprocessed list of record fields. We do this because
+    * we need to resort to different techniques to deal with unmatched record fields or fields with multiple possible
+    * matches. Until 2.6.0, we resorted to using the first column field of the correct type as per user input, in
+    * situations where a given record type cou;d match more than one column. However, this introduces a subtle problem
+    * as we risk "using up" a column field with a potentially incorrect matching record field because we do not exhaust
+    * all "direct" easy matches before attempting to handle the more complex situations.
+    * - If a direct match is found or no matching type is found we recursively remove from both the list of record
+    * fields to look for and also from the dictionary of column members to look up from.
+    * @param columnFields An ordered "as-written" map of column types with a list of terms associated with it. This is used to
+    *                      deal with the fact that multiple table columns can have the same Scala type.
+    * @param recordFields An ordered "as-written" list of record fields.
+    * @param descriptor A table descriptor, built recursively, which will hold all the information we need to generate the
+    *                   extractor at the end of this recursive cycle.
+    * @param unprocessed The list of unprocessed record fields, dealt with last to avoid the above described scenario. We
+    *                    attempt to make all "easy matches" before analysing situations where it's harder to derive
+    *                    a simple field match.
+    * @return A [[TableDescriptor]], which contains all the information needed to create a full cassandra table.
+    */
+  def extractorRec(
+    columnFields: ListMap[Type, Seq[TermName]],
+    recordFields: List[Record.Field],
+    descriptor: TableDescriptor,
+    unprocessed: List[Record.Field]
+  ): TableDescriptor = {
+    recordFields match { case recField :: tail =>
+      columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
         case None =>
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
-          extractorRec(columnFields, columnMembers, tail, descriptor withMatch un)
+          extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
 
-        // If there is a single term name associated with a Type
-        // Then we don't need to find the best matching term name so we just proceed.
-        // We remove the key from the source dictionary completely because there are no more terms left that could
-        // match the given type.
         case Some(Seq(h)) =>
-          extractorRec(columnFields, columnMembers - recField.tpe, tail,
-            descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
+          extractorRec(
+            columnFields - recField.tpe,
+            tail,
+            descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe)),
+            unprocessed
           )
 
         case Some(seq) => seq.find(recField.name ==) match {
@@ -155,22 +270,26 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             logger.debug(s"Found multiple possible matches for ${recField.debugString}")
             val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
 
-            extractorRec(columnFields, columnMembers remove (recField.tpe, matchingName), tail, descriptor withMatch m)
-
-          case None =>
-            val nm: TermName = seq.headOption.getOrElse(
-              c.abort(c.enclosingPosition, "This should never happen")
+            extractorRec(
+              columnFields remove (recField.tpe, matchingName),
+              tail,
+              descriptor withMatch m,
+              unprocessed
             )
 
-            val f = MatchedField(recField, Column.Field(nm, recField.tpe))
-
-            extractorRec(columnFields, columnMembers remove (recField.tpe, nm), tail, descriptor withMatch f)
+          case None =>
+            extractorRec(
+              columnFields,
+              tail,
+              descriptor,
+              unprocessed :+ recField
+            )
           }
         }
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => descriptor
+      case Nil => processHardMatches(columnFields, unprocessed, descriptor)
     }
   }
 
@@ -188,7 +307,9 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     *   def fromRow(row: Row): R = ???
     * }}}
     *
-    * Not only that but they also have to be in the same order. For example:
+    * The fields do not have to be in the same order in both the record and the table. The macro
+    * algorithm will go to some length to try and figure out a correct match even if the fields are in random order.
+    *
     * {{{
     *   case class MyRecord(
     *     id: UUID,
@@ -203,6 +324,24 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     *   }
     * }}}
     *
+    * For example, the below will be a perfect match as well:
+    *
+    * {{{
+    *   case class MyRecord(
+    *     date: DateTime
+    *     id: UUID,
+    *     email: String,
+    *   )
+    *
+    *   class MyTable extends CassandraTable[MyTable, MyRecord] {
+    *     object id extends UUIDColumn(this) with PartitionKey
+    *     object email extends StringColumn(this)
+    *     object date extends DateTimeColumn(this)
+    *   }
+    * }}}
+    *
+    * For a more detailed description on how this method works, see [[extractorRec]].
+    *
     * @return An interpolated tree that will contain the automatically generated implementation
     *         of the fromRow method in a Cassandra Table.
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
@@ -213,10 +352,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     val colFields = extractColumnMembers(tableTpe, columns)
 
     extractorRec(
-      colFields,
       colFields.typeMap,
       recordMembers.toList,
-      TableDescriptor(tableTpe, recordTpe, colFields)
+      TableDescriptor(tableTpe, recordTpe, colFields),
+      Nil
     )
   }
 
@@ -279,9 +418,10 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
+    val clsName = TypeName(c.freshName("anon$"))
 
     q"""
-       new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
+       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
           def tableName: $strTpe = $tableName
@@ -298,6 +438,8 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
        }
+
+       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $rTpe, ${descriptor.storeType}]
     """
   }
 }

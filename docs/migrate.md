@@ -1,7 +1,7 @@
 Phantom 2.0.0 series
 ====================
 
-### What got completed in Phantom 2.0.0
+### What got completed in Phantom 2.x.x
 
 With the rapidly evolving requirements, Cassandra releases, and competition, it was only natural we kept Phantom up to scratch. In line with a lot of user feedback, the priorities of 2.0.0 were:
 
@@ -30,7 +30,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Enforce primary key restrictions on a table using a macro.
 - [x] Generate the `fromRow` method of `CassandraTable` using a macro if the `case class` fields and `table` columns are matched.
 - [x] Enforce a same ordering restriction for case class fields and table columns to avoid generating invalid methods with the macro.
-- [ ] Generate the `fromRow` if the fields match, they are in arbitrary order, but there are no duplicate types.
+- [x] Generate the `fromRow` if the fields match, they are in arbitrary order, but there are no duplicate types.
 - [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
 #### Tech debt
@@ -100,3 +100,55 @@ CassandraConnector`.
 - Automated Cassandra pagination via paging states has been moved to a new method called `paginateRecord`. Using `fetchRecord` with a `PagingState` is no longer possible.
 This is done to distinguish the underlying consumer mechanism of parsing and fetching records from Cassandra.
 - `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`.
+
+
+#### You can remove manual `fromRow` method definitions
+
+As of phantom 2.4.0, phantom is capable of automatically generating a `Row` extractor for the majority of 
+use cases using implicit macros, meaning you will never again need to define that part of the boilerplate.
+
+For more details, you can refer to the [how extractors work](basics/tables#extractors) guideline in the documentation.
+
+#### You can remove manual `store` method definitions
+
+As of phantom 2.5.0, if you have a manually defined method to insert records into your table, this is now no longer necessary.
+For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs. 
+This is because phantom successfully auto-generates a basic store method that looks like this below.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class MyTable extends CassandraTable[MyTable, Record] {
+
+  object id extends UUIDColumn(this) with PartitionKey
+  object name extends StringColumn(this)
+  object firstName extends StringColumn(this)
+  object email extends StringColumn(this)
+
+  // Phantom now auto-generates the below method
+  def store(record: Record): InsertQuery.Default[MyTable, Record] = {
+    insert.value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+  
+  // you can trivially extend the default insert method
+  // and add more clauses or features to it.
+  def newRecord(record: Record): Future[ResultSet] = {
+    store(record)
+      .ttl(5.minutes)
+      .consistencyLevel_=(ConsistencyLevel.ALL).future()
+  } 
+}
+
+```

@@ -10,7 +10,7 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
-Migrating to phantom 2.0.x series
+Migrating to phantom 2.x.x series
 =================================
 
 The new series of phantom introduces several key backwards incompatible changes with previous versions.
@@ -108,7 +108,8 @@ We love Cassandra to bits and use it in every bit of our stack. phantom makes it
 
 Cassandra is highly scalable and it is by far the most powerful database technology available, open source or otherwise.
 
-Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which does most of the heavy lifting.
+Phantom is built on top of the [Datastax Java Driver](https://github.com/datastax/java-driver), which handles Cassandra connectivity
+and raw query execution.
 
 We are very happy to help implement missing features in phantom, answer questions about phantom, and occasionally help you out with Cassandra questions! Please use GitHub for any issues or bug reports.
 
