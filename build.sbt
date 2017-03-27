@@ -112,6 +112,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
+  scalaOrganization in ThisBuild := "org.typelevel",
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
@@ -141,9 +142,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
-  gitTagName <<= (organization, name, version) map { (o, n, v) =>
-    "version=%s".format(v)
-  },
+  gitTagName in ThisBuild := "version=%s".format(scalaVersion.value),
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
   testOptions in PerformanceTest := Seq(Tests.Filter(performanceFilter)),

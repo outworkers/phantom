@@ -20,7 +20,6 @@ import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, Ins
 import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.macros.Storer
 import com.outworkers.phantom.streams.RequestBuilder
 import com.outworkers.util.samplers._
 import org.scalatest._
