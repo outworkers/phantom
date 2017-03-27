@@ -17,7 +17,6 @@ package com.outworkers.phantom
 
 import com.outworkers.phantom.builder.ops.SelectColumn
 import com.outworkers.phantom.builder.query.RootSelectBlock
-import com.outworkers.phantom.macros.SelectClause
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
