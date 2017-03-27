@@ -38,9 +38,9 @@ object Storer {
     implicit ev: Storer[T, R]
   ): Storer[T, R] = ev
 
-  type Aux[T <: CassandraTable[T, R], R, Out] = Storer[T, R] { type Repr = Out }
-
   implicit def materialize[T <: CassandraTable[T, R], R]: Storer[T, R] = macro StorerMacro.materialize[T, R]
+
+  type Aux[T <: CassandraTable[T, R], R, Repr0] = Storer[T, R] { type Repr = Repr0 }
 }
 
 
@@ -58,13 +58,16 @@ class StorerMacro(override val c: whitebox.Context) extends TableHelperMacro(c) 
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
     val descriptor = extractor(tableType, rTpe, referenceColumns)
+    val clsName = TypeName(c.freshName("anon$"))
 
     q"""
-      new $macroPkg.Storer[$tableType, $rTpe] {
+      final class $clsName extends $macroPkg.Storer[$tableType, $rTpe] {
         type Repr = ${descriptor.storeType}
 
         ${descriptor.storeMethod}
       }
+
+      new $clsName(): $macroPkg.Storer.Aux[$tableType, $rTpe, ${descriptor.storeType}]
     """
   }
 }

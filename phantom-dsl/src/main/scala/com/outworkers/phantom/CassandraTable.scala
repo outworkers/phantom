@@ -34,7 +34,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  * @tparam R Type of record.
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
-  implicit helper: TableHelper[T, R]
+  implicit val helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
@@ -119,11 +119,9 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1, Out](input: V1)(
-    implicit keySpace: KeySpace,
-    storer: Storer.Aux[T, R, Out],
-    ev0: V1 =:= Out
-  ): InsertQuery.Default[T, R] = storer.store(instance, input)
+  def store[V1](input: V1)(
+    implicit keySpace: KeySpace
+  ): InsertQuery.Default[T, R] = helper.store(instance, input.asInstanceOf[helper.Repr])
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
