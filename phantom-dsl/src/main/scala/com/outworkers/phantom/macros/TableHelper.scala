@@ -24,7 +24,7 @@ import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.whitebox
+import scala.reflect.macros.blackbox
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
@@ -50,7 +50,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
+class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {

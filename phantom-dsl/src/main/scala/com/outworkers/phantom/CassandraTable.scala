@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.macros.TableHelper
+import com.outworkers.phantom.macros.{ Storer, TableHelper }
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.Typeable
 
@@ -121,7 +121,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     */
   def store[V1, Out](input: V1)(
     implicit keySpace: KeySpace,
-    storer: TableHelper.Aux[T, R, Out],
+    storer: Storer.Aux[T, R, Out],
     ev0: V1 =:= Out
   ): InsertQuery.Default[T, R] = storer.store(instance, input)
 

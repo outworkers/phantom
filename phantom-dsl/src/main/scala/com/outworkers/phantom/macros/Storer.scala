@@ -15,6 +15,17 @@
  */
 package com.outworkers.phantom.macros
 
+import com.datastax.driver.core.Row
+import com.google.common.base.CaseFormat
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
+
+import scala.collection.immutable.ListMap
+import scala.reflect.macros.whitebox
+
 trait Storer[T <: CassandraTable[T, R], R] {
   type Repr
 
@@ -29,14 +40,14 @@ object Storer {
 
   type Aux[T <: CassandraTable[T, R], R, Out] = Storer[T, R] { type Repr = Out }
 
-  implicit def materialize[T <: CassandraTable[T, R]]: Storer[T, R] = {
-    macro StorerMacro.materialize[T, R]
-  }
+  implicit def materialize[T <: CassandraTable[T, R], R]: Storer[T, R] = macro StorerMacro.materialize[T, R]
 }
 
 
 @macrocompat.bundle
-class StorerMacro(override val c: whitebox.Context) extends TableHelper(c) {
+class StorerMacro(override val c: whitebox.Context) extends TableHelperMacro(c) {
+
+  import c.universe._
 
   def materialize[T : c.WeakTypeTag, R : c.WeakTypeTag]: Tree = {
     val tableType = weakTypeOf[T]
@@ -53,7 +64,7 @@ class StorerMacro(override val c: whitebox.Context) extends TableHelper(c) {
         type Repr = ${descriptor.storeType}
 
         ${descriptor.storeMethod}
-      }    
+      }
     """
   }
 }
