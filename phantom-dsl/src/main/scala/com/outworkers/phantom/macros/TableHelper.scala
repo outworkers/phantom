@@ -418,9 +418,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
+    val clsName = TypeName(c.freshName("anon$"))
 
     q"""
-       new $macroPkg.TableHelper[$tableType, $rTpe] {
+       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
           def tableName: $strTpe = $tableName
@@ -437,6 +438,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
        }
+
+       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $rTpe, ${descriptor.storeType}]
     """
   }
 }

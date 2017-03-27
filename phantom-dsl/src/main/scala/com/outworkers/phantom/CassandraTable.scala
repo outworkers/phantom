@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.macros.{ Storer, TableHelper }
+import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.Typeable
 
