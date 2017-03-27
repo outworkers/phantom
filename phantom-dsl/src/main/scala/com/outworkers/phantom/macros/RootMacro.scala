@@ -162,6 +162,15 @@ class RootMacro(val c: blackbox.Context) {
       this.copy(matches = matches :+ m)
     }
 
+    /**
+      * This is just done for the naming convenience, but the functionality of distinguishing between
+      * matched and unmatched is implemented
+      * using an ADT and collect, so it doesn't actually matter if we append to the same place.
+      * @param m The record match.
+      * @return An immutable copy of the table descriptor with one extra unmatched record.
+      */
+    def withoutMatch(m: RecordMatch): TableDescriptor = withMatch(m)
+
     def unmatched: Seq[Unmatched] = matches.collect {
       case u @ Unmatched(records, reason) => u
     }

@@ -30,10 +30,6 @@ trait SelectTable[T <: CassandraTable[T, R], R] {
     RootSelectBlock(t, List(c.col.name), c.apply)
   }
 
-  def tester[In, Out](input: In)(implicit ev: SelectClause.Aux[In, Out]): RootSelectBlock[T, Out] = {
-    RootSelectBlock(instance, ev.names(input), ev.extractor(input, instance))
-  }
-
   def select[A, B](f1: T => SelectColumn[A], f2: T => SelectColumn[B]): RootSelectBlock[T, (A, B)] = {
     val t = this.asInstanceOf[T]
     val c1 = f1(t)

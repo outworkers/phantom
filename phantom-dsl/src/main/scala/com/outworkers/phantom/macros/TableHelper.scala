@@ -16,6 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.Row
+import com.google.common.base.CaseFormat
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
@@ -126,11 +127,17 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
   }
 
   def variations(term: TermName): List[TermName] = {
-    val str = term.decodedName.toString
+    val str = term.decodedName.toString.toLowerCase
 
+    List(
+      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, str),
+      CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str),
+      CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str)
+    ).distinct.map(TermName(_))
+  }
 
-
-    List()
+  def lowercased(term: TermName): TermName = {
+    TermName(term.decodedName.toString.trim.toLowerCase)
   }
 
   def processHardMatches(
@@ -139,7 +146,72 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
     descriptor: TableDescriptor
   ): TableDescriptor = {
     unprocessed match {
-      case head :: tail =>
+      case recField :: tail =>
+        columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
+          // It's possible that after all easy matches have been exhausted, no column fields are left to match
+          // with remaining record fields for the given type.
+          case None =>
+            val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
+            processHardMatches(columnFields, tail, descriptor withoutMatch un)
+
+          // We once again repeat the case, because we may under some circumstances find a single remaining
+          // column term to match with after all direct and easy matches have happened for a given type.
+          case Some(Seq(h)) =>
+            processHardMatches(
+              columnFields - recField.tpe,
+              tail,
+              descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
+            )
+
+
+          case Some(seq) => seq.find(recField.name ==) match {
+            // In theory this case should not re-occur because we only add elements
+            // to the unprocessed if no direct term name matches were found.
+            case Some(matchingName) =>
+              logger.warn(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
+              val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+
+              processHardMatches(
+                columnFields remove (recField.tpe, matchingName),
+                tail,
+                descriptor withMatch m
+              )
+            // The real case we are attempting to handle here is when we have no clue which one
+            // of multiple record strings matches which column field.
+            case None =>
+              // we now attempt to match a few variations of the term name.
+              // and check if the column members contain some possible variations.
+              val possibilities = variations(recField.name)
+
+              seq.find(colTerm => possibilities.exists(lowercased(colTerm) ==)) match {
+                case Some(matchingName) =>
+                  val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+                  processHardMatches(
+                    columnFields remove (recField.tpe, matchingName),
+                    tail,
+                    descriptor withMatch m
+                  )
+
+                  case None =>
+                    // This is still our worst case scenario, where no variation of a term name
+                    // was found and we still have multiple potential matches for a record field.
+                    // Under such circumstances we use the first available column term name
+                    // with respect to the write order.
+                    val firstName = seq.headOption.getOrElse(
+                      c.abort(c.enclosingPosition, "Found empty term sequence which should never happen!!!")
+                    )
+
+                    val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
+
+                    processHardMatches(
+                      columnFields remove (recField.tpe, firstName),
+                      tail,
+                      descriptor withMatch m
+                    )
+
+              }
+          }
+        }
 
 
 
@@ -208,10 +280,6 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
             )
 
           case None =>
-            val nm: TermName = seq.headOption.getOrElse(
-              c.abort(c.enclosingPosition, "This should never happen")
-            )
-
             extractorRec(
               columnFields,
               tail,
@@ -353,7 +421,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
 
-    q"""
+    val tree = q"""
        new com.outworkers.phantom.macros.TableHelper[$tableType, $rTpe] {
           type Repr = ${descriptor.storeType}
 
@@ -372,5 +440,7 @@ class TableHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
           }
        }
     """
+    Console.println(showCode(tree))
+    tree
   }
 }
