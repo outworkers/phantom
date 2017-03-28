@@ -43,7 +43,7 @@ abstract class SessionsByUserId extends CassandraTable[
   object client_id extends UUIDColumn(this)
   object access_token extends UUIDColumn(this)
   object refresh_token extends UUIDColumn(this)
-  object authorization_grant extends StringColumn(this)
+  object authorization_grant extends UUIDColumn(this)
   object remembered_token extends OptionalUUIDColumn(this)
   object timestamp extends DateTimeColumn(this)
 
