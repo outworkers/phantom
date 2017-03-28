@@ -176,11 +176,11 @@ class RootMacro(val c: blackbox.Context) {
     def withoutMatch(m: RecordMatch): TableDescriptor = withMatch(m)
 
     def unmatched: Seq[Unmatched] = matches.collect {
-      case u@Unmatched(records, reason) => u
+      case u @ Unmatched(records, reason) => u
     }
 
     def matched: Seq[MatchedField] = matches.collect {
-      case m@MatchedField(left, right) => m
+      case m @ MatchedField(left, right) => m
     }
 
     def fromRow: Option[Tree] = {
@@ -196,6 +196,12 @@ class RootMacro(val c: blackbox.Context) {
       s"${u.name.decodedName}: ${printType(u.tpe)}"
     )
 
+    /**
+      * Creates a map to show users how record fields map to columns inside the table.
+      * This is done when they want to inspect the generated macro trees and report
+      * bugs and as a convenience feature for us at debugging time.
+      * @return An interpolated quoted tree that contains a [[Map[String, String]] definition.
+      */
     def debugMap: Tree = {
       val tuples = matched.map(m => {
         val recordTerm = m.record.name.decodedName.toString
@@ -211,14 +217,13 @@ class RootMacro(val c: blackbox.Context) {
       q"_root_.scala.collection.immutable.Map.apply[String, String](..$tuples)"
     }
 
+    /**
+      * Creates a quoted tree wrapping a [[com.outworkers.phantom.macros.Debugger]] instance definition.
+      * This will contain debug information about the macro output.
+      * @return A tree with the definition.
+      */
     def debugger: Tree = {
-      q"""
-          new $macroPkg.Debugger(
-            $storeTypeDebugString,
-            $debugMap,
-            $showExtractor
-          )
-      """
+      q"new $macroPkg.Debugger($storeTypeDebugString, $debugMap, $showExtractor)"
     }
 
     /**
@@ -349,7 +354,7 @@ class RootMacro(val c: blackbox.Context) {
     }
   }
 
-  def filterMembers[T: WeakTypeTag, Filter: TypeTag](
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
   ): Seq[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
@@ -363,7 +368,7 @@ class RootMacro(val c: blackbox.Context) {
       ) (collection.breakOut) distinct
   }
 
-  def filterColumns[Filter: TypeTag](columns: Seq[Type]): Seq[Type] = {
+  def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
     columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol ==))
   }
 
