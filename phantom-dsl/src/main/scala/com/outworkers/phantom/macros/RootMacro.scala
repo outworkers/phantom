@@ -25,6 +25,7 @@ import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
 class RootMacro(val c: blackbox.Context) {
+
   import c.universe._
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)
@@ -58,7 +59,7 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
-    traversable map(tpe => showCode(tq"$tpe")) mkString sep
+    traversable map (tpe => showCode(tq"$tpe")) mkString sep
   }
 
   trait RootField {
@@ -70,11 +71,15 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   object Record {
+
     case class Field(name: TermName, tpe: Type, index: Int) extends RootField
+
   }
 
   object Column {
+
     case class Field(name: TermName, tpe: Type) extends RootField
+
   }
 
   def caseFields(tpe: Type): Seq[(Name, Type)] = {
@@ -115,6 +120,7 @@ class RootMacro(val c: blackbox.Context) {
     right: Column.Field
   ) extends RecordMatch {
     def column: Column.Field = right
+
     def record: Record.Field = left
   }
 
@@ -123,17 +129,25 @@ class RootMacro(val c: blackbox.Context) {
   )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
 
     /**
-     * Every entry in this ordered map is a traversable of type [[M]].
-     * That means every key holds a sequence of elements.
-     * This function will remove the element [[elem]] from that sequence
-     * for the provided key.
-     */
+      * Every entry in this ordered map is a traversable of type [[M]].
+      * That means every key holds a sequence of elements.
+      * This function will remove the element [[elem]] from that sequence
+      * for the provided key.
+      */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
         case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
         case None => lm
       }
     }
+
+    /**
+      * Every entry in this ordered map is a traversable of type [[M]].
+      * That means every key holds a sequence of elements.
+      * This function will remove the element [[elem]] from that sequence
+      * for the provided key.
+      */
+    def -(key: K, elem: V): ListMap[K, M[V]] = remove(key, elem)
   }
 
   case class TableDescriptor(
@@ -155,17 +169,18 @@ class RootMacro(val c: blackbox.Context) {
       * This is just done for the naming convenience, but the functionality of distinguishing between
       * matched and unmatched is implemented
       * using an ADT and collect, so it doesn't actually matter if we append to the same place.
+      *
       * @param m The record match.
       * @return An immutable copy of the table descriptor with one extra unmatched record.
       */
     def withoutMatch(m: RecordMatch): TableDescriptor = withMatch(m)
 
     def unmatched: Seq[Unmatched] = matches.collect {
-      case u @ Unmatched(records, reason) => u
+      case u@Unmatched(records, reason) => u
     }
 
     def matched: Seq[MatchedField] = matches.collect {
-      case m @ MatchedField(left, right) => m
+      case m@MatchedField(left, right) => m
     }
 
     def fromRow: Option[Tree] = {
@@ -230,6 +245,7 @@ class RootMacro(val c: blackbox.Context) {
       * store method, where the numerical value of the tuple index is equal to the number of
       * unmatched columns(found in the table but not the record) plus one more for the record type
       * itself and another to compensate for tuples being indexed from 1 instead of 0.
+      *
       * @return An optional [[TermName]] of the form [[TermName]]
       */
     val referenceTerm: Option[TermName] = {
@@ -252,36 +268,32 @@ class RootMacro(val c: blackbox.Context) {
     }
 
     /**
-     * Short cut method to create a full CQL query using the a particular column
-     * inside a table. This will create something like the folloing:
-     * {{{
-     *  com.outworkers.phantom.
-     * }}}
-     */
+      * Short cut method to create a full CQL query using the a particular column
+      * inside a table. This will create something like the folloing:
+      * {{{
+      *  com.outworkers.phantom.
+      * }}}
+      */
     def tableField(fieldName: TermName): Tree = {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
-    def storeMethod: Tree = {
-      val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
-        q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+    def storeMethod: Option[Tree] = {
+      if (unmatched.isEmpty) {
+        val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
+          q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+        }
+
+        val insertions = matched map { field =>
+          q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
+        }
+
+        val finalDefinitions = unmatchedColumnInserts ++ insertions
+        logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
+        Some(q"""$tableTerm.insert.values(..$finalDefinitions)""")
+      } else {
+        None
       }
-
-      val insertions = matched map { field =>
-        q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
-      }
-
-      val finalDefinitions = unmatchedColumnInserts ++ insertions
-
-      val tree = q"""
-         override def store($tableTerm: $tableTpe, $inputTerm: $storeType)(
-           implicit space: $keyspaceType
-         ): $builderPkg.InsertQuery.Default[$tableTpe, $recordType] = {
-           $tableTerm.insert.values(..$finalDefinitions)
-         }
-      """
-      logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
-      tree
     }
 
     def storeTypeDebugString: String = {
@@ -319,6 +331,7 @@ class RootMacro(val c: blackbox.Context) {
     *
     * To achieve this, we simply have specific ways of extracting the types from the underlying records,
     * and producing a [[Record.Field]] for each of the members in the product type,
+    *
     * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
     * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
     */
@@ -336,7 +349,7 @@ class RootMacro(val c: blackbox.Context) {
     }
   }
 
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
+  def filterMembers[T: WeakTypeTag, Filter: TypeTag](
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
   ): Seq[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
@@ -347,11 +360,11 @@ class RootMacro(val c: blackbox.Context) {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-      )(collection.breakOut) distinct
+      ) (collection.breakOut) distinct
   }
 
-  def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
-    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
+  def filterColumns[Filter: TypeTag](columns: Seq[Type]): Seq[Type] = {
+    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol ==))
   }
 
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {
