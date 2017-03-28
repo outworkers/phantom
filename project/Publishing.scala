@@ -91,18 +91,15 @@ object Publishing {
         None
       }
     },
-    publishTo <<= version.apply {
-      v =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT")) {
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        } else {
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-        }
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (version.value.trim.endsWith("SNAPSHOT")) {
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      } else {
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+      }
     },
-    externalResolvers := resolvers map { rs =>
-      Resolver.withDefaultResolvers(rs, mavenCentral = true)
-    },
+    externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
     licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
