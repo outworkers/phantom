@@ -48,9 +48,6 @@ class TableHelperRuntimeTests extends PhantomSuite {
   it should "automatically generate a store type for an OAuth2Session domain case class" in {
     val sample = gen[OAuth2Session]
 
-    Console.println(database.sessionsByUser.helper.debug.storeType)
-    Console.println(database.sessionsByUser.helper.debug.recordMap.mkString("\n"))
-
     val chain = for {
       store <- database.sessionsByUser.store(sample).future()
       find <- database.sessionsByUser.select.where(_.user_id eqs sample.user_id).one()
