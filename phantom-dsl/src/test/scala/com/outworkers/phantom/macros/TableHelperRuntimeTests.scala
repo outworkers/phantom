@@ -19,7 +19,8 @@ import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.{OAuth2Session, TestDatabase}
 
 class TableHelperRuntimeTests extends PhantomSuite {
 
@@ -29,12 +30,28 @@ class TableHelperRuntimeTests extends PhantomSuite {
   }
 
   it should "automatically generate an extractor for a tuple type" in {
-    val sample = (gen[UUID], gen[String], gen[String])
+    val sample = gen[(UUID, String, String)]
     val (id, _, _) = sample
 
     val chain = for {
       store <- database.tableTypeTuple.store(sample).future()
       find <- database.tableTypeTuple.findById(id)
+    } yield find
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "automatically generate a store type for an OAuth2Session domain case class" in {
+    val sample = gen[OAuth2Session]
+
+    Console.println(database.sessionsByUser.helper.debug)
+
+    val chain = for {
+      store <- database.sessionsByUser.store(sample).future()
+      find <- database.sessionsByUser.select.where(_.user_id eqs sample.user_id).one()
     } yield find
 
     whenReady(chain) { res =>

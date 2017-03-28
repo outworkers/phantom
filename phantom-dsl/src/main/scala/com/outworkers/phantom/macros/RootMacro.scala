@@ -113,7 +113,10 @@ class RootMacro(val c: blackbox.Context) {
   case class MatchedField(
     left: Record.Field,
     right: Column.Field
-  ) extends RecordMatch
+  ) extends RecordMatch {
+    def column: Column.Field = right
+    def record: Record.Field = left
+  }
 
   implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
     val lm: ListMap[K, M[V]]
@@ -125,7 +128,6 @@ class RootMacro(val c: blackbox.Context) {
      * This function will remove the element [[elem]] from that sequence
      * for the provided key.
      */
-
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
         case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
@@ -178,6 +180,31 @@ class RootMacro(val c: blackbox.Context) {
     def debugList(fields: Seq[RootField]): Seq[String] = fields.map(u =>
       s"${u.name.decodedName}: ${printType(u.tpe)}"
     )
+
+    def debugMap: Tree = {
+      val tuples = matched.map(m => {
+        val recordTerm = m.record.name.decodedName.toString
+        val colTerm = m.record.name.decodedName.toString
+        val recordType = printType(m.record.tpe)
+        val colType = printType(m.column.tpe)
+
+        q"""
+           _root_.scala.Tuple2($recordTerm + ":" + $recordType, $colTerm + ":" + $colType)
+        """
+      })
+
+      q"_root_.scala.collection.immutable.Map.apply[String, String](..$tuples)"
+    }
+
+    def debugger: Tree = {
+      q"""
+          new $macroPkg.Debugger(
+            $storeTypeDebugString,
+            $debugMap,
+            $showExtractor
+          )
+      """
+    }
 
     /**
       * The reference term is a tuple field pointing to the tuple index found on a store type.
@@ -256,6 +283,18 @@ class RootMacro(val c: blackbox.Context) {
       logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
       tree
     }
+
+    def storeTypeDebugString: String = {
+      val recString = s"record: ${printType(recordType)}"
+      if (unmatchedColumns.isEmpty) {
+        recString
+      } else {
+        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
+        cols.mkString(", ") + s", $recString"
+      }
+    }
+
 
     def storeType: Tree = {
       if (unmatchedColumns.isEmpty) {

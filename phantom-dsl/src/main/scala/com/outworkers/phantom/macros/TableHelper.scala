@@ -26,6 +26,12 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
+case class Debugger(
+  storeType: String,
+  recordMap: Map[String, String],
+  extractor: String
+)
+
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr
@@ -39,10 +45,15 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
   def fields(table: T): Seq[AbstractColumn[_]]
 
   def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
+
+  def debug: Debugger
 }
 
 object TableHelper {
-  implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
+  implicit def fieldsMacro[
+    T <: CassandraTable[T, R],
+    R
+  ]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
@@ -390,38 +401,17 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tableType = weakTypeOf[T]
-    val rTpe = weakTypeOf[R]
+    val recordType = weakTypeOf[R]
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
     val tableName = extractTableName(refTable)
-
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
-    val descriptor = extractor(tableType, rTpe, referenceColumns)
-    val abstractFromRow = refTable.member(fromRowName)
-    val fromRowTpe = abstractFromRow.infoIn(tableType)
-    val fromRowFn = descriptor.fromRow
-
-    if (fromRowFn.isEmpty) {
-      logger.debug(
-        s"""
-          Table: ${printType(tableType)}
-          Type info: ${printType(fromRowTpe)}
-          fromRowDefined: ${descriptor.fromRow.isDefined}
-          fromRow == ???: ${abstractFromRow.asMethod}
-          abstract: ${abstractFromRow.asMethod.isAbstract}
-          abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
-          body: ${showCode(q"$fromRowTpe")}
-        """
-      )
-    } else {
-      logger.debug(descriptor.showExtractor)
-    }
-
+    val descriptor = extractor(tableType, recordType, referenceColumns)
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
 
     q"""
-       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
+       final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = ${descriptor.storeType}
 
           def tableName: $strTpe = $tableName
@@ -432,14 +422,16 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowFn.getOrElse(q"""???""")}
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = ${descriptor.fromRow.getOrElse(q"""???""")}
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
+
+          def debug: $macroPkg.Debugger = ${descriptor.debugger}
        }
 
-       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $rTpe, ${descriptor.storeType}]
+       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, ${descriptor.storeType}]
     """
   }
 }
