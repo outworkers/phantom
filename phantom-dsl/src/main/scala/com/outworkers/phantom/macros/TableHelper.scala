@@ -403,13 +403,17 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
           def store($tableTerm: $tableType, $inputTerm: ${descriptor.storeType})(
            implicit space: $keyspaceType
-          ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = ${descriptor.storeMethod.getOrElse(notImpemented)}
+          ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = {
+            ${descriptor.storeMethod.getOrElse(notImpemented)}
+          }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = ${descriptor.fromRow.getOrElse(notImpemented)}
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = {
+            ${descriptor.fromRow.getOrElse(notImpemented)}
+          }
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
