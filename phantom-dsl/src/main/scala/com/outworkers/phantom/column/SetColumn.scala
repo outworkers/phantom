@@ -72,9 +72,9 @@ class SetColumn[
     }
   }
 
-  override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)
+  override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
 
-  override def fromString(c: String): RR = Primitive[RR].fromString(c)
+  override def fromString(c: String): RR = valuePrimitive.fromString(c)
 
   override def parse(r: Row): Try[Set[RR]] = {
     if (r.isNull(name)) {

@@ -30,6 +30,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.{LocalDate => JodaLocalDate}
 
+import scala.collection.generic.CanBuildFrom
 import scala.util.Try
 
 object Primitives {
@@ -423,40 +424,78 @@ object Primitives {
       override def deserialize(source: ByteBuffer): ByteBuffer = source
     }
 
-  def list[T : Primitive](): Primitive[List[T]] = {
-    new Primitive[List[T]] {
+  private[this] def collectionPrimitive[RR, M[X] <: TraversableOnce[RR]](
+    cType: String,
+    converter: M[RR] => String
+  )(
+    implicit ev: Primitive[RR],
+    cbf: CanBuildFrom[Nothing, RR, M[RR]]
+  ): Primitive[M[RR]] = new Primitive[M[RR]] {
+    override def asCql(value: M[RR]): String = converter(value)
 
-      val ev = implicitly[Primitive[T]]
+    override def cassandraType: String = cType
 
-      override def cassandraType: String = QueryBuilder.Collections.listType(ev.cassandraType).queryString
+    override def serialize(value: M[RR]): ByteBuffer = {
+      value match {
+        case Primitive.nullValue => Primitive.nullValue
+        case set =>
+          var i = 0
+          val buffers = set.foldRight(
+            new Array[ByteBuffer](value.size)
+          ) { case (elt, buffer) =>
+            if (Option(elt).isEmpty) {
+              throw new NullPointerException("Collection elements cannot be null")
+            }
+            buffer(i) = ev.serialize(elt)
+            i += 1
+            buffer
+          }
 
-      override def fromString(value: String): List[T] = value.split(",").map(Primitive[T].fromString).toList
-
-      override def asCql(value: List[T]): String = {
-        QueryBuilder.Collections
-          .serialize(value.map(Primitive[T].asCql))
-          .queryString
+          CodecUtils.pack(buffers, value.size, ProtocolVersion.V4);
       }
-
-      override def serialize(obj: List[T]): ByteBuffer = ???
-
-      override def deserialize(source: ByteBuffer): List[T] = ???
     }
+
+    override def deserialize(bytes: ByteBuffer): M[RR] = {
+      val empty = cbf().result()
+      bytes match {
+        case Primitive.nullValue => empty
+        case b if b.remaining() == 0 => empty
+        case bt => try {
+          val input = bt.duplicate()
+          val builder = cbf()
+          val size = CodecUtils.readSize(input, ProtocolVersion.V4)
+
+          for (i <- 0 to size) {
+            val databb = CodecUtils.readValue(input, ProtocolVersion.V4)
+            builder += ev.deserialize(databb)
+          }
+          builder.result()
+        } catch {
+          case e: BufferUnderflowException =>
+            throw new InvalidTypeException("Not enough bytes to deserialize collection", e);
+        }
+      }
+    }
+
+    override def fromString(value: String): M[RR] = value.split(",").map(ev.fromString).to[M]
   }
 
-  def set[T : Primitive](): Primitive[Set[T]] = {
-    new Primitive[Set[T]] {
+  def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {
+    collectionPrimitive[T, List](
+      QueryBuilder.Collections.listType(ev.cassandraType).queryString,
+      value =>  QueryBuilder.Collections
+        .serialize(value.map(Primitive[T].asCql))
+        .queryString
+    )
+  }
 
-      val ev = implicitly[Primitive[T]]
-
-      override def cassandraType: String = QueryBuilder.Collections.setType(ev.cassandraType).queryString
-
-      override def fromString(value: String): Set[T] = value.split(",").map(Primitive[T].fromString).toSet
-
-      override def asCql(value: Set[T]): String = {
-        QueryBuilder.Collections.serialize(value.map(Primitive[T].asCql)).queryString
-      }
-    }
+  def set[T]()(implicit ev: Primitive[T]): Primitive[Set[T]] = {
+    collectionPrimitive[T, Set](
+      QueryBuilder.Collections.setType(ev.cassandraType).queryString,
+      value =>  QueryBuilder.Collections
+        .serialize(value.map(Primitive[T].asCql))
+        .queryString
+    )
   }
 
   def map[K, V](implicit keyPrimitive: Primitive[K], valuePrimitive: Primitive[V]): Primitive[Map[K, V]] = {
@@ -513,7 +552,8 @@ object Primitives {
               }
               m result()
             } catch  {
-              case e: BufferUnderflowException => throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
+              case e: BufferUnderflowException =>
+                throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
             }
         }
       }
