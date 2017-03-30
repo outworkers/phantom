@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.primitives
 
 import java.math.BigInteger
-import java.net.InetAddress
+import java.net.{InetAddress, UnknownHostException}
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
@@ -28,6 +28,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
+
 import scala.util.Try
 
 object Primitives {
@@ -54,23 +55,57 @@ object Primitives {
     }
 
     class IntPrimitive extends Primitive[Int] {
+
+      private[this] val byteLength = 4
+
       def asCql(value: Int): String = value.toString
 
       override def cassandraType: String = CQLSyntax.Types.Int
 
       override def fromString(value: String): Int = value.toInt
 
-      override def serialize(obj: Int): ByteBuffer = ???
+      override def serialize(obj: Int): ByteBuffer = {
+        val bb = ByteBuffer.allocate(4)
+        bb.putInt(0, obj)
+        bb
+      }
 
-      override def deserialize(source: ByteBuffer): Int = ???
+      override def deserialize(bytes: ByteBuffer): Int = {
+        checkNullsAndLength(
+          bytes,
+          byteLength,
+          "Invalid 32-bits integer value, expecting 4 bytes but got " + bytes.remaining()
+        ) {
+          case _ => bytes.getShort(bytes.position)
+        }
+      }
     }
 
     class SmallIntPrimitive extends Primitive[Short] {
+
+      private[this] val byteLength = 2
+
       def asCql(value: Short): String = value.toString
 
       override def cassandraType: String = CQLSyntax.Types.SmallInt
 
       override def fromString(value: String): Short = value.toShort
+
+      override def serialize(obj: Short): ByteBuffer = {
+        val bb = ByteBuffer.allocate(2)
+        bb.putShort(0, obj)
+        bb
+      }
+
+      override def deserialize(bytes: ByteBuffer): Short = {
+        checkNullsAndLength(
+          bytes,
+          byteLength,
+          "Invalid 16-bits integer value, expecting 2 bytes but got " + bytes.remaining
+        ) {
+          case _ => bytes.getShort(bytes.position)
+        }
+      }
     }
 
     class TinyIntPrimitive extends Primitive[Byte] {
@@ -79,6 +114,22 @@ object Primitives {
       override def cassandraType: String = CQLSyntax.Types.TinyInt
 
       override def fromString(value: String): Byte = value.toByte
+
+      override def serialize(obj: Byte): ByteBuffer = {
+        val bb = ByteBuffer.allocate(1)
+        bb.put(0, obj)
+        bb
+      }
+
+      override def deserialize(source: ByteBuffer): Byte = {
+        checkNullsAndLength(
+          source,
+          1,
+          "Invalid 8-bits integer value, expecting 1 byte but got " + source.remaining()
+        ) {
+          case b => source.get(source.position())
+        }
+      }
     }
 
     class DoublePrimitive extends Primitive[Double] {
@@ -111,11 +162,31 @@ object Primitives {
 
     class LongPrimitive extends Primitive[Long] {
 
+      private[this] val byteLength = 8
+
       def asCql(value: Long): String = value.toString
 
       override def cassandraType: String = CQLSyntax.Types.BigInt
 
       override def fromString(value: String): Long = java.lang.Long.parseLong(value)
+
+      override def serialize(obj: Long): ByteBuffer = {
+        val bb = ByteBuffer.allocate(8)
+        bb.putLong(0, obj)
+        bb
+      }
+
+      override def deserialize(bytes: ByteBuffer): Long = {
+        bytes match {
+          case None.orNull => 0L
+          case b if b.remaining() == 0 => 0L
+          case b if b.remaining() != byteLength =>
+            throw new InvalidTypeException(
+              "Invalid 64-bits long value, expecting 8 bytes but got " + bytes.remaining
+            )
+          case b @ _ => bytes.getLong(bytes.position)
+        }
+      }
     }
 
     class FloatPrimitive extends Primitive[Float] {
@@ -147,11 +218,25 @@ object Primitives {
     }
 
     class UUIDPrimitive extends Primitive[UUID] {
+
+      private[this] val byteLength = 16
+
       def asCql(value: UUID): String = value.toString
 
       override def cassandraType: String = CQLSyntax.Types.UUID
 
       override def fromString(value: String): UUID = UUID.fromString(value)
+
+      override def serialize(obj: UUID): ByteBuffer = {
+        nullValueCheck(obj) { value =>
+          val bb = ByteBuffer.allocate(byteLength)
+          bb.putLong(0, value.getMostSignificantBits)
+          bb.putLong(8, value.getLeastSignificantBits)
+          bb
+        }
+      }
+
+      override def deserialize(source: ByteBuffer): UUID = ???
     }
 
     class DateIsPrimitive extends Primitive[Date] {
@@ -293,6 +378,24 @@ object Primitives {
       override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
 
       override def fromString(value: String): InetAddress = InetAddress.getByName(value)
+
+      override def serialize(obj: InetAddress): ByteBuffer = {
+        nullValueCheck(obj) { i => ByteBuffer.wrap(i.getAddress) }
+      }
+
+      override def deserialize(bytes: ByteBuffer): InetAddress = {
+        bytes match {
+          case super.nullValue => nullValue
+          case b if b.remaining() == 0 => nullValue
+          case _ =>
+            try
+              InetAddress.getByAddress(Bytes.getArray(bytes))
+            catch {
+              case e: UnknownHostException =>
+                throw new InvalidTypeException("Invalid bytes for inet value, got " + bytes.remaining + " bytes")
+            }
+        }
+      }
     }
 
     class BigIntPrimitive extends Primitive[BigInt] {
@@ -301,6 +404,18 @@ object Primitives {
       override def asCql(value: BigInt): String = value.toString()
 
       override def fromString(value: String): BigInt = BigInt(value)
+
+      override def serialize(obj: BigInt): ByteBuffer = {
+        nullValueCheck(obj)(bi =>  ByteBuffer.wrap(bi.toByteArray))
+      }
+
+      override def deserialize(bytes: ByteBuffer): BigInt = {
+        bytes match {
+          case super.nullValue => nullValue
+          case b if b.remaining() == 0 => nullValue
+          case bt => new BigInteger(Bytes.getArray(bytes))
+        }
+      }
     }
 
     class BlobIsPrimitive extends Primitive[ByteBuffer] {

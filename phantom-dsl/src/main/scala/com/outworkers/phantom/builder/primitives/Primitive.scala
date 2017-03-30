@@ -42,6 +42,10 @@ abstract class Primitive[RR] {
 
   protected[this] val nullValue = None.orNull
 
+  protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
+    if (source == nullValue) nullValue else fn(source)
+  }
+
   protected[this] def checkNullsAndLength[T](
     source: ByteBuffer,
     len: Int,
