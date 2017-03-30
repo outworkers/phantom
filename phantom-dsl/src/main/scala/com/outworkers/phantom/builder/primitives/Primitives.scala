@@ -241,25 +241,31 @@ object Primitives {
 
     class DateIsPrimitive extends Primitive[Date] {
 
+      val codec = new LongPrimitive
+
       val cassandraType = CQLSyntax.Types.Timestamp
 
-      def fromRow(row: GettableData, name: String): Option[Date] =
-        if (row.isNull(name)) None else Try(row.getTimestamp(name)).toOption
-
-      override def asCql(value: Date): String = {
-        DateSerializer.asCql(value)
-      }
+      override def asCql(value: Date): String = DateSerializer.asCql(value)
 
       override def fromString(value: String): Date = {
         new DateTime(value, DateTimeZone.UTC).toDate
+      }
+
+      override def serialize(obj: Date): ByteBuffer = codec.serialize(obj.getTime)
+
+      override def deserialize(bytes: ByteBuffer): Date = {
+        bytes match {
+          case None.orNull => super.nullValue
+          case b if b.remaining() == 0 => super.nullValue
+          case b @ _ => new Date(codec.deserialize(bytes))
+        }
       }
     }
 
     class LocalDateIsPrimitive extends Primitive[LocalDate] {
       val cassandraType = CQLSyntax.Types.Date
 
-      def fromRow(row: GettableData, name: String): Option[LocalDate] =
-        if (row.isNull(name)) None else Try(row.getDate(name)).toOption
+      val codec = new IntPrimitive
 
       override def asCql(value: LocalDate): String = {
         DateSerializer.asCql(value)
@@ -268,6 +274,15 @@ object Primitives {
       override def fromString(value: String): LocalDate = {
         LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
       }
+
+      override def serialize(obj: LocalDate): ByteBuffer = {
+        nullValueCheck(obj){ dt =>
+          val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.getDaysSinceEpoch)
+          codec.serialize(unsigned)
+        }
+      }
+
+      override def deserialize(source: ByteBuffer): LocalDate = ???
     }
 
     class JodaLocalDateIsPrimitive extends Primitive[org.joda.time.LocalDate] {
