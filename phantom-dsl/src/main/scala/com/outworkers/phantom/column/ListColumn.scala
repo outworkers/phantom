@@ -42,14 +42,16 @@ abstract class AbstractListColumn[
 class ListColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  RR : Primitive
-](table: CassandraTable[Owner, Record])
-  extends AbstractListColumn[Owner, Record, RR](table)
+  RR
+](table: CassandraTable[Owner, Record])(
+  implicit val valuePrimitive: Primitive[RR],
+  ev: Primitive[List[RR]]
+) extends AbstractListColumn[Owner, Record, RR](table)
   with PrimitiveCollectionValue[RR] {
 
-  override val valuePrimitive = Primitive[RR]
-
-  override val cassandraType = QueryBuilder.Collections.listType(valuePrimitive.cassandraType).queryString
+  override val cassandraType: String = QueryBuilder.Collections.listType(
+    valuePrimitive.cassandraType
+  ).queryString
 
   override def qb: CQLQuery = {
     if (shouldFreeze) {
@@ -73,7 +75,7 @@ class ListColumn[
     if (r.isNull(name)) {
       Success(Nil)
     } else {
-      Try(r.getList(name, valuePrimitive.clz).asScala.map(valuePrimitive.extract).toList)
+      Try(ev.deserialize(r.getBytesUnsafe(name)))
     }
   }
 }

@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.primitives
 
 import java.math.BigInteger
 import java.net.{InetAddress, UnknownHostException}
-import java.nio.ByteBuffer
+import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
@@ -27,8 +27,9 @@ import com.google.common.base.Charsets
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.joda.time.{ LocalDate => JodaLocalDate }
+import org.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.{LocalDate => JodaLocalDate}
+
 import scala.util.Try
 
 object Primitives {
@@ -271,16 +272,16 @@ object Primitives {
     }
   }
 
-  val DateTimeIsPrimitive = Primitive.manuallyDerivce[DateTime, Long](
+  val DateTimeIsPrimitive = Primitive.manuallyDerive[DateTime, Long](
     dt => dt.getMillis,
     l => new DateTime(l, DateTimeZone.UTC)
   )(LongPrimitive)
 
-  val JodaLocalDateIsPrimitive = Primitive.manuallyDerivce[JodaLocalDate, DateTime](
+  val JodaLocalDateIsPrimitive = Primitive.manuallyDerive[JodaLocalDate, DateTime](
     jld => jld.toDateTimeAtCurrentTime(DateTimeZone.UTC), jld => jld.toLocalDate
   )(DateTimeIsPrimitive)
 
-  val DateIsPrimitive = Primitive.manuallyDerivce[Date, Long](
+  val DateIsPrimitive = Primitive.manuallyDerive[Date, Long](
     _.getTime, l => new Date(l)
   )(LongPrimitive)
 
@@ -436,6 +437,10 @@ object Primitives {
           .serialize(value.map(Primitive[T].asCql))
           .queryString
       }
+
+      override def serialize(obj: List[T]): ByteBuffer = ???
+
+      override def deserialize(source: ByteBuffer): List[T] = ???
     }
   }
 
@@ -454,12 +459,8 @@ object Primitives {
     }
   }
 
-  def map[K : Primitive, V : Primitive](): Primitive[Map[K, V]] = {
+  def map[K, V](implicit keyPrimitive: Primitive[K], valuePrimitive: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
-
-      val keyPrimitive = implicitly[Primitive[K]]
-      val valuePrimitive = implicitly[Primitive[V]]
-
       override def cassandraType: String = QueryBuilder.Collections.mapType(
         keyPrimitive.cassandraType,
         valuePrimitive.cassandraType
@@ -470,6 +471,52 @@ object Primitives {
       override def asCql(map: Map[K, V]): String = QueryBuilder.Utils.map(map.map {
         case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
       }).queryString
+
+      override def serialize(value: Map[K, V]): ByteBuffer = {
+        if (value == Primitive.nullValue) Primitive.nullValue
+
+        var i: Int = 0
+        val bbs: Array[ByteBuffer] = new Array[ByteBuffer](2 * value.size)
+
+        for ((key, value) <- value) {
+          val bbk: ByteBuffer = keyPrimitive.serialize(key)
+
+          if (Option(key).isEmpty) throw new NullPointerException("Map keys cannot be null")
+          val bbv: ByteBuffer = valuePrimitive.serialize(value)
+
+          bbs({
+            i += 1; i - 1
+          }) = bbk
+          bbs({
+            i += 1; i - 1
+          }) = bbv
+        }
+        CodecUtils.pack(bbs, value.size, ProtocolVersion.V4)
+      }
+
+      override def deserialize(bytes: ByteBuffer): Map[K, V] = {
+        bytes match {
+          case Primitive.nullValue => Map.empty[K, V]
+          case b if b.remaining() == 0 => Map.empty[K, V]
+          case bt =>
+            try {
+              val input = bytes.duplicate()
+              val n = CodecUtils.readSize(input, ProtocolVersion.V4)
+
+              val m = Map.newBuilder[K, V]
+
+              for (i <- 0 to n) {
+                val kbb = CodecUtils.readValue(input, ProtocolVersion.V4)
+                val vbb = CodecUtils.readValue(input, ProtocolVersion.V4)
+
+                m += (keyPrimitive.deserialize(kbb) -> valuePrimitive.deserialize(vbb))
+              }
+              m result()
+            } catch  {
+              case e: BufferUnderflowException => throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
+            }
+        }
+      }
     }
   }
 }

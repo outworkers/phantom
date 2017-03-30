@@ -157,7 +157,7 @@ object Primitive {
     }
   }
 
-  private[phantom] def manuallyDerivce[Target, Source](
+  private[phantom] def manuallyDerive[Target, Source](
     to: Target => Source,
     from: Source => Target
   )(
