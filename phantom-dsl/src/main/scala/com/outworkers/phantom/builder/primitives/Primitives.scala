@@ -47,7 +47,7 @@ object Primitives {
 
       override def deserialize(source: ByteBuffer): String = {
         source match {
-          case None.orNull => None.orNull
+          case Primitive.nullValue => Primitive.nullValue
           case bytes if bytes.remaining() == 0 => ""
           case arr @ _ => new String(arr.array(), Charsets.UTF_8)
         }
@@ -171,14 +171,14 @@ object Primitives {
       override def fromString(value: String): Long = java.lang.Long.parseLong(value)
 
       override def serialize(obj: Long): ByteBuffer = {
-        val bb = ByteBuffer.allocate(8)
+        val bb = ByteBuffer.allocate(byteLength)
         bb.putLong(0, obj)
         bb
       }
 
       override def deserialize(bytes: ByteBuffer): Long = {
         bytes match {
-          case None.orNull => 0L
+          case Primitive.nullValue => 0L
           case b if b.remaining() == 0 => 0L
           case b if b.remaining() != byteLength =>
             throw new InvalidTypeException(
@@ -255,8 +255,8 @@ object Primitives {
 
       override def deserialize(bytes: ByteBuffer): Date = {
         bytes match {
-          case None.orNull => super.nullValue
-          case b if b.remaining() == 0 => super.nullValue
+          case Primitive.nullValue => Primitive.nullValue
+          case b if b.remaining() == 0 => Primitive.nullValue
           case b @ _ => new Date(codec.deserialize(bytes))
         }
       }
@@ -282,7 +282,16 @@ object Primitives {
         }
       }
 
-      override def deserialize(source: ByteBuffer): LocalDate = ???
+      override def deserialize(bytes: ByteBuffer): LocalDate = {
+        bytes match {
+          case Primitive.nullValue => Primitive.nullValue
+          case b if b.remaining() == 0 => Primitive.nullValue
+          case b @ _ =>
+            val unsigned = codec.deserialize(bytes)
+            val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
+            LocalDate.fromDaysSinceEpoch(signed)
+        }
+      }
     }
 
     class JodaLocalDateIsPrimitive extends Primitive[org.joda.time.LocalDate] {
@@ -330,7 +339,7 @@ object Primitives {
 
       override def deserialize(bytes: ByteBuffer): Boolean = {
         bytes match {
-          case None.orNull => false
+          case Primitive.nullValue => false
           case b if b.remaining() == 0 => false
           case b if b.remaining() != 1 =>
             throw new InvalidTypeException(
@@ -350,7 +359,7 @@ object Primitives {
 
       override def serialize(obj: BigDecimal): ByteBuffer = {
         obj match {
-          case None.orNull => None.orNull
+          case Primitive.nullValue => Primitive.nullValue
           case decimal =>
             val bi: BigInteger = obj.bigDecimal.unscaledValue
             val scale: Int = obj.scale
@@ -366,8 +375,8 @@ object Primitives {
 
       override def deserialize(bytes: ByteBuffer): BigDecimal = {
         bytes match {
-          case None.orNull => None.orNull
-          case b if b.remaining() == 0 => None.orNull
+          case Primitive.nullValue => Primitive.nullValue
+          case b if b.remaining() == 0 => Primitive.nullValue
           case b if b.remaining() < 4 =>
             throw new InvalidTypeException(
               "Invalid decimal value, expecting at least 4 bytes but got " + bytes.remaining
@@ -400,8 +409,8 @@ object Primitives {
 
       override def deserialize(bytes: ByteBuffer): InetAddress = {
         bytes match {
-          case super.nullValue => nullValue
-          case b if b.remaining() == 0 => nullValue
+          case Primitive.nullValue => Primitive.nullValue
+          case b if b.remaining() == 0 => Primitive.nullValue
           case _ =>
             try
               InetAddress.getByAddress(Bytes.getArray(bytes))
@@ -426,8 +435,8 @@ object Primitives {
 
       override def deserialize(bytes: ByteBuffer): BigInt = {
         bytes match {
-          case super.nullValue => nullValue
-          case b if b.remaining() == 0 => nullValue
+          case Primitive.nullValue => Primitive.nullValue
+          case b if b.remaining() == 0 => Primitive.nullValue
           case bt => new BigInteger(Bytes.getArray(bytes))
         }
       }

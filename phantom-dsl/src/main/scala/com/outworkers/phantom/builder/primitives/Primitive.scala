@@ -40,10 +40,8 @@ private[phantom] object DateSerializer {
 @implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
-  protected[this] val nullValue = None.orNull
-
   protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
-    if (source == nullValue) nullValue else fn(source)
+    if (source == Primitive.nullValue) Primitive.nullValue else fn(source)
   }
 
   protected[this] def checkNullsAndLength[T](
@@ -52,7 +50,7 @@ abstract class Primitive[RR] {
     msg: String
   )(pf: PartialFunction[ByteBuffer, T]): T = {
     source match {
-      case this.nullValue => nullValue.asInstanceOf[T]
+      case Primitive.nullValue=> Primitive.nullValue.asInstanceOf[T]
       case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len")
       case bytes @ _ => pf(bytes)
     }
@@ -104,6 +102,8 @@ abstract class Primitive[RR] {
 
 object Primitive {
 
+  val nullValue = None.orNull
+
   /**
     * A helper for implicit lookups that require the refined inner abstract type of a concrete
     * primitive implementation produced by an implicit macro.
@@ -137,7 +137,6 @@ object Primitive {
     val source = implicitly[Primitive[Source]]
 
     new Primitive[Target] {
-      override type PrimitiveType = source.PrimitiveType
 
       /**
         * Converts the type to a CQL compatible string.
@@ -159,8 +158,6 @@ object Primitive {
         source.fromRow(index, row) map from
       }
       override def fromString(value: String): Target = from(source.fromString(value))
-
-      override def clz: Class[source.PrimitiveType] = source.clz
     }
   }
 
