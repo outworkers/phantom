@@ -101,7 +101,5 @@ class MapColumn[
     }
   }
 
-  def apply(k: K): MapKeyUpdateClause[K, V] = {
-    new MapKeyUpdateClause[K, V](name, k)
-  }
+  def apply(k: K): MapKeyUpdateClause[K, V] = new MapKeyUpdateClause[K, V](name, k)
 }

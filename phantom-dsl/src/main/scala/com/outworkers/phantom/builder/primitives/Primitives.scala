@@ -241,6 +241,144 @@ object Primitives {
     override def deserialize(source: ByteBuffer): UUID = ???
   }
 
+  object BooleanIsPrimitive extends Primitive[Boolean] {
+    private[this] val TRUE: ByteBuffer = ByteBuffer.wrap(Array[Byte](1))
+    private[this] val FALSE: ByteBuffer = ByteBuffer.wrap(Array[Byte](0))
+
+    val cassandraType = CQLSyntax.Types.Boolean
+
+    def fromRow(row: GettableData, name: String): Option[Boolean] =
+      if (row.isNull(name)) None else Try(row.getBool(name)).toOption
+
+    override def asCql(value: Boolean): String = value.toString
+
+    override def fromString(value: String): Boolean = value match {
+      case "true" => true
+      case "false" => false
+      case _ => throw new Exception(s"Couldn't parse a boolean value from $value")
+    }
+
+    override def serialize(obj: Boolean): ByteBuffer = {
+      if (obj) TRUE.duplicate else FALSE.duplicate
+    }
+
+    override def deserialize(bytes: ByteBuffer): Boolean = {
+      bytes match {
+        case Primitive.nullValue => false
+        case b if b.remaining() == 0 => false
+        case b if b.remaining() != 1 =>
+          throw new InvalidTypeException(
+            "Invalid boolean value, expecting 1 byte but got " + bytes.remaining
+          )
+        case b @ _ => bytes.get(bytes.position) != 0
+      }
+    }
+  }
+
+  object BigDecimalIsPrimitive extends Primitive[BigDecimal] {
+    val cassandraType = CQLSyntax.Types.Decimal
+
+    override def asCql(value: BigDecimal): String = value.toString()
+
+    override def fromString(value: String): BigDecimal = BigDecimal(value)
+
+    override def serialize(obj: BigDecimal): ByteBuffer = {
+      obj match {
+        case Primitive.nullValue => Primitive.nullValue
+        case decimal =>
+          val bi: BigInteger = obj.bigDecimal.unscaledValue
+          val scale: Int = obj.scale
+          val bibytes: Array[Byte] = bi.toByteArray
+
+          val bytes: ByteBuffer = ByteBuffer.allocate(4 + bibytes.length)
+          bytes.putInt(scale)
+          bytes.put(bibytes)
+          bytes.rewind
+          bytes
+      }
+    }
+
+    override def deserialize(bytes: ByteBuffer): BigDecimal = {
+      bytes match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case b if b.remaining() < 4 =>
+          throw new InvalidTypeException(
+            "Invalid decimal value, expecting at least 4 bytes but got " + bytes.remaining
+          )
+
+        case bt @ _ =>
+          val newBytes = bytes.duplicate
+
+          val scale: Int = bytes.getInt
+          val bibytes: Array[Byte] = new Array[Byte](bytes.remaining)
+          newBytes.get(bibytes)
+
+          val bi: BigInteger = new BigInteger(bibytes)
+          BigDecimal(bi, scale)
+      }
+
+    }
+  }
+
+  object InetAddressPrimitive extends Primitive[InetAddress] {
+    val cassandraType = CQLSyntax.Types.Inet
+
+    override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
+
+    override def fromString(value: String): InetAddress = InetAddress.getByName(value)
+
+    override def serialize(obj: InetAddress): ByteBuffer = {
+      nullValueCheck(obj) { i => ByteBuffer.wrap(i.getAddress) }
+    }
+
+    override def deserialize(bytes: ByteBuffer): InetAddress = {
+      bytes match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case _ =>
+          try
+            InetAddress.getByAddress(Bytes.getArray(bytes))
+          catch {
+            case e: UnknownHostException =>
+              throw new InvalidTypeException("Invalid bytes for inet value, got " + bytes.remaining + " bytes")
+          }
+      }
+    }
+  }
+
+  object BigIntPrimitive extends Primitive[BigInt] {
+    val cassandraType = CQLSyntax.Types.Varint
+
+    override def asCql(value: BigInt): String = value.toString()
+
+    override def fromString(value: String): BigInt = BigInt(value)
+
+    override def serialize(obj: BigInt): ByteBuffer = {
+      nullValueCheck(obj)(bi =>  ByteBuffer.wrap(bi.toByteArray))
+    }
+
+    override def deserialize(bytes: ByteBuffer): BigInt = {
+      bytes match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case bt => new BigInteger(Bytes.getArray(bytes))
+      }
+    }
+  }
+
+  object BlobIsPrimitive extends Primitive[ByteBuffer] {
+    val cassandraType = CQLSyntax.Types.Blob
+
+    override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
+
+    override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
+
+    override def serialize(obj: ByteBuffer): ByteBuffer = obj
+
+    override def deserialize(source: ByteBuffer): ByteBuffer = source
+  }
+
   object LocalDateIsPrimitive extends Primitive[LocalDate] {
     val cassandraType = CQLSyntax.Types.Date
 
@@ -255,7 +393,7 @@ object Primitives {
     }
 
     override def serialize(obj: LocalDate): ByteBuffer = {
-      nullValueCheck(obj){ dt =>
+      nullValueCheck(obj) { dt =>
         val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.getDaysSinceEpoch)
         codec.serialize(unsigned)
       }
@@ -286,145 +424,7 @@ object Primitives {
     _.getTime, l => new Date(l)
   )(LongPrimitive)
 
-  object BooleanIsPrimitive extends Primitive[Boolean] {
-      private[this] val TRUE: ByteBuffer = ByteBuffer.wrap(Array[Byte](1))
-      private[this] val FALSE: ByteBuffer = ByteBuffer.wrap(Array[Byte](0))
-
-      val cassandraType = CQLSyntax.Types.Boolean
-
-      def fromRow(row: GettableData, name: String): Option[Boolean] =
-        if (row.isNull(name)) None else Try(row.getBool(name)).toOption
-
-      override def asCql(value: Boolean): String = value.toString
-
-      override def fromString(value: String): Boolean = value match {
-        case "true" => true
-        case "false" => false
-        case _ => throw new Exception(s"Couldn't parse a boolean value from $value")
-      }
-
-      override def serialize(obj: Boolean): ByteBuffer = {
-        if (obj) TRUE.duplicate else FALSE.duplicate
-      }
-
-      override def deserialize(bytes: ByteBuffer): Boolean = {
-        bytes match {
-          case Primitive.nullValue => false
-          case b if b.remaining() == 0 => false
-          case b if b.remaining() != 1 =>
-            throw new InvalidTypeException(
-              "Invalid boolean value, expecting 1 byte but got " + bytes.remaining
-            )
-          case b @ _ => bytes.get(bytes.position) != 0
-        }
-      }
-    }
-
-  object BigDecimalIsPrimitive extends Primitive[BigDecimal] {
-      val cassandraType = CQLSyntax.Types.Decimal
-
-      override def asCql(value: BigDecimal): String = value.toString()
-
-      override def fromString(value: String): BigDecimal = BigDecimal(value)
-
-      override def serialize(obj: BigDecimal): ByteBuffer = {
-        obj match {
-          case Primitive.nullValue => Primitive.nullValue
-          case decimal =>
-            val bi: BigInteger = obj.bigDecimal.unscaledValue
-            val scale: Int = obj.scale
-            val bibytes: Array[Byte] = bi.toByteArray
-
-            val bytes: ByteBuffer = ByteBuffer.allocate(4 + bibytes.length)
-            bytes.putInt(scale)
-            bytes.put(bibytes)
-            bytes.rewind
-            bytes
-        }
-      }
-
-      override def deserialize(bytes: ByteBuffer): BigDecimal = {
-        bytes match {
-          case Primitive.nullValue => Primitive.nullValue
-          case b if b.remaining() == 0 => Primitive.nullValue
-          case b if b.remaining() < 4 =>
-            throw new InvalidTypeException(
-              "Invalid decimal value, expecting at least 4 bytes but got " + bytes.remaining
-            )
-
-          case bt @ _ =>
-            val newBytes = bytes.duplicate
-
-            val scale: Int = bytes.getInt
-            val bibytes: Array[Byte] = new Array[Byte](bytes.remaining)
-            newBytes.get(bibytes)
-
-            val bi: BigInteger = new BigInteger(bibytes)
-            BigDecimal(bi, scale)
-        }
-
-      }
-    }
-
-  object InetAddressPrimitive extends Primitive[InetAddress] {
-      val cassandraType = CQLSyntax.Types.Inet
-
-      override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
-
-      override def fromString(value: String): InetAddress = InetAddress.getByName(value)
-
-      override def serialize(obj: InetAddress): ByteBuffer = {
-        nullValueCheck(obj) { i => ByteBuffer.wrap(i.getAddress) }
-      }
-
-      override def deserialize(bytes: ByteBuffer): InetAddress = {
-        bytes match {
-          case Primitive.nullValue => Primitive.nullValue
-          case b if b.remaining() == 0 => Primitive.nullValue
-          case _ =>
-            try
-              InetAddress.getByAddress(Bytes.getArray(bytes))
-            catch {
-              case e: UnknownHostException =>
-                throw new InvalidTypeException("Invalid bytes for inet value, got " + bytes.remaining + " bytes")
-            }
-        }
-      }
-    }
-
-  object BigIntPrimitive extends Primitive[BigInt] {
-      val cassandraType = CQLSyntax.Types.Varint
-
-      override def asCql(value: BigInt): String = value.toString()
-
-      override def fromString(value: String): BigInt = BigInt(value)
-
-      override def serialize(obj: BigInt): ByteBuffer = {
-        nullValueCheck(obj)(bi =>  ByteBuffer.wrap(bi.toByteArray))
-      }
-
-      override def deserialize(bytes: ByteBuffer): BigInt = {
-        bytes match {
-          case Primitive.nullValue => Primitive.nullValue
-          case b if b.remaining() == 0 => Primitive.nullValue
-          case bt => new BigInteger(Bytes.getArray(bytes))
-        }
-      }
-    }
-
-  object BlobIsPrimitive extends Primitive[ByteBuffer] {
-      val cassandraType = CQLSyntax.Types.Blob
-
-      override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
-
-      override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
-
-      override def serialize(obj: ByteBuffer): ByteBuffer = obj
-
-      override def deserialize(source: ByteBuffer): ByteBuffer = source
-    }
-
-  private[this] def collectionPrimitive[RR, M[X] <: TraversableOnce[RR]](
+  private[this] def collectionPrimitive[ M[X] <: TraversableOnce[X], RR](
     cType: String,
     converter: M[RR] => String
   )(
@@ -464,6 +464,7 @@ object Primitives {
           val input = bt.duplicate()
           val builder = cbf()
           val size = CodecUtils.readSize(input, ProtocolVersion.V4)
+          builder.sizeHint(size)
 
           for (i <- 0 to size) {
             val databb = CodecUtils.readValue(input, ProtocolVersion.V4)
@@ -481,7 +482,7 @@ object Primitives {
   }
 
   def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {
-    collectionPrimitive[T, List](
+    collectionPrimitive[List, T](
       QueryBuilder.Collections.listType(ev.cassandraType).queryString,
       value =>  QueryBuilder.Collections
         .serialize(value.map(Primitive[T].asCql))
@@ -490,7 +491,7 @@ object Primitives {
   }
 
   def set[T]()(implicit ev: Primitive[T]): Primitive[Set[T]] = {
-    collectionPrimitive[T, Set](
+    collectionPrimitive[Set, T](
       QueryBuilder.Collections.setType(ev.cassandraType).queryString,
       value =>  QueryBuilder.Collections
         .serialize(value.map(Primitive[T].asCql))
@@ -551,7 +552,7 @@ object Primitives {
                 m += (keyPrimitive.deserialize(kbb) -> valuePrimitive.deserialize(vbb))
               }
               m result()
-            } catch  {
+            } catch {
               case e: BufferUnderflowException =>
                 throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
             }

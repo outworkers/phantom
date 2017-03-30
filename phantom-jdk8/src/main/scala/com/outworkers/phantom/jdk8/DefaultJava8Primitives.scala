@@ -19,10 +19,12 @@ import java.time._
 import java.util.Date
 
 import com.datastax.driver.core.{GettableByIndexData, GettableByNameData}
+import com.datastax.driver.core.{ LocalDate => DatastaxLocalDate }
 import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import org.joda.time.DateTime
 
 import scala.util.Try
 
@@ -45,54 +47,23 @@ trait DefaultJava8Primitives {
     }
   }
 
-  implicit object JdkLocalDateIsPrimitive extends Primitive[JdkLocalDate] {
 
-    override type PrimitiveType = com.datastax.driver.core.LocalDate
-
-    val cassandraType = CQLSyntax.Types.Date
-
-    override def asCql(value: JdkLocalDate): String = {
-      CQLQuery.empty.singleQuote(value.toString)
+  implicit val JdkLocalDateIsPrimitive: Primitive[JdkLocalDate] = {
+    Primitive.derive[JdkLocalDate, DatastaxLocalDate](dt => JdkLocalDate.of(dt.getYear, dt.getMonth, dt.getDayOfWeek)) {
+      case (timestamp, zone) => Instant.ofEpochMilli(timestamp).atOffset(ZoneOffset.UTC).toLocalDate
     }
-
-    override def fromRow(column: String, row: GettableByNameData): Try[JdkLocalDate] = nullCheck(column, row) {
-      r => LocalDate.ofEpochDay(r.getDate(column).getDaysSinceEpoch)
-    }
-
-    override def fromRow(index: Int, row: GettableByIndexData): Try[JdkLocalDate] = nullCheck(index, row) {
-      r => LocalDate.ofEpochDay(r.getDate(index).getDaysSinceEpoch)
-    }
-
-    override def fromString(value: String): JdkLocalDate = {
-      Instant.ofEpochMilli(value.toLong).atOffset(ZoneOffset.UTC).toLocalDate
-    }
-
-    override def clz: Class[com.datastax.driver.core.LocalDate] = classOf[com.datastax.driver.core.LocalDate]
   }
 
   implicit object JdkLocalDateTimeIsPrimitive extends Primitive[LocalDateTime] {
-
-    override type PrimitiveType = java.time.LocalDateTime
-
     val cassandraType = CQLSyntax.Types.Timestamp
 
     override def asCql(value: LocalDateTime): String = {
       CQLQuery.empty.singleQuote(value.atZone(ZoneOffset.UTC).toString)
     }
 
-    override def fromRow(column: String, row: GettableByNameData): Try[LocalDateTime] = nullCheck(column, row) {
-      r => LocalDateTime.ofInstant(Instant.ofEpochMilli(r.getTimestamp(column).getTime), ZoneOffset.UTC)
-    }
-
-    override def fromRow(index: Int, row: GettableByIndexData): Try[LocalDateTime] = nullCheck(index, row) {
-      r => LocalDateTime.ofInstant(Instant.ofEpochMilli(r.getTimestamp(index).getTime), ZoneOffset.UTC)
-    }
-
     override def fromString(value: String): LocalDateTime = {
       Instant.ofEpochMilli(value.toLong).atZone(ZoneOffset.UTC).toLocalDateTime
     }
-
-    override def clz: Class[LocalDateTime] = classOf[LocalDateTime]
   }
 
 }

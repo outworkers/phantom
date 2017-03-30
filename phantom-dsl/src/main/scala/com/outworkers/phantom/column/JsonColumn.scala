@@ -72,7 +72,8 @@ abstract class JsonListColumn[
   R,
   ValueType
 ](table: CassandraTable[T, R])(
-  implicit primitive: Primitive[String]
+  implicit primitive: Primitive[String],
+  ev: Primitive[List[String]]
 ) extends AbstractListColumn[T, R, ValueType](table) with JsonDefinition[ValueType] {
 
   override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
@@ -83,14 +84,17 @@ abstract class JsonListColumn[
     if (r.isNull(name)) {
       Success(List.empty[ValueType])
     } else {
-      Success(r.getList(name, primitive.clz.asInstanceOf[Class[String]]).asScala.map(fromString).toList)
+      Try(ev.deserialize(r.getBytesUnsafe(name)).map(fromString))
     }
   }
 }
 
 abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
   table: CassandraTable[T, R]
-)(implicit primitive: Primitive[String]) extends AbstractSetColumn[T ,R,
+)(
+  implicit primitive: Primitive[String],
+  ev: Primitive[Set[String]]
+) extends AbstractSetColumn[T ,R,
   ValueType](table) with JsonDefinition[ValueType] {
 
   override val cassandraType = QueryBuilder.Collections.setType(primitive.cassandraType).queryString
@@ -99,7 +103,7 @@ abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
     if (r.isNull(name)) {
       Success(Set.empty[ValueType])
     } else {
-      Success(r.getSet(name, primitive.clz).asScala.map(e => fromString(e.asInstanceOf[String])).toSet[ValueType])
+      Try(ev.deserialize(r.getBytesUnsafe(name)).map(fromString))
     }
   }
 }
@@ -110,11 +114,10 @@ abstract class JsonMapColumn[
   KeyType,
   ValueType
 ](table: CassandraTable[Owner, Record])(
-  implicit primitive: Primitive[KeyType],
-  strPrimitive: Primitive[String]
+  implicit keyPrimitive: Primitive[KeyType],
+  strPrimitive: Primitive[String],
+  ev: Primitive[Map[KeyType, String]]
 ) extends AbstractMapColumn[Owner, Record, KeyType, ValueType](table) with JsonDefinition[ValueType] {
-
-  val keyPrimitive = Primitive[KeyType]
 
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
@@ -129,11 +132,9 @@ abstract class JsonMapColumn[
 
   override def parse(r: Row): Try[Map[KeyType,ValueType]] = {
     if (r.isNull(name)) {
-      Success(Map.empty[KeyType,ValueType])
+      Success(Map.empty[KeyType, ValueType])
     } else {
-      Success(r.getMap(name, keyPrimitive.clz, strPrimitive.clz).asScala.toMap.map {
-        case (k, v) => (keyPrimitive.extract(k), fromString(v.asInstanceOf[String]))
-      })
+      Try(ev.deserialize(r.getBytesUnsafe(name)).mapValues(fromString))
     }
   }
 }
