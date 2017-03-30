@@ -75,6 +75,19 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   ): CassandraConnection = {
     new CassandraConnection(name, clusterBuilder, true, Some(query))
   }
+
+  /**
+    * Creates and can initialise a keyspace with the given name and the respective query.
+    * This will automatically initialise the keyspace by default, as we consider
+    * passing a specific keyspace query indicates clear intent you want this to happen.
+    * @param query The builder to use when producing the keyspace query.
+    * @return
+    */
+  def keySpace(
+    query: KeySpaceCQLQuery
+  ): CassandraConnection = {
+    new CassandraConnection(query.keyspace, clusterBuilder, true, Some(query))
+  }
 }
 
 /**
@@ -83,6 +96,8 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   * This allows connectors to be used in isolation from the rest of phantom DSL.
   */
 trait KeySpaceCQLQuery {
+  def keyspace: String
+
   def queryString: String
 }
 

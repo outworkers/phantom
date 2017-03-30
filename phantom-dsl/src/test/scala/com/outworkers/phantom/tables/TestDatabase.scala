@@ -100,8 +100,7 @@ object Connector {
         .setReadTimeoutMillis(20000)
       )
     ).noHeartbeat().keySpace(
-      "phantom",
-      KeySpaceSerializer("phantom").ifNotExists().`with`(
+      KeySpace("phantom").ifNotExists().`with`(
         replication eqs SimpleStrategy.replication_factor(1)
       )
     )

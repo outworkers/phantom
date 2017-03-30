@@ -15,8 +15,10 @@
  */
 package com.outworkers.phantom.builder.primitives
 
+import java.nio.ByteBuffer
 import java.util.Date
 
+import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
 import org.joda.time.DateTime
 
@@ -38,16 +40,19 @@ private[phantom] object DateSerializer {
 @implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
-  /**
-    * A way of maintaining compatibility with the underlying Java driver.
-    * The driver often type checks records before casting them and to do that
-    * it needs the correct Java Class obtained via classOf[] or .getClass in Java.
-    *
-    * We use this because the appropriate Scala type is often different than the
-    * Java equivalent. For instance, we don't want users to deal with [[java.util.List]],
-    * even if the Java Driver will attempt to look for one.
-    */
-  type PrimitiveType
+  protected[this] val nullValue = None.orNull
+
+  protected[this] def checkNullsAndLength[T](
+    source: ByteBuffer,
+    len: Int,
+    msg: String
+  )(pf: PartialFunction[ByteBuffer, T]): T = {
+    source match {
+      case this.nullValue => nullValue.asInstanceOf[T]
+      case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len")
+      case bytes @ _ => pf(bytes)
+    }
+  }
 
   protected[this] def nullCheck[T](column: String, row: GettableByNameData)(fn: GettableByNameData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
@@ -76,15 +81,19 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(column: String, row: GettableByNameData): Try[RR]
+  def serialize(obj: RR): ByteBuffer
 
-  def fromRow(index: Int, row: GettableByIndexData): Try[RR]
+  def deserialize(source: ByteBuffer): RR
+
+  def fromRow(column: String, row: GettableByNameData): Try[RR] = {
+    nullCheck(column, row)(r => deserialize(r.getBytesUnsafe(column)))
+  }
+
+  def fromRow(index: Int, row: GettableByIndexData): Try[RR] = {
+    nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index)))
+  }
 
   def fromString(value: String): RR
-
-  def clz: Class[PrimitiveType]
-
-  def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
 
   def frozen: Boolean = false
 }

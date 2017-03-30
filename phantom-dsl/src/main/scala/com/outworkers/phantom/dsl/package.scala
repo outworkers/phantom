@@ -30,7 +30,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, KeySpaceSerializer}
+import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, KeySpaceSerializer, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.DefaultVersions
@@ -160,8 +160,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class KeySpaceAugmenter(val k: KeySpace) extends AnyVal {
-    def build: KeySpaceSerializer = KeySpaceSerializer(k.name)
+    def build: RootSerializer = new RootSerializer(k)
   }
+
+  implicit def keyspaceInstanceToQueryBuilder(k: KeySpace): RootSerializer = new RootSerializer(k)
 
   implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
