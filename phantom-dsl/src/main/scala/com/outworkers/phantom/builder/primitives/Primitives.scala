@@ -27,13 +27,13 @@ import com.google.common.base.Charsets
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import org.joda.time.{DateTime, DateTimeZone}
-
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{ LocalDate => JodaLocalDate }
 import scala.util.Try
 
 object Primitives {
 
-    class StringPrimitive extends Primitive[String] {
+  object StringPrimitive extends Primitive[String] {
       def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
       override def cassandraType: String = CQLSyntax.Types.Text
@@ -54,269 +54,237 @@ object Primitives {
       }
     }
 
-    class IntPrimitive extends Primitive[Int] {
+  object IntPrimitive extends Primitive[Int] {
 
-      private[this] val byteLength = 4
+    private[this] val byteLength = 4
 
-      def asCql(value: Int): String = value.toString
+    def asCql(value: Int): String = value.toString
 
-      override def cassandraType: String = CQLSyntax.Types.Int
+    override def cassandraType: String = CQLSyntax.Types.Int
 
-      override def fromString(value: String): Int = value.toInt
+    override def fromString(value: String): Int = value.toInt
 
-      override def serialize(obj: Int): ByteBuffer = {
-        val bb = ByteBuffer.allocate(4)
-        bb.putInt(0, obj)
-        bb
+    override def serialize(obj: Int): ByteBuffer = {
+      val bb = ByteBuffer.allocate(4)
+      bb.putInt(0, obj)
+      bb
+    }
+
+    override def deserialize(bytes: ByteBuffer): Int = {
+      checkNullsAndLength(
+        bytes,
+        byteLength,
+        "Invalid 32-bits integer value, expecting 4 bytes but got " + bytes.remaining()
+      ) {
+        case _ => bytes.getShort(bytes.position)
       }
+    }
+  }
 
-      override def deserialize(bytes: ByteBuffer): Int = {
-        checkNullsAndLength(
-          bytes,
-          byteLength,
-          "Invalid 32-bits integer value, expecting 4 bytes but got " + bytes.remaining()
-        ) {
-          case _ => bytes.getShort(bytes.position)
-        }
+  object SmallIntPrimitive extends Primitive[Short] {
+
+    private[this] val byteLength = 2
+
+    def asCql(value: Short): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.SmallInt
+
+    override def fromString(value: String): Short = value.toShort
+
+    override def serialize(obj: Short): ByteBuffer = {
+      val bb = ByteBuffer.allocate(2)
+      bb.putShort(0, obj)
+      bb
+    }
+
+    override def deserialize(bytes: ByteBuffer): Short = {
+      checkNullsAndLength(
+        bytes,
+        byteLength,
+        "Invalid 16-bits integer value, expecting 2 bytes but got " + bytes.remaining
+      ) {
+        case _ => bytes.getShort(bytes.position)
+      }
+    }
+  }
+
+  object TinyIntPrimitive extends Primitive[Byte] {
+    def asCql(value: Byte): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.TinyInt
+
+    override def fromString(value: String): Byte = value.toByte
+
+    override def serialize(obj: Byte): ByteBuffer = {
+      val bb = ByteBuffer.allocate(1)
+      bb.put(0, obj)
+      bb
+    }
+
+    override def deserialize(source: ByteBuffer): Byte = {
+      checkNullsAndLength(
+        source,
+        1,
+        "Invalid 8-bits integer value, expecting 1 byte but got " + source.remaining()
+      ) {
+        case b => source.get(source.position())
+      }
+    }
+  }
+
+  object DoublePrimitive extends Primitive[Double] {
+
+    private[this] val byteLength = 8
+
+    def asCql(value: Double): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.Double
+
+    override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
+
+    override def serialize(obj: Double): ByteBuffer = {
+      val bb: ByteBuffer = ByteBuffer.allocate(byteLength)
+      bb.putDouble(0, obj)
+      bb
+    }
+
+    override def deserialize(bytes: ByteBuffer): Double = {
+      checkNullsAndLength(
+        bytes,
+        byteLength,
+        "Invalid 64-bits double value, expecting 8 bytes but got " + bytes.remaining
+      ) {
+        case b if b.remaining() == 0 => 0D
+        case b @ _ => bytes.getDouble(b.position)
+      }
+    }
+  }
+
+  object LongPrimitive extends Primitive[Long] {
+
+    private[this] val byteLength = 8
+
+    def asCql(value: Long): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.BigInt
+
+    override def fromString(value: String): Long = java.lang.Long.parseLong(value)
+
+    override def serialize(obj: Long): ByteBuffer = {
+      val bb = ByteBuffer.allocate(byteLength)
+      bb.putLong(0, obj)
+      bb
+    }
+
+    override def deserialize(bytes: ByteBuffer): Long = {
+      bytes match {
+        case Primitive.nullValue => 0L
+        case b if b.remaining() == 0 => 0L
+        case b if b.remaining() != byteLength =>
+          throw new InvalidTypeException(
+            "Invalid 64-bits long value, expecting 8 bytes but got " + bytes.remaining
+          )
+        case b @ _ => bytes.getLong(bytes.position)
+      }
+    }
+  }
+
+  object FloatPrimitive extends Primitive[Float] {
+
+    private[this] val byteLength = 4
+
+    def asCql(value: Float): String = value.toString
+
+    override def cassandraType: String = CQLSyntax.Types.Float
+
+    override def fromString(value: String): Float = java.lang.Float.parseFloat(value)
+
+    override def deserialize(bytes: ByteBuffer): Float = {
+      checkNullsAndLength(
+        bytes,
+        byteLength,
+        s"Invalid 32-bits float value, expecting $byteLength bytes but got " + bytes.remaining
+      ) {
+        case b if b.remaining() == 0 => 0F
+        case b @ _ => bytes.getFloat(b.position)
       }
     }
 
-    class SmallIntPrimitive extends Primitive[Short] {
-
-      private[this] val byteLength = 2
-
-      def asCql(value: Short): String = value.toString
-
-      override def cassandraType: String = CQLSyntax.Types.SmallInt
-
-      override def fromString(value: String): Short = value.toShort
-
-      override def serialize(obj: Short): ByteBuffer = {
-        val bb = ByteBuffer.allocate(2)
-        bb.putShort(0, obj)
-        bb
-      }
-
-      override def deserialize(bytes: ByteBuffer): Short = {
-        checkNullsAndLength(
-          bytes,
-          byteLength,
-          "Invalid 16-bits integer value, expecting 2 bytes but got " + bytes.remaining
-        ) {
-          case _ => bytes.getShort(bytes.position)
-        }
-      }
+    override def serialize(obj: Float): ByteBuffer = {
+      val bb = ByteBuffer.allocate(byteLength)
+      bb.putFloat(0, obj)
+      bb
     }
+  }
 
-    class TinyIntPrimitive extends Primitive[Byte] {
-      def asCql(value: Byte): String = value.toString
+  object UUIDPrimitive extends Primitive[UUID] {
 
-      override def cassandraType: String = CQLSyntax.Types.TinyInt
+    private[this] val byteLength = 16
 
-      override def fromString(value: String): Byte = value.toByte
+    def asCql(value: UUID): String = value.toString
 
-      override def serialize(obj: Byte): ByteBuffer = {
-        val bb = ByteBuffer.allocate(1)
-        bb.put(0, obj)
-        bb
-      }
+    override def cassandraType: String = CQLSyntax.Types.UUID
 
-      override def deserialize(source: ByteBuffer): Byte = {
-        checkNullsAndLength(
-          source,
-          1,
-          "Invalid 8-bits integer value, expecting 1 byte but got " + source.remaining()
-        ) {
-          case b => source.get(source.position())
-        }
-      }
-    }
+    override def fromString(value: String): UUID = UUID.fromString(value)
 
-    class DoublePrimitive extends Primitive[Double] {
-
-      private[this] val byteLength = 8
-
-      def asCql(value: Double): String = value.toString
-
-      override def cassandraType: String = CQLSyntax.Types.Double
-
-      override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
-
-      override def serialize(obj: Double): ByteBuffer = {
-        val bb: ByteBuffer = ByteBuffer.allocate(byteLength)
-        bb.putDouble(0, obj)
-        bb
-      }
-
-      override def deserialize(bytes: ByteBuffer): Double = {
-        checkNullsAndLength(
-          bytes,
-          byteLength,
-          "Invalid 64-bits double value, expecting 8 bytes but got " + bytes.remaining
-        ) {
-          case b if b.remaining() == 0 => 0D
-          case b @ _ => bytes.getDouble(b.position)
-        }
-      }
-    }
-
-    class LongPrimitive extends Primitive[Long] {
-
-      private[this] val byteLength = 8
-
-      def asCql(value: Long): String = value.toString
-
-      override def cassandraType: String = CQLSyntax.Types.BigInt
-
-      override def fromString(value: String): Long = java.lang.Long.parseLong(value)
-
-      override def serialize(obj: Long): ByteBuffer = {
+    override def serialize(obj: UUID): ByteBuffer = {
+      nullValueCheck(obj) { value =>
         val bb = ByteBuffer.allocate(byteLength)
-        bb.putLong(0, obj)
-        bb
-      }
-
-      override def deserialize(bytes: ByteBuffer): Long = {
-        bytes match {
-          case Primitive.nullValue => 0L
-          case b if b.remaining() == 0 => 0L
-          case b if b.remaining() != byteLength =>
-            throw new InvalidTypeException(
-              "Invalid 64-bits long value, expecting 8 bytes but got " + bytes.remaining
-            )
-          case b @ _ => bytes.getLong(bytes.position)
-        }
-      }
-    }
-
-    class FloatPrimitive extends Primitive[Float] {
-
-      private[this] val byteLength = 4
-
-      def asCql(value: Float): String = value.toString
-
-      override def cassandraType: String = CQLSyntax.Types.Float
-
-      override def fromString(value: String): Float = java.lang.Float.parseFloat(value)
-
-      override def deserialize(bytes: ByteBuffer): Double = {
-        checkNullsAndLength(
-          bytes,
-          byteLength,
-          s"Invalid 32-bits float value, expecting $byteLength bytes but got " + bytes.remaining
-        ) {
-          case b if b.remaining() == 0 => 0D
-          case b @ _ => bytes.getDouble(b.position)
-        }
-      }
-
-      override def serialize(obj: Float): ByteBuffer = {
-        val bb = ByteBuffer.allocate(byteLength)
-        bb.putFloat(0, obj)
+        bb.putLong(0, value.getMostSignificantBits)
+        bb.putLong(8, value.getLeastSignificantBits)
         bb
       }
     }
 
-    class UUIDPrimitive extends Primitive[UUID] {
+    override def deserialize(source: ByteBuffer): UUID = ???
+  }
 
-      private[this] val byteLength = 16
+  object LocalDateIsPrimitive extends Primitive[LocalDate] {
+    val cassandraType = CQLSyntax.Types.Date
 
-      def asCql(value: UUID): String = value.toString
+    val codec = IntPrimitive
 
-      override def cassandraType: String = CQLSyntax.Types.UUID
-
-      override def fromString(value: String): UUID = UUID.fromString(value)
-
-      override def serialize(obj: UUID): ByteBuffer = {
-        nullValueCheck(obj) { value =>
-          val bb = ByteBuffer.allocate(byteLength)
-          bb.putLong(0, value.getMostSignificantBits)
-          bb.putLong(8, value.getLeastSignificantBits)
-          bb
-        }
-      }
-
-      override def deserialize(source: ByteBuffer): UUID = ???
+    override def asCql(value: LocalDate): String = {
+      DateSerializer.asCql(value)
     }
 
-    class DateIsPrimitive extends Primitive[Date] {
+    override def fromString(value: String): LocalDate = {
+      LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
+    }
 
-      val codec = new LongPrimitive
-
-      val cassandraType = CQLSyntax.Types.Timestamp
-
-      override def asCql(value: Date): String = DateSerializer.asCql(value)
-
-      override def fromString(value: String): Date = {
-        new DateTime(value, DateTimeZone.UTC).toDate
-      }
-
-      override def serialize(obj: Date): ByteBuffer = codec.serialize(obj.getTime)
-
-      override def deserialize(bytes: ByteBuffer): Date = {
-        bytes match {
-          case Primitive.nullValue => Primitive.nullValue
-          case b if b.remaining() == 0 => Primitive.nullValue
-          case b @ _ => new Date(codec.deserialize(bytes))
-        }
+    override def serialize(obj: LocalDate): ByteBuffer = {
+      nullValueCheck(obj){ dt =>
+        val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.getDaysSinceEpoch)
+        codec.serialize(unsigned)
       }
     }
 
-    class LocalDateIsPrimitive extends Primitive[LocalDate] {
-      val cassandraType = CQLSyntax.Types.Date
-
-      val codec = new IntPrimitive
-
-      override def asCql(value: LocalDate): String = {
-        DateSerializer.asCql(value)
-      }
-
-      override def fromString(value: String): LocalDate = {
-        LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
-      }
-
-      override def serialize(obj: LocalDate): ByteBuffer = {
-        nullValueCheck(obj){ dt =>
-          val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.getDaysSinceEpoch)
-          codec.serialize(unsigned)
-        }
-      }
-
-      override def deserialize(bytes: ByteBuffer): LocalDate = {
-        bytes match {
-          case Primitive.nullValue => Primitive.nullValue
-          case b if b.remaining() == 0 => Primitive.nullValue
-          case b @ _ =>
-            val unsigned = codec.deserialize(bytes)
-            val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
-            LocalDate.fromDaysSinceEpoch(signed)
-        }
+    override def deserialize(bytes: ByteBuffer): LocalDate = {
+      bytes match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case b @ _ =>
+          val unsigned = codec.deserialize(bytes)
+          val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
+          LocalDate.fromDaysSinceEpoch(signed)
       }
     }
+  }
 
-    class JodaLocalDateIsPrimitive extends Primitive[org.joda.time.LocalDate] {
-      val cassandraType = CQLSyntax.Types.Date
+  val DateTimeIsPrimitive = Primitive.manuallyDerivce[DateTime, Long](
+    dt => dt.getMillis,
+    l => new DateTime(l, DateTimeZone.UTC)
+  )(LongPrimitive)
 
-      override def asCql(value: org.joda.time.LocalDate): String = {
-        CQLQuery.empty.singleQuote(DateSerializer.asCql(value))
-      }
+  val JodaLocalDateIsPrimitive = Primitive.manuallyDerivce[JodaLocalDate, DateTime](
+    jld => jld.toDateTimeAtCurrentTime(DateTimeZone.UTC), jld => jld.toLocalDate
+  )(DateTimeIsPrimitive)
 
-      override def fromString(value: String): org.joda.time.LocalDate = {
-        new DateTime(value, DateTimeZone.UTC).toLocalDate
-      }
-    }
+  val DateIsPrimitive = Primitive.manuallyDerivce[Date, Long](
+    _.getTime, l => new Date(l)
+  )(LongPrimitive)
 
-    class DateTimeIsPrimitive extends Primitive[DateTime] {
-      val cassandraType = CQLSyntax.Types.Timestamp
-
-      override def asCql(value: DateTime): String = {
-        DateSerializer.asCql(value)
-      }
-
-      override def fromString(value: String): DateTime = new DateTime(value, DateTimeZone.UTC)
-    }
-
-    class BooleanIsPrimitive extends Primitive[Boolean] {
+  object BooleanIsPrimitive extends Primitive[Boolean] {
       private[this] val TRUE: ByteBuffer = ByteBuffer.wrap(Array[Byte](1))
       private[this] val FALSE: ByteBuffer = ByteBuffer.wrap(Array[Byte](0))
 
@@ -350,7 +318,7 @@ object Primitives {
       }
     }
 
-    class BigDecimalIsPrimitive extends Primitive[BigDecimal] {
+  object BigDecimalIsPrimitive extends Primitive[BigDecimal] {
       val cassandraType = CQLSyntax.Types.Decimal
 
       override def asCql(value: BigDecimal): String = value.toString()
@@ -396,7 +364,7 @@ object Primitives {
       }
     }
 
-    class InetAddressPrimitive extends Primitive[InetAddress] {
+  object InetAddressPrimitive extends Primitive[InetAddress] {
       val cassandraType = CQLSyntax.Types.Inet
 
       override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
@@ -422,7 +390,7 @@ object Primitives {
       }
     }
 
-    class BigIntPrimitive extends Primitive[BigInt] {
+  object BigIntPrimitive extends Primitive[BigInt] {
       val cassandraType = CQLSyntax.Types.Varint
 
       override def asCql(value: BigInt): String = value.toString()
@@ -442,7 +410,7 @@ object Primitives {
       }
     }
 
-    class BlobIsPrimitive extends Primitive[ByteBuffer] {
+  object BlobIsPrimitive extends Primitive[ByteBuffer] {
       val cassandraType = CQLSyntax.Types.Blob
 
       override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)

@@ -96,7 +96,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val enum: Symbol = typed[Enumeration]
   }
 
-  def primitive(nm: String): Tree = q"new $prefix.Primitives.${TypeName(nm)}"
+  def primitive(nm: String): Tree = q"$prefix.Primitives.${TermName(nm)}"
 
   val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
 
@@ -280,8 +280,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       override def fromString(value: $strType): $tpe#Value = {
         $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
       }
-
-      override def clz: Class[$strType] = classOf[$strType]
     }"""
   }
 
@@ -321,8 +319,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       override def fromString(value: $strType): $tpe = {
         $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
       }
-
-      override def clz: Class[$strType] = classOf[$strType]
     }"""
   }
 

@@ -134,10 +134,9 @@ object Primitive {
     */
   def derive[Target, Source : Primitive](to: Target => Source)(from: Source => Target): Primitive[Target] = {
 
-    val source = implicitly[Primitive[Source]]
+    val primitive = implicitly[Primitive[Source]]
 
     new Primitive[Target] {
-
       /**
         * Converts the type to a CQL compatible string.
         * The primitive is responsible for handling all aspects of adequate escaping as well.
@@ -146,20 +145,24 @@ object Primitive {
         * @param value The strongly typed value.
         * @return The string representation of the value with respect to CQL standards.
         */
-      override def asCql(value: Target): String = source.asCql(to(value))
+      override def asCql(value: Target): String = primitive.asCql(to(value))
 
-      override def cassandraType: String = source.cassandraType
+      override def cassandraType: String = primitive.cassandraType
 
-      override def fromRow(column: String, row: GettableByNameData): Try[Target] = {
-        source.fromRow(column, row) map from
-      }
+      override def fromString(value: String): Target = from(primitive.fromString(value))
 
-      override def fromRow(index: Int, row: GettableByIndexData): Try[Target] = {
-        source.fromRow(index, row) map from
-      }
-      override def fromString(value: String): Target = from(source.fromString(value))
+      override def serialize(obj: Target): ByteBuffer = primitive.serialize(to(obj))
+
+      override def deserialize(source: ByteBuffer): Target = from(primitive.deserialize(source))
     }
   }
+
+  private[phantom] def manuallyDerivce[Target, Source](
+    to: Target => Source,
+    from: Source => Target
+  )(
+    ev: Primitive[Source]
+  ): Primitive[Target] = derive(to)(from)(ev)
 
   /**
     * Convenience method to materialise the context bound and return a reference to it.
