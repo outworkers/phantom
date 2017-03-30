@@ -50,7 +50,7 @@ abstract class Primitive[RR] {
     msg: String
   )(pf: PartialFunction[ByteBuffer, T]): T = {
     source match {
-      case Primitive.nullValue=> Primitive.nullValue.asInstanceOf[T]
+      case Primitive.nullValue => Primitive.nullValue.asInstanceOf[T]
       case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len")
       case bytes @ _ => pf(bytes)
     }
