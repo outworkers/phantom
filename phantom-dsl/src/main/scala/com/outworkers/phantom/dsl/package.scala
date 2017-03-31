@@ -121,6 +121,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
   type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
 
+  type Primitive[RR] = com.outworkers.phantom.builder.primitives.Primitive[RR]
+  val Primitive = com.outworkers.phantom.builder.primitives.Primitive
 
   object ? extends PrepareMark
   case object Batch extends Batcher
