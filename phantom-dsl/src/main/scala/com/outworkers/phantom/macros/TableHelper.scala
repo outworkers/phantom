@@ -50,7 +50,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {

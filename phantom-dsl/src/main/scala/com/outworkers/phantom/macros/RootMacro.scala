@@ -21,10 +21,11 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
-class RootMacro(val c: blackbox.Context) {
+trait RootMacro {
+  val c: whitebox.Context
   import c.universe._
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)

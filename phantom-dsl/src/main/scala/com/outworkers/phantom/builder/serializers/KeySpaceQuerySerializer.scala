@@ -131,6 +131,8 @@ sealed class KeySpaceSerializer(
   }
 
   override def queryString: String = qb.queryString
+
+  override def keyspace: String = keySpace.name
 }
 
 class RootSerializer(val keySpace: KeySpace) {

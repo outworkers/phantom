@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.column
 
-import scala.collection.JavaConverters._
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
@@ -25,7 +24,10 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import scala.annotation.implicitNotFound
 import scala.util.{Failure, Success, Try}
 
-abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record, RR](table: CassandraTable[Owner, Record])
+abstract class AbstractSetColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record, RR
+](table: CassandraTable[Owner, Record])
   extends Column[Owner, Record, Set[RR]](table) with CollectionValueDefinition[RR] {
 
   def valuesToCType(values: Iterable[RR]): Set[String] = values.map(valueAsCql).toSet
@@ -35,24 +37,30 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
       case Success(set) => set
 
       // Note null sets are considered successful, we simply return an empty set instead of null.
-      case Failure(ex) => {
+      case Failure(ex) =>
         table.logger.error(ex.getMessage)
         throw ex
-      }
     }
   }
 
-  override def asCql(v: Set[RR]): String = QueryBuilder.Collections.serialize(valuesToCType(v)).queryString
+  override def asCql(v: Set[RR]): String = {
+    QueryBuilder.Collections.serialize(valuesToCType(v)).queryString
+  }
 }
 
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](table: CassandraTable[Owner, Record])
-    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
+class SetColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record, RR : Primitive
+](table: CassandraTable[Owner, Record])(
+  implicit val valuePrimitive: Primitive[RR],
+  ev: Primitive[Set[RR]]
+) extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
-  override val valuePrimitive: Primitive[RR] = Primitive[RR]
-
-  val cassandraType: String = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
+  val cassandraType: String = QueryBuilder.Collections.setType(
+    valuePrimitive.cassandraType
+  ).queryString
 
   override def qb: CQLQuery = {
     if (shouldFreeze) {
@@ -64,15 +72,15 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](
     }
   }
 
-  override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)
+  override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
 
-  override def fromString(c: String): RR = Primitive[RR].fromString(c)
+  override def fromString(c: String): RR = valuePrimitive.fromString(c)
 
   override def parse(r: Row): Try[Set[RR]] = {
     if (r.isNull(name)) {
       Success(Set.empty[RR])
     } else {
-      Success(r.getSet(name, Primitive[RR].clz.asInstanceOf[Class[RR]]).asScala.toSet[RR])
+      Success(ev.deserialize(r.getBytesUnsafe(name)))
     }
   }
 

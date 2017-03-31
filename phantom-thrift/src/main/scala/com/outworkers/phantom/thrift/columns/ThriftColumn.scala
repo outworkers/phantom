@@ -106,7 +106,8 @@ abstract class ThriftSetColumn[
   R,
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V]
+  implicit hp: ThriftHelper[V],
+  ev: Primitive[Set[String]]
 ) extends AbstractSetColumn[T, R, V](table) with CollectionThriftColumnDefinition[V] {
 
   override val serializer: CompactThriftSerializer[V] = hp.serializer
@@ -119,7 +120,7 @@ abstract class ThriftSetColumn[
     if (r.isNull(name)) {
       Success(Set.empty[V])
     } else {
-      Success(r.getSet(name, Primitive[String].clz.asInstanceOf[Class[String]]).asScala.map(fromString).toSet[V])
+      Success(ev.deserialize(r.getBytesUnsafe(name)).map(fromString))
     }
   }
 }
@@ -130,7 +131,8 @@ abstract class ThriftListColumn[
   R,
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V]
+  implicit hp: ThriftHelper[V],
+  ev: Primitive[List[String]]
 ) extends AbstractListColumn[T, R, V](table) with CollectionThriftColumnDefinition[V] {
 
   override val cassandraType = QueryBuilder.Collections.listType(CQLSyntax.Types.Text).queryString
@@ -141,7 +143,7 @@ abstract class ThriftListColumn[
     if (r.isNull(name)) {
       Success(Nil)
     } else {
-      Success(r.getList(name, Primitive[String].clz.asInstanceOf[Class[String]]).asScala.map(fromString).toList)
+      Success(ev.deserialize(r.getBytesUnsafe(name)).map(fromString))
     }
   }
 }
@@ -153,14 +155,17 @@ abstract class ThriftMapColumn[
   KeyType : Primitive,
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V]
+  implicit hp: ThriftHelper[V],
+  val keyPrimitive: Primitive[KeyType],
+  ev: Primitive[Map[KeyType, String]]
 ) extends AbstractMapColumn[T, R, KeyType, V](table) with CollectionThriftColumnDefinition[V] {
-
-  val keyPrimitive = Primitive[KeyType]
 
   override val serializer: CompactThriftSerializer[V] = hp.serializer
 
-  override val cassandraType = QueryBuilder.Collections.mapType(keyPrimitive.cassandraType, CQLSyntax.Types.Text).queryString
+  override val cassandraType = QueryBuilder.Collections.mapType(
+    keyPrimitive.cassandraType,
+    CQLSyntax.Types.Text
+  ).queryString
 
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
@@ -170,13 +175,7 @@ abstract class ThriftMapColumn[
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, V])
     } else {
-      Try(
-        r.getMap(name, keyPrimitive.clz.asInstanceOf[Class[KeyType]],
-          Primitive[String].clz.asInstanceOf[Class[String]]
-        ).asScala.toMap map {
-          case (k, v) => (k, serializer.fromString(v))
-        }
-      )
+      Try(ev.deserialize(r.getBytesUnsafe(name)).mapValues(v => serializer.fromString(v)))
     }
   }
 }
