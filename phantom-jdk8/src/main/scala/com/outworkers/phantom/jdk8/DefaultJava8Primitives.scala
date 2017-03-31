@@ -15,18 +15,14 @@
  */
 package com.outworkers.phantom.jdk8
 
-import java.time._
-import java.util.Date
+import java.nio.ByteBuffer
+import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 
-import com.datastax.driver.core.{GettableByIndexData, GettableByNameData}
-import com.datastax.driver.core.{ LocalDate => DatastaxLocalDate }
-import com.outworkers.phantom.jdk8.dsl.JdkLocalDate
-import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.datastax.driver.core.{CodecUtils, LocalDate => DatastaxLocalDate}
+import com.outworkers.phantom.builder.primitives.Primitives.IntPrimitive
+import com.outworkers.phantom.builder.primitives.{DateSerializer, Primitive}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import org.joda.time.DateTime
-
-import scala.util.Try
+import org.joda.time.{DateTime, DateTimeZone}
 
 trait DefaultJava8Primitives {
 
@@ -41,29 +37,49 @@ trait DefaultJava8Primitives {
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
+  object LocalDateIsPrimitive extends Primitive[JavaLocalDate] {
+    val cassandraType = CQLSyntax.Types.Date
+
+    val codec = IntPrimitive
+
+    override def asCql(value: JavaLocalDate): String = {
+      DateSerializer.asCql(
+        DatastaxLocalDate.fromDaysSinceEpoch(value.toEpochDay.toInt)
+      )
+    }
+
+    override def fromString(value: String): JavaLocalDate = {
+      JavaLocalDate.ofEpochDay(java.lang.Long.parseLong(value))
+    }
+
+    override def serialize(obj: JavaLocalDate): ByteBuffer = {
+      nullValueCheck(obj) { dt =>
+        val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.toEpochDay.toInt)
+        codec.serialize(unsigned)
+      }
+    }
+
+    override def deserialize(bytes: ByteBuffer): JavaLocalDate = {
+      bytes match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case b @ _ =>
+          val unsigned = codec.deserialize(bytes)
+          val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
+          JavaLocalDate.ofEpochDay(signed)
+      }
+    }
+  }
+
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
     Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
       case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
     }
   }
 
-
-  implicit val JdkLocalDateIsPrimitive: Primitive[JdkLocalDate] = {
-    Primitive.derive[JdkLocalDate, DatastaxLocalDate](dt => JdkLocalDate.of(dt.getYear, dt.getMonth, dt.getDayOfWeek)) {
-      case (timestamp, zone) => Instant.ofEpochMilli(timestamp).atOffset(ZoneOffset.UTC).toLocalDate
-    }
+  implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {
+    Primitive.derive[JavaLocalDateTime, DateTime](jd =>
+      new DateTime(jd.toInstant(ZoneOffset.UTC).toEpochMilli, DateTimeZone.UTC)
+    )(dt => JavaLocalDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneOffset.UTC))
   }
-
-  implicit object JdkLocalDateTimeIsPrimitive extends Primitive[LocalDateTime] {
-    val cassandraType = CQLSyntax.Types.Timestamp
-
-    override def asCql(value: LocalDateTime): String = {
-      CQLQuery.empty.singleQuote(value.atZone(ZoneOffset.UTC).toString)
-    }
-
-    override def fromString(value: String): LocalDateTime = {
-      Instant.ofEpochMilli(value.toLong).atZone(ZoneOffset.UTC).toLocalDateTime
-    }
-  }
-
 }

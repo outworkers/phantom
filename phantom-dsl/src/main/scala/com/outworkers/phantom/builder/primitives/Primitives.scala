@@ -33,6 +33,62 @@ import org.joda.time.{LocalDate => JodaLocalDate}
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
 
+/*
+            if (value == null)
+                return null;
+            int size = 0;
+            int length = definition.getComponentTypes().size();
+            ByteBuffer[] elements = new ByteBuffer[length];
+            for (int i = 0; i < length; i++) {
+                elements[i] = serializeField(value, i, protocolVersion);
+                size += 4 + (elements[i] == null ? 0 : elements[i].remaining());
+            }
+            ByteBuffer result = ByteBuffer.allocate(size);
+            for (ByteBuffer bb : elements) {
+                if (bb == null) {
+                    result.putInt(-1);
+                } else {
+                    result.putInt(bb.remaining());
+                    result.put(bb.duplicate());
+                }
+            }
+            result.flip();
+ */
+
+class TuplePrimitive[T] extends Primitive[T] {
+
+  def primitives: List[Primitive[_]]
+
+  override def serialize(obj: T): ByteBuffer = {
+    obj match {
+      case Primitive.nullValue => Primitive.nullValue
+      case bytes =>
+        var size = 0
+        val length = primitives.size
+        val elements = new Array[ByteBuffer](primitives.size)
+
+        for ( i <- 0 to length) {
+          elements(i) = serializeField(bytes, i, protocolVersion)
+          size += 4 + (if (elements(i) == Primitive.nullValue) 0 else elements(i).remaining())
+        }
+
+        val result = ByteBuffer.allocate(size)
+        for (bb <- elements) {
+          if (bb == null) {
+            result.putInt(-1)
+          } else {
+            result.putInt(bb.remaining())
+            result.put(bb.duplicate())
+          }
+        }
+        result.flip().asInstanceOf[ByteBuffer];
+    }
+  }
+  override def deserialize(source: ByteBuffer): T = ???
+
+  override def fromString(value: String): T = ???
+}
+
 object Primitives {
 
   object StringPrimitive extends Primitive[String] {

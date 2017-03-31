@@ -241,81 +241,36 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   }
 
   def enumPrimitive(tpe: Type): Tree = {
-
     val comp = tpe.typeSymbol.name.toTermName
 
-    q"""new $prefix.Primitive[$tpe#Value] {
-      val strP = implicitly[$prefix.Primitive[$strType]]
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: $strType = strP.cassandraType
-
-      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe#Value] = {
-        nullCheck(name, row) {
-          r => $comp.values.find(_.toString == r.getString(name)) match {
+    q"""
+      $prefix.Primitive.derive[$tpe#Value, $strType](_.toString)(
+        str =>
+          $comp.values.find(_.toString == str) match {
             case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+            case _ => throw new Exception(
+              "Value " + str + " not found in enumeration"
+            ) with scala.util.control.NoStackTrace
           }
-        }
-      }
-
-      override def fromRow(index: $intType, row: $rowByIndexType): scala.util.Try[$tpe#Value] = {
-        nullCheck(index, row) {
-          r => $comp.values.find(_.toString == r.getString(index)) match {
-            case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: $tpe#Value): $strType = {
-        strP.asCql(value.toString)
-      }
-
-      override def fromString(value: $strType): $tpe#Value = {
-        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
-      }
-    }"""
+      )
+    """
   }
 
   def enumValuePrimitive(tpe: Type): Tree = {
 
     val comp = c.parse(s"${tpe.toString.replace("#Value", "").replace(".Value", "")}")
 
-    q"""new $prefix.Primitive[$tpe] {
-      val strP = implicitly[$prefix.Primitive[$strType]]
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: $strType = strP.cassandraType
-
-      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe] = {
-        nullCheck(name, row) {
-          r => $comp.values.find(_.toString == r.getString(name)) match {
+    q"""
+      $prefix.Primitive.derive[$tpe, $strType](_.toString)(
+        str =>
+          $comp.values.find(_.toString == str) match {
             case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+            case _ => throw new Exception(
+              "Value " + str + " not found in enumeration"
+            ) with scala.util.control.NoStackTrace
           }
-        }
-      }
-
-      override def fromRow(index: $intType, row: $rowByIndexType): scala.util.Try[$tpe] = {
-        nullCheck(index, row) {
-          r => $comp.values.find(_.toString == r.getString(index)) match {
-            case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: $tpe): $strType = {
-        strP.asCql(value.toString)
-      }
-
-      override def fromString(value: $strType): $tpe = {
-        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
-      }
-    }"""
+      )
+    """
   }
 
   def materializer[T : c.WeakTypeTag]: c.Expr[Primitive[T]] = {
