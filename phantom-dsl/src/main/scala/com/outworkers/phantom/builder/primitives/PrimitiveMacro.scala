@@ -155,10 +155,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   def tupleFields(tpe: Type): List[TupleType] = {
     val sourceTerm = TermName("source")
     tpe.typeArgs.zipWithIndex.map {
-      case (argTpe, i) => {
+      case (argTpe, i) =>
         val currentTerm = TermName(s"tp${i + 1}")
         val tupleRef = TermName("_" + (i + 1).toString)
-
         val index = q"$i"
 
         TupleType(
@@ -167,7 +166,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
           fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(index = $index, row = $sourceTerm)",
           q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)"
         )
-      }
     }
   }
 

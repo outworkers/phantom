@@ -33,10 +33,13 @@ private[phantom] trait PrepareMark {
 
   def symbol: String = "?"
 
-  def qb: CQLQuery = CQLQuery("?")
+  def qb: CQLQuery = CQLQuery(symbol)
 }
 
-class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
+class ExecutablePreparedQuery(
+  val statement: Statement,
+  val options: QueryOptions
+) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
@@ -64,7 +67,6 @@ Limit <: LimitBound
   /**
     * Returns the first row from the select ignoring everything else
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
     * @param ec The implicit Scala execution context.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
