@@ -53,7 +53,7 @@ case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
 abstract class Events extends CassandraTable[Events, SampleEvent] with RootConnector {
   object id extends UUIDColumn with PartitionKey
-  object map extends MapColumn[Long, DateTime](this)
+  object map extends MapColumn[Long, DateTime]
 
   def findById(id: UUID): Future[Option[SampleEvent]] = {
     select.where(_.id eqs id).one()
