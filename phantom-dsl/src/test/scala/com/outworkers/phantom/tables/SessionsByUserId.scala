@@ -47,7 +47,7 @@ abstract class SessionsByUserId extends CassandraTable[
   object remembered_token extends OptionalUUIDColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  def getById(id: UUID): Future[Option[OAuth2Session]] = {
+  def findById(id: UUID): Future[Option[OAuth2Session]] = {
     select.where(_.user_id eqs id).one()
   }
 
