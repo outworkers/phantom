@@ -55,6 +55,7 @@ import scala.util.Try
             result.flip();
  */
 
+/*
 class TuplePrimitive[T] extends Primitive[T] {
 
   def primitives: List[Primitive[_]]
@@ -87,7 +88,7 @@ class TuplePrimitive[T] extends Primitive[T] {
   override def deserialize(source: ByteBuffer): T = ???
 
   override def fromString(value: String): T = ???
-}
+}*/
 
 object Primitives {
 

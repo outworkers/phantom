@@ -397,32 +397,22 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
     val descriptor = extractor(tableType, rTpe, referenceColumns)
-    val abstractFromRow = refTable.member(fromRowName)
-    val fromRowTpe = abstractFromRow.infoIn(tableType)
+    val abstractFromRow = refTable.member(fromRowName).asMethod
     val fromRowFn = descriptor.fromRow
 
-    if (fromRowFn.isEmpty) {
-      logger.debug(
-        s"""
-          Table: ${printType(tableType)}
-          Type info: ${printType(fromRowTpe)}
-          fromRowDefined: ${descriptor.fromRow.isDefined}
-          fromRow == ???: ${abstractFromRow.asMethod}
-          abstract: ${abstractFromRow.asMethod.isAbstract}
-          abstractOverride: ${abstractFromRow.asMethod.isAbstractOverride}
-          body: ${showCode(q"$fromRowTpe")}
-        """
-      )
+    if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
+      c.abort(c.enclosingPosition, s"You need to manually define a def fromRow(row: ${showCode(rowType)}): ${printType(rTpe)}")
     } else {
       logger.debug(descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
+    val storeType = descriptor.storeType
 
     q"""
-       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
-          type Repr = ${descriptor.storeType}
+       final class $clsName extends $macroPkg.TableHelper.Aux[$tableType, $rTpe, $storeType] {
+          type Repr = $storeType
 
           def tableName: $strTpe = $tableName
 

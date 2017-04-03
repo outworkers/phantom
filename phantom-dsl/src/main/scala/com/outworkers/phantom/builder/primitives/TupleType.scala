@@ -118,19 +118,6 @@ class TupleType(
 
   def isFrozen: Boolean = true
 
-  /**
-    * Return the protocol version that has been used to deserialize
-    * this tuple type, or that will be used to serialize it.
-    * In most cases this should be the version
-    * currently in use by the cluster instance
-    * that this tuple type belongs to, as reported by
-    * {@link ProtocolOptions#getProtocolVersion()}.
-    *
-    * @return the protocol version that has been used to deserialize
-    *         this tuple type, or that will be used to serialize it.
-    */
-  private[core] def getProtocolVersion: ProtocolVersion = protocolVersion
-
   override def hashCode: Int = util.Arrays.hashCode(Array[AnyRef](name, types))
 
   override def equals(o: Any): Boolean = {

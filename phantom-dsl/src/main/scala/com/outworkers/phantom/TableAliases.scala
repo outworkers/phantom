@@ -22,57 +22,70 @@ import java.util.{Date, UUID}
 import com.outworkers.phantom.builder.primitives.Primitive
 import org.joda.time.{DateTime, LocalDate}
 
-trait TableAliases[T <: CassandraTable[T, R], R] {
-  self: CassandraTable[T, R] =>
+trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
 
   class ListColumn[RR]()(
     implicit ev: Primitive[RR],
     ev2: Primitive[List[RR]]
-  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, List, RR](instance)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, List, RR](this)
 
   class SetColumn[RR]()(
     implicit ev: Primitive[RR],
     ev2: Primitive[Set[RR]]
-  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, Set, RR](instance)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, Set, RR](this)
 
-  class MapColumn[KK, VV] extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](instance)
+  class MapColumn[KK, VV]()(implicit
+    ev: Primitive[KK],
+    ev2: Primitive[VV],
+    ev3: Primitive[Map[KK, VV]]
+  ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](this)
 
-  abstract class JsonColumn[RR] extends com.outworkers.phantom.column.JsonColumn[T, R, RR](instance)
-  abstract class OptionalJsonColumn[RR] extends com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR](instance)
+  abstract class JsonColumn[RR] extends com.outworkers.phantom.column.JsonColumn[T, R, RR](this)
+  abstract class OptionalJsonColumn[RR] extends com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR](this)
 
-  class EnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](instance)
-  class OptionalEnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](instance)
+  class EnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
+  class OptionalEnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
 
-  abstract class JsonSetColumn[RR] extends com.outworkers.phantom.column.JsonSetColumn[T, R, RR](instance)
-  abstract class JsonListColumn[RR] extends com.outworkers.phantom.column.JsonListColumn[T, R, RR](instance)
-  abstract class JsonMapColumn[KK, VV] extends com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV](instance)
+  abstract class JsonSetColumn[RR]()(
+    implicit ev: Primitive[Set[String]],
+    ev2: Primitive[String]
+  ) extends com.outworkers.phantom.column.JsonSetColumn[T, R, RR](this)
+  abstract class JsonListColumn[RR]()(
+    implicit ev: Primitive[List[String]],
+    ev2: Primitive[String]
+  ) extends com.outworkers.phantom.column.JsonListColumn[T, R, RR](this)
+  abstract class JsonMapColumn[KK, VV]()(
+    implicit ev: Primitive[Map[KK, String]],
+    ev2: Primitive[String],
+    ev3: Primitive[KK]
+  ) extends com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV](this)
 
-  class PrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](instance)
+  class PrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class CustomColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class Col[RR : Primitive] extends PrimitiveColumn[RR]
-  class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](instance)
+  class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](this)
 
-  class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](instance)
-  class OptionalPrimitiveColumn[RR] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](instance)
-  class BigDecimalColumn extends PrimitiveColumn[BigDecimal]
-  class BlobColumn extends PrimitiveColumn[ByteBuffer]
-  class BigIntColumn extends PrimitiveColumn[BigInt]
-  class BooleanColumn extends PrimitiveColumn[Boolean]
-  class DateColumn extends PrimitiveColumn[Date]
-  class DateTimeColumn extends PrimitiveColumn[DateTime]
-  class LocalDateColumn extends PrimitiveColumn[LocalDate]
-  class DoubleColumn extends PrimitiveColumn[Double]
-  class FloatColumn extends PrimitiveColumn[Float]
-  class IntColumn extends PrimitiveColumn[Int]
-  class SmallIntColumn extends PrimitiveColumn[Short]
-  class TinyIntColumn extends PrimitiveColumn[Byte]
-  class InetAddressColumn extends PrimitiveColumn[InetAddress]
+  class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](this)
+  class OptionalPrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
 
-  class LongColumn extends PrimitiveColumn[Long]
-  class StringColumn extends PrimitiveColumn[String]
-  class UUIDColumn extends PrimitiveColumn[UUID]
-  class CounterColumn extends com.outworkers.phantom.column.CounterColumn[T, R](instance)
-  class TimeUUIDColumn extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](instance)
+  class BigDecimalColumn()(implicit ev: Primitive[BigDecimal]) extends PrimitiveColumn[BigDecimal]
+  class BlobColumn()(implicit ev: Primitive[ByteBuffer]) extends PrimitiveColumn[ByteBuffer]
+  class BigIntColumn()(implicit ev: Primitive[BigInt]) extends PrimitiveColumn[BigInt]
+  class BooleanColumn()(implicit ev: Primitive[Boolean]) extends PrimitiveColumn[Boolean]
+  class DateColumn()(implicit ev: Primitive[Date]) extends PrimitiveColumn[Date]
+  class DateTimeColumn()(implicit ev: Primitive[DateTime]) extends PrimitiveColumn[DateTime]
+  class LocalDateColumn()(implicit ev: Primitive[LocalDate]) extends PrimitiveColumn[LocalDate]
+  class DoubleColumn()(implicit ev: Primitive[Double]) extends PrimitiveColumn[Double]
+  class FloatColumn()(implicit ev: Primitive[Float]) extends PrimitiveColumn[Float]
+  class IntColumn()(implicit ev: Primitive[Int]) extends PrimitiveColumn[Int]
+  class SmallIntColumn()(implicit ev: Primitive[Short]) extends PrimitiveColumn[Short]
+  class TinyIntColumn()(implicit ev: Primitive[Byte]) extends PrimitiveColumn[Byte]
+  class InetAddressColumn()(implicit ev: Primitive[InetAddress]) extends PrimitiveColumn[InetAddress]
+  class LongColumn()(implicit ev: Primitive[Long]) extends PrimitiveColumn[Long]
+  class StringColumn()(implicit ev: Primitive[String]) extends PrimitiveColumn[String]
+  class UUIDColumn()(implicit ev: Primitive[UUID]) extends PrimitiveColumn[UUID]
+  class CounterColumn()(implicit ev: Primitive[Long]) extends com.outworkers.phantom.column.CounterColumn[T, R](this)
+  class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](this)
 
 }

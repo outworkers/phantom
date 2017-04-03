@@ -28,12 +28,13 @@ import scala.util.Try
 @implicitNotFound(msg = "Type ${T} must be a Cassandra primitive")
 class OptionalPrimitiveColumn[
   Owner <: CassandraTable[Owner, Record],
-  Record, @specialized(Int, Double, Float, Long, Boolean, Short) T : Primitive
-](table: CassandraTable[Owner, Record]) extends OptionalColumn[Owner, Record, T](table) {
+  Record,
+  @specialized(Int, Double, Float, Long, Boolean, Short) T
+](table: CassandraTable[Owner, Record])(implicit ev: Primitive[T]) extends OptionalColumn[Owner, Record, T](table) {
 
-  def cassandraType: String = Primitive[T].cassandraType
+  def cassandraType: String = ev.cassandraType
 
-  def optional(r: Row): Try[T] = implicitly[Primitive[T]].fromRow(name, r)
+  def optional(r: Row): Try[T] = ev.fromRow(name, r)
 
   override def qb: CQLQuery = {
     val root = CQLQuery(name).forcePad.append(cassandraType)
