@@ -142,17 +142,20 @@ class InsertQuery[
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
-    val insertValue = if (Option(value).isDefined) col(table).asCql(value) else None.orNull.asInstanceOf[String]
-
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append CQLQuery(insertValue),
-      usingPart,
-      lightweightPart,
-      options
-    )
+    if (Option(value).isDefined) {
+      val insertValue = col(table).asCql(value)
+      new InsertQuery(
+        table,
+        init,
+        columnsPart append CQLQuery(col(table).name),
+        valuePart append CQLQuery(insertValue),
+        usingPart,
+        lightweightPart,
+        options
+      )
+    } else {
+      this
+    }
   }
 
   override def qb: CQLQuery = {
