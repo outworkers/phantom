@@ -18,13 +18,14 @@ package com.outworkers.phantom.builder.ops
 import java.util.Date
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
 import com.outworkers.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
+import com.outworkers.phantom.column.{AbstractColumn, Column}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.{DateTime, DateTimeZone}
 import shapeless.{=:!=, HList}
@@ -33,7 +34,7 @@ sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(
+  def apply(pf: CassandraTable[_, _]#TimeUUIDColumn)(
     implicit ev: Primitive[Long],
     session: Session
   ): TypedClause.Condition[Option[Long]] = {
@@ -70,7 +71,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
     })
   }
 
-  def apply(pf: TimeUUIDColumn[_, _])(
+  def apply(pf: CassandraTable[_, _]#TimeUUIDColumn)(
     implicit ev: Primitive[DateTime],
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(pf.name)

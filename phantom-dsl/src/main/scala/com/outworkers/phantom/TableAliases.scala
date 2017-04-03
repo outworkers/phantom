@@ -89,8 +89,9 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class StringColumn()(implicit ev: Primitive[String]) extends PrimitiveColumn[String]
   class UUIDColumn()(implicit ev: Primitive[UUID]) extends PrimitiveColumn[UUID]
   class CounterColumn()(implicit ev: Primitive[Long]) extends com.outworkers.phantom.column.CounterColumn[T, R](this)
-  class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](this)
-
+  class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends PrimitiveColumn[UUID] {
+    override val cassandraType = CQLSyntax.Types.TimeUUID
+  }
 
   class OptionalBlobColumn()(
     implicit ev: Primitive[ByteBuffer]
