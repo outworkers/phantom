@@ -34,7 +34,7 @@ sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply(pf: CassandraTable[_, _]#TimeUUIDColumn)(
+  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
     implicit ev: Primitive[Long],
     session: Session
   ): TypedClause.Condition[Option[Long]] = {
@@ -71,7 +71,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
     })
   }
 
-  def apply(pf: CassandraTable[_, _]#TimeUUIDColumn)(
+  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
     implicit ev: Primitive[DateTime],
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(pf.name)
