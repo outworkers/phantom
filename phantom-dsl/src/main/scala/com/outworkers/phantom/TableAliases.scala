@@ -20,6 +20,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, LocalDate}
 
 trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
@@ -49,11 +50,13 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   abstract class JsonSetColumn[RR]()(
     implicit ev: Primitive[Set[String]],
     ev2: Primitive[String]
-  ) extends com.outworkers.phantom.column.JsonSetColumn[T, R, RR](this)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, Set, String](this)
+
   abstract class JsonListColumn[RR]()(
     implicit ev: Primitive[List[String]],
     ev2: Primitive[String]
-  ) extends com.outworkers.phantom.column.JsonListColumn[T, R, RR](this)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, List, String](this)
+
   abstract class JsonMapColumn[KK, VV]()(
     implicit ev: Primitive[Map[KK, String]],
     ev2: Primitive[String],
@@ -155,5 +158,7 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
 
   class OptionalTimeUUIDColumn()(
     implicit ev: Primitive[UUID]
-  ) extends com.outworkers.phantom.column.OptionalTimeUUIDColumn[T, R](this)
+  ) extends PrimitiveColumn[UUID] {
+    override val cassandraType: String = CQLSyntax.Types.TimeUUID
+  }
 }

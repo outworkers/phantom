@@ -20,7 +20,6 @@ import com.outworkers.phantom.CassandraTable
 
 import scala.util.{Failure, Success, Try}
 
-
 abstract class Column[
   Owner <: CassandraTable[Owner, Record],
   Record,
@@ -35,5 +34,4 @@ abstract class Column[
       table.logger.error(s"Unable to parse value for column $name from row", ex)
       throw ex
   }
-
 }
