@@ -218,7 +218,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     Owner <: CassandraTable[Owner, Record],
     Record,
     RR
-  ](val col: CollectionColumn[Owner, Record, List, RR]) extends AnyVal {
+  ](val col: AbstractColColumn[Owner, Record, List, RR]) extends AnyVal {
 
     def prepend(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(value :: Nil)))
@@ -253,7 +253,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     Owner <: CassandraTable[Owner, Record],
     Record,
     RR
-  ](val col: CollectionColumn[Owner, Record, Set, RR]) extends AnyVal {
+  ](val col: AbstractColColumn[Owner, Record, Set, RR]) extends AnyVal {
 
     def add(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))

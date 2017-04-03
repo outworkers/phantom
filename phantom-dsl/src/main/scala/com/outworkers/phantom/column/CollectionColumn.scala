@@ -18,25 +18,26 @@ package com.outworkers.phantom.column
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
-import scala.collection.JavaConverters._
-import scala.util.{Success, Try}
+import scala.collection.generic.CanBuildFrom
+import scala.util.Try
 
-abstract class AbstractListColumn[
+abstract class AbstractColColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
+  M[X] <: TraversableOnce[X],
   RR
-](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, List[RR]](table)
-  with CollectionValueDefinition[RR] {
+](table: CassandraTable[Owner, Record])(
+  implicit cbf: CanBuildFrom[Nothing, RR, M[RR]]
+) extends Column[Owner, Record, M[RR]](table) with CollectionValueDefinition[RR] {
 
-  override def asCql(v: List[RR]): String = {
-    QueryBuilder.Collections.serialize(v.map(valueAsCql)).queryString
+  override def asCql(v: M[RR]): String = {
+    QueryBuilder.Collections.serialize(v.map(valueAsCql).toSeq).queryString
   }
 
-  override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
+  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().result())
 }
 
 class CollectionColumn[
@@ -45,19 +46,18 @@ class CollectionColumn[
   M[X] <: TraversableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record])(
-  implicit val valuePrimitive: Primitive[RR],
-  ev: Primitive[M[RR]]
-) extends PrimitiveColumn[Owner, Record, M[RR]](table) {
-
-  def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
+  implicit vp: Primitive[RR],
+  ev: Primitive[M[RR]],
+  cbf: CanBuildFrom[Nothing, RR, M[RR]]
+) extends AbstractColColumn[Owner, Record, M, RR](table) {
 
   override def qb: CQLQuery = {
     if (ev.shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)
-    } else if (valuePrimitive.frozen) {
+    } else if (vp.frozen) {
       CQLQuery(name).forcePad.append(
         QueryBuilder.Collections.listType(
-          QueryBuilder.Collections.frozen(valuePrimitive.cassandraType).queryString
+          QueryBuilder.Collections.frozen(vp.cassandraType).queryString
         )
       )
     } else {
@@ -66,4 +66,10 @@ class CollectionColumn[
   }
 
   override def parse(r: Row): Try[M[RR]] = ev.fromRow(name, r)
+
+  override def cassandraType: String = ev.cassandraType
+
+  override def valueAsCql(v: RR): String = vp.asCql(v)
+
+  override def fromString(c: String): RR = vp.fromString(c)
 }
