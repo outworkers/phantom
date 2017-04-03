@@ -15,24 +15,21 @@
  */
 package com.outworkers.phantom
 
-import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.util.{Date, Random}
+import java.util.Random
 
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
+import com.datastax.driver.core.{Row, VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
 import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
-import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, KeySpaceSerializer, RootSerializer}
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
@@ -47,50 +44,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
-
-  type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
-  type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
-  type OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.OptionalColumn[Owner, Record, T]
-
-  type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
-  type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, BigDecimal]
-
-  type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, ByteBuffer]
-  type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, BigInt]
-  type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Boolean]
-  type DateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Date]
-  type DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, DateTime]
-  type LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, LocalDate]
-  type DoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Double]
-  type FloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Float]
-  type IntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Int]
-  type SmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Short]
-  type TinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Byte]
-  type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, InetAddress]
-  type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, Long]
-  type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, String]
-  type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, UUID]
-  type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.CounterColumn[Owner, Record]
-  type TimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.TimeUUIDColumn[Owner, Record]
-
-  type OptionalBlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, ByteBuffer]
-  type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigDecimal]
-  type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, BigInt]
-  type OptionalBooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Boolean]
-  type OptionalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Date]
-  type OptionalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, DateTime]
-  type OptionalLocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, LocalDate]
-  type OptionalDoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Double]
-  type OptionalFloatColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Float]
-  type OptionalIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Int]
-  type OptionalSmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Short]
-  type OptionalTinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Byte]
-  type OptionalInetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, InetAddress]
-  type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, Long]
-  type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, String]
-  type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID]
-  type OptionalTimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.OptionalTimeUUIDColumn[Owner, Record]
-
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
   type Descending = com.outworkers.phantom.keys.Descending
@@ -259,5 +212,104 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   implicit class UUIDAugmenter(val uid: UUID) extends AnyVal {
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
+  }
+
+  implicit class ListLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    RR
+  ](val col: CollectionColumn[Owner, Record, List, RR]) extends AnyVal {
+
+    def prepend(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(value :: Nil)))
+    }
+
+    def prepend(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(values)))
+    }
+
+    def append(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(value :: Nil)))
+    }
+
+    def append(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(values)))
+    }
+
+    def discard(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(value :: Nil)))
+    }
+
+    def discard(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
+    }
+
+    def setIdx(i: Int, value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.valueAsCql(value)))
+    }
+  }
+
+  implicit class SetLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    RR
+  ](val col: CollectionColumn[Owner, Record, Set, RR]) extends AnyVal {
+
+    def add(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))
+    }
+
+    def addAll(values: Set[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
+    }
+
+    def remove(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
+    }
+
+    def removeAll(values: Set[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))
+    }
+  }
+
+  implicit class MapLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    A,
+    B
+  ](val col: AbstractMapColumn[Owner, Record, A, B]) extends AnyVal {
+
+    def set(key: A, value: B): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.mapSet(col.name, col.keyAsCql(key).toString, col.valueAsCql(value)))
+    }
+
+    def put(value: (A, B)): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.put(
+        col.name,
+        col.keyAsCql(value._1).toString -> col.valueAsCql(value._2))
+      )
+    }
+
+    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Default = {
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
+          col.keyAsCql(key) -> col.valueAsCql(value)
+        }.toSeq : _*)
+      )
+    }
+  }
+
+  implicit class SelectColumnRequired[
+    Owner <: CassandraTable[Owner, Record],
+    Record, T
+  ](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
+    def apply(r: Row): T = col.apply(r)
+  }
+
+  implicit class SelectColumnOptional[
+    Owner <: CassandraTable[Owner, Record],
+    Record, T
+  ](col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
+    def apply(r: Row): Option[T] = col.apply(r)
   }
 }

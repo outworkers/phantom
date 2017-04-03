@@ -31,7 +31,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partially selecting 1 fields" should "select 1 field" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       _ <- database.primitives.store(row).future()
@@ -44,7 +44,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 2 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long)
 
     val chain = for {
@@ -59,7 +59,7 @@ class PartialSelectTest extends PhantomSuite {
 
   "Partial selects" should "select 3 columns" in {
 
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean)
 
     val chain = for {
@@ -73,7 +73,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 4 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal)
 
     val chain = for {
@@ -87,7 +87,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 5 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double)
 
     val chain = for {
@@ -101,7 +101,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 6 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float)
 
     val chain = for {
@@ -115,7 +115,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 7 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet)
 
     val chain = for {
@@ -129,7 +129,7 @@ class PartialSelectTest extends PhantomSuite {
   }
 
   "Partial selects" should "select 8 columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val expected = (row.pkey, row.long, row.boolean, row.bDecimal, row.double, row.float, row.inet, row.int)
 
     val chain = for {

@@ -64,9 +64,9 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class CustomColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class Col[RR : Primitive] extends PrimitiveColumn[RR]
-  class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](this)
+  abstract class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](this)
 
-  class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](this)
+  abstract class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](this)
   class OptionalPrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
 
   class BigDecimalColumn()(implicit ev: Primitive[BigDecimal]) extends PrimitiveColumn[BigDecimal]
@@ -88,4 +88,72 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class CounterColumn()(implicit ev: Primitive[Long]) extends com.outworkers.phantom.column.CounterColumn[T, R](this)
   class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](this)
 
+
+  class OptionalBlobColumn()(
+    implicit ev: Primitive[ByteBuffer]
+  ) extends OptionalPrimitiveColumn[ByteBuffer]
+
+  class OptionalBigDecimalColumn()(
+    implicit ev: Primitive[BigDecimal]
+  ) extends OptionalPrimitiveColumn[BigDecimal]
+
+  class OptionalBigIntColumn()(
+    implicit ev: Primitive[BigInt]
+  ) extends OptionalPrimitiveColumn[BigInt]
+
+  class OptionalBooleanColumn()(
+    implicit ev: Primitive[Boolean]
+  ) extends OptionalPrimitiveColumn[Boolean]
+
+  class OptionalDateColumn()(
+    implicit ev: Primitive[Date]
+  ) extends OptionalPrimitiveColumn[Date]
+
+  class OptionalDateTimeColumn()(
+    implicit ev: Primitive[DateTime]
+  ) extends OptionalPrimitiveColumn[DateTime]
+
+  class OptionalLocalDateColumn()(
+    implicit ev: Primitive[LocalDate]
+  ) extends OptionalPrimitiveColumn[LocalDate]
+
+  class OptionalDoubleColumn()(
+    implicit ev: Primitive[Double]
+  ) extends OptionalPrimitiveColumn[Double]
+
+  class OptionalFloatColumn()(
+    implicit ev: Primitive[Float]
+  ) extends OptionalPrimitiveColumn[Float]
+
+  class OptionalIntColumn()(
+    implicit ev: Primitive[Int]
+  ) extends OptionalPrimitiveColumn[Int]
+
+  class OptionalSmallIntColumn()(
+    implicit ev: Primitive[Short]
+  ) extends OptionalPrimitiveColumn[Short]
+
+  class OptionalTinyIntColumn()(
+    implicit ev: Primitive[Byte]
+  ) extends OptionalPrimitiveColumn[Byte]
+
+  class OptionalInetAddressColumn()(
+    implicit ev: Primitive[InetAddress]
+  ) extends OptionalPrimitiveColumn[InetAddress]
+
+  class OptionalLongColumn()(
+    implicit ev: Primitive[Long]
+  ) extends OptionalPrimitiveColumn[Long]
+
+  class OptionalStringColumn()(
+    implicit ev: Primitive[String]
+  ) extends OptionalPrimitiveColumn[String]
+
+  class OptionalUUIDColumn()(
+    implicit ev: Primitive[UUID]
+  ) extends OptionalPrimitiveColumn[UUID]
+
+  class OptionalTimeUUIDColumn()(
+    implicit ev: Primitive[UUID]
+  ) extends com.outworkers.phantom.column.OptionalTimeUUIDColumn[T, R](this)
 }

@@ -17,10 +17,8 @@ package com.outworkers.phantom.example.basics
 
 import java.util.UUID
 
-import scala.concurrent.{Future => ScalaFuture}
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
+import scala.concurrent.{Future => ScalaFuture}
 
 /**
  * In this example we will create a  table storing recipes.
@@ -32,7 +30,7 @@ import com.outworkers.phantom.dsl._
 // Keep reading for examples.
 abstract class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Recipe] with RootConnector {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends  UUIDColumn(this) with PartitionKey {
+  object id extends UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
@@ -40,18 +38,18 @@ abstract class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, R
 
   // Now we define a column for each field in our case class.
   // If we want to add another key to our composite, simply mixin PrimaryKey[ValueType]
-  object name extends StringColumn(this) with PrimaryKey // and you're done
+  object name extends StringColumn with PrimaryKey // and you're done
 
 
-  object title extends StringColumn(this)
-  object author extends StringColumn(this)
-  object description extends StringColumn(this)
+  object title extends StringColumn
+  object author extends StringColumn
+  object description extends StringColumn
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[String](this)
-  object props extends MapColumn[String, String](this)
-  object timestamp extends DateTimeColumn(this)
+  object ingredients extends SetColumn[String]
+  object props extends MapColumn[String, String]
+  object timestamp extends DateTimeColumn
 
   // now you can use composite keys in the normal way.
   // If you would select only by id,

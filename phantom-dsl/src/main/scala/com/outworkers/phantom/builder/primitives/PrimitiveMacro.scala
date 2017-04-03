@@ -180,18 +180,14 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val fields: List[TupleType] = tupleFields(tpe)
 
     q"""new $prefix.Primitive[$tpe] {
-      override type PrimitiveType = $tupleValue
-
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
           .queryString
       }
 
-      override def extract($sourceTerm: $tupleValue): $tpe = {
-        val tp = for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
-        tp.get
-      }
+      override def serialize(source: $tpe): $bufferType = ???
+      override def deserialize(source: $bufferType): $tpe = ???
 
       override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
         if (scala.Option(row).isEmpty || row.isNull(name)) {
@@ -216,8 +212,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       }
 
       override def fromString(value: $strType): $tpe = ???
-
-      override def clz: Class[$tupleValue] = classOf[$tupleValue]
 
       override def frozen: $boolType = true
     }"""

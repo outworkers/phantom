@@ -38,7 +38,7 @@ class InsertTest extends PhantomSuite {
   }
 
   "Insert" should "work fine for primitives columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()

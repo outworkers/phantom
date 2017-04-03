@@ -123,7 +123,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
   }
 
   it should "serialise and execute a primitives prepared select statement with the correct number of arguments" in {
-    val primitive = gen[Primitive]
+    val primitive = gen[PrimitiveRecord]
 
     val query = database.primitives.select.where(_.pkey eqs ?).prepare()
 

@@ -45,13 +45,13 @@ abstract class OptionalPrimitivesCassandra22 extends CassandraTable[
   OptionalPrimitiveCassandra22
 ] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
-  object short extends OptionalSmallIntColumn(this)
+  object short extends OptionalSmallIntColumn
 
-  object byte extends OptionalTinyIntColumn(this)
+  object byte extends OptionalTinyIntColumn
 
-  object localDate extends OptionalLocalDateColumn(this)
+  object localDate extends OptionalLocalDateColumn
 
   override val tableName = "OptionalPrimitivesCassandra22"
 }

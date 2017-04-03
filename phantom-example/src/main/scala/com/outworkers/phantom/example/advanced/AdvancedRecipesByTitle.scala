@@ -33,10 +33,10 @@ import scala.concurrent.{Future => ScalaFuture}
 abstract class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitle, (String, UUID)] with RootConnector {
 
   // In this table, the author will be PrimaryKey and PartitionKey.
-  object title extends StringColumn(this) with PartitionKey
+  object title extends StringColumn with PartitionKey
 
   // The id is just another normal field.
-  object id extends UUIDColumn(this)
+  object id extends UUIDColumn
 
   override lazy val tableName = "recipes_by_title"
 

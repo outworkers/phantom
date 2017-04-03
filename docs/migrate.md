@@ -129,10 +129,10 @@ case class Record(
 
 abstract class MyTable extends CassandraTable[MyTable, Record] {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object firstName extends StringColumn(this)
-  object email extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
 
   // Phantom now auto-generates the below method
   def store(record: Record): InsertQuery.Default[MyTable, Record] = {

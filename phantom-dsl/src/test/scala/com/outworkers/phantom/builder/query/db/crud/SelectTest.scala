@@ -28,7 +28,7 @@ class SelectTest extends PhantomSuite {
   }
 
   "Selecting the whole row" should "work fine" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()

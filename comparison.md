@@ -119,19 +119,19 @@ case class Recipe(
 
 class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn with PartitionKey[String]
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
-  object side_id extends UUIDColumn(this)
+  object side_id extends UUIDColumn
 
 
   override def fromRow(r: Row): Recipe = {
@@ -153,19 +153,19 @@ As of version 2.0.0, phantom is capable of auto-generating the `fromRow` method,
 ```
 abstract class Recipes extends CassandraTable[ConcreteRecipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn with PartitionKey[String]
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
-
-  object side_id extends UUIDColumn(this)
+  object props extends MapColumn[String, String]
+  
+  object side_id extends UUIDColumn
 }
 ```
 

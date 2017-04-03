@@ -49,6 +49,8 @@ class CollectionColumn[
   ev: Primitive[M[RR]]
 ) extends PrimitiveColumn[Owner, Record, M[RR]](table) {
 
+  def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
+
   override def qb: CQLQuery = {
     if (ev.shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)

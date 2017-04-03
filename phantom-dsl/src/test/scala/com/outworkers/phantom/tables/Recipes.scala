@@ -34,25 +34,25 @@ case class Recipe(
 
 abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn with PartitionKey
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
-  object uid extends UUIDColumn(this)
+  object uid extends UUIDColumn
 }
 
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
 abstract class Events extends CassandraTable[Events, SampleEvent] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
   object map extends MapColumn[Long, DateTime](this)
 
   def findById(id: UUID): Future[Option[SampleEvent]] = {

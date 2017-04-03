@@ -29,10 +29,10 @@ case class CarMetric(
 )
 
 abstract class AnalyticsEntries extends CassandraTable[AnalyticsEntries, CarMetric] with RootConnector {
-  object car extends UUIDColumn(this) with PartitionKey
-  object id extends TimeUUIDColumn(this) with ClusteringOrder with Descending
-  object velocity extends DoubleColumn(this)
-  object tirePressure extends DoubleColumn(this)
+  object car extends UUIDColumn with PartitionKey
+  object id extends TimeUUIDColumn with ClusteringOrder with Descending
+  object velocity extends DoubleColumn
+  object tirePressure extends DoubleColumn
 }
 
 ```

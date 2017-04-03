@@ -32,7 +32,7 @@ class InsertCasTest extends PhantomSuite {
   }
 
   "Standard inserts" should "not create multiple database entries and perform upserts instead" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val insertion = new ExecutableStatementList(
       List(
@@ -67,7 +67,7 @@ class InsertCasTest extends PhantomSuite {
 
 
   "Conditional inserts" should "not create duplicate database entries" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val insertion = new ExecutableStatementList(
       List(

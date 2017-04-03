@@ -318,9 +318,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     *   )
     *
     *   class MyTable extends CassandraTable[MyTable, MyRecord] {
-    *     object id extends UUIDColumn(this) with PartitionKey
-    *     object email extends StringColumn(this)
-    *     object date extends DateTimeColumn(this)
+    *     object id extends UUIDColumn with PartitionKey
+    *     object email extends StringColumn
+    *     object date extends DateTimeColumn
     *   }
     * }}}
     *
@@ -334,9 +334,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     *   )
     *
     *   class MyTable extends CassandraTable[MyTable, MyRecord] {
-    *     object id extends UUIDColumn(this) with PartitionKey
-    *     object email extends StringColumn(this)
-    *     object date extends DateTimeColumn(this)
+    *     object id extends UUIDColumn with PartitionKey
+    *     object email extends StringColumn
+    *     object date extends DateTimeColumn
     *   }
     * }}}
     *
@@ -411,7 +411,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val storeType = descriptor.storeType
 
     q"""
-       final class $clsName extends $macroPkg.TableHelper.Aux[$tableType, $rTpe, $storeType] {
+       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
           type Repr = $storeType
 
           def tableName: $strTpe = $tableName

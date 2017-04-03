@@ -35,15 +35,15 @@ case class Jdk8Row(
 
 abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OffsetDateTimeColumn(this)
+  object offsetDateTime extends OffsetDateTimeColumn
 
-  object zonedDateTime extends ZonedDateTimeColumn(this)
+  object zonedDateTime extends ZonedDateTimeColumn
 
-  object localDate extends JdkLocalDateColumn(this)
+  object localDate extends JdkLocalDateColumn
 
-  object localDateTime extends JdkLocalDateTimeColumn(this)
+  object localDateTime extends JdkLocalDateTimeColumn
 
   def findByPkey(pkey: String): Future[Option[Jdk8Row]] = {
     select.where(_.pkey eqs pkey).one()

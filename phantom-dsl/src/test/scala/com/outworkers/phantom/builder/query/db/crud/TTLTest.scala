@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.db.crud
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.Primitive
+import com.outworkers.phantom.tables.PrimitiveRecord
 import com.outworkers.util.samplers._
 import org.scalatest.{Outcome, Retries}
 import org.scalatest.concurrent.Eventually
@@ -45,7 +45,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
   private[this] val granularity = 5 seconds
 
   it should "expire inserted records after TTL" taggedAs Retryable in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       _ <- database.primitives.store(row).ttl(ttl).future()
@@ -65,7 +65,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
   }
 
   it should "expire inserted records after TTL with prepared statement" taggedAs Retryable in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val fetchQuery = database.primitives.select
       .where(_.pkey eqs ?)
@@ -86,7 +86,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
       .ttl(ttl)
       .prepare()
 
-    def preparedInsert(row: Primitive): ExecutablePreparedQuery = insertQuery.bind(row)
+    def preparedInsert(row: PrimitiveRecord): ExecutablePreparedQuery = insertQuery.bind(row)
 
     val chain = for {
       _ <- preparedInsert(row).future()

@@ -37,19 +37,19 @@ case class Recipe(
 
 class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn with PartitionKey[String]
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
   object ingredients extends ListColumn[String](this)
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
   object props extends MapColumn[String, String](this)
 
-  object uid extends UUIDColumn(this)
+  object uid extends UUIDColumn
 }
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.

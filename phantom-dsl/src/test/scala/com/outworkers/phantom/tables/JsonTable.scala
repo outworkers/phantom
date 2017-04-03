@@ -36,11 +36,11 @@ abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootC
 
   implicit val formats = org.json4s.DefaultFormats
 
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
 
-  object name extends StringColumn(this)
+  object name extends StringColumn
 
-  object json extends JsonColumn[JsonTest](this) {
+  object json extends JsonColumn[JsonTest] {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -48,7 +48,7 @@ abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootC
     override def toJson(obj: JsonTest): String = compactJson(renderJValue(Extraction.decompose(obj)))
   }
 
-  object optionalJson extends OptionalJsonColumn[JsonTest](this) {
+  object optionalJson extends OptionalJsonColumn[JsonTest] {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -57,7 +57,7 @@ abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootC
   }
 
 
-  object jsonList extends JsonListColumn[JsonTest](this) {
+  object jsonList extends JsonListColumn[JsonTest] {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }
@@ -67,7 +67,7 @@ abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootC
     }
   }
 
-  object jsonSet extends JsonSetColumn[JsonTest](this) {
+  object jsonSet extends JsonSetColumn[JsonTest] {
     override def fromJson(obj: String): JsonTest = {
       JsonParser.parse(obj).extract[JsonTest]
     }

@@ -191,9 +191,9 @@ trait RootMacro {
       *
       *   class Records extends CassandraTable[Records, Record] {
       *
-      *     object id extends UUIDColumn(this) with PartitionKey
-      *     object name extends StringColumn(this) with PrimaryKey
-      *     object timestamp extends DateTimeColumn(this)
+      *     object id extends UUIDColumn with PartitionKey
+      *     object name extends StringColumn with PrimaryKey
+      *     object timestamp extends DateTimeColumn
       *
       *     // Will end up with a store method that has the following type signature.
       *     def store(input: (UUID, Record)): InsertQuery.Default[Records, Record]

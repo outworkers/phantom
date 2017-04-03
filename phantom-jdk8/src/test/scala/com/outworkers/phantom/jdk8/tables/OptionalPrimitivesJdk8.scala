@@ -38,15 +38,15 @@ abstract class OptionalPrimitivesJdk8 extends CassandraTable[
   OptionalJdk8Row
 ] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
+  object offsetDateTime extends OptionalOffsetDateTimeColumn
 
-  object zonedDateTime extends OptionalZonedDateTimeColumn(this)
+  object zonedDateTime extends OptionalZonedDateTimeColumn
 
-  object localDate extends OptionalJdkLocalDateColumn(this)
+  object localDate extends OptionalJdkLocalDateColumn
 
-  object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
+  object localDateTime extends OptionalJdkLocalDateTimeColumn
 
   def findByPkey(pkey: String): Future[Option[OptionalJdk8Row]] = {
     select.where(_.pkey eqs pkey).one()

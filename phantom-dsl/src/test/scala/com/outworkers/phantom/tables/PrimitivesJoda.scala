@@ -30,9 +30,9 @@ case class JodaRow(
 )
 
 abstract class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] with RootConnector {
-  object pkey extends StringColumn(this) with PartitionKey
-  object intColumn extends IntColumn(this)
-  object timestamp extends DateTimeColumn(this)
+  object pkey extends StringColumn with PartitionKey
+  object intColumn extends IntColumn
+  object timestamp extends DateTimeColumn
 
   def fetchPage(limit: Int, paging: Option[PagingState]): Future[ListResult[JodaRow]] = {
     select.limit(limit).paginateRecord(paging)

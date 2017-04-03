@@ -21,7 +21,7 @@ import java.util.{List => JavaList}
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
-import com.twitter.util._
+import com.twitter.util.{ Duration => TwitterDuration, _ }
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
@@ -317,7 +317,7 @@ package object finagle {
     Status <: ConsistencyBound,
     PS <: HList
   ](val query: InsertQuery[Table, Record, Status, PS]) extends AnyVal {
-    def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
+    def ttl(duration: TwitterDuration): InsertQuery[Table, Record, Status, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -372,7 +372,7 @@ package object finagle {
     Chain <: WhereBound,
     PS <: HList
   ](val query: Query[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
-    def ttl(duration: com.twitter.util.Duration): Query[Table, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: TwitterDuration): Query[Table, Record, Limit, Order, Status, Chain, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -387,7 +387,7 @@ package object finagle {
     PS <: HList
   ](val query: UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
-    def ttl(duration: com.twitter.util.Duration): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: TwitterDuration): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -403,7 +403,7 @@ package object finagle {
     ModifiedPrepared <: HList
   ](val query: AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -419,7 +419,7 @@ package object finagle {
     ModifiedPrepared <: HList
   ](val query: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -452,11 +452,11 @@ package object finagle {
   }
 
   implicit class TimeToLiveBuilderAugmenter(val builder: TimeToLiveBuilder) extends AnyVal {
-    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = builder.eqs(duration.inLongSeconds)
+    def eqs(duration: TwitterDuration): TablePropertyClause = builder.eqs(duration.inLongSeconds)
   }
 
   implicit class GcGraceSecondsBuilderAugmenter(val builder: GcGraceSecondsBuilder) extends AnyVal {
-    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = builder.eqs(Seconds.seconds(duration.inSeconds))
+    def eqs(duration: TwitterDuration): TablePropertyClause = builder.eqs(Seconds.seconds(duration.inSeconds))
   }
 
   implicit class CompressionStrategyAugmenter[

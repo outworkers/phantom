@@ -40,9 +40,9 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object simpleCompoundKeyTable extends SimpleCompoundKeyTable with Connector
   object complexCompoundKeyTable extends ComplexCompoundKeyTable with Connector
 
-  object counterTableTest extends ConcreteCounterTableTest with Connector
-  object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
-  object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with Connector
+  object counterTableTest extends CounterTableTest with Connector
+  object secondaryCounterTable extends SecondaryCounterTable with Connector
+  object brokenCounterCounterTable extends BrokenCounterTableTest with Connector
 
   object indexedCollectionsTable extends IndexedCollectionsTable with Connector
   object indexedEntriesTable extends IndexedEntriesTable with Connector
@@ -63,7 +63,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   }
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
-  object staticTable extends ConcreteStaticTableTest with Connector
+  object staticTable extends StaticTableTest with Connector
   object staticCollectionTable extends StaticCollectionTableTest with Connector
 
   object tableWithSingleKey extends TableWithSingleKey with Connector
@@ -75,8 +75,8 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object primaryCollectionsTable extends PrimaryCollectionTable with Connector
 
-  object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
-  object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector
+  object timeSeriesTableWithTtl extends TimeSeriesTableWithTTL with Connector
+  object timeSeriesTableWithTtl2 extends TimeSeriesTableWithTTL2 with Connector
   object multipleKeysTable extends MultipleKeys with Connector
   object timeuuidTable extends TimeUUIDTable with Connector
 
@@ -84,9 +84,9 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object scalaPrimitivesTable extends ScalaTypesMapTable with Connector
   object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
-  object tuple2Table extends ConcreteTupleColumnTable with Connector
-  object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
-  object tupleCollectionsTable extends ConcreteTupleCollectionsTable with Connector
+  object tuple2Table extends TupleColumnTable with Connector
+  object nestedTupleTable extends NestedTupleColumnTable with Connector
+  object tupleCollectionsTable extends TupleCollectionsTable with Connector
 
   object tableTypeTuple extends TupleTypeTable with Connector
   object wideTable extends WideTable with Connector

@@ -24,31 +24,19 @@ case class StubRecord(
 )
 
 abstract class TableWithSingleKey extends CassandraTable[TableWithSingleKey, StubRecord] with RootConnector {
-
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
 }
 
 abstract class TableWithCompoundKey extends CassandraTable[TableWithCompoundKey, StubRecord] with RootConnector {
-
-  object id extends UUIDColumn(this) with PartitionKey
-  object second extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-
-  override def fromRow(r: Row): StubRecord = StubRecord(id(r), name(r))
+  object id extends UUIDColumn with PartitionKey
+  object second extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
 }
 
 abstract class TableWithCompositeKey extends CassandraTable[TableWithCompositeKey, StubRecord] with RootConnector {
-
-  object id extends UUIDColumn(this) with PartitionKey
-  object second_part extends UUIDColumn(this) with PartitionKey
-  object second extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-
-  override def fromRow(r: Row): StubRecord = {
-    StubRecord(
-      id = id(r),
-      name = name(r)
-    )
-  }
+  object id extends UUIDColumn with PartitionKey
+  object second_part extends UUIDColumn with PartitionKey
+  object second extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
 }

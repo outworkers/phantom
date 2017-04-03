@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.codec.JodaLocalDateCodec
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Primitive, PrimitiveCassandra22, Recipe}
+import com.outworkers.phantom.tables.{PrimitiveRecord, PrimitiveCassandra22, Recipe}
 import com.outworkers.util.samplers._
 
 class PreparedInsertQueryTest extends PhantomSuite {
@@ -69,7 +69,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
   }
 
   it should "serialize a primitives insert query" in {
-    val sample = gen[Primitive]
+    val sample = gen[PrimitiveRecord]
 
     val query = database.primitives.insert
       .p_value(_.pkey, ?)
@@ -179,7 +179,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
   }
 
   it should "be able to bind a custom Scala BigDecimal" in {
-    val sample = gen[Primitive]
+    val sample = gen[PrimitiveRecord]
 
     val query = database.primitives.insert
       .p_value(_.pkey, ?)

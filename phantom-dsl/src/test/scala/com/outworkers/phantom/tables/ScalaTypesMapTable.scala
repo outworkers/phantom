@@ -27,8 +27,8 @@ case class ScalaPrimitiveMapRecord(
 
 abstract class ScalaTypesMapTable extends CassandraTable[ScalaTypesMapTable, ScalaPrimitiveMapRecord] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object map extends MapColumn[DateTime, BigDecimal](this)
+  object id extends UUIDColumn with PartitionKey
+  object map extends MapColumn[DateTime, BigDecimal]
 
   def findById(id: UUID): Future[Option[ScalaPrimitiveMapRecord]] = {
     select.where(_.id eqs id).one()

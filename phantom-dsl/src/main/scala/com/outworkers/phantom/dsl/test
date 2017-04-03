@@ -1,0 +1,21 @@
+
+  class OptionalBlobColumn()(
+    implicit ev: Primitive[ByteBuffer]
+  ) extends OptionalPrimitiveColumn[T, R, ByteBuffer]
+
+  class OptionalBigDecimalColumn extends OptionalPrimitiveColumn[T, R, BigDecimal]
+  class OptionalBigIntColumn extends OptionalPrimitiveColumn[T, R, BigInt]
+  class OptionalBooleanColumn extends OptionalPrimitiveColumn[T, R, Boolean]
+  class OptionalDateColumn extends OptionalPrimitiveColumn[T, R, Date]
+  class OptionalDateTimeColumn extends OptionalPrimitiveColumn[T, R, DateTime]
+  class OptionalLocalDateColumn extends OptionalPrimitiveColumn[T, R, LocalDate]
+  class OptionalDoubleColumn extends OptionalPrimitiveColumn[T, R, Double]
+  class OptionalFloatColumn extends OptionalPrimitiveColumn[T, R, Float]
+  class OptionalIntColumn extends OptionalPrimitiveColumn[T, R, Int]
+  class OptionalSmallIntColumn extends OptionalPrimitiveColumn[T, R, Short]
+  class OptionalTinyIntColumn extends OptionalPrimitiveColumn[T, R, Byte]
+  class OptionalInetAddressColumn extends OptionalPrimitiveColumn[T, R, InetAddress]
+  class OptionalLongColumn extends OptionalPrimitiveColumn[T, R, Long]
+  class OptionalStringColumn extends OptionalPrimitiveColumn[T, R, String]
+  class OptionalUUIDColumn extends OptionalPrimitiveColumn[T, R, UUID]
+  class OptionalTimeUUIDColumn extends com.outworkers.phantom.column.OptionalTimeUUIDColumn[Owner, Record]

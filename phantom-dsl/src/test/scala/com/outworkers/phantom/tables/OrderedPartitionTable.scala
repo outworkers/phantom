@@ -24,6 +24,6 @@ case class OrderedPartitionRecord(
 )
 
 abstract class OrderedPartitionTable extends CassandraTable[OrderedPartitionTable, OrderedPartitionRecord] {
-  object id extends UUIDColumn(this) with PartitionKey
-  object order extends LongColumn(this) with ClusteringOrder
+  object id extends UUIDColumn with PartitionKey
+  object order extends LongColumn with ClusteringOrder
 }

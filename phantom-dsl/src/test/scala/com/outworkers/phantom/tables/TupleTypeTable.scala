@@ -15,15 +15,18 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future
 
-abstract class TupleTypeTable extends CassandraTable[TupleTypeTable, (UUID, String, String)] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object description extends StringColumn(this)
+abstract class TupleTypeTable extends CassandraTable[
+  TupleTypeTable,
+  (UUID, String, String)
+] with RootConnector {
+
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object description extends StringColumn
 
   def findById(id: UUID): Future[Option[(UUID, String, String)]] = {
     select.where(_.id eqs id).one()

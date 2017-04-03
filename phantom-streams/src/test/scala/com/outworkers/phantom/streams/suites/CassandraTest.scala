@@ -73,7 +73,7 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 case class Opera(name: String)
 
 class OperaTable extends CassandraTable[OperaTable, Opera] {
-  object name extends StringColumn(this) with PartitionKey
+  object name extends StringColumn with PartitionKey
 }
 
 object StreamConnector {

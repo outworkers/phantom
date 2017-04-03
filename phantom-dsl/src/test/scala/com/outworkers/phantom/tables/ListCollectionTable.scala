@@ -26,9 +26,9 @@ case class MyTestRow(
 
 abstract class ListCollectionTable extends CassandraTable[ListCollectionTable, MyTestRow] with RootConnector {
 
-  object key extends StringColumn(this) with PartitionKey
+  object key extends StringColumn with PartitionKey
 
-  object optionA extends OptionalIntColumn(this)
+  object optionA extends OptionalIntColumn
 
-  object stringlist extends ListColumn[String](this)
+  object stringlist extends ListColumn[String]
 }

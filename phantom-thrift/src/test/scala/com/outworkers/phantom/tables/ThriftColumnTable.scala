@@ -36,8 +36,8 @@ case class ThriftRecord(
 
 abstract class ThriftColumnTable extends CassandraTable[ThriftColumnTable, ThriftRecord] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
   object ref extends ThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
 
   object thriftSet extends ThriftSetColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
@@ -52,8 +52,8 @@ abstract class ThriftColumnTable extends CassandraTable[ThriftColumnTable, Thrif
 
 abstract class ThriftIndexedTable extends CassandraTable[ThriftIndexedTable, ThriftRecord] with RootConnector {
 
-  object id extends UUIDColumn(this)
-  object name extends StringColumn(this)
+  object id extends UUIDColumn
+  object name extends StringColumn
 
   object ref extends ThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) with PartitionKey
 

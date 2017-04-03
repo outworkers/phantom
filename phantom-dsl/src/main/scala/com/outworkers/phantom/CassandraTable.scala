@@ -21,8 +21,10 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.dsl.RootConnector
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 
