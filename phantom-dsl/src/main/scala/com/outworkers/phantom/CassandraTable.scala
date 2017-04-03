@@ -23,8 +23,6 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
-import shapeless.Typeable
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 
@@ -35,7 +33,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
-) extends SelectTable[T, R] { self =>
+) extends SelectTable[T, R] with TableAliases[T, R] { self =>
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
@@ -49,35 +47,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def tableKey: String = helper.tableKey(instance)
 
-  @deprecated("Method replaced with macro implementation", "2.0.0")
-  def defineTableKey(): String = tableKey
-
   def instance: T = self.asInstanceOf[T]
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
-
-  type ListColumn[RR] = com.outworkers.phantom.column.ListColumn[T, R, RR]
-  type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
-  type MapColumn[KK, VV] =  com.outworkers.phantom.column.MapColumn[T, R, KK, VV]
-  type JsonColumn[RR] = com.outworkers.phantom.column.JsonColumn[T, R, RR]
-  type OptionalJsonColumn[RR] = com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR]
-  type EnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type OptionalEnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR]
-  type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]
-  type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]
-  type JsonMapColumn[KK,VV] = com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV]
-  type TupleColumn[RR] =  com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type PrimitiveColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type CustomColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type Col[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
 
   def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
-  ): Unit = {
-    Await.result(autocreate(keySpace).future(), 10.seconds)
-  }
+  ): Unit = Await.result(autocreate(keySpace).future(), 10.seconds)
 
   def tableName: String = helper.tableName
 

@@ -54,11 +54,11 @@ trait RootMacro {
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
   val fromRowName: TermName = TermName("fromRow")
 
-  def printType(tpe: Type): String = {
-    showCode(tq"${tpe.dealias}")
-  }
+  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
-  def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
+  def showCollection[
+    M[X] <: TraversableOnce[X]
+  ](traversable: M[Type], sep: String = ", "): String = {
     traversable map(tpe => showCode(tq"$tpe")) mkString sep
   }
 

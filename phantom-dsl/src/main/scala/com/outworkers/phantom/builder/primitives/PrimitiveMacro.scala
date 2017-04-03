@@ -154,7 +154,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
   def tupleFields(tpe: Type): List[TupleType] = {
     val sourceTerm = TermName("source")
-
     tpe.typeArgs.zipWithIndex.map {
       case (argTpe, i) => {
         val currentTerm = TermName(s"tp${i + 1}")

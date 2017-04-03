@@ -48,7 +48,7 @@ object TupleType {
   ): TupleType = new TupleType(types.toList, protocolVersion)
 }
 
-class TupleType private[core](
+class TupleType(
   val types: List[DataType],
   val protocolVersion: ProtocolVersion
 ) extends DataType(DataType.Name.TUPLE) {

@@ -40,6 +40,8 @@ private[phantom] object DateSerializer {
 @implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
+  def shouldFreeze: Boolean = false
+
   protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
     if (source == Primitive.nullValue) Primitive.nullValue else fn(source)
   }

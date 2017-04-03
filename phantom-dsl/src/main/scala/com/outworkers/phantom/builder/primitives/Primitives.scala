@@ -480,13 +480,16 @@ object Primitives {
     _.getTime, l => new Date(l)
   )(LongPrimitive)
 
-  private[this] def collectionPrimitive[ M[X] <: TraversableOnce[X], RR](
+  private[this] def collectionPrimitive[M[X] <: TraversableOnce[X], RR](
     cType: String,
     converter: M[RR] => String
   )(
     implicit ev: Primitive[RR],
     cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
+
+    override def shouldFreeze: Boolean = true
+
     override def asCql(value: M[RR]): String = converter(value)
 
     override def cassandraType: String = cType
@@ -495,19 +498,14 @@ object Primitives {
       value match {
         case Primitive.nullValue => Primitive.nullValue
         case set =>
-          var i = 0
-          val buffers = set.foldRight(
-            new Array[ByteBuffer](value.size)
-          ) { case (elt, buffer) =>
+          val buffers = set.foldRight(Seq.empty[ByteBuffer]) { case (elt, acc) =>
             if (Option(elt).isEmpty) {
               throw new NullPointerException("Collection elements cannot be null")
             }
-            buffer(i) = ev.serialize(elt)
-            i += 1
-            buffer
+            acc :+ ev.serialize(elt)
           }
 
-          CodecUtils.pack(buffers, value.size, ProtocolVersion.V4);
+          CodecUtils.pack(buffers.toArray, value.size, ProtocolVersion.V4);
       }
     }
 
@@ -557,6 +555,8 @@ object Primitives {
 
   def map[K, V](implicit keyPrimitive: Primitive[K], valuePrimitive: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
+      override def shouldFreeze: Boolean = true
+
       override def cassandraType: String = QueryBuilder.Collections.mapType(
         keyPrimitive.cassandraType,
         valuePrimitive.cassandraType
@@ -568,26 +568,14 @@ object Primitives {
         case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
       }).queryString
 
-      override def serialize(value: Map[K, V]): ByteBuffer = {
-        if (value == Primitive.nullValue) Primitive.nullValue
+      override def serialize(source: Map[K, V]): ByteBuffer = {
+        if (source == Primitive.nullValue) Primitive.nullValue
 
-        var i: Int = 0
-        val bbs: Array[ByteBuffer] = new Array[ByteBuffer](2 * value.size)
-
-        for ((key, value) <- value) {
-          val bbk: ByteBuffer = keyPrimitive.serialize(key)
-
+        val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
           if (Option(key).isEmpty) throw new NullPointerException("Map keys cannot be null")
-          val bbv: ByteBuffer = valuePrimitive.serialize(value)
-
-          bbs({
-            i += 1; i - 1
-          }) = bbk
-          bbs({
-            i += 1; i - 1
-          }) = bbv
+          acc :+ keyPrimitive.serialize(key) :+ valuePrimitive.serialize(value)
         }
-        CodecUtils.pack(bbs, value.size, ProtocolVersion.V4)
+        CodecUtils.pack(bbs.toArray, source.size, ProtocolVersion.V4)
       }
 
       override def deserialize(bytes: ByteBuffer): Map[K, V] = {

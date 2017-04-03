@@ -39,22 +39,18 @@ abstract class AbstractListColumn[
   override def apply(r: Row): List[RR] = parse(r).getOrElse(Nil)
 }
 
-class ListColumn[
+class CollectionColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
+  M[X] <: TraversableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record])(
   implicit val valuePrimitive: Primitive[RR],
-  ev: Primitive[List[RR]]
-) extends AbstractListColumn[Owner, Record, RR](table)
-  with PrimitiveCollectionValue[RR] {
-
-  override val cassandraType: String = QueryBuilder.Collections.listType(
-    valuePrimitive.cassandraType
-  ).queryString
+  ev: Primitive[M[RR]]
+) extends PrimitiveColumn[Owner, Record, M[RR]](table) {
 
   override def qb: CQLQuery = {
-    if (shouldFreeze) {
+    if (ev.shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)
     } else if (valuePrimitive.frozen) {
       CQLQuery(name).forcePad.append(
@@ -67,15 +63,5 @@ class ListColumn[
     }
   }
 
-  override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
-
-  override def fromString(value: String): RR = valuePrimitive.fromString(value)
-
-  override def parse(r: Row): Try[List[RR]] = {
-    if (r.isNull(name)) {
-      Success(Nil)
-    } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name)))
-    }
-  }
+  override def parse(r: Row): Try[M[RR]] = ev.fromRow(name, r)
 }
