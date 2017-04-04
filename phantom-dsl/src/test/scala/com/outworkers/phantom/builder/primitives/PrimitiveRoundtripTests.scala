@@ -152,4 +152,37 @@ class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrive
   it should "serialize and deserialie a List[InetAddress] primitive" in {
     roundtrip[List[InetAddress]]
   }
+
+
+  it should "serialize and deserialie a Set[Int] primitive" in {
+    roundtrip[Set[Int]]
+  }
+
+  it should "serialize and deserialie a Set[String] primitive" in {
+    roundtrip[Set[String]]
+  }
+
+  it should "serialize and deserialie a Set[Double] primitive" in {
+    roundtrip[Set[Double]]
+  }
+
+  it should "serialize and deserialie a Set[Long] primitive" in {
+    roundtrip[Set[Long]]
+  }
+
+  it should "serialize and deserialie a Set[Float] primitive" in {
+    roundtrip[Set[Float]]
+  }
+
+  it should "serialize and deserialie a Set[BigDecimal] primitive" in {
+    roundtrip[Set[BigDecimal]]
+  }
+
+  it should "serialize and deserialie a Set[BigInt] primitive" in {
+    roundtrip[Set[BigInt]]
+  }
+
+  it should "serialize and deserialie a Set[InetAddress] primitive" in {
+    roundtrip[Set[InetAddress]]
+  }
 }
