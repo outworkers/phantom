@@ -90,6 +90,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
 
   object tableTypeTuple extends TupleTypeTable with Connector
   object wideTable extends WideTable with Connector
+  object sessionsByUser extends SessionsByUserId with Connector
 }
 
 object Connector {

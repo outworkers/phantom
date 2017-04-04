@@ -26,6 +26,12 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
+case class Debugger(
+  storeType: String,
+  recordMap: Map[String, String],
+  extractor: String
+)
+
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr
@@ -39,10 +45,15 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
   def fields(table: T): Seq[AbstractColumn[_]]
 
   def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
+
+  def debug: Debugger
 }
 
 object TableHelper {
-  implicit def fieldsMacro[T <: CassandraTable[T, R], R]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
+  implicit def fieldsMacro[
+    T <: CassandraTable[T, R],
+    R
+  ]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
@@ -126,7 +137,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
   }
 
   def variations(term: TermName): List[TermName] = {
-    val str = term.decodedName.toString.toLowerCase
+    val str = lowercased(term).decodedName.toString
 
     List(
       CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, str),
@@ -139,7 +150,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     TermName(term.decodedName.toString.trim.toLowerCase)
   }
 
-  def processHardMatches(
+  def hardMatch(
     columnFields: ListMap[Type, Seq[TermName]],
     unprocessed: List[Record.Field],
     descriptor: TableDescriptor
@@ -151,12 +162,12 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
           // with remaining record fields for the given type.
           case None =>
             val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
-            processHardMatches(columnFields, tail, descriptor withoutMatch un)
+            hardMatch(columnFields, tail, descriptor withoutMatch un)
 
           // We once again repeat the case, because we may under some circumstances find a single remaining
           // column term to match with after all direct and easy matches have happened for a given type.
           case Some(Seq(h)) =>
-            processHardMatches(
+            hardMatch(
               columnFields - recField.tpe,
               tail,
               descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
@@ -168,12 +179,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
             case Some(matchingName) =>
               logger.warn(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
               val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+              hardMatch(columnFields - (recField.tpe, matchingName), tail, descriptor withMatch m)
 
-              processHardMatches(
-                columnFields remove (recField.tpe, matchingName),
-                tail,
-                descriptor withMatch m
-              )
             // The real case we are attempting to handle here is when we have no clue which one
             // of multiple record strings matches which column field.
             case None =>
@@ -184,11 +191,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
               seq.find(colTerm => possibilities.exists(lowercased(colTerm) ==)) match {
                 case Some(matchingName) =>
                   val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
-                  processHardMatches(
-                    columnFields remove (recField.tpe, matchingName),
-                    tail,
-                    descriptor withMatch m
-                  )
+                  hardMatch(columnFields - (recField.tpe, matchingName), tail, descriptor withMatch m)
 
                   case None =>
                     // This is still our worst case scenario, where no variation of a term name
@@ -200,18 +203,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
                     )
 
                     val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
-
-                    processHardMatches(
-                      columnFields remove (recField.tpe, firstName),
-                      tail,
-                      descriptor withMatch m
-                    )
-
+                    hardMatch(columnFields - (recField.tpe, firstName), tail, descriptor withMatch m)
               }
           }
         }
-
-
 
       case Nil => descriptor
     }
@@ -289,7 +284,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => processHardMatches(columnFields, unprocessed, descriptor)
+      case Nil => hardMatch(columnFields, unprocessed, descriptor)
     }
   }
 
@@ -390,18 +385,21 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
   def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
     val tableType = weakTypeOf[T]
-    val rTpe = weakTypeOf[R]
+    val recordType = weakTypeOf[R]
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
     val tableName = extractTableName(refTable)
-
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
-    val descriptor = extractor(tableType, rTpe, referenceColumns)
+    val descriptor = extractor(tableType, recordType, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName).asMethod
     val fromRowFn = descriptor.fromRow
+    val notImplemented = q"???"
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
-      c.abort(c.enclosingPosition, s"You need to manually define a def fromRow(row: ${showCode(rowType)}): ${printType(rTpe)}")
+      c.abort(
+        c.enclosingPosition,
+        s"You need to manually define a def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}"
+      )
     } else {
       logger.debug(descriptor.showExtractor)
     }
@@ -411,25 +409,33 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val storeType = descriptor.storeType
 
     q"""
-       final class $clsName extends $macroPkg.TableHelper[$tableType, $rTpe] {
+       final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = $storeType
 
           def tableName: $strTpe = $tableName
 
-          ${descriptor.storeMethod}
+          def store($tableTerm: $tableType, $inputTerm: ${descriptor.storeType})(
+           implicit space: $keyspaceType
+          ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = {
+            ${descriptor.storeMethod.getOrElse(notImplemented)}
+          }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
             ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
           }
 
-          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $rTpe = ${fromRowFn.getOrElse(q"""???""")}
+          def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = {
+            ${descriptor.fromRow.getOrElse(notImplemented)}
+          }
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
+
+          def debug: $macroPkg.Debugger = ${descriptor.debugger}
        }
 
-       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $rTpe, ${descriptor.storeType}]
+       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, ${descriptor.storeType}]
     """
   }
 }

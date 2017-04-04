@@ -71,11 +71,15 @@ trait RootMacro {
   }
 
   object Record {
+
     case class Field(name: TermName, tpe: Type, index: Int) extends RootField
+
   }
 
   object Column {
+
     case class Field(name: TermName, tpe: Type) extends RootField
+
   }
 
   def caseFields(tpe: Type): Seq[(Name, Type)] = {
@@ -114,25 +118,36 @@ trait RootMacro {
   case class MatchedField(
     left: Record.Field,
     right: Column.Field
-  ) extends RecordMatch
+  ) extends RecordMatch {
+    def column: Column.Field = right
+
+    def record: Record.Field = left
+  }
 
   implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
     val lm: ListMap[K, M[V]]
   )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
 
     /**
-     * Every entry in this ordered map is a traversable of type [[M]].
-     * That means every key holds a sequence of elements.
-     * This function will remove the element [[elem]] from that sequence
-     * for the provided key.
-     */
-
+      * Every entry in this ordered map is a traversable of type [[M]].
+      * That means every key holds a sequence of elements.
+      * This function will remove the element [[elem]] from that sequence
+      * for the provided key.
+      */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
         case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
         case None => lm
       }
     }
+
+    /**
+      * Every entry in this ordered map is a traversable of type [[M]].
+      * That means every key holds a sequence of elements.
+      * This function will remove the element [[elem]] from that sequence
+      * for the provided key.
+      */
+    def -(key: K, elem: V): ListMap[K, M[V]] = remove(key, elem)
   }
 
   case class TableDescriptor(
@@ -154,6 +169,7 @@ trait RootMacro {
       * This is just done for the naming convenience, but the functionality of distinguishing between
       * matched and unmatched is implemented
       * using an ADT and collect, so it doesn't actually matter if we append to the same place.
+      *
       * @param m The record match.
       * @return An immutable copy of the table descriptor with one extra unmatched record.
       */
@@ -181,6 +197,36 @@ trait RootMacro {
     )
 
     /**
+      * Creates a map to show users how record fields map to columns inside the table.
+      * This is done when they want to inspect the generated macro trees and report
+      * bugs and as a convenience feature for us at debugging time.
+      * @return An interpolated quoted tree that contains a [[Map[String, String]] definition.
+      */
+    def debugMap: Tree = {
+      val tuples = matched.map(m => {
+        val recordTerm = m.record.name.decodedName.toString
+        val colTerm = m.record.name.decodedName.toString
+        val recordType = printType(m.record.tpe)
+        val colType = printType(m.column.tpe)
+
+        q"""
+           _root_.scala.Tuple2($recordTerm + ":" + $recordType, $colTerm + ":" + $colType)
+        """
+      })
+
+      q"_root_.scala.collection.immutable.Map.apply[String, String](..$tuples)"
+    }
+
+    /**
+      * Creates a quoted tree wrapping a [[com.outworkers.phantom.macros.Debugger]] instance definition.
+      * This will contain debug information about the macro output.
+      * @return A tree with the definition.
+      */
+    def debugger: Tree = {
+      q"new $macroPkg.Debugger($storeTypeDebugString, $debugMap, $showExtractor)"
+    }
+
+    /**
       * The reference term is a tuple field pointing to the tuple index found on a store type.
       * If the Cassandra table has more columns than the record field, such as when users
       * chose to store a denormalised variant of a record indexed by a new ID, the store
@@ -204,6 +250,7 @@ trait RootMacro {
       * store method, where the numerical value of the tuple index is equal to the number of
       * unmatched columns(found in the table but not the record) plus one more for the record type
       * itself and another to compensate for tuples being indexed from 1 instead of 0.
+      *
       * @return An optional [[TermName]] of the form [[TermName]]
       */
     val referenceTerm: Option[TermName] = {
@@ -226,37 +273,45 @@ trait RootMacro {
     }
 
     /**
-     * Short cut method to create a full CQL query using the a particular column
-     * inside a table. This will create something like the folloing:
-     * {{{
-     *  com.outworkers.phantom.
-     * }}}
-     */
+      * Short cut method to create a full CQL query using the a particular column
+      * inside a table. This will create something like the folloing:
+      * {{{
+      *  com.outworkers.phantom.
+      * }}}
+      */
     def tableField(fieldName: TermName): Tree = {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
-    def storeMethod: Tree = {
-      val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
-        q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+    def storeMethod: Option[Tree] = {
+      if (unmatched.isEmpty) {
+        val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
+          q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+        }
+
+        val insertions = matched map { field =>
+          q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
+        }
+
+        val finalDefinitions = unmatchedColumnInserts ++ insertions
+        logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
+        Some(q"""$tableTerm.insert.values(..$finalDefinitions)""")
+      } else {
+        None
       }
-
-      val insertions = matched map { field =>
-        q"${tableField(field.right.name)} -> ${valueTerm(field, referenceTerm)}"
-      }
-
-      val finalDefinitions = unmatchedColumnInserts ++ insertions
-
-      val tree = q"""
-         override def store($tableTerm: $tableTpe, $inputTerm: $storeType)(
-           implicit space: $keyspaceType
-         ): $builderPkg.InsertQuery.Default[$tableTpe, $recordType] = {
-           $tableTerm.insert.values(..$finalDefinitions)
-         }
-      """
-      logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
-      tree
     }
+
+    def storeTypeDebugString: String = {
+      val recString = s"record: ${printType(recordType)}"
+      if (unmatchedColumns.isEmpty) {
+        recString
+      } else {
+        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
+        cols.mkString(", ") + s", $recString"
+      }
+    }
+
 
     def storeType: Tree = {
       if (unmatchedColumns.isEmpty) {
@@ -281,6 +336,7 @@ trait RootMacro {
     *
     * To achieve this, we simply have specific ways of extracting the types from the underlying records,
     * and producing a [[Record.Field]] for each of the members in the product type,
+    *
     * @param tpe The underlying record type that was passed as the second argument to a Cassandra table.
     * @return An iterable of fields, each containing a [[TermName]] and a [[Type]] that describe a record member.
     */
@@ -309,11 +365,11 @@ trait RootMacro {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-      )(collection.breakOut) distinct
+      ) (collection.breakOut) distinct
   }
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
-    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol == ))
+    columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol ==))
   }
 
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {
