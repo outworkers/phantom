@@ -353,12 +353,11 @@ object Primitives {
       obj match {
         case Primitive.nullValue => Primitive.nullValue
         case decimal =>
-          val bi: BigInteger = obj.bigDecimal.unscaledValue
-          val scale: Int = obj.scale
+          val bi = obj.bigDecimal.unscaledValue
           val bibytes = bi.toByteArray
 
           val bytes = ByteBuffer.allocate(4 + bibytes.length)
-          bytes.putInt(scale)
+          bytes.putInt(obj.scale)
           bytes.put(bibytes)
           bytes.rewind
           bytes

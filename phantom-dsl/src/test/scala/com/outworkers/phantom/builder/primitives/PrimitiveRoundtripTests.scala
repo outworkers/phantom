@@ -59,15 +59,14 @@ class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrive
 
   implicit val inetAddressArb: Arbitrary[InetAddress] = Arbitrary(inetAddressGen)
 
-
-  def roundtrip[T : Primitive](gen: Gen[T]) = {
+  def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
     forAll(gen) { sample =>
       ev.deserialize(ev.serialize(sample)) shouldEqual sample
     }
   }
 
-  def roundtrip[T : Primitive : Arbitrary] = {
+  def roundtrip[T : Primitive : Arbitrary]: Assertion = {
     val ev = Primitive[T]
     forAll { sample: T =>
       ev.deserialize(ev.serialize(sample)) shouldEqual sample
