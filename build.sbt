@@ -19,25 +19,25 @@ import com.twitter.sbt._
 import sbt.Defaults._
 
 lazy val Versions = new {
-  val logback = "1.2.1"
+  val logback = "1.2.3"
   val sbt = "0.13.13"
   val util = "0.30.1"
-  val json4s = "3.5.0"
+  val json4s = "3.5.1"
   val datastax = "3.2.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.42.0"
-  val scalameter = "0.8+"
-  val scalacheck = "1.13.4"
-  val slf4j = "1.7.21"
+  val scalameter = "0.8.2"
+  val scalacheck = "1.13.5"
+  val slf4j = "1.7.25"
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
 
-  val joda = "2.9.7"
+  val joda = "2.9.9"
   val jodaConvert = "1.8.1"
-  val scalamock = "3.4.2"
+  val scalamock = "3.5.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.0"
 

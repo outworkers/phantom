@@ -108,7 +108,7 @@ object Primitives {
         source match {
           case Primitive.nullValue => Primitive.nullValue
           case bytes if bytes.remaining() == 0 => ""
-          case arr @ _ => new String(arr.array(), Charsets.UTF_8)
+          case arr @ _ => ParseUtils.unquote(new String(arr.array(), Charsets.UTF_8))
         }
       }
     }
@@ -135,7 +135,7 @@ object Primitives {
         byteLength,
         "Invalid 32-bits integer value, expecting 4 bytes but got " + bytes.remaining()
       ) {
-        case _ => bytes.getShort(bytes.position)
+        case _ => bytes.getInt(bytes.position)
       }
     }
   }
