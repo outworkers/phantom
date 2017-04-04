@@ -103,12 +103,12 @@ object Primitives {
 
       override def fromString(value: String): String = value
 
-      override def serialize(obj: String): ByteBuffer = {
+      override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
         val source = if (Option(obj).isEmpty) "NULL" else ParseUtils.quote(obj)
         ByteBuffer.wrap(source.getBytes(Charsets.UTF_8))
       }
 
-      override def deserialize(source: ByteBuffer): String = {
+      override def deserialize(source: ByteBuffer, version: ProtocolVersion): String = {
         source match {
           case Primitive.nullValue => Primitive.nullValue
           case bytes if bytes.remaining() == 0 => ""
@@ -127,11 +127,11 @@ object Primitives {
 
     override def fromString(value: String): Int = value.toInt
 
-    override def serialize(obj: Int): ByteBuffer = {
+    override def serialize(obj: Int, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putInt(0, obj)
     }
 
-    override def deserialize(bytes: ByteBuffer): Int = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Int = {
       checkNullsAndLength(
         bytes,
         byteLength,
@@ -152,11 +152,11 @@ object Primitives {
 
     override def fromString(value: String): Short = value.toShort
 
-    override def serialize(obj: Short): ByteBuffer = {
+    override def serialize(obj: Short, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putShort(0, obj)
     }
 
-    override def deserialize(bytes: ByteBuffer): Short = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Short = {
       checkNullsAndLength(
         bytes,
         byteLength,
@@ -174,13 +174,13 @@ object Primitives {
 
     override def fromString(value: String): Byte = value.toByte
 
-    override def serialize(obj: Byte): ByteBuffer = {
+    override def serialize(obj: Byte, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(1)
       bb.put(0, obj)
       bb
     }
 
-    override def deserialize(source: ByteBuffer): Byte = {
+    override def deserialize(source: ByteBuffer, version: ProtocolVersion): Byte = {
       checkNullsAndLength(
         source,
         1,
@@ -201,13 +201,13 @@ object Primitives {
 
     override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
 
-    override def serialize(obj: Double): ByteBuffer = {
+    override def serialize(obj: Double, version: ProtocolVersion): ByteBuffer = {
       val bb: ByteBuffer = ByteBuffer.allocate(byteLength)
       bb.putDouble(0, obj)
       bb
     }
 
-    override def deserialize(bytes: ByteBuffer): Double = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Double = {
       checkNullsAndLength(
         bytes,
         byteLength,
@@ -229,13 +229,13 @@ object Primitives {
 
     override def fromString(value: String): Long = java.lang.Long.parseLong(value)
 
-    override def serialize(obj: Long): ByteBuffer = {
+    override def serialize(obj: Long, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(byteLength)
       bb.putLong(0, obj)
       bb
     }
 
-    override def deserialize(bytes: ByteBuffer): Long = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Long = {
       bytes match {
         case Primitive.nullValue => 0L
         case b if b.remaining() == 0 => 0L
@@ -258,7 +258,7 @@ object Primitives {
 
     override def fromString(value: String): Float = java.lang.Float.parseFloat(value)
 
-    override def deserialize(bytes: ByteBuffer): Float = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Float = {
       checkNullsAndLength(
         bytes,
         byteLength,
@@ -269,10 +269,8 @@ object Primitives {
       }
     }
 
-    override def serialize(obj: Float): ByteBuffer = {
-      val bb = ByteBuffer.allocate(byteLength)
-      bb.putFloat(0, obj)
-      bb
+    override def serialize(obj: Float, version: ProtocolVersion): ByteBuffer = {
+      ByteBuffer.allocate(byteLength).putFloat(0, obj)
     }
   }
 
@@ -286,7 +284,7 @@ object Primitives {
 
     override def fromString(value: String): UUID = UUID.fromString(value)
 
-    override def serialize(obj: UUID): ByteBuffer = {
+    override def serialize(obj: UUID, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { value =>
         val bb = ByteBuffer.allocate(byteLength)
         bb.putLong(0, value.getMostSignificantBits)
@@ -295,7 +293,7 @@ object Primitives {
       }
     }
 
-    override def deserialize(source: ByteBuffer): UUID = {
+    override def deserialize(source: ByteBuffer, version: ProtocolVersion): UUID = {
       source match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
@@ -325,11 +323,11 @@ object Primitives {
       case _ => throw new Exception(s"Couldn't parse a boolean value from $value")
     }
 
-    override def serialize(obj: Boolean): ByteBuffer = {
+    override def serialize(obj: Boolean, version: ProtocolVersion): ByteBuffer = {
       if (obj) TRUE.duplicate else FALSE.duplicate
     }
 
-    override def deserialize(bytes: ByteBuffer): Boolean = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Boolean = {
       bytes match {
         case Primitive.nullValue => false
         case b if b.remaining() == 0 => false
@@ -349,7 +347,7 @@ object Primitives {
 
     override def fromString(value: String): BigDecimal = BigDecimal(value)
 
-    override def serialize(obj: BigDecimal): ByteBuffer = {
+    override def serialize(obj: BigDecimal, version: ProtocolVersion): ByteBuffer = {
       obj match {
         case Primitive.nullValue => Primitive.nullValue
         case decimal =>
@@ -364,7 +362,7 @@ object Primitives {
       }
     }
 
-    override def deserialize(bytes: ByteBuffer): BigDecimal = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): BigDecimal = {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
@@ -391,11 +389,11 @@ object Primitives {
 
     override def fromString(value: String): InetAddress = InetAddress.getByName(value)
 
-    override def serialize(obj: InetAddress): ByteBuffer = {
+    override def serialize(obj: InetAddress, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { i => ByteBuffer.wrap(i.getAddress) }
     }
 
-    override def deserialize(bytes: ByteBuffer): InetAddress = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): InetAddress = {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
@@ -417,11 +415,11 @@ object Primitives {
 
     override def fromString(value: String): BigInt = BigInt(value)
 
-    override def serialize(obj: BigInt): ByteBuffer = {
+    override def serialize(obj: BigInt, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj)(bi =>  ByteBuffer.wrap(bi.toByteArray))
     }
 
-    override def deserialize(bytes: ByteBuffer): BigInt = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): BigInt = {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
@@ -437,9 +435,9 @@ object Primitives {
 
     override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
 
-    override def serialize(obj: ByteBuffer): ByteBuffer = obj
+    override def serialize(obj: ByteBuffer, version: ProtocolVersion): ByteBuffer = obj
 
-    override def deserialize(source: ByteBuffer): ByteBuffer = source
+    override def deserialize(source: ByteBuffer, version: ProtocolVersion): ByteBuffer = source
   }
 
   object LocalDateIsPrimitive extends Primitive[LocalDate] {
@@ -455,19 +453,19 @@ object Primitives {
       LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
     }
 
-    override def serialize(obj: LocalDate): ByteBuffer = {
+    override def serialize(obj: LocalDate, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { dt =>
         val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.getDaysSinceEpoch)
-        codec.serialize(unsigned)
+        codec.serialize(unsigned, version)
       }
     }
 
-    override def deserialize(bytes: ByteBuffer): LocalDate = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): LocalDate = {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
         case b @ _ =>
-          val unsigned = codec.deserialize(bytes)
+          val unsigned = codec.deserialize(bytes, version)
           val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
           LocalDate.fromDaysSinceEpoch(signed)
       }
@@ -500,38 +498,41 @@ object Primitives {
 
     override def cassandraType: String = cType
 
-    override def serialize(value: M[RR]): ByteBuffer = {
-      value match {
-        case Primitive.nullValue => Primitive.nullValue
-        case v if v.isEmpty => emptyCollection
-        case set =>
-          val buffers = (set :\ Seq.empty[ByteBuffer]) { case (elt, acc) =>
-            notNull(elt, "Collection elements cannot be null")
-            acc :+ ev.serialize(elt)
-          }
-          Utils.pack(buffers, value.size, ProtocolVersion.V4)
+    override def serialize(value: M[RR], version: ProtocolVersion): ByteBuffer = {
+      if (value == Primitive.nullValue) {
+        Primitive.nullValue
+      } else {
+        var i = 0
+        val bbs = new Array[ByteBuffer](value.size)
+        for (elt <- value) {
+          notNull(elt, "Collection elements cannot be null")
+          bbs(i) = ev.serialize(elt, version)
+          i += 1
+        }
+        CodecUtils.pack(bbs, value.size, version)
       }
     }
 
-    override def deserialize(bytes: ByteBuffer): M[RR] = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): M[RR] = {
       val empty = cbf().result()
-      bytes match {
-        case Primitive.nullValue => empty
-        case b if b.remaining() == 0 => empty
-        case bt => try {
-          val input = bt.duplicate()
-          val builder = cbf()
-          val size = CodecUtils.readSize(input, ProtocolVersion.V4)
-          builder.sizeHint(size)
+      if (bytes == Primitive.nullValue || bytes.remaining() == 0) {
+         empty
+      } else {
+        try {
+          val input = bytes.duplicate()
+          val size = CodecUtils.readSize(input, version)
+          val coll = cbf()
+          coll.sizeHint(size)
 
           for (i <- 0 to size) {
-            val databb = CodecUtils.readValue(input, ProtocolVersion.V4)
-            builder += ev.deserialize(databb)
+            val databb = CodecUtils.readValue(input, version)
+            coll += ev.deserialize(databb, version)
           }
-          builder.result()
+          coll.result()
         } catch {
-          case e: BufferUnderflowException =>
-            throw new InvalidTypeException("Not enough bytes to deserialize collection", e);
+          case e: BufferUnderflowException => {
+            throw new InvalidTypeException("Not enough bytes to deserialize collection", e)
+          }
         }
       }
     }
@@ -569,33 +570,33 @@ object Primitives {
         case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
       }).queryString
 
-      override def serialize(source: Map[K, V]): ByteBuffer = source match {
+      override def serialize(source: Map[K, V], version: ProtocolVersion): ByteBuffer = source match {
         case Primitive.nullValue => emptyCollection
         case s if s.isEmpty => emptyCollection
 
         val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
           notNull(key, "Map keys cannot be null")
-          acc :+ kp.serialize(key) :+ vp.serialize(value)
+          acc :+ kp.serialize(key, version) :+ vp.serialize(value, version)
         }
         Utils.pack(bbs, source.size, ProtocolVersion.V4)
       }
 
-      override def deserialize(bytes: ByteBuffer): Map[K, V] = {
+      override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Map[K, V] = {
         bytes match {
           case Primitive.nullValue => Map.empty[K, V]
           case b if b.remaining() == 0 => Map.empty[K, V]
           case bt =>
             try {
               val input = bytes.duplicate()
-              val n = CodecUtils.readSize(input, ProtocolVersion.V4)
+              val n = CodecUtils.readSize(input, version)
 
               val m = Map.newBuilder[K, V]
 
               for (i <- 0 to n) {
-                val kbb = CodecUtils.readValue(input, ProtocolVersion.V4)
-                val vbb = CodecUtils.readValue(input, ProtocolVersion.V4)
+                val kbb = CodecUtils.readValue(input, version)
+                val vbb = CodecUtils.readValue(input, version)
 
-                m += (kp.deserialize(kbb) -> vp.deserialize(vbb))
+                m += (kp.deserialize(kbb, version) -> vp.deserialize(vbb, version))
               }
               m result()
             } catch {

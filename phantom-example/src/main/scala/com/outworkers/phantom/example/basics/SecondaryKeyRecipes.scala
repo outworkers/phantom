@@ -15,10 +15,7 @@
  */
 package com.outworkers.phantom.example.basics
 
-import java.util.UUID
-
 import scala.concurrent.{Future => ScalaFuture}
-import com.datastax.driver.core.Row
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 

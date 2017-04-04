@@ -30,7 +30,7 @@ trait RootMacro {
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)
 
-  protected[this] val rowType = tq"com.datastax.driver.core.Row"
+  protected[this] val rowType = tq"com.outworkers.phantom.Row"
   protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"com.outworkers.phantom.macros"
   protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"

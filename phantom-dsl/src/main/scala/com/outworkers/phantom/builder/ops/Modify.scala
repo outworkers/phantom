@@ -15,14 +15,13 @@
  */
 package com.outworkers.phantom.builder.ops
 
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.{PreparedWhereClause, UpdateClause}
+import com.outworkers.phantom.builder.clauses.UpdateClause
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
+import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound

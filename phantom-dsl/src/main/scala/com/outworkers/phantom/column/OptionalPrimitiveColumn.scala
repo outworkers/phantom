@@ -18,8 +18,7 @@ package com.outworkers.phantom.column
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.annotation.implicitNotFound
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 

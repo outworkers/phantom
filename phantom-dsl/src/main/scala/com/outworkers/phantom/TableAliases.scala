@@ -21,7 +21,6 @@ import java.util.{Date, UUID}
 
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.AbstractColColumn
 import org.joda.time.{DateTime, LocalDate}
 
 trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>

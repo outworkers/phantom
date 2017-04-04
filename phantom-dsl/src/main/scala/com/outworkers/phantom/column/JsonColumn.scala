@@ -16,10 +16,10 @@
 package com.outworkers.phantom.column
 
 import scala.util.{Success, Try}
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
@@ -45,7 +45,7 @@ abstract class JsonColumn[
   val cassandraType = CQLSyntax.Types.Text
 
   def parse(row: Row): Try[ValueType] = {
-    Try(fromJson(row.getString(name)))
+    Try(fromJson(StringPrimitive.deserialize(row.getBytesUnsafe(name), row.version)))
   }
 }
 
@@ -62,7 +62,9 @@ abstract class OptionalJsonColumn[
 
   val cassandraType = CQLSyntax.Types.Text
 
-  override def optional(r: Row): Try[ValueType] = Try(fromJson(r.getString(name)))
+  override def optional(r: Row): Try[ValueType] = {
+    Try(fromJson(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)))
+  }
 }
 
 abstract class JsonListColumn[
@@ -131,7 +133,7 @@ abstract class JsonMapColumn[
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, ValueType])
     } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name)).mapValues(fromString))
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(fromString))
     }
   }
 }

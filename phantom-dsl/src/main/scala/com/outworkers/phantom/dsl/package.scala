@@ -18,7 +18,7 @@ package com.outworkers.phantom
 import java.util.Random
 
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{Row, VersionNumber, ConsistencyLevel => CLevel}
+import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
 import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
@@ -61,7 +61,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type LocalDate = org.joda.time.LocalDate
   type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
-  type Row = com.datastax.driver.core.Row
+  type Row = com.outworkers.phantom.Row
   type ResultSet = com.datastax.driver.core.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace

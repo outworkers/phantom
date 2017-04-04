@@ -18,7 +18,7 @@ package com.outworkers.phantom.jdk8
 import java.nio.ByteBuffer
 import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 
-import com.datastax.driver.core.{CodecUtils, LocalDate => DatastaxLocalDate}
+import com.datastax.driver.core.{CodecUtils, ProtocolVersion, LocalDate => DatastaxLocalDate}
 import com.outworkers.phantom.builder.primitives.Primitives.IntPrimitive
 import com.outworkers.phantom.builder.primitives.{DateSerializer, Primitive}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -52,19 +52,19 @@ trait DefaultJava8Primitives {
       JavaLocalDate.ofEpochDay(java.lang.Long.parseLong(value))
     }
 
-    override def serialize(obj: JavaLocalDate): ByteBuffer = {
+    override def serialize(obj: JavaLocalDate, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { dt =>
         val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.toEpochDay.toInt)
-        codec.serialize(unsigned)
+        codec.serialize(unsigned,version)
       }
     }
 
-    override def deserialize(bytes: ByteBuffer): JavaLocalDate = {
+    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): JavaLocalDate = {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
         case b @ _ =>
-          val unsigned = codec.deserialize(bytes)
+          val unsigned = codec.deserialize(bytes, version)
           val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
           JavaLocalDate.ofEpochDay(signed)
       }

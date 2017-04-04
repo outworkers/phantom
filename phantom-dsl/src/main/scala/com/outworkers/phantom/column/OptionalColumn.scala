@@ -15,8 +15,7 @@
  */
 package com.outworkers.phantom.column
 
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 
 import scala.util.Try
 

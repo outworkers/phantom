@@ -15,8 +15,13 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{QueryOptions => _, _}
-import com.outworkers.phantom.CassandraTable
+import com.datastax.driver.core.{
+  PreparedStatement,
+  Session,
+  Statement
+}
+
+import com.outworkers.phantom.{ CassandraTable, ResultSet, Row }
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
@@ -24,8 +29,6 @@ import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.{Generic, HList}
 import shapeless.ops.hlist.Tupler
-
-import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
@@ -43,15 +46,14 @@ class ExecutablePreparedQuery(
   override val qb = CQLQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
-    statement
-      .setConsistencyLevel(options.consistencyLevel.orNull)
+    statement.setConsistencyLevel(options.consistencyLevel.orNull)
   }
 }
 
 class ExecutablePreparedSelectQuery[
-Table <: CassandraTable[Table, _],
-R,
-Limit <: LimitBound
+  Table <: CassandraTable[Table, _],
+  R,
+  Limit <: LimitBound
 ](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
@@ -59,10 +61,7 @@ Limit <: LimitBound
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(st)
-  }
-
+  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(st)
 
   /**
     * Returns the first row from the select ignoring everything else
@@ -75,9 +74,7 @@ Limit <: LimitBound
     implicit session: Session,
     ev: =:=[Limit, Unlimited],
     ec: ExecutionContextExecutor
-  ): ScalaFuture[Option[R]] = {
-    singleFetch()
-  }
+  ): ScalaFuture[Option[R]] = singleFetch()
 
   override def qb: CQLQuery = CQLQuery.empty
 }

@@ -15,9 +15,8 @@
  */
 package com.outworkers.phantom.macros
 
-import com.datastax.driver.core.Row
 import com.google.common.base.CaseFormat
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row}
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace

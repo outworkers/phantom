@@ -15,19 +15,13 @@
  */
 package com.outworkers.phantom.column
 
-import java.nio.{BufferUnderflowException, ByteBuffer}
-
-import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{CodecUtils, ProtocolVersion, Row}
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters._
-import scala.collection.generic.CanBuildFrom
 import scala.util.{Failure, Success, Try}
 
 private[phantom] abstract class AbstractMapColumn[
@@ -97,7 +91,7 @@ class MapColumn[
     if (r.isNull(name)) {
       Success(Map.empty[K, V])
     } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name)))
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version))
     }
   }
 

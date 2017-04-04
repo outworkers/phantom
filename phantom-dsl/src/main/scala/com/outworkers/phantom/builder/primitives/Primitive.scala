@@ -19,13 +19,9 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{
-  GettableByIndexData,
-  GettableByNameData,
-  GettableData,
-  LocalDate
-}
+import com.datastax.driver.core.{ GettableByIndexData, GettableByNameData, LocalDate, ProtocolVersion }
 import org.joda.time.DateTime
+import com.outworkers.phantom.Row
 
 import scala.annotation.implicitNotFound
 import scala.util.control.NoStackTrace
@@ -69,21 +65,10 @@ abstract class Primitive[RR] {
 
   protected[this] def nullCheck[T](
     column: String,
-    row: GettableByNameData
-  )(fn: GettableByNameData => T): Try[T] = {
+    row: Row
+  )(fn: Row => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null") with NoStackTrace)
-    } else {
-      Try(fn(row))
-    }
-  }
-
-  protected[this] def nullCheck[T](
-    index: Int,
-    row: GettableByIndexData
-  )(fn: GettableByIndexData => T): Try[T] = {
-    if (Option(row).isEmpty || row.isNull(index)) {
-      Failure(new Exception(s"Column with index $index is null") with NoStackTrace)
     } else {
       Try(fn(row))
     }
@@ -100,16 +85,12 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def serialize(obj: RR): ByteBuffer
+  def serialize(obj: RR, protocol: ProtocolVersion): ByteBuffer
 
-  def deserialize(source: ByteBuffer): RR
+  def deserialize(source: ByteBuffer, protocol: ProtocolVersion): RR
 
-  def fromRow(column: String, row: GettableByNameData): Try[RR] = {
-    nullCheck(column, row)(r => deserialize(r.getBytesUnsafe(column)))
-  }
-
-  def fromRow(index: Int, row: GettableByIndexData): Try[RR] = {
-    nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index)))
+  def fromRow(column: String, row: Row): Try[RR] = {
+    nullCheck(column, row)(r => deserialize(r.getBytesUnsafe(column), r.version))
   }
 
   def fromString(value: String): RR
@@ -120,17 +101,6 @@ abstract class Primitive[RR] {
 object Primitive {
 
   val nullValue = None.orNull
-
-  /**
-    * A helper for implicit lookups that require the refined inner abstract type of a concrete
-    * primitive implementation produced by an implicit macro.
-    * This is useful to eliminate a compiler warning produced for map columns, where
-    * we need to manually cast values to their PrimitiveType after extraction
-    * just to please the compiler.
-    * @tparam Outer The outer, visible Scala type of a primitive.
-    * @tparam Inner The inner, primitive type, used to unwrap Java bindings.
-    */
-  type Aux[Outer, Inner] = Primitive[Outer] { type PrimitiveType = Inner }
 
   /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
@@ -150,27 +120,22 @@ object Primitive {
     * @return A new primitive that can interact with the target type.
     */
   def derive[Target, Source : Primitive](to: Target => Source)(from: Source => Target): Primitive[Target] = {
-
     val primitive = implicitly[Primitive[Source]]
 
     new Primitive[Target] {
-      /**
-        * Converts the type to a CQL compatible string.
-        * The primitive is responsible for handling all aspects of adequate escaping as well.
-        * This is used to generate the final queries from domain objects.
-        *
-        * @param value The strongly typed value.
-        * @return The string representation of the value with respect to CQL standards.
-        */
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
       override def cassandraType: String = primitive.cassandraType
 
       override def fromString(value: String): Target = from(primitive.fromString(value))
 
-      override def serialize(obj: Target): ByteBuffer = primitive.serialize(to(obj))
+      override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
+        primitive.serialize(to(obj), protocol)
+      }
 
-      override def deserialize(source: ByteBuffer): Target = from(primitive.deserialize(source))
+      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Target = {
+        from(primitive.deserialize(source, protocol))
+      }
     }
   }
 
@@ -198,5 +163,5 @@ object Primitive {
     * @tparam RR The type of the primitive to retrieve.
     * @return A reference to a concrete materialised implementation of a primitive for the given type.
     */
-  def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
+  def apply[RR]()(implicit ev: Primitive[RR]): Primitive[RR] = ev
 }

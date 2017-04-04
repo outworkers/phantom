@@ -108,16 +108,16 @@ private[phantom] class MinTimeUUID extends CqlFunction with TimeUUIDOperator {
 }
 
 sealed class WritetimeCqlFunction extends CqlFunction {
-  def apply(col: AbstractColumn[_])(implicit ev: Primitive[BigDecimal]): TypedClause.Condition[Long] = {
+  def apply(col: AbstractColumn[_])(implicit ev: Primitive[Long]): TypedClause.Condition[Long] = {
     val qb = QueryBuilder.Select.writetime(col.name)
 
-    new TypedClause.Condition(qb, row => {
-      row.getLong(qb.queryString)
-    })
+    new TypedClause.Condition(qb, row =>
+      ev.deserialize(row.getBytesUnsafe(qb.queryString), row.version)
+    )
   }
 }
 
-sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Seq[String]) {
+sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper: Seq[String]) {
 
   private[this] def joinOp(comp: Seq[String], op: String): WhereClause.Condition = {
     new WhereClause.Condition(

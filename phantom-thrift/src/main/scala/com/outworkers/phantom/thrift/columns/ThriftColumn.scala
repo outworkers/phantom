@@ -15,11 +15,11 @@
  */
 package com.outworkers.phantom.thrift.columns
 
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
@@ -67,7 +67,7 @@ abstract class ThriftColumn[
   override val serializer: CompactThriftSerializer[V] = hp.serializer
 
   def parse(r: Row): Try[V] = {
-    Try(serializer.fromString(r.getString(name)))
+    Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
   }
 }
 
@@ -88,7 +88,7 @@ abstract class OptionalThriftColumn[
   }
 
   def optional(r: Row): Try[V] = {
-    Try(serializer.fromString(r.getString(name)))
+    Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
   }
 
 }
@@ -116,7 +116,7 @@ class ThriftSetColumn[
     if (r.isNull(name)) {
       Success(Set.empty[V])
     } else {
-      Success(ev.deserialize(r.getBytesUnsafe(name)).map(serializer.fromString))
+      Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
     }
   }
 
@@ -145,7 +145,7 @@ class ThriftListColumn[
     if (r.isNull(name)) {
       Success(Nil)
     } else {
-      Success(ev.deserialize(r.getBytesUnsafe(name)).map(serializer.fromString))
+      Success(ev.deserialize(r.getBytesUnsafe(name), r.version).map(serializer.fromString))
     }
   }
 

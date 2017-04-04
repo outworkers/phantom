@@ -31,6 +31,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
   val rowByNameType = tq"com.datastax.driver.core.GettableByNameData"
   val rowByIndexType = tq"com.datastax.driver.core.GettableByIndexData"
+  val pVersion = tq"com.datastax.driver.core.ProtocolVersion"
+
   val boolType = tq"scala.Boolean"
   val strType: Tree = tq"java.lang.String"
   val intType: Tree = tq"scala.Int"
@@ -55,6 +57,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
 
   val prefix = q"com.outworkers.phantom.builder.primitives"
+  private[this] val versionTerm = q"version"
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
   def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
@@ -192,15 +195,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
           scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
         } else {
           val $sourceTerm = row.getTupleValue(name)
-          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
-        }
-      }
-
-      override def fromRow(index: $intType, row: $rowByIndexType): ${tryT(tpe)}  = {
-        if (scala.Option(row).isEmpty || row.isNull(index)) {
-          scala.util.Failure(new Exception("Column with index " + index + " is null") with scala.util.control.NoStackTrace)
-        } else {
-          val $sourceTerm = row.getTupleValue(index)
           for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
         }
       }
