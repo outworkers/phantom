@@ -284,9 +284,12 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     }
 
     def put(value: (A, B)): UpdateClause.Default = {
+      val (k, v) = value
+
       new UpdateClause.Condition(QueryBuilder.Collections.put(
         col.name,
-        col.keyAsCql(value._1).toString -> col.valueAsCql(value._2))
+        col.keyAsCql(k).toString -> col.valueAsCql(v)
+        )
       )
     }
 

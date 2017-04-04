@@ -32,5 +32,5 @@ abstract class TestCaseSchema extends CassandraTable[
   object epicId extends IntColumn with PrimaryKey
   object userStoryId extends IntColumn with PrimaryKey
   object name extends StringColumn
-  object eventId extends LongColumn
+  //object eventId extends LongColumn
 }
