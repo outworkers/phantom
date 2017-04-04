@@ -16,20 +16,22 @@
 package com.outworkers.phantom.builder.primitives
 
 import org.scalatest._
-
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 import com.outworkers.util.samplers._
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
-import java.util.{ Date, UUID }
-import org.scalacheck.{ Arbitrary, Gen }
-import com.datastax.driver.core.LocalDate
+import java.util.{Date, UUID}
+
+import org.scalacheck.{Arbitrary, Gen}
+import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 
 class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
   implicit override val generatorDrivenConfig = {
     PropertyCheckConfiguration(minSuccessful = 100)
   }
+
+  private[this] val protocol = ProtocolVersion.V5
 
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower
@@ -62,14 +64,14 @@ class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrive
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
     forAll(gen) { sample =>
-      ev.deserialize(ev.serialize(sample)) shouldEqual sample
+      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
 
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
     val ev = Primitive[T]
     forAll { sample: T =>
-      ev.deserialize(ev.serialize(sample)) shouldEqual sample
+      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
 

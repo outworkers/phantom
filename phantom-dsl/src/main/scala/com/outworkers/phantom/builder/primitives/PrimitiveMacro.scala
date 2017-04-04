@@ -180,7 +180,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     val fields: List[TupleType] = tupleFields(tpe)
 
-    q"""new $prefix.Primitive[$tpe] {
+    val tree = q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
@@ -207,6 +207,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def frozen: $boolType = true
     }"""
+    Console.println(showCode(tree))
+    tree
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {

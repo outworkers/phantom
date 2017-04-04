@@ -116,7 +116,7 @@ class ThriftSetColumn[
     if (r.isNull(name)) {
       Success(Set.empty[V])
     } else {
-      Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version) map serializer.fromString)
     }
   }
 

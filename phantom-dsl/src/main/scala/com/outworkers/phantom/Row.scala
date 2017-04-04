@@ -56,7 +56,7 @@ case class ResultSet(
 
   override def getExecutionInfo: ExecutionInfo = inner.getExecutionInfo
 
-  override def fetchMoreResults(): ListenableFuture[DatastaxResultSet] = inner.fetchMoreResults()
+  override def fetchMoreResults: ListenableFuture[DatastaxResultSet] = inner.fetchMoreResults()
 
   override def isExhausted: Boolean = inner.isExhausted
 
@@ -68,7 +68,7 @@ case class ResultSet(
 
   override def getAllExecutionInfo: util.List[ExecutionInfo] = inner.getAllExecutionInfo
 
-  override def iterator(): util.Iterator[DatastaxRow] = inner.iterator()
+  override def iterator: util.Iterator[DatastaxRow] = inner.iterator()
 
   def iterate(): Iterator[Row] = inner.iterator().asScala.map(r => new Row(r, version))
 

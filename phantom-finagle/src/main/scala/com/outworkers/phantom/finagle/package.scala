@@ -17,25 +17,23 @@ package com.outworkers.phantom
 
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
-
-import com.datastax.driver.core._
+import com.datastax.driver.core.{ PagingState, Session, SimpleStatement, Statement, ResultSet => DatastaxResultSet }
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
-import com.twitter.util.{ Duration => TwitterDuration, _ }
+import com.twitter.util.{Duration => TwitterDuration, _}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
-
 import scala.annotation.implicitNotFound
 
-package object finagle {
+package object finagle extends SessionAugmenterImplicits {
 
   protected[this] type Modifier = Statement => Statement
 
@@ -48,9 +46,9 @@ package object finagle {
     val promise = Promise[ResultSet]()
     val future = session.executeAsync(str)
 
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise update Return(result)
+    val callback = new FutureCallback[DatastaxResultSet] {
+      def onSuccess(result: DatastaxResultSet): Unit = {
+        promise update Return(ResultSet(result, session.protocolVersion))
       }
 
       def onFailure(err: Throwable): Unit = {
@@ -142,7 +140,7 @@ package object finagle {
       implicit session: Session,
       executor: Executor
     ): Future[Option[R]] = {
-      query.execute() map { res => singleResult(res.one) }
+      query.execute() map { res => singleResult(res.value()) }
     }
 
     /**
@@ -170,7 +168,7 @@ package object finagle {
       * @return A Twitter future wrapping a list of mapped results.
       */
     def collect()(implicit session: Session, executor: Executor): Future[List[R]] = {
-      query.execute() map { resultSet => directMapper(resultSet.all) }
+      query.execute() map (_.allRows().map(query.fromRow))
     }
 
     /**
@@ -185,7 +183,7 @@ package object finagle {
       implicit session: Session,
       executor: Executor
     ): Future[List[R]] = {
-      query.execute(modifyStatement) map { resultSet => directMapper(resultSet.all) }
+      query.execute(modifyStatement) map (_.allRows().map(query.fromRow))
     }
 
     /**
@@ -200,7 +198,7 @@ package object finagle {
       implicit session: Session,
       executor: Executor
     ): Future[List[R]] = {
-      query.execute(st => st.setPagingState(pagingState)) map { resultSet => directMapper(resultSet.all) }
+      query.execute(_.setPagingState(pagingState)) map (_.allRows().map(query.fromRow))
     }
 
     /**
@@ -212,7 +210,7 @@ package object finagle {
       * @return A Twitter future wrapping a list of mapped results.
       */
     def collectRecord()(implicit session: Session, executor: Executor): Future[ListResult[R]] = {
-      query.execute() map { resultSet => ListResult(directMapper(resultSet.all), resultSet) }
+      query.execute() map { rs => ListResult(rs.allRows().map(query.fromRow), rs) }
     }
 
     /**
@@ -227,7 +225,7 @@ package object finagle {
       implicit session: Session,
       executor: Executor
     ): Future[ListResult[R]] = {
-      query.execute(modifyStatement) map { resultSet => ListResult(directMapper(resultSet.all), resultSet) }
+      query.execute(modifyStatement) map (rs => ListResult(rs.allRows().map(query.fromRow), rs))
     }
 
     /**
@@ -242,8 +240,8 @@ package object finagle {
       implicit session: Session,
       executor: Executor
     ): Future[ListResult[R]] = {
-      query.execute(st => st.setPagingState(pagingState)) map { resultSet =>
-        ListResult(directMapper(resultSet.all), resultSet)
+      query.execute(_.setPagingState(pagingState)) map { rs =>
+        ListResult(rs.allRows().map(query.fromRow), rs)
       }
     }
 
@@ -262,9 +260,9 @@ package object finagle {
       executor: Executor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(set.allRows().map(query.fromRow), set)
       }) (state => query.execute(_.setPagingState(state)) map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(set.allRows().map(query.fromRow), set)
       })
     }
 }
