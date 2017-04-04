@@ -39,7 +39,12 @@ case class WideRow(
   field17: String,
   field18: String,
   field19: String,
-  field20: String
+  field20: String,
+  field21: String,
+  field22: String,
+  field23: String,
+  field24: String,
+  field25: String
 )
 
 abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootConnector {
@@ -65,4 +70,9 @@ abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootCon
   object field18 extends StringColumn
   object field19 extends StringColumn
   object field20 extends StringColumn
+  object field21 extends StringColumn
+  object field22 extends StringColumn
+  object field23 extends StringColumn
+  object field24 extends StringColumn
+  object field25 extends StringColumn
 }

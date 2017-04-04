@@ -19,7 +19,12 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
+import com.datastax.driver.core.{
+  GettableByIndexData,
+  GettableByNameData,
+  GettableData,
+  LocalDate
+}
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -58,7 +63,10 @@ abstract class Primitive[RR] {
     }
   }
 
-  protected[this] def nullCheck[T](column: String, row: GettableByNameData)(fn: GettableByNameData => T): Try[T] = {
+  protected[this] def nullCheck[T](
+    column: String,
+    row: GettableByNameData
+  )(fn: GettableByNameData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(column)) {
       Failure(new Exception(s"Column $column is null") with NoStackTrace)
     } else {
@@ -66,7 +74,10 @@ abstract class Primitive[RR] {
     }
   }
 
-  protected[this] def nullCheck[T](index: Int, row: GettableByIndexData)(fn: GettableByIndexData => T): Try[T] = {
+  protected[this] def nullCheck[T](
+    index: Int,
+    row: GettableByIndexData
+  )(fn: GettableByIndexData => T): Try[T] = {
     if (Option(row).isEmpty || row.isNull(index)) {
       Failure(new Exception(s"Column with index $index is null") with NoStackTrace)
     } else {
