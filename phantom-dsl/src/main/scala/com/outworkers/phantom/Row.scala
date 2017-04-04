@@ -17,29 +17,17 @@ package com.outworkers.phantom
 
 import java.nio.ByteBuffer
 import java.util
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import com.datastax.driver.core.{
   ColumnDefinitions,
   ExecutionInfo,
+  GettableByIndexData,
   ProtocolVersion,
-  TupleValue,
-  Row => DatastaxRow,
-  ResultSet => DatastaxResultSet
+  ResultSet => DatastaxResultSet,
+  Row => DatastaxRow
 }
 import com.google.common.util.concurrent.ListenableFuture
-
-class Row(val inner: DatastaxRow, val version: ProtocolVersion) {
-  def getBytesUnsafe(name: String): ByteBuffer = inner.getBytesUnsafe(name)
-  def getBytesUnsafe(index: Int): ByteBuffer = inner.getBytesUnsafe(index)
-
-
-  def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
-
-  def getTupleValue(name: String): TupleValue = inner.getTupleValue(name)
-
-  def isNull(name: String): Boolean = inner.isNull(name)
-}
 
 case class ResultSet(
   inner: DatastaxResultSet,
@@ -73,4 +61,58 @@ case class ResultSet(
   def iterate(): Iterator[Row] = inner.iterator().asScala.map(r => new Row(r, version))
 
   override def getAvailableWithoutFetching: Int = inner.getAvailableWithoutFetching
+}
+
+
+class IndexedRow(inner: GettableByIndexData, val version: ProtocolVersion) {
+  def getBytesUnsafe(index: Int): ByteBuffer = inner.getBytesUnsafe(index)
+
+  def isNull(index: Int): Boolean = inner.isNull(index)
+}
+
+class Row(val inner: DatastaxRow, val version: ProtocolVersion) {
+  def getBytesUnsafe(name: String): ByteBuffer = inner.getBytesUnsafe(name)
+  def getBytesUnsafe(index: Int): ByteBuffer = inner.getBytesUnsafe(index)
+
+  def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
+
+  def getTupleValue(name: String): IndexedRow = new IndexedRow(inner.getTupleValue(name), version)
+
+  def isNull(name: String): Boolean = inner.isNull(name)
+
+  def isNull(index: Int): Boolean = inner.isNull(index)
+}
+
+
+trait BytesExtractor[T] {
+  def getBytesUnsafe(source: T, index: Int): ByteBuffer
+
+  def getBytesUnsafe(source: T, name: String): ByteBuffer
+
+  def isNull(source: T, name: String): Boolean
+
+  def isNull(source: T, index: Int): Boolean
+
+}
+
+object BytesExtractor {
+  implicit object RowExtractor extends BytesExtractor[Row] {
+    override def getBytesUnsafe(source: Row, index: Int): ByteBuffer = source.getBytesUnsafe(index)
+
+    override def getBytesUnsafe(source: Row, name: String): ByteBuffer = source.getBytesUnsafe(name)
+
+    override def isNull(source: Row, name: String): Boolean = source.isNull(name)
+
+    override def isNull(source: Row, index: Int): Boolean = source.isNull(index)
+  }
+
+  implicit object GettableByIndexExtracotr extends BytesExtractor[GettableByIndexData] {
+    override def getBytesUnsafe(source: GettableByIndexData, index: Int): ByteBuffer = source.getBytesUnsafe(index)
+
+    override def getBytesUnsafe(source: GettableByIndexData, name: String): ByteBuffer = ByteBuffer.allocate(0)
+
+    override def isNull(source: GettableByIndexData, name: String): Boolean = true
+
+    override def isNull(source: GettableByIndexData, index: Int): Boolean = source.isNull(index)
+  }
 }

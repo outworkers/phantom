@@ -179,7 +179,7 @@ class ThriftMapColumn[
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, V])
     } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name)).mapValues(v => serializer.fromString(v)))
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(serializer.fromString))
     }
   }
 

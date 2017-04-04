@@ -19,9 +19,9 @@ import java.nio.ByteBuffer
 import java.util.Date
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{ GettableByIndexData, GettableByNameData, LocalDate, ProtocolVersion }
+import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, LocalDate, ProtocolVersion}
 import org.joda.time.DateTime
-import com.outworkers.phantom.Row
+import com.outworkers.phantom.{IndexedRow, Row}
 
 import scala.annotation.implicitNotFound
 import scala.util.control.NoStackTrace
@@ -64,6 +64,17 @@ abstract class Primitive[RR] {
   }
 
   protected[this] def nullCheck[T](
+    index: Int,
+    row: Row
+  )(fn: Row => T): Try[T] = {
+    if (Option(row).isEmpty || row.isNull(index)) {
+      Failure(new Exception(s"Column $index is null") with NoStackTrace)
+    } else {
+      Try(fn(row))
+    }
+  }
+
+  protected[this] def nullCheck[T](
     column: String,
     row: Row
   )(fn: Row => T): Try[T] = {
@@ -91,6 +102,18 @@ abstract class Primitive[RR] {
 
   def fromRow(column: String, row: Row): Try[RR] = {
     nullCheck(column, row)(r => deserialize(r.getBytesUnsafe(column), r.version))
+  }
+
+  def fromRow(index: Int, row: Row): Try[RR] = {
+    nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index), r.version))
+  }
+
+  def fromRow(index: Int, row: IndexedRow): Try[RR] = {
+    if (Option(row).isEmpty || row.isNull(index)) {
+      Failure(new Exception(s"Column with index $index is null") with NoStackTrace)
+    } else {
+      Try(deserialize(row.getBytesUnsafe(index), row.version))
+    }
   }
 
   def fromString(value: String): RR

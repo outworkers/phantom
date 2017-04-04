@@ -30,8 +30,10 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   import c.universe._
 
   val rowByNameType = tq"com.datastax.driver.core.GettableByNameData"
-  val rowByIndexType = tq"com.datastax.driver.core.GettableByIndexData"
+  val rowByIndexType = tq"com.outworkers.phantom.IndexedRow"
   val pVersion = tq"com.datastax.driver.core.ProtocolVersion"
+  private[this] val versionTerm = q"version"
+  private[this] val rowType = tq"com.outworkers.phantom.Row"
 
   val boolType = tq"scala.Boolean"
   val strType: Tree = tq"java.lang.String"
@@ -57,7 +59,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
 
   val prefix = q"com.outworkers.phantom.builder.primitives"
-  private[this] val versionTerm = q"version"
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
   def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
@@ -180,17 +181,17 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     val fields: List[TupleType] = tupleFields(tpe)
 
-    val tree = q"""new $prefix.Primitive[$tpe] {
+    q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
           .queryString
       }
 
-      override def serialize(source: $tpe): $bufferType = ???
-      override def deserialize(source: $bufferType): $tpe = ???
+      override def serialize(source: $tpe, $versionTerm: $pVersion): $bufferType = ???
+      override def deserialize(source: $bufferType, $versionTerm: $pVersion): $tpe = ???
 
-      override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
+      override def fromRow(name: $strType, row: $rowType): ${tryT(tpe)} = {
         if (scala.Option(row).isEmpty || row.isNull(name)) {
           scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
         } else {
@@ -207,8 +208,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
       override def frozen: $boolType = true
     }"""
-    Console.println(showCode(tree))
-    tree
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {
