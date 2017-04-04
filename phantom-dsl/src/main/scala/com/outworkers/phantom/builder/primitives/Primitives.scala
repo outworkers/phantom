@@ -93,7 +93,7 @@ object Utils {
 
 object Primitives {
 
-  private[this] def emptyCollection: ByteBuffer = ByteBuffer.wrap(new Array[Byte](0))
+  private[this] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
 
   object StringPrimitive extends Primitive[String] {
@@ -355,7 +355,7 @@ object Primitives {
         case decimal =>
           val bi: BigInteger = obj.bigDecimal.unscaledValue
           val scale: Int = obj.scale
-          val bibytes: Array[Byte] = bi.toByteArray
+          val bibytes = bi.toByteArray
 
           val bytes = ByteBuffer.allocate(4 + bibytes.length)
           bytes.putInt(scale)
@@ -376,8 +376,7 @@ object Primitives {
 
         case bt @ _ =>
           val newBytes = bytes.duplicate
-
-          val scale: Int = newBytes.getInt
+          val scale = newBytes.getInt
           val bibytes = new Array[Byte](newBytes.remaining)
           newBytes.get(bibytes)
 
