@@ -21,8 +21,10 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 import com.outworkers.util.samplers._
 import org.joda.time.{ DateTime, DateTimeZone }
-import java.util.Date
+import java.net.InetAddress
+import java.util.{ Date, UUID }
 import org.scalacheck.{ Arbitrary, Gen }
+import com.datastax.driver.core.LocalDate
 
 class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
   implicit override val generatorDrivenConfig = {
@@ -32,12 +34,31 @@ class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrive
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower
 
+  private[this] val inetLowerLimit = 0
+  private[this] val inetUpperLimit = 255
+
   implicit val dateTimeGen: Gen[DateTime] = for {
     offset <- Gen.choose(genLower, genHigher)
     time = new DateTime(DateTimeZone.UTC)
   } yield time.plusMillis(offset)
 
   implicit val javaDateGen: Gen[Date] = dateTimeGen.map(_.toDate)
+
+  implicit val localDateGen: Gen[LocalDate] = dateTimeGen.map(dt =>
+    LocalDate.fromMillisSinceEpoch(dt.getMillis)
+  )
+
+  implicit val inetAddressGen: Gen[InetAddress] = {
+    for {
+      ip1 <- Gen.choose(inetLowerLimit, inetUpperLimit)
+      ip2 <- Gen.choose(inetLowerLimit, inetUpperLimit)
+      ip3 <- Gen.choose(inetLowerLimit, inetUpperLimit)
+      ip4 <- Gen.choose(inetLowerLimit, inetUpperLimit)
+    } yield InetAddress.getByName(s"$ip1.$ip2.$ip3.$ip4")
+  }
+
+  implicit val inetAddressArb: Arbitrary[InetAddress] = Arbitrary(inetAddressGen)
+
 
   def roundtrip[T : Primitive](gen: Gen[T]) = {
     val ev = Primitive[T]
@@ -85,11 +106,51 @@ class PrimitiveRoundtripTests extends FlatSpec with Matchers with GeneratorDrive
     roundtrip[Boolean]
   }
 
+  it should "serialize and deserialize a UUID primitive" in {
+    roundtrip(Gen.uuid)
+  }
+
+  it should "serialize and deserialize a java.net.InetAddress primitive" in {
+    roundtrip(inetAddressGen)
+  }
+
   it should "serialize and deserialize a BigDecimal primitive" in {
     roundtrip[BigDecimal]
   }
 
   it should "serialize and deserialize a BigInt primitive" in {
     roundtrip[BigInt]
+  }
+
+  it should "serialize and deserialie a List[Int] primitive" in {
+    roundtrip[List[Int]]
+  }
+
+  it should "serialize and deserialie a List[String] primitive" in {
+    roundtrip[List[String]]
+  }
+
+  it should "serialize and deserialie a List[Double] primitive" in {
+    roundtrip[List[Double]]
+  }
+
+  it should "serialize and deserialie a List[Long] primitive" in {
+    roundtrip[List[Long]]
+  }
+
+  it should "serialize and deserialie a List[Float] primitive" in {
+    roundtrip[List[Float]]
+  }
+
+  it should "serialize and deserialie a List[BigDecimal] primitive" in {
+    roundtrip[List[BigDecimal]]
+  }
+
+  it should "serialize and deserialie a List[BigInt] primitive" in {
+    roundtrip[List[BigInt]]
+  }
+
+  it should "serialize and deserialie a List[InetAddress] primitive" in {
+    roundtrip[List[InetAddress]]
   }
 }

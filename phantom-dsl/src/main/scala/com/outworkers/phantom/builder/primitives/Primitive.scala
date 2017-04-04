@@ -45,6 +45,10 @@ private[phantom] object DateSerializer {
 @implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
+  protected[this] def notNull[T](value: T, msg: String = "Value cannot be null"): Unit = {
+    if (Option(value).isEmpty) throw new NullPointerException(msg)
+  }
+
   def shouldFreeze: Boolean = false
 
   protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
@@ -170,6 +174,17 @@ object Primitive {
     }
   }
 
+  /**
+    * Derives a primitive without implicit lookup in phantom itself.
+    * This is because the macro that empowers the implicit lookup for primitives
+    * cannot be used in the same compilation as the one its defined in.
+    * @param to The function that converts the derived value to the original one.
+    * @param from The function that will convert an original value to a derived one.
+    * @param ev Evidence that the source type is a Cassandra primitive.
+    * @tparam Target The target type of the new primitive.
+    * @tparam Source The type we are deriving from.
+    * @return A new primitive for the target type.
+    */
   private[phantom] def manuallyDerive[Target, Source](
     to: Target => Source,
     from: Source => Target

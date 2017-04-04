@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class PrimitiveRecord(
@@ -33,7 +31,7 @@ case class PrimitiveRecord(
   bi: BigInt
 )
 
-abstract class Primitives extends CassandraTable[Primitives, PrimitiveRecord] {
+abstract class PrimitivesTable extends CassandraTable[PrimitivesTable, PrimitiveRecord] {
   object pkey extends StringColumn with PartitionKey
 
   object long extends LongColumn

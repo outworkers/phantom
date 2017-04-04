@@ -22,7 +22,7 @@ import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
 import com.datastax.driver.core._
-import com.datastax.driver.core.exceptions.InvalidTypeException
+import com.datastax.driver.core.exceptions.{DriverInternalError, InvalidTypeException}
 import com.google.common.base.Charsets
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -33,64 +33,68 @@ import org.joda.time.{LocalDate => JodaLocalDate}
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
 
-/*
-            if (value == null)
-                return null;
-            int size = 0;
-            int length = definition.getComponentTypes().size();
-            ByteBuffer[] elements = new ByteBuffer[length];
-            for (int i = 0; i < length; i++) {
-                elements[i] = serializeField(value, i, protocolVersion);
-                size += 4 + (elements[i] == null ? 0 : elements[i].remaining());
-            }
-            ByteBuffer result = ByteBuffer.allocate(size);
-            for (ByteBuffer bb : elements) {
-                if (bb == null) {
-                    result.putInt(-1);
-                } else {
-                    result.putInt(bb.remaining());
-                    result.put(bb.duplicate());
-                }
-            }
-            result.flip();
- */
+object Utils {
+  private[this] def unsupported(version: ProtocolVersion): DriverInternalError = {
+    new DriverInternalError(s"Unsupported protocol version $version")
+  }
 
-/*
-class TuplePrimitive[T] extends Primitive[T] {
+  private[this] val baseColSize = 4
 
-  def primitives: List[Primitive[_]]
+  private[this] def sizeOfValue(value: ByteBuffer, version: ProtocolVersion): Int = {
+    version match {
+      case ProtocolVersion.V1 | ProtocolVersion.V2 =>
+        val elemSize = value.remaining
 
-  override def serialize(obj: T): ByteBuffer = {
-    obj match {
-      case Primitive.nullValue => Primitive.nullValue
-      case bytes =>
-        var size = 0
-        val length = primitives.size
-        val elements = new Array[ByteBuffer](primitives.size)
-
-        for ( i <- 0 to length) {
-          elements(i) = serializeField(bytes, i, protocolVersion)
-          size += 4 + (if (elements(i) == Primitive.nullValue) 0 else elements(i).remaining())
+        if (elemSize > 65535) {
+          throw new IllegalArgumentException(
+            s"Native protocol version $version supports only elements " +
+              s"with size up to 65535 bytes - but element size is $elemSize bytes"
+          )
         }
 
-        val result = ByteBuffer.allocate(size)
-        for (bb <- elements) {
-          if (bb == null) {
-            result.putInt(-1)
-          } else {
-            result.putInt(bb.remaining())
-            result.put(bb.duplicate())
-          }
-        }
-        result.flip().asInstanceOf[ByteBuffer];
+        2 + elemSize
+      case ProtocolVersion.V3 | ProtocolVersion.V4 | ProtocolVersion.V5 =>
+        if (value == Primitive.nullValue) baseColSize else baseColSize + value.remaining
+      case _ => throw unsupported(version)
     }
   }
-  override def deserialize(source: ByteBuffer): T = ???
 
-  override def fromString(value: String): T = ???
-}*/
+  private[this] def sizeOfCollectionSize(version: ProtocolVersion): Int = version match {
+    case ProtocolVersion.V1 | ProtocolVersion.V2 => 2
+    case ProtocolVersion.V3 | ProtocolVersion.V4 | ProtocolVersion.V5 => baseColSize
+    case _ => throw unsupported(version)
+  }
+
+  /**
+    * Utility method that "packs" together a list of {@link ByteBuffer}s containing
+    * serialized collection elements.
+    * Mainly intended for use with collection codecs when serializing collections.
+    *
+    * @param buffers  the collection elements
+    * @param elements the total number of elements
+    * @param version  the protocol version to use
+    * @return The serialized collection
+    */
+  def pack[M[X] <: Traversable[X]](
+    buffers: M[ByteBuffer],
+    elements: Int,
+    version: ProtocolVersion
+  ): ByteBuffer = {
+    val size = buffers.foldLeft(0)((acc, b) => acc + sizeOfValue(b, version))
+
+    val result = ByteBuffer.allocate(sizeOfCollectionSize(version) + size)
+
+    CodecUtils.writeSize(result, elements, version)
+
+    for (bb <- buffers) CodecUtils.writeValue(result, bb, version)
+    result.flip.asInstanceOf[ByteBuffer]
+  }
+}
 
 object Primitives {
+
+  private[this] def emptyCollection: ByteBuffer = ByteBuffer.wrap(new Array[Byte](0))
+
 
   object StringPrimitive extends Primitive[String] {
       def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
@@ -124,9 +128,7 @@ object Primitives {
     override def fromString(value: String): Int = value.toInt
 
     override def serialize(obj: Int): ByteBuffer = {
-      val bb = ByteBuffer.allocate(4)
-      bb.putInt(0, obj)
-      bb
+      ByteBuffer.allocate(byteLength).putInt(0, obj)
     }
 
     override def deserialize(bytes: ByteBuffer): Int = {
@@ -151,9 +153,7 @@ object Primitives {
     override def fromString(value: String): Short = value.toShort
 
     override def serialize(obj: Short): ByteBuffer = {
-      val bb = ByteBuffer.allocate(2)
-      bb.putShort(0, obj)
-      bb
+      ByteBuffer.allocate(byteLength).putShort(0, obj)
     }
 
     override def deserialize(bytes: ByteBuffer): Short = {
@@ -290,12 +290,22 @@ object Primitives {
       nullValueCheck(obj) { value =>
         val bb = ByteBuffer.allocate(byteLength)
         bb.putLong(0, value.getMostSignificantBits)
-        bb.putLong(8, value.getLeastSignificantBits)
+        bb.putLong(byteLength / 2, value.getLeastSignificantBits)
         bb
       }
     }
 
-    override def deserialize(source: ByteBuffer): UUID = ???
+    override def deserialize(source: ByteBuffer): UUID = {
+      source match {
+        case Primitive.nullValue => Primitive.nullValue
+        case b if b.remaining() == 0 => Primitive.nullValue
+        case b if b.remaining() != byteLength =>
+          throw new InvalidTypeException(
+            s"Invalid UUID value, expecting $byteLength bytes but got " + b.remaining
+          )
+        case bytes @ _ => new UUID(bytes.getLong(bytes.position()), bytes.getLong(bytes.position() + 8))
+      }
+    }
   }
 
   object BooleanIsPrimitive extends Primitive[Boolean] {
@@ -347,7 +357,7 @@ object Primitives {
           val scale: Int = obj.scale
           val bibytes: Array[Byte] = bi.toByteArray
 
-          val bytes: ByteBuffer = ByteBuffer.allocate(4 + bibytes.length)
+          val bytes = ByteBuffer.allocate(4 + bibytes.length)
           bytes.putInt(scale)
           bytes.put(bibytes)
           bytes.rewind
@@ -367,14 +377,12 @@ object Primitives {
         case bt @ _ =>
           val newBytes = bytes.duplicate
 
-          val scale: Int = bytes.getInt
-          val bibytes: Array[Byte] = new Array[Byte](bytes.remaining)
+          val scale: Int = newBytes.getInt
+          val bibytes = new Array[Byte](newBytes.remaining)
           newBytes.get(bibytes)
 
-          val bi: BigInteger = new BigInteger(bibytes)
-          BigDecimal(bi, scale)
+          BigDecimal(new BigInteger(bibytes), scale)
       }
-
     }
   }
 
@@ -488,7 +496,6 @@ object Primitives {
     implicit ev: Primitive[RR],
     cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
-
     override def shouldFreeze: Boolean = true
 
     override def asCql(value: M[RR]): String = converter(value)
@@ -498,15 +505,13 @@ object Primitives {
     override def serialize(value: M[RR]): ByteBuffer = {
       value match {
         case Primitive.nullValue => Primitive.nullValue
+        case v if v.isEmpty => emptyCollection
         case set =>
-          val buffers = set.foldRight(Seq.empty[ByteBuffer]) { case (elt, acc) =>
-            if (Option(elt).isEmpty) {
-              throw new NullPointerException("Collection elements cannot be null")
-            }
+          val buffers = (set :\ Seq.empty[ByteBuffer]) { case (elt, acc) =>
+            notNull(elt, "Collection elements cannot be null")
             acc :+ ev.serialize(elt)
           }
-
-          CodecUtils.pack(buffers.toArray, value.size, ProtocolVersion.V4);
+          Utils.pack(buffers, value.size, ProtocolVersion.V4)
       }
     }
 
@@ -554,14 +559,11 @@ object Primitives {
     )
   }
 
-  def map[K, V](implicit keyPrimitive: Primitive[K], valuePrimitive: Primitive[V]): Primitive[Map[K, V]] = {
+  def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
       override def shouldFreeze: Boolean = true
 
-      override def cassandraType: String = QueryBuilder.Collections.mapType(
-        keyPrimitive.cassandraType,
-        valuePrimitive.cassandraType
-      ).queryString
+      override def cassandraType: String = QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
 
       override def fromString(value: String): Map[K, V] = Map.empty[K, V]
 
@@ -569,14 +571,15 @@ object Primitives {
         case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
       }).queryString
 
-      override def serialize(source: Map[K, V]): ByteBuffer = {
-        if (source == Primitive.nullValue) Primitive.nullValue
+      override def serialize(source: Map[K, V]): ByteBuffer = source match {
+        case Primitive.nullValue => emptyCollection
+        case s if s.isEmpty => emptyCollection
 
         val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
-          if (Option(key).isEmpty) throw new NullPointerException("Map keys cannot be null")
-          acc :+ keyPrimitive.serialize(key) :+ valuePrimitive.serialize(value)
+          notNull(key, "Map keys cannot be null")
+          acc :+ kp.serialize(key) :+ vp.serialize(value)
         }
-        CodecUtils.pack(bbs.toArray, source.size, ProtocolVersion.V4)
+        Utils.pack(bbs, source.size, ProtocolVersion.V4)
       }
 
       override def deserialize(bytes: ByteBuffer): Map[K, V] = {
@@ -594,7 +597,7 @@ object Primitives {
                 val kbb = CodecUtils.readValue(input, ProtocolVersion.V4)
                 val vbb = CodecUtils.readValue(input, ProtocolVersion.V4)
 
-                m += (keyPrimitive.deserialize(kbb) -> valuePrimitive.deserialize(vbb))
+                m += (kp.deserialize(kbb) -> vp.deserialize(vbb))
               }
               m result()
             } catch {
