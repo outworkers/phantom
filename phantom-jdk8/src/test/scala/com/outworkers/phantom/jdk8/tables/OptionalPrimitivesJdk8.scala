@@ -18,7 +18,6 @@ package com.outworkers.phantom.jdk8.tables
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8.dsl._
@@ -40,13 +39,13 @@ abstract class OptionalPrimitivesJdk8 extends CassandraTable[
 
   object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OptionalOffsetDateTimeColumn
+  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
 
-  object zonedDateTime extends OptionalZonedDateTimeColumn
+  object zonedDateTime extends OptionalZonedDateTimeColumn(this)
 
-  object localDate extends OptionalJdkLocalDateColumn
+  object localDate extends OptionalJdkLocalDateColumn(this)
 
-  object localDateTime extends OptionalJdkLocalDateTimeColumn
+  object localDateTime extends OptionalJdkLocalDateTimeColumn(this)
 
   def findByPkey(pkey: String): Future[Option[OptionalJdk8Row]] = {
     select.where(_.pkey eqs pkey).one()

@@ -37,7 +37,7 @@ trait DefaultJava8Primitives {
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-  object LocalDateIsPrimitive extends Primitive[JavaLocalDate] {
+  implicit val LocalDateIsPrimitive = new Primitive[JavaLocalDate] {
     val cassandraType = CQLSyntax.Types.Date
 
     val codec = IntPrimitive

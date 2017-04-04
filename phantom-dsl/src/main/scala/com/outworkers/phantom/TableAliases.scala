@@ -51,12 +51,12 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   abstract class JsonSetColumn[RR]()(
     implicit ev: Primitive[Set[String]],
     ev2: Primitive[String]
-  ) extends AbstractColColumn[T, R, Set, String](this)
+  ) extends column.JsonSetColumn[T, R, RR](this)
 
   abstract class JsonListColumn[RR]()(
     implicit ev: Primitive[List[String]],
     ev2: Primitive[String]
-  ) extends AbstractColColumn[T, R, List, String](this)
+  ) extends column.JsonListColumn[T, R, RR](this)
 
   abstract class JsonMapColumn[KK, VV]()(
     implicit ev: Primitive[Map[KK, String]],

@@ -31,7 +31,7 @@ abstract class SecondaryCounterTable extends CassandraTable[SecondaryCounterTabl
   object count_entries extends CounterColumn
 }
 
-class BrokenCounterTableTest extends CassandraTable[BrokenCounterTableTest, CounterRecord] with RootConnector {
+abstract class BrokenCounterTableTest extends CassandraTable[BrokenCounterTableTest, CounterRecord] with RootConnector {
   object id extends UUIDColumn with PartitionKey
   object count_entries extends CounterColumn
 }

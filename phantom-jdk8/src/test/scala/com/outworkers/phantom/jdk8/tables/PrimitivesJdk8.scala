@@ -37,13 +37,13 @@ abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] wi
 
   object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OffsetDateTimeColumn
+  object offsetDateTime extends OffsetDateTimeColumn(this)
 
-  object zonedDateTime extends ZonedDateTimeColumn
+  object zonedDateTime extends ZonedDateTimeColumn(this)
 
-  object localDate extends JdkLocalDateColumn
+  object localDate extends JdkLocalDateColumn(this)
 
-  object localDateTime extends JdkLocalDateTimeColumn
+  object localDateTime extends JdkLocalDateTimeColumn(this)
 
   def findByPkey(pkey: String): Future[Option[Jdk8Row]] = {
     select.where(_.pkey eqs pkey).one()

@@ -19,62 +19,60 @@ import java.time._
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause
-import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
-import com.outworkers.phantom.builder.ops.{MaxTimeUUID, MinTimeUUID, TimeUUIDOperator}
-import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.ops.TimeUUIDOperator
 import com.outworkers.phantom.dsl.CassandraTable
 import org.joda.time.{DateTime, DateTimeZone}
+import com.outworkers.phantom.column
 
 package object dsl extends DefaultJava8Primitives {
-
-  type OffsetDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
-
-  type ZonedDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
-
-  type JdkLocalDateColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
-
-  type JdkLocalDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, LocalDateTime]
-
-  type OptionalOffsetDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
-
-  type OptionalZonedDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
-
-  type OptionalJdkLocalDateColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
-
-  type OptionalJdkLocalDateTimeColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
 
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
-  def instantToTimeuuid(instant: Instant): UUID = {
 
+  type OffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  type ZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, ZonedDateTime]
+
+  type JdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, JdkLocalDate]
+
+  type JdkLocalDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, LocalDateTime]
+
+  type OptionalOffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  type OptionalZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
+
+  type OptionalJdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
+
+  type OptionalJdkLocalDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
+
+  def instantToTimeuuid(instant: Instant): UUID = {
     new UUID(
       UUIDs.startOf(instant.toEpochMilli).getMostSignificantBits,
       scala.util.Random.nextLong()
@@ -133,8 +131,8 @@ package object dsl extends DefaultJava8Primitives {
   }
 
   implicit class Jdk8TimeUUIDOps(val op: TimeUUIDOperator) extends AnyVal {
-    def apply(odt: OffsetDateTime): OperatorClause.Condition = op(odt.asJoda)
+    def apply(odt: OffsetDateTime): OperatorClause.Condition = op(odt.asJoda())
 
-    def apply(zdt: ZonedDateTime): OperatorClause.Condition = op(zdt.asJoda)
+    def apply(zdt: ZonedDateTime): OperatorClause.Condition = op(zdt.asJoda())
   }
 }

@@ -93,15 +93,14 @@ abstract class OptionalThriftColumn[
 
 }
 
-abstract class ThriftSetColumn[
+class ThriftSetColumn[
   T <: CassandraTable[T, R],
   R,
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
   implicit hp: ThriftHelper[V],
-  ev: Primitive[Set[String]],
-  thriftPrimitive: Primitive[V]
-) extends CollectionColumn[T, R, Set, V](table) with ThriftCol[V] {
+  ev: Primitive[Set[String]]
+) extends AbstractColColumn[T, R, Set, V](table) with ThriftCol[V] {
 
   override def valueAsCql(v: V): String = {
     CQLQuery.empty.singleQuote(serializer.toString(v))
@@ -120,18 +119,19 @@ abstract class ThriftSetColumn[
       Success(ev.deserialize(r.getBytesUnsafe(name)).map(serializer.fromString))
     }
   }
+
+  override def fromString(c: String): V = serializer.fromString(c)
 }
 
 
-abstract class ThriftListColumn[
+class ThriftListColumn[
   T <: CassandraTable[T, R],
   R,
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
   implicit hp: ThriftHelper[V],
-  ev: Primitive[List[String]],
-  thriftPrimitive: Primitive[V]
-) extends CollectionColumn[T, R, List, V](table) with ThriftCol[V] {
+  ev: Primitive[List[String]]
+) extends AbstractColColumn[T, R, List, V](table) with ThriftCol[V] {
 
   override def valueAsCql(v: V): String = {
     CQLQuery.empty.singleQuote(serializer.toString(v))
@@ -148,10 +148,12 @@ abstract class ThriftListColumn[
       Success(ev.deserialize(r.getBytesUnsafe(name)).map(serializer.fromString))
     }
   }
+
+  override def fromString(c: String): V = serializer.fromString(c)
 }
 
 @implicitNotFound(msg = "Type ${KeyType} must be a Cassandra primitive")
-abstract class ThriftMapColumn[
+class ThriftMapColumn[
   T <: CassandraTable[T, R],
   R,
   KeyType : Primitive,
@@ -180,4 +182,6 @@ abstract class ThriftMapColumn[
       Try(ev.deserialize(r.getBytesUnsafe(name)).mapValues(v => serializer.fromString(v)))
     }
   }
+
+  override def fromString(c: String): V = serializer.fromString(c)
 }

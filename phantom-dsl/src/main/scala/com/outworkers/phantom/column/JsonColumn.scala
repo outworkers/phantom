@@ -63,7 +63,46 @@ abstract class OptionalJsonColumn[
   val cassandraType = CQLSyntax.Types.Text
 
   override def optional(r: Row): Try[ValueType] = Try(fromJson(r.getString(name)))
+}
 
+abstract class JsonListColumn[
+  T <: CassandraTable[T, R],
+  R,
+  ValueType
+](table: CassandraTable[T, R])(
+  implicit ev: Primitive[String],
+  cp: Primitive[List[String]]
+) extends AbstractColColumn[T, R, List, ValueType](table) with JsonDefinition[ValueType] {
+
+  override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
+
+  override val cassandraType = cp.cassandraType
+
+  override def parse(r: Row): Try[List[ValueType]] = {
+    if (r.isNull(name)) {
+      Success(List.empty[ValueType])
+    } else {
+      cp.fromRow(name, r) map (_.map(fromJson))
+    }
+  }
+}
+
+abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
+  table: CassandraTable[T, R]
+)(
+  implicit ev: Primitive[String],
+  cp: Primitive[Set[String]]
+) extends AbstractColColumn[T ,R, Set, ValueType](table) with JsonDefinition[ValueType] {
+
+  override val cassandraType = cp.cassandraType
+
+  override def parse(r: Row): Try[Set[ValueType]] = {
+    if (r.isNull(name)) {
+      Success(Set.empty[ValueType])
+    } else {
+      cp.fromRow(name, r) map (_.map(fromJson))
+    }
+  }
 }
 
 abstract class JsonMapColumn[
