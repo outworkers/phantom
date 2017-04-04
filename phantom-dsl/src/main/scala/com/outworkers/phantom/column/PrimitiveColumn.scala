@@ -43,7 +43,7 @@ class PrimitiveColumn[
 
     if (isStaticColumn) {
       root.forcePad.append(CQLSyntax.static)
-    } else if (shouldFreeze) {
+    } else if (shouldFreeze && ev.shouldFreeze) {
       QueryBuilder.Collections.frozen(root)
     } else {
       root

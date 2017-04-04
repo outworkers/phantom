@@ -306,7 +306,7 @@ trait RootMacro {
       if (unmatchedColumns.isEmpty) {
         recString
       } else {
-        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
         cols.mkString(", ") + s", $recString"
       }
@@ -317,7 +317,7 @@ trait RootMacro {
       if (unmatchedColumns.isEmpty) {
         tq"$recordType"
       } else {
-        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
         tq"(..$cols)"
       }

@@ -129,10 +129,8 @@ class SelectQuery[
     RR,
     HL <: HList,
     Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Unchainned,
+  ](condition: Table => QueryCondition[HL])(
+    implicit ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
@@ -159,10 +157,8 @@ class SelectQuery[
     RR,
     HL <: HList,
     Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Chainned,
+  ](condition: Table => QueryCondition[HL])(
+    implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(

@@ -249,6 +249,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     recordFields match { case recField :: tail =>
       columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
         case None =>
+
+
+
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
           extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
 
@@ -396,9 +399,14 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val notImplemented = q"???"
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
+      val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
+
       c.abort(
         c.enclosingPosition,
-        s"You need to manually define a def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}"
+        s"""Please define def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}.
+          Found unmatched record columns on ${printType(tableType)}
+          $unmatched
+        """"
       )
     } else {
       logger.debug(descriptor.showExtractor)

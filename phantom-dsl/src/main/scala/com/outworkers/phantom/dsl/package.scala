@@ -115,7 +115,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class KeySpaceAugmenter(val k: KeySpace) extends AnyVal {
-    def build: RootSerializer = new RootSerializer(k)
+    def builder: RootSerializer = new RootSerializer(k)
   }
 
   implicit def keyspaceInstanceToQueryBuilder(k: KeySpace): RootSerializer = new RootSerializer(k)

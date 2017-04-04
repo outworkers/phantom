@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
 abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] with RootConnector {
@@ -53,6 +51,3 @@ abstract class IndexedEntriesTable extends CassandraTable[IndexedEntriesTable, T
 
   object mapIntToInt extends MapColumn[Int, Int] with Index with Entries
 }
-
-
-
