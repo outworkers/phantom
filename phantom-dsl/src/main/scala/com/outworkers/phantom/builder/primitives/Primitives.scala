@@ -498,18 +498,16 @@ object Primitives {
 
     override def cassandraType: String = cType
 
-    override def serialize(value: M[RR], version: ProtocolVersion): ByteBuffer = {
-      if (value == Primitive.nullValue) {
+    override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
+      if (coll == Primitive.nullValue) {
         Primitive.nullValue
       } else {
-        var i = 0
-        val bbs = new Array[ByteBuffer](value.size)
-        for (elt <- value) {
+        val bbs = coll.foldRight(Seq.empty[ByteBuffer]) { (elt, acc) =>
           notNull(elt, "Collection elements cannot be null")
-          bbs(i) = ev.serialize(elt, version)
-          i += 1
+          acc :+ ev.serialize(elt, version)
         }
-        CodecUtils.pack(bbs, value.size, version)
+
+        Utils.pack(bbs, coll.size, version)
       }
     }
 
