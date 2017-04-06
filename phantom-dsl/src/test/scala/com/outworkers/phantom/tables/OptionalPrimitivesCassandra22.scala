@@ -53,8 +53,6 @@ abstract class OptionalPrimitivesCassandra22 extends Table[
   object byte extends OptionalTinyIntColumn
 
   object localDate extends OptionalLocalDateColumn
-
-  override val tableName = "OptionalPrimitivesCassandra22"
 }
 
 
@@ -82,6 +80,6 @@ abstract class OptionalDerivedTable extends CassandraTable[
   OptionalDerivedTable,
   OptTypesRecord
 ] {
-  object pkey extends UUIDColumn(this) with PartitionKey
-  object wrapped extends OptionalCol[WrappedType](this)
+  object pkey extends UUIDColumn with PartitionKey
+  object wrapped extends OptionalCol[WrappedType]
 }
