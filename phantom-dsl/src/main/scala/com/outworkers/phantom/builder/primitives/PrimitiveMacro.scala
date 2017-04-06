@@ -71,6 +71,10 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     tpe.typeSymbol.fullName startsWith "scala.Tuple"
   }
 
+  def isOption(tpe: Type): Boolean = {
+    tpe.typeSymbol.fullName startsWith "scala.Option"
+  }
+
   object Symbols {
     val intSymbol: Symbol = typed[Int]
     val byteSymbol: Symbol = typed[Byte]
@@ -244,6 +248,20 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
   }
 
+  def printType(tpe: Type): String = {
+    showCode(tq"${tpe.dealias}")
+  }
+
+  def optionPrimitive(tpe: Type): Tree = {
+    tpe.typeArgs match {
+      case head :: Nil => q"$prefix.Primitives.option[$head]"
+      case _ => c.abort(
+        c.enclosingPosition,
+        s"Expected a single type argument for optional primitive for type ${printType(tpe)}, got ${tpe.typeArgs.size}"
+      )
+    }
+  }
+
   def enumPrimitive(tpe: Type): Tree = {
 
     val comp = tpe.typeSymbol.name.toTermName
@@ -332,6 +350,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     val tree = tpe match {
       case _ if isTuple(wkType) => tuplePrimitive[T]()
+      case _ if isOption(wkType) => optionPrimitive(wkType)
       case Symbols.boolSymbol => booleanPrimitive
       case Symbols.byteSymbol => bytePrimitive
       case Symbols.shortSymbol => shortPrimitive

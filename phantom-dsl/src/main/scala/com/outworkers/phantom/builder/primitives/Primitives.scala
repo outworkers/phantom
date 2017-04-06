@@ -27,7 +27,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.collection.JavaConverters._
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 object Primitives {
 
@@ -436,6 +436,41 @@ object Primitives {
       override def clz: Class[java.nio.ByteBuffer] = classOf[java.nio.ByteBuffer]
 
     }
+
+  def option[T : Primitive]: Primitive[Option[T]] = {
+    val ev = implicitly[Primitive[T]]
+
+    val nullString = None.orNull.asInstanceOf[String]
+
+    new Primitive[Option[T]] {
+
+      override def fromRow(column: String, row: GettableByNameData): Try[Option[T]] = {
+        ev.fromRow(column, row) match {
+          case Success(value) => Success(Some(value))
+          case Failure(err) => Success(None)
+        }
+      }
+
+      override def fromRow(index: Int, row: GettableByIndexData): Try[Option[T]] = {
+        ev.fromRow(index, row) match {
+          case Success(value) => Success(Some(value))
+          case Failure(err) => Success(None)
+        }
+      }
+
+      override def cassandraType: String = ev.cassandraType
+
+      override def fromString(value: String): Option[T] = Option(ev.fromString(value))
+
+      override def asCql(value: Option[T]): String = {
+          value.map(ev.asCql).getOrElse(nullString)
+      }
+
+      override def clz: Class[Option[T]] = classOf[Option[T]]
+
+      override type PrimitiveType = Option[T]
+    }
+  }
 
   def list[T : Primitive](): Primitive[List[T]] = {
     new Primitive[List[T]] {

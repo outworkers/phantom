@@ -18,6 +18,7 @@ package com.outworkers.phantom.tables
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.builder.primitives.{ Primitive => PPrimitive }
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 
@@ -54,4 +55,33 @@ abstract class OptionalPrimitivesCassandra22 extends CassandraTable[
   object localDate extends OptionalLocalDateColumn(this)
 
   override val tableName = "OptionalPrimitivesCassandra22"
+}
+
+
+case class WrappedType(name: String)
+
+object WrappedType {
+  implicit val wrappedPrimitive: PPrimitive[WrappedType] = {
+    PPrimitive.derive[WrappedType, String](_.name)(WrappedType.apply)
+  }
+}
+
+case class OptTypesRecord(
+  pkey: UUID,
+  wrapped: Option[WrappedType]
+)
+
+/**
+ * This is used to test our ability to derive optional primitives based on
+ * existing primitive types. A [[None]] value should be correctly parsed
+ * and serialised to Cassandra.
+ * To simulate the use case, we need a custom primitive
+ * and an [[OptionalCol]] with this newtype.
+ */
+abstract class OptionalDerivedTable extends CassandraTable[
+  OptionalDerivedTable,
+  OptTypesRecord
+] {
+  object pkey extends UUIDColumn(this) with PartitionKey
+  object wrapped extends OptionalCol[WrappedType](this)
 }

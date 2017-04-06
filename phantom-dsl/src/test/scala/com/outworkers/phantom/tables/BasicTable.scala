@@ -125,5 +125,3 @@ abstract class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTa
   object id3 extends UUIDColumn(this) with PrimaryKey
   object placeholder extends StringColumn(this)
 }
-
-
