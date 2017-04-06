@@ -44,6 +44,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
+  type Table[T, R] = phantom.CassandraTable[T, R]
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
   type Descending = com.outworkers.phantom.keys.Descending
@@ -107,18 +108,42 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
 
   implicit class RichNumber(val percent: Int) extends AnyVal {
-    def percentile: CQLQuery = CQLQuery(percent.toString).pad.append(CQLSyntax.CreateOptions.percentile)
+    def percentile: CQLQuery = CQLQuery(percent.toString)
+      .pad.append(CQLSyntax.CreateOptions.percentile)
   }
 
   implicit def primitiveToTokenOp[RR : Primitive](value: RR): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
     new TokenConstructor(Seq(Primitive[RR].asCql(value)))
   }
 
+  /**
+   * Used when creating a [[ContactPoint]] to allow users to provide
+   * a single [[KeySpace]] derived query. When users want to provide
+   * a single argument to the [[ContactPoint#keySpace]] method, they can use
+   * the following syntax to generate a full keyspace initialisation query.
+   *
+   * {{{
+   *   KeySpace("test").builder.ifNotExists
+   * }}}
+   */
   implicit class KeySpaceAugmenter(val k: KeySpace) extends AnyVal {
     def builder: RootSerializer = new RootSerializer(k)
   }
 
-  implicit def keyspaceInstanceToQueryBuilder(k: KeySpace): RootSerializer = new RootSerializer(k)
+  /**
+   * Used as a secondary option when creating a [[ContactPoint]] to allow users to provide
+   * a single [[KeySpace]] derived query. When users want to provide
+   * a single argument to the [[ContactPoint#keySpace]] method, they can use
+   * the following syntax to generate a full keyspace initialisation query.
+   * The KeySpace will implicitly convert to a [[RootSerializer]].
+   *
+   * {{{
+   *   KeySpace("test").ifNotExists
+   * }}}
+   */
+  implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = {
+    new RootSerializer(k)
+  }
 
   implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
