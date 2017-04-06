@@ -34,18 +34,18 @@ case class OAuth2Session(
  * This table is used for the internal application.
  * If a session is found in this table for a given user, it means the respective user is authenticated.
  */
-abstract class SessionsByUserId extends Table[
+abstract class SessionsByUserId extends CassandraTable[
   SessionsByUserId,
   OAuth2Session
 ] with RootConnector {
 
-  object user_id extends UUIDColumn with PartitionKey
-  object client_id extends UUIDColumn
-  object access_token extends UUIDColumn
-  object refresh_token extends UUIDColumn
-  object authorization_grant extends UUIDColumn
-  object remembered_token extends OptionalUUIDColumn
-  object timestamp extends DateTimeColumn
+  object user_id extends UUIDColumn(this) with PartitionKey
+  object client_id extends UUIDColumn(this)
+  object access_token extends UUIDColumn(this)
+  object refresh_token extends UUIDColumn(this)
+  object authorization_grant extends UUIDColumn(this)
+  object remembered_token extends OptionalUUIDColumn(this)
+  object timestamp extends DateTimeColumn(this)
 
   def findById(id: UUID): Future[Option[OAuth2Session]] = {
     select.where(_.user_id eqs id).one()

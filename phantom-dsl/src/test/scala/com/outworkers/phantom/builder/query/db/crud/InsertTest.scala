@@ -28,6 +28,7 @@ class InsertTest extends PhantomSuite {
     super.beforeAll()
     database.listCollectionTable.insertSchema()
     database.primitives.insertSchema()
+    database.optDerivedTable.insertSchema()
 
     if (session.v4orNewer) {
       database.primitivesCassandra22.insertSchema()
@@ -156,4 +157,19 @@ class InsertTest extends PhantomSuite {
     }
   }
 
+  it should "correctly insert a record with an Option wrapped primitive type" in {
+    val sample = gen[OptTypesRecord]
+
+    val chain = for {
+      store <- database.optDerivedTable.store(sample).future()
+      res <- database.optDerivedTable.select.where(_.pkey eqs sample.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+
+    }
+
+  }
 }
