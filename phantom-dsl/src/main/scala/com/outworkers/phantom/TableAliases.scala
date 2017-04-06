@@ -67,6 +67,8 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class CustomColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class Col[RR : Primitive] extends PrimitiveColumn[RR]
+  type OptionalCol[RR] = Col[Option[RR]]
+
   abstract class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](this)
 
   abstract class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](this)

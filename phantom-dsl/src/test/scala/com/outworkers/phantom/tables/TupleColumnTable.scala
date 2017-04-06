@@ -50,7 +50,6 @@ abstract class NestedTupleColumnTable extends Table[
   }
 }
 
-
 case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
 
 abstract class TupleCollectionsTable extends Table[

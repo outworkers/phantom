@@ -106,6 +106,19 @@ val PerformanceTest = config("perf").extend(Test)
 
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
+scalacOptions in ThisBuild ++= Seq(
+  "-language:experimental.macros",
+  "-language:postfixOps",
+  "-language:implicitConversions",
+  "-language:reflectiveCalls",
+  "-language:higherKinds",
+  "-language:existentials",
+  "-Xlint",
+  "-deprecation",
+  "-feature",
+  "-unchecked"
+)
+
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
@@ -121,18 +134,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
-  ),
-  scalacOptions in ThisBuild ++= Seq(
-    "-language:experimental.macros",
-    "-language:postfixOps",
-    "-language:implicitConversions",
-    "-language:reflectiveCalls",
-    "-language:higherKinds",
-    "-language:existentials",
-    "-Xlint",
-    "-deprecation",
-    "-feature",
-    "-unchecked"
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(

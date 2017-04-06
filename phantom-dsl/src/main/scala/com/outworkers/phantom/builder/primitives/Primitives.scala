@@ -556,6 +556,33 @@ object Primitives {
     )
   }
 
+  def option[T : Primitive]: Primitive[Option[T]] = {
+    val ev = implicitly[Primitive[T]]
+
+    val nullString = None.orNull.asInstanceOf[String]
+
+    new Primitive[Option[T]] {
+
+      def serialize(obj: Option[T], protocol: ProtocolVersion): ByteBuffer = {
+        obj.fold(
+          Primitive.nullValue.asInstanceOf[ByteBuffer]
+        )(v => ev.serialize(v, protocol))
+      }
+
+      def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Option[T] = {
+        Try(ev.deserialize(source, protocol)).toOption
+      }
+
+      override def cassandraType: String = ev.cassandraType
+
+      override def fromString(value: String): Option[T] = Option(ev.fromString(value))
+
+      override def asCql(value: Option[T]): String = {
+          value.map(ev.asCql).getOrElse(nullString)
+      }
+    }
+  }
+
   def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
       override def shouldFreeze: Boolean = true

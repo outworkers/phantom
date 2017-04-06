@@ -60,10 +60,4 @@ package object primitives {
   }
 
   implicit val inetAddressArb: Arbitrary[InetAddress] = Arbitrary(inetAddressGen)
-
-  object Record {
-    implicit val recordPrimitive: Primitive[Record] = {
-      Primitive.derive[Record, String](_.value)(Record.apply)
-    }
-  }
 }

@@ -16,3 +16,9 @@
 package com.outworkers.phantom.builder.primitives
 
 case class Record(value: String)
+
+object Record {
+  implicit val recordPrimitive: Primitive[Record] = {
+    Primitive.derive[Record, String](_.value)(Record.apply)
+  }
+}
