@@ -157,6 +157,20 @@ class InsertTest extends PhantomSuite {
     }
   }
 
+  it should "correctly insert a record with an Option wrapped primitive type with a None" in {
+    val sample = gen[OptTypesRecord].copy(wrapped = None)
+
+    val chain = for {
+      store <- database.optDerivedTable.store(sample).future()
+      res <- database.optDerivedTable.select.where(_.pkey eqs sample.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
   it should "correctly insert a record with an Option wrapped primitive type" in {
     val sample = gen[OptTypesRecord]
 
@@ -168,8 +182,6 @@ class InsertTest extends PhantomSuite {
     whenReady(chain) { res =>
       res shouldBe defined
       res.value shouldEqual sample
-
     }
-
   }
 }
