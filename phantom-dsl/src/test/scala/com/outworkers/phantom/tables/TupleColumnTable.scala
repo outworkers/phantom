@@ -50,7 +50,6 @@ abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable wit
   }
 }
 
-
 case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
 
 class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {

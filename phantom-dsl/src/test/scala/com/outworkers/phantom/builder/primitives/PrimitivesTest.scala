@@ -89,6 +89,10 @@ class PrimitivesTest extends FlatSpec with Matchers {
 
     Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
   }
+
+  it should "automatically generate a primitive for an optional type" in {
+    """val ev = Primitive[Option[Record]]""" should compile
+  }
 }
 
 case class Record(value: String)
