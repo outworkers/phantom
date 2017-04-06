@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.primitives
 
 import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
 import org.scalacheck.{Arbitrary, Gen}
@@ -34,6 +35,14 @@ trait PrimitiveSamplers {
     offset <- Gen.choose(genLower, genHigher)
     time = new DateTime(DateTimeZone.UTC)
   } yield time.plusMillis(offset)
+
+  def bytebufferGen[T : Primitive : Sample](
+    version: ProtocolVersion
+  ): Gen[ByteBuffer] = {
+    Sample.arbitrary[T].arbitrary.map(
+      obj => Primitive[T].serialize(obj, version)
+    )
+  }
 
   implicit val javaDateGen: Gen[Date] = dateTimeGen.map(_.toDate)
 

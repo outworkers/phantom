@@ -38,21 +38,30 @@ class PrimitiveUtilsTest extends FlatSpec
 
   private[this] val protocol = ProtocolVersion.V5
 
+  def serialize[M[X] <: Traversable[X],T](
+    input: M[T],
+    version: ProtocolVersion = ProtocolVersion.V5
+  )(
+    implicit ev: Primitive[T],
+    cbf: CanBuildFrom[M[T], ByteBuffer, M[ByteBuffer]]
+  ): M[ByteBuffer] = {
+    input.foldRight(cbf()) { (elt, acc) =>
+      acc += ev.serialize(elt, version)
+    } result()
+  }
+
   /**
-    * We use this test to check that we rare mainting
+    * We use this test to check that we are maintaining
+    * serialization compatibility with the underlying Java driver.
     */
   def roundtrip[M[X] <: Traversable[X], T](gen: Gen[T])(
      implicit ev: Primitive[T],
      cbf: CanBuildFrom[Nothing, T, M[T]]
   ): Assertion = {
     forAll(Gen.listOf(gen)) { coll =>
-      val bbs = coll.foldRight(Seq.empty[ByteBuffer]) { (elt, acc) =>
-        acc :+ ev.serialize(elt, protocol)
-      }
-
-      val driverBuffer = CodecUtils.pack(bbs.toArray, coll.size, protocol)
+      val bbs = serialize(coll, protocol)
+      val driverBuffer = CodecUtils.pack(bbs.toArray, bbs.size, protocol)
       val phantomBuffer = Utils.pack(bbs, coll.size, protocol)
-
       driverBuffer shouldEqual phantomBuffer
     }
   }
@@ -71,8 +80,16 @@ class PrimitiveUtilsTest extends FlatSpec
     roundtrip[List, Int]
   }
 
-  it should "serialize a List[Date] just like the underlying Java Driver" in {
-    roundtrip[List, Date]
+  it should "serialize a List[Double] just like the underlying Java Driver" in {
+    roundtrip[List, Double]
+  }
+
+  it should "serialize a List[Float] just like the underlying Java Driver" in {
+    roundtrip[List, Float]
+  }
+
+  it should "serialize a List[Long] just like the underlying Java Driver" in {
+    roundtrip[List, Long]
   }
 
   it should "serialize a List[UUID] just like the underlying Java Driver" in {
@@ -83,11 +100,19 @@ class PrimitiveUtilsTest extends FlatSpec
     roundtrip[List, InetAddress]
   }
 
-  it should "serialize a List[InetAddress] just like the underlying Java Driver" in {
-    roundtrip[List, DateTime]
+  it should "serialize a List[ByteBuffer] just like the underlying Java Driver" in {
+    roundtrip[List, ByteBuffer](bytebufferGen[String](protocol))
   }
 
-  it should "serialize a List[InetAddress] just like the underlying Java Driver" in {
-    roundtrip[List, LocalDate]
+  it should "serialize a List[Date] just like the underlying Java Driver" in {
+    roundtrip[List, Date]
+  }
+
+  it should "serialize a List[DateTime] just like the underlying Java Driver" in {
+    roundtrip[List, DateTime](dateTimeGen)
+  }
+
+  it should "serialize a List[LocalDate] just like the underlying Java Driver" in {
+    roundtrip[List, LocalDate](localDateGen)
   }
 }

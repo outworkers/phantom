@@ -560,7 +560,12 @@ object Primitives {
     new Primitive[Map[K, V]] {
       override def shouldFreeze: Boolean = true
 
-      override def cassandraType: String = QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
+      override def cassandraType: String = {
+        QueryBuilder.Collections.mapType(
+          kp.cassandraType,
+          vp.cassandraType
+        ).queryString
+      }
 
       override def fromString(value: String): Map[K, V] = Map.empty[K, V]
 
