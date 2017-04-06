@@ -28,8 +28,7 @@ import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 
 class PrimitiveRoundtripTests extends FlatSpec
   with Matchers
-  with GeneratorDrivenPropertyChecks
-  with PrimitiveSamplers {
+  with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig = {
     PropertyCheckConfiguration(minSuccessful = 100)
@@ -42,6 +41,10 @@ class PrimitiveRoundtripTests extends FlatSpec
     forAll(gen) { sample =>
       ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
+  }
+
+  def sroundtrip[T : Primitive : Sample]: Assertion = {
+    roundtrip[T](Sample.arbitrary[T].arbitrary)
   }
 
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
@@ -195,4 +198,9 @@ class PrimitiveRoundtripTests extends FlatSpec
   it should "serialize and deserialize a Map[String, InetAddress] primitive" in {
     roundtrip[Map[String, InetAddress]]
   }
+
+  it should "serialize and deserialize a derived Primitive" in {
+    sroundtrip[Record]
+  }
+
 }

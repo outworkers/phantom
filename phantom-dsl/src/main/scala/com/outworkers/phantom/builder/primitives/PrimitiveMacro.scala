@@ -243,7 +243,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   }
 
   def enumValuePrimitive(tpe: Type): Tree = {
-
     val comp = c.parse(s"${tpe.toString.replace("#Value", "").replace(".Value", "")}")
 
     q"""

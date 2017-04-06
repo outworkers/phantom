@@ -29,8 +29,7 @@ import scala.collection.generic.CanBuildFrom
 
 class PrimitiveUtilsTest extends FlatSpec
   with Matchers
-  with GeneratorDrivenPropertyChecks
-  with PrimitiveSamplers {
+  with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig = {
     PropertyCheckConfiguration(minSuccessful = 300)

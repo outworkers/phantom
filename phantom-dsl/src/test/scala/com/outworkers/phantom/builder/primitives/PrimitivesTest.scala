@@ -90,9 +90,3 @@ class PrimitivesTest extends FlatSpec with Matchers {
     Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
   }
 }
-
-case class Record(value: String)
-
-object Record {
-  implicit val recordPrimitive: Primitive[Record] = Primitive.derive[Record, String](_.value)(Record.apply)
-}

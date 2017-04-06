@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.primitives
+package com.outworkers.phantom.builder
 
 import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
@@ -24,7 +24,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.util.samplers._
 
-trait PrimitiveSamplers {
+package object primitives {
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower
 
@@ -60,4 +60,10 @@ trait PrimitiveSamplers {
   }
 
   implicit val inetAddressArb: Arbitrary[InetAddress] = Arbitrary(inetAddressGen)
+
+  object Record {
+    implicit val recordPrimitive: Primitive[Record] = {
+      Primitive.derive[Record, String](_.value)(Record.apply)
+    }
+  }
 }
