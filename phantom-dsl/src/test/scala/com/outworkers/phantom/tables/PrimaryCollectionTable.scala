@@ -25,7 +25,7 @@ case class PrimaryCollectionRecord(
   value: Int
 )
 
-class PrimaryCollectionTable extends CassandraTable[PrimaryCollectionTable, PrimaryCollectionRecord] {
+class PrimaryCollectionTable extends Table[PrimaryCollectionTable, PrimaryCollectionRecord] {
   object listIndex extends ListColumn[String] with PartitionKey
   object setCol extends SetColumn[String] with PrimaryKey
   object mapCol extends MapColumn[String, String] with PrimaryKey

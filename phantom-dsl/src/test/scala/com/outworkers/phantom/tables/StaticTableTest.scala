@@ -21,7 +21,7 @@ import com.outworkers.phantom.dsl._
 
 case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
 
-abstract class StaticTableTest extends CassandraTable[
+abstract class StaticTableTest extends Table[
   StaticTableTest,
   StaticCollectionSingle
 ] with RootConnector {
@@ -45,4 +45,3 @@ abstract class StaticCollectionTableTest extends CassandraTable[
   object clusteringId extends UUIDColumn with PrimaryKey with ClusteringOrder with Descending
   object staticList extends ListColumn[String] with StaticColumn
 }
-

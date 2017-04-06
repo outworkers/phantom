@@ -40,7 +40,7 @@ object OptionalPrimitiveCassandra22 {
   }
 }
 
-abstract class OptionalPrimitivesCassandra22 extends CassandraTable[
+abstract class OptionalPrimitivesCassandra22 extends Table[
   OptionalPrimitivesCassandra22,
   OptionalPrimitiveCassandra22
 ] with RootConnector {

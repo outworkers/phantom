@@ -27,7 +27,7 @@ case class PrimitiveCassandra22(
   date: LocalDate
 )
 
-abstract class PrimitivesCassandra22 extends CassandraTable[
+abstract class PrimitivesCassandra22 extends Table[
   PrimitivesCassandra22,
   PrimitiveCassandra22
 ] with RootConnector {

@@ -32,7 +32,7 @@ case class Recipe(
   uid: UUID
 )
 
-abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+abstract class Recipes extends Table[Recipes, Recipe] with RootConnector {
 
   object url extends StringColumn with PartitionKey
 

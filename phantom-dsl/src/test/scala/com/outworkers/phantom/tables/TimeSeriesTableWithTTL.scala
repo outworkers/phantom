@@ -18,7 +18,7 @@ package com.outworkers.phantom.tables
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
-abstract class TimeSeriesTableWithTTL extends CassandraTable[
+abstract class TimeSeriesTableWithTTL extends Table[
   TimeSeriesTableWithTTL,
   TimeSeriesRecord
 ] with RootConnector {
@@ -27,7 +27,7 @@ abstract class TimeSeriesTableWithTTL extends CassandraTable[
   object timestamp extends DateTimeColumn with ClusteringOrder with Descending
 }
 
-abstract class TimeSeriesTableWithTTL2 extends CassandraTable[
+abstract class TimeSeriesTableWithTTL2 extends Table[
   TimeSeriesTableWithTTL2,
   TimeSeriesRecord
 ] {
@@ -35,4 +35,3 @@ abstract class TimeSeriesTableWithTTL2 extends CassandraTable[
   object name extends StringColumn
   object timestamp extends DateTimeColumn
 }
-

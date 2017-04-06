@@ -19,7 +19,7 @@ import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future
 
-abstract class TupleTypeTable extends CassandraTable[
+abstract class TupleTypeTable extends Table[
   TupleTypeTable,
   (UUID, String, String)
 ] with RootConnector {

@@ -27,7 +27,7 @@ case class OptionalSecondaryRecord(
   secondary: Option[Int]
 )
 
-abstract class OptionalSecondaryIndexTable extends CassandraTable[
+abstract class OptionalSecondaryIndexTable extends Table[
   OptionalSecondaryIndexTable,
   OptionalSecondaryRecord
 ] with RootConnector {
@@ -42,5 +42,3 @@ abstract class OptionalSecondaryIndexTable extends CassandraTable[
     select.where(_.secondary eqs sec).one()
   }
 }
-
-

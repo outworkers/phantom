@@ -32,7 +32,7 @@ case class JsonClass(
   jsonSet: Set[JsonTest]
 )
 
-abstract class JsonTable extends CassandraTable[JsonTable, JsonClass] with RootConnector {
+abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
 
   implicit val formats = org.json4s.DefaultFormats
 

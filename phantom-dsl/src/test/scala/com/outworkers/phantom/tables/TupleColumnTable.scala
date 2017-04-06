@@ -24,7 +24,7 @@ import scala.concurrent.Future
 
 case class TupleRecord(id: UUID, tp: (String, Long))
 
-abstract class TupleColumnTable extends CassandraTable[
+abstract class TupleColumnTable extends Table[
   TupleColumnTable,
   TupleRecord
 ] with RootConnector {
@@ -38,7 +38,7 @@ abstract class TupleColumnTable extends CassandraTable[
 
 case class NestedTupleRecord(id: UUID, tp: (String, (String, Long)))
 
-abstract class NestedTupleColumnTable extends CassandraTable[
+abstract class NestedTupleColumnTable extends Table[
   NestedTupleColumnTable,
   NestedTupleRecord
 ] with RootConnector {
@@ -53,7 +53,7 @@ abstract class NestedTupleColumnTable extends CassandraTable[
 
 case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
 
-abstract class TupleCollectionsTable extends CassandraTable[
+abstract class TupleCollectionsTable extends Table[
   TupleCollectionsTable,
   TupleCollectionRecord
 ] with RootConnector {

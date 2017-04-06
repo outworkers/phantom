@@ -25,7 +25,7 @@ import com.outworkers.phantom.dsl._
   name: String
 )
 
-abstract class SecondaryIndexTable extends CassandraTable[
+abstract class SecondaryIndexTable extends Table[
   SecondaryIndexTable,
   SecondaryIndexRecord
 ] with RootConnector {

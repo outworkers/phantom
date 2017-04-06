@@ -25,7 +25,10 @@ case class ScalaPrimitiveMapRecord(
   map: Map[DateTime, BigDecimal]
 )
 
-abstract class ScalaTypesMapTable extends CassandraTable[ScalaTypesMapTable, ScalaPrimitiveMapRecord] with RootConnector {
+abstract class ScalaTypesMapTable extends Table[
+  ScalaTypesMapTable,
+  ScalaPrimitiveMapRecord
+] with RootConnector {
 
   object id extends UUIDColumn with PartitionKey
   object map extends MapColumn[DateTime, BigDecimal]

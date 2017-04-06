@@ -34,7 +34,7 @@ case class OAuth2Session(
  * This table is used for the internal application.
  * If a session is found in this table for a given user, it means the respective user is authenticated.
  */
-abstract class SessionsByUserId extends CassandraTable[
+abstract class SessionsByUserId extends Table[
   SessionsByUserId,
   OAuth2Session
 ] with RootConnector {

@@ -31,7 +31,7 @@ case class PrimitiveRecord(
   bi: BigInt
 )
 
-abstract class PrimitivesTable extends CassandraTable[PrimitivesTable, PrimitiveRecord] {
+abstract class PrimitivesTable extends Table[PrimitivesTable, PrimitiveRecord] {
   object pkey extends StringColumn with PartitionKey
 
   object long extends LongColumn

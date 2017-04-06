@@ -17,7 +17,7 @@ package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.dsl._
 
-abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] with RootConnector {
+abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, TestRow] with RootConnector {
 
   object key extends StringColumn with PartitionKey
 
@@ -35,7 +35,7 @@ abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollections
 }
 
 
-abstract class IndexedEntriesTable extends CassandraTable[IndexedEntriesTable, TestRow] with RootConnector {
+abstract class IndexedEntriesTable extends Table[IndexedEntriesTable, TestRow] with RootConnector {
 
   object key extends StringColumn with PartitionKey
 

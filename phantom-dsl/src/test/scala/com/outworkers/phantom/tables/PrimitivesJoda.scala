@@ -29,7 +29,10 @@ case class JodaRow(
   timestamp: DateTime
 )
 
-abstract class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] with RootConnector {
+abstract class PrimitivesJoda extends Table[
+  PrimitivesJoda,
+  JodaRow
+] with RootConnector {
   object pkey extends StringColumn with PartitionKey
   object intColumn extends IntColumn
   object timestamp extends DateTimeColumn
@@ -38,4 +41,3 @@ abstract class PrimitivesJoda extends CassandraTable[PrimitivesJoda, JodaRow] wi
     select.limit(limit).paginateRecord(paging)
   }
 }
-

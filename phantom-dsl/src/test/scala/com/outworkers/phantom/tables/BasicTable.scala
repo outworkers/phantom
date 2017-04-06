@@ -19,7 +19,7 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
-abstract class BasicTable extends CassandraTable[BasicTable, String] with RootConnector {
+abstract class BasicTable extends Table[BasicTable, String] with RootConnector {
 
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with PrimaryKey
@@ -67,7 +67,7 @@ case class NamedPartitionRecord(
   id: UUID
 )
 
-abstract class EnumTable extends CassandraTable[EnumTable, EnumRecord] with RootConnector {
+abstract class EnumTable extends Table[EnumTable, EnumRecord] with RootConnector {
   object id extends StringColumn with PartitionKey
   object enum extends EnumColumn[Records#Value]
   object optEnum extends OptionalEnumColumn[Records#Value]
@@ -75,13 +75,13 @@ abstract class EnumTable extends CassandraTable[EnumTable, EnumRecord] with Root
 }
 
 
-abstract class NamedEnumTable extends CassandraTable[NamedEnumTable, NamedEnumRecord] with RootConnector {
+abstract class NamedEnumTable extends Table[NamedEnumTable, NamedEnumRecord] with RootConnector {
   object id extends StringColumn with PartitionKey
   object enum extends EnumColumn[NamedRecords#Value]
   object optEnum extends OptionalEnumColumn[NamedRecords#Value]
 }
 
-abstract class NamedPartitionEnumTable extends CassandraTable[
+abstract class NamedPartitionEnumTable extends Table[
   NamedPartitionEnumTable,
   NamedPartitionRecord
 ] with RootConnector {
@@ -89,7 +89,7 @@ abstract class NamedPartitionEnumTable extends CassandraTable[
   object id extends UUIDColumn with PrimaryKey
 }
 
-abstract class ClusteringTable extends CassandraTable[ClusteringTable, String] with RootConnector {
+abstract class ClusteringTable extends Table[ClusteringTable, String] with RootConnector {
 
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with ClusteringOrder with Ascending
@@ -97,7 +97,7 @@ abstract class ClusteringTable extends CassandraTable[ClusteringTable, String] w
   object placeholder extends StringColumn
 }
 
-abstract class ComplexClusteringTable extends CassandraTable[ComplexClusteringTable, String] {
+abstract class ComplexClusteringTable extends Table[ComplexClusteringTable, String] {
 
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with ClusteringOrder with Ascending
@@ -105,8 +105,7 @@ abstract class ComplexClusteringTable extends CassandraTable[ComplexClusteringTa
   object placeholder extends StringColumn with ClusteringOrder with Descending
 }
 
-abstract class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKeyTable, String] {
-
+abstract class ComplexCompoundKeyTable extends Table[ComplexCompoundKeyTable, String] {
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with PrimaryKey
   object id3 extends UUIDColumn with PrimaryKey
@@ -119,7 +118,7 @@ abstract class ComplexCompoundKeyTable extends CassandraTable[ComplexCompoundKey
   object placeholder extends StringColumn
 }
 
-abstract class SimpleCompoundKeyTable extends CassandraTable[SimpleCompoundKeyTable, String] {
+abstract class SimpleCompoundKeyTable extends Table[SimpleCompoundKeyTable, String] {
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with PrimaryKey
   object id3 extends UUIDColumn with PrimaryKey
