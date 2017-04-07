@@ -104,8 +104,12 @@ object Primitives {
       override def fromString(value: String): String = value
 
       override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
-        val source = if (Option(obj).isEmpty) "NULL" else ParseUtils.quote(obj)
-        ByteBuffer.wrap(source.getBytes(Charsets.UTF_8))
+        if (obj == Primitive.nullValue) {
+          Primitive.nullValue
+        } else {
+          val str = ParseUtils.quote(obj)
+          ByteBuffer.wrap(str.getBytes(Charsets.UTF_8))
+        }
       }
 
       override def deserialize(source: ByteBuffer, version: ProtocolVersion): String = {

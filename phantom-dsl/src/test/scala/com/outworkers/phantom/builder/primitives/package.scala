@@ -20,11 +20,13 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
+import com.datastax.driver.core.utils.UUIDs
 import org.scalacheck.{Arbitrary, Gen}
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.util.samplers._
 
 package object primitives {
+
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower
 
@@ -60,4 +62,6 @@ package object primitives {
   }
 
   implicit val inetAddressArb: Arbitrary[InetAddress] = Arbitrary(inetAddressGen)
+
+  val timeuuidGen: Gen[UUID] = Gen.delay(UUIDs.timeBased())
 }
