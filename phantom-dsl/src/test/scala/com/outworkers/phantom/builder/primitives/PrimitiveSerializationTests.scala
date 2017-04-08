@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import com.datastax.driver.core.{DataType, ProtocolVersion, TypeCodec}
+import com.datastax.driver.core.{DataType, LocalDate, ProtocolVersion, TypeCodec}
 import com.outworkers.phantom.PhantomSuite
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.Assertion
@@ -70,11 +70,15 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a String type just like the varchar codec" in {
-    roundtrip[String](registry.codecFor(DataType.text()), protocol)
+    roundtrip[String](registry.codecFor(DataType.varchar()), protocol)
+  }
+
+  it should "serialize a java.util.Date type just like the native codec" in {
+    groundtrip[UUID](Gen.uuid, registry.codecFor(DataType.uuid()), protocol)
   }
 
   it should "serialize a UUID type just like the native codec" in {
-    groundtrip[UUID](Gen.uuid, registry.codecFor(DataType.uuid()), protocol)
+    groundtrip[LocalDate](localDateGen, registry.codecFor(DataType.date()), protocol)
   }
 
   it should "serialize a TimeUUID type just like the native codec" in {

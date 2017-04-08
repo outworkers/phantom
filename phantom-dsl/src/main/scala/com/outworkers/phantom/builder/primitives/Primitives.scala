@@ -104,8 +104,8 @@ object Primitives {
       override def fromString(value: String): String = value
 
       override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
-        if (obj == Primitive.nullValue) {
-          Primitive.nullValue
+        if (obj == Primitive.nullValue || obj.length == 0) {
+          ByteBuffer.allocate(0)
         } else {
           val str = ParseUtils.quote(obj)
           ByteBuffer.wrap(str.getBytes(Charsets.UTF_8))
