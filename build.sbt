@@ -23,7 +23,7 @@ lazy val Versions = new {
   val sbt = "0.13.13"
   val util = "0.30.1"
   val json4s = "3.5.0"
-  val datastax = "3.1.0"
+  val datastax = "3.2.0"
   val scalatest = "3.0.0"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
@@ -110,12 +110,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
-  scalaOrganization in ThisBuild := {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((_, minor)) if minor >= 11 => "org.typelevel"
-      case _ => scalaOrganization.value
-    }
-  },
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
