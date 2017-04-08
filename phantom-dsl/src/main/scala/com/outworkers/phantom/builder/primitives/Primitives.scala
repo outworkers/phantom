@@ -95,7 +95,6 @@ object Primitives {
 
   private[this] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
-
   object StringPrimitive extends Primitive[String] {
       def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
@@ -105,10 +104,10 @@ object Primitives {
 
       override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
         if (obj == Primitive.nullValue || obj.length == 0) {
-          ByteBuffer.allocate(0)
+          ByteBuffer.wrap("".getBytes(Charsets.UTF_8))
         } else {
-          val str = ParseUtils.quote(obj)
-          ByteBuffer.wrap(str.getBytes(Charsets.UTF_8))
+          //val str = ParseUtils.quote(obj)
+          ByteBuffer.wrap(obj.getBytes(Charsets.UTF_8))
         }
       }
 

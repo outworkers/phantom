@@ -33,6 +33,8 @@ package object primitives {
   private[this] val inetLowerLimit = 0
   private[this] val inetUpperLimit = 255
 
+  implicit def arbitraryToGen[T](arb: Arbitrary[T]): Gen[T] = arb.arbitrary
+
   implicit val dateTimeGen: Gen[DateTime] = for {
     offset <- Gen.choose(genLower, genHigher)
     time = new DateTime(DateTimeZone.UTC)
@@ -45,6 +47,8 @@ package object primitives {
       obj => Primitive[T].serialize(obj, version)
     )
   }
+
+  val protocolGen: Gen[ProtocolVersion] = Gen.oneOf(ProtocolVersion.values())
 
   implicit val javaDateGen: Gen[Date] = dateTimeGen.map(_.toDate)
 
