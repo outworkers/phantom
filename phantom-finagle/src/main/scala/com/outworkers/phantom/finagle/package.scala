@@ -18,7 +18,7 @@ package com.outworkers.phantom
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{ Duration => DatastaxDuration, _ }
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util._
