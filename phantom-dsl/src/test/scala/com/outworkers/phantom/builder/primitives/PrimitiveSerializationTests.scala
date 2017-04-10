@@ -17,27 +17,23 @@ package com.outworkers.phantom.builder.primitives
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.util.{Date, UUID, List => JList, Map => JMap, Set => JSet}
 
 import com.datastax.driver.core.{DataType, LocalDate, ProtocolVersion, TypeCodec}
+import com.google.common.base.Charsets
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.util.samplers.Sample
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.Assertion
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import java.util.{Date, UUID, List => JList, Map => JMap, Set => JSet}
-
-import com.google.common.base.Charsets
-import com.outworkers.util.samplers.Sample
 
 import scala.collection.JavaConverters._
+import scala.collection.generic.CanBuildFrom
 
 class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 300)
-  }
-
-  private[this] def showBuffer(buffer: ByteBuffer): String = {
-    new String(buffer.array(), Charsets.UTF_8)
   }
 
   val registry = session.getCluster.getConfiguration.getCodecRegistry
@@ -83,19 +79,50 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     }
   }
 
-  def testList[T](dataType: DataType, gen: Gen[T])(
+  def testCollection[M[X] <: Traversable[X], JType[X], T](
+    dataType: DataType,
+    gen: Gen[T],
+    asJv: M[T] => JType[T]
+  )(
     implicit ev: Primitive[T],
-    ev2: Primitive[List[T]]
+    ev2: Primitive[M[T]],
+    cbf: CanBuildFrom[Nothing, T, M[T]]
   ): Assertion = {
-    val listGen = Gen.listOf(gen)
-    val codec: TypeCodec[JList[T]] = registry.codecFor(DataType.list(dataType))
+    val listGen = Gen.buildableOf[M[T], T](gen)
+    val codec: TypeCodec[JType[T]] = registry.codecFor(DataType.list(dataType))
 
-    forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: List[T]) =>
+    forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
+      val phantom = ev2.serialize(sample, version)
+      val datastax = codec.serialize(asJv(sample), version)
+      phantom shouldEqual datastax
+    }
+  }
+
+  def testMap[K, V](kd: DataType, vd: DataType, gen: Gen[(K, V)])(
+    implicit kp: Primitive[K],
+    vp: Primitive[V],
+    ev2: Primitive[Map[K, V]]
+  ): Assertion = {
+    val listGen = Gen.mapOf[K, V(gen)
+    val codec: TypeCodec[JMap[K, V]] = registry.codecFor(DataType.map(kd, vd))
+
+    forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: Map[K, V]) =>
       val phantom = ev2.serialize(sample, version)
       val datastax = codec.serialize(sample.asJava, version)
       phantom shouldEqual datastax
     }
   }
+
+  def testList[T](dataType: DataType, gen: Gen[T])(
+    implicit ev: Primitive[T],
+    ev2: Primitive[List[T]]
+  ): Assertion = testCollection[List, JList, T](dataType, gen, _.asJava)
+
+  def testSet[T](dataType: DataType, gen: Gen[T])(
+    implicit ev: Primitive[T],
+    ev2: Primitive[Set[T]]
+  ): Assertion = testCollection[Set, JSet, T](dataType, gen, _.asJava)
+
 
   it should "serialize a Byte type just like the native codec" in {
     roundtrip[Byte](registry.codecFor(DataType.tinyint()))
@@ -141,7 +168,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     roundtrip[String](registry.codecFor(DataType.varchar()))
   }
 
-  it should "serialize a java.util.Date type just like the native codec" in {
+  it should "serialize a java.util.UUID type just like the native codec" in {
     groundtrip[UUID](Gen.uuid, registry.codecFor(DataType.uuid()))
   }
 
@@ -150,7 +177,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a Date type just like the native codec" in {
-    groundtrip[Date](javaDateGen, registry.codecFor(DataType.date()))
+    groundtrip[Date](javaDateGen, registry.codecFor(DataType.timestamp()))
   }
 
   it should "serialize a UUID type just like the native codec" in {
