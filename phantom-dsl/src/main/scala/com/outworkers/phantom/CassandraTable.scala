@@ -23,7 +23,6 @@ import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
-import shapeless.Typeable
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
