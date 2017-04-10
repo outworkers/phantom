@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import java.util.UUID
-
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer

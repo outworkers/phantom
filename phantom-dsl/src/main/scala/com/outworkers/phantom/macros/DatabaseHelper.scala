@@ -58,7 +58,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c)
     q"""
        new com.outworkers.phantom.macros.DatabaseHelper[$tpe] {
          def tables(db: $tpe): scala.collection.immutable.Seq[$tableSymbol] = {
-           scala.collection.immutable.Set.apply[$tableSymbol](..$tableList)
+           scala.collection.immutable.Seq.apply[$tableSymbol](..$tableList)
          }
 
          def createQueries(db: $tpe)(implicit space: $keySpaceTpe): $listType = {
