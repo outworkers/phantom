@@ -20,9 +20,9 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID, List => JList, Map => JMap, Set => JSet}
 
 import com.datastax.driver.core.{DataType, LocalDate, ProtocolVersion, TypeCodec}
-import com.google.common.base.Charsets
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.util.samplers.Sample
+import org.joda.time.DateTime
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.Assertion
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
@@ -103,7 +103,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     vp: Primitive[V],
     ev2: Primitive[Map[K, V]]
   ): Assertion = {
-    val listGen = Gen.mapOf[K, V(gen)
+    val listGen = Gen.mapOf[K, V](gen)
     val codec: TypeCodec[JMap[K, V]] = registry.codecFor(DataType.map(kd, vd))
 
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: Map[K, V]) =>
@@ -195,6 +195,11 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   it should "serialize a List[Int] type just like the native codec" in {
     testList[Int](DataType.cint(), Arbitrary.arbInt)
   }
+
+  it should "serialize a List[Long] type just like the native codec" in {
+    testList[Long](DataType.bigint(), Arbitrary.arbLong)
+  }
+
   it should "serialize a List[Double] type just like the native codec" in {
     testList[Double](DataType.cdouble(), Arbitrary.arbDouble)
   }
@@ -211,11 +216,71 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     testList[UUID](DataType.uuid(), Gen.uuid)
   }
 
+  it should "serialize a List[java.util.Date] type just like the native codec" in {
+    testList[Date](DataType.time(), javaDateGen)
+  }
+
+  it should "serialize a List[org.joda.time.DateTime] type just like the native codec" in {
+    testList[DateTime](DataType.timestamp(), dateTimeGen)
+  }
+
   it should "serialize a List[TimeUUID] type just like the native codec" in {
     testList[UUID](DataType.timeuuid(), timeuuidGen)
   }
 
+  it should "serialize a List[BigInt] type just like the native codec" in {
+    testList[BigInt](DataType.varint(), Arbitrary.arbBigInt)
+  }
+
   it should "serialize a List[BigDecimal] type just like the native codec" in {
     testList[BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal)
+  }
+
+  it should "serialize a Set[String] type just like the native codec" in {
+    testSet[String](DataType.text(), Gen.alphaNumStr)
+  }
+
+  it should "serialize a Set[Int] type just like the native codec" in {
+    testSet[Int](DataType.cint(), Arbitrary.arbInt)
+  }
+
+  it should "serialize a Set[Long] type just like the native codec" in {
+    testSet[Long](DataType.bigint(), Arbitrary.arbLong)
+  }
+
+  it should "serialize a Set[Double] type just like the native codec" in {
+    testSet[Double](DataType.cdouble(), Arbitrary.arbDouble)
+  }
+
+  it should "serialize a Set[Float] type just like the native codec" in {
+    testSet[Float](DataType.cfloat(), Arbitrary.arbFloat)
+  }
+
+  it should "serialize a Set[InetAddress] type just like the native codec" in {
+    testSet[InetAddress](DataType.inet(), inetAddressGen)
+  }
+
+  it should "serialize a Set[UUID] type just like the native codec" in {
+    testSet[UUID](DataType.uuid(), Gen.uuid)
+  }
+
+  it should "serialize a Set[java.util.Date] type just like the native codec" in {
+    testSet[Date](DataType.time(), javaDateGen)
+  }
+
+  it should "serialize a Set[org.joda.time.DateTime] type just like the native codec" in {
+    testSet[DateTime](DataType.timestamp(), dateTimeGen)
+  }
+
+  it should "serialize a Set[TimeUUID] type just like the native codec" in {
+    testSet[UUID](DataType.timeuuid(), timeuuidGen)
+  }
+
+  it should "serialize a Set[BigInt] type just like the native codec" in {
+    testSet[BigInt](DataType.varint(), Arbitrary.arbBigInt)
+  }
+
+  it should "serialize a Set[BigDecimal] type just like the native codec" in {
+    testSet[BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal)
   }
 }
