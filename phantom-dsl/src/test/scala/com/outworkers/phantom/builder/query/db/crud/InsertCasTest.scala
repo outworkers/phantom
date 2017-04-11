@@ -51,17 +51,15 @@ class InsertCasTest extends PhantomSuite {
       multi <- database.primitives.select.where(_.pkey eqs row.pkey).fetch()
     } yield (one, multi)
 
-    whenReady(chain) {
-      case (res1, res3) => {
-        info("The one query should return a record")
-        res1 shouldBe defined
+    whenReady(chain) { case (res1, res3) =>
+      info("The one query should return a record")
+      res1 shouldBe defined
 
-        info("And the record should equal the inserted record")
-        res1.value shouldEqual row
+      info("And the record should equal the inserted record")
+      res1.value shouldEqual row
 
-        info("And only one record should be retrieved from a range fetch")
-        res3 should have size 1
-      }
+      info("And only one record should be retrieved from a range fetch")
+      res3 should have size 1
     }
   }
 

@@ -24,21 +24,19 @@ class InOperatorTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.insertSchema()
+    database.recipes.insertSchema()
   }
 
   it should "find a record with a in operator if the record exists" in {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- TestDatabase.recipes.store(recipe).future()
-      select <- TestDatabase.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
+      done <- database.recipes.store(recipe).future()
+      select <- database.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
 
-    whenReady(chain) {
-      res => {
-        res.value.url shouldEqual recipe.url
-      }
+    whenReady(chain) { res =>
+      res.value.url shouldEqual recipe.url
     }
   }
 
@@ -46,14 +44,12 @@ class InOperatorTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- TestDatabase.recipes.store(recipe).future()
-      select <- TestDatabase.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
+      done <- database.recipes.store(recipe).future()
+      select <- database.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
     } yield select
 
-    whenReady(chain) {
-      res => {
-        res shouldBe empty
-      }
+    whenReady(chain) { res =>
+      res shouldBe empty
     }
   }
 

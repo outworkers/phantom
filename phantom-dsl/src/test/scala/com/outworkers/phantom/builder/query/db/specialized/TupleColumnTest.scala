@@ -38,11 +38,9 @@ class TupleColumnTest extends PhantomSuite {
       rec <- database.tuple2Table.findById(sample.id)
     } yield rec
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 
@@ -59,14 +57,12 @@ class TupleColumnTest extends PhantomSuite {
       rec2 <- database.tuple2Table.findById(sample.id)
     } yield (rec, rec2)
 
-    whenReady(chain) {
-      case (beforeUpdate, afterUpdate) => {
-        beforeUpdate shouldBe defined
-        beforeUpdate.value shouldEqual sample
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate shouldBe defined
+      beforeUpdate.value shouldEqual sample
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.tp shouldEqual sample2.tp
-      }
+      afterUpdate shouldBe defined
+      afterUpdate.value.tp shouldEqual sample2.tp
     }
   }
 
@@ -80,11 +76,9 @@ class TupleColumnTest extends PhantomSuite {
       rec <- database.nestedTupleTable.findById(sample.id)
     } yield rec
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value shouldEqual sample
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
     }
   }
 
@@ -97,18 +91,19 @@ class TupleColumnTest extends PhantomSuite {
     val chain = for {
       store <- insert.future()
       rec <- database.nestedTupleTable.findById(sample.id)
-      update <- database.nestedTupleTable.update.where(_.id eqs sample.id).modify(_.tp setTo sample2.tp).future()
+      update <- database.nestedTupleTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.tp setTo sample2.tp)
+        .future()
       rec2 <- database.nestedTupleTable.findById(sample.id)
     } yield (rec, rec2)
 
-    whenReady(chain) {
-      case (beforeUpdate, afterUpdate) => {
-        beforeUpdate shouldBe defined
-        beforeUpdate.value shouldEqual sample
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate shouldBe defined
+      beforeUpdate.value shouldEqual sample
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.tp shouldEqual sample2.tp
-      }
+      afterUpdate shouldBe defined
+      afterUpdate.value.tp shouldEqual sample2.tp
     }
   }
 
@@ -123,12 +118,10 @@ class TupleColumnTest extends PhantomSuite {
       rec <- database.tupleCollectionsTable.findById(sample.id)
     } yield rec
 
-    whenReady(chain) {
-      res => {
-        res shouldBe defined
-        res.value.id shouldEqual sample.id
-        res.value.tuples should contain theSameElementsAs sample.tuples
-      }
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.id shouldEqual sample.id
+      res.value.tuples should contain theSameElementsAs sample.tuples
     }
   }
 
@@ -142,20 +135,20 @@ class TupleColumnTest extends PhantomSuite {
     val chain = for {
       store <- insert.future()
       rec <- database.tupleCollectionsTable.findById(sample.id)
-      update <- database.tupleCollectionsTable.update.where(_.id eqs sample.id).modify(_.tuples append appended).future()
+      update <- database.tupleCollectionsTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.tuples append appended)
+        .future()
       rec2 <- database.tupleCollectionsTable.findById(sample.id)
     } yield (rec, rec2)
 
-    whenReady(chain) {
-      case (beforeUpdate, afterUpdate) => {
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate shouldBe defined
+      beforeUpdate.value.id shouldEqual sample.id
+      beforeUpdate.value.tuples should contain theSameElementsAs sample.tuples
 
-        beforeUpdate shouldBe defined
-        beforeUpdate.value.id shouldEqual sample.id
-        beforeUpdate.value.tuples should contain theSameElementsAs sample.tuples
-
-        afterUpdate shouldBe defined
-        afterUpdate.value.tuples should contain (appended)
-      }
+      afterUpdate shouldBe defined
+      afterUpdate.value.tuples should contain (appended)
     }
   }
 }
