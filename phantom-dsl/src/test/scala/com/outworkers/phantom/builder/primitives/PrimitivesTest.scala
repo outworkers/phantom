@@ -94,9 +94,3 @@ class PrimitivesTest extends FlatSpec with Matchers {
     """val ev = Primitive[Option[Record]]""" should compile
   }
 }
-
-case class Record(value: String)
-
-object Record {
-  implicit val recordPrimitive: Primitive[Record] = Primitive.derive[Record, String](_.value)(Record.apply)
-}

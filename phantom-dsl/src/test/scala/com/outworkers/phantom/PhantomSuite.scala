@@ -33,7 +33,6 @@ import scala.concurrent.duration.Duration
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
-  with RootConnector
   with ScalaFutures
   with JsonFormats
   with OptionValues {
