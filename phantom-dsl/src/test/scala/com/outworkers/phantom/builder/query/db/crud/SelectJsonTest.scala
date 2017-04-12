@@ -57,10 +57,10 @@ class SelectJsonTest extends PhantomSuite {
 
     val chain = for {
       store <- database.primitives.store(row).future()
-      get <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
+      one <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .json()
         .where(_.pkey eqs row.pkey).one()
-    } yield get
+    } yield one
 
     if (cassandraVersion.value >= Version.`2.2.0`) {
       whenReady(chain) { res =>
