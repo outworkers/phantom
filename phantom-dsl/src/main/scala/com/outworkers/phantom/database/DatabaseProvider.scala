@@ -15,7 +15,15 @@
  */
 package com.outworkers.phantom.database
 
+import com.datastax.driver.core.Session
+import com.outworkers.phantom.connectors.KeySpace
+
 trait DatabaseProvider[T <: Database[T]] {
+
+  implicit def session: Session = database.session
+
+  implicit def space: KeySpace = database.space
+  
   def database: T
 
   /**
