@@ -24,7 +24,7 @@ trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
   override def database: RecipesDatabase = RecipesDatabase
 }
 
-trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider with RecipesDatabase.Connector {
+trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

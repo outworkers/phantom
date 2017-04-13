@@ -24,7 +24,7 @@
     </logger>
 
     <logger name="com.outworkers.phantom">
-        <level value="info"/>
+        <level value="error"/>
     </logger>
 
     <logger name="me.prettyprint">

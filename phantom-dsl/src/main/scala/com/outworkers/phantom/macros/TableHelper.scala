@@ -127,13 +127,13 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
   /**
     * Predicate that checks two fields refer to the same type.
-    * @param source The source, which is a tuple of two [[Record.Field]] values.
+    * @param left The source, which is a tuple of two [[Record.Field]] values.
+    * @param right The source, which is a tuple of two [[Column.Field]] values.
     * @return True if the left hand side of te tuple is equal to the right hand side
     *         or if there is an implicit conversion from the left field type to the right field type.
     */
-  private[this] def predicate(source: (Type, Type)): Boolean = {
-    val (col, rec) = source
-    (col =:= rec) || (c.inferImplicitView(EmptyTree, col, rec) != EmptyTree)
+  private[this] def predicate(left: Record.Field, right: Type): Boolean = {
+    (left.tpe =:= right)// || (c.inferImplicitView(EmptyTree, left.tpe, right) != EmptyTree)
   }
 
   def variations(term: TermName): List[TermName] = {
@@ -157,7 +157,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
   ): TableDescriptor = {
     unprocessed match {
       case recField :: tail =>
-        columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
+        columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
           // It's possible that after all easy matches have been exhausted, no column fields are left to match
           // with remaining record fields for the given type.
           case None =>
@@ -244,10 +244,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     columnFields: ListMap[Type, Seq[TermName]],
     recordFields: List[Record.Field],
     descriptor: TableDescriptor,
-    unprocessed: List[Record.Field]
+    unprocessed: List[Record.Field] = Nil
   ): TableDescriptor = {
     recordFields match { case recField :: tail =>
-      columnFields.find { case (tpe, seq) => predicate(recField.tpe -> tpe) } map { case (_, seq) => seq } match {
+      columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
         case None =>
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
           extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
@@ -349,8 +349,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     extractorRec(
       colFields.typeMap,
       recordMembers.toList,
-      TableDescriptor(tableTpe, recordTpe, colFields),
-      Nil
+      TableDescriptor(tableTpe, recordTpe, colFields)
     )
   }
 
@@ -422,7 +421,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
           def debug: $macroPkg.Debugger = ${descriptor.debugger}
        }
 
-       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, ${descriptor.storeType}]
+       new $clsName(): $macroPkg.TableHelper[$tableType, $recordType]
     """
   }
 }
