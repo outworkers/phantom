@@ -29,6 +29,6 @@ trait BigTest extends PhantomSuite {
         .setReadTimeoutMillis(connectionTimeoutMillis)
         .setConnectTimeoutMillis(connectionTimeoutMillis)
       )
-    ).noHeartbeat().keySpace(space).session
+    ).noHeartbeat().keySpace(space.name).session
   }
 }
