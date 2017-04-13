@@ -45,6 +45,19 @@ Batch.counter
     .future()
 ```
 
+Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
+you can also use `+=` and `-=` to achieve the same thing.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+
+Batch.counter
+    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter += 500L))
+    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.someCounter _= 300L))
+    .future()
+```
+
 <a id="unlogged-batch-statements">UNLOGGED batch statements</a>
 ============================================================
 

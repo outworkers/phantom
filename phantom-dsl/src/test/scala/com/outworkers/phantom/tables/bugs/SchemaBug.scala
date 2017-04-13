@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.tables.bugs
 
+import com.outworkers.phantom.dsl._
+
 case class Model(
   id: Int,
   quality: Int,
