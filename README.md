@@ -42,7 +42,7 @@ This is a table of the available modules for the various Scala versions. Not all
 
 Modules marked with "x" are still in beta or pre-publishing mode.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Release date   | 
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Release date   |
 | ------------          | ------------------- | ------------------| ----------------- | -------------- |
 | phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
 | phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
@@ -51,6 +51,8 @@ Modules marked with "x" are still in beta or pre-publishing mode.
 | phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
 | phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
 | phantom-migrations    | <span>x</span>      | <span>x</span>    | <span>x</span>    | September 2017 |
+| phantom-native        | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
+| phantom-java-dsl      | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
 
 Using phantom
 =============

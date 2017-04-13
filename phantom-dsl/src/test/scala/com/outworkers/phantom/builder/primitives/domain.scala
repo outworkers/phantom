@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.example
+package com.outworkers.phantom.builder.primitives
 
-import com.outworkers.phantom.PhantomBaseSuite
-import com.outworkers.phantom.dsl.{DatabaseProvider, context}
-import com.outworkers.phantom.example.advanced.RecipesDatabase
-import org.scalatest.FlatSpec
+case class Record(value: String)
 
-trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
-  override def database: RecipesDatabase = RecipesDatabase
-}
-
-trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider {
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    database.create()
+object Record {
+  implicit val recordPrimitive: Primitive[Record] = {
+    Primitive.derive[Record, String](_.value)(Record.apply)
   }
 }

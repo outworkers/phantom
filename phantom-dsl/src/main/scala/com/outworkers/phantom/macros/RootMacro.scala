@@ -185,8 +185,11 @@ class RootMacro(val c: blackbox.Context) {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.sortBy(_.left.index).map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
-        Some(q"""new $recordType(..$columnNames)""")
+        val columnNames = matched.sortBy(_.left.index).map {
+          m => q"$tableTerm.${m.right.name}.apply($rowTerm)"
+        }
+        val tree = q"""new $recordType(..$columnNames)"""
+        Some(tree)
       } else {
         None
       }
@@ -306,7 +309,6 @@ class RootMacro(val c: blackbox.Context) {
       if (unmatchedColumns.isEmpty) {
         recString
       } else {
-        logger.debug(s"Found unmatched types for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
         cols.mkString(", ") + s", $recString"
       }
@@ -352,6 +354,10 @@ class RootMacro(val c: blackbox.Context) {
 
       case _ => Seq.empty[Record.Field]
     }
+  }
+
+  def filterDecls[Filter: TypeTag](source: Type): Seq[Symbol] = {
+    source.declarations.sorted.filter(_.typeSignature <:< typeOf[Filter])
   }
 
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](

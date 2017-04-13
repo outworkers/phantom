@@ -15,7 +15,19 @@
  */
 package com.outworkers.phantom.database
 
-trait DatabaseProvider[T <: Database[T]] {
+import com.datastax.driver.core.{ Session, VersionNumber }
+import com.outworkers.phantom.connectors.{ KeySpace, SessionAugmenterImplicits }
+
+trait DatabaseProvider[T <: Database[T]] extends SessionAugmenterImplicits {
+
+  def cassandraVersion: Option[VersionNumber] = database.connector.cassandraVersion
+
+  def cassandraVersions: Set[VersionNumber] = database.connector.cassandraVersions
+
+  implicit def session: Session = database.session
+
+  implicit def space: KeySpace = database.space
+
   def database: T
 
   /**
