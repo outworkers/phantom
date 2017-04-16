@@ -275,7 +275,7 @@ package object finagle {
     }
   }
 
-  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList) extends AnyVal {
+  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
     def execute()(implicit session: Session, executor: Executor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
         twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))

@@ -104,35 +104,68 @@ trait ExecutableStatement extends CassandraOperations {
   }
 }
 
-class ExecutableStatementList(val queries: Seq[CQLQuery]) extends CassandraOperations {
+private[this] object SequentialFutures {
+    def sequencedTraverse[
+    A,
+    B,
+    M[X] <: TraversableOnce[X]
+  ](in: M[A])(fn: A => ScalaFuture[B])(implicit
+    executor: ExecutionContextExecutor,
+    cbf: CanBuildFrom[M[A], B, M[B]]
+  ): ScalaFuture[M[B]] = {
+    in.foldLeft(ScalaFuture.successful(cbf(in))) { (fr, a) =>
+      for (r <- fr; b <- fn(a)) yield r += b
+    }.map(_.result())
+  }
+}
 
-  /**
-   * Secondary constructor to allow passing in Sets instead of Sequences.
-   * Although this may appear to be fruitless and uninteresting it a necessary evil.
-   *
-   * The TwitterFuture.collect method does not support passing in arbitrary collections using the Scala API
-   * just as Scala.future does. Scala Futures can sequence over traversables and return a collection of the appropiate type.
-   *
-   * @param queries The list of CQL queries to execute.
-   * @return An instance of an ExecutableStatement with the matching sequence of CQL queries.
-   */
-  def this(queries: Set[CQLQuery]) = this(queries.toSeq)
+class ExecutableStatementList[
+  M[X] <: TraversableOnce[X]
+](val queries: M[CQLQuery])(
+  implicit cbf: CanBuildFrom[M[CQLQuery], CQLQuery, M[CQLQuery]]
+) extends CassandraOperations {
 
-  def add(appendable: Seq[CQLQuery]): ExecutableStatementList = {
-    new ExecutableStatementList(queries ++ appendable)
+  def add(appendable: M[CQLQuery]): ExecutableStatementList[M] = {
+    val builder = cbf(queries)
+    for (q <- appendable) builder += q
+    new ExecutableStatementList(builder.result())
   }
 
-  def ++(appendable: Seq[CQLQuery]): ExecutableStatementList = add(appendable)
+  def ++(appendable: M[CQLQuery]): ExecutableStatementList[M] = add(appendable)
 
-  def ++(st: ExecutableStatementList): ExecutableStatementList = add(st.queries)
+  def ++(st: ExecutableStatementList[M]): ExecutableStatementList[M] = add(st.queries)
+
+  /** Transforms a `TraversableOnce[A]` into a `Future[TraversableOnce[B]]` using the provided function `A => Future[B]`.
+    *  This is useful for performing a parallel map. For example, to apply a function to all items of a list
+    *  in parallel:
+    *
+    *  {{{
+    *    val myFutureList = Future.traverse(myList)(x => Future(myFunc(x)))
+    *  }}}
+    */
 
   def future()(
     implicit session: Session,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[Seq[ResultSet]] = {
-    ScalaFuture.sequence(queries.map(item => {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))
-    }))
+    ec: ExecutionContextExecutor,
+    fbf: CanBuildFrom[Nothing, ScalaFuture[ResultSet], M[ScalaFuture[ResultSet]]],
+    ebf: CanBuildFrom[M[ScalaFuture[ResultSet]], ResultSet, M[ResultSet]]
+  ): ScalaFuture[M[ResultSet]] = {
+
+    val builder = fbf()
+
+    for (q <- queries) builder += scalaQueryStringExecuteToFuture(new SimpleStatement(q.terminate.queryString))
+
+    ScalaFuture.sequence(builder.result())(ebf, ec)
+  }
+
+  def sequentialFuture()(
+    implicit session: Session,
+    ec: ExecutionContextExecutor,
+    cbf: CanBuildFrom[M[CQLQuery], ResultSet, M[ResultSet]]
+  ): ScalaFuture[M[ResultSet]] = {
+    SequentialFutures.sequencedTraverse(queries) {
+      q => scalaQueryStringExecuteToFuture(new SimpleStatement(q.terminate.queryString))
+    }
   }
 }
 

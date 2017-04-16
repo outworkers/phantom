@@ -97,7 +97,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autodrop(): ExecutableStatementList = {
+  private[phantom] def autodrop(): ExecutableStatementList[Seq] = {
     new ExecutableStatementList(tables.map {
       table => table.alter().drop().qb
     })
@@ -137,7 +137,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autotruncate(): ExecutableStatementList = {
+  private[phantom] def autotruncate(): ExecutableStatementList[Seq] = {
     new ExecutableStatementList(tables.map(_.truncate().qb))
   }
 
