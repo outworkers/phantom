@@ -24,7 +24,7 @@ class SetOperationsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.testTable.insertSchema()
+    database.testTable.insertSchema()
   }
 
   it should "append an item to a set column" in {
@@ -37,10 +37,8 @@ class SetOperationsTest extends PhantomSuite {
       db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    whenReady(chain) {
-      items => {
-        items.value shouldBe item.setText + someItem
-      }
+    whenReady(chain) { items =>
+      items.value shouldBe item.setText + someItem
     }
   }
 
@@ -49,15 +47,13 @@ class SetOperationsTest extends PhantomSuite {
     val someItems = Set("test5", "test6")
 
     val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).future()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).future()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
+      insertDone <- database.testTable.store(item).future()
+      update <- database.testTable.update.where(_.key eqs item.key).modify(_.setText addAll someItems).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    whenReady(chain) {
-      items => {
-        items.value shouldBe item.setText ++ someItems
-      }
+    whenReady(chain) { items =>
+      items.value shouldBe item.setText ++ someItems
     }
   }
 
@@ -67,15 +63,13 @@ class SetOperationsTest extends PhantomSuite {
     val removal = "test6"
 
     val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).future()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText remove removal).future()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
+      insertDone <- database.testTable.store(item).future()
+      update <- database.testTable.update.where(_.key eqs item.key).modify(_.setText remove removal).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    whenReady(chain) {
-      items => {
-        items.value shouldBe someItems.diff(Set(removal))
-      }
+    whenReady(chain) { items =>
+      items.value shouldBe someItems.diff(Set(removal))
     }
   }
 
@@ -85,15 +79,13 @@ class SetOperationsTest extends PhantomSuite {
     val removal = Set("test5", "test6")
 
     val chain = for {
-      insertDone <- TestDatabase.testTable.store(item).future()
-      update <- TestDatabase.testTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).future()
-      db <- TestDatabase.testTable.select(_.setText).where(_.key eqs item.key).one()
+      insertDone <- database.testTable.store(item).future()
+      update <- database.testTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
-    whenReady(chain) {
-      items => {
-        items.value shouldBe someItems.diff(removal)
-      }
+    whenReady(chain) { items =>
+      items.value shouldBe someItems.diff(removal)
     }
   }
 }

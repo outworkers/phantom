@@ -33,7 +33,6 @@ import scala.concurrent.duration.Duration
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
-  with RootConnector
   with ScalaFutures
   with JsonFormats
   with OptionValues {
@@ -78,11 +77,9 @@ trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
   override val database: TestDatabase = TestDatabase
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabase.Connector with TestDatabaseProvider {
+trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabaseProvider {
   def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
 }
 
 
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabase.Connector {
-  val database = TestDatabase
-}
+trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite with TestDatabaseProvider

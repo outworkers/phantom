@@ -39,7 +39,7 @@ So why not just use the Datastax driver for Scala? We would like to start by say
 #### Cons of using the Java driver from Scala
 
 - Writing queries is not type-safe, and the `QueryBuilder` is mutable.
-- There is no DSL to define the tables, so dealing with them is still very much manual and string based. 
+- There is no DSL to define the tables, so dealing with them is still very much manual and string based.
 - Auto-generation of schema is not available, the CQL for tables or anything else must be manually created.
 - The driver does not and cannot prevent you from doing bad things.
 - You must constantly refer to the `session`.
@@ -61,6 +61,7 @@ It is built on top of the Datastax Java driver, and uses all the default connect
 
 - A type safe Schema DSL that means you never have to deal with raw CQL again.
 - A very advanced compile time mechanism that offers a fully type safe variant of CQL.
+- A tool that prevents you from doing any "bad" things by enforcing Cassandra rules at compile time.
 - A natural DSL that doesn't require any new terminology and aims to introduce a minimal learning curve. Phantom is not a leaking abstraction and it is exclusively built to target Cassnadra integration, therefore it has support for all the latest features of CQL and doesn't require constantly mapping terminology. Unlike LINQ style DSLs for instance, the naming will largely have 100% correspondence to CQL terminology you are already used to.
 - Automated schema generation, automated table migrations, automated database generation and more, meaning you will never ever have to manually initialise CQL tables from scripts ever again.
 - Native support of Scala concurrency primitives, from `scala.concurrent.Future` to more advanced access patterns such as reactive streams or even iteratees, available via separate dependencies.
@@ -117,19 +118,19 @@ case class Recipe(
   side_id: UUID
 )
 
-class Recipes extends CassandraTable[ConcreteRecipes, Recipe] {
+class Recipes extends CassandraTable[Recipes, Recipe] {
 
-  object url extends StringColumn with PartitionKey[String]
+  object url extends StringColumn(this) with PartitionKey[String]
 
-  object description extends OptionalStringColumn
+  object description extends OptionalStringColumn(this)
 
-  object ingredients extends ListColumn[String]
+  object ingredients extends ListColumn[String](this)
 
-  object servings extends OptionalIntColumn
+  object servings extends OptionalIntColumn(this)
 
-  object lastcheckedat extends DateTimeColumn
+  object lastcheckedat extends DateTimeColumn(this)
 
-  object props extends MapColumn[String, String]
+  object props extends MapColumn[String, String](this)
 
   object side_id extends UUIDColumn
 
@@ -196,7 +197,7 @@ not possible in either of quill or the Java driver, because they do not operate 
 database.recipes.select.where(_.uid eqs someid)
 ```
 
-Quill, *based on our current understanding, will however happily compile and generate the query, it has no way
+Quill, *based on our current understanding*, will however happily compile and generate the query, it has no way
 to know what you wanted to do with the `side_id` column.
 
 
@@ -236,7 +237,7 @@ In this category, both tools are imperfect and incomplete, and phantom has its o
 the Quill comparison simply states: "You could extend Phantom by extending the DSL to add new features,
 although it might not be a straightforward process.", which is a bit inaccurate.
 
-Being a very new player in the game, Quill is a nice toy when it comes to Cassandra feature support 
+Being a very new player in the game, Quill is a nice toy when it comes to Cassandra feature support
 and you will often find yourself needing to add features. Phantom has its gaps without a doubt, but it's a far far more mature alternative,
 and the amount of times when extension is required are significantly rarer.
 
@@ -261,22 +262,21 @@ play-streams somewhere else in you app, otherwise it makes little sense to not s
 much impossible to build Thrift services without a dependency on Thrift itself, so in that respect it is highly
 unlikely that using those extra modules will end up bringing in more dependencies than you already have.
 
-- The one place where phantom used to suck is the dependency on `scala-reflect`, which is causing some ugly things inside the 
-framework, namely the need for global locks to make reflection thread safe in the presence of multiple class loaders. This 
-is however going away in 2.0.0, already available on `feature/2.0.0`, and we are replacing `scala-reflect` with a macro based approach.
- 
+- The one place where phantom used to suck is the dependency on `scala-reflect`, which is causing some ugly things inside the
+framework, namely the need for global locks to make reflection thread safe in the presence of multiple class loaders. This
+is now a part of history, as of 2.x.x and up, we have entirely replaced the runtime mechanism with macros.
+
 - The only notable dependencies of phantom are `shapeless` and `cassandra-driver-core`, the latter of which you will have
-inevitably. Shapeless is also quite light and compile time, it depends only on macro libraries such as `macro-compat`. You
-can have a look yourself [here](https://github.com/milessabin/shapeless). We also depend on an internal engine called the
-diesel engine, which itself only depends on `macro-compat`, since it's nothing more than a customised macro toolchain.
+inevitably. Shapeless is also quite light and compile time, it depends only a minuscule macro library called `macro-compat` which phantom also requires for its own macros. You
+can have a look yourself [here](https://github.com/milessabin/shapeless). `phantom-dsl` has no other dependencies.
 
 #### Documentation and commercial support
 
-Both tools can do a lot better in this category, but phantom is probably doing a little better in that department, 
+Both tools can do a lot better in this category, but phantom is probably doing a little better in that department,
 since we have a plethora of tests, blog posts, and resources, on how to do things in phantom. This is not yet
 necessarily true of Quill, and we know very well just how challenging the ramp up process to stability can be.
 
-In terms of commercial support, phantom wins. We don't mean to start a debase on the virtues of open source, and 
+In terms of commercial support, phantom wins. We don't mean to start a debase on the virtues of open source, and
 we are aware most of the development community strongly favours OSS licenses and the word "commercial" is unpleasant.
 However, we are constrained by the economic reality of having to pay the people competent enough to write this software
 for the benefit of us all and make sure they get enough spare time to focus on these things, which is a lot less fun.
@@ -299,7 +299,7 @@ Let's sum up the points that we tried to make here in two key paragraphs.
 - Phantom used to make it less interesting to extend support for custom types, however this is now trivially
 done with `Primitive.derive`, which allows users to support new types by leveraging existing primitives.
 
-- Quill is an excellence piece of software and it has theoretically less boilerplate than phantom. there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
+- Quill is an excellent piece of software and it has theoretically less boilerplate than phantom. there's boilerplate that can be reduced through QDSLs that cannot be reduced through an EDSL, if we are fighting who's the leanest meanest string generator Quill wins.
 It's a vastly inferior tool at the application layer, and in supports such a small subset of Cassandra features it's barely usable for anything real world, and it's even more unnatural for most people. Slick popularised the concepts to some extent, but some of the most basic functionalities you would want as part of your application lifecycle are not as easily addressable through a QDSL or at least it has yet to happen.
 Phantom is far more mature, feature rich, battle tested, and very widely adopted, with more resources and input from the founding team, a long standing roadmap and a key partnership with Datastax that helps us stay on top of all features.
 

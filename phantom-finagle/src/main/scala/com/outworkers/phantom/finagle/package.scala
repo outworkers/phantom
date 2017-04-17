@@ -17,7 +17,8 @@ package com.outworkers.phantom
 
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
-import com.datastax.driver.core.{ PagingState, Session, SimpleStatement, Statement, ResultSet => DatastaxResultSet }
+
+import com.datastax.driver.core.{ Duration => DatastaxDuration, _ }
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Duration => TwitterDuration, _}
@@ -273,7 +274,7 @@ package object finagle extends SessionAugmenterImplicits {
     }
   }
 
-  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList) extends AnyVal {
+  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
     def execute()(implicit session: Session, executor: Executor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
         twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))

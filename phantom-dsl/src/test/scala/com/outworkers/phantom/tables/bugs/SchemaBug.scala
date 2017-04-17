@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.example
+package com.outworkers.phantom.tables.bugs
 
-import com.outworkers.phantom.PhantomBaseSuite
-import com.outworkers.phantom.dsl.{DatabaseProvider, context}
-import com.outworkers.phantom.example.advanced.RecipesDatabase
-import org.scalatest.FlatSpec
+import com.outworkers.phantom.dsl._
 
-trait RecipesDbProvider extends DatabaseProvider[RecipesDatabase] {
-  override def database: RecipesDatabase = RecipesDatabase
-}
+case class SchemaBugModel(
+  id: Int,
+  quality: Int,
+  name: String
+)
 
-trait ExampleSuite extends FlatSpec with PhantomBaseSuite with RecipesDbProvider {
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    database.create()
-  }
+abstract class Schema extends CassandraTable[Schema, SchemaBugModel] with RootConnector {
+  object id extends IntColumn(this) with PartitionKey
+  object quality extends IntColumn(this)
+  object name extends StringColumn(this)
+  object eventId extends LongColumn(this)
 }

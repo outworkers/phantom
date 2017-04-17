@@ -354,6 +354,10 @@ trait RootMacro {
     }
   }
 
+  def filterDecls[Filter: TypeTag](source: Type): Seq[Symbol] = {
+    source.declarations.sorted.filter(_.typeSignature <:< typeOf[Filter])
+  }
+
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
   ): Seq[Symbol] = {

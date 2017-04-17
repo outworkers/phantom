@@ -164,16 +164,14 @@ class CreateQuery[
 
   override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
-  private[phantom] def indexList(name: String): ExecutableStatementList = {
-    new ExecutableStatementList(table.secondaryKeys map {
-      key => {
-        if (key.isMapKeyIndex) {
-          QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
-        } else if (key.isMapEntryIndex) {
-          QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
-        } else {
-          QueryBuilder.Create.index(table.tableName, name, key.name)
-        }
+  private[phantom] def indexList(name: String): ExecutableStatementList[Seq] = {
+    new ExecutableStatementList(table.secondaryKeys map { key =>
+      if (key.isMapKeyIndex) {
+        QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
+      } else if (key.isMapEntryIndex) {
+        QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
+      } else {
+        QueryBuilder.Create.index(table.tableName, name, key.name)
       }
     })
   }
@@ -185,14 +183,10 @@ class CreateQuery[
     if (table.secondaryKeys.isEmpty) {
       scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
     } else {
-      super.future() flatMap {
-        res => {
-          indexList(keySpace.name).future() map {
-            _ => {
-              Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-              res
-            }
-          }
+      super.future() flatMap { res =>
+        indexList(keySpace.name).future() map { _ =>
+          Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+          res
         }
       }
     }

@@ -20,7 +20,7 @@ import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList
 import com.outworkers.phantom.connectors.KeySpace
 
 trait DatabaseHelper[T <: Database[T]] {
-  def tables(db: T): Set[CassandraTable[_ ,_]]
+  def tables(db: T): Seq[CassandraTable[_ ,_]]
 
   def createQueries(db: T)(implicit keySpace: KeySpace): ExecutableCreateStatementsList
 }
@@ -39,7 +39,7 @@ class DatabaseHelperMacro(val c: scala.reflect.macros.whitebox.Context) extends 
     val tpe = weakTypeOf[T]
     val tableSymbol = tq"com.outworkers.phantom.CassandraTable[_, _]"
 
-    val accessors = filterMembers[T, CassandraTable[_, _]]()
+    val accessors = filterDecls[CassandraTable[_, _]](tpe)
 
     val prefix = q"com.outworkers.phantom.database"
 
@@ -54,8 +54,8 @@ class DatabaseHelperMacro(val c: scala.reflect.macros.whitebox.Context) extends 
 
     q"""
        new com.outworkers.phantom.macros.DatabaseHelper[$tpe] {
-         def tables(db: $tpe): scala.collection.immutable.Set[$tableSymbol] = {
-           scala.collection.immutable.Set.apply[$tableSymbol](..$tableList)
+         def tables(db: $tpe): scala.collection.immutable.Seq[$tableSymbol] = {
+           scala.collection.immutable.Seq.apply[$tableSymbol](..$tableList)
          }
 
          def createQueries(db: $tpe)(implicit space: $keySpaceTpe): $listType = {

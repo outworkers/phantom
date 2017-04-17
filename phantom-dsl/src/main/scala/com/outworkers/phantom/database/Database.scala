@@ -37,7 +37,7 @@ abstract class Database[
 
   implicit lazy val session: Session = connector.session
 
-  val tables: Set[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
+  val tables: Seq[CassandraTable[_, _]] = helper.tables(this.asInstanceOf[DB])
 
   def shutdown(): Unit = {
     blocking {
@@ -97,8 +97,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autodrop(): ExecutableStatementList = {
-    new ExecutableStatementList(tables.toSeq.map {
+  private[phantom] def autodrop(): ExecutableStatementList[Seq] = {
+    new ExecutableStatementList(tables.map {
       table => table.alter().drop().qb
     })
   }
@@ -137,8 +137,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autotruncate(): ExecutableStatementList = {
-    new ExecutableStatementList(tables.toSeq.map(_.truncate().qb))
+  private[phantom] def autotruncate(): ExecutableStatementList[Seq] = {
+    new ExecutableStatementList(tables.map(_.truncate().qb))
   }
 
   /**

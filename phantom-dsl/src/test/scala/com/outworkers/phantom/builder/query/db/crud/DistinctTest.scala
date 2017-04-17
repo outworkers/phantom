@@ -20,13 +20,13 @@ import java.util.UUID
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import org.joda.time.DateTime
+import org.joda.time.{ DateTime, DateTimeZone }
 
 class DistinctTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
-      super.beforeAll()
-      database.tableWithCompoundKey.insertSchema()
+    super.beforeAll()
+    database.tableWithCompoundKey.insertSchema()
   }
 
   it should "return distinct primary keys" in {
@@ -59,5 +59,5 @@ class DistinctTest extends PhantomSuite {
     }
   }
 
-  private[this] implicit def string2date(date: String): DateTime = new DateTime(date)
+  private[this] implicit def string2date(date: String): DateTime = new DateTime(date, DateTimeZone.UTC)
 }
