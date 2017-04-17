@@ -24,8 +24,8 @@ case class SchemaBugModel(
 )
 
 abstract class Schema extends CassandraTable[Schema, SchemaBugModel] with RootConnector {
-  object id extends IntColumn(this) with PartitionKey
-  object quality extends IntColumn(this)
-  object name extends StringColumn(this)
-  object eventId extends LongColumn(this)
+  object id extends IntColumn with PartitionKey
+  object quality extends IntColumn
+  object name extends StringColumn
+  object eventId extends LongColumn
 }

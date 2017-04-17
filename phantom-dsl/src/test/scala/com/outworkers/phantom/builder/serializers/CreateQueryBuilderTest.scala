@@ -351,6 +351,63 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
     }
 
+    "should allow using SizeTieredCompaction and all its properties" - {
+      "specify a SizeTieredCompactionStrategy" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a tombstone threshold" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .tombstone_threshold(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'tombstone_threshold': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a tombstone compaction interval" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .tombstone_compaction_interval(5L)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'tombstone_compaction_interval': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with an unchecked tombstone compaction option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .unchecked_tombstone_compaction(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'unchecked_tombstone_compaction': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with an enabled flag set to true" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .enabled(true)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'enabled': true}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with an enabled flag set to false" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .enabled(false)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'enabled': false}"
+      }
+    }
+
     "should allow generating secondary indexes based on trait mixins" - {
       "specify a secondary index on a non-map column" in {
         val qb = QueryBuilder.Create.index("t", "k", "col").queryString
