@@ -79,6 +79,35 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     }
   }
 
+  def testEmptyCol[M[X] <: Traversable[X], JType[X], T](
+    dataType: DataType,
+    asJv: M[T] => JType[T]
+  )(
+    implicit ev: Primitive[T],
+    ev2: Primitive[M[T]],
+    cbf: CanBuildFrom[Nothing, T, M[T]]
+  ): Assertion = {
+    val codec: TypeCodec[JType[T]] = registry.codecFor(DataType.list(dataType))
+    val empty = cbf().result()
+
+    forAll(protocolGen) { version =>
+      val phantom = ev2.serialize(empty, version)
+      val datastax = codec.serialize(asJv(empty), version)
+      phantom shouldEqual datastax
+    }
+  }
+
+  def testEmptyList[T](dataType: DataType)(
+    implicit ev: Primitive[T],
+    ev2: Primitive[List[T]]
+  ): Assertion = testEmptyCol[List, JList, T](dataType, _.asJava)
+
+  def testEmptySet[T](dataType: DataType)(
+    implicit ev: Primitive[T],
+    ev2: Primitive[Set[T]]
+  ): Assertion = testEmptyCol[Set, JSet, T](dataType, _.asJava)
+
+
   def testCollection[M[X] <: Traversable[X], JType[X], T](
     dataType: DataType,
     gen: Gen[T],
@@ -122,6 +151,15 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     implicit ev: Primitive[T],
     ev2: Primitive[Set[T]]
   ): Assertion = testCollection[Set, JSet, T](dataType, gen, _.asJava)
+
+
+  it should "serialize an empty List[UUID] type just like the native codec" in {
+    testEmptyList[UUID](DataType.uuid())
+  }
+
+  it should "serialize an empty Set[UUID] type just like the native codec" in {
+    testEmptyList[UUID](DataType.uuid())
+  }
 
 
   it should "serialize a Byte type just like the native codec" in {
@@ -283,4 +321,5 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   it should "serialize a Set[BigDecimal] type just like the native codec" in {
     testSet[BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal)
   }
+  
 }
