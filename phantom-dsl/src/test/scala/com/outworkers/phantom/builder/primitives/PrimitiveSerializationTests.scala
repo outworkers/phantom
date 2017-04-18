@@ -107,6 +107,25 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     ev2: Primitive[Set[T]]
   ): Assertion = testEmptyCol[Set, JSet, T](dataType, _.asJava)
 
+  def testCollection[M[X] <: Traversable[X], JType[X], T, InnerType](
+    dataType: DataType,
+    gen: Gen[T],
+    asJv: M[T] => JType[T],
+    conv: T => InnerType
+  )(
+    implicit ev: Primitive[T],
+    ev2: Primitive[M[T]],
+    cbf: CanBuildFrom[Nothing, T, M[T]]
+  ): Assertion = {
+    val listGen = Gen.buildableOf[M[T], T](gen)
+    val codec: TypeCodec[JType[InnerType]] = registry.codecFor(DataType.list(dataType))
+
+    forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
+      val phantom = ev2.serialize(sample, version)
+      val datastax = codec.serialize(asJv(sample.map(conv).to[M]), version)
+      phantom shouldEqual datastax
+    }
+  }
 
   def testCollection[M[X] <: Traversable[X], JType[X], T](
     dataType: DataType,
@@ -123,6 +142,21 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
       val datastax = codec.serialize(asJv(sample), version)
+      phantom shouldEqual datastax
+    }
+  }
+
+  def testEmptyMap[K, V](kd: DataType, vd: DataType)(
+    implicit kp: Primitive[K],
+    vp: Primitive[V],
+    ev2: Primitive[Map[K, V]]
+  ): Assertion = {
+    val sample = Map.empty[K, V]
+    val codec: TypeCodec[JMap[K, V]] = registry.codecFor(DataType.map(kd, vd))
+
+    forAll(protocolGen) { version =>
+      val phantom = ev2.serialize(sample, version)
+      val datastax = codec.serialize(sample.asJava, version)
       phantom shouldEqual datastax
     }
   }
@@ -152,6 +186,16 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     ev2: Primitive[Set[T]]
   ): Assertion = testCollection[Set, JSet, T](dataType, gen, _.asJava)
 
+  def testSet[T, InnerType](
+    dataType: DataType,
+    gen: Gen[T],
+    conv: T => InnerType
+  )(
+    implicit ev: Primitive[T],
+    ev2: Primitive[Set[T]]
+  ): Assertion = testCollection[Set, JSet, T, InnerType](dataType, gen, _.asJava, conv)
+
+
 
   it should "serialize an empty List[UUID] type just like the native codec" in {
     testEmptyList[UUID](DataType.uuid())
@@ -161,6 +205,9 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     testEmptyList[UUID](DataType.uuid())
   }
 
+  it should "serialize an empty Map[String, UUID] type just like the native codec" in {
+    testEmptyMap[String, UUID](DataType.text(), DataType.uuid())
+  }
 
   it should "serialize a Byte type just like the native codec" in {
     roundtrip[Byte](registry.codecFor(DataType.tinyint()))
@@ -321,5 +368,5 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   it should "serialize a Set[BigDecimal] type just like the native codec" in {
     testSet[BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal)
   }
-  
+
 }
