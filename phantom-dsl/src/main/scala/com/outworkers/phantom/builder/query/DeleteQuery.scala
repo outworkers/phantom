@@ -62,7 +62,13 @@ class DeleteQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, part: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
+  ](
+    t: T,
+    q: CQLQuery,
+    r: Row => R,
+    part: UsingPart,
+    options: QueryOptions
+  ): QueryType[T, R, L, O, S, C, P] = {
     new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
   }
 
@@ -251,4 +257,3 @@ sealed class ConditionalDeleteQuery[
     )
   }
 }
-
