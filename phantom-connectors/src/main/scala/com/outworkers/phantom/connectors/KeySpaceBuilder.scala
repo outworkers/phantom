@@ -69,7 +69,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     * @param query The builder to use when producing the keyspace query.
     * @return
     */
-  @deprecated("Simply pass in a keyspace query instead of passing the name separately", "2.7.0")
+  @deprecated("Simply pass in a keyspace query instead of passing the name separately", "2.8.0")
   def keySpace(
     name: String,
     query: KeySpaceCQLQuery
@@ -101,5 +101,3 @@ trait KeySpaceCQLQuery {
 
   def queryString: String
 }
-
-
