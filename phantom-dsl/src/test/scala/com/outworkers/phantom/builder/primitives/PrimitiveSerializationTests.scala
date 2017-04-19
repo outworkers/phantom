@@ -107,22 +107,39 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     ev2: Primitive[Set[T]]
   ): Assertion = testEmptyCol[Set, JSet, T](dataType, _.asJava)
 
-  def testCollection[M[X] <: Traversable[X], JType[X], T, InnerType](
+  /**
+   * Tests a collection type that's a [[Traversable]] with a manually
+   * defined corresponding Java collection and Java element type. This is
+   * useful for testing roundtrips where the Scala type expoesed as part
+   * of the API is not directly equivalent to the Java type used.
+   * One such example is [[scala.math.BigDecimal]] and [[java.math.BigDecimal]].
+   *
+   * @param dataType The DataType as encoded in the Datastax Java Driver.
+   * @param gen The ScalaCheck generator of the Scala type.
+   * @param asJv A function that converts the Scala collection to the equivalent
+   *             Java collection. This comes from [[scala.collection.JavaConverters]].
+   * @param conv A function that converts an element with a Scala type to the
+   *             corresponding Java type. For instance, converting a [[scala.math.BigDecimal]]
+   *             to a [[java.math.BigDecimal]].
+   */
+
+  def testCollection[M[X] <: Traversable[X], JType[X], T, JavaType](
     dataType: DataType,
     gen: Gen[T],
-    asJv: M[T] => JType[T],
-    conv: T => InnerType
+    asJv: M[JavaType] => JType[JavaType],
+    conv: T => JavaType
   )(
     implicit ev: Primitive[T],
     ev2: Primitive[M[T]],
-    cbf: CanBuildFrom[Nothing, T, M[T]]
+    cbf: CanBuildFrom[Nothing, T, M[T]],
+    cbf2: CanBuildFrom[Nothing, JavaType, M[JavaType]]
   ): Assertion = {
     val listGen = Gen.buildableOf[M[T], T](gen)
-    val codec: TypeCodec[JType[InnerType]] = registry.codecFor(DataType.list(dataType))
+    val codec: TypeCodec[JType[JavaType]] = registry.codecFor(DataType.list(dataType))
 
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
-      val datastax = codec.serialize(asJv(sample.map(conv).to[M]), version)
+      val datastax = codec.serialize(asJv(sample.map(conv).to[M](cbf2)), version)
       phantom shouldEqual datastax
     }
   }
@@ -314,11 +331,21 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a List[BigInt] type just like the native codec" in {
-    testList[BigInt](DataType.varint(), Arbitrary.arbBigInt)
+    testCollection[
+      List,
+      JList,
+      scala.math.BigInt,
+      java.math.BigInteger
+    ](DataType.varint(), Arbitrary.arbBigInt, _.asJava, _.bigInteger)
   }
 
   it should "serialize a List[BigDecimal] type just like the native codec" in {
-    testList[BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal)
+    testCollection[
+      List,
+      JList,
+      scala.math.BigDecimal,
+      java.math.BigDecimal
+    ](DataType.decimal(), Arbitrary.arbBigDecimal, _.asJava, _.bigDecimal)
   }
 
   it should "serialize a Set[String] type just like the native codec" in {
