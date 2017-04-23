@@ -347,17 +347,11 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 
-    Console.println(showCode(tq"$tableTpe"))
-    Console.println(showCollection(recordMembers.map(_.tpe)))
-    Console.println(showCollection(colFields.map(_.tpe)))
-
-    val res = extractorRec(
+    extractorRec(
       colFields.typeMap,
       recordMembers.toList,
       TableDescriptor(tableTpe, recordTpe, colFields)
     )
-    Console.println(res)
-    res
   }
 
   /**
@@ -403,7 +397,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val nothingTpe = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
 
-    val tree = q"""
+    q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = $storeTpe
 
@@ -432,8 +426,5 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
        new $clsName(): $macroPkg.TableHelper[$tableType, $recordType]
     """
-    Console.println(s"${printType(tableType)}: ${recordType}")
-    Console.println(showCode(tree))
-    tree
   }
 }
