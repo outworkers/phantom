@@ -24,7 +24,9 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.bugs.SchemaBug656Table
 
-class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
+class TestDatabase(
+  override val connector: CassandraConnection
+) extends Database[TestDatabase](connector) {
 
   object articles extends Articles with Connector
   object articlesByAuthor extends ArticlesByAuthor with Connector

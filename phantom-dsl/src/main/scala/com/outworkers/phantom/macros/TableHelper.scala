@@ -25,6 +25,7 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
+import scala.util.{ Failure, Success, Try }
 
 case class Debugger(
   storeType: String,
@@ -62,7 +63,7 @@ object TableHelper {
 
 @macrocompat.bundle
 class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
-  import c.universe._
+  import c.universe.{ Try => _, _ }
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
@@ -346,11 +347,17 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 
-    extractorRec(
+    Console.println(showCode(tq"$tableTpe"))
+    Console.println(showCollection(recordMembers.map(_.tpe)))
+    Console.println(showCollection(colFields.map(_.tpe)))
+
+    val res = extractorRec(
       colFields.typeMap,
       recordMembers.toList,
       TableDescriptor(tableTpe, recordTpe, colFields)
     )
+    Console.println(res)
+    res
   }
 
   /**
@@ -359,9 +366,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     * @return An optional symbol, if such a type was found in the type hierarchy.
     */
   def determineReferenceTable(tpe: Type): Option[Symbol] = {
-    tpe.baseClasses.reverse.find(symbol => {
+    tpe.baseClasses.reverse.find(symbol =>
       symbol.typeSignature.decls.exists(_.typeSignature <:< typeOf[AbstractColumn[_]])
-    })
+    )
   }
 
   /**
@@ -392,18 +399,20 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val descriptor = extractor(tableType, recordType, referenceColumns)
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val notImpemented = q"???"
+    val notImplemented = q"???"
+    val nothingTpe = tq"_root_.scala.Nothing"
+    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
 
-    q"""
+    val tree = q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
-          type Repr = ${descriptor.storeType}
+          type Repr = $storeTpe
 
           def tableName: $strTpe = $tableName
 
-          def store($tableTerm: $tableType, $inputTerm: ${descriptor.storeType})(
+          def store($tableTerm: $tableType, $inputTerm: $storeTpe)(
            implicit space: $keyspaceType
           ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = {
-            ${descriptor.storeMethod.getOrElse(notImpemented)}
+            ${descriptor.storeMethod.getOrElse(notImplemented)}
           }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
@@ -411,7 +420,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
           }
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = {
-            ${descriptor.fromRow.getOrElse(notImpemented)}
+            ${descriptor.fromRow.getOrElse(notImplemented)}
           }
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
@@ -423,5 +432,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
        new $clsName(): $macroPkg.TableHelper[$tableType, $recordType]
     """
+    Console.println(s"${printType(tableType)}: ${recordType}")
+    Console.println(showCode(tree))
+    tree
   }
 }

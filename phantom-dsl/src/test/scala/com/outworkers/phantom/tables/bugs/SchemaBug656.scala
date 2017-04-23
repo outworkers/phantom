@@ -17,9 +17,11 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
 
-case class Model(id: Int, name: String)
+case class SchemaBug656Model(id: Int, name: String)
 
-abstract class SchemaBug656Table extends CassandraTable[SchemaBug656, Model] with RootConnector {
+abstract class SchemaBug656Table extends CassandraTable[
+  SchemaBug656Table, SchemaBug656Model
+] with RootConnector {
 
   object _1  extends IntColumn(this) with PartitionKey
   object _2  extends StringColumn(this)
