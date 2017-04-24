@@ -91,7 +91,7 @@ package object finagle extends SessionAugmenterImplicits {
       executor: ExecutionContextExecutor
     ): Future[Spool[R]] = {
       block.all().execute() flatMap {
-        resultSet => ResultSpool.spool(resultSet).map(spool => spool map block.all.fromRow)
+        rs => ResultSpool.spool(rs).map(_ map block.all.fromRow)
       }
     }
   }
@@ -149,8 +149,8 @@ package object finagle extends SessionAugmenterImplicits {
       if (Option(row).isDefined) Some(query.fromRow(row)) else None
     }
 
-    protected[this] def directMapper(results: JavaList[Row]): List[R] = {
-      List.tabulate(results.size())(index => query.fromRow(results.get(index)))
+    protected[this] def directMapper(results: List[Row]): List[R] = {
+      results map query.fromRow
     }
 
     private[phantom] def singleCollect()(
@@ -188,7 +188,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute() map { rs => directMapper(rs.all) }
+      query.execute() map { rs => directMapper(rs.allRows) }
     }
 
     /**
@@ -218,7 +218,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute(_.setPagingState(pagingState)) map { rs => directMapper(rs.all) }
+      query.execute(_.setPagingState(pagingState)) map { rs => directMapper(rs.allRows) }
     }
 
     /**
@@ -233,7 +233,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute() map { rs => ListResult(directMapper(rs.all), rs) }
+      query.execute() map { rs => ListResult(directMapper(rs.allRows), rs) }
     }
 
     /**
@@ -248,7 +248,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(modifyStatement) map { rs => ListResult(directMapper(rs.all), rs) }
+      query.execute(modifyStatement) map { rs => ListResult(directMapper(rs.allRows), rs) }
     }
 
     /**
@@ -263,8 +263,8 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(st => st.setPagingState(pagingState)) map { rs =>
-        ListResult(directMapper(rs.all), rs)
+      query.execute(_.setPagingState(pagingState)) map { rs =>
+        ListResult(directMapper(rs.allRows), rs)
       }
     }
 
@@ -283,9 +283,9 @@ package object finagle extends SessionAugmenterImplicits {
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(directMapper(set.allRows), set)
       }) (state => query.execute(_.setPagingState(state)) map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(directMapper(set.allRows), set)
       })
     }
 }
