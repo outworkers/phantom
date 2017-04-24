@@ -307,16 +307,18 @@ package object finagle {
 
     def execute()(
       implicit session: Session,
-      keySpace: KeySpace,
       ex: ExecutionContextExecutor
     ): Future[ResultSet] = {
+
+      val root = twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
+
       if (query.table.secondaryKeys.isEmpty) {
-        twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
+        root
       } else {
-        query.execute() flatMap {
-          res => query.indexList(keySpace.name).execute() map { _ =>
+        root flatMap {
+          res => query.indexList.execute() map { _ =>
             Manager.logger.debug(
-              s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, query.table.tableName).queryString}"
+              s"Creating secondary indexes on ${QueryBuilder.keyspace(query.keySpace.name, query.table.tableName).queryString}"
             )
             res
           }
