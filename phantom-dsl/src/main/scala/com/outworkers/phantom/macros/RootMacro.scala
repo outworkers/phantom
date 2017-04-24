@@ -326,7 +326,7 @@ trait RootMacro {
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
         if (cols.size > maxTupleSize) {
-          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns")
+          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
           None
         } else {
           Some(tq"(..$cols)")
@@ -337,6 +337,16 @@ trait RootMacro {
     def showExtractor: String = matched.map(f =>
       s"rec.${f.left.name} -> table.${f.right.name} | ${printType(f.right.tpe)}"
     ) mkString "\n"
+  }
+
+  object TableDescriptor {
+    def empty(table: Type, rec: Type, members: Seq[Column.Field]): TableDescriptor = {
+      new TableDescriptor(table, rec, members) {
+        override def storeMethod: Option[c.universe.Tree] = None
+        override def storeType: Option[Tree] = None
+        override def fromRow: Option[Tree] = None
+      }
+    }
   }
 
   /**
@@ -418,4 +428,5 @@ trait RootMacro {
       }
     }
   }
+
 }

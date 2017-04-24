@@ -89,7 +89,7 @@ class CreateQuery[
   val withClause: WithPart = WithPart.empty,
   val usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-)(implicit keySpace: KeySpace) extends ExecutableStatement {
+)(implicit val keySpace: KeySpace) extends ExecutableStatement {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
@@ -164,7 +164,9 @@ class CreateQuery[
 
   override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
-  private[phantom] def indexList(name: String): ExecutableStatementList[Seq] = {
+  private[phantom] val indexList: ExecutableStatementList[Seq] = {
+    val name = keySpace.name
+
     new ExecutableStatementList(table.secondaryKeys map { key =>
       if (key.isMapKeyIndex) {
         QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
@@ -184,7 +186,7 @@ class CreateQuery[
       scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
     } else {
       super.future() flatMap { res =>
-        indexList(keySpace.name).future() map { _ =>
+        indexList.future() map { _ =>
           Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
           res
         }

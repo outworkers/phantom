@@ -31,7 +31,12 @@ import com.twitter.util.{Duration => TwitterDuration, _}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
+import com.outworkers.phantom.builder.query.options.{
+  CompressionStrategy,
+  GcGraceSecondsBuilder,
+  TablePropertyClause,
+  TimeToLiveBuilder
+}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
@@ -39,6 +44,7 @@ import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
 import scala.annotation.implicitNotFound
+import scala.concurrent.ExecutionContextExecutor
 
 package object finagle extends SessionAugmenterImplicits {
 
@@ -46,7 +52,7 @@ package object finagle extends SessionAugmenterImplicits {
 
   protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(
     implicit session: Session,
-    executor: Executor
+    executor: ExecutionContextExecutor
   ): Future[ResultSet] = {
     Manager.logger.debug(s"Executing query: $str")
 
@@ -76,10 +82,14 @@ package object finagle extends SessionAugmenterImplicits {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-      * @param executor The implicit Java executor.
+      * @param executor The implicit Java compatible Scala executor.
       * @return
       */
-    def fetchSpool()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Spool[R]] = {
+    def fetchSpool()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: ExecutionContextExecutor
+    ): Future[Spool[R]] = {
       block.all().execute() flatMap {
         resultSet => ResultSpool.spool(resultSet).map(spool => spool map block.all.fromRow)
       }
@@ -102,7 +112,7 @@ package object finagle extends SessionAugmenterImplicits {
       * @param executor The implicit Java executor.
       * @return
       */
-    def execute()(implicit session: Session, executor: Executor): Future[ResultSet] = {
+    def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(query.statement())
     }
 
@@ -123,7 +133,7 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def execute(modifyStatement: Modifier)(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(modifyStatement(query.statement()))
     }
@@ -145,7 +155,7 @@ package object finagle extends SessionAugmenterImplicits {
 
     private[phantom] def singleCollect()(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[Option[R]] = {
       query.execute() map { res => singleResult(res.value()) }
     }
@@ -159,9 +169,9 @@ package object finagle extends SessionAugmenterImplicits {
       * @param executor The implicit Java executor.
       * @return A Spool of R.
       */
-    def fetchSpool()(implicit session: Session, executor: Executor): Future[Spool[R]] = {
-      query.execute() flatMap {
-        resultSet => ResultSpool.spool(resultSet).map(spool => spool map query.fromRow)
+    def fetchSpool()(implicit session: Session, executor: ExecutionContextExecutor): Future[Spool[R]] = {
+      query.execute() flatMap { rs =>
+        ResultSpool.spool(rs).map(spool => spool map query.fromRow)
       }
     }
 
@@ -174,8 +184,11 @@ package object finagle extends SessionAugmenterImplicits {
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collect()(implicit session: Session, executor: Executor): Future[List[R]] = {
-      query.execute() map (_.allRows().map(query.fromRow))
+    def collect()(
+      implicit session: Session,
+      executor: ExecutionContextExecutor
+    ): Future[List[R]] = {
+      query.execute() map { rs => directMapper(rs.all) }
     }
 
     /**
@@ -188,7 +201,7 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def collect(modifyStatement: Modifier)(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[List[R]] = {
       query.execute(modifyStatement) map (_.allRows().map(query.fromRow))
     }
@@ -203,9 +216,9 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def collect(pagingState: PagingState)(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute(_.setPagingState(pagingState)) map (_.allRows().map(query.fromRow))
+      query.execute(_.setPagingState(pagingState)) map { rs => directMapper(rs.all) }
     }
 
     /**
@@ -216,8 +229,11 @@ package object finagle extends SessionAugmenterImplicits {
       * @param executor The implicit Java executor.
       * @return A Twitter future wrapping a list of mapped results.
       */
-    def collectRecord()(implicit session: Session, executor: Executor): Future[ListResult[R]] = {
-      query.execute() map { rs => ListResult(rs.allRows().map(query.fromRow), rs) }
+    def collectRecord()(
+      implicit session: Session,
+      executor: ExecutionContextExecutor
+    ): Future[ListResult[R]] = {
+      query.execute() map { rs => ListResult(directMapper(rs.all), rs) }
     }
 
     /**
@@ -230,9 +246,9 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def collectRecord(modifyStatement: Modifier)(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(modifyStatement) map (rs => ListResult(rs.allRows().map(query.fromRow), rs))
+      query.execute(modifyStatement) map { rs => ListResult(directMapper(rs.all), rs) }
     }
 
     /**
@@ -245,10 +261,10 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def collectRecord(pagingState: PagingState)(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(_.setPagingState(pagingState)) map { rs =>
-        ListResult(rs.allRows().map(query.fromRow), rs)
+      query.execute(st => st.setPagingState(pagingState)) map { rs =>
+        ListResult(directMapper(rs.all), rs)
       }
     }
 
@@ -264,24 +280,24 @@ package object finagle extends SessionAugmenterImplicits {
       */
     def collectRecord(state: Option[PagingState])(
       implicit session: Session,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
-        set => ListResult(set.allRows().map(query.fromRow), set)
+        set => ListResult(directMapper(set.all), set)
       }) (state => query.execute(_.setPagingState(state)) map {
-        set => ListResult(set.allRows().map(query.fromRow), set)
+        set => ListResult(directMapper(set.all), set)
       })
     }
 }
 
   implicit class BatchQueryAugmenter[ST <: ConsistencyBound](val batch: BatchQuery[ST]) extends AnyVal {
-    def execute()(implicit session: Session, executor: Executor): Future[ResultSet] = {
+    def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(batch.makeBatch())
     }
   }
 
   implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
-    def execute()(implicit session: Session, executor: Executor): Future[Seq[ResultSet]] = {
+    def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
         twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))
       }))
@@ -294,14 +310,20 @@ package object finagle extends SessionAugmenterImplicits {
     Status <: ConsistencyBound
   ](val query: CreateQuery[Table, Record, Status]) extends AnyVal {
 
-    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[ResultSet] = {
+    def execute()(
+      implicit session: Session,
+      ex: ExecutionContextExecutor
+    ): Future[ResultSet] = {
+
+      val root = twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
+
       if (query.table.secondaryKeys.isEmpty) {
-        twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
+        root
       } else {
-        query.execute() flatMap {
-          res => query.indexList(keySpace.name).execute() map { _ =>
+        root flatMap {
+          res => query.indexList.execute() map { _ =>
             Manager.logger.debug(
-              s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, query.table.tableName).queryString}"
+              s"Creating secondary indexes on ${QueryBuilder.keyspace(query.keySpace.name, query.table.tableName).queryString}"
             )
             res
           }
@@ -310,8 +332,14 @@ package object finagle extends SessionAugmenterImplicits {
     }
   }
 
-  implicit class ExecutableCreateStatementsListAugmenter(val list: ExecutableCreateStatementsList) extends AnyVal {
-    def execute()(implicit session: Session, keySpace: KeySpace, executor: Executor): Future[Seq[ResultSet]] = {
+  implicit class ExecutableCreateStatementsListAugmenter(
+    val list: ExecutableCreateStatementsList
+  ) extends AnyVal {
+    def execute()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      executor: ExecutionContextExecutor
+    ): Future[Seq[ResultSet]] = {
       Future.collect(list.queries(keySpace).map(_.execute()))
     }
   }
@@ -322,7 +350,7 @@ package object finagle extends SessionAugmenterImplicits {
     Status <: ConsistencyBound,
     PS <: HList
   ](val query: InsertQuery[Table, Record, Status, PS]) extends AnyVal {
-    def ttl(duration: TwitterDuration): InsertQuery[Table, Record, Status, PS] = {
+    def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -349,7 +377,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       keySpace: KeySpace,
       ev: Limit =:= Unlimited,
-      executor: Executor
+      executor: ExecutionContextExecutor
     ): Future[Option[Record]] = {
       val enforceLimit = if (select.count) LimitedPart.empty else select.limitedPart append QueryBuilder.limit("1")
 
@@ -392,7 +420,7 @@ package object finagle extends SessionAugmenterImplicits {
     PS <: HList
   ](val query: UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
-    def ttl(duration: TwitterDuration): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: com.twitter.util.Duration): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -446,12 +474,10 @@ package object finagle extends SessionAugmenterImplicits {
     def get()(
       implicit session: Session,
       ev: =:=[Limit, Unlimited],
-      executor: Executor
-    ): Future[Option[Record]] = {
-      block.singleCollect()
-    }
+      executor: ExecutionContextExecutor
+    ): Future[Option[Record]] = block.singleCollect()
 
-    def execute()(implicit session: Session, executor: Executor): Future[ResultSet] = {
+    def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
       twitterQueryStringExecuteToFuture(block.st)
     }
   }
