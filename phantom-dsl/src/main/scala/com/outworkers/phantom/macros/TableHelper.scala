@@ -61,7 +61,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
   import c.universe.{ Try => _, _ }
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -399,13 +399,12 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
       val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
-
       c.abort(
         c.enclosingPosition,
         s"""Please define def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}.
           Found unmatched record columns on ${printType(tableType)}
           $unmatched
-        """"
+        """
       )
     } else {
       logger.debug(descriptor.showExtractor)
@@ -413,7 +412,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val notImplemented = q"???"
     val nothingTpe = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
 

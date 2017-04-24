@@ -23,28 +23,28 @@ abstract class SchemaBug656Table extends CassandraTable[
   SchemaBug656Table, SchemaBug656Model
 ] with RootConnector {
 
-  object _1  extends IntColumn(this) with PartitionKey
-  object _2  extends StringColumn(this)
-  object _3  extends IntColumn(this)
-  object _4  extends IntColumn(this)
-  object _5  extends StringColumn(this)
-  object _6  extends StringColumn(this)
-  object _7 extends IntColumn(this)
-  object _8 extends IntColumn(this)
-  object _9 extends IntColumn(this)
-  object _10 extends StringColumn(this)
-  object _11 extends StringColumn(this)
-  object _12 extends StringColumn(this)
-  object _13 extends StringColumn(this)
-  object _14 extends IntColumn(this)
-  object _15 extends IntColumn(this)
-  object _16 extends IntColumn(this)
-  object _17 extends IntColumn(this)
-  object _18 extends IntColumn(this)
-  object _20 extends IntColumn(this)
-  object _21 extends StringColumn(this)
-  object _22 extends StringColumn(this)
-  object _23 extends StringColumn(this)
-  object _24 extends StringColumn(this)
-  object _25 extends StringColumn(this)
+  object _1  extends IntColumn with PartitionKey
+  object _2  extends StringColumn
+  object _3  extends IntColumn
+  object _4  extends IntColumn
+  object _5  extends StringColumn
+  object _6  extends StringColumn
+  object _7 extends IntColumn
+  object _8 extends IntColumn
+  object _9 extends IntColumn
+  object _10 extends StringColumn
+  object _11 extends StringColumn
+  object _12 extends StringColumn
+  object _13 extends StringColumn
+  object _14 extends IntColumn
+  object _15 extends IntColumn
+  object _16 extends IntColumn
+  object _17 extends IntColumn
+  object _18 extends IntColumn
+  object _20 extends IntColumn
+  object _21 extends StringColumn
+  object _22 extends StringColumn
+  object _23 extends StringColumn
+  object _24 extends StringColumn
+  object _25 extends StringColumn
 }
