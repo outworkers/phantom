@@ -424,7 +424,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
           def debug: $macroPkg.Debugger = ${descriptor.debugger}
        }
 
-       new $clsName(): $macroPkg.TableHelper[$tableType, $recordType]
+       new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
   }
 }
