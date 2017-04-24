@@ -21,7 +21,7 @@ sealed trait SchemaRecord663
 case class A(a: Int) extends SchemaRecord663
 case class B(b: Int) extends SchemaRecord663
 
-abstract class SchemaBug663 extends CassandraTable[SchemaBug663, SchemaRecord663] {
+abstract class SchemaBug663Table extends CassandraTable[SchemaBug663Table, SchemaRecord663] {
   object discriminator extends IntColumn(this) with PartitionKey
   object a extends IntColumn(this)
   object b extends IntColumn(this)

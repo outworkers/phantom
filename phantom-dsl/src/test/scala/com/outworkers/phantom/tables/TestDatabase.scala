@@ -22,7 +22,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.bugs.SchemaBug656Table
+import com.outworkers.phantom.tables.bugs.{SchemaBug656Table, SchemaBug663Table}
 
 class TestDatabase(
   override val connector: CassandraConnection
@@ -95,6 +95,7 @@ class TestDatabase(
 
   object optDerivedTable extends OptionalDerivedTable with Connector
   object schemaBug656 extends SchemaBug656Table with Connector
+  object schemaBug663Table$ extends SchemaBug663Table with Connector
 }
 
 object Connector {

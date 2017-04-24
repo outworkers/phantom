@@ -400,13 +400,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
     val notImplemented = q"???"
-    Console.println("blablasfasf1")
     val nothingTpe = tq"_root_.scala.Nothing"
-    Console.println("blablasfasf2")
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
-
-    Console.println(showCode(storeMethod))
 
     q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
