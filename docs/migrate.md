@@ -89,8 +89,8 @@ projects which have in their own right been completely open sourced under Apache
 - Index modifiers no longer require a type parameter, `PartitionKey`, `PrimaryKey`, `ClusteringOrder` and `Index` don't require
 the column type passed anymore.
 - `KeySpaceDef` has been renamed to the more appropiate `
-CassandraConnector`.
-- `CassandraConnector` now natively supports specifying a keyspace creation query.
+CassandraConnection`.
+- `CassandraConnection` now natively supports specifying a typed keyspace creation query.
 - `TimeWindowCompactionStrategy` is now natively supported in the CREATE/ALTER dsl.
 - Collections can now be used as part of a primary or partition key.
 - Tuples are now natively supported as valid types via `TupleColumn`.
@@ -129,10 +129,10 @@ case class Record(
 
 abstract class MyTable extends CassandraTable[MyTable, Record] {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object firstName extends StringColumn(this)
-  object email extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
 
   // Phantom now auto-generates the below method
   def store(record: Record): InsertQuery.Default[MyTable, Record] = {

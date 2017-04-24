@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.column
+package com.outworkers.phantom.tables
 
-import java.util.UUID
+import com.outworkers.phantom.dsl._
 
-import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.syntax.CQLSyntax
+case class TestCaseContext(
+  epicId: Int,
+  userStoryId: Int,
+  name: String
+)
 
-class OptionalTimeUUIDColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-](table: CassandraTable[Owner, Record])(
-  implicit primitive: Primitive[UUID]
-) extends OptionalPrimitiveColumn[Owner, Record, UUID](table) {
-  override val cassandraType = CQLSyntax.Types.TimeUUID
+abstract class TestCaseSchema extends CassandraTable[
+  TestCaseSchema,
+  TestCaseContext
+] with RootConnector {
+  object tenantId extends IntColumn with PartitionKey
+  object productId extends IntColumn with PartitionKey
+  object epicId extends IntColumn with PrimaryKey
+  object userStoryId extends IntColumn with PrimaryKey
+  object name extends StringColumn
+  //object eventId extends LongColumn
 }

@@ -15,10 +15,15 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{
+  PreparedStatement,
+  Session,
+  Statement,
+  ResultSet => DatastaxResultSet
+}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.outworkers.phantom.Manager
-import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.{Manager, ResultSet}
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture, Promise => ScalaPromise}
 
@@ -56,6 +61,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     promise
   }
 
+
   protected[this] def scalaQueryStringToPromise(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
@@ -66,9 +72,9 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
 
     val future = session.executeAsync(st)
 
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise success result
+    val callback = new FutureCallback[DatastaxResultSet] {
+      def onSuccess(result: DatastaxResultSet): Unit = {
+        promise success ResultSet(result, session.protocolVersion)
       }
 
       def onFailure(err: Throwable): Unit = {

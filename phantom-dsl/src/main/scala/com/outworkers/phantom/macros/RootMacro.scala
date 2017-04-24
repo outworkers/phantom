@@ -21,16 +21,16 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
-class RootMacro(val c: blackbox.Context) {
-
+trait RootMacro {
+  val c: whitebox.Context
   import c.universe._
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)
 
-  protected[this] val rowType = tq"com.datastax.driver.core.Row"
+  protected[this] val rowType = tq"com.outworkers.phantom.Row"
   protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"com.outworkers.phantom.macros"
   protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"
@@ -54,12 +54,12 @@ class RootMacro(val c: blackbox.Context) {
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
   val fromRowName: TermName = TermName("fromRow")
 
-  def printType(tpe: Type): String = {
-    showCode(tq"${tpe.dealias}")
-  }
+  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
-  def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
-    traversable map (tpe => showCode(tq"$tpe")) mkString sep
+  def showCollection[
+    M[X] <: TraversableOnce[X]
+  ](traversable: M[Type], sep: String = ", "): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString sep
   }
 
   trait RootField {
@@ -185,11 +185,8 @@ class RootMacro(val c: blackbox.Context) {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.sortBy(_.left.index).map {
-          m => q"$tableTerm.${m.right.name}.apply($rowTerm)"
-        }
-        val tree = q"""new $recordType(..$columnNames)"""
-        Some(tree)
+        val columnNames = matched.sortBy(_.left.index).map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+        Some(q"""new $recordType(..$columnNames)""")
       } else {
         None
       }
@@ -240,9 +237,9 @@ class RootMacro(val c: blackbox.Context) {
       *
       *   class Records extends CassandraTable[Records, Record] {
       *
-      *     object id extends UUIDColumn(this) with PartitionKey
-      *     object name extends StringColumn(this) with PrimaryKey
-      *     object timestamp extends DateTimeColumn(this)
+      *     object id extends UUIDColumn with PartitionKey
+      *     object name extends StringColumn with PrimaryKey
+      *     object timestamp extends DateTimeColumn
       *
       *     // Will end up with a store method that has the following type signature.
       *     def store(input: (UUID, Record)): InsertQuery.Default[Records, Record]
@@ -309,6 +306,7 @@ class RootMacro(val c: blackbox.Context) {
       if (unmatchedColumns.isEmpty) {
         recString
       } else {
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
         cols.mkString(", ") + s", $recString"
       }

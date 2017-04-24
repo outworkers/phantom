@@ -21,15 +21,15 @@ import com.outworkers.phantom.dsl._
 
 case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
 
-sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, StaticCollectionSingle] {
+abstract class StaticTableTest extends Table[
+  StaticTableTest,
+  StaticCollectionSingle
+] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
-  object staticTest extends StringColumn(this) with StaticColumn
+  object id extends UUIDColumn with PartitionKey
+  object clusteringId extends UUIDColumn with PrimaryKey with ClusteringOrder with Descending
+  object staticTest extends StringColumn with StaticColumn
 }
-
-abstract class ConcreteStaticTableTest extends StaticTableTest with RootConnector
-
 
 case class StaticCollectionRecord(
   id: UUID,
@@ -41,8 +41,7 @@ abstract class StaticCollectionTableTest extends CassandraTable[
   StaticCollectionTableTest,
   StaticCollectionRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
-  object staticList extends ListColumn[String](this) with StaticColumn
+  object id extends UUIDColumn with PartitionKey
+  object clusteringId extends UUIDColumn with PrimaryKey with ClusteringOrder with Descending
+  object staticList extends ListColumn[String] with StaticColumn
 }
-

@@ -83,32 +83,35 @@ object OptionalPrimitive {
   }
 }
 
-abstract class OptionalPrimitives extends CassandraTable[OptionalPrimitives, OptionalPrimitive] with RootConnector {
-  object pkey extends StringColumn(this) with PartitionKey
+abstract class OptionalPrimitives extends Table[
+  OptionalPrimitives,
+  OptionalPrimitive
+] with RootConnector {
+  object pkey extends StringColumn with PartitionKey
 
-  object string extends OptionalStringColumn(this)
+  object string extends OptionalStringColumn
 
-  object long extends OptionalLongColumn(this)
+  object long extends OptionalLongColumn
 
-  object boolean extends OptionalBooleanColumn(this)
+  object boolean extends OptionalBooleanColumn
 
-  object bDecimal extends OptionalBigDecimalColumn(this)
+  object bDecimal extends OptionalBigDecimalColumn
 
-  object double extends OptionalDoubleColumn(this)
+  object double extends OptionalDoubleColumn
 
-  object float extends OptionalFloatColumn(this)
+  object float extends OptionalFloatColumn
 
-  object inet extends OptionalInetAddressColumn(this)
+  object inet extends OptionalInetAddressColumn
 
-  object int extends OptionalIntColumn(this)
+  object int extends OptionalIntColumn
 
-  object date extends OptionalDateColumn(this)
+  object date extends OptionalDateColumn
 
-  object uuid extends OptionalUUIDColumn(this)
+  object uuid extends OptionalUUIDColumn
 
-  object timeuuid extends OptionalTimeUUIDColumn(this)
+  object timeuuid extends OptionalTimeUUIDColumn
 
-  object bi extends OptionalBigIntColumn(this)
+  object bi extends OptionalBigIntColumn
 
   def findByKey(pkey: String): Future[Option[OptionalPrimitive]] = {
     select.where(_.pkey eqs pkey).one()

@@ -15,46 +15,39 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.column.{ListColumn, MapColumn, SetColumn}
 import com.outworkers.phantom.dsl._
 
-abstract class IndexedCollectionsTable extends CassandraTable[IndexedCollectionsTable, TestRow] with RootConnector {
+abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, TestRow] with RootConnector {
 
-  object key extends StringColumn(this) with PartitionKey
+  object key extends StringColumn with PartitionKey
 
-  object list extends ListColumn[String](this)
+  object list extends ListColumn[String]
 
-  object setText extends SetColumn[String](this) with Index
+  object setText extends SetColumn[String] with Index
 
-  object mapTextToText extends MapColumn[String, String](this) with Index
+  object mapTextToText extends MapColumn[String, String] with Index
 
-  object setInt extends SetColumn[Int](this)
+  object setInt extends SetColumn[Int]
 
-  object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
+  object mapIntToText extends MapColumn[Int, String] with Index with Keys
 
-  object mapIntToInt extends MapColumn[Int, Int](this)
+  object mapIntToInt extends MapColumn[Int, Int]
 }
 
 
-abstract class IndexedEntriesTable extends CassandraTable[IndexedEntriesTable, TestRow] with RootConnector {
+abstract class IndexedEntriesTable extends Table[IndexedEntriesTable, TestRow] with RootConnector {
 
-  object key extends StringColumn(this) with PartitionKey
+  object key extends StringColumn with PartitionKey
 
-  object list extends ListColumn[String](this)
+  object list extends ListColumn[String]
 
-  object setText extends SetColumn[String](this) with Index
+  object setText extends SetColumn[String] with Index
 
-  object mapTextToText extends MapColumn[String, String](this) with Index
+  object mapTextToText extends MapColumn[String, String] with Index
 
-  object setInt extends SetColumn[Int](this)
+  object setInt extends SetColumn[Int]
 
-  object mapIntToText extends MapColumn[Int, String](this) with Index with Keys
+  object mapIntToText extends MapColumn[Int, String] with Index with Keys
 
-  object mapIntToInt extends MapColumn[Int, Int](this) with Index with Entries
+  object mapIntToInt extends MapColumn[Int, Int] with Index with Entries
 }
-
-
-

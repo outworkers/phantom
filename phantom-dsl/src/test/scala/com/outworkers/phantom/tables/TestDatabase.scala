@@ -41,16 +41,16 @@ class TestDatabase(
   object simpleCompoundKeyTable extends SimpleCompoundKeyTable with Connector
   object complexCompoundKeyTable extends ComplexCompoundKeyTable with Connector
 
-  object counterTableTest extends ConcreteCounterTableTest with Connector
-  object secondaryCounterTable extends ConcreteSecondaryCounterTable with Connector
-  object brokenCounterCounterTable extends ConcreteBrokenCounterTableTest with Connector
+  object counterTableTest extends CounterTableTest with Connector
+  object secondaryCounterTable extends SecondaryCounterTable with Connector
+  object brokenCounterCounterTable extends BrokenCounterTableTest with Connector
 
   object indexedCollectionsTable extends IndexedCollectionsTable with Connector
   object indexedEntriesTable extends IndexedEntriesTable with Connector
   object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
-  object primitives extends Primitives with Connector
+  object primitives extends PrimitivesTable with Connector
 
   object primitivesJoda extends PrimitivesJoda with Connector
 
@@ -64,7 +64,7 @@ class TestDatabase(
   }
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
-  object staticTable extends ConcreteStaticTableTest with Connector
+  object staticTable extends StaticTableTest with Connector
   object staticCollectionTable extends StaticCollectionTableTest with Connector
 
   object tableWithSingleKey extends TableWithSingleKey with Connector
@@ -76,8 +76,8 @@ class TestDatabase(
 
   object primaryCollectionsTable extends PrimaryCollectionTable with Connector
 
-  object timeSeriesTableWithTtl extends ConcreteTimeSeriesTableWithTTL with Connector
-  object timeSeriesTableWithTtl2 extends ConcreteTimeSeriesTableWithTTL2 with Connector
+  object timeSeriesTableWithTtl extends TimeSeriesTableWithTTL with Connector
+  object timeSeriesTableWithTtl2 extends TimeSeriesTableWithTTL2 with Connector
   object multipleKeysTable extends MultipleKeys with Connector
   object timeuuidTable extends TimeUUIDTable with Connector
 
@@ -85,9 +85,9 @@ class TestDatabase(
 
   object scalaPrimitivesTable extends ScalaTypesMapTable with Connector
   object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
-  object tuple2Table extends ConcreteTupleColumnTable with Connector
-  object nestedTupleTable extends ConcreteNestedTupleColumnTable with Connector
-  object tupleCollectionsTable extends ConcreteTupleCollectionsTable with Connector
+  object tuple2Table extends TupleColumnTable with Connector
+  object nestedTupleTable extends NestedTupleColumnTable with Connector
+  object tupleCollectionsTable extends TupleCollectionsTable with Connector
 
   object tableTypeTuple extends TupleTypeTable with Connector
   object wideTable extends WideTable with Connector
@@ -105,8 +105,7 @@ object Connector {
         .setReadTimeoutMillis(20000)
       )
     ).noHeartbeat().keySpace(
-      "phantom",
-      KeySpaceSerializer("phantom").ifNotExists().`with`(
+      KeySpace("phantom").ifNotExists().`with`(
         replication eqs SimpleStrategy.replication_factor(1)
       )
     )

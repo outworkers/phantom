@@ -56,7 +56,7 @@ class IterateePerformanceTest extends PhantomSuite {
   }
 
   it should "get correctly retrieve the right number of records using asynchronous iterators" in {
-    val rows = for (i <- 1 to 100) yield gen[Primitive]
+    val rows = for (i <- 1 to 100) yield gen[PrimitiveRecord]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       b.add(database.primitives.store(row))
     })

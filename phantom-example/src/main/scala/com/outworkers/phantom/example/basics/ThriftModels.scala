@@ -29,9 +29,9 @@ case class SampleRecord(
 )
 
 abstract class ThriftTable extends CassandraTable[ThriftTable, SampleRecord] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object stuff extends StringColumn(this)
-  object someList extends ListColumn[String](this)
+  object id extends UUIDColumn with PartitionKey
+  object stuff extends StringColumn
+  object someList extends ListColumn[String]
 
   // By default, com.outworkers.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.

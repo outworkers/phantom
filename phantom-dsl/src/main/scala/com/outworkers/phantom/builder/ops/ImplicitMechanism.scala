@@ -70,7 +70,10 @@ sealed class CasConditionalOperators[RR](col: AbstractColumn[RR]) {
   }
 }
 
-sealed class SetConditionals[T <: CassandraTable[T, R], R, RR](val col: AbstractSetColumn[T, R, RR]) {
+sealed class SetConditionals[
+  T <: CassandraTable[T, R],
+  R, RR
+](val col: AbstractColColumn[T, R, Set, RR]) {
 
   /**
    * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
@@ -157,9 +160,11 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey): OrderingColumn[RR] = new OrderingColumn[RR](col)
 
-  implicit def setColumnToQueryColumn[T <: CassandraTable[T, R], R, RR](col: AbstractSetColumn[T, R, RR] with Index): SetConditionals[T, R, RR] = {
-    new SetConditionals(col)
-  }
+  implicit def setColumnToQueryColumn[
+    T <: CassandraTable[T, R],
+    R,
+    RR
+  ](col: AbstractColColumn[T, R, Set, RR] with Index): SetConditionals[T, R, RR] = new SetConditionals(col)
 
   /**
     * Definition used to cast a comparison clause to Map entry lookup based on a secondary index.

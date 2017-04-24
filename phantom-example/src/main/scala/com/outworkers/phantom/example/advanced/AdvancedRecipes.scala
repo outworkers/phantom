@@ -36,23 +36,23 @@ import scala.concurrent.{Future => ScalaFuture}
 // Keep reading for examples.
 abstract class AdvancedRecipes extends CassandraTable[AdvancedRecipes, Recipe] with RootConnector {
   // First the partition key, which is also a Primary key in Cassandra.
-  object id extends UUIDColumn(this) with PartitionKey {
+  object id extends UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
     override lazy  val name = "the_primary_key"
   }
 
-  object name extends StringColumn(this)
+  object name extends StringColumn
 
-  object title extends StringColumn(this)
-  object author extends StringColumn(this)
-  object description extends StringColumn(this)
+  object title extends StringColumn
+  object author extends StringColumn
+  object description extends StringColumn
 
   // Custom data types can be stored easily.
   // Cassandra collections target a small number of items, but usage is trivial.
-  object ingredients extends SetColumn[String](this)
-  object props extends MapColumn[String, String](this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder
+  object ingredients extends SetColumn[String]
+  object props extends MapColumn[String, String]
+  object timestamp extends DateTimeColumn with ClusteringOrder
 
   // Like in the real world, you have now planned your queries ahead.
   // You know what you can do and what you can't based on the schema limitations.

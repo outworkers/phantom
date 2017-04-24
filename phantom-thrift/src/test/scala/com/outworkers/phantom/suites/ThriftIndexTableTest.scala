@@ -28,7 +28,7 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
 
   val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
 
-  implicit val samplePrimitive = thriftPrimitive[ThriftTest]
+  implicit val samplePrimitive = Primitive.thrift[ThriftTest]
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
     val sample = gen[ThriftRecord]

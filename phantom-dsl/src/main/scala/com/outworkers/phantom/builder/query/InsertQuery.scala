@@ -287,7 +287,6 @@ class InsertJsonQuery[
   }
 
   override val qb: CQLQuery = (lightweightPart merge usingPart) build init
-
 }
 
 

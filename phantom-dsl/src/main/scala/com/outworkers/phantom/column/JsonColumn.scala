@@ -15,12 +15,11 @@
  */
 package com.outworkers.phantom.column
 
-import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
@@ -46,7 +45,7 @@ abstract class JsonColumn[
   val cassandraType = CQLSyntax.Types.Text
 
   def parse(row: Row): Try[ValueType] = {
-    Try(fromJson(row.getString(name)))
+    Try(fromJson(StringPrimitive.deserialize(row.getBytesUnsafe(name), row.version)))
   }
 }
 
@@ -63,8 +62,9 @@ abstract class OptionalJsonColumn[
 
   val cassandraType = CQLSyntax.Types.Text
 
-  override def optional(r: Row): Try[ValueType] = Try(fromJson(r.getString(name)))
-
+  override def optional(r: Row): Try[ValueType] = {
+    Try(fromJson(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)))
+  }
 }
 
 abstract class JsonListColumn[
@@ -72,34 +72,37 @@ abstract class JsonListColumn[
   R,
   ValueType
 ](table: CassandraTable[T, R])(
-  implicit primitive: Primitive[String]
-) extends AbstractListColumn[T, R, ValueType](table) with JsonDefinition[ValueType] {
+  implicit ev: Primitive[String],
+  cp: Primitive[List[String]]
+) extends AbstractColColumn[T, R, List, ValueType](table) with JsonDefinition[ValueType] {
 
   override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
 
-  override val cassandraType = QueryBuilder.Collections.listType(primitive.cassandraType).queryString
+  override val cassandraType = cp.cassandraType
 
   override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {
       Success(List.empty[ValueType])
     } else {
-      Success(r.getList(name, primitive.clz.asInstanceOf[Class[String]]).asScala.map(fromString).toList)
+      cp.fromRow(name, r) map (_.map(fromJson))
     }
   }
 }
 
 abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
   table: CassandraTable[T, R]
-)(implicit primitive: Primitive[String]) extends AbstractSetColumn[T ,R,
-  ValueType](table) with JsonDefinition[ValueType] {
+)(
+  implicit ev: Primitive[String],
+  cp: Primitive[Set[String]]
+) extends AbstractColColumn[T ,R, Set, ValueType](table) with JsonDefinition[ValueType] {
 
-  override val cassandraType = QueryBuilder.Collections.setType(primitive.cassandraType).queryString
+  override val cassandraType = cp.cassandraType
 
   override def parse(r: Row): Try[Set[ValueType]] = {
     if (r.isNull(name)) {
       Success(Set.empty[ValueType])
     } else {
-      Success(r.getSet(name, primitive.clz).asScala.map(e => fromString(e.asInstanceOf[String])).toSet[ValueType])
+      cp.fromRow(name, r) map (_.map(fromJson))
     }
   }
 }
@@ -110,11 +113,10 @@ abstract class JsonMapColumn[
   KeyType,
   ValueType
 ](table: CassandraTable[Owner, Record])(
-  implicit primitive: Primitive[KeyType],
-  strPrimitive: Primitive[String]
+  implicit keyPrimitive: Primitive[KeyType],
+  strPrimitive: Primitive[String],
+  ev: Primitive[Map[KeyType, String]]
 ) extends AbstractMapColumn[Owner, Record, KeyType, ValueType](table) with JsonDefinition[ValueType] {
-
-  val keyPrimitive = Primitive[KeyType]
 
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
@@ -129,11 +131,9 @@ abstract class JsonMapColumn[
 
   override def parse(r: Row): Try[Map[KeyType,ValueType]] = {
     if (r.isNull(name)) {
-      Success(Map.empty[KeyType,ValueType])
+      Success(Map.empty[KeyType, ValueType])
     } else {
-      Success(r.getMap(name, keyPrimitive.clz, strPrimitive.clz).asScala.toMap.map {
-        case (k, v) => (keyPrimitive.extract(k), fromString(v.asInstanceOf[String]))
-      })
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(fromString))
     }
   }
 }

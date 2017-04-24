@@ -15,8 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.outworkers.phantom.CassandraTable
+import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -270,15 +270,16 @@ sealed class AssignmentsQuery[
 
   def prepare[
     Rev <: HList,
-    Reversed <: HList
+    Reversed <: HList,
+    Out <: HList
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend[Reversed, Rev]
-  ): PreparedBlock[prepend.Out] = {
+    prepend: Prepend.Aux[Reversed, Rev, Out]
+  ): PreparedBlock[Out] = {
     new PreparedBlock(qb, options)
   }
 
@@ -420,14 +421,14 @@ sealed class ConditionalQuery[
     ttl(duration.toSeconds)
   }
 
-  def prepare[Rev <: HList, Rev2 <: HList]()(
+  def prepare[Rev <: HList, Rev2 <: HList, Out <: HList]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Rev2],
-    prepend: Prepend[Rev2, Rev]
-  ): PreparedBlock[prepend.Out] = new PreparedBlock(qb, options)
+    prepend: Prepend.Aux[Rev2, Rev, Out]
+  ): PreparedBlock[Out] = new PreparedBlock(qb, options)
 }
 
 object UpdateQuery {

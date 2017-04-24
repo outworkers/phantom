@@ -74,7 +74,7 @@ In essence, this is pretty straighforward, and now what I can do in any Cassandr
 case class Wrapper(id: UUID, test: Test)
 
 class MyTable extends CassandraTable[MyTable, Wrapper] {
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
   object test extends Col[Test](this)
 }
 ```

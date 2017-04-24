@@ -36,19 +36,19 @@ case class TimeUUIDRecord(
   def timestamp: DateTime = id.datetime
 }
 
-abstract class TimeSeriesTable extends CassandraTable[TimeSeriesTable, TimeSeriesRecord] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending {
+abstract class TimeSeriesTable extends Table[TimeSeriesTable, TimeSeriesRecord] with RootConnector {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object timestamp extends DateTimeColumn with ClusteringOrder with Descending {
     override val name = "unixTimestamp"
   }
 }
 
-abstract class TimeUUIDTable extends CassandraTable[TimeUUIDTable, TimeUUIDRecord] with RootConnector {
+abstract class TimeUUIDTable extends Table[TimeUUIDTable, TimeUUIDRecord] with RootConnector {
 
-  object user extends UUIDColumn(this) with PartitionKey
-  object id extends TimeUUIDColumn(this) with ClusteringOrder with Descending
-  object name extends StringColumn(this)
+  object user extends UUIDColumn with PartitionKey
+  object id extends TimeUUIDColumn with ClusteringOrder with Descending
+  object name extends StringColumn
 
   def retrieve(user: UUID): Future[List[TimeUUIDRecord]] = {
     select.where(_.user eqs user).orderBy(_.id ascending).fetch()

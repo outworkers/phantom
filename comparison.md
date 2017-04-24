@@ -120,7 +120,7 @@ case class Recipe(
 
 class Recipes extends CassandraTable[Recipes, Recipe] {
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn(this) with PartitionKey[String]
 
   object description extends OptionalStringColumn(this)
 
@@ -132,7 +132,41 @@ class Recipes extends CassandraTable[Recipes, Recipe] {
 
   object props extends MapColumn[String, String](this)
 
-  object side_id extends UUIDColumn(this)
+  object side_id extends UUIDColumn
+
+
+  override def fromRow(r: Row): Recipe = {
+    Recipe(
+      url(r),
+      description(r),
+      ingredients(r),
+      servings(r),
+      lastcheckedat(r),
+      props(r),
+      side_id(r)
+    )
+  }
+}
+```
+
+As of version 2.0.0, phantom is capable of auto-generating the `fromRow` method, so the mapping DSL is reduced to:
+
+```
+abstract class Recipes extends CassandraTable[ConcreteRecipes, Recipe] with RootConnector {
+
+  object url extends StringColumn with PartitionKey[String]
+
+  object description extends OptionalStringColumn
+
+  object ingredients extends ListColumn[String]
+
+  object servings extends OptionalIntColumn
+
+  object lastcheckedat extends DateTimeColumn
+
+  object props extends MapColumn[String, String]
+  
+  object side_id extends UUIDColumn
 }
 ```
 

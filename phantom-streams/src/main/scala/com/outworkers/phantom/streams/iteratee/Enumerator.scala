@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.streams.iteratee
 
-import com.datastax.driver.core.{ResultSet, Row}
+import com.outworkers.phantom.{ResultSet, Row}
 import play.api.libs.iteratee.Execution.{defaultExecutionContext => dec}
 import play.api.libs.iteratee.{Cont, Done, Error, Input, Step, Enumerator => PlayEnum, Iteratee => PlayIter}
 
@@ -27,7 +27,7 @@ private[phantom] object Enumerator {
 
     new PlayEnum[Row] {
       private[this] val rs = resultSet
-      private[this] val it = rs.iterator
+      private[this] val it = rs.iterate()
 
       def apply[A](iter: PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
 
@@ -42,8 +42,10 @@ private[phantom] object Enumerator {
         step(iter)
       }
 
-      def fetch[A](loop: PlayIter[Row, A] => Future[PlayIter[Row, A]], k: Input[Row] => PlayIter[Row, A]): Future[PlayIter[Row, A]] = {
-
+      def fetch[A](
+        loop: PlayIter[Row, A] => Future[PlayIter[Row, A]],
+        k: Input[Row] => PlayIter[Row, A]
+      ): Future[PlayIter[Row, A]] = {
         val available = resultSet.getAvailableWithoutFetching
 
         if (!rs.isExhausted) {

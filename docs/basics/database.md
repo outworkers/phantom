@@ -1,4 +1,5 @@
-### How to model your application with phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Phantom offers an interesting first class citizen construct called the `Database` class. It seems quite simple, but it is designed to serve several purposes simultaneously:
 
@@ -36,20 +37,19 @@ case class Recipe(
 
 class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn with PartitionKey[String]
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
   object ingredients extends ListColumn[String](this)
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
   object props extends MapColumn[String, String](this)
 
-  object uid extends UUIDColumn(this)
-
+  object uid extends UUIDColumn
 }
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
@@ -71,15 +71,14 @@ trait RootConnector {
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
 
 ```scala
-class RecipesDatabase(
-  override val connector: CassandraConnection
-) extends Database[RecipesDatabase](connector) {
+class RecipesDatabase(override val connector: KeySpaceDef) extends Database[RecipesDatabase](connector) {
 
-  object recipes extends Recipes with Connector
+  object recipes extends ConcreteRecipes with connector.Connector
 
 }
 ```
-The interesting bit is that the `Connector` is an inner trait inside the `connector` object that will basically statically point all implicit resolutions for a `session` and `keySpace` inside a `database` instance to a specific `session` and `keySpace`.
+
+The interesting bit is that the `connector.Connector` is an inner trait inside the `connector` object that will basically statically point all implicit resolutions for a `session` and `keySpace` inside a `database` instance to a specific `session` and `keySpace`.
 
 "It seems a bit complex, why bother to go to such lengths?" The answer to that is simple, in an ideal world:
 
@@ -101,18 +100,7 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 ```scala
 
 trait DatabaseProvider[T <: Database[T]] {
-
-  implicit def session: Session = database.session
-
-  implicit def space: KeySpace = database.space
-
   def database: T
-
-  /**
-    * A helper shorthand method.
-    * @return A reference to the database object.
-    */
-  def db: T = database
 }
 ```
 
@@ -120,9 +108,9 @@ This is pretty simple in its design, it simply aims to provide a simple way of i
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database(connector) {
-  object users extends Users with Connector
-  object usersByEmail extends UsersByEmail with Connector
+class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDatabase](connector) {
+  object users extends ConcreteUsers with connector.Connector
+  object usersByEmail extends ConcreteUsersByEmail with connector.Connector
 }
 
 
@@ -131,7 +119,7 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database(connect
 trait AppDatabase extends DatabaseProvider[AppDatabase]
 
 trait UserService extends AppDatabase {
-
+  
   /**
    * Stores a user into the database guaranteeing application level consistency of data.
    * E.g we have two tables, one indexing users by ID and another indexing users by email.
@@ -202,17 +190,17 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
     // all our tables will now be initialised automatically against the target keyspace.
     database.create()
   }
-
+  
   it should "store a user using the user service and retrieve it by id and email" in {
     val user = User(...)
-
+    
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)
       byEmail <- userService.findByEmail(user.email)
     } yield (byId, byEmail)
 
-    whenReady(chain) { case (byId, byEmail) =>
+    whenReady(chain) { case (byId, byEmail) => 
       byId shouldBe defined
       byId.value shouldEqual user
 
@@ -257,8 +245,8 @@ When you later call `database.create` or `database.createAsync` or any other fla
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database(connector) {
-  object users extends ConcreteUsers with connector.Connector {
+class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDatabase](connector) {
+  object users extends Users with Connector {
     def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
       create.ifNotExists()(keySpace)
         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))

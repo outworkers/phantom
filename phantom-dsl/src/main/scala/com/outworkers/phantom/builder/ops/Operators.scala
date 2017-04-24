@@ -18,13 +18,14 @@ package com.outworkers.phantom.builder.ops
 import java.util.Date
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
 import com.outworkers.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
+import com.outworkers.phantom.column.{AbstractColumn, Column}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.{DateTime, DateTimeZone}
 import shapeless.{=:!=, HList}
@@ -33,7 +34,7 @@ sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply(pf: TimeUUIDColumn[_, _])(
+  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
     implicit ev: Primitive[Long],
     session: Session
   ): TypedClause.Condition[Option[Long]] = {
@@ -70,7 +71,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
     })
   }
 
-  def apply(pf: TimeUUIDColumn[_, _])(
+  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
     implicit ev: Primitive[DateTime],
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(pf.name)
@@ -107,16 +108,16 @@ private[phantom] class MinTimeUUID extends CqlFunction with TimeUUIDOperator {
 }
 
 sealed class WritetimeCqlFunction extends CqlFunction {
-  def apply(col: AbstractColumn[_])(implicit ev: Primitive[BigDecimal]): TypedClause.Condition[Long] = {
+  def apply(col: AbstractColumn[_])(implicit ev: Primitive[Long]): TypedClause.Condition[Long] = {
     val qb = QueryBuilder.Select.writetime(col.name)
 
-    new TypedClause.Condition(qb, row => {
-      row.getLong(qb.queryString)
-    })
+    new TypedClause.Condition(qb, row =>
+      ev.deserialize(row.getBytesUnsafe(qb.queryString), row.version)
+    )
   }
 }
 
-sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper : Seq[String]) {
+sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper: Seq[String]) {
 
   private[this] def joinOp(comp: Seq[String], op: String): WhereClause.Condition = {
     new WhereClause.Condition(

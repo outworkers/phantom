@@ -25,17 +25,17 @@ case class Article(
   orderId: Long
 )
 
-abstract class Articles extends CassandraTable[Articles, Article] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object orderId extends LongColumn(this)
+abstract class Articles extends Table[Articles, Article] with RootConnector {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object orderId extends LongColumn
 }
 
 
-abstract class ArticlesByAuthor extends CassandraTable[ArticlesByAuthor, Article] with RootConnector {
-  object author_id extends UUIDColumn(this) with PartitionKey
-  object category extends UUIDColumn(this) with PartitionKey
-  object id extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-  object orderId extends LongColumn(this)
+abstract class ArticlesByAuthor extends Table[ArticlesByAuthor, Article] with RootConnector {
+  object author_id extends UUIDColumn with PartitionKey
+  object category extends UUIDColumn with PartitionKey
+  object id extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object orderId extends LongColumn
 }

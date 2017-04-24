@@ -205,7 +205,9 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
       "serialise a simple create query with a SizeTieredCompactionStrategy and 1 compaction strategy options set" in {
 
-        val qb = BasicTable.create.`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)).qb.queryString
+        val qb = BasicTable.create.`with`(
+          compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50)
+        ).qb.queryString
 
         qb shouldEqual "CREATE TABLE phantom.basicTable (id uuid, id2 uuid, id3 uuid, placeholder text, PRIMARY KEY (id, id2, id3)) WITH compaction = {'class': 'LeveledCompactionStrategy', 'sstable_size_in_mb': 50}"
       }
@@ -317,7 +319,9 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
 
       "specify a default time to live using a scala.concurrent.duration.FiniteDuration value" in {
-        val qb = BasicTable.create.`with`(default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)).qb.queryString
+        val qb = BasicTable.create.`with`(
+          default_time_to_live eqs FiniteDuration(DefaultTtl, TimeUnit.SECONDS)
+        ).qb.queryString
         qb shouldEqual s"$root WITH default_time_to_live = 500"
       }
     }
@@ -348,6 +352,118 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val qb = QueryBuilder.Create.clusteringOrder(columns).queryString
 
         qb shouldEqual "CLUSTERING ORDER BY (test ASC, test2 DESC)"
+      }
+    }
+
+    "should allow using SizeTieredCompaction and all its properties" - {
+      "specify a SizeTieredCompactionStrategy" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy'}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a tombstone threshold" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .tombstone_threshold(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'tombstone_threshold': 5.0}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a tombstone compaction interval" in {
+
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .tombstone_compaction_interval(5L)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'tombstone_compaction_interval': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with an unchecked tombstone compaction option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .unchecked_tombstone_compaction(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'unchecked_tombstone_compaction': 5.0}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a max_threshold option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .max_threshold(5)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'max_threshold': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a min_threshold option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .min_threshold(5)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'min_threshold': 5}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a cold_reads_to_omit option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .cold_reads_to_omit(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'cold_reads_to_omit': 5.0}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a bucket_low option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .bucket_low(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'bucket_low': 5.0}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a bucket_high option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .bucket_high(5D)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'bucket_high': 5.0}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with a min_sstable_size option" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .min_sstable_size(5)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'min_sstable_size': 5}"
+      }
+
+
+      "specify a SizeTieredCompactionStrategy with an enabled flag set to true" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .enabled(true)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'enabled': true}"
+      }
+
+      "specify a SizeTieredCompactionStrategy with an enabled flag set to false" in {
+        val qb = BasicTable.create
+          .option(compaction eqs SizeTieredCompactionStrategy
+            .enabled(false)
+          ).qb.queryString
+
+        qb shouldEqual s"$root WITH compaction = {'class': 'SizeTieredCompactionStrategy', 'enabled': false}"
       }
     }
 

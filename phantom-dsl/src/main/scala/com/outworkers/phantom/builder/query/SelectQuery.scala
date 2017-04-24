@@ -15,10 +15,11 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.outworkers.phantom.CassandraTable
+import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -28,7 +29,6 @@ import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
-import scala.util.Try
 
 class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -129,10 +129,8 @@ class SelectQuery[
     RR,
     HL <: HList,
     Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Unchainned,
+  ](condition: Table => QueryCondition[HL])(
+    implicit ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
@@ -159,10 +157,8 @@ class SelectQuery[
     RR,
     HL <: HList,
     Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Chainned,
+  ](condition: Table => QueryCondition[HL])(
+    implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
     new SelectQuery(
@@ -347,29 +343,31 @@ private[phantom] class RootSelectBlock[
   }
 
   private[this] def extractCount(r: Row): Long = {
-    Try(r.getLong(CQLSyntax.Selection.count)).getOrElse(0L)
+    LongPrimitive.fromRow(CQLSyntax.Selection.count, r).getOrElse(0L)
   }
 
   def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
     val jsonParser: (Row) => String = row => {
-      row.getString(CQLSyntax.JSON_EXTRACTOR)
+      StringPrimitive.deserialize(
+        row.getBytesUnsafe(CQLSyntax.JSON_EXTRACTOR),
+        row.version
+      )
     }
 
     clause match {
-      case Some(_) => {
+      case Some(_) =>
         new SelectQuery(
           table,
           jsonParser,
           QueryBuilder.Select.selectJson(table.tableName, keySpace.name)
         )
-      }
-      case None => {
+
+      case None =>
         new SelectQuery(
           table,
           jsonParser,
           QueryBuilder.Select.selectJson(table.tableName, keySpace.name, columns: _*)
         )
-      }
     }
   }
 

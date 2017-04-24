@@ -15,12 +15,12 @@
  */
 package com.outworkers.phantom.builder.clauses
 
-import com.datastax.driver.core.Row
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl.?
+import com.outworkers.phantom.Row
 import shapeless.{::, HList, HNil}
 
 abstract class QueryCondition[T <: HList](val qb: CQLQuery)

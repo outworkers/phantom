@@ -27,15 +27,16 @@ case class PrimitiveCassandra22(
   date: LocalDate
 )
 
-abstract class PrimitivesCassandra22 extends CassandraTable[PrimitivesCassandra22, PrimitiveCassandra22] with RootConnector {
+abstract class PrimitivesCassandra22 extends Table[
+  PrimitivesCassandra22,
+  PrimitiveCassandra22
+] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
-  object short extends SmallIntColumn(this)
+  object short extends SmallIntColumn
 
-  object byte extends TinyIntColumn(this)
+  object byte extends TinyIntColumn
 
-  object date extends LocalDateColumn(this)
-
-  override val tableName = "PrimitivesCassandra22"
+  object date extends LocalDateColumn
 }

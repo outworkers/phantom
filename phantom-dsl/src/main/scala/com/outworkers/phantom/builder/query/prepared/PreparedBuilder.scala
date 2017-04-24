@@ -15,8 +15,13 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{QueryOptions => _, _}
-import com.outworkers.phantom.CassandraTable
+import com.datastax.driver.core.{
+  PreparedStatement,
+  Session,
+  Statement
+}
+
+import com.outworkers.phantom.{ CassandraTable, ResultSet, Row }
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
@@ -24,8 +29,6 @@ import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.{Generic, HList}
 import shapeless.ops.hlist.Tupler
-
-import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
@@ -33,22 +36,24 @@ private[phantom] trait PrepareMark {
 
   def symbol: String = "?"
 
-  def qb: CQLQuery = CQLQuery("?")
+  def qb: CQLQuery = CQLQuery(symbol)
 }
 
-class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
+class ExecutablePreparedQuery(
+  val statement: Statement,
+  val options: QueryOptions
+) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
-    statement
-      .setConsistencyLevel(options.consistencyLevel.orNull)
+    statement.setConsistencyLevel(options.consistencyLevel.orNull)
   }
 }
 
 class ExecutablePreparedSelectQuery[
-Table <: CassandraTable[Table, _],
-R,
-Limit <: LimitBound
+  Table <: CassandraTable[Table, _],
+  R,
+  Limit <: LimitBound
 ](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
@@ -56,15 +61,11 @@ Limit <: LimitBound
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(st)
-  }
-
+  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(st)
 
   /**
     * Returns the first row from the select ignoring everything else
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
     * @param ec The implicit Scala execution context.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
@@ -73,9 +74,7 @@ Limit <: LimitBound
     implicit session: Session,
     ev: =:=[Limit, Unlimited],
     ec: ExecutionContextExecutor
-  ): ScalaFuture[Option[R]] = {
-    singleFetch()
-  }
+  ): ScalaFuture[Option[R]] = singleFetch()
 
   override def qb: CQLQuery = CQLQuery.empty
 }

@@ -17,10 +17,7 @@ package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
-import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.connectors.KeySpace
-
-import scala.reflect.macros.blackbox
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
@@ -33,7 +30,7 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
+class DatabaseHelperMacro(val c: scala.reflect.macros.whitebox.Context) extends RootMacro {
   import c.universe._
 
   private[this] val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
