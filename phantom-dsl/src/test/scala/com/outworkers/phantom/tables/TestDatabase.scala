@@ -22,8 +22,11 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.bugs.SchemaBug656Table
 
-class TestDatabase(override val connector: CassandraConnection) extends Database[TestDatabase](connector) {
+class TestDatabase(
+  override val connector: CassandraConnection
+) extends Database[TestDatabase](connector) {
 
   object articles extends Articles with Connector
   object articlesByAuthor extends ArticlesByAuthor with Connector
@@ -91,6 +94,7 @@ class TestDatabase(override val connector: CassandraConnection) extends Database
   object sessionsByUser extends SessionsByUserId with Connector
 
   object optDerivedTable extends OptionalDerivedTable with Connector
+  object schemaBug656 extends SchemaBug656Table with Connector
 }
 
 object Connector {

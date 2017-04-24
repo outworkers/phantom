@@ -24,6 +24,7 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
+import scala.util.{ Failure, Success, Try }
 
 case class Debugger(
   storeType: String,
@@ -60,8 +61,8 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
-  import c.universe._
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
+  import c.universe.{ Try => _, _ }
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
@@ -361,9 +362,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     * @return An optional symbol, if such a type was found in the type hierarchy.
     */
   def determineReferenceTable(tpe: Type): Option[Symbol] = {
-    tpe.baseClasses.reverse.find(symbol => {
+    tpe.baseClasses.reverse.find(symbol =>
       symbol.typeSignature.decls.exists(_.typeSignature <:< typeOf[AbstractColumn[_]])
-    })
+    )
   }
 
   /**
@@ -412,15 +413,17 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val storeType = descriptor.storeType
+    val notImplemented = q"???"
+    val nothingTpe = tq"_root_.scala.Nothing"
+    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
 
     q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
-          type Repr = $storeType
+          type Repr = $storeTpe
 
           def tableName: $strTpe = $tableName
 
-          def store($tableTerm: $tableType, $inputTerm: ${descriptor.storeType})(
+          def store($tableTerm: $tableType, $inputTerm: $storeTpe)(
            implicit space: $keyspaceType
           ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = {
             ${descriptor.storeMethod.getOrElse(notImplemented)}

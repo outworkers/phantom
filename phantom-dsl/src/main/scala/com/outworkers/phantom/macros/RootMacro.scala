@@ -283,7 +283,7 @@ trait RootMacro {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
-    def storeMethod: Option[Tree] = {
+    def storeMethod: Option[Tree] = storeType flatMap { sTpe =>
       if (unmatched.isEmpty) {
         val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
           q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
@@ -294,7 +294,7 @@ trait RootMacro {
         }
 
         val finalDefinitions = unmatchedColumnInserts ++ insertions
-        logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
+        logger.info(s"Inferred store input type: ${showCode(sTpe)} for ${printType(tableTpe)}")
         Some(q"""$tableTerm.insert.values(..$finalDefinitions)""")
       } else {
         None
@@ -312,14 +312,25 @@ trait RootMacro {
       }
     }
 
+    private[this] val maxTupleSize = 22
 
-    def storeType: Tree = {
+    /**
+     * Automatically tuples the types found in a table as described in the
+     * documentation.
+     */
+    def storeType: Option[Tree] = {
       if (unmatchedColumns.isEmpty) {
-        tq"$recordType"
+        Some(tq"$recordType")
       } else {
         logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
-        tq"(..$cols)"
+
+        if (cols.size > maxTupleSize) {
+          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns")
+          None
+        } else {
+          Some(tq"(..$cols)")
+        }
       }
     }
 
