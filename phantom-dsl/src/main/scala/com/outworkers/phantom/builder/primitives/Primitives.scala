@@ -55,6 +55,7 @@ object Utils {
         2 + elemSize
       case ProtocolVersion.V3 | ProtocolVersion.V4 | ProtocolVersion.V5 =>
         if (value == Primitive.nullValue) baseColSize else baseColSize + value.remaining
+
       case _ => throw unsupported(version)
     }
   }
@@ -63,6 +64,31 @@ object Utils {
     case ProtocolVersion.V1 | ProtocolVersion.V2 => 2
     case ProtocolVersion.V3 | ProtocolVersion.V4 | ProtocolVersion.V5 => baseColSize
     case _ => throw unsupported(version)
+  }
+
+  /**
+    * Utility method that "packs" together a list of {@link ByteBuffer}s containing
+    * serialized collection elements.
+    * Mainly intended for use with collection codecs when serializing collections.
+    *
+    * @param buffers  the collection elements
+    * @param elements the total number of elements
+    * @param version  the protocol version to use
+    * @return The serialized collection
+    */
+  def pack(
+    buffers: Array[ByteBuffer],
+    elements: Int,
+    version: ProtocolVersion
+  ): ByteBuffer = {
+    val size = buffers.foldLeft(0)((acc, b) => acc + sizeOfValue(b, version))
+
+    val result = ByteBuffer.allocate(sizeOfCollectionSize(version) + size)
+
+    CodecUtils.writeSize(result, elements, version)
+
+    for (bb <- buffers) CodecUtils.writeValue(result, bb, version)
+    result.flip.asInstanceOf[ByteBuffer]
   }
 
   /**
@@ -205,9 +231,7 @@ object Primitives {
     override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
 
     override def serialize(obj: Double, version: ProtocolVersion): ByteBuffer = {
-      val bb: ByteBuffer = ByteBuffer.allocate(byteLength)
-      bb.putDouble(0, obj)
-      bb
+      ByteBuffer.allocate(byteLength).putDouble(0, obj)
     }
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Double = {
@@ -603,15 +627,17 @@ object Primitives {
         case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
       }).queryString
 
-      override def serialize(source: Map[K, V], version: ProtocolVersion): ByteBuffer = source match {
-        case Primitive.nullValue => emptyCollection
-        case s if s.isEmpty => emptyCollection
+      override def serialize(source: Map[K, V], version: ProtocolVersion): ByteBuffer = {
+        source match {
+          case Primitive.nullValue => emptyCollection
+          case s if s.isEmpty => emptyCollection
 
-        val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
-          notNull(key, "Map keys cannot be null")
-          acc :+ kp.serialize(key, version) :+ vp.serialize(value, version)
+            val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
+              notNull(key, "Map keys cannot be null")
+              acc :+ kp.serialize(key, version) :+ vp.serialize(value, version)
+            }
+            Utils.pack(bbs, source.size, ProtocolVersion.V4)
         }
-        Utils.pack(bbs, source.size, ProtocolVersion.V4)
       }
 
       override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Map[K, V] = {

@@ -30,7 +30,7 @@ class PrimitiveRoundtripTests extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
 
-  implicit override val generatorDrivenConfig = {
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 100)
   }
 
