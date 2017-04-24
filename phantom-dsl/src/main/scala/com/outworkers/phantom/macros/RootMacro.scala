@@ -341,6 +341,16 @@ class RootMacro(val c: blackbox.Context) {
     ) mkString "\n"
   }
 
+  object TableDescriptor {
+    def empty(table: Type, rec: Type, members: Seq[Column.Field]): TableDescriptor = {
+      new TableDescriptor(table, rec, members) {
+        override def storeMethod: Option[c.universe.Tree] = None
+        override def storeType: Option[Tree] = None
+        override def fromRow: Option[Tree] = None
+      }
+    }
+  }
+
   /**
     * A "generic" type extractor that's meant to produce a list of fields from a record type.
     * We support a narrow domain of types for automated generation, currently including:
@@ -420,4 +430,5 @@ class RootMacro(val c: blackbox.Context) {
       }
     }
   }
+
 }

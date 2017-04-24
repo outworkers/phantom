@@ -347,11 +347,17 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 
-    extractorRec(
-      colFields.typeMap,
-      recordMembers.toList,
-      TableDescriptor(tableTpe, recordTpe, colFields)
-    )
+
+    if (recordMembers.isEmpty) {
+      logger.debug(s"Supplied record type $recordTpe has no fields defined, are you sure this is what you want?")
+      TableDescriptor.empty(tableTpe, recordTpe, colFields)
+    } else {
+      extractorRec(
+        colFields.typeMap,
+        recordMembers.toList,
+        TableDescriptor(tableTpe, recordTpe, colFields)
+      )
+    }
   }
 
   /**
@@ -394,8 +400,13 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
     val notImplemented = q"???"
+    Console.println("blablasfasf1")
     val nothingTpe = tq"_root_.scala.Nothing"
+    Console.println("blablasfasf2")
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
+    val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
+
+    Console.println(showCode(storeMethod))
 
     q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
@@ -406,7 +417,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
           def store($tableTerm: $tableType, $inputTerm: $storeTpe)(
            implicit space: $keyspaceType
           ): $builderPkg.InsertQuery.Default[$tableType, $recordType] = {
-            ${descriptor.storeMethod.getOrElse(notImplemented)}
+            $storeMethod
           }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
