@@ -139,7 +139,12 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
 
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
-      val datastax = codec.serialize(asJv(sample.map(conv).to[M](cbf2)), version)
+      val javaCol = asJv(sample.map(conv).to[M](cbf2))
+      // Console.println(s"Scala input: $sample")
+      // Console.println(s"Java input: $javaCol")
+      // Console.println(s"Output ${codec.deserialize(phantom, version)}")
+
+      val datastax = codec.serialize(javaCol, version)
       phantom shouldEqual datastax
     }
   }
@@ -155,10 +160,13 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   ): Assertion = {
     val listGen = Gen.buildableOf[M[T], T](gen)
     val codec: TypeCodec[JType[T]] = registry.codecFor(DataType.list(dataType))
-
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
-      val datastax = codec.serialize(asJv(sample), version)
+      val javaCol = asJv(sample)
+      // Console.println(s"Scala input: $sample")
+      // Console.println(s"Java input: $javaCol")
+      // Console.println(s"Output ${codec.deserialize(phantom, version)}")
+      val datastax = codec.serialize(javaCol, version)
       phantom shouldEqual datastax
     }
   }
@@ -319,11 +327,21 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a List[java.util.Date] type just like the native codec" in {
-    testList[Date](DataType.time(), javaDateGen)
+    testCollection[
+      List,
+      JList,
+      java.util.Date,
+      Long
+    ](DataType.bigint(), javaDateGen, _.asJava, _.getTime)
   }
 
   it should "serialize a List[org.joda.time.DateTime] type just like the native codec" in {
-    testList[DateTime](DataType.timestamp(), dateTimeGen)
+    testCollection[
+      List,
+      JList,
+      DateTime,
+      Long
+    ](DataType.bigint(), dateTimeGen, _.asJava, _.getMillis)
   }
 
   it should "serialize a List[TimeUUID] type just like the native codec" in {
@@ -377,18 +395,21 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a Set[java.util.Date] type just like the native codec" in {
-    testSet[Date](DataType.time(), javaDateGen)
+    testCollection[
+      Set,
+      JSet,
+      java.util.Date,
+      Long
+    ](DataType.bigint(), javaDateGen, _.asJava, _.getTime)
   }
 
   it should "serialize a Set[org.joda.time.DateTime] type just like the native codec" in {
-    testSet[DateTime](DataType.timestamp(), dateTimeGen)
-
     testCollection[
       Set,
       JSet,
       DateTime,
-      Date
-    ](DataType.timestamp(), dateTimeGen, _.asJava, _.toDate)
+      Long
+    ](DataType.bigint(), dateTimeGen, _.asJava, _.getMillis)
   }
 
   it should "serialize a Set[TimeUUID] type just like the native codec" in {

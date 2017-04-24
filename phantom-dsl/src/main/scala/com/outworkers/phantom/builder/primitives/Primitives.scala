@@ -529,7 +529,7 @@ object Primitives {
       if (coll == Primitive.nullValue) {
         Primitive.nullValue
       } else {
-        val bbs = coll.foldRight(Seq.empty[ByteBuffer]) { (elt, acc) =>
+        val bbs = coll.foldLeft(Seq.empty[ByteBuffer]) { (acc, elt) =>
           notNull(elt, "Collection elements cannot be null")
           acc :+ ev.serialize(elt, version)
         }
