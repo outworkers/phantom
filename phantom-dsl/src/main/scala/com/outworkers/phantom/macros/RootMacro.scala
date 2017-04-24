@@ -297,7 +297,7 @@ class RootMacro(val c: blackbox.Context) {
         }
 
         val finalDefinitions = unmatchedColumnInserts ++ insertions
-        logger.info(s"Inferred store input type: ${tq"$storeType"} for ${printType(tableTpe)}")
+        logger.info(s"Inferred store input type: ${showCode(sTpe)} for ${printType(tableTpe)}")
         Some(q"""$tableTerm.insert.values(..$finalDefinitions)""")
       } else {
         None
