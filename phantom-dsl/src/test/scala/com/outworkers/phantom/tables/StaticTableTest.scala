@@ -37,8 +37,8 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-abstract class StaticCollectionTableTest extends CassandraTable[
-  StaticCollectionTableTest,
+abstract class StaticCollectionTable extends CassandraTable[
+  StaticCollectionTable,
   StaticCollectionRecord
 ] with RootConnector {
   object id extends UUIDColumn with PartitionKey

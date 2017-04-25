@@ -152,11 +152,7 @@ class TableHelperTest extends PhantomSuite with MockFactory {
   }
 
   it should "generate a fromRow method from a partial table definition" in {
-
     val row = stub[Row]
-
-    val instance = Ev2(gen[UUID], genList[String]().toSet)
-
     val ev = new Events2()
 
     intercept[NullPointerException] {

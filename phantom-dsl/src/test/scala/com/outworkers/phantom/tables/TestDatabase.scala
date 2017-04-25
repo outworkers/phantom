@@ -65,7 +65,7 @@ class TestDatabase(
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
   object staticTable extends StaticTableTest with Connector
-  object staticCollectionTable extends StaticCollectionTableTest with Connector
+  object staticCollectionTable extends StaticCollectionTable with Connector
 
   object tableWithSingleKey extends TableWithSingleKey with Connector
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
