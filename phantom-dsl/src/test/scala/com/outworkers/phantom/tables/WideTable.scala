@@ -40,39 +40,55 @@ case class WideRow(
   field18: String,
   field19: String,
   field20: String,
-  field21: String,
-  field22: String,
-  field23: String,
-  field24: String,
-  field25: String
+  field21: String
 )
 
 abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootConnector {
+
   object id extends UUIDColumn with PartitionKey
+
   object field extends StringColumn
+
   object field1 extends StringColumn
+
   object field2 extends StringColumn
+
   object field3 extends StringColumn
+
   object field4 extends StringColumn
+
   object field5 extends StringColumn
+
   object field6 extends StringColumn
+
   object field7 extends StringColumn
+
   object field8 extends StringColumn
+
   object field9 extends StringColumn
+
   object field10 extends StringColumn
+
   object field11 extends StringColumn
+
   object field12 extends StringColumn
+
   object field13 extends StringColumn
+
   object field14 extends StringColumn
+
   object field15 extends StringColumn
+
   object field16 extends StringColumn
+
   object field17 extends StringColumn
+
   object field18 extends StringColumn
+
   object field19 extends StringColumn
+
   object field20 extends StringColumn
+
   object field21 extends StringColumn
-  object field22 extends StringColumn
-  object field23 extends StringColumn
-  object field24 extends StringColumn
-  object field25 extends StringColumn
+
 }
