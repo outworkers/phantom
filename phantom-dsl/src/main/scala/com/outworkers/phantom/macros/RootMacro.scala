@@ -283,6 +283,12 @@ trait RootMacro {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
+    def hlistType[M[X] <: Traversable[X]](col: M[Type]): Tree = {
+      col.foldLeft(tq"_root_.shapeless.HNil": Tree) { (tpe, current) =>
+        tq"$current :: $tpe"
+      }
+    }
+
     def storeMethod: Option[Tree] = storeType flatMap { sTpe =>
       if (unmatched.isEmpty) {
         val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
@@ -329,6 +335,8 @@ trait RootMacro {
           logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
           None
         } else {
+          val hlist = hlistType(cols)
+          logger.debug(s"Inferred store type ${showCode(hlist)}")
           Some(tq"(..$cols)")
         }
       }

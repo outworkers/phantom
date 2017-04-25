@@ -580,7 +580,7 @@ object Primitives {
     collectionPrimitive[List, T](
       QueryBuilder.Collections.listType(ev.cassandraType).queryString,
       value => QueryBuilder.Collections
-        .serialize(value.map(Primitive[T].asCql))
+        .serialize(value.map(ev.asCql))
         .queryString
     )
   }
@@ -589,7 +589,7 @@ object Primitives {
     collectionPrimitive[Set, T](
       QueryBuilder.Collections.setType(ev.cassandraType).queryString,
       value => QueryBuilder.Collections
-        .serialize(value.map(Primitive[T].asCql))
+        .serialize(value.map(ev.asCql))
         .queryString
     )
   }
