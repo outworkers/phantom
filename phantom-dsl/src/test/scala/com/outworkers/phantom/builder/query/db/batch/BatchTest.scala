@@ -20,6 +20,8 @@ import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
 import org.joda.time.DateTime
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class BatchTest extends PhantomSuite {
 
@@ -174,6 +176,8 @@ class BatchTest extends PhantomSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
+
+    //Await.result(batch.future(), 10.seconds)
 
     val chain = for {
       s1 <- database.primitivesJoda.store(row).future()

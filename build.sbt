@@ -140,6 +140,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
+  envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   gitTagName in ThisBuild := s"version=${scalaVersion.value}",
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
