@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.primitives
 
+import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID, List => JList, Map => JMap, Set => JSet}
@@ -202,7 +203,9 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   def testSet[T](dataType: DataType, gen: Gen[T])(
     implicit ev: Primitive[T],
     ev2: Primitive[Set[T]]
-  ): Assertion = testCollection[Set, JSet, T](dataType, gen, _.asJava)
+  ): Assertion = {
+    testCollection[Set, JSet, T](dataType, gen, _.asJava)
+  }
 
   def testSet[T, InnerType](
     dataType: DataType,
@@ -387,21 +390,11 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a Set[java.util.Date] type just like the native codec" in {
-    testCollection[
-      Set,
-      JSet,
-      java.util.Date,
-      Long
-    ](DataType.bigint(), javaDateGen, _.asJava, _.getTime)
+    testSet[java.util.Date, Long](DataType.bigint(), javaDateGen, _.getTime)
   }
 
   it should "serialize a Set[org.joda.time.DateTime] type just like the native codec" in {
-    testCollection[
-      Set,
-      JSet,
-      DateTime,
-      Long
-    ](DataType.bigint(), dateTimeGen, _.asJava, _.getMillis)
+    testSet[DateTime, Long](DataType.bigint(), dateTimeGen, _.getMillis)
   }
 
   it should "serialize a Set[TimeUUID] type just like the native codec" in {
@@ -409,21 +402,11 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a Set[BigInt] type just like the native codec" in {
-    testCollection[
-      Set,
-      JSet,
-      scala.math.BigInt,
-      java.math.BigInteger
-    ](DataType.varint(), Arbitrary.arbBigInt, _.asJava, _.bigInteger)
+    testSet[BigInt, BigInteger](DataType.varint(), Arbitrary.arbBigInt, _.bigInteger)
   }
 
   it should "serialize a Set[BigDecimal] type just like the native codec" in {
-    testCollection[
-      Set,
-      JSet,
-      scala.math.BigDecimal,
-      java.math.BigDecimal
-    ](DataType.decimal(), Arbitrary.arbBigDecimal, _.asJava, _.bigDecimal)
+    testSet[scala.math.BigDecimal, java.math.BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal, _.bigDecimal)
   }
 
 }

@@ -509,7 +509,7 @@ object Primitives {
   }
 
   val DateTimeIsPrimitive = Primitive.manuallyDerive[DateTime, Long](
-    dt => dt.getMillis,
+    _.getMillis,
     l => new DateTime(l, DateTimeZone.UTC)
   )(LongPrimitive)
 
