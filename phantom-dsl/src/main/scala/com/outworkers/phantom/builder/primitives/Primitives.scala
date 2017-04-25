@@ -17,7 +17,8 @@ package com.outworkers.phantom.builder.primitives
 
 import java.math.BigInteger
 import java.net.{InetAddress, UnknownHostException}
-import java.nio.{BufferUnderflowException, ByteBuffer}
+import java.nio.charset.Charset
+import java.nio.{BufferUnderflowException, ByteBuffer, CharBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.Bytes
@@ -122,29 +123,37 @@ object Primitives {
   private[this] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
   object StringPrimitive extends Primitive[String] {
-      def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
-      override def cassandraType: String = CQLSyntax.Types.Text
+    private[this] val name = "UTF-8"
+    val encoder = Charset.forName(name).newEncoder
+    val decoder = Charset.forName(name).newDecoder
 
-      override def fromString(value: String): String = value
+    def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
-      override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
-        if (obj == Primitive.nullValue || obj.length == 0) {
-          ByteBuffer.wrap("".getBytes(Charsets.UTF_8))
-        } else {
-          //val str = ParseUtils.quote(obj)
-          ByteBuffer.wrap(obj.getBytes(Charsets.UTF_8))
-        }
-      }
+    override def cassandraType: String = CQLSyntax.Types.Text
 
-      override def deserialize(source: ByteBuffer, version: ProtocolVersion): String = {
-        source match {
-          case Primitive.nullValue => Primitive.nullValue
-          case bytes if bytes.remaining() == 0 => ""
-          case arr @ _ => ParseUtils.unquote(new String(arr.array(), Charsets.UTF_8))
-        }
+    override def fromString(value: String): String = value
+
+    override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
+      if (obj == Primitive.nullValue || obj.length == 0) {
+        ByteBuffer.wrap("".getBytes(Charsets.UTF_8))
+      } else {
+        //val str = ParseUtils.quote(obj)
+        val bytes = encoder.encode(CharBuffer.wrap(obj))
+        ByteBuffer.wrap(
+          bytes.array.slice(bytes.position, bytes.limit)
+        )
       }
     }
+
+    override def deserialize(source: ByteBuffer, version: ProtocolVersion): String = {
+      source match {
+        case Primitive.nullValue => Primitive.nullValue
+        case bytes if bytes.remaining() == 0 => ""
+        case arr @ _ => ParseUtils.unquote(decoder.decode(arr).toString)
+      }
+    }
+  }
 
   object IntPrimitive extends Primitive[Int] {
 
@@ -526,15 +535,17 @@ object Primitives {
     override def cassandraType: String = cType
 
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
-      if (coll == Primitive.nullValue) {
-        Primitive.nullValue
-      } else {
-        val bbs = coll.foldLeft(Seq.empty[ByteBuffer]) { (acc, elt) =>
-          notNull(elt, "Collection elements cannot be null")
-          acc :+ ev.serialize(elt, version)
-        }
 
-        Utils.pack(bbs, coll.size, version)
+      coll match {
+        case Primitive.nullValue => Primitive.nullValue
+        case c if c.isEmpty => Utils.pack(new Array[ByteBuffer](coll.size), coll.size, version)
+        case _ =>
+          val bbs = coll.foldLeft(Seq.empty[ByteBuffer]) { (acc, elt) =>
+            notNull(elt, "Collection elements cannot be null")
+            acc :+ ev.serialize(elt, version)
+          }
+
+          Utils.pack(bbs, coll.size, version)
       }
     }
 
@@ -549,7 +560,7 @@ object Primitives {
           val coll = cbf()
           coll.sizeHint(size)
 
-          for (i <- 0 to size) {
+          for (i <- 0 until size) {
             val databb = CodecUtils.readValue(input, version)
             coll += ev.deserialize(databb, version)
           }
@@ -568,7 +579,7 @@ object Primitives {
   def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {
     collectionPrimitive[List, T](
       QueryBuilder.Collections.listType(ev.cassandraType).queryString,
-      value =>  QueryBuilder.Collections
+      value => QueryBuilder.Collections
         .serialize(value.map(Primitive[T].asCql))
         .queryString
     )
@@ -577,7 +588,7 @@ object Primitives {
   def set[T]()(implicit ev: Primitive[T]): Primitive[Set[T]] = {
     collectionPrimitive[Set, T](
       QueryBuilder.Collections.setType(ev.cassandraType).queryString,
-      value =>  QueryBuilder.Collections
+      value => QueryBuilder.Collections
         .serialize(value.map(Primitive[T].asCql))
         .queryString
     )
@@ -615,24 +626,21 @@ object Primitives {
       override def shouldFreeze: Boolean = true
 
       override def cassandraType: String = {
-        QueryBuilder.Collections.mapType(
-          kp.cassandraType,
-          vp.cassandraType
-        ).queryString
+        QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
       }
 
       override def fromString(value: String): Map[K, V] = Map.empty[K, V]
 
-      override def asCql(map: Map[K, V]): String = QueryBuilder.Utils.map(map.map {
-        case (key, value) => Primitive[K].asCql(key) -> Primitive[V].asCql(value)
+      override def asCql(sourceMap: Map[K, V]): String = QueryBuilder.Utils.map(sourceMap.map {
+        case (key, value) => kp.asCql(key) -> vp.asCql(value)
       }).queryString
 
       override def serialize(source: Map[K, V], version: ProtocolVersion): ByteBuffer = {
         source match {
           case Primitive.nullValue => emptyCollection
-          case s if s.isEmpty => emptyCollection
-
-            val bbs = source.zipWithIndex.foldRight(Seq.empty[ByteBuffer]) { case (((key, value), i), acc) =>
+          case s if s.isEmpty => Utils.pack(new Array[ByteBuffer](2 * source.size), source.size, version)
+          case _ =>
+            val bbs = source.foldLeft(Seq.empty[ByteBuffer]) { case (acc, (key, value)) =>
               notNull(key, "Map keys cannot be null")
               acc :+ kp.serialize(key, version) :+ vp.serialize(value, version)
             }
@@ -651,7 +659,7 @@ object Primitives {
 
               val m = Map.newBuilder[K, V]
 
-              for (i <- 0 to n) {
+              for (i <- 0 until n) {
                 val kbb = CodecUtils.readValue(input, version)
                 val vbb = CodecUtils.readValue(input, version)
 

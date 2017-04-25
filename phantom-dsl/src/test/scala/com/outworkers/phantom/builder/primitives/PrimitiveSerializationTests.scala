@@ -140,10 +140,6 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
       val javaCol = asJv(sample.map(conv).to[M](cbf2))
-      // Console.println(s"Scala input: $sample")
-      // Console.println(s"Java input: $javaCol")
-      // Console.println(s"Output ${codec.deserialize(phantom, version)}")
-
       val datastax = codec.serialize(javaCol, version)
       phantom shouldEqual datastax
     }
@@ -163,9 +159,6 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
       val javaCol = asJv(sample)
-      // Console.println(s"Scala input: $sample")
-      // Console.println(s"Java input: $javaCol")
-      // Console.println(s"Output ${codec.deserialize(phantom, version)}")
       val datastax = codec.serialize(javaCol, version)
       phantom shouldEqual datastax
     }
@@ -219,7 +212,6 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     implicit ev: Primitive[T],
     ev2: Primitive[Set[T]]
   ): Assertion = testCollection[Set, JSet, T, InnerType](dataType, gen, _.asJava, conv)
-
 
 
   it should "serialize an empty List[UUID] type just like the native codec" in {

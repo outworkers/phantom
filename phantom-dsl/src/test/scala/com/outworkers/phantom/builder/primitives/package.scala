@@ -23,6 +23,7 @@ import java.util.{Date, UUID}
 import com.datastax.driver.core.utils.UUIDs
 import org.scalacheck.{Arbitrary, Gen}
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
+import com.google.common.base.Charsets
 import com.outworkers.util.samplers._
 
 package object primitives {
@@ -34,6 +35,10 @@ package object primitives {
   private[this] val inetUpperLimit = 255
 
   implicit def arbitraryToGen[T](arb: Arbitrary[T]): Gen[T] = arb.arbitrary
+
+  val unicodeChar: Gen[Char] = Gen.oneOf((Char.MinValue to Char.MaxValue).filter(Character.isDefined))
+
+  implicit val strArb: Arbitrary[String] = Sample.arbitrary[String]
 
   implicit val dateTimeGen: Gen[DateTime] = for {
     offset <- Gen.choose(genLower, genHigher)
