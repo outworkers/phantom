@@ -271,14 +271,13 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
-      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test,
-      addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scroogePlugin(scalaVersion.value))
+      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
     ),
+    //addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scroogePlugin(scalaVersion.value)),
     coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
     sharedSettings: _*
