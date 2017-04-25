@@ -76,6 +76,8 @@ abstract class JsonListColumn[
   cp: Primitive[List[String]]
 ) extends AbstractColColumn[T, R, List, ValueType](table) with JsonDefinition[ValueType] {
 
+  override def asCql(v: List[ValueType]): String = cp.asCql(v.map(valueAsCql))
+
   override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
 
   override val cassandraType = cp.cassandraType
@@ -95,6 +97,8 @@ abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
   implicit ev: Primitive[String],
   cp: Primitive[Set[String]]
 ) extends AbstractColColumn[T ,R, Set, ValueType](table) with JsonDefinition[ValueType] {
+
+  override def asCql(v: Set[ValueType]): String = cp.asCql(v.map(valueAsCql))
 
   override val cassandraType = cp.cassandraType
 

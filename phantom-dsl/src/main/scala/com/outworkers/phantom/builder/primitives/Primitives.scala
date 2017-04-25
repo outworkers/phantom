@@ -30,6 +30,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.{LocalDate => JodaLocalDate}
+import shapeless.{Generic, HList}
 
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
@@ -618,6 +619,29 @@ object Primitives {
       override def asCql(value: Option[T]): String = {
           value.map(ev.asCql).getOrElse(nullString)
       }
+    }
+  }
+
+  def tuplePrimitive[
+    TP,
+    HL <: HList
+  ]()(implicit gen: Generic.Aux[TP, HL]): Primitive[TP] = {
+    new Primitive[TP] {
+      override def shouldFreeze: Boolean = true
+
+      /**
+        * Converts the type to a CQL compatible string.
+        * The primitive is responsible for handling all aspects of adequate escaping as well.
+        * This is used to generate the final queries from domain objects.
+        *
+        * @param value The strongly typed value.
+        * @return The string representation of the value with respect to CQL standards.
+        */
+      override def asCql(value: TP): String = ???
+      override def cassandraType: String = ???
+      override def serialize(obj: TP, protocol: ProtocolVersion): ByteBuffer = ???
+      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): TP = ???
+      override def fromString(value: String): TP = ???
     }
   }
 

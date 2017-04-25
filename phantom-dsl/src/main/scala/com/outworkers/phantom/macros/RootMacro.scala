@@ -317,6 +317,22 @@ trait RootMacro {
       }
     }
 
+    def hListStoreType: Option[Tree] = {
+      if (unmatchedColumns.isEmpty) {
+        Some(hlistType(List(recordType)))
+      } else {
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        val cols = unmatchedColumns.map(_.tpe) :+ recordType
+
+        if (cols.size > maxTupleSize) {
+          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
+          None
+        } else {
+          Some(hlistType(cols))
+        }
+      }
+    }
+
     private[this] val maxTupleSize = 22
 
     /**

@@ -110,7 +110,7 @@ class ThriftSetColumn[
 
   override val cassandraType = QueryBuilder.Collections.setType(CQLSyntax.Types.Text).queryString
 
-  override def asCql(v: Set[V]): String = Utils.set(v.map(valueAsCql)).queryString
+  override def asCql(v: Set[V]): String = ev.asCql(v map valueAsCql)
 
   override def parse(r: Row): Try[Set[V]] = {
     if (r.isNull(name)) {
@@ -150,6 +150,22 @@ class ThriftListColumn[
   }
 
   override def fromString(c: String): V = serializer.fromString(c)
+
+  /**
+    * Provides the serialisation mechanism of a value to a CQL string.
+    * The vast majority of serializers are fed in via the Primitives mechanism.
+    *
+    * Primitive columns will automatically override and define "asCql" based on the
+    * serialization of specific primitives. When T is context bounded by a primitive:
+    *
+    * {{{
+    *   def asCql(v: T): String = implicitly[Primitive[T]].asCql(value)
+    * }}}
+    *
+    * @param v The value of the object to convert to a string.
+    * @return A string that can be directly appended to a CQL query.
+    */
+  override def asCql(v: List[V]): String = ev.asCql(v map valueAsCql)
 }
 
 @implicitNotFound(msg = "Type ${KeyType} must be a Cassandra primitive")

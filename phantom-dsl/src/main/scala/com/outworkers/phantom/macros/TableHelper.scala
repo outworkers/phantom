@@ -417,9 +417,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val nothingTpe = tq"_root_.scala.Nothing"
+    val nothingTpe: Tree = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
+    Console.println(s"Store method type ${showCode(descriptor.hListStoreType.getOrElse(nothingTpe))} for ${printType(tableType)}")
 
     q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {

@@ -33,10 +33,6 @@ abstract class AbstractColColumn[
   implicit cbf: CanBuildFrom[Nothing, RR, M[RR]]
 ) extends Column[Owner, Record, M[RR]](table) with CollectionValueDefinition[RR] {
 
-  override def asCql(v: M[RR]): String = {
-    QueryBuilder.Collections.serialize(v.map(valueAsCql).toSeq).queryString
-  }
-
   override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().result())
 }
 
