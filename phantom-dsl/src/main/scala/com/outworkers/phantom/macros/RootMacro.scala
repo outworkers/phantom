@@ -42,6 +42,7 @@ trait RootMacro {
   protected[this] val tableTerm = TermName("table")
   protected[this] val inputTerm = TermName("input")
   protected[this] val keyspaceType = tq"com.outworkers.phantom.connectors.KeySpace"
+  private[this] val hnilTpe: Tree = tq"_root_.shapeless.HNil"
 
   val knownList = List("Any", "Object", "RootConnector")
 
@@ -284,9 +285,7 @@ trait RootMacro {
     }
 
     def hlistType[M[X] <: Traversable[X]](col: M[Type]): Tree = {
-      col.foldLeft(tq"_root_.shapeless.HNil": Tree) { (tpe, current) =>
-        tq"$current :: $tpe"
-      }
+      (hnilTpe /: col)((acc, tp) => tq"$tp :: $acc")
     }
 
     def storeMethod: Option[Tree] = storeType flatMap { sTpe =>

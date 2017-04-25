@@ -51,6 +51,8 @@ class CollectionColumn[
   cbf: CanBuildFrom[Nothing, RR, M[RR]]
 ) extends AbstractColColumn[Owner, Record, M, RR](table) {
 
+  override def asCql(v: M[RR]): String = ev.asCql(v)
+
   override def qb: CQLQuery = {
     if (ev.shouldFreeze) {
       QueryBuilder.Collections.frozen(name, cassandraType)

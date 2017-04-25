@@ -24,7 +24,6 @@ import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
-import scala.util.{ Failure, Success, Try }
 
 case class Debugger(
   storeType: String,
@@ -62,7 +61,7 @@ object TableHelper {
 
 @macrocompat.bundle
 class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
-  import c.universe.{ Try => _, _ }
+  import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
