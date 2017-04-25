@@ -76,6 +76,14 @@ lazy val Versions = new {
     }
   }
 
+  val scroogePlugin: String => String = { s =>
+    CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.14.0"
+      case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
+      case _ => "4.7.0"
+    }
+  }
+
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor == 12 => "2.6.1"
@@ -268,7 +276,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
-      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
+      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test,
+      addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scroogePlugin(scalaVersion.value))
     ),
     coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(

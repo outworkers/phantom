@@ -15,13 +15,11 @@
  */
 package com.outworkers.phantom.jdk8
 
-import java.nio.ByteBuffer
 import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 
-import com.datastax.driver.core.{CodecUtils, ProtocolVersion, LocalDate => DatastaxLocalDate}
-import com.outworkers.phantom.builder.primitives.Primitives.IntPrimitive
-import com.outworkers.phantom.builder.primitives.{DateSerializer, Primitive}
-import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.datastax.driver.core.CodecUtils
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.Primitives.LongPrimitive
 import org.joda.time.{DateTime, DateTimeZone}
 
 trait DefaultJava8Primitives {
@@ -37,39 +35,9 @@ trait DefaultJava8Primitives {
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-  implicit val LocalDateIsPrimitive = new Primitive[JavaLocalDate] {
-    val cassandraType = CQLSyntax.Types.Date
-
-    val codec = IntPrimitive
-
-    override def asCql(value: JavaLocalDate): String = {
-      DateSerializer.asCql(
-        DatastaxLocalDate.fromDaysSinceEpoch(value.toEpochDay.toInt)
-      )
-    }
-
-    override def fromString(value: String): JavaLocalDate = {
-      JavaLocalDate.ofEpochDay(java.lang.Long.parseLong(value))
-    }
-
-    override def serialize(obj: JavaLocalDate, version: ProtocolVersion): ByteBuffer = {
-      nullValueCheck(obj) { dt =>
-        val unsigned = CodecUtils.fromSignedToUnsignedInt(dt.toEpochDay.toInt)
-        codec.serialize(unsigned,version)
-      }
-    }
-
-    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): JavaLocalDate = {
-      bytes match {
-        case Primitive.nullValue => Primitive.nullValue
-        case b if b.remaining() == 0 => Primitive.nullValue
-        case b @ _ =>
-          val unsigned = codec.deserialize(bytes, version)
-          val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
-          JavaLocalDate.ofEpochDay(signed)
-      }
-    }
-  }
+  implicit val LocalDateIsPrimitive = Primitive.manuallyDerive[JavaLocalDate, Long](
+    l => CodecUtils.fromCqlDateToDaysSinceEpoch(l.toEpochDay), s => JavaLocalDate.ofEpochDay(s)
+  )(LongPrimitive)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
     Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {

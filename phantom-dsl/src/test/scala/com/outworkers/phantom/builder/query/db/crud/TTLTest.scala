@@ -86,10 +86,8 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
       .ttl(ttl)
       .prepare()
 
-    def preparedInsert(row: PrimitiveRecord): ExecutablePreparedQuery = insertQuery.bind(row)
-
     val chain = for {
-      _ <- preparedInsert(row).future()
+      _ <- insertQuery.bind(row).future()
       get <- fetchQuery.bind(row.pkey).one()
     } yield get
 

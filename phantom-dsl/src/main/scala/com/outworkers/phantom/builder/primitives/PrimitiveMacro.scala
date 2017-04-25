@@ -51,15 +51,14 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val localJodaDate: Tree = tq"org.joda.time.LocalDate"
   val bigDecimalType: Tree = tq"scala.math.BigDecimal"
   val inetType: Tree = tq"java.net.InetAddress"
-  val bigIntType = tq"_root_.scala.math.BigInt"
-  val bufferType = tq"_root_.java.nio.ByteBuffer"
-  val bufferCompanion = q"_root_.java.nio.ByteBuffer"
+  val bigIntType = tq"scala.math.BigInt"
+  val bufferType = tq"java.nio.ByteBuffer"
 
-  val builder = q"_root_.com.outworkers.phantom.builder"
-  val cql = q"_root_.com.outworkers.phantom.builder.query.engine.CQLQuery"
-  val syntax = q"_root_.com.outworkers.phantom.builder.syntax.CQLSyntax"
+  val builder = q"com.outworkers.phantom.builder"
+  val cql = q"com.outworkers.phantom.builder.query.engine.CQLQuery"
+  val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
 
-  val prefix = q"_root_.com.outworkers.phantom.builder.primitives"
+  val prefix = q"com.outworkers.phantom.builder.primitives"
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
   def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
@@ -158,8 +157,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     term: TermName,
     cassandraType: Tree,
     extractor: Tree,
-    serializer: Tree,
-    tpe: Type
+    serializer: Tree
   )
 
   def tupleFields(tpe: Type): List[TupleType] = {
@@ -174,14 +172,9 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
           currentTerm,
           q"$prefix.Primitive[$argTpe].cassandraType",
           fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(index = $index, row = $sourceTerm)",
-          q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)",
-          argTpe
+          q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)"
         )
     }
-  }
-
-  def tupleTerm(index: Int, aug: Int = 1): TermName = {
-    TermName("_" + (index + aug).toString)
   }
 
   def tuplePrimitive[T : WeakTypeTag](): Tree = {
@@ -192,25 +185,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
 
     val fields: List[TupleType] = tupleFields(tpe)
 
-    val serializedComponents = fields.zipWithIndex.map { case (f, i) =>
-      q"""
-        elements($i) = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
-        size += (4 + { if (elements($i) == null) 0 else elements($i).remaining()})
-      """
-    }
-
-    val serializedFields = fields.zipWithIndex.map { case (f, i) =>
-      q"""
-        val bb = elements($i)
-        if (bb == null) {
-          res.putInt(-1)
-        } else {
-         res.putInt(bb.remaining())
-         res.put(bb.duplicate())
-        }
-      """
-    }
-
     q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
@@ -218,19 +192,34 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
           .queryString
       }
 
-      override def serialize($sourceTerm: $tpe, $versionTerm: $pVersion): $bufferType = {
-        if ($sourceTerm == null) {
+      override def serialize(source: $tpe, $versionTerm: $pVersion): $bufferType = {
+        if (value == null) {
            null
         } else {
           var size = 0
           val length = ${fields.size}
-          val elements = new _root_.scala.Array[$bufferType](length)
-          ..$serializedComponents
 
-          val res = $bufferCompanion.allocate(size)
-          ..$serializedFields
+          val elements = new Array[ByteBuffer](length)
 
-          res.flip().asInstanceOf[$bufferType]
+          for (i <- 0 until length) {
+
+            elements(i) = serializeField()
+            val el = elements(i)
+
+            size += (4 + { if (el == null) 0 else el.remaining()})
+          }
+
+          val res = ByteBuffer.allocate(size)
+          for (bb <- elements) {
+            if (bb == null) {
+              res.putInt(-1)
+            } else {
+              res.putInt(bb.remaining())
+              res.put(bb.duplicate())
+            }
+          }
+
+          res.flip().asInstanceOf[ByteBuffer]
         }
       }
 

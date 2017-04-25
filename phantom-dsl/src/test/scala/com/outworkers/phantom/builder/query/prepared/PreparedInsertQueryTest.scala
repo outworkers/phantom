@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.query.prepared
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.codec.JodaLocalDateCodec
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{PrimitiveRecord, PrimitiveCassandra22, Recipe}
 import com.outworkers.util.samplers._
@@ -112,7 +111,6 @@ class PreparedInsertQueryTest extends PhantomSuite {
 
   if (session.v4orNewer) {
     it should "serialize a cassandra 2.2 primitives insert query" in {
-      session.getCluster.getConfiguration.getCodecRegistry.register(new JodaLocalDateCodec)
       val sample = gen[PrimitiveCassandra22]
 
       val query = database.primitivesCassandra22.insert

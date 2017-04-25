@@ -24,7 +24,7 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList}
+import shapeless.{Generic, HList, HNil}
 
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
@@ -78,6 +78,7 @@ class ExecutablePreparedSelectQuery[
 abstract class PreparedFlattener(qb: CQLQuery)(
   implicit session: Session, keySpace: KeySpace
 ) extends SessionAugmenterImplicits {
+
   protected[this] val query: PreparedStatement = {
     blocking(session.prepare(qb.queryString))
   }
@@ -117,13 +118,14 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V : Primitive](v: V): ExecutablePreparedQuery = {
-    val source = new BoundStatement(query).setBytesUnsafe(
-      0,
-      Primitive[V].serialize(v, session.protocolVersion)
+  def bind[V](v: V)(
+    implicit ev: Primitive[V],
+    binder: BindHelper[V]
+  ): ExecutablePreparedQuery = {
+    new ExecutablePreparedQuery(
+      binder.bind(query, v, session.protocolVersion),
+      options
     )
-
-    new ExecutablePreparedQuery(source, options)
   }
 }
 
@@ -166,13 +168,14 @@ class PreparedSelectBlock[
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V : Primitive](v: V): ExecutablePreparedSelectQuery[T, R, Limit] = {
-    val source = new BoundStatement(query).setBytesUnsafe(
-      0,
-      Primitive[V].serialize(v, session.protocolVersion)
+  def bind[V](v: V)(
+    implicit ev: Primitive[V],
+    binder: BindHelper[V]
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    new ExecutablePreparedSelectQuery(
+      binder.bind(query, v, session.protocolVersion),
+      fn,
+      options
     )
-
-    new ExecutablePreparedSelectQuery(source, fn, options)
   }
-
 }

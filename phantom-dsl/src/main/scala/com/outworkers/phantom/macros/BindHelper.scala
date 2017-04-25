@@ -34,9 +34,8 @@ object BindHelper {
   implicit def materialize[TP]: BindHelper[TP] = macro BindMacros.materialize[TP]
 }
 
-
 @macrocompat.bundle
-class BindMacros(val c: whitebox.Context) {
+class BindMacros(val c: whitebox.Context) extends RootMacro {
 
   import c.universe._
 
@@ -44,36 +43,84 @@ class BindMacros(val c: whitebox.Context) {
   private[this] val boundTpe = tq"_root_.com.datastax.driver.core.BoundStatement"
   private[this] val protocolVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
 
-  def tupleTerm(index: Int, aug: Int = 1): TermName = {
-    TermName("_" + (index + aug).toString)
+  private[this] val source = TermName("ps")
+  private[this] val value = TermName("value")
+  private[this] val version = TermName("version")
+
+  def isTuple(tpe: Type): Boolean = {
+    tpe.typeSymbol.fullName startsWith "scala.Tuple"
   }
 
-  def materialize[TP : WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[TP]
+  def bindSingle(tpe: Type): Tree = {
+    q"""
+       new com.outworkers.phantom.macros.BindHelper[$tpe] {
+          def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
+             $source.setBytesUnsafe(
+                0,
+                $prefix.Primitive[$tpe].serialize($value, $version)
+             )
+             $source
+          }
+       }
+    """
+  }
 
-    val source = TermName("ps")
-    val values = TermName("values")
-    val version = TermName("version")
-
-    val setters = tpe.typeArgs.zipWithIndex.map { case (tp, i) =>
+  def bindCaseClass(tpe: Type): Tree = {
+    val setters = caseFields(tpe).zipWithIndex.map { case (tp, i) =>
       q"""
         $source.setBytesUnsafe(
           $i,
-          $prefix.Primitive[$tp].serialize($values.${tupleTerm(i)}, $version)
+          $prefix.Primitive[${tp._2}].serialize($value.${tp._1.toTermName}, $version)
         )
       """
     }
 
-    val tree = q"""
+    q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
-          def bind($source: $boundTpe, $values: $tpe, $version: $protocolVersion): $boundTpe = {
+          def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
             ..$setters
             $source
           }
        }
     """
+  }
+
+  def bindTuple(tpe: Type): Tree = {
+    val setters = tpe.typeArgs.zipWithIndex.map { case (tp, i) =>
+      q"""
+        $source.setBytesUnsafe(
+          $i,
+          $prefix.Primitive[$tp].serialize($value.${tupleTerm(i)}, $version)
+        )
+      """
+    }
+
+    q"""
+       new com.outworkers.phantom.macros.BindHelper[$tpe] {
+          def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
+            ..$setters
+            $source
+          }
+       }
+    """
+  }
+
+  def isCaseClass(tpe: Type): Boolean = {
+    tpe.termSymbol.isClass && tpe.termSymbol.asClass.isCaseClass
+  }
+
+  def materialize[TP : WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[TP]
+
+    val tree = if (isTuple(tpe)) {
+      bindTuple(tpe)
+    } else if (isCaseClass(tpe)) {
+      bindCaseClass(tpe)
+    } else {
+      bindSingle(tpe)
+    }
+
     Console.println(showCode(tree))
     tree
   }
-
 }
