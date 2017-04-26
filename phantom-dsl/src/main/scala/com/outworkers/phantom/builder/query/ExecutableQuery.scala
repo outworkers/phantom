@@ -21,7 +21,6 @@ import com.datastax.driver.core._
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
-import com.outworkers.phantom.connectors.KeySpace
 
 import scala.collection.JavaConverters._
 import scala.collection.generic.CanBuildFrom

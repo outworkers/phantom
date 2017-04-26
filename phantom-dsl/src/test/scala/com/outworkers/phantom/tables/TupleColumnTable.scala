@@ -50,11 +50,16 @@ abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable wit
   }
 }
 
-case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
+case class TupleCollectionRecord(
+  id: UUID,
+  tuples: List[(Int, String)],
+  uniqueTuples: Set[(Int, String)]
+)
 
 class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {
   object id extends UUIDColumn(this) with PartitionKey
   object tuples extends ListColumn[(Int, String)](this)
+  object uniqueTuples extends SetColumn[(Int, String)](this)
 }
 
 abstract class ConcreteTupleCollectionsTable extends TupleCollectionsTable with RootConnector {

@@ -21,6 +21,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.annotation.implicitNotFound
 import scala.util.{Failure, Success, Try}
@@ -55,13 +56,12 @@ class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](
   val cassandraType: String = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
 
   override def qb: CQLQuery = {
-    if (shouldFreeze) {
-      QueryBuilder.Collections.frozen(name, cassandraType)
-    } else if (valuePrimitive.frozen) {
-      CQLQuery(name).forcePad.append(QueryBuilder.Collections.frozen(valuePrimitive.cassandraType))
-    } else {
-      CQLQuery(name).forcePad.append(cassandraType)
-    }
+    QueryBuilder.Collections.collectionType(
+      CQLSyntax.Collections.set,
+      valuePrimitive.cassandraType,
+      shouldFreeze,
+      valuePrimitive.frozen
+    )
   }
 
   override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)
