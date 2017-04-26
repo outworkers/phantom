@@ -20,6 +20,9 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class DeleteQueryTests extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -30,17 +33,10 @@ class DeleteQueryTests extends PhantomSuite {
   "A delete query" should "delete a row by its single primary key" in {
     val row = gen[PrimitiveRecord]
 
-    val chain = for {
-      store <- database.primitives.store(row).future()
-      inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).future()
-      deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (inserted, deleted)
-
-    whenReady(chain) { case (r1, r2) =>
-      r1.value shouldEqual row
-      r2 shouldBe empty
-    }
+    Await.result(database.primitives.store(row).future(), 10.seconds)
+    Await.result(database.primitives.select.where(_.pkey eqs row.pkey).one, 10.seconds)
+    Await.result(database.primitives.delete.where(_.pkey eqs row.pkey).future(), 10.seconds)
+    Await.result(database.primitives.select.where(_.pkey eqs row.pkey).one, 10.seconds)
   }
 
   "A delete query" should "delete a row by its single primary key if a single condition is met" in {

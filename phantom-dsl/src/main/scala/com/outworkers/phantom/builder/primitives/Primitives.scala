@@ -126,8 +126,9 @@ object Primitives {
   object StringPrimitive extends Primitive[String] {
 
     private[this] val name = "UTF-8"
-    val encoder = Charset.forName(name).newEncoder
-    val decoder = Charset.forName(name).newDecoder
+    val charset = Charset.forName(name)
+    val encoder = charset.newEncoder
+    val decoder = charset.newDecoder
 
     def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
@@ -151,7 +152,7 @@ object Primitives {
       source match {
         case Primitive.nullValue => Primitive.nullValue
         case bytes if bytes.remaining() == 0 => ""
-        case arr @ _ => ParseUtils.unquote(decoder.decode(arr).toString)
+        case arr @ _ => new String(Bytes.getArray(arr), charset)
       }
     }
   }

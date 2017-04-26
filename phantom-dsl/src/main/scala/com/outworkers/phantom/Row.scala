@@ -19,15 +19,10 @@ import java.nio.ByteBuffer
 import java.util
 
 import scala.collection.JavaConverters._
-import com.datastax.driver.core.{
-  ColumnDefinitions,
-  ExecutionInfo,
-  GettableByIndexData,
-  ProtocolVersion,
-  ResultSet => DatastaxResultSet,
-  Row => DatastaxRow
-}
+import com.datastax.driver.core.{ColumnDefinitions, ExecutionInfo, GettableByIndexData, ProtocolVersion, ResultSet => DatastaxResultSet, Row => DatastaxRow}
 import com.google.common.util.concurrent.ListenableFuture
+
+import scala.util.Try
 
 case class ResultSet(
   inner: DatastaxResultSet,
@@ -64,23 +59,16 @@ case class ResultSet(
 }
 
 
-class IndexedRow(inner: GettableByIndexData, val version: ProtocolVersion) {
-  def getBytesUnsafe(index: Int): ByteBuffer = inner.getBytesUnsafe(index)
-
-  def isNull(index: Int): Boolean = inner.isNull(index)
-}
-
 class Row(val inner: DatastaxRow, val version: ProtocolVersion) {
   def getBytesUnsafe(name: String): ByteBuffer = inner.getBytesUnsafe(name)
+
   def getBytesUnsafe(index: Int): ByteBuffer = inner.getBytesUnsafe(index)
 
   def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
 
-  def getTupleValue(name: String): IndexedRow = new IndexedRow(inner.getTupleValue(name), version)
+  def isNull(name: String): Boolean = Try(inner.isNull(name)).getOrElse(false)
 
-  def isNull(name: String): Boolean = inner.isNull(name)
-
-  def isNull(index: Int): Boolean = inner.isNull(index)
+  def isNull(index: Int): Boolean = Try(inner.isNull(index)).getOrElse(false)
 }
 
 
