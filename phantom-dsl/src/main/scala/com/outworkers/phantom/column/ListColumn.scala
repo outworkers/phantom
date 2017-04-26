@@ -50,16 +50,12 @@ class ListColumn[
 
   override val valuePrimitive = Primitive[RR]
 
-  override val cassandraType = QueryBuilder.Collections.listType(valuePrimitive.cassandraType).queryString
-
-  override def qb: CQLQuery = {
-    QueryBuilder.Collections.collectionType(
-      CQLSyntax.Collections.list,
-      valuePrimitive.cassandraType,
-      shouldFreeze,
-      valuePrimitive.frozen
-    )
-  }
+  override val cassandraType = QueryBuilder.Collections.collectionType(
+    CQLSyntax.Collections.list,
+    valuePrimitive.cassandraType,
+    shouldFreeze,
+    valuePrimitive.frozen
+  ).queryString
 
   override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
 
