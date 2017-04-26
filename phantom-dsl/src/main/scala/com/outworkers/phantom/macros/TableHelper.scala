@@ -420,7 +420,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val nothingTpe: Tree = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
-    Console.println(s"Store method type ${showCode(descriptor.hListStoreType.getOrElse(nothingTpe))} for ${printType(tableType)}")
 
     q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {

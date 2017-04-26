@@ -15,9 +15,10 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
+import com.datastax.driver.core.{BoundStatement, ProtocolVersion}
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{PrimitiveRecord, PrimitiveCassandra22, Recipe}
+import com.outworkers.phantom.tables.{PrimitiveCassandra22, PrimitiveRecord, Recipe}
 import com.outworkers.util.samplers._
 
 class PreparedInsertQueryTest extends PhantomSuite {
@@ -109,6 +110,14 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
+
+  implicit object $anon extends com.outworkers.phantom.macros.BindHelper[String] {
+    def bind(ps: BoundStatement, value: String, version: ProtocolVersion): BoundStatement = {
+      ps.setBytesUnsafe(0, Primitive[String].serialize(value, version))
+      ps
+    }
+  }
+
   if (session.v4orNewer) {
     it should "serialize a cassandra 2.2 primitives insert query" in {
       val sample = gen[PrimitiveCassandra22]
@@ -138,7 +147,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
-  it should "excute a prepared insert with a bound TTL variable in the using clause" in {
+  it should "execute a prepared insert with a bound TTL variable in the using clause" in {
     val usedTtl = 10
 
     val sample = gen[Recipe]

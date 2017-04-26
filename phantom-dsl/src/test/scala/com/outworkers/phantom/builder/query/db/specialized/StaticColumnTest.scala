@@ -75,7 +75,6 @@ class StaticColumnTest extends PhantomSuite {
     val id = gen[UUID]
 
     val helper = TableHelper[StaticCollectionTable, StaticCollectionRecord]
-    Console.println(helper.debug.recordMap)
 
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)

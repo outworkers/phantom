@@ -16,10 +16,12 @@
 package com.outworkers.phantom.builder.primitives
 
 import java.net.InetAddress
-import java.nio.ByteBuffer
+import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
+import com.datastax.driver.core.exceptions.InvalidTypeException
 import org.joda.time.DateTime
+
 import scala.collection.concurrent.TrieMap
 
 @macrocompat.bundle
@@ -52,6 +54,10 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bufferType = tq"_root_.java.nio.ByteBuffer"
   val bufferCompanion = q"_root_.java.nio.ByteBuffer"
 
+  val bufferException = typeOf[BufferUnderflowException]
+  val invalidTypeException = typeOf[InvalidTypeException]
+
+  val codecUtils = q"com.datastax.driver.core.CodecUtils"
   val builder = q"_root_.com.outworkers.phantom.builder"
   val cql = q"_root_.com.outworkers.phantom.builder.query.engine.CQLQuery"
   val syntax = q"_root_.com.outworkers.phantom.builder.syntax.CQLSyntax"
@@ -181,22 +187,23 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     TermName("_" + (index + aug).toString)
   }
 
-  def tuplePrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
+  val sourceTerm = TermName("source")
+  def fieldTerm(i: Int): TermName = TermName(s"n$i")
+  def elTerm(i: Int): TermName = TermName(s"el$i")
+  def fqTerm(i: Int): TermName = TermName(s"fq$i")
 
-    val comp = tpe.typeSymbol.name.toTermName
-    val sourceTerm = TermName("source")
-
+  def tuplePrimitive(tpe: Type): Tree = {
     val fields: List[TupleType] = tupleFields(tpe)
+    val indexedFields = fields.zipWithIndex
 
-    val serializedComponents = fields.zipWithIndex.map { case (f, i) =>
+    val serializedComponents = indexedFields.map { case (f, i) =>
       q"""
         elements($i) = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
         size += (4 + { if (elements($i) == null) 0 else elements($i).remaining()})
       """
     }
 
-    val serializedFields = fields.zipWithIndex.map { case (f, i) =>
+    val serializedFields = indexedFields.map { case (f, i) =>
       q"""
         val bb = elements($i)
         if (bb == null) {
@@ -207,6 +214,23 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         }
       """
     }
+
+    val inputTerm = TermName("input")
+
+    val deserializedFields = indexedFields.map { case (f, i) =>
+      val tm = fieldTerm(i)
+      val el = elTerm(i)
+      fq"""
+         ${fqTerm(i)} <- {
+            val $tm = $inputTerm.getInt()
+            val $el = if ($tm < 0) { null } else { $codecUtils.readBytes($inputTerm, $tm) }
+            Some($prefix.Primitive[${f.tpe}].deserialize($inputTerm, $versionTerm))
+         }
+      """
+    }
+
+    val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
+    val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
     q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
@@ -231,14 +255,17 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         }
       }
 
-      override def deserialize(source: $bufferType, $versionTerm: $pVersion): $tpe = ???
-
-      override def fromRow(name: $strType, row: $rowType): ${tryT(tpe)} = {
-        if (scala.Option(row).isEmpty || row.isNull(name)) {
-          scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
+      override def deserialize($sourceTerm: $bufferType, $versionTerm: $pVersion): $tpe = {
+        if ($sourceTerm == null) {
+          null
         } else {
-          val $sourceTerm = row.getTupleValue(name)
-          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+          try {
+            val $inputTerm = $sourceTerm.duplicate()
+            $fieldExtractor.get
+          } catch {
+            case e: $bufferException =>
+              throw new $invalidTypeException("Not enough bytes to deserialize a tuple", e)
+          }
         }
       }
 
@@ -319,7 +346,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val tpe = wkType.typeSymbol
 
     val tree = tpe match {
-      case _ if isTuple(wkType) => tuplePrimitive[T]()
+      case _ if isTuple(wkType) => tuplePrimitive(wkType)
       case _ if isOption(wkType) => optionPrimitive(wkType)
       case Symbols.boolSymbol => booleanPrimitive
       case Symbols.byteSymbol => bytePrimitive

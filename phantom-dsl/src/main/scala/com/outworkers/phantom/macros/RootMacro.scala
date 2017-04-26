@@ -343,7 +343,7 @@ trait RootMacro {
       if (unmatchedColumns.isEmpty) {
         Some(tq"$recordType")
       } else {
-        Console.println(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
         if (cols.size > maxTupleSize) {

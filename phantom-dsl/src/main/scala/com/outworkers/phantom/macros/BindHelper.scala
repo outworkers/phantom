@@ -106,21 +106,18 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
   }
 
   def isCaseClass(tpe: Type): Boolean = {
-    tpe.termSymbol.isClass && tpe.termSymbol.asClass.isCaseClass
+    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
   }
 
   def materialize[TP : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[TP]
 
-    val tree = if (isTuple(tpe)) {
+    if (isTuple(tpe)) {
       bindTuple(tpe)
     } else if (isCaseClass(tpe)) {
       bindCaseClass(tpe)
     } else {
       bindSingle(tpe)
     }
-
-    Console.println(showCode(tree))
-    tree
   }
 }
