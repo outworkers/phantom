@@ -32,7 +32,7 @@ case class Ev2(
 class Events2 extends CassandraTable[Events2, Ev2] {
   object partition extends UUIDColumn with PartitionKey
   object id extends UUIDColumn with PartitionKey
-  object map extends SetColumn[String]
+  object set extends SetColumn[String]
 }
 
 case class ClusteredRecord(
@@ -155,8 +155,6 @@ class TableHelperTest extends PhantomSuite with MockFactory {
     val row = stub[Row]
     val ev = new Events2()
 
-    intercept[NullPointerException] {
-      ev.fromRow(row)
-    }
+    ev.fromRow(row)
   }
 }

@@ -71,7 +71,7 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      items.value shouldBe Set(sample, sample2, sample3)
+      items.value should contain theSameElementsAs Set(sample, sample2, sample3)
     }
   }
 
@@ -97,7 +97,7 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      items.value shouldBe Set(sample, sample2)
+      items.value should contain theSameElementsAs Set(sample, sample2)
     }
   }
 
@@ -112,10 +112,20 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample, sample2, sample3))
-      .future()
+
+
+    Console.println(insert.queryString)
+
+    val q = thriftDb
+      .thriftColumnTable.update.where(_.id eqs id)
+      .modify(_.thriftSet removeAll Set(sample2, sample3))
+
+    Console.println(q.queryString)
 
     val operation = for {
-      insertDone <- insert
+      insertDone <- insert.future()
+      s1 = Console.println(thriftDb.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).queryString)
+
       update <- thriftDb
         .thriftColumnTable.update.where(_.id eqs id)
         .modify(_.thriftSet removeAll Set(sample2, sample3))
@@ -125,7 +135,7 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
 
     whenReady(operation) { items =>
       items shouldBe defined
-      items.value shouldBe Set(sample)
+      items.value should contain theSameElementsAs Set(sample)
     }
   }
 }

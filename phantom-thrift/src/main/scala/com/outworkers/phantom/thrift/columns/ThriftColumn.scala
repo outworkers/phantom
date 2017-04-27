@@ -99,18 +99,17 @@ class ThriftSetColumn[
   V <: ThriftStruct
 ](table: CassandraTable[T, R])(
   implicit hp: ThriftHelper[V],
+  ev1: Primitive[String],
   ev: Primitive[Set[String]]
 ) extends AbstractColColumn[T, R, Set, V](table) with ThriftCol[V] {
 
-  override def valueAsCql(v: V): String = {
-    CQLQuery.empty.singleQuote(serializer.toString(v))
-  }
+  override def valueAsCql(v: V): String = ev1.asCql(serializer.toString(v))
 
   override val serializer: CompactThriftSerializer[V] = hp.serializer
 
   override val cassandraType = QueryBuilder.Collections.setType(CQLSyntax.Types.Text).queryString
 
-  override def asCql(v: Set[V]): String = ev.asCql(v map valueAsCql)
+  override def asCql(v: Set[V]): String = ev.asCql(v map serializer.toString)
 
   override def parse(r: Row): Try[Set[V]] = {
     if (r.isNull(name)) {

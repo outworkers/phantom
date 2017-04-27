@@ -140,11 +140,7 @@ object Primitives {
       if (obj == Primitive.nullValue || obj.length == 0) {
         ByteBuffer.wrap("".getBytes(Charsets.UTF_8))
       } else {
-        //val str = ParseUtils.quote(obj)
-        val bytes = encoder.encode(CharBuffer.wrap(obj))
-        ByteBuffer.wrap(
-          bytes.array.slice(bytes.position, bytes.limit)
-        )
+        ByteBuffer.wrap(obj.getBytes(charset))
       }
     }
 
