@@ -383,7 +383,7 @@ class RootMacro(val c: blackbox.Context) {
 
   def filterMembers[Filter : TypeTag](
     tpe: Type,
-    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+    exclusions: Symbol => Option[Symbol]
   ): Seq[Symbol] = {
     (
       for {
