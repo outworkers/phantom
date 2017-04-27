@@ -44,9 +44,9 @@ class ListColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
   RR : Primitive
-](table: CassandraTable[Owner, Record])
-  extends AbstractListColumn[Owner, Record, RR](table)
-  with PrimitiveCollectionValue[RR] {
+](
+  table: CassandraTable[Owner, Record]
+) extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = Primitive[RR]
 

@@ -41,15 +41,15 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
 
   type Value = T
 
-  private[phantom] val isPrimary = false
-  private[phantom] val isSecondaryKey = false
-  private[phantom] val isPartitionKey = false
-  private[phantom] val isCounterColumn = false
-  private[phantom] val isStaticColumn = false
-  private[phantom] val isClusteringKey = false
-  private[phantom] val isAscending = false
-  private[phantom] val isMapKeyIndex = false
-  private[phantom] val isMapEntryIndex = false
+  def isPrimary: Boolean = false
+  def isSecondaryKey: Boolean = false
+  def isPartitionKey: Boolean = false
+  def isCounterColumn: Boolean = false
+  def isStaticColumn: Boolean = false
+  def isClusteringKey: Boolean = false
+  def isAscending: Boolean = false
+  def isMapKeyIndex: Boolean = false
+  def isMapEntryIndex: Boolean = false
 
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString
@@ -73,7 +73,7 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
     *
     * @return A boolean that says whether or not this type should be frozen.
     */
-  def shouldFreeze: Boolean = isPrimary
+  def shouldFreeze: Boolean = isPrimary || isPartitionKey
 
 }
 

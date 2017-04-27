@@ -36,10 +36,9 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
       case Success(set) => set
 
       // Note null sets are considered successful, we simply return an empty set instead of null.
-      case Failure(ex) => {
+      case Failure(ex) =>
         table.logger.error(ex.getMessage)
         throw ex
-      }
     }
   }
 
@@ -48,8 +47,13 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
 
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](table: CassandraTable[Owner, Record])
-    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
+class SetColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  RR : Primitive
+](
+  table: CassandraTable[Owner, Record]
+) extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive: Primitive[RR] = Primitive[RR]
 

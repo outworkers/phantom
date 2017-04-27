@@ -208,10 +208,10 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
   def collectionType(
     colType: String,
     cassandraType: String,
-    freezeCollection: Boolean,
+    shouldFreeze: Boolean,
     freezeInner: Boolean
   ): CQLQuery = {
-    (freezeCollection, freezeInner) match {
+    (shouldFreeze, freezeInner) match {
       case (true, true) =>
         // frozen<list<frozen<tuple<string, string>>>
         frozen(diamond(colType, frozen(cassandraType).queryString))
