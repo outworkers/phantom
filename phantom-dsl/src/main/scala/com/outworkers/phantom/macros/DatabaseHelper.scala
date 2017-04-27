@@ -18,6 +18,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
 import com.outworkers.phantom.connectors.KeySpace
+import scala.reflect.macros.whitebox
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
@@ -30,18 +31,18 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(val c: scala.reflect.macros.whitebox.Context) extends RootMacro {
+class DatabaseHelperMacro(val c: whitebox.Context) extends RootMacro {
   import c.universe._
 
-  private[this] val keySpaceTpe = tq"com.outworkers.phantom.connectors.KeySpace"
+  private[this] val keySpaceTpe = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
-    val tableSymbol = tq"com.outworkers.phantom.CassandraTable[_, _]"
+    val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
 
-    val accessors = filterDecls[CassandraTable[_, _]](tpe)
+    val accessors = filterMembers[T, CassandraTable[_, _]]()
 
-    val prefix = q"com.outworkers.phantom.database"
+    val prefix = q"_root_.com.outworkers.phantom.database"
 
     val tableList = accessors.map(sym => {
       val name = sym.asTerm.name.toTermName

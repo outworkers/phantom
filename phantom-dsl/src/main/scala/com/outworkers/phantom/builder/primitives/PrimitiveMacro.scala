@@ -21,35 +21,35 @@ import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
 import org.joda.time.DateTime
-
 import scala.collection.concurrent.TrieMap
+import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
-class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
+class PrimitiveMacro(val c: blackbox.Context) {
   import c.universe._
 
-  val rowByNameType = tq"com.datastax.driver.core.GettableByNameData"
-  val rowByIndexType = tq"com.outworkers.phantom.IndexedRow"
-  val pVersion = tq"com.datastax.driver.core.ProtocolVersion"
+  val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
+  val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
+  val pVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
   private[this] val versionTerm = q"version"
-  private[this] val rowType = tq"com.outworkers.phantom.Row"
+  private[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
 
-  val boolType = tq"scala.Boolean"
-  val strType: Tree = tq"java.lang.String"
-  val intType: Tree = tq"scala.Int"
-  val byteType: Tree = tq"scala.Byte"
-  val doubleType: Tree = tq"scala.Double"
-  val shortType: Tree = tq"scala.Short"
-  val uuidType: Tree = tq"java.util.UUID"
-  val longType: Tree = tq"scala.Long"
-  val floatType: Tree = tq"scala.Float"
-  val dateType: Tree = tq"java.util.Date"
-  val tupleValue: Tree = tq"com.datastax.driver.core.TupleValue"
-  val localDate: Tree = tq"com.datastax.driver.core.LocalDate"
-  val dateTimeType: Tree = tq"org.joda.time.DateTime"
-  val localJodaDate: Tree = tq"org.joda.time.LocalDate"
-  val bigDecimalType: Tree = tq"scala.math.BigDecimal"
-  val inetType: Tree = tq"java.net.InetAddress"
+  val boolType = tq"_root_.scala.Boolean"
+  val strType: Tree = tq"_root_.java.lang.String"
+  val intType: Tree = tq"_root_.scala.Int"
+  val byteType: Tree = tq"_root_.scala.Byte"
+  val doubleType: Tree = tq"_root_.scala.Double"
+  val shortType: Tree = tq"_root_.scala.Short"
+  val uuidType: Tree = tq"_root_.java.util.UUID"
+  val longType: Tree = tq"_root_.scala.Long"
+  val floatType: Tree = tq"_root_.scala.Float"
+  val dateType: Tree = tq"_root_.java.util.Date"
+  val tupleValue: Tree = tq"_root_.com.datastax.driver.core.TupleValue"
+  val localDate: Tree = tq"_root_.com.datastax.driver.core.LocalDate"
+  val dateTimeType: Tree = tq"_root_.org.joda.time.DateTime"
+  val localJodaDate: Tree = tq"_root_.org.joda.time.LocalDate"
+  val bigDecimalType: Tree = tq"_root_.scala.math.BigDecimal"
+  val inetType: Tree = tq"_root_.java.net.InetAddress"
   val bigIntType = tq"_root_.scala.math.BigInt"
   val bufferType = tq"_root_.java.nio.ByteBuffer"
   val bufferCompanion = q"_root_.java.nio.ByteBuffer"
@@ -57,7 +57,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   val bufferException = typeOf[BufferUnderflowException]
   val invalidTypeException = typeOf[InvalidTypeException]
 
-  val codecUtils = q"com.datastax.driver.core.CodecUtils"
+  val codecUtils = q"_root_.com.datastax.driver.core.CodecUtils"
   val builder = q"_root_.com.outworkers.phantom.builder"
   val cql = q"_root_.com.outworkers.phantom.builder.query.engine.CQLQuery"
   val syntax = q"_root_.com.outworkers.phantom.builder.syntax.CQLSyntax"

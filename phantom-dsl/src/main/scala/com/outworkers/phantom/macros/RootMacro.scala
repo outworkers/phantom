@@ -30,18 +30,18 @@ trait RootMacro {
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)
 
-  protected[this] val rowType = tq"com.outworkers.phantom.Row"
-  protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
-  protected[this] val macroPkg = q"com.outworkers.phantom.macros"
-  protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"
-  protected[this] val enginePkg = q"com.outworkers.phantom.builder.query.engine"
-  protected[this] val strTpe = tq"java.lang.String"
-  protected[this] val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
-  protected[this] val collections = q"scala.collection.immutable"
+  protected[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
+  protected[this] val builder = q"_root_.com.outworkers.phantom.builder.QueryBuilder"
+  protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
+  protected[this] val builderPkg = q"_root_.com.outworkers.phantom.builder.query"
+  protected[this] val enginePkg = q"_root_.com.outworkers.phantom.builder.query.engine"
+  protected[this] val strTpe = tq"_root_.java.lang.String"
+  protected[this] val colType = tq"_root_.com.outworkers.phantom.column.AbstractColumn[_]"
+  protected[this] val collections = q"_root_.scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")
   protected[this] val inputTerm = TermName("input")
-  protected[this] val keyspaceType = tq"com.outworkers.phantom.connectors.KeySpace"
+  protected[this] val keyspaceType = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
   private[this] val hnilTpe: Tree = tq"_root_.shapeless.HNil"
 
   val knownList = List("Any", "Object", "RootConnector")
@@ -186,7 +186,10 @@ trait RootMacro {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.sortBy(_.left.index).map { m => q"$tableTerm.${m.right.name}.apply($rowTerm)" }
+        val columnNames = matched.sortBy(_.left.index).map { m =>
+          q"$tableTerm.${m.right.name}.apply($rowTerm)"
+        }
+
         Some(q"""new $recordType(..$columnNames)""")
       } else {
         None
@@ -389,10 +392,14 @@ trait RootMacro {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
         (Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => tupleTerm(index)
-        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) => Record.Field(term, tp, index) }
+        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) =>
+          Record.Field(term, tp, index)
+        }
 
       case sym if sym.isClass && sym.asClass.isCaseClass =>
-        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) => Record.Field(nm.toTermName, tp, i) }
+        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) =>
+          Record.Field(nm.toTermName, tp, i)
+        }
 
       case _ => Seq.empty[Record.Field]
     }
@@ -406,14 +413,13 @@ trait RootMacro {
     exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
   ): Seq[Symbol] = {
     val tpe = weakTypeOf[T].typeSymbol.typeSignature
-
     (
       for {
         baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-      ) (collection.breakOut) distinct
+    )(collection.breakOut) distinct
   }
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
@@ -445,9 +451,15 @@ trait RootMacro {
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
-            case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
+            case _ => c.abort(
+              c.enclosingPosition,
+              "Expected exactly one type parameter provided for root column type"
+            )
           }
-        case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
+        case None => c.abort(
+          c.enclosingPosition,
+          s"Could not find root column type for ${member.asModule.name}"
+        )
       }
     }
   }
