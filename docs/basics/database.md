@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.websudos/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Phantom offers an interesting first class citizen construct called the `Database` class. It seems quite simple, but it is designed to serve several purposes simultaneously:
@@ -22,7 +23,7 @@ At the very bottom level, phantom queries require several implicits in scope to 
 
 However, from an app or service consumer perspective, when pulling in dependencies or calling a database service, as a developer I do not want to be concerned with providing a `session` or a `keySpace`. Under some circumstances I may want to provide a custom `ExecutionContext` but that's a different story.
 
-That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector` to its companion `ConcreteTable` class. Let's look at an example:
+That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector`.
 
 ```scala
 case class Recipe(
@@ -37,17 +38,17 @@ case class Recipe(
 
 class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn with PartitionKey[String]
+  object url extends StringColumn with PartitionKey
 
   object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
   object servings extends OptionalIntColumn
 
   object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
   object uid extends UUIDColumn
 }
@@ -55,7 +56,6 @@ class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
 ```scala
-
 
 import com.datastax.driver.core.Session
 
@@ -65,15 +65,16 @@ trait RootConnector {
 
   implicit def session: Session
 }
-
 ```
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
 
 ```scala
-class RecipesDatabase(override val connector: KeySpaceDef) extends Database[RecipesDatabase](connector) {
+class RecipesDatabase(
+  override val connector: CassandraConnection
+) extends Database[RecipesDatabase](connector) {
 
-  object recipes extends ConcreteRecipes with connector.Connector
+  object recipes extends Recipes with Connector
 
 }
 ```
@@ -108,9 +109,11 @@ This is pretty simple in its design, it simply aims to provide a simple way of i
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDatabase](connector) {
-  object users extends ConcreteUsers with connector.Connector
-  object usersByEmail extends ConcreteUsersByEmail with connector.Connector
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
+  object users extends Users with Connector
+  object usersByEmail extends UsersByEmail with Connector
 }
 
 
@@ -119,7 +122,7 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDat
 trait AppDatabase extends DatabaseProvider[AppDatabase]
 
 trait UserService extends AppDatabase {
-  
+
   /**
    * Stores a user into the database guaranteeing application level consistency of data.
    * E.g we have two tables, one indexing users by ID and another indexing users by email.
@@ -130,13 +133,13 @@ trait UserService extends AppDatabase {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- database.users.store(user)
-      byEmail <- database.usersByEmail.store(user)
+      byId <- db.users.store(user)
+      byEmail <- db.usersByEmail.store(user)
     } yield byEmail
   }
 
-  def findById(id: UUID): Future[Option[User]] = database.users.findById(id)
-  def findByEmail(email: String): Future[Option[User]] = database.usersByEmail.findByEmail(email)
+  def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
+  def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
 }
 ```
 
@@ -150,7 +153,6 @@ Pretty much the only thing left is the `ResultSet`, and we can get rid of that t
 #### Using the DatabaseProvider to specify environments
 
 Ok, so now we have all the elements in place to create the cake pattern, the next step is to basically flesh out the environments we want. In almost 99% of all cases, we only have two provider traits in our entire app, one for `production` or runtime mode, the other for `test`, since we often want a test cluster to fire requests against during the `sbt test` phase.
-
 
 Let's go ahead and create two complete examples. We are going to make some simple assumptions about how settings for Cassandra look like in production/runtime vs tests, but don't take those seriously, they are just for example purposes more than anything, to show you what you can do with the phantom API.
 
@@ -179,7 +181,7 @@ And this is how you would use that provider trait now. We're going to assume Sca
 
 import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.outworkers.phantom.dsl.context
 
 class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
@@ -190,17 +192,17 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
     // all our tables will now be initialised automatically against the target keyspace.
     database.create()
   }
-  
+
   it should "store a user using the user service and retrieve it by id and email" in {
     val user = User(...)
-    
+
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)
       byEmail <- userService.findByEmail(user.email)
     } yield (byId, byEmail)
 
-    whenReady(chain) { case (byId, byEmail) => 
+    whenReady(chain) { case (byId, byEmail) =>
       byId shouldBe defined
       byId.value shouldEqual user
 
@@ -245,7 +247,10 @@ When you later call `database.create` or `database.createAsync` or any other fla
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDatabase](connector) {
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
+
   object users extends Users with Connector {
     def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
       create.ifNotExists()(keySpace)
@@ -256,7 +261,7 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDat
         .and(dclocal_read_repair_chance eqs 5D)
     }
   }
-  object usersByEmail extends ConcreteUsersByEmail with connector.Connector
+  object usersByEmail extends UsersByEmail with Connector
 }
 
 ```
@@ -264,7 +269,15 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database[UserDat
 By default, `autocreate` will simply try and perform a lightweight create query, as follows, which in the final CQL query will look very familiar. This is a simple example not related to any of the above examples.
 
 ```scala
-def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
+def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+  create.ifNotExists()(keySpace)
+}
 
-// CREATE TABLE IF NOT EXISTS $keyspace.$table (id uuid, name text, unixTimestamp timestamp, PRIMARY KEY (id, unixTimestamp))
+```sql
+CREATE TABLE IF NOT EXISTS $keyspace.$table (
+  id uuid,
+  name text,
+  unixTimestamp timestamp,
+  PRIMARY KEY (id, unixTimestamp)
+)
 ```
