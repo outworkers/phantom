@@ -42,7 +42,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c)
     val tpe = weakTypeOf[T]
     val tableSymbol = tq"com.outworkers.phantom.CassandraTable[_, _]"
 
-    val accessors = filterDecls[CassandraTable[_, _]](tpe)
+    val accessors = filterMembers[CassandraTable[_, _]](tpe)
 
     val prefix = q"com.outworkers.phantom.database"
 
