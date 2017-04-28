@@ -22,10 +22,10 @@ and how up to date they are.
 
 | Driver | Language | Commercial | Type-safe | Schema Safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
 | ------ | -------- | ---------- | --------- | ----------- | ------------- | --------| --- | --------- | ------ | ------- | -------- |
-| Java Driver     | Java  | [x] | []  | []  | []  | []  | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
+| Java Driver     | Java  | [x] | [-] | [-] | [-] | [-] | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
 | Phantom         | Scala | [x] | [x] | [x] | [x] | [x] | EDSL | 3.8.0 | 3.1.0 | High | 2013 |
-| Spark Connector | Scala | [x] | [x] | [x] | []  | []  | EDSL | 3.0   | 3.0.0 | High | 2014 |
-| Quill           | Scala | []  | [x] | []  | [x] | []  | QDSL | 3.8.0 | 3.8.0 | High | 2015 |
+| Spark Connector | Scala | [x] | [x] | [x] | [-] | [-] | EDSL | 3.0   | 3.0.0 | High | 2014 |
+| Quill           | Scala | [-] | [x] | [-] | [x] | [-] | QDSL | 3.8.0 | 3.8.0 | High | 2015 |
 
 
 ### An overview of the various drivers and using them from Scala
