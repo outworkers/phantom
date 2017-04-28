@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import java.util.concurrent.TimeUnit
 
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
@@ -394,6 +395,24 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         ).queryString
 
         qb shouldEqual "frozen<list<frozen<tuple<bigint, text>>>>"
+      }
+
+      "generate a frozen collection if its used as a partition key " in {
+
+        val stringP = Primitive[String]
+
+        val cType = TestDatabase.primaryCollectionsTable.listIndex.cassandraType
+
+        cType shouldEqual s"frozen<list<${stringP.cassandraType}>>"
+      }
+
+      "generate a frozen collection if its used as a primary key " in {
+
+        val stringP = Primitive[String]
+
+        val cType = TestDatabase.primaryCollectionsTable.setCol.cassandraType
+
+        cType shouldEqual s"frozen<set<${stringP.cassandraType}>>"
       }
     }
   }

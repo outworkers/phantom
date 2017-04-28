@@ -24,26 +24,29 @@ import scala.concurrent.Future
 
 case class TupleRecord(id: UUID, tp: (String, Long))
 
-class TupleColumnTable extends CassandraTable[ConcreteTupleColumnTable, TupleRecord] {
+abstract class TupleColumnTable extends CassandraTable[
+  TupleColumnTable,
+  TupleRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, Long)](this)
-}
-
-abstract class ConcreteTupleColumnTable extends TupleColumnTable with RootConnector {
 
   def findById(id: UUID): Future[Option[TupleRecord]] = {
     select.where(_.id eqs id).one()
   }
 }
 
-case class NestedTupleRecord(id: UUID, tp: (String, (String, Long)))
+case class NestedTupleRecord(
+  id: UUID,
+  tp: (String, (String, Long))
+)
 
-class NestedTupleColumnTable extends CassandraTable[ConcreteNestedTupleColumnTable, NestedTupleRecord] {
+abstract class NestedTupleColumnTable extends CassandraTable[
+  NestedTupleColumnTable,
+  NestedTupleRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object tp extends TupleColumn[(String, (String, Long))](this)
-}
-
-abstract class ConcreteNestedTupleColumnTable extends NestedTupleColumnTable with RootConnector {
 
   def findById(id: UUID): Future[Option[NestedTupleRecord]] = {
     select.where(_.id eqs id).one()
@@ -56,13 +59,14 @@ case class TupleCollectionRecord(
   uniqueTuples: Set[(Int, String)]
 )
 
-class TupleCollectionsTable extends CassandraTable[ConcreteTupleCollectionsTable, TupleCollectionRecord] {
+abstract class TupleCollectionsTable extends CassandraTable[
+  TupleCollectionsTable,
+  TupleCollectionRecord
+] with RootConnector {
+
   object id extends UUIDColumn(this) with PartitionKey
   object tuples extends ListColumn[(Int, String)](this)
   object uniqueTuples extends SetColumn[(Int, String)](this)
-}
-
-abstract class ConcreteTupleCollectionsTable extends TupleCollectionsTable with RootConnector {
 
   def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
     select.where(_.id eqs id).one()

@@ -41,10 +41,8 @@ class StaticColumnTest extends PhantomSuite {
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
     } yield select
 
-    whenReady(chain) {
-      res => {
-        res.value.static shouldEqual static
-      }
+    whenReady(chain) { res =>
+      res.value.static shouldEqual static
     }
   }
 
@@ -66,10 +64,9 @@ class StaticColumnTest extends PhantomSuite {
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
     } yield select
 
-    whenReady(chain) {
-      res =>
-        // The first record should hold the updated value.
-        res.value.static shouldEqual static2
+    whenReady(chain) { res =>
+      // The first record should hold the updated value.
+      res.value.static shouldEqual static2
     }
   }
 
@@ -99,8 +96,8 @@ class StaticColumnTest extends PhantomSuite {
         .one()
     } yield rec
 
-    whenReady(chain) {
-      res => res.value.list shouldEqual sample.list ::: List("test")
+    whenReady(chain) { res =>
+      res.value.list shouldEqual sample.list ::: List("test")
     }
   }
 
