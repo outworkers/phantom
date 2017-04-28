@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 function check_java_version {
   if type -p java; then
