@@ -21,7 +21,7 @@ and how up to date they are.
 
 
 | Driver | Language | Commercial | Type-safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
-| ------ | -------- | ----- | ------------------ | --------- | ------------- | ---------------- | --- | -------- | ---- | ----- | ----- |
+| ------ | -------- | ---------- | --------- | ------------- | ------- | --- | --------- | ------ | -------- | ------- |
 | Datastax Java Driver | Java | yes | no | no | no | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
 | Phantom | Scala | yes | yes | no | yes | EDSL | 3.8.0 | 3.1.0 | High | 2013 |
 | Spark Connector | Scala | yes | yes | yes | no | EDSL | 3.0 | High | 2014 |
