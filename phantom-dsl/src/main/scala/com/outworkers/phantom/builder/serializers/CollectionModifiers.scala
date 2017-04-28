@@ -209,9 +209,10 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     colType: String,
     cassandraType: String,
     shouldFreeze: Boolean,
-    freezeInner: Boolean
+    freezeInner: Boolean,
+    static: Boolean
   ): CQLQuery = {
-    (shouldFreeze, freezeInner) match {
+    val root = (shouldFreeze, freezeInner) match {
       case (true, true) =>
         // frozen<list<frozen<tuple<string, string>>>
         frozen(diamond(colType, frozen(cassandraType).queryString))
@@ -222,6 +223,12 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       case (false, true) => diamond(colType, frozen(cassandraType).queryString)
         // list<string>
       case (false, false) => diamond(colType, cassandraType)
+    }
+
+    if (static) {
+      root.pad.append("static")
+    } else {
+      root
     }
   }
 

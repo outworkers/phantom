@@ -61,7 +61,8 @@ class SetColumn[
     CQLSyntax.Collections.set,
     valuePrimitive.cassandraType,
     shouldFreeze,
-    valuePrimitive.frozen
+    valuePrimitive.frozen,
+    isStaticColumn
   ).queryString
 
   override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)

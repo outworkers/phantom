@@ -365,5 +365,36 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
     }
 
+    "should generate a correct cassandra type for collections " - {
+      "freeze a collection type without a frozen inner type" in {
+        val qb = QueryBuilder.Collections.collectionType(
+          colType = CQLSyntax.Collections.list,
+          cassandraType = CQLSyntax.Types.BigInt,
+          shouldFreeze = true,
+          freezeInner = false,
+          static = false
+        ).queryString
+
+        qb shouldEqual "frozen<list<bigint>>"
+      }
+
+      "freeze a collection type with a frozen inner type" in {
+
+        val tpe = QueryBuilder.Collections.tupleType(
+          CQLSyntax.Types.BigInt,
+          CQLSyntax.Types.Text
+        ).queryString
+
+        val qb = QueryBuilder.Collections.collectionType(
+          colType = CQLSyntax.Collections.list,
+          cassandraType = tpe,
+          shouldFreeze = true,
+          freezeInner = true,
+          static = false
+        ).queryString
+
+        qb shouldEqual "frozen<list<frozen<tuple<bigint, text>>>>"
+      }
+    }
   }
 }
