@@ -21,6 +21,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
@@ -43,27 +44,18 @@ class ListColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
   RR : Primitive
-](table: CassandraTable[Owner, Record])
-  extends AbstractListColumn[Owner, Record, RR](table)
-  with PrimitiveCollectionValue[RR] {
+](
+  table: CassandraTable[Owner, Record]
+) extends AbstractListColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive = Primitive[RR]
 
-  override val cassandraType = QueryBuilder.Collections.listType(valuePrimitive.cassandraType).queryString
-
-  override def qb: CQLQuery = {
-    if (shouldFreeze) {
-      QueryBuilder.Collections.frozen(name, cassandraType)
-    } else if (valuePrimitive.frozen) {
-      CQLQuery(name).forcePad.append(
-        QueryBuilder.Collections.listType(
-          QueryBuilder.Collections.frozen(valuePrimitive.cassandraType).queryString
-        )
-      )
-    } else {
-      CQLQuery(name).forcePad.append(cassandraType)
-    }
-  }
+  override val cassandraType = QueryBuilder.Collections.collectionType(
+    CQLSyntax.Collections.list,
+    valuePrimitive.cassandraType,
+    shouldFreeze,
+    valuePrimitive.frozen
+  ).queryString
 
   override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)
 

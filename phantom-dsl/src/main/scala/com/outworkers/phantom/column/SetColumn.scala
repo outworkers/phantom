@@ -21,6 +21,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.annotation.implicitNotFound
 import scala.util.{Failure, Success, Try}
@@ -35,10 +36,9 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
       case Success(set) => set
 
       // Note null sets are considered successful, we simply return an empty set instead of null.
-      case Failure(ex) => {
+      case Failure(ex) =>
         table.logger.error(ex.getMessage)
         throw ex
-      }
     }
   }
 
@@ -47,22 +47,22 @@ abstract class AbstractSetColumn[Owner <: CassandraTable[Owner, Record], Record,
 
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class SetColumn[Owner <: CassandraTable[Owner, Record], Record, RR : Primitive](table: CassandraTable[Owner, Record])
-    extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
+class SetColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  RR : Primitive
+](
+  table: CassandraTable[Owner, Record]
+) extends AbstractSetColumn[Owner, Record, RR](table) with PrimitiveCollectionValue[RR] {
 
   override val valuePrimitive: Primitive[RR] = Primitive[RR]
 
-  val cassandraType: String = QueryBuilder.Collections.setType(valuePrimitive.cassandraType).queryString
-
-  override def qb: CQLQuery = {
-    if (shouldFreeze) {
-      QueryBuilder.Collections.frozen(name, cassandraType)
-    } else if (valuePrimitive.frozen) {
-      CQLQuery(name).forcePad.append(QueryBuilder.Collections.frozen(valuePrimitive.cassandraType))
-    } else {
-      CQLQuery(name).forcePad.append(cassandraType)
-    }
-  }
+  val cassandraType: String = QueryBuilder.Collections.collectionType(
+    CQLSyntax.Collections.set,
+    valuePrimitive.cassandraType,
+    shouldFreeze,
+    valuePrimitive.frozen
+  ).queryString
 
   override def valueAsCql(v: RR): String = Primitive[RR].asCql(v)
 

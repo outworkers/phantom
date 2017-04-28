@@ -71,15 +71,11 @@ class RootMacro(val c: blackbox.Context) {
   }
 
   object Record {
-
     case class Field(name: TermName, tpe: Type, index: Int) extends RootField
-
   }
 
   object Column {
-
     case class Field(name: TermName, tpe: Type) extends RootField
-
   }
 
   def caseFields(tpe: Type): Seq[(Name, Type)] = {
@@ -381,18 +377,23 @@ class RootMacro(val c: blackbox.Context) {
     source.declarations.sorted.filter(_.typeSignature <:< typeOf[Filter])
   }
 
-  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
-    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+  def filterMembers[Filter : TypeTag](
+    tpe: Type,
+    exclusions: Symbol => Option[Symbol]
   ): Seq[Symbol] = {
-    val tpe = weakTypeOf[T].typeSymbol.typeSignature
-
     (
       for {
         baseClass <- tpe.baseClasses.reverse.flatMap(exclusions(_))
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-      ) (collection.breakOut) distinct
+    ) (collection.breakOut) distinct
+  }
+
+  def filterMembers[T : WeakTypeTag, Filter : TypeTag](
+    exclusions: Symbol => Option[Symbol] = { s: Symbol => Some(s) }
+  ): Seq[Symbol] = {
+    filterMembers[Filter](weakTypeOf[T], exclusions)
   }
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
