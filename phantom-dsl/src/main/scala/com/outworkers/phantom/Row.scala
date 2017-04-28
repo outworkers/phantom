@@ -66,9 +66,9 @@ class Row(val inner: DatastaxRow, val version: ProtocolVersion) {
 
   def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
 
-  def isNull(name: String): Boolean = Try(inner.isNull(name)).getOrElse(false)
+  def isNull(name: String): Boolean = Try(inner.isNull(name)).getOrElse(true)
 
-  def isNull(index: Int): Boolean = Try(inner.isNull(index)).getOrElse(false)
+  def isNull(index: Int): Boolean = Try(inner.isNull(index)).getOrElse(true)
 }
 
 

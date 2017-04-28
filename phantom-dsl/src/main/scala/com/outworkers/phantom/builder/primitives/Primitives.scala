@@ -137,8 +137,8 @@ object Primitives {
     override def fromString(value: String): String = value
 
     override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
-      if (obj == Primitive.nullValue || obj.length == 0) {
-        ByteBuffer.wrap("".getBytes(Charsets.UTF_8))
+      if (obj == Primitive.nullValue) {
+        Primitive.nullValue
       } else {
         ByteBuffer.wrap(obj.getBytes(charset))
       }
