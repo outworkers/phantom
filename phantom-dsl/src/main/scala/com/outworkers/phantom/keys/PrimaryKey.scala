@@ -60,5 +60,5 @@ trait Entries {
 
 trait StaticColumn extends Key[StaticColumn] {
   self: AbstractColumn[_] =>
-  abstract override val isStaticColumn = true
+  abstract override def isStaticColumn: Boolean = true
 }

@@ -31,7 +31,9 @@ import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
-  private[this] val BasicTable = TestDatabase.basicTable
+  def db: TestDatabase = TestDatabase
+
+  private[this] val BasicTable = db.basicTable
   final val DefaultTtl = 500
   final val OneDay = 86400
 
@@ -366,6 +368,14 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
     }
 
+    "should account for static modifiers on a collection" - {
+      "add a static column modifier on a simple collection" in {
+        val stringP = Primitive[String]
+
+        db.staticCollectionTable.staticList.cassandraType shouldEqual s"list<${stringP.cassandraType}> static"
+      }
+    }
+
     "should generate a correct cassandra type for collections " - {
       "freeze a collection type without a frozen inner type" in {
         val qb = QueryBuilder.Collections.collectionType(
@@ -401,7 +411,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         val stringP = Primitive[String]
 
-        val cType = TestDatabase.primaryCollectionsTable.listIndex.cassandraType
+        val cType = db.primaryCollectionsTable.listIndex.cassandraType
 
         cType shouldEqual s"frozen<list<${stringP.cassandraType}>>"
       }
@@ -410,7 +420,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         val stringP = Primitive[String]
 
-        val cType = TestDatabase.primaryCollectionsTable.setCol.cassandraType
+        val cType = db.primaryCollectionsTable.setCol.cassandraType
 
         cType shouldEqual s"frozen<set<${stringP.cassandraType}>>"
       }
