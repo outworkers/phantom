@@ -20,12 +20,12 @@ are with Cassandra and the support they offer, to their level of activity
 and how up to date they are.
 
 
-| Driver | Language | Commercial | Type-safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
+| Driver | Language | Commercial support | Type-safe | Schema Safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
 | ------ | -------- | ---------- | --------- | ------------- | ------- | --- | --------- | ------ | -------- | ------- |
-| Datastax Java Driver | Java | yes | no | no | no | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
-| Phantom | Scala | yes | yes | no | yes | EDSL | 3.8.0 | 3.1.0 | High | 2013 |
-| Spark Connector | Scala | yes | yes | yes | no | EDSL | 3.0 | High | 2014 |
-| Quill | Scala | no | yes | no | yes | QDSL | 3.8.0 | 2015 |
+| Java Driver     | Java  | [x] | []  | []  | []  | []  | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
+| Phantom         | Scala | [x] | [x] | [x] | [x] | [x] | EDSL | 3.8.0 | 3.1.0 | High | 2013 |
+| Spark Connector | Scala | [x] | [x] | [x] | []  | []  | EDSL | 3.0   | 3.0.0 | High | 2014 |
+| Quill           | Scala | []  | [x] | []  | [x] | []  | QDSL | 3.8.0 | 3.8.0 | High | 2015 |
 
 
 ### An overview of the various drivers and using them from Scala
