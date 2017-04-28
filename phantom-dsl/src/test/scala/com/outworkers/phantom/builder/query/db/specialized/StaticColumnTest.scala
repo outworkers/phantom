@@ -76,18 +76,21 @@ class StaticColumnTest extends PhantomSuite {
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
-    val qb = database.staticCollectionTable.update.where(_.id eqs id)
-      .and(_.clusteringId eqs sample.clustering)
-      .modify(_.staticList append "test")
-      .queryString
-
-    val chain = for {
-      store1 <- database.staticCollectionTable.store(sample).future()
-      store2 <- database.staticCollectionTable.store(sample2).future()
-      update <- database.staticCollectionTable.update.where(_.id eqs id)
+    val updateQuery = if (cassandraVersion.value >= Version.`3.0.0`) {
+      db.staticCollectionTable.update.where(_.id eqs id)
         .and(_.clusteringId eqs sample.clustering)
         .modify(_.staticList append "test")
         .future()
+    } else {
+      db.staticCollectionTable.update.where(_.id eqs id)
+        .modify(_.staticList append "test")
+        .future()
+    }
+
+    val chain = for {
+      store1 <- db.staticCollectionTable.store(sample).future()
+      store2 <- db.staticCollectionTable.store(sample2).future()
+      update <- updateQuery
 
       rec <- database.staticCollectionTable
         .select
