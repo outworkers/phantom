@@ -21,6 +21,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.StaticCollectionRecord
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Future
+
 class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -76,7 +78,7 @@ class StaticColumnTest extends PhantomSuite {
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
-    val updateQuery = if (cassandraVersion.value >= Version.`3.0.0`) {
+    def updateQuery: Future[ResultSet] = if (cassandraVersion.value >= Version.`3.0.0`) {
       db.staticCollectionTable.update.where(_.id eqs id)
         .and(_.clusteringId eqs sample.clustering)
         .modify(_.staticList append "test")
