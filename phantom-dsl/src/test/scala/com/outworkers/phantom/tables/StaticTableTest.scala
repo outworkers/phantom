@@ -19,17 +19,21 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
-case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
+case class StaticCollectionSingle(
+  id: UUID,
+  clusteringId: UUID,
+  static: String
+)
 
-sealed class StaticTableTest extends CassandraTable[ConcreteStaticTableTest, StaticCollectionSingle] {
+abstract class StaticTableTest extends Table[
+  StaticTableTest,
+  StaticCollectionSingle
+] with RootConnector {
 
   object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object clusteringId extends UUIDColumn(this) with ClusteringOrder with Descending
   object staticTest extends StringColumn(this) with StaticColumn
 }
-
-abstract class ConcreteStaticTableTest extends StaticTableTest with RootConnector
-
 
 case class StaticCollectionRecord(
   id: UUID,
@@ -37,12 +41,12 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-abstract class StaticCollectionTableTest extends CassandraTable[
+abstract class StaticCollectionTableTest extends Table[
   StaticCollectionTableTest,
   StaticCollectionRecord
 ] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with PrimaryKey with ClusteringOrder with Descending
+  object clusteringId extends UUIDColumn(this) with ClusteringOrder with Descending
   object staticList extends ListColumn[String](this) with StaticColumn
 }
 

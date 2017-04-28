@@ -54,7 +54,8 @@ class ListColumn[
     CQLSyntax.Collections.list,
     valuePrimitive.cassandraType,
     shouldFreeze,
-    valuePrimitive.frozen
+    valuePrimitive.frozen,
+    isStaticColumn
   ).queryString
 
   override def valueAsCql(v: RR): String = valuePrimitive.asCql(v)

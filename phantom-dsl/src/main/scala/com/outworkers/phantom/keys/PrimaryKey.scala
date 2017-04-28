@@ -46,7 +46,7 @@ trait Index extends Indexed with Undroppable {
 }
 
 trait Keys {
-  self : Index with AbstractColumn[_] =>
+  self: Index with AbstractColumn[_] =>
 
   abstract override def isMapKeyIndex: Boolean = true
 }
@@ -55,4 +55,10 @@ trait Entries {
   self: Index with AbstractColumn[_] =>
 
   abstract override def isMapEntryIndex: Boolean = true
+}
+
+
+trait StaticColumn extends Key[StaticColumn] {
+  self: AbstractColumn[_] =>
+  abstract override def isStaticColumn: Boolean = true
 }

@@ -20,33 +20,26 @@ import com.outworkers.phantom.dsl._
 
 case class CounterRecord(id: UUID, count: Long)
 
-class CounterTableTest extends CassandraTable[ConcreteCounterTableTest, CounterRecord] {
-
+abstract class CounterTableTest extends Table[
+  CounterTableTest,
+  CounterRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
 }
 
-abstract class ConcreteCounterTableTest extends CounterTableTest with RootConnector {
-  override val tableName = "counter_column_tests"
-}
-
-class SecondaryCounterTable extends CassandraTable[ConcreteSecondaryCounterTable, CounterRecord] {
+abstract class SecondaryCounterTable extends Table[
+  SecondaryCounterTable,
+  CounterRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
 }
 
-abstract class ConcreteSecondaryCounterTable extends SecondaryCounterTable with RootConnector {
-  override val tableName = "secondary_column_tests"
-}
-
-class BrokenCounterTableTest extends CassandraTable[ConcreteBrokenCounterTableTest, CounterRecord] {
-
+abstract class BrokenCounterTableTest extends CassandraTable[
+  BrokenCounterTableTest,
+  CounterRecord
+] with RootConnector {
   object id extends UUIDColumn(this) with PartitionKey
   object count_entries extends CounterColumn(this)
-
 }
-
-abstract class ConcreteBrokenCounterTableTest extends BrokenCounterTableTest with RootConnector {
-  override val tableName = "counter_column_tests"
-}
-

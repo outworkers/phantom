@@ -104,7 +104,7 @@ trait ExecutableStatement extends CassandraOperations {
 }
 
 private[this] object SequentialFutures {
-    def sequencedTraverse[
+  def sequencedTraverse[
     A,
     B,
     M[X] <: TraversableOnce[X]

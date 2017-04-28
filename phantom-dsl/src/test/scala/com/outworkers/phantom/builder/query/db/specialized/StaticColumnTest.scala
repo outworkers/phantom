@@ -21,6 +21,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.StaticCollectionRecord
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Future
+
 class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -41,10 +43,8 @@ class StaticColumnTest extends PhantomSuite {
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
     } yield select
 
-    whenReady(chain) {
-      res => {
-        res.value.static shouldEqual static
-      }
+    whenReady(chain) { res =>
+      res.value.static shouldEqual static
     }
   }
 
@@ -66,10 +66,9 @@ class StaticColumnTest extends PhantomSuite {
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
     } yield select
 
-    whenReady(chain) {
-      res =>
-        // The first record should hold the updated value.
-        res.value.static shouldEqual static2
+    whenReady(chain) { res =>
+      // The first record should hold the updated value.
+      res.value.static shouldEqual static2
     }
   }
 
@@ -79,18 +78,21 @@ class StaticColumnTest extends PhantomSuite {
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
-    val qb = database.staticCollectionTable.update.where(_.id eqs id)
-      .and(_.clusteringId eqs sample.clustering)
-      .modify(_.staticList append "test")
-      .queryString
-
-    val chain = for {
-      store1 <- database.staticCollectionTable.store(sample).future()
-      store2 <- database.staticCollectionTable.store(sample2).future()
-      update <- database.staticCollectionTable.update.where(_.id eqs id)
+    def updateQuery: Future[ResultSet] = if (cassandraVersion.value >= Version.`3.0.0`) {
+      db.staticCollectionTable.update.where(_.id eqs id)
         .and(_.clusteringId eqs sample.clustering)
         .modify(_.staticList append "test")
         .future()
+    } else {
+      db.staticCollectionTable.update.where(_.id eqs id)
+        .modify(_.staticList append "test")
+        .future()
+    }
+
+    val chain = for {
+      store1 <- db.staticCollectionTable.store(sample).future()
+      store2 <- db.staticCollectionTable.store(sample2).future()
+      update <- updateQuery
 
       rec <- database.staticCollectionTable
         .select
@@ -99,8 +101,8 @@ class StaticColumnTest extends PhantomSuite {
         .one()
     } yield rec
 
-    whenReady(chain) {
-      res => res.value.list shouldEqual sample.list ::: List("test")
+    whenReady(chain) { res =>
+      res.value.list shouldEqual sample.list ::: List("test")
     }
   }
 
