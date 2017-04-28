@@ -241,9 +241,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val innerTpe = tpe.typeArgs.headOption
 
     innerTpe match {
-      case Some(inner) => {
-        q"""$prefix.Primitives.set[$inner]"""
-      }
+      case Some(inner) => q"""$prefix.Primitives.set[$inner]"""
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
