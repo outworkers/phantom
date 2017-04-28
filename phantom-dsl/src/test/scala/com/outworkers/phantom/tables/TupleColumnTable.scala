@@ -64,9 +64,9 @@ abstract class TupleCollectionsTable extends Table[
   TupleCollectionRecord
 ] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object tuples extends ListColumn[(Int, String)](this)
-  object uniqueTuples extends SetColumn[(Int, String)](this)
+  object id extends UUIDColumn with PartitionKey
+  object tuples extends ListColumn[(Int, String)]
+  object uniqueTuples extends SetColumn[(Int, String)]
 
   def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
     select.where(_.id eqs id).one()
