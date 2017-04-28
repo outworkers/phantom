@@ -289,8 +289,10 @@ class PrimitiveMacro(val c: blackbox.Context) {
   def setPrimitive[T : WeakTypeTag](): Tree = {
     val tpe = weakTypeOf[T]
 
-    tpe.typeArgs.headOption match {
-      case Some(inner) => q"$prefix.Primitives.set[$inner]"
+    val innerTpe = tpe.typeArgs.headOption
+
+    innerTpe match {
+      case Some(inner) => q"""$prefix.Primitives.set[$inner]"""
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }

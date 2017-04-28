@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.keys
+package com.outworkers.phantom.builder.query
 
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.PhantomSuite
 
-trait StaticColumn extends Key[StaticColumn] {
-  self: AbstractColumn[_] =>
-    override val isStaticColumn = true
+class ColumnsSchemaTest extends PhantomSuite {
+
+
+  it should "automatically freeze a tuple column using a set column" in {
+
+  }
 }
