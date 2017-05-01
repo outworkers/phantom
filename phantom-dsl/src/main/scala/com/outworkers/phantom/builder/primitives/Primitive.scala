@@ -108,8 +108,6 @@ abstract class Primitive[RR] {
     nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index), r.version))
   }
 
-  def fromString(value: String): RR
-
   def frozen: Boolean = false
 }
 

@@ -588,14 +588,11 @@ object Primitives {
           }
           coll.result()
         } catch {
-          case e: BufferUnderflowException => {
+          case e: BufferUnderflowException =>
             throw new InvalidTypeException("Not enough bytes to deserialize collection", e)
-          }
         }
       }
     }
-
-    override def fromString(value: String): M[RR] = value.split(",").map(ev.fromString).to[M]
   }
 
   def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {

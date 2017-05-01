@@ -54,7 +54,7 @@ class DatabaseHelperMacro(val c: whitebox.Context) extends RootMacro {
 
     val tableList = accessors.map { sym =>
       val name = sym.asTerm.name.toTermName
-      q"""db.$name"""
+      q"db.$name"
     }
 
     val queryList = tableList.map(tb => q"$tb.autocreate(space)")

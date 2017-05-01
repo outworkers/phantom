@@ -188,8 +188,6 @@ class ThriftMapColumn[
 
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
-  override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
-
   override def parse(r: Row): Try[Map[KeyType, V]] = {
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, V])
@@ -197,6 +195,4 @@ class ThriftMapColumn[
       Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(serializer.fromString))
     }
   }
-
-  override def fromString(c: String): V = serializer.fromString(c)
 }
