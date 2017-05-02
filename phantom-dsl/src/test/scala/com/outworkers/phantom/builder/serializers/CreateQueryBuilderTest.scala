@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import java.util.concurrent.TimeUnit
 
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
@@ -30,7 +31,9 @@ import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
-  private[this] val BasicTable = TestDatabase.basicTable
+  def db: TestDatabase = TestDatabase
+
+  private[this] val BasicTable = db.basicTable
   final val DefaultTtl = 500
   final val OneDay = 86400
 
@@ -481,5 +484,62 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
     }
 
+    "should account for static modifiers on a collection" - {
+      "add a static column modifier on a simple collection" in {
+        val stringP = Primitive[String]
+
+        db.staticCollectionTable.staticList.cassandraType shouldEqual s"list<${stringP.cassandraType}> static"
+      }
+    }
+
+    "should generate a correct cassandra type for collections " - {
+      "freeze a collection type without a frozen inner type" in {
+        val qb = QueryBuilder.Collections.collectionType(
+          colType = CQLSyntax.Collections.list,
+          cassandraType = CQLSyntax.Types.BigInt,
+          shouldFreeze = true,
+          freezeInner = false,
+          static = false
+        ).queryString
+
+        qb shouldEqual "frozen<list<bigint>>"
+      }
+
+      "freeze a collection type with a frozen inner type" in {
+
+        val tpe = QueryBuilder.Collections.tupleType(
+          CQLSyntax.Types.BigInt,
+          CQLSyntax.Types.Text
+        ).queryString
+
+        val qb = QueryBuilder.Collections.collectionType(
+          colType = CQLSyntax.Collections.list,
+          cassandraType = tpe,
+          shouldFreeze = true,
+          freezeInner = true,
+          static = false
+        ).queryString
+
+        qb shouldEqual "frozen<list<frozen<tuple<bigint, text>>>>"
+      }
+
+      "generate a frozen collection if its used as a partition key " in {
+
+        val stringP = Primitive[String]
+
+        val cType = db.primaryCollectionsTable.listIndex.cassandraType
+
+        cType shouldEqual s"frozen<list<${stringP.cassandraType}>>"
+      }
+
+      "generate a frozen collection if its used as a primary key " in {
+
+        val stringP = Primitive[String]
+
+        val cType = db.primaryCollectionsTable.setCol.cassandraType
+
+        cType shouldEqual s"frozen<set<${stringP.cassandraType}>>"
+      }
+    }
   }
 }

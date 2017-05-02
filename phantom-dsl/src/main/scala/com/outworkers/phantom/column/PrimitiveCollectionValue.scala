@@ -23,6 +23,4 @@ trait PrimitiveCollectionValue[R] extends CollectionValueDefinition[R] {
   def valuePrimitive: Primitive[R]
 
   def valueAsCql(v: R): String = valuePrimitive.asCql(v)
-
-  def fromString(c: String): R = valuePrimitive.fromString(c)
 }

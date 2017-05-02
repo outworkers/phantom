@@ -205,6 +205,33 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     diamond(CQLSyntax.Collections.frozen, cassandraType)
   }
 
+  def collectionType(
+    colType: String,
+    cassandraType: String,
+    shouldFreeze: Boolean,
+    freezeInner: Boolean,
+    static: Boolean
+  ): CQLQuery = {
+    val root = (shouldFreeze, freezeInner) match {
+      case (true, true) =>
+        // frozen<list<frozen<tuple<string, string>>>
+        frozen(diamond(colType, frozen(cassandraType).queryString))
+      case (true, false) =>
+        // frozen<list<string>>
+        frozen(diamond(colType, cassandraType))
+        // list<frozen<tuple<string, string>>
+      case (false, true) => diamond(colType, frozen(cassandraType).queryString)
+        // list<string>
+      case (false, false) => diamond(colType, cassandraType)
+    }
+
+    if (static) {
+      root.pad.append("static")
+    } else {
+      root
+    }
+  }
+
   def frozen(cassandraType: CQLQuery): CQLQuery = {
     frozen(cassandraType.queryString)
   }

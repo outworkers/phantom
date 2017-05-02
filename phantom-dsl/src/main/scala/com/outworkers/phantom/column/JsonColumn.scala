@@ -30,8 +30,6 @@ sealed trait JsonDefinition[T] {
   def toJson(obj: T): String
 
   def valueAsCql(obj: T): String = CQLQuery.empty.singleQuote(toJson(obj))
-
-  def fromString(c: String): T = fromJson(c)
 }
 
 abstract class JsonColumn[
@@ -131,13 +129,11 @@ abstract class JsonMapColumn[
 
   override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 
-  override def keyFromCql(c: String): KeyType = keyPrimitive.fromString(c)
-
   override def parse(r: Row): Try[Map[KeyType,ValueType]] = {
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, ValueType])
     } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(fromString))
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(fromJson))
     }
   }
 }
