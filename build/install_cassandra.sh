@@ -15,10 +15,10 @@ function check_java_version {
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     echo version "$version"
     if [[ "$version" > "1.8" ]]; then
-      echo version is more than 1.8
+      echo "version is more than 1.8"
       return true
     else
-      echo version is less than 1.8
+      echo "version is less than 1.8"
       return false
     fi
   fi

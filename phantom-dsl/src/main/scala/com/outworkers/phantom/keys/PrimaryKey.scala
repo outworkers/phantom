@@ -27,13 +27,13 @@ private[phantom] trait Key[KeyType <: Key[KeyType]] {
 
 trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Undroppable {
   self: AbstractColumn[_] =>
-  override val isPrimary = true
+  abstract override def isPrimary: Boolean = true
 }
 
 trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Indexed with Undroppable {
   self: AbstractColumn[_] =>
-  override val isPartitionKey = true
-  override val isPrimary = true
+  abstract override def isPartitionKey: Boolean = true
+  abstract override def isPrimary: Boolean = true
 }
 
 /**
@@ -42,17 +42,23 @@ trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Indexed with
 trait Index extends Indexed with Undroppable {
   self: AbstractColumn[_] =>
 
-  override val isSecondaryKey = true
+  abstract override def isSecondaryKey: Boolean = true
 }
 
 trait Keys {
-  self : Index with AbstractColumn[_] =>
+  self: Index with AbstractColumn[_] =>
 
-  override private[phantom] val isMapKeyIndex = true
+  abstract override def isMapKeyIndex: Boolean = true
 }
 
 trait Entries {
   self: Index with AbstractColumn[_] =>
 
-  override private[phantom] val isMapEntryIndex = true
+  abstract override def isMapEntryIndex: Boolean = true
+}
+
+
+trait StaticColumn extends Key[StaticColumn] {
+  self: AbstractColumn[_] =>
+  abstract override def isStaticColumn: Boolean = true
 }

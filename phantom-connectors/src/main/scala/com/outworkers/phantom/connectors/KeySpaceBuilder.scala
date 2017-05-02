@@ -100,4 +100,6 @@ trait KeySpaceCQLQuery {
   def keyspace: String
 
   def queryString: String
+
+  def space: String
 }

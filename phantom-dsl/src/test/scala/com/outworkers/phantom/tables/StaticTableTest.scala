@@ -19,7 +19,11 @@ import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
-case class StaticCollectionSingle(id: UUID, clusteringId: UUID, static: String)
+case class StaticCollectionSingle(
+  id: UUID,
+  clusteringId: UUID,
+  static: String
+)
 
 abstract class StaticTableTest extends Table[
   StaticTableTest,
