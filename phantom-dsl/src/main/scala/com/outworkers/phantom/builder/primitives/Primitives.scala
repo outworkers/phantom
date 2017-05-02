@@ -161,8 +161,6 @@ object Primitives {
 
     override def cassandraType: String = CQLSyntax.Types.Int
 
-    override def fromString(value: String): Int = value.toInt
-
     override def serialize(obj: Int, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putInt(0, obj)
     }
@@ -186,8 +184,6 @@ object Primitives {
 
     override def cassandraType: String = CQLSyntax.Types.SmallInt
 
-    override def fromString(value: String): Short = value.toShort
-
     override def serialize(obj: Short, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putShort(0, obj)
     }
@@ -207,8 +203,6 @@ object Primitives {
     def asCql(value: Byte): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.TinyInt
-
-    override def fromString(value: String): Byte = value.toByte
 
     override def serialize(obj: Byte, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(1)
@@ -235,8 +229,6 @@ object Primitives {
 
     override def cassandraType: String = CQLSyntax.Types.Double
 
-    override def fromString(value: String): Double = java.lang.Double.parseDouble(value)
-
     override def serialize(obj: Double, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putDouble(0, obj)
     }
@@ -260,8 +252,6 @@ object Primitives {
     def asCql(value: Long): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.BigInt
-
-    override def fromString(value: String): Long = java.lang.Long.parseLong(value)
 
     override def serialize(obj: Long, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(byteLength)
@@ -290,8 +280,6 @@ object Primitives {
 
     override def cassandraType: String = CQLSyntax.Types.Float
 
-    override def fromString(value: String): Float = java.lang.Float.parseFloat(value)
-
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Float = {
       checkNullsAndLength(
         bytes,
@@ -315,8 +303,6 @@ object Primitives {
     def asCql(value: UUID): String = value.toString
 
     override def cassandraType: String = CQLSyntax.Types.UUID
-
-    override def fromString(value: String): UUID = UUID.fromString(value)
 
     override def serialize(obj: UUID, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { value =>
@@ -351,12 +337,6 @@ object Primitives {
 
     override def asCql(value: Boolean): String = value.toString
 
-    override def fromString(value: String): Boolean = value match {
-      case "true" => true
-      case "false" => false
-      case _ => throw new Exception(s"Couldn't parse a boolean value from $value")
-    }
-
     override def serialize(obj: Boolean, version: ProtocolVersion): ByteBuffer = {
       if (obj) TRUE.duplicate else FALSE.duplicate
     }
@@ -378,8 +358,6 @@ object Primitives {
     val cassandraType = CQLSyntax.Types.Decimal
 
     override def asCql(value: BigDecimal): String = value.toString()
-
-    override def fromString(value: String): BigDecimal = BigDecimal(value)
 
     override def serialize(obj: BigDecimal, version: ProtocolVersion): ByteBuffer = {
       obj match {
@@ -421,8 +399,6 @@ object Primitives {
 
     override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
 
-    override def fromString(value: String): InetAddress = InetAddress.getByName(value)
-
     override def serialize(obj: InetAddress, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { i => ByteBuffer.wrap(i.getAddress) }
     }
@@ -447,8 +423,6 @@ object Primitives {
 
     override def asCql(value: BigInt): String = value.toString()
 
-    override def fromString(value: String): BigInt = BigInt(value)
-
     override def serialize(obj: BigInt, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj)(bi =>  ByteBuffer.wrap(bi.toByteArray))
     }
@@ -467,8 +441,6 @@ object Primitives {
 
     override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
 
-    override def fromString(value: String): ByteBuffer = Bytes.fromHexString(value)
-
     override def serialize(obj: ByteBuffer, version: ProtocolVersion): ByteBuffer = obj
 
     override def deserialize(source: ByteBuffer, version: ProtocolVersion): ByteBuffer = source
@@ -481,10 +453,6 @@ object Primitives {
 
     override def asCql(value: LocalDate): String = {
       DateSerializer.asCql(value)
-    }
-
-    override def fromString(value: String): LocalDate = {
-      LocalDate.fromMillisSinceEpoch(new DateTime(value, DateTimeZone.UTC).getMillis)
     }
 
     override def serialize(obj: LocalDate, version: ProtocolVersion): ByteBuffer = {
@@ -513,10 +481,6 @@ object Primitives {
 
     override def asCql(value: DateTime): String = {
       DateSerializer.asCql(value)
-    }
-
-    override def fromString(value: String): DateTime = {
-      new DateTime(value, DateTimeZone.UTC)
     }
 
     override def serialize(obj: DateTime, version: ProtocolVersion): ByteBuffer = {
@@ -632,8 +596,6 @@ object Primitives {
 
       override def cassandraType: String = ev.cassandraType
 
-      override def fromString(value: String): Option[T] = Option(ev.fromString(value))
-
       override def asCql(value: Option[T]): String = {
           value.map(ev.asCql).getOrElse(nullString)
       }
@@ -647,8 +609,6 @@ object Primitives {
       override def cassandraType: String = {
         QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
       }
-
-      override def fromString(value: String): Map[K, V] = Map.empty[K, V]
 
       override def asCql(sourceMap: Map[K, V]): String = QueryBuilder.Utils.map(sourceMap.map {
         case (key, value) => kp.asCql(key) -> vp.asCql(value)

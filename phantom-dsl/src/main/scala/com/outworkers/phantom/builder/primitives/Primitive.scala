@@ -140,8 +140,6 @@ object Primitive {
 
       override def cassandraType: String = primitive.cassandraType
 
-      override def fromString(value: String): Target = from(primitive.fromString(value))
-
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         primitive.serialize(to(obj), protocol)
       }
