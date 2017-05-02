@@ -273,8 +273,6 @@ class PrimitiveMacro(val c: blackbox.Context) {
         $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 
-      override def fromString(value: $strType): $tpe = ???
-
       override def frozen: $boolType = true
     }"""
   }
