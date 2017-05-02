@@ -34,10 +34,6 @@ private[phantom] abstract class AbstractMapColumn[
 
   def keyAsCql(v: K): String
 
-  def keyFromCql(c: String): K
-
-  override def fromString(c: String): V
-
   def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
     case (a, b) => keyAsCql(a) -> valueAsCql(b)
   }).queryString
@@ -81,11 +77,7 @@ class MapColumn[
     }
   }
 
-  override def keyFromCql(c: String): K = keyPrimitive.fromString(c)
-
   override def valueAsCql(v: V): String = valuePrimitive.asCql(v)
-
-  override def fromString(c: String): V = valuePrimitive.fromString(c)
 
   override def parse(r: Row): Try[Map[K, V]] = {
     if (r.isNull(name)) {

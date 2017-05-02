@@ -108,8 +108,6 @@ abstract class Primitive[RR] {
     nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index), r.version))
   }
 
-  def fromString(value: String): RR
-
   def frozen: Boolean = false
 }
 
@@ -141,8 +139,6 @@ object Primitive {
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
       override def cassandraType: String = primitive.cassandraType
-
-      override def fromString(value: String): Target = from(primitive.fromString(value))
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         primitive.serialize(to(obj), protocol)

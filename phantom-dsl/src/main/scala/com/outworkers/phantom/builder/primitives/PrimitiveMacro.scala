@@ -273,8 +273,6 @@ class PrimitiveMacro(val c: blackbox.Context) {
         $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 
-      override def fromString(value: $strType): $tpe = ???
-
       override def frozen: $boolType = true
     }"""
   }
@@ -287,9 +285,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
   }
 
   def setPrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
-
-    tpe.typeArgs.headOption match {
+    weakTypeOf[T].typeArgs.headOption match {
       case Some(inner) => q"$prefix.Primitives.set[$inner]"
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }

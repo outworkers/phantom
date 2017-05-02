@@ -31,7 +31,7 @@ abstract class StaticTableTest extends Table[
 ] with RootConnector {
 
   object id extends UUIDColumn with PartitionKey
-  object clusteringId extends UUIDColumn with PrimaryKey with ClusteringOrder with Descending
+  object clusteringId extends UUIDColumn with ClusteringOrder with Descending
   object staticTest extends StringColumn with StaticColumn
 }
 
@@ -41,11 +41,11 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-abstract class StaticCollectionTable extends CassandraTable[
+abstract class StaticCollectionTable extends Table[
   StaticCollectionTable,
   StaticCollectionRecord
 ] with RootConnector {
   object id extends UUIDColumn with PartitionKey
-  object clusteringId extends UUIDColumn with PrimaryKey with ClusteringOrder with Descending
+  object clusteringId extends UUIDColumn with ClusteringOrder with Descending
   object staticList extends ListColumn[String] with StaticColumn
 }

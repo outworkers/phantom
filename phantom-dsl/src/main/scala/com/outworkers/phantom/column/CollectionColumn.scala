@@ -68,6 +68,4 @@ class CollectionColumn[
   override def cassandraType: String = ev.cassandraType
 
   override def valueAsCql(v: RR): String = vp.asCql(v)
-
-  override def fromString(c: String): RR = vp.fromString(c)
 }

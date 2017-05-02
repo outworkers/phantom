@@ -401,10 +401,6 @@ trait RootMacro {
     }
   }
 
-  def filterDecls[Filter: TypeTag](source: Type): Seq[Symbol] = {
-    source.declarations.sorted.filter(_.typeSignature <:< typeOf[Filter])
-  }
-
   def filterMembers[Filter : TypeTag](
     tpe: Type,
     exclusions: Symbol => Option[Symbol]

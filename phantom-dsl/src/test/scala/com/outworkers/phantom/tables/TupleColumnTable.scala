@@ -36,7 +36,10 @@ abstract class TupleColumnTable extends Table[
   }
 }
 
-case class NestedTupleRecord(id: UUID, tp: (String, (String, Long)))
+case class NestedTupleRecord(
+  id: UUID,
+  tp: (String, (String, Long))
+)
 
 abstract class NestedTupleColumnTable extends Table[
   NestedTupleColumnTable,
@@ -50,14 +53,20 @@ abstract class NestedTupleColumnTable extends Table[
   }
 }
 
-case class TupleCollectionRecord(id: UUID, tuples: List[(Int, String)])
+case class TupleCollectionRecord(
+  id: UUID,
+  tuples: List[(Int, String)],
+  uniqueTuples: Set[(Int, String)]
+)
 
 abstract class TupleCollectionsTable extends Table[
   TupleCollectionsTable,
   TupleCollectionRecord
 ] with RootConnector {
+
   object id extends UUIDColumn with PartitionKey
   object tuples extends ListColumn[(Int, String)]
+  object uniqueTuples extends SetColumn[(Int, String)]
 
   def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
     select.where(_.id eqs id).one()

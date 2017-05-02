@@ -18,6 +18,4 @@ package com.outworkers.phantom.column
 trait CollectionValueDefinition[RR] {
 
   def valueAsCql(v: RR): String
-
-  def fromString(c: String): RR
 }

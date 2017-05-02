@@ -69,7 +69,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     * @param query The builder to use when producing the keyspace query.
     * @return
     */
-  @deprecated("Simply pass in a keyspace query instead of passing the name separately", "2.8.0")
+  @deprecated("Simply pass in a keySpace query, the keyspace is not required", "2.8.5")
   def keySpace(
     name: String,
     query: KeySpaceCQLQuery
@@ -78,7 +78,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   }
 
   /**
-    * Creates and can initialise a keyspace with the given name and the respective query.
+    * Creates and can initialise a keyspace with the given name.
     * This will automatically initialise the keyspace by default, as we consider
     * passing a specific keyspace query indicates clear intent you want this to happen.
     * @param query The builder to use when producing the keyspace query.
