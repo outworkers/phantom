@@ -118,8 +118,6 @@ class ThriftSetColumn[
       Try(ev.deserialize(r.getBytesUnsafe(name), r.version) map serializer.fromString)
     }
   }
-
-  override def fromString(c: String): V = serializer.fromString(c)
 }
 
 
@@ -147,8 +145,6 @@ class ThriftListColumn[
       Success(ev.deserialize(r.getBytesUnsafe(name), r.version).map(serializer.fromString))
     }
   }
-
-  override def fromString(c: String): V = serializer.fromString(c)
 
   /**
     * Provides the serialisation mechanism of a value to a CQL string.

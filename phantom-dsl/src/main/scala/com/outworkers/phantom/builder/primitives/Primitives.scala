@@ -134,8 +134,6 @@ object Primitives {
 
     override def cassandraType: String = CQLSyntax.Types.Text
 
-    override def fromString(value: String): String = value
-
     override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
       if (obj == Primitive.nullValue) {
         Primitive.nullValue
