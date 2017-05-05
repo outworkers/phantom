@@ -82,7 +82,7 @@ class TestDatabase(
   object timeuuidTable extends TimeUUIDTable with Connector
 
   object events extends Events with Connector
-
+  object nestedCollectionTable extends NestedCollectionTable with Connector
   object scalaPrimitivesTable extends ScalaTypesMapTable with Connector
   object optionalIndexesTable extends OptionalSecondaryIndexTable with Connector
   object tuple2Table extends TupleColumnTable with Connector

@@ -417,12 +417,39 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       }
 
       "generate a frozen collection if its used as a primary key " in {
-
         val stringP = Primitive[String]
 
         val cType = db.primaryCollectionsTable.setCol.cassandraType
 
         cType shouldEqual s"frozen<set<${stringP.cassandraType}>>"
+      }
+
+      "generate a frozen collection type for a tuple inside a list" in {
+        val innerP = Primitive[(Int, String)]
+        val cType = db.tupleCollectionsTable.tuples.cassandraType
+
+        cType shouldEqual s"list<frozen<${innerP.cassandraType}>>"
+      }
+
+      "generate a frozen collection type for a tuple inside a set" in {
+        val innerP = Primitive[(Int, String)]
+        val cType = db.tupleCollectionsTable.uniqueTuples.cassandraType
+
+        cType shouldEqual s"set<frozen<${innerP.cassandraType}>>"
+      }
+
+      "generate a frozen collection type for map with a collection key and value type" in {
+        val stringP = Primitive[String]
+        val cType = db.nestedCollectionTable.doubleProps.cassandraType
+
+        cType shouldEqual s"map<frozen<set<${stringP.cassandraType}>>, frozen<list<${stringP.cassandraType}>>>"
+      }
+
+      "generate a frozen collection type for map with a collection value type" in {
+        val stringP = Primitive[String]
+        val cType = db.nestedCollectionTable.props.cassandraType
+
+        cType shouldEqual s"map<text, frozen<list<${stringP.cassandraType}>>>"
       }
     }
   }

@@ -62,8 +62,12 @@ private[phantom] abstract class AbstractMapColumn[
 }
 
 @implicitNotFound(msg = "Type ${K} and ${V} must be Cassandra primitives")
-class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V : Primitive](table: CassandraTable[Owner, Record])
-    extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
+class MapColumn[
+  Owner <: CassandraTable[Owner, Record],
+  Record,
+  K : Primitive,
+  V : Primitive
+](table: CassandraTable[Owner, Record]) extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
 
   private[this] val keyPrimitive = Primitive[K]
 
@@ -72,8 +76,8 @@ class MapColumn[Owner <: CassandraTable[Owner, Record], Record, K : Primitive, V
   override val valuePrimitive: Primitive[V] = Primitive[V]
 
   override val cassandraType: String = QueryBuilder.Collections.mapType(
-    keyPrimitive.cassandraType,
-    valuePrimitive.cassandraType
+    keyPrimitive,
+    valuePrimitive
   ).queryString
 
   override def qb: CQLQuery = {

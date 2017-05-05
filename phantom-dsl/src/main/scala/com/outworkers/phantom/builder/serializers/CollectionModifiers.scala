@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.primitives.Primitive
 
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
@@ -181,6 +182,12 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     diamond(CQLSyntax.Collections.map, CQLQuery(List(keyType, valueType)).queryString)
   }
 
+  def mapType[K, V](key: Primitive[K], value: Primitive[V]): CQLQuery = {
+    diamond(CQLSyntax.Collections.map, CQLQuery(
+      List(frozen(key).queryString, frozen(value).queryString)
+    ).queryString)
+  }
+
   def listType(valueType: String): CQLQuery = {
     diamond(CQLSyntax.Collections.list, valueType)
   }
@@ -199,6 +206,16 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     .append(CQLSyntax.Symbols.`<`)
     .append(types)
     .append(CQLSyntax.Symbols.`>`)
+  }
+
+  def frozen[V](p: Primitive[V]): CQLQuery = frozen(p.cassandraType, p.frozen)
+
+  def frozen(cassandraType: String, shouldFreeze: Boolean): CQLQuery = {
+    if (shouldFreeze) {
+      diamond(CQLSyntax.Collections.frozen, cassandraType)
+    } else {
+      CQLQuery(cassandraType)
+    }
   }
 
   def frozen(cassandraType: String): CQLQuery = {
