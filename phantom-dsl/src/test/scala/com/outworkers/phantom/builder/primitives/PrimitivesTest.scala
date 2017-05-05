@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2013 - 2017 Outworkers Ltd.
  *
@@ -73,6 +74,22 @@ class PrimitivesTest extends FlatSpec with Matchers {
 
   it should "autogenerate set primitives for Map types" in {
     """val test = Primitive[Map[String, String]]""" should compile
+  }
+
+  it should "freeze List collection primitives" in {
+    Primitive[List[String]].frozen shouldEqual true
+  }
+
+  it should "freeze Set collection primitives" in {
+    Primitive[Set[String]].frozen shouldEqual true
+  }
+
+  it should "freeze Map collection primitives" in {
+    Primitive[Map[String, String]].frozen shouldEqual true
+  }
+
+  it should "freeze Tuple collection primitives" in {
+    Primitive[(String, String, Int)].frozen shouldEqual true
   }
 
   it should "automatically generate a primitive for an enumeration" in {

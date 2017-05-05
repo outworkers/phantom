@@ -477,6 +477,8 @@ object Primitives {
 
       val ev = implicitly[Primitive[T]]
 
+      override def frozen: Boolean = true
+
       override def fromRow(column: String, row: GettableByNameData): Try[List[T]] = {
         Try(row.getList(column, ev.clz).asScala.toList.map(ev.extract))
       }
@@ -506,6 +508,8 @@ object Primitives {
 
       val ev = implicitly[Primitive[T]]
 
+      override def frozen: Boolean = true
+
       override def fromRow(column: String, row: GettableByNameData): Try[Set[T]] = {
         Try(row.getSet(column, ev.clz).asScala.toSet.map(ev.extract))
       }
@@ -533,6 +537,8 @@ object Primitives {
 
       val keyPrimitive = implicitly[Primitive[K]]
       val valuePrimitive = implicitly[Primitive[V]]
+
+      override def frozen: Boolean = true
 
       override def fromRow(column: String, row: GettableByNameData): Try[Map[K, V]] = {
         Try {

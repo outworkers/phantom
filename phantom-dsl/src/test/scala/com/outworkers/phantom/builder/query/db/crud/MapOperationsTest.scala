@@ -89,8 +89,8 @@ class MapOperationsTest extends PhantomSuite {
       get <- database.scalaPrimitivesTable.findById(sample.id)
     } yield get
 
-    whenReady(chain) {
-      res => res.value shouldEqual sample
+    whenReady(chain) { res =>
+      res.value shouldEqual sample
     }
   }
 
