@@ -83,7 +83,7 @@ class StaticColumnTest extends PhantomSuite {
 
     def updateQuery: Future[ResultSet] = if (cassandraVersion.value >= Version.`3.0.0`) {
       db.staticCollectionTable.update.where(_.id eqs id)
-        .and(_.clusteringId eqs sample.clustering)
+        //.and(_.clusteringId eqs sample.clustering)
         .modify(_.staticList append "test")
         .future()
     } else {

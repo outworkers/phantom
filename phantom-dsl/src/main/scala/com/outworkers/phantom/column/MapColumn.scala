@@ -65,8 +65,8 @@ class MapColumn[
   override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
 
   override val cassandraType: String = QueryBuilder.Collections.mapType(
-    keyPrimitive.cassandraType,
-    valuePrimitive.cassandraType
+    keyPrimitive,
+    valuePrimitive
   ).queryString
 
   override def qb: CQLQuery = {
