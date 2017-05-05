@@ -36,9 +36,9 @@ class PrimaryCollectionTable extends CassandraTable[PrimaryCollectionTable, Prim
 case class NestedCollections(
   id: UUID,
   text: String,
-  props: Map[String, List[String]]
+  props: Map[String, List[String]],
+  doubleProps: Map[Set[String], List[String]]
 )
-
 
 abstract class NestedCollectionTable extends Table[
   NestedCollectionTable,
@@ -47,4 +47,5 @@ abstract class NestedCollectionTable extends Table[
   object id extends UUIDColumn(this) with PartitionKey
   object text extends StringColumn(this)
   object props extends MapColumn[String, List[String]](this)
+  object doubleProps extends MapColumn[Set[String], List[String]](this)
 }

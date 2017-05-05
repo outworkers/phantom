@@ -438,7 +438,14 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         cType shouldEqual s"set<frozen<${innerP.cassandraType}>>"
       }
 
-      "generate a frozen collection type for a nested collection" in {
+      "generate a frozen collection type for map with a collection key and value type" in {
+        val stringP = Primitive[String]
+        val cType = db.nestedCollectionTable.doubleProps.cassandraType
+
+        cType shouldEqual s"map<frozen<set<${stringP.cassandraType}>>, frozen<list<${stringP.cassandraType}>>>"
+      }
+
+      "generate a frozen collection type for map with a collection value type" in {
         val stringP = Primitive[String]
         val cType = db.nestedCollectionTable.props.cassandraType
 
