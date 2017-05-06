@@ -20,7 +20,7 @@ import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8.dsl._
+import com.outworkers.phantom.jdk8._
 
 import scala.concurrent.Future
 

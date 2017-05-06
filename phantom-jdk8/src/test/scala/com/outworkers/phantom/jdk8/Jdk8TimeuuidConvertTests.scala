@@ -19,7 +19,6 @@ import java.time.{Instant, OffsetDateTime, ZoneId, ZonedDateTime}
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
-import com.outworkers.phantom.jdk8.dsl._
 import scala.collection.JavaConverters._
 
 class Jdk8TimeuuidConvertTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {

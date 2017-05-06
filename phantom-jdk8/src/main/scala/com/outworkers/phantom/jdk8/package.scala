@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.jdk8
+package com.outworkers.phantom
 
 import java.time._
 import java.util.UUID
@@ -21,21 +21,18 @@ import java.util.UUID
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.builder.clauses.OperatorClause
 import com.outworkers.phantom.builder.ops.TimeUUIDOperator
-import com.outworkers.phantom.dsl.CassandraTable
 import org.joda.time.{DateTime, DateTimeZone}
-import com.outworkers.phantom.column
 
-package object dsl extends DefaultJava8Primitives {
-
+package object jdk8 extends DefaultJava8Primitives {
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
-  type OffsetDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = column.PrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  implicit class Jdk8Columns[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
+    class OffsetDateTimeColumn extends table.Col[OffsetDateTime]
+  }
 
   type ZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
@@ -80,15 +77,15 @@ package object dsl extends DefaultJava8Primitives {
   }
 
   implicit class OffsetDateTimeHelper(val date: OffsetDateTime) extends AnyVal {
-    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class ZonedDateTimeHelper(val date: ZonedDateTime) extends AnyVal {
-    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class TimeUUIDAugmenter(val uuid: UUID) extends AnyVal {
@@ -131,8 +128,8 @@ package object dsl extends DefaultJava8Primitives {
   }
 
   implicit class Jdk8TimeUUIDOps(val op: TimeUUIDOperator) extends AnyVal {
-    def apply(odt: OffsetDateTime): OperatorClause.Condition = op(odt.asJoda())
+    def apply(odt: OffsetDateTime): OperatorClause.Condition = op(odt.asJoda)
 
-    def apply(zdt: ZonedDateTime): OperatorClause.Condition = op(zdt.asJoda())
+    def apply(zdt: ZonedDateTime): OperatorClause.Condition = op(zdt.asJoda)
   }
 }
