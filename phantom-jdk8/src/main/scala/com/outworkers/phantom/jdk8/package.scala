@@ -34,6 +34,11 @@ package object jdk8 extends DefaultJava8Primitives {
     class OffsetDateTimeColumn extends table.Col[OffsetDateTime]
   }
 
+  type OffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, OffsetDateTime]
+
   type ZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record

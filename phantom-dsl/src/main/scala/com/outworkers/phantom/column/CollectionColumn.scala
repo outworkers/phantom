@@ -19,7 +19,7 @@ import com.outworkers.phantom.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
@@ -41,7 +41,7 @@ class CollectionColumn[
   Record,
   M[X] <: TraversableOnce[X],
   RR
-](table: CassandraTable[Owner, Record])(
+](table: CassandraTable[Owner, Record], collection: String)(
   implicit vp: Primitive[RR],
   ev: Primitive[M[RR]],
   cbf: CanBuildFrom[Nothing, RR, M[RR]]
@@ -49,23 +49,15 @@ class CollectionColumn[
 
   override def asCql(v: M[RR]): String = ev.asCql(v)
 
-  override def qb: CQLQuery = {
-    if (ev.shouldFreeze && shouldFreeze) {
-      QueryBuilder.Collections.frozen(name, cassandraType)
-    } else if (vp.frozen) {
-      CQLQuery(name).forcePad.append(
-        QueryBuilder.Collections.listType(
-          QueryBuilder.Collections.frozen(vp.cassandraType).queryString
-        )
-      )
-    } else {
-      CQLQuery(name).forcePad.append(cassandraType)
-    }
-  }
+  override val cassandraType = QueryBuilder.Collections.collectionType(
+    collection,
+    ev.cassandraType,
+    shouldFreeze,
+    ev.frozen,
+    isStaticColumn
+  ).queryString
 
   override def parse(r: Row): Try[M[RR]] = ev.fromRow(name, r)
-
-  override def cassandraType: String = ev.cassandraType
 
   override def valueAsCql(v: RR): String = vp.asCql(v)
 }

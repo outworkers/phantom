@@ -145,9 +145,7 @@ package object finagle extends SessionAugmenterImplicits {
     Limit <: LimitBound
   ](val query: ExecutableQuery[T, R, Limit]) extends AnyVal {
 
-    protected[this] def singleResult(row: Row): Option[R] = {
-      if (Option(row).isDefined) Some(query.fromRow(row)) else None
-    }
+    protected[this] def singleResult(row: Option[Row]): Option[R] = row map query.fromRow
 
     protected[this] def directMapper(results: List[Row]): List[R] = {
       results map query.fromRow

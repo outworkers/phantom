@@ -172,8 +172,8 @@ private[phantom] trait RootExecutableQuery[R] {
 
   def fromRow(r: Row): R
 
-  protected[this] def singleResult(row: Row): Option[R] = {
-    if (Option(row).isDefined) Some(fromRow(row)) else None
+  protected[this] def singleResult(row: Option[Row]): Option[R] = {
+    row map fromRow
   }
 
   protected[this] def directMapper(
@@ -220,7 +220,7 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     builder.sizeHint(count)
     var i = 0
     while (i < count) {
-      builder += fromRow(res.value())
+      builder += fromRow(res.value().get)
       i += 1
     }
     builder.result() -> res

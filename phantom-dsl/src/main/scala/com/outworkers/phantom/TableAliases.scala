@@ -28,12 +28,12 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class ListColumn[RR]()(
     implicit ev: Primitive[RR],
     ev2: Primitive[List[RR]]
-  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, List, RR](this)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, List, RR](this, CQLSyntax.Collections.list)
 
   class SetColumn[RR]()(
     implicit ev: Primitive[RR],
     ev2: Primitive[Set[RR]]
-  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, Set, RR](this)
+  ) extends com.outworkers.phantom.column.CollectionColumn[T, R, Set, RR](this, CQLSyntax.Collections.set)
 
   class MapColumn[KK, VV]()(implicit
     ev: Primitive[KK],

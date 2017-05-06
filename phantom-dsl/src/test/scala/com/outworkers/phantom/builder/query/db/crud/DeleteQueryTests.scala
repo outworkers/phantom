@@ -33,10 +33,17 @@ class DeleteQueryTests extends PhantomSuite {
   "A delete query" should "delete a row by its single primary key" in {
     val row = gen[PrimitiveRecord]
 
-    Await.result(database.primitives.store(row).future(), 10.seconds)
-    Await.result(database.primitives.select.where(_.pkey eqs row.pkey).one, 10.seconds)
-    Await.result(database.primitives.delete.where(_.pkey eqs row.pkey).future(), 10.seconds)
-    Await.result(database.primitives.select.where(_.pkey eqs row.pkey).one, 10.seconds)
+    val chain = for {
+      store <- database.primitives.store(row).future()
+      inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
+      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).future()
+      deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (inserted, deleted)
+
+    whenReady(chain) { case (r1, r2) =>
+      r1.value shouldEqual row
+      r2 shouldBe empty
+    }
   }
 
   "A delete query" should "delete a row by its single primary key if a single condition is met" in {

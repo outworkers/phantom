@@ -36,7 +36,7 @@ abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] wi
 
   object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OptionalOffsetDateTimeColumn(this)
+  object offsetDateTime extends OffsetDateTimeColumn(this)
 
   object zonedDateTime extends ZonedDateTimeColumn(this)
 

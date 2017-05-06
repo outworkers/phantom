@@ -29,7 +29,11 @@ case class ResultSet(
   version: ProtocolVersion
 ) extends DatastaxResultSet {
 
-  def value(): Row = new Row(one(), version)
+  def value(): Option[Row] = if (inner.getAvailableWithoutFetching == 0){
+    None
+  } else {
+    Some(new Row(one(), version))
+  }
 
   override def one(): DatastaxRow = inner.one()
 
