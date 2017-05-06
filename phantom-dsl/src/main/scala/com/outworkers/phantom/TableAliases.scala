@@ -23,6 +23,8 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, LocalDate}
 
+import scala.util.{Failure, Success, Try}
+
 trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
 
   class ListColumn[RR]()(
@@ -67,7 +69,16 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class CustomColumn[RR : Primitive] extends PrimitiveColumn[RR]
   class Col[RR : Primitive] extends PrimitiveColumn[RR]
-  type OptionalCol[RR] = Col[Option[RR]]
+
+  class OptionalCol[RR](
+    implicit ev: Primitive[RR],
+    evOpt: Primitive[Option[RR]]
+  ) extends Col[Option[RR]] {
+    override def parse(r: Row): Try[Option[RR]] = ev.fromRow(name, r) match {
+      case Success(value) => Success(Some(value))
+      case Failure(err) => Success(None)
+    }
+  }
 
   abstract class Column[RR] extends com.outworkers.phantom.column.Column[T, R, RR](this)
 

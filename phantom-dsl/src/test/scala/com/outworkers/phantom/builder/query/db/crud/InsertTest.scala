@@ -22,6 +22,9 @@ import com.outworkers.util.samplers._
 import org.json4s.Extraction
 import org.json4s.native._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {

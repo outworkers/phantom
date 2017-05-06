@@ -140,8 +140,16 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
 
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
+
       val javaCol = asJv(sample.map(conv).to[M](cbf2))
       val datastax = codec.serialize(javaCol, version)
+
+      if (!java.util.Arrays.equals(phantom.array(), datastax.array())) {
+        Console.println("Comparison between phantom and datastax")
+        Console.println(phantom.array().mkString(", "))
+        Console.println(datastax.array().mkString(", "))
+      }
+
       phantom shouldEqual datastax
     }
   }
@@ -406,7 +414,10 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   }
 
   it should "serialize a Set[BigDecimal] type just like the native codec" in {
-    testSet[scala.math.BigDecimal, java.math.BigDecimal](DataType.decimal(), Arbitrary.arbBigDecimal, _.bigDecimal)
+    testSet[
+      scala.math.BigDecimal,
+      java.math.BigDecimal
+    ](DataType.decimal(), Arbitrary.arbBigDecimal, _.bigDecimal)
   }
 
 }

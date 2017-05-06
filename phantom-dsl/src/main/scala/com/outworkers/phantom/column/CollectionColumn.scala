@@ -51,9 +51,9 @@ class CollectionColumn[
 
   override val cassandraType = QueryBuilder.Collections.collectionType(
     collection,
-    ev.cassandraType,
+    vp.cassandraType,
     shouldFreeze,
-    ev.frozen,
+    vp.frozen,
     isStaticColumn
   ).queryString
 

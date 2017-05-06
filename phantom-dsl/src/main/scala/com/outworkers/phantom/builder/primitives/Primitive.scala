@@ -45,8 +45,6 @@ abstract class Primitive[RR] {
     if (Option(value).isEmpty) throw new NullPointerException(msg)
   }
 
-  def shouldFreeze: Boolean = false
-
   protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
     if (source == Primitive.nullValue) Primitive.nullValue else fn(source)
   }
@@ -108,6 +106,17 @@ abstract class Primitive[RR] {
     nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index), r.version))
   }
 
+  /**
+    * Whether or not this primitive should freeze if used inside a collection column type
+    * or if used as part of a partition column.
+    * There are several kinds of primitives that must freeze in both scenarios:
+    * - Set columns
+    * - List columns
+    * - Map columns
+    * - Tuple columns
+    * - UDT columns
+    * @return A boolean that marks if this should be frozen.
+    */
   def frozen: Boolean = false
 }
 

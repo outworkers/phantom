@@ -74,7 +74,7 @@ case class OptTypesRecord(
  * existing primitive types. A [[None]] value should be correctly parsed
  * and serialised to Cassandra.
  * To simulate the use case, we need a custom primitive
- * and an [[OptionalCol]] with this newtype.
+ * and an [[CassandraTable#OptionalCol]] with this newtype.
  */
 abstract class OptionalDerivedTable extends CassandraTable[
   OptionalDerivedTable,

@@ -512,7 +512,7 @@ object Primitives {
     implicit ev: Primitive[RR],
     cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
-    override def shouldFreeze: Boolean = true
+    override def frozen: Boolean = true
 
     override def asCql(value: M[RR]): String = converter(value)
 
@@ -560,18 +560,14 @@ object Primitives {
   def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {
     collectionPrimitive[List, T](
       QueryBuilder.Collections.listType(ev.cassandraType).queryString,
-      value => QueryBuilder.Collections
-        .serialize(value.map(ev.asCql))
-        .queryString
+      value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
     )
   }
 
   def set[T]()(implicit ev: Primitive[T]): Primitive[Set[T]] = {
     collectionPrimitive[Set, T](
       QueryBuilder.Collections.setType(ev.cassandraType).queryString,
-      value => QueryBuilder.Collections
-        .serialize(value.map(ev.asCql))
-        .queryString
+      value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
     )
   }
 
@@ -585,24 +581,28 @@ object Primitives {
       def serialize(obj: Option[T], protocol: ProtocolVersion): ByteBuffer = {
         obj.fold(
           Primitive.nullValue.asInstanceOf[ByteBuffer]
-        )(v => ev.serialize(v, protocol))
+        )(ev.serialize(_, protocol))
       }
 
       def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Option[T] = {
-        Try(ev.deserialize(source, protocol)).toOption
+        if (source == Primitive.nullValue || source.remaining() == 0) {
+          None
+        } else {
+          Some(ev.deserialize(source, protocol))
+        }
       }
 
       override def cassandraType: String = ev.cassandraType
 
       override def asCql(value: Option[T]): String = {
-          value.map(ev.asCql).getOrElse(nullString)
+        value.map(ev.asCql).getOrElse(nullString)
       }
     }
   }
 
   def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
-      override def shouldFreeze: Boolean = true
+      override def frozen: Boolean = true
 
       override def cassandraType: String = {
         QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
