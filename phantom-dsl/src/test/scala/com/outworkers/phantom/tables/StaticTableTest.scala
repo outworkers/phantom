@@ -46,6 +46,6 @@ abstract class StaticCollectionTable extends Table[
   StaticCollectionRecord
 ] with RootConnector {
   object id extends UUIDColumn with PartitionKey
-  object clusteringId extends UUIDColumn with ClusteringOrder with Descending
+  object clustering extends UUIDColumn with ClusteringOrder with Descending
   object staticList extends ListColumn[String] with StaticColumn
 }

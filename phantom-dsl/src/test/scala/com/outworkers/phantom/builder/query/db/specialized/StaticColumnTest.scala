@@ -91,7 +91,7 @@ class StaticColumnTest extends PhantomSuite {
       rec <- database.staticCollectionTable
         .select
         .where(_.id eqs id)
-        .and(_.clusteringId eqs sample.clustering)
+        .and(_.clustering eqs sample.clustering)
         .one()
     } yield rec
 

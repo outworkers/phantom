@@ -199,6 +199,14 @@ class PrimitiveRoundtripTests extends FlatSpec
     roundtrip[Map[String, InetAddress]]
   }
 
+  it should "serialize and deserialize a tuple (String, Int) primitive" in {
+    roundtrip[(String, Int)]
+  }
+
+  it should "serialize and deserialize a tuple (String, Int, Date) primitive" in {
+    roundtrip[(String, Int, Date)]
+  }
+
   it should "serialize and deserialize a derived Primitive" in {
     sroundtrip[Record]
   }

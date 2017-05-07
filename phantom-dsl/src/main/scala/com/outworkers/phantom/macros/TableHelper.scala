@@ -128,8 +128,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     * Predicate that checks two fields refer to the same type.
     * @param left The source, which is a tuple of two [[Record.Field]] values.
     * @param right The source, which is a tuple of two [[Column.Field]] values.
-    * @return True if the left hand side of te tuple is equal to the right hand side
-    *         or if there is an implicit conversion from the left field type to the right field type.
+    * @return True if the left hand side of te tuple is equal to the right hand side.
+    *         Not true even if there is an implicit conversion from the left field type to the right field type,
+    *         we do not currently support the type mapping natively in the macro.
     */
   private[this] def predicate(left: Record.Field, right: Type): Boolean = {
     (left.tpe =:= right)// || (c.inferImplicitView(EmptyTree, left.tpe, right) != EmptyTree)
@@ -421,7 +422,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
-    q"""
+    val tree = q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = $storeTpe
 
@@ -450,5 +451,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
+    c.echo(c.enclosingPosition, showCode(tree))
+    tree
   }
 }

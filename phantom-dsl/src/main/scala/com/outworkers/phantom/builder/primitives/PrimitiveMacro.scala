@@ -232,7 +232,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
     val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
     val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
-    q"""new $prefix.Primitive[$tpe] {
+    val tree = q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
@@ -275,6 +275,10 @@ class PrimitiveMacro(val c: blackbox.Context) {
 
       override def frozen: $boolType = true
     }"""
+
+    c.echo(c.enclosingPosition, showCode(tree))
+
+    tree
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {
