@@ -150,9 +150,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
     val innerTpe = tpe.typeArgs.headOption
 
     innerTpe match {
-      case Some(inner) => {
-        q"""$prefix.Primitives.list[$inner]"""
-      }
+      case Some(inner) => q"""$prefix.Primitives.list[$inner]"""
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
@@ -196,21 +194,24 @@ class PrimitiveMacro(val c: blackbox.Context) {
     val fields: List[TupleType] = tupleFields(tpe)
     val indexedFields = fields.zipWithIndex
 
-    val serializedComponents = indexedFields.map { case (f, i) =>
+    var sizeComp = indexedFields.map { case (f, i) =>
+      val term = elTerm(i)
       q"""
-        elements($i) = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
-        size += (4 + { if (elements($i) == null) 0 else elements($i).remaining()})
+        val $term = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
+        size += (4 + { if ($term == null) 0 else $term.remaining()})
       """
     }
 
-    val serializedFields = indexedFields.map { case (f, i) =>
-      q"""
-        val bb = elements($i)
-        if (bb == null) {
-          res.putInt(-1)
-        } else {
-         res.putInt(bb.remaining())
-         res.put(bb.duplicate())
+    val serializedComponents = indexedFields.map { case (f, i) =>
+      fq""" ${elTerm(i)} <- {
+          val serialized = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
+
+           if (serialized == null) {
+             res.putInt(-1)
+           } else {
+             res.putInt(serialized.remaining())
+             res.put(serialized.duplicate())
+           }
         }
       """
     }
@@ -246,10 +247,11 @@ class PrimitiveMacro(val c: blackbox.Context) {
           var size = 0
           val length = ${fields.size}
           val elements = new _root_.scala.Array[$bufferType](length)
-          ..$serializedComponents
+          ..$sizeComp
 
           val res = $bufferCompanion.allocate(size)
-          ..$serializedFields
+          val buf = for (..$serializedComponents) yield ()
+          buf.get
 
           res.flip().asInstanceOf[$bufferType]
         }
@@ -341,7 +343,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
     """
   }
 
-  def materializer[T : c.WeakTypeTag]: c.Expr[Primitive[T]] = {
+  def materializer[T : c.WeakTypeTag]: Tree = {
     val wkType = weakTypeOf[T]
     val tpe = wkType.typeSymbol
 
@@ -373,6 +375,6 @@ class PrimitiveMacro(val c: blackbox.Context) {
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
-    c.Expr[Primitive[T]](tree)
+    tree
   }
 }

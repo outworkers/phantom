@@ -34,6 +34,7 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }
 
+
   val fs: IndexedSeq[Future[Unit]] = for {
     step <- 1 to 3
     rows = Iterator.fill(10000)(gen[JodaRow])

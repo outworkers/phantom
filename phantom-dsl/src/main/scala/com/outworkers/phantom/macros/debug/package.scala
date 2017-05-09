@@ -13,20 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.finagle
+package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing.twitter._
-import com.outworkers.phantom.dsl.context
-import com.outworkers.phantom.finagle._
-import com.twitter.util.Future
-
-class CreateQueryFinagleTests extends PhantomSuite {
-
-  it should "execute a simple query with secondary indexes with Twitter futures" in {
-    database.secondaryIndexTable.create.ifNotExists().execute.successful { res =>
-      info("The creation query of secondary indexes should execute successfully")
-      res.wasApplied() shouldEqual true
-    }
+package object debug {
+  object options {
   }
 }
