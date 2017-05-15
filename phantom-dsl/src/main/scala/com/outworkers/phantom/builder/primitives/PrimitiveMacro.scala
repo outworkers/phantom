@@ -249,6 +249,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
           val elements = new _root_.scala.Array[$bufferType](length)
           ..$sizeComp
 
+          Console.println($sourceTerm)
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get
@@ -279,6 +280,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
     }"""
 
     c.echo(c.enclosingPosition, showCode(tree))
+    Console.println(showCode(tree))
 
     tree
   }

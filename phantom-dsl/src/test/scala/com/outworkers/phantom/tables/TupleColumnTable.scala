@@ -72,3 +72,5 @@ abstract class TupleCollectionsTable extends Table[
     select.where(_.id eqs id).one()
   }
 }
+
+
