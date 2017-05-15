@@ -196,9 +196,12 @@ class PrimitiveMacro(val c: blackbox.Context) {
 
     var sizeComp = indexedFields.map { case (f, i) =>
       val term = elTerm(i)
-      q"""
-        val $term = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
-        size += (4 + { if ($term == null) 0 else $term.remaining()})
+      fq"""
+        $term <- {
+          val $term = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
+          size += (4 + { if ($term == null) 0 else $term.remaining()})
+          ()
+        }
       """
     }
 
@@ -206,13 +209,14 @@ class PrimitiveMacro(val c: blackbox.Context) {
       fq""" ${elTerm(i)} <- {
           val serialized = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
 
-           if (serialized == null) {
+          val buf = if (serialized == null) {
              res.putInt(-1)
            } else {
              res.putInt(serialized.remaining())
              res.put(serialized.duplicate())
            }
         }
+        Some(buf)
       """
     }
 
@@ -247,9 +251,8 @@ class PrimitiveMacro(val c: blackbox.Context) {
           var size = 0
           val length = ${fields.size}
           val elements = new _root_.scala.Array[$bufferType](length)
-          ..$sizeComp
+          val _ = for (..$sizeComp) yield ()
 
-          Console.println($sourceTerm)
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get
