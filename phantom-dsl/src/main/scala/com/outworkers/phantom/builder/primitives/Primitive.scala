@@ -126,6 +126,8 @@ object Primitive {
     new Primitive[Target] {
       override type PrimitiveType = source.PrimitiveType
 
+      override def frozen: Boolean = source.frozen
+
       /**
         * Converts the type to a CQL compatible string.
         * The primitive is responsible for handling all aspects of adequate escaping as well.
