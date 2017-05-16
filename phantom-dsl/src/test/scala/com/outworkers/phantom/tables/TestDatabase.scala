@@ -96,6 +96,8 @@ class TestDatabase(
   object optDerivedTable extends OptionalDerivedTable with Connector
   object schemaBug656 extends SchemaBug656Table with Connector
   object schemaBug663Table extends SchemaBug663Table with Connector
+
+  object derivedPrimitivesTable extends DerivedPrimitivesTable with Connector
 }
 
 object Connector {
