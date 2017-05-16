@@ -219,8 +219,29 @@ class PrimitiveRoundtripTests extends FlatSpec
     roundtrip[List[(String, Int, Date, Boolean)]]
   }
 
+  it should "serialize and deserialize a List[List[String]] nested collection" in {
+    roundtrip[List[List[String]]]
+  }
+
+
+  it should "serialize and deserialize a List[Set[String]] nested collection" in {
+    roundtrip[List[Set[String]]]
+  }
+
+  it should "serialize and deserialize a Map[String, Set[String]] nested collection" in {
+    roundtrip[Map[String, Set[String]]]
+  }
+
+  it should "serialize and deserialize a Map[List[Int], Set[String]] nested collection" in {
+    roundtrip[Map[List[Int], Set[String]]]
+  }
+
   it should "serialize and deserialize a map of tuples Map[String, (String, Int, Date, Boolean)] primitive" in {
     roundtrip[Map[String, (String, Int, Date, Boolean)]]
+  }
+
+  it should "serialize and deserialize a map of tuples Map[(String, Decimal), (String, Int, Date, Boolean)] primitive" in {
+    roundtrip[Map[(String, BigDecimal), (String, Int, Date, Boolean)]]
   }
 
   it should "serialize and deserialize a derived Primitive" in {
