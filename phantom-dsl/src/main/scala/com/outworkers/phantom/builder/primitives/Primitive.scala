@@ -148,6 +148,7 @@ object Primitive {
 
       override def frozen = primitive.frozen
 
+
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
       override def cassandraType: String = primitive.cassandraType
@@ -173,12 +174,27 @@ object Primitive {
     * @tparam Source The type we are deriving from.
     * @return A new primitive for the target type.
     */
-  private[phantom] def manuallyDerive[Target, Source](
+  def manuallyDerive[Target, Source](
     to: Target => Source,
     from: Source => Target
-  )(
-    ev: Primitive[Source]
-  ): Primitive[Target] = derive(to)(from)(ev)
+  )(ev: Primitive[Source])(tpe: String = ev.cassandraType): Primitive[Target] = {
+    new Primitive[Target] {
+
+      override def frozen = ev.frozen
+
+      override def asCql(value: Target): String = ev.asCql(to(value))
+
+      override def cassandraType: String = tpe
+
+      override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
+        ev.serialize(to(obj), protocol)
+      }
+
+      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Target = {
+        from(ev.deserialize(source, protocol))
+      }
+    }
+  }
 
   /**
     * Convenience method to materialise the context bound and return a reference to it.

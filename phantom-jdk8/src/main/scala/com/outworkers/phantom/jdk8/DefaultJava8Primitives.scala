@@ -19,6 +19,7 @@ import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime
 
 import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
 import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
 trait DefaultJava8Primitives {
@@ -43,7 +44,7 @@ trait DefaultJava8Primitives {
       JavaLocalDate.of(conv.getYear, conv.getMonth, conv.getDayOfMonth)
     }
 
-  )(Primitives.LocalDateIsPrimitive)
+  )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
     Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {

@@ -452,7 +452,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
-    c.echo(c.enclosingPosition, showCode(tree))
+
     tree
   }
 }

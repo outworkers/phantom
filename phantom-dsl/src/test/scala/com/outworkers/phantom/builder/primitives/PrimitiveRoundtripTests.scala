@@ -16,13 +16,9 @@
 package com.outworkers.phantom.builder.primitives
 
 import java.net.InetAddress
-import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{CodecUtils, ProtocolVersion}
-import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.dsl.DateTime
+import com.datastax.driver.core.ProtocolVersion
 import com.outworkers.util.samplers._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks

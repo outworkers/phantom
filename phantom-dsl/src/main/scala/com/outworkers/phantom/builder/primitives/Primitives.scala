@@ -472,38 +472,16 @@ object Primitives {
     }
   }
 
-  object DateTimeIsPrimitive extends Primitive[DateTime] {
-    val cassandraType = CQLSyntax.Types.Timestamp
-
-    val codec = LongPrimitive
-
-    override def asCql(value: DateTime): String = {
-      DateSerializer.asCql(value)
-    }
-
-    override def serialize(obj: DateTime, version: ProtocolVersion): ByteBuffer = {
-      nullValueCheck(obj) { dt =>
-        codec.serialize(obj.toDateTime(DateTimeZone.UTC).getMillis, version)
-      }
-    }
-
-    override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): DateTime = {
-      bytes match {
-        case Primitive.nullValue => Primitive.nullValue
-        case b if b.remaining() == 0 => Primitive.nullValue
-        case b @ _ =>
-          new DateTime(codec.deserialize(bytes, version), DateTimeZone.UTC)
-      }
-    }
-  }
+  val DateTimeIsPrimitive = Primitive.manuallyDerive[DateTime, Long](
+    _.toDateTime(DateTimeZone.UTC).getMillis,
+    new DateTime(_, DateTimeZone.UTC)
+  )(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   val JodaLocalDateIsPrimitive = Primitive.manuallyDerive[JodaLocalDate, DateTime](
     jld => jld.toDateTimeAtCurrentTime(DateTimeZone.UTC), jld => jld.toLocalDate
-  )(DateTimeIsPrimitive)
+  )(DateTimeIsPrimitive)(CQLSyntax.Types.Timestamp)
 
-  val DateIsPrimitive = Primitive.manuallyDerive[Date, Long](
-    _.getTime, l => new Date(l)
-  )(LongPrimitive)
+  val DateIsPrimitive = Primitive.manuallyDerive[Date, Long](_.getTime, new Date(_))(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   private[this] def collectionPrimitive[M[X] <: TraversableOnce[X], RR](
     cType: String,
