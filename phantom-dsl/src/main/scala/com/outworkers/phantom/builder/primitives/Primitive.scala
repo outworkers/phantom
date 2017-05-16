@@ -192,11 +192,12 @@ object Primitive {
     new Primitive[Target] {
 
       override def frozen: Boolean = ev.frozen
+
       override def shouldFreeze: Boolean = ev.shouldFreeze
 
       override def asCql(value: Target): String = ev.asCql(to(value))
 
-      override def dataType: String = ev.dataType
+      override def dataType: String = tpe
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         ev.serialize(to(obj), protocol)
