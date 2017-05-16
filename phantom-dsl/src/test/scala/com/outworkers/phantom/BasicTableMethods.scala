@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom
 
-import org.scalatest.FlatSpec
-
 class BasicTableMethods extends PhantomSuite {
 
   it should "retrieve the correct number of columns in a simple table" in {

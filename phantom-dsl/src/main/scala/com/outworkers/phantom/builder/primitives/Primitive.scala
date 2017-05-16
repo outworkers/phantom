@@ -114,8 +114,6 @@ abstract class Primitive[RR] {
   }
 
   /**
-    * Whether or not this primitive should freeze if used inside a collection column type
-    * or if used as part of a partition column.
     * There are several kinds of primitives that must freeze in both scenarios:
     * - Set columns
     * - List columns
@@ -125,6 +123,13 @@ abstract class Primitive[RR] {
     * @return A boolean that marks if this should be frozen.
     */
   def frozen: Boolean = false
+
+  /**
+    * Whether or not this primitive should freeze if used together with a primary column.
+    * or if used as part of a partition column.
+    * @return A Boolean marking whether or not this should freeze.
+    */
+  def shouldFreeze: Boolean = false
 }
 
 object Primitive {
@@ -154,7 +159,6 @@ object Primitive {
     new Primitive[Target] {
 
       override def frozen = primitive.frozen
-
 
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
@@ -187,7 +191,8 @@ object Primitive {
   )(ev: Primitive[Source])(tpe: String = ev.dataType): Primitive[Target] = {
     new Primitive[Target] {
 
-      override def frozen = ev.frozen
+      override def frozen: Boolean = ev.frozen
+      override def shouldFreeze: Boolean = ev.shouldFreeze
 
       override def asCql(value: Target): String = ev.asCql(to(value))
 

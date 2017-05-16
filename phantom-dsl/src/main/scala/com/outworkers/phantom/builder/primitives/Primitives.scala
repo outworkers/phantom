@@ -490,6 +490,8 @@ object Primitives {
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
     override def frozen: Boolean = ev.frozen
 
+    override def shouldFreeze: Boolean = true
+
     override def asCql(value: M[RR]): String = converter(value)
 
     override val dataType = cType
@@ -578,9 +580,10 @@ object Primitives {
   def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
       override def frozen: Boolean = true
+      override def shouldFreeze: Boolean = true
 
       override def dataType: String = {
-        QueryBuilder.Collections.mapType(kp.dataType, vp.dataType).queryString
+        QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
       }
 
       override def asCql(sourceMap: Map[K, V]): String = QueryBuilder.Utils.map(sourceMap.map {

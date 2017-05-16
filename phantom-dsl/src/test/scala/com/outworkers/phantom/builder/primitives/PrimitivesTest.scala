@@ -98,24 +98,25 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   }
 
   it should "freeze List collection primitives" in {
-    Primitive[List[String]].frozen shouldEqual true
+    Primitive[List[String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Set collection primitives" in {
-    Primitive[Set[String]].frozen shouldEqual true
+    Primitive[Set[String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Map collection primitives" in {
-    Primitive[Map[String, String]].frozen shouldEqual true
+    Primitive[Map[String, String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Tuple collection primitives" in {
-    Primitive[(String, String, Int)].frozen shouldEqual true
+    Primitive[(String, String, Int)].shouldFreeze shouldEqual true
   }
 
   it should "correctly serialize a primitive type" in {
     val sample = gen[(String, String, Int)]
     val qb = Primitive[(String, String, Int)].asCql(sample)
+    qb shouldEqual s"(${sample._1}, ${sample._2}, ${sample._3})"
   }
 
   it should "serialize a Set[Int] primitive accordingly" in {
