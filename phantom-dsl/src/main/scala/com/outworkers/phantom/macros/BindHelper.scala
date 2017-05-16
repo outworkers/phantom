@@ -20,6 +20,7 @@ import com.datastax.driver.core.{BoundStatement, PreparedStatement, ProtocolVers
 import scala.reflect.macros.whitebox
 
 trait BindHelper[TP] {
+
   def bind(ps: BoundStatement, values: TP, version: ProtocolVersion): BoundStatement
 
   def bind(ps: PreparedStatement, values: TP, version: ProtocolVersion): BoundStatement = {
@@ -54,6 +55,9 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
   def bindSingle(tpe: Type): Tree = {
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+
+
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
              $source.setBytesUnsafe(
                 0,

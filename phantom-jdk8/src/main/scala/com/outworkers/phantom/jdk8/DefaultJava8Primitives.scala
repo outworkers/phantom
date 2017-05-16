@@ -26,8 +26,7 @@ trait DefaultJava8Primitives {
 
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
     Primitive.derive[OffsetDateTime, (Long, String)](
-      offsetDt =>
-        offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
+      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
     ) { case (timestamp, zone) =>
       OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
     }

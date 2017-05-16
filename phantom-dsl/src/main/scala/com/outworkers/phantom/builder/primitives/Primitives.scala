@@ -445,13 +445,11 @@ object Primitives {
   }
 
   object LocalDateIsPrimitive extends Primitive[LocalDate] {
-    val cassandraType = CQLSyntax.Types.Date
+    val cassandraType = CQLSyntax.Types.Timestamp
 
     val codec = IntPrimitive
 
-    override def asCql(value: LocalDate): String = {
-      DateSerializer.asCql(value)
-    }
+    override def asCql(value: LocalDate): String = ParseUtils.quote(value.toString)
 
     override def serialize(obj: LocalDate, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { dt =>
