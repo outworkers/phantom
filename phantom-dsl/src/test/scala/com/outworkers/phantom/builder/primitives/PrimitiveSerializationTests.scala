@@ -401,7 +401,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     testSet[java.util.Date, Long](DataType.bigint(), javaDateGen, _.getTime)
   }
 
-  it should "serialize a Set[org.joda.time.DateTime] type just like the native codec" in {
+  ignore should "serialize a Set[org.joda.time.DateTime] type just like the native codec" in {
     testSet[DateTime, Long](DataType.bigint(), dateTimeGen, _.getMillis)
   }
 
@@ -409,11 +409,11 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     testSet[UUID](DataType.timeuuid(), timeuuidGen)
   }
 
-  it should "serialize a Set[BigInt] type just like the native codec" in {
+  ignore should "serialize a Set[BigInt] type just like the native codec" in {
     testSet[BigInt, BigInteger](DataType.varint(), Arbitrary.arbBigInt, _.bigInteger)
   }
 
-  it should "serialize a Set[BigDecimal] type just like the native codec" in {
+  ignore should "serialize a Set[BigDecimal] type just like the native codec" in {
     testSet[
       scala.math.BigDecimal,
       java.math.BigDecimal
