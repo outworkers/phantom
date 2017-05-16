@@ -27,7 +27,10 @@ case class DerivedTupleField(value: String, num: Long)
 
 object DerivedTupleField {
   implicit val recordPrimitive: Primitive[DerivedTupleField] = {
-    Primitive.derive[DerivedTupleField, (String, Long)](x => x.value -> x.num)(x => DerivedTupleField(x._1, x._2))
+    Primitive.derive[DerivedTupleField, (String, Long)](x => x.value -> x.num)(x => {
+      val (a, b) = x
+      DerivedTupleField(a, b)
+    })
   }
 }
 
