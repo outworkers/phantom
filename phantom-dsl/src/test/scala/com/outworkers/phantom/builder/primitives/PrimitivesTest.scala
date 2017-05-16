@@ -116,7 +116,7 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   it should "correctly serialize a primitive type" in {
     val sample = gen[(String, String, Int)]
     val qb = Primitive[(String, String, Int)].asCql(sample)
-    qb shouldEqual s"(${sample._1}, ${sample._2}, ${sample._3})"
+    qb shouldEqual s"(${Primitive[String].asCql(sample._1)}, ${Primitive[String].asCql(sample._2)}, ${Primitive[Int].asCql(sample._3)})"
   }
 
   it should "serialize a Set[Int] primitive accordingly" in {
@@ -147,6 +147,7 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   }
 
   it should "automatically generate a primitive for an optional type" in {
-    """val ev = Primitive[Option[Record]]""" should compile
+    val r = DerivedField
+    """val ev = Primitive[Option[DerivedField]]""" should compile
   }
 }

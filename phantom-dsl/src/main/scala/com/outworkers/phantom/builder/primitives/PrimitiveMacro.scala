@@ -284,6 +284,8 @@ class PrimitiveMacro(val c: blackbox.Context) {
       }
 
       override def frozen: $boolType = true
+
+      override def shouldFreeze: $boolType = true
     }"""
 
     //c.echo(c.enclosingPosition, showCode(tree))
