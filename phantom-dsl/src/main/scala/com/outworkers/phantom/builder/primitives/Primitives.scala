@@ -495,7 +495,6 @@ object Primitives {
     override def cassandraType: String = cType
 
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
-
       coll match {
         case Primitive.nullValue => Primitive.nullValue
         case c if c.isEmpty => Utils.pack(new Array[ByteBuffer](coll.size), coll.size, version)

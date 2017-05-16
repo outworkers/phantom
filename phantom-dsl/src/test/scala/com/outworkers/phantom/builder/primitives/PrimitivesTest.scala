@@ -142,7 +142,7 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   it should "derive a primitive for a custom wrapper type" in {
     val str = gen[String]
 
-    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
+    Primitive[DerivedField].asCql(DerivedField(str)) shouldEqual CQLQuery.escape(str)
   }
 
   it should "automatically generate a primitive for an optional type" in {

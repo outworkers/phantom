@@ -245,7 +245,7 @@ class PrimitiveRoundtripTests extends FlatSpec
   }
 
   it should "serialize and deserialize a derived Primitive" in {
-    sroundtrip[Record]
+    sroundtrip[DerivedField]
   }
 
 }

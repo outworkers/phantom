@@ -27,14 +27,14 @@ case class Article(
   orderId: Long
 )
 
-abstract class Articles extends Table[Articles, Article] with RootConnector {
+abstract class Articles extends Table[Articles, Article] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
   object orderId extends LongColumn
 }
 
 
-abstract class ArticlesByAuthor extends Table[ArticlesByAuthor, Article] with RootConnector {
+abstract class ArticlesByAuthor extends Table[ArticlesByAuthor, Article] {
   object author_id extends UUIDColumn with PartitionKey
   object category extends UUIDColumn with PartitionKey
   object id extends UUIDColumn with PrimaryKey
@@ -45,7 +45,7 @@ abstract class ArticlesByAuthor extends Table[ArticlesByAuthor, Article] with Ro
 
 case class User(id: UUID, name:String)
 
-abstract class Users extends Table[Users, User] with RootConnector {
+abstract class Users extends Table[Users, User] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
 
