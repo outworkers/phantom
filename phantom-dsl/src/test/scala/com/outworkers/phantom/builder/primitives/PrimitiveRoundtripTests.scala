@@ -32,6 +32,8 @@ class PrimitiveRoundtripTests extends FlatSpec
     PropertyCheckConfiguration(minSuccessful = 100)
   }
 
+  implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
+
   private[this] val protocol = ProtocolVersion.V5
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
