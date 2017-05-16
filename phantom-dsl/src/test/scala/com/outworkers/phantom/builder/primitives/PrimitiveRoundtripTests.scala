@@ -15,105 +15,22 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FlatSpec, Matchers}
-import com.outworkers.util.samplers._
-import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.util.{Date, UUID}
+import java.util.Date
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import org.scalacheck.{Arbitrary, Gen}
-import com.datastax.driver.core.{CodecUtils, LocalDate, ProtocolVersion}
+import com.datastax.driver.core.{CodecUtils, ProtocolVersion}
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.dsl.DateTime
+import com.outworkers.util.samplers._
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{FlatSpec, Matchers, _}
 
 class PrimitiveRoundtripTests extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
-
-
-    implicit val tpPrimitive = new Primitive[(Int, String)] {
-      override def cassandraType: String = QueryBuilder.Collections.tupleType(Primitive[Int].cassandraType, Primitive[String].cassandraType).queryString
-      override def serialize(source: (Int, String), version: ProtocolVersion): ByteBuffer = {
-        if (source == Primitive.nullValue) {
-          Primitive.nullValue
-        } else {
-          val size = {
-            val el0 = Primitive[Int].serialize(source._1, version)
-            Some(4 + (if (el0 == Primitive.nullValue) 0 else el0.remaining()))
-          }.flatMap((el0) => {
-            val el1 = Primitive[String].serialize(source._2, version)
-            Some(4 + (if (el1 == Primitive.nullValue) 0 else el1.remaining()))
-          }.map((el1) => el0 + el1)).get
-
-
-          val length = 2
-          val elements = new _root_.scala.Array[_root_.java.nio.ByteBuffer](length)
-          val res = _root_.java.nio.ByteBuffer.allocate(size)
-          val buf = {
-            val serialized = Primitive[Int].serialize(source._1, version)
-            val buf = if (serialized == Primitive.nullValue)
-              res.putInt(-1)
-            else {
-              res.putInt(serialized.remaining())
-              res.put(serialized.duplicate())
-            }
-            Some(buf)
-          }.flatMap((el0) => {
-            val serialized = Primitive[String].serialize(source._2, version)
-            val buf = if (serialized == Primitive.nullValue)
-              res.putInt(-1)
-            else {
-              res.putInt(serialized.remaining())
-              res.put(serialized.duplicate())
-            }
-            Some(buf)
-          }.map((el1) => ()))
-
-          buf.get
-
-          res.flip().asInstanceOf[_root_.java.nio.ByteBuffer]
-        }
-      }
-
-      override def deserialize(source: ByteBuffer, version: ProtocolVersion): (Int, String) = {
-        if (source == Primitive.nullValue) {
-          Primitive.nullValue
-        } else {
-          try {
-            val input = source.duplicate()
-
-            {
-              val n0 = input.getInt()
-              val el0 = if (n0.<(0))
-                null
-              else
-                CodecUtils.readBytes(input, n0)
-              Some(Primitive[Int].deserialize(input, version))
-            }.flatMap(fq0 => {
-              val n1 = input.getInt()
-              val el1 = if (n1.<(0))
-                null
-              else
-                _root_.com.datastax.driver.core.CodecUtils.readBytes(input, n1)
-              Some(_root_.com.outworkers.phantom.builder.primitives.Primitive[String].deserialize(input, version))
-            }.map((fq1) => Tuple2(fq0, fq1))).get
-          } catch {
-            case e: java.nio.BufferUnderflowException => throw new InvalidTypeException("Not enough bytes to deserialize a tuple", e)
-          }
-        }
-      }
-
-      override def asCql(tp: (Int, String)): String = {
-        QueryBuilder.Collections.tupled(
-          Primitive[Int].asCql(tp._1),
-          Primitive[String].asCql(tp._2)
-        ).queryString
-      }
-      override def frozen: _root_.scala.Boolean = true
-    }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 100)
@@ -290,6 +207,22 @@ class PrimitiveRoundtripTests extends FlatSpec
 
   it should "serialize and deserialize a tuple (String, Int, Date) primitive" in {
     roundtrip[(String, Int, Date)]
+  }
+
+  it should "serialize and deserialize a tuple (String, Int, Date, Boolean) primitive" in {
+    roundtrip[(String, Int, Date, Boolean)]
+  }
+
+  it should "serialize and deserialize a set of tuples Set[(String, Int, Date, Boolean)] primitive" in {
+    roundtrip[Set[(String, Int, Date, Boolean)]]
+  }
+
+  it should "serialize and deserialize a list of tuples Set[(String, Int, Date, Boolean)] primitive" in {
+    roundtrip[List[(String, Int, Date, Boolean)]]
+  }
+
+  it should "serialize and deserialize a map of tuples Map[String, (String, Int, Date, Boolean)] primitive" in {
+    roundtrip[Map[String, (String, Int, Date, Boolean)]]
   }
 
   it should "serialize and deserialize a derived Primitive" in {

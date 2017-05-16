@@ -228,7 +228,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
          ${fqTerm(i)} <- {
             val $tm = $inputTerm.getInt()
             val $el = if ($tm < 0) { null } else { $codecUtils.readBytes($inputTerm, $tm) }
-            Some($prefix.Primitive[${f.tpe}].deserialize($inputTerm, $versionTerm))
+            Some($prefix.Primitive[${f.tpe}].deserialize($el, $versionTerm))
          }
       """
     }
@@ -257,8 +257,6 @@ class PrimitiveMacro(val c: blackbox.Context) {
           val size = {for (..$sizeComp) yield ($sumTerm) } get
 
           val length = ${fields.size}
-          val elements = new _root_.scala.Array[$bufferType](length)
-
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get
@@ -288,8 +286,8 @@ class PrimitiveMacro(val c: blackbox.Context) {
       override def frozen: $boolType = true
     }"""
 
-    c.echo(c.enclosingPosition, showCode(tree))
-    Console.println(showCode(tree))
+    //c.echo(c.enclosingPosition, showCode(tree))
+    //Console.println(showCode(tree))
 
     tree
   }

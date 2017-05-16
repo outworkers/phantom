@@ -34,7 +34,7 @@ case class Debugger(
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
-  type Repr <: HList
+  type Repr
 
   def tableName: String
 
@@ -420,7 +420,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
     val nothingTpe: Tree = tq"_root_.scala.Nothing"
-    val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
+    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
     val tree = q"""
