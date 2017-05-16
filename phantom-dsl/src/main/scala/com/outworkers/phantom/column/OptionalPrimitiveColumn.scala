@@ -31,7 +31,7 @@ class OptionalPrimitiveColumn[
   @specialized(Int, Double, Float, Long, Boolean, Short) T
 ](table: CassandraTable[Owner, Record])(implicit ev: Primitive[T]) extends OptionalColumn[Owner, Record, T](table) {
 
-  def cassandraType: String = ev.cassandraType
+  def cassandraType: String = ev.dataType
 
   def optional(r: Row): Try[T] = ev.fromRow(name, r)
 

@@ -78,7 +78,7 @@ abstract class JsonListColumn[
 
   override def valueAsCql(obj: ValueType): String = CQLQuery.empty.singleQuote(toJson(obj))
 
-  override val cassandraType = cp.cassandraType
+  override val cassandraType = cp.dataType
 
   override def parse(r: Row): Try[List[ValueType]] = {
     if (r.isNull(name)) {
@@ -98,7 +98,7 @@ abstract class JsonSetColumn[T <: CassandraTable[T, R], R, ValueType](
 
   override def asCql(v: Set[ValueType]): String = cp.asCql(v map toJson)
 
-  override val cassandraType = cp.cassandraType
+  override val cassandraType = cp.dataType
 
   override def parse(r: Row): Try[Set[ValueType]] = {
     if (r.isNull(name)) {
@@ -123,8 +123,8 @@ abstract class JsonMapColumn[
   override def keyAsCql(v: KeyType): String = keyPrimitive.asCql(v)
 
   override val cassandraType = QueryBuilder.Collections.mapType(
-    keyPrimitive.cassandraType,
-    strPrimitive.cassandraType
+    keyPrimitive.dataType,
+    strPrimitive.dataType
   ).queryString
 
   override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)

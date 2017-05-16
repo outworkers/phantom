@@ -211,7 +211,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "alter column type from text to blob" in {
         val qb = basicTable.alter(_.placeholder)(Primitive[ByteBuffer]).queryString
-        qb shouldEqual s"ALTER TABLE phantom.basicTable ALTER placeholder TYPE ${Primitive[ByteBuffer].cassandraType};"
+        qb shouldEqual s"ALTER TABLE phantom.basicTable ALTER placeholder TYPE ${Primitive[ByteBuffer].dataType};"
       }
 
       "alter a column type from placedholder to test" in {

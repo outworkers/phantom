@@ -208,7 +208,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     .append(CQLSyntax.Symbols.`>`)
   }
 
-  def frozen[V](p: Primitive[V]): CQLQuery = frozen(p.cassandraType, p.frozen)
+  def frozen[V](p: Primitive[V]): CQLQuery = frozen(p.dataType, p.frozen)
 
   def frozen(cassandraType: String, shouldFreeze: Boolean): CQLQuery = {
     if (shouldFreeze) {

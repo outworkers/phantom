@@ -21,6 +21,7 @@ import java.util.Date
 import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.phantom.Row
+import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -92,7 +93,13 @@ abstract class Primitive[RR] {
     */
   def asCql(value: RR): String
 
-  def cassandraType: String
+  def dataType: String
+
+  def cassandraType: String = if (frozen) {
+    QueryBuilder.Collections.frozen(dataType).queryString
+  } else {
+    dataType
+  }
 
   def serialize(obj: RR, protocol: ProtocolVersion): ByteBuffer
 
@@ -151,7 +158,7 @@ object Primitive {
 
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
-      override def cassandraType: String = primitive.cassandraType
+      override def dataType: String = primitive.dataType
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         primitive.serialize(to(obj), protocol)
@@ -177,14 +184,14 @@ object Primitive {
   def manuallyDerive[Target, Source](
     to: Target => Source,
     from: Source => Target
-  )(ev: Primitive[Source])(tpe: String = ev.cassandraType): Primitive[Target] = {
+  )(ev: Primitive[Source])(tpe: String = ev.dataType): Primitive[Target] = {
     new Primitive[Target] {
 
       override def frozen = ev.frozen
 
       override def asCql(value: Target): String = ev.asCql(to(value))
 
-      override def cassandraType: String = tpe
+      override def dataType: String = ev.dataType
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         ev.serialize(to(obj), protocol)

@@ -31,8 +31,6 @@ import scala.concurrent.duration._
 
 class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTest {
 
-  def db: TestDatabase = TestDatabase
-
   private[this] val BasicTable = db.basicTable
   final val DefaultTtl = 500
   final val OneDay = 86400
@@ -481,91 +479,6 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         val qb = QueryBuilder.Create.mapIndex("t", "k", "col").queryString
 
         qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(keys(col))"
-      }
-    }
-
-    "should account for static modifiers on a collection" - {
-      "add a static column modifier on a simple collection" in {
-        val stringP = Primitive[String]
-
-        db.staticCollectionTable.staticList.cassandraType shouldEqual s"list<${stringP.cassandraType}> static"
-      }
-    }
-
-    "should generate a correct cassandra type for collections " - {
-      "freeze a collection type without a frozen inner type" in {
-        val qb = QueryBuilder.Collections.collectionType(
-          colType = CQLSyntax.Collections.list,
-          cassandraType = CQLSyntax.Types.BigInt,
-          shouldFreeze = true,
-          freezeInner = false,
-          static = false
-        ).queryString
-
-        qb shouldEqual "frozen<list<bigint>>"
-      }
-
-      "freeze a collection type with a frozen inner type" in {
-
-        val tpe = QueryBuilder.Collections.tupleType(
-          CQLSyntax.Types.BigInt,
-          CQLSyntax.Types.Text
-        ).queryString
-
-        val qb = QueryBuilder.Collections.collectionType(
-          colType = CQLSyntax.Collections.list,
-          cassandraType = tpe,
-          shouldFreeze = true,
-          freezeInner = true,
-          static = false
-        ).queryString
-
-        qb shouldEqual "frozen<list<frozen<tuple<bigint, text>>>>"
-      }
-
-      "generate a frozen collection if its used as a partition key " in {
-
-        val stringP = Primitive[String]
-
-        val cType = db.primaryCollectionsTable.listIndex.cassandraType
-
-        cType shouldEqual s"frozen<list<${stringP.cassandraType}>>"
-      }
-
-      "generate a frozen collection if its used as a primary key " in {
-        val stringP = Primitive[String]
-
-        val cType = db.primaryCollectionsTable.setCol.cassandraType
-
-        cType shouldEqual s"frozen<set<${stringP.cassandraType}>>"
-      }
-
-      "generate a frozen collection type for a tuple inside a list" in {
-        val innerP = Primitive[(Int, String)]
-        val cType = db.tupleCollectionsTable.tuples.cassandraType
-
-        cType shouldEqual s"list<frozen<${innerP.cassandraType}>>"
-      }
-
-      "generate a frozen collection type for a tuple inside a set" in {
-        val innerP = Primitive[(Int, String)]
-        val cType = db.tupleCollectionsTable.uniqueTuples.cassandraType
-
-        cType shouldEqual s"set<frozen<${innerP.cassandraType}>>"
-      }
-
-      "generate a frozen collection type for map with a collection key and value type" in {
-        val stringP = Primitive[String]
-        val cType = db.nestedCollectionTable.doubleProps.cassandraType
-
-        cType shouldEqual s"map<frozen<set<${stringP.cassandraType}>>, frozen<list<${stringP.cassandraType}>>>"
-      }
-
-      "generate a frozen collection type for map with a collection value type" in {
-        val stringP = Primitive[String]
-        val cType = db.nestedCollectionTable.props.cassandraType
-
-        cType shouldEqual s"map<text, frozen<list<${stringP.cassandraType}>>>"
       }
     }
   }

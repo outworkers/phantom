@@ -173,7 +173,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
 
         TupleType(
           currentTerm,
-          q"$prefix.Primitive[$argTpe].cassandraType",
+          q"$prefix.Primitive[$argTpe].dataType",
           fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(index = $index, row = $sourceTerm)",
           q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)",
           argTpe
@@ -244,7 +244,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
     val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
     val tree = q"""new $prefix.Primitive[$tpe] {
-      override def cassandraType: $strType = {
+      override def dataType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
           .queryString
