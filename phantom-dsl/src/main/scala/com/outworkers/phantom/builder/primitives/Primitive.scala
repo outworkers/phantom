@@ -145,6 +145,9 @@ object Primitive {
     val primitive = implicitly[Primitive[Source]]
 
     new Primitive[Target] {
+
+      override def frozen = primitive.frozen
+
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
       override def cassandraType: String = primitive.cassandraType

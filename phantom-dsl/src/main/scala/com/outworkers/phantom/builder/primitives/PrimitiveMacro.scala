@@ -199,8 +199,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
       fq"""
         $term <- {
           val $term = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
-          size += (4 + { if ($term == null) 0 else $term.remaining()})
-          ()
+          Some((4 + { if ($term == null) 0 else $term.remaining()}))
         }
       """
     }
@@ -215,8 +214,8 @@ class PrimitiveMacro(val c: blackbox.Context) {
              res.putInt(serialized.remaining())
              res.put(serialized.duplicate())
            }
-        }
         Some(buf)
+      }
       """
     }
 
@@ -234,6 +233,13 @@ class PrimitiveMacro(val c: blackbox.Context) {
       """
     }
 
+    val sumTerm = indexedFields.foldRight(q"") { case ((_, pos), acc) =>
+      acc match {
+        case t if t.isEmpty => q"${elTerm(pos)}"
+        case _ => q"${elTerm(pos)} + $acc"
+      }
+    }
+
     val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
     val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
@@ -248,10 +254,10 @@ class PrimitiveMacro(val c: blackbox.Context) {
         if ($sourceTerm == null) {
            null
         } else {
-          var size = 0
+          val size = {for (..$sizeComp) yield ($sumTerm) } get
+
           val length = ${fields.size}
           val elements = new _root_.scala.Array[$bufferType](length)
-          val _ = for (..$sizeComp) yield ()
 
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()

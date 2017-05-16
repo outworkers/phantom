@@ -16,11 +16,12 @@
 package com.outworkers.phantom.macros
 
 import com.google.common.base.CaseFormat
-import com.outworkers.phantom.{ CassandraTable, Row}
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
+import shapeless.HList
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
@@ -33,7 +34,7 @@ case class Debugger(
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
-  type Repr
+  type Repr <: HList
 
   def tableName: String
 
@@ -315,7 +316,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     *     date: DateTime
     *   )
     *
-    *   class MyTable extends CassandraTable[MyTable, MyRecord] {
+    *   class MyTable extends Table[MyTable, MyRecord] {
     *     object id extends UUIDColumn with PartitionKey
     *     object email extends StringColumn
     *     object date extends DateTimeColumn
@@ -331,7 +332,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     *     email: String,
     *   )
     *
-    *   class MyTable extends CassandraTable[MyTable, MyRecord] {
+    *   class MyTable extends Table[MyTable, MyRecord] {
     *     object id extends UUIDColumn with PartitionKey
     *     object email extends StringColumn
     *     object date extends DateTimeColumn
@@ -419,7 +420,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
     val nothingTpe: Tree = tq"_root_.scala.Nothing"
-    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
+    val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
     val tree = q"""
