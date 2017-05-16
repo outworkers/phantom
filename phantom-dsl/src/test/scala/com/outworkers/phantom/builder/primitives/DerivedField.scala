@@ -15,10 +15,22 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-case class Record(value: String)
+case class DerivedField(value: String)
 
-object Record {
-  implicit val recordPrimitive: Primitive[Record] = {
-    Primitive.derive[Record, String](_.value)(Record.apply)
+object DerivedField {
+  implicit val recordPrimitive: Primitive[DerivedField] = {
+    Primitive.derive[DerivedField, String](_.value)(DerivedField.apply)
   }
 }
+
+case class DerivedTupleField(value: String, num: Long)
+
+object DerivedTupleField {
+  implicit val recordPrimitive: Primitive[DerivedTupleField] = {
+    Primitive.derive[DerivedTupleField, (String, Long)](x => x.value -> x.num)(x => {
+      val (a, b) = x
+      DerivedTupleField(a, b)
+    })
+  }
+}
+

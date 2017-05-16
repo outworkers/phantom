@@ -19,7 +19,6 @@ import com.outworkers.phantom.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
@@ -51,7 +50,7 @@ class CollectionColumn[
 
   override val cassandraType = QueryBuilder.Collections.collectionType(
     collection,
-    vp.cassandraType,
+    vp.dataType,
     shouldFreeze,
     vp.frozen,
     isStaticColumn

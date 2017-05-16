@@ -98,24 +98,27 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   }
 
   it should "freeze List collection primitives" in {
-    Primitive[List[String]].frozen shouldEqual true
+    Primitive[List[String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Set collection primitives" in {
-    Primitive[Set[String]].frozen shouldEqual true
+    Primitive[Set[String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Map collection primitives" in {
-    Primitive[Map[String, String]].frozen shouldEqual true
+    Primitive[Map[String, String]].shouldFreeze shouldEqual true
   }
 
   it should "freeze Tuple collection primitives" in {
-    Primitive[(String, String, Int)].frozen shouldEqual true
+    Primitive[(String, String, Int)].shouldFreeze shouldEqual true
   }
 
   it should "correctly serialize a primitive type" in {
     val sample = gen[(String, String, Int)]
     val qb = Primitive[(String, String, Int)].asCql(sample)
+    val (s1, s2, i1) = sample
+
+    qb shouldEqual s"(${Primitive[String].asCql(s1)}, ${Primitive[String].asCql(s2)}, ${Primitive[Int].asCql(i1)})"
   }
 
   it should "serialize a Set[Int] primitive accordingly" in {
@@ -142,10 +145,11 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   it should "derive a primitive for a custom wrapper type" in {
     val str = gen[String]
 
-    Primitive[Record].asCql(Record(str)) shouldEqual CQLQuery.escape(str)
+    Primitive[DerivedField].asCql(DerivedField(str)) shouldEqual CQLQuery.escape(str)
   }
 
   it should "automatically generate a primitive for an optional type" in {
-    """val ev = Primitive[Option[Record]]""" should compile
+    val r = DerivedField
+    """val ev = Primitive[Option[DerivedField]]""" should compile
   }
 }

@@ -17,7 +17,7 @@ package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.dsl._
 
-abstract class BasicTable extends Table[BasicTable, String] with RootConnector {
+abstract class BasicTable extends Table[BasicTable, String] {
 
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with PrimaryKey
@@ -65,7 +65,7 @@ case class NamedPartitionRecord(
   id: UUID
 )
 
-abstract class EnumTable extends Table[EnumTable, EnumRecord] with RootConnector {
+abstract class EnumTable extends Table[EnumTable, EnumRecord] {
   object id extends StringColumn with PartitionKey
   object enum extends EnumColumn[Records#Value]
   object optEnum extends OptionalEnumColumn[Records#Value]
@@ -73,7 +73,7 @@ abstract class EnumTable extends Table[EnumTable, EnumRecord] with RootConnector
 }
 
 
-abstract class NamedEnumTable extends Table[NamedEnumTable, NamedEnumRecord] with RootConnector {
+abstract class NamedEnumTable extends Table[NamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn with PartitionKey
   object enum extends EnumColumn[NamedRecords#Value]
   object optEnum extends OptionalEnumColumn[NamedRecords#Value]
@@ -87,7 +87,7 @@ abstract class NamedPartitionEnumTable extends Table[
   object id extends UUIDColumn with PrimaryKey
 }
 
-abstract class ClusteringTable extends Table[ClusteringTable, String] with RootConnector {
+abstract class ClusteringTable extends Table[ClusteringTable, String] {
 
   object id extends UUIDColumn with PartitionKey
   object id2 extends UUIDColumn with ClusteringOrder with Ascending

@@ -132,7 +132,7 @@ object Primitives {
 
     def asCql(value: String): String = CQLQuery.empty.singleQuote(value)
 
-    override def cassandraType: String = CQLSyntax.Types.Text
+    override def dataType: String = CQLSyntax.Types.Text
 
     override def serialize(obj: String, version: ProtocolVersion): ByteBuffer = {
       if (obj == Primitive.nullValue) {
@@ -157,7 +157,7 @@ object Primitives {
 
     def asCql(value: Int): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.Int
+    override def dataType: String = CQLSyntax.Types.Int
 
     override def serialize(obj: Int, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putInt(0, obj)
@@ -180,7 +180,7 @@ object Primitives {
 
     def asCql(value: Short): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.SmallInt
+    override def dataType: String = CQLSyntax.Types.SmallInt
 
     override def serialize(obj: Short, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putShort(0, obj)
@@ -200,7 +200,7 @@ object Primitives {
   object TinyIntPrimitive extends Primitive[Byte] {
     def asCql(value: Byte): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.TinyInt
+    override def dataType: String = CQLSyntax.Types.TinyInt
 
     override def serialize(obj: Byte, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(1)
@@ -225,7 +225,7 @@ object Primitives {
 
     def asCql(value: Double): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.Double
+    override def dataType: String = CQLSyntax.Types.Double
 
     override def serialize(obj: Double, version: ProtocolVersion): ByteBuffer = {
       ByteBuffer.allocate(byteLength).putDouble(0, obj)
@@ -249,7 +249,7 @@ object Primitives {
 
     def asCql(value: Long): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.BigInt
+    override def dataType: String = CQLSyntax.Types.BigInt
 
     override def serialize(obj: Long, version: ProtocolVersion): ByteBuffer = {
       val bb = ByteBuffer.allocate(byteLength)
@@ -276,7 +276,7 @@ object Primitives {
 
     def asCql(value: Float): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.Float
+    override def dataType: String = CQLSyntax.Types.Float
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Float = {
       checkNullsAndLength(
@@ -300,7 +300,7 @@ object Primitives {
 
     def asCql(value: UUID): String = value.toString
 
-    override def cassandraType: String = CQLSyntax.Types.UUID
+    override def dataType: String = CQLSyntax.Types.UUID
 
     override def serialize(obj: UUID, version: ProtocolVersion): ByteBuffer = {
       nullValueCheck(obj) { value =>
@@ -328,7 +328,7 @@ object Primitives {
     private[this] val TRUE: ByteBuffer = ByteBuffer.wrap(Array[Byte](1))
     private[this] val FALSE: ByteBuffer = ByteBuffer.wrap(Array[Byte](0))
 
-    val cassandraType = CQLSyntax.Types.Boolean
+    override val dataType = CQLSyntax.Types.Boolean
 
     def fromRow(row: GettableData, name: String): Option[Boolean] =
       if (row.isNull(name)) None else Try(row.getBool(name)).toOption
@@ -353,7 +353,7 @@ object Primitives {
   }
 
   object BigDecimalIsPrimitive extends Primitive[BigDecimal] {
-    val cassandraType = CQLSyntax.Types.Decimal
+    override def dataType: String = CQLSyntax.Types.Decimal
 
     override def asCql(value: BigDecimal): String = value.toString()
 
@@ -393,7 +393,7 @@ object Primitives {
   }
 
   object InetAddressPrimitive extends Primitive[InetAddress] {
-    val cassandraType = CQLSyntax.Types.Inet
+    override val dataType = CQLSyntax.Types.Inet
 
     override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
 
@@ -417,7 +417,7 @@ object Primitives {
   }
 
   object BigIntPrimitive extends Primitive[BigInt] {
-    val cassandraType = CQLSyntax.Types.Varint
+    override val dataType = CQLSyntax.Types.Varint
 
     override def asCql(value: BigInt): String = value.toString()
 
@@ -435,7 +435,7 @@ object Primitives {
   }
 
   object BlobIsPrimitive extends Primitive[ByteBuffer] {
-    val cassandraType = CQLSyntax.Types.Blob
+    override val dataType = CQLSyntax.Types.Blob
 
     override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
 
@@ -445,7 +445,7 @@ object Primitives {
   }
 
   object LocalDateIsPrimitive extends Primitive[LocalDate] {
-    val cassandraType = CQLSyntax.Types.Timestamp
+    override val dataType = CQLSyntax.Types.Timestamp
 
     val codec = IntPrimitive
 
@@ -488,14 +488,15 @@ object Primitives {
     implicit ev: Primitive[RR],
     cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
-    override def frozen: Boolean = true
+    override def frozen: Boolean = ev.frozen
+
+    override def shouldFreeze: Boolean = true
 
     override def asCql(value: M[RR]): String = converter(value)
 
-    override def cassandraType: String = cType
+    override val dataType = cType
 
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
-
       coll match {
         case Primitive.nullValue => Primitive.nullValue
         case c if c.isEmpty => Utils.pack(new Array[ByteBuffer](coll.size), coll.size, version)
@@ -568,7 +569,7 @@ object Primitives {
         }
       }
 
-      override def cassandraType: String = ev.cassandraType
+      override def dataType: String = ev.dataType
 
       override def asCql(value: Option[T]): String = {
         value.map(ev.asCql).getOrElse(nullString)
@@ -579,8 +580,9 @@ object Primitives {
   def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
     new Primitive[Map[K, V]] {
       override def frozen: Boolean = true
+      override def shouldFreeze: Boolean = true
 
-      override def cassandraType: String = {
+      override def dataType: String = {
         QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
       }
 

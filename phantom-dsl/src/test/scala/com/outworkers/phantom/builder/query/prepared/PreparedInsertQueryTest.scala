@@ -17,8 +17,9 @@ package com.outworkers.phantom.builder.query.prepared
 
 import com.datastax.driver.core.{BoundStatement, ProtocolVersion}
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.primitives.{DerivedField, DerivedTupleField}
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{PrimitiveCassandra22, PrimitiveRecord, Recipe}
+import com.outworkers.phantom.tables.{DerivedRecord, PrimitiveCassandra22, PrimitiveRecord, Recipe}
 import com.outworkers.util.samplers._
 
 class PreparedInsertQueryTest extends PhantomSuite {
@@ -27,6 +28,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
     database.recipes.insertSchema()
+    database.derivedPrimitivesTable.insertSchema()
     database.primitives.insertSchema()
     if (session.v4orNewer) {
       database.primitivesCassandra22.insertSchema()
@@ -177,6 +179,32 @@ class PreparedInsertQueryTest extends PhantomSuite {
     val chain = for {
       store <- exec.future()
       res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "be able to bind a derived primitive" in {
+    val sample = DerivedRecord(
+      gen[UUID],
+      gen[ShortString].value,
+      gen[DerivedField],
+      gen[DerivedTupleField]
+    )
+
+    val query = database.derivedPrimitivesTable.insert
+      .p_value(_.id, ?)
+      .p_value(_.description, ?)
+      .p_value(_.rec, ?)
+      .p_value(_.complex, ?)
+      .prepare()
+
+    val chain = for {
+      store <- query.bind(sample).future()
+      res <- database.derivedPrimitivesTable.select.where(_.id eqs sample.id).one()
     } yield res
 
     whenReady(chain) { res =>

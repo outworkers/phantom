@@ -44,7 +44,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with DeleteImplicits {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
-  type Table[T <: Table[T, R], R] = phantom.CassandraTable[T, R]
+
+  trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with RootConnector
+
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
   type Descending = com.outworkers.phantom.keys.Descending

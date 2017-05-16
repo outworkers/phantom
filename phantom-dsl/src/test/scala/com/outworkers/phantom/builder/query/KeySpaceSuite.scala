@@ -30,6 +30,8 @@ trait KeySpaceSuite { self: Suite =>
 trait SerializationTest extends Matchers with TestDatabase.connector.Connector {
   self: Suite =>
 
+  def db: TestDatabase = TestDatabase
+
   implicit object JodaTimeSampler extends Sample[DateTime] {
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }

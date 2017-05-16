@@ -170,7 +170,7 @@ object AlterQuery {
 
     new AlterQuery(
       table,
-      QueryBuilder.Alter.alter(qb, select(table).name, newType.cassandraType),
+      QueryBuilder.Alter.alter(qb, select(table).name, newType.dataType),
       QueryOptions.empty
     )
   }

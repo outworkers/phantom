@@ -21,6 +21,7 @@ import java.util.Date
 import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.phantom.Row
+import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -92,7 +93,13 @@ abstract class Primitive[RR] {
     */
   def asCql(value: RR): String
 
-  def cassandraType: String
+  def dataType: String
+
+  def cassandraType: String = if (frozen) {
+    QueryBuilder.Collections.frozen(dataType).queryString
+  } else {
+    dataType
+  }
 
   def serialize(obj: RR, protocol: ProtocolVersion): ByteBuffer
 
@@ -107,8 +114,6 @@ abstract class Primitive[RR] {
   }
 
   /**
-    * Whether or not this primitive should freeze if used inside a collection column type
-    * or if used as part of a partition column.
     * There are several kinds of primitives that must freeze in both scenarios:
     * - Set columns
     * - List columns
@@ -118,6 +123,13 @@ abstract class Primitive[RR] {
     * @return A boolean that marks if this should be frozen.
     */
   def frozen: Boolean = false
+
+  /**
+    * Whether or not this primitive should freeze if used together with a primary column.
+    * or if used as part of a partition column.
+    * @return A Boolean marking whether or not this should freeze.
+    */
+  def shouldFreeze: Boolean = false
 }
 
 object Primitive {
@@ -148,10 +160,9 @@ object Primitive {
 
       override def frozen = primitive.frozen
 
-
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
-      override def cassandraType: String = primitive.cassandraType
+      override def dataType: String = primitive.dataType
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         primitive.serialize(to(obj), protocol)
@@ -177,14 +188,16 @@ object Primitive {
   def manuallyDerive[Target, Source](
     to: Target => Source,
     from: Source => Target
-  )(ev: Primitive[Source])(tpe: String = ev.cassandraType): Primitive[Target] = {
+  )(ev: Primitive[Source])(tpe: String = ev.dataType): Primitive[Target] = {
     new Primitive[Target] {
 
-      override def frozen = ev.frozen
+      override def frozen: Boolean = ev.frozen
+
+      override def shouldFreeze: Boolean = ev.shouldFreeze
 
       override def asCql(value: Target): String = ev.asCql(to(value))
 
-      override def cassandraType: String = tpe
+      override def dataType: String = tpe
 
       override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
         ev.serialize(to(obj), protocol)

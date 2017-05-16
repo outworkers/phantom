@@ -178,7 +178,7 @@ class ThriftMapColumn[
   override val serializer: CompactThriftSerializer[V] = hp.serializer
 
   override val cassandraType = QueryBuilder.Collections.mapType(
-    keyPrimitive.cassandraType,
+    keyPrimitive.dataType,
     CQLSyntax.Types.Text
   ).queryString
 
