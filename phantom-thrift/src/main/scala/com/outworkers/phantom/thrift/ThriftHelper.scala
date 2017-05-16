@@ -37,9 +37,9 @@ class ThriftHelperMacro(val c: blackbox.Context) {
   private[this] val scroogePkg = q"_root_.com.twitter.scrooge"
   private[this] val serializerTpe: Type => Tree = t => tq"$scroogePkg.CompactThriftSerializer[$t]"
 
-  def materialize[T <: ThriftStruct : c.WeakTypeTag]: Tree = {
+  def materialize[T <: ThriftStruct : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
-    val companion = tpe.typeSymbol.name.decodedName.toTermName
+    val companion = tpe.typeSymbol.companion
 
     q"""
       new $pkgRoot.ThriftHelper[$tpe] {

@@ -13,68 +13,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.jdk8
+package com.outworkers.phantom
 
 import java.time._
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause
-import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
-import com.outworkers.phantom.builder.ops.{MaxTimeUUID, MinTimeUUID, TimeUUIDOperator}
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.dsl.CassandraTable
+import com.outworkers.phantom.builder.ops.TimeUUIDOperator
 import org.joda.time.{DateTime, DateTimeZone}
 
-package object dsl extends DefaultJava8Primitives {
-
-  type OffsetDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, OffsetDateTime]
-
-  type ZonedDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, ZonedDateTime]
-
-  type JdkLocalDateColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, JdkLocalDate]
-
-  type JdkLocalDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, LocalDateTime]
-
-  type OptionalOffsetDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
-
-  type OptionalZonedDateTimeColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
-
-  type OptionalJdkLocalDateColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
-
-  type OptionalJdkLocalDateTimeColumn[
-  Owner <: CassandraTable[Owner, Record],
-  Record
-  ] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
-
+package object jdk8 extends DefaultJava8Primitives {
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
-  def instantToTimeuuid(instant: Instant): UUID = {
 
+
+  implicit class Jdk8Columns[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
+    class OffsetDateTimeColumn extends table.Col[OffsetDateTime]
+  }
+
+  type OffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  type ZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, ZonedDateTime]
+
+  type JdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, JdkLocalDate]
+
+  type JdkLocalDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.PrimitiveColumn[Owner, Record, LocalDateTime]
+
+  type OptionalOffsetDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
+
+  type OptionalZonedDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
+
+  type OptionalJdkLocalDateColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
+
+  type OptionalJdkLocalDateTimeColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ] = column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
+
+  def instantToTimeuuid(instant: Instant): UUID = {
     new UUID(
       UUIDs.startOf(instant.toEpochMilli).getMostSignificantBits,
       scala.util.Random.nextLong()
@@ -82,15 +82,15 @@ package object dsl extends DefaultJava8Primitives {
   }
 
   implicit class OffsetDateTimeHelper(val date: OffsetDateTime) extends AnyVal {
-    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class ZonedDateTimeHelper(val date: ZonedDateTime) extends AnyVal {
-    def timeuuid(): UUID = instantToTimeuuid(date.toInstant)
+    def timeuuid: UUID = instantToTimeuuid(date.toInstant)
 
-    def asJoda(): DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
+    def asJoda: DateTime = new DateTime(date.toInstant.toEpochMilli, DateTimeZone.UTC)
   }
 
   implicit class TimeUUIDAugmenter(val uuid: UUID) extends AnyVal {

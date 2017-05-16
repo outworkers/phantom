@@ -1,4 +1,6 @@
-### How to model your application with phantom
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Phantom offers an interesting first class citizen construct called the `Database` class. It seems quite simple, but it is designed to serve several purposes simultaneously:
 
@@ -21,7 +23,7 @@ At the very bottom level, phantom queries require several implicits in scope to 
 
 However, from an app or service consumer perspective, when pulling in dependencies or calling a database service, as a developer I do not want to be concerned with providing a `session` or a `keySpace`. Under some circumstances I may want to provide a custom `ExecutionContext` but that's a different story.
 
-That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector` to its companion `ConcreteTable` class. Let's look at an example:
+That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector`.
 
 ```scala
 case class Recipe(
@@ -36,26 +38,24 @@ case class Recipe(
 
 class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn with PartitionKey
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
-  object uid extends UUIDColumn(this)
-
+  object uid extends UUIDColumn
 }
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
 ```scala
-
 
 import com.datastax.driver.core.Session
 
@@ -65,7 +65,6 @@ trait RootConnector {
 
   implicit def session: Session
 }
-
 ```
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
@@ -79,7 +78,8 @@ class RecipesDatabase(
 
 }
 ```
-The interesting bit is that the `Connector` is an inner trait inside the `connector` object that will basically statically point all implicit resolutions for a `session` and `keySpace` inside a `database` instance to a specific `session` and `keySpace`.
+
+The interesting bit is that the `connector.Connector` is an inner trait inside the `connector` object that will basically statically point all implicit resolutions for a `session` and `keySpace` inside a `database` instance to a specific `session` and `keySpace`.
 
 "It seems a bit complex, why bother to go to such lengths?" The answer to that is simple, in an ideal world:
 
@@ -101,18 +101,7 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 ```scala
 
 trait DatabaseProvider[T <: Database[T]] {
-
-  implicit def session: Session = database.session
-
-  implicit def space: KeySpace = database.space
-
   def database: T
-
-  /**
-    * A helper shorthand method.
-    * @return A reference to the database object.
-    */
-  def db: T = database
 }
 ```
 
@@ -120,7 +109,9 @@ This is pretty simple in its design, it simply aims to provide a simple way of i
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database(connector) {
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
   object users extends Users with Connector
   object usersByEmail extends UsersByEmail with Connector
 }
@@ -142,13 +133,13 @@ trait UserService extends AppDatabase {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- database.users.store(user)
-      byEmail <- database.usersByEmail.store(user)
+      byId <- db.users.store(user)
+      byEmail <- db.usersByEmail.store(user)
     } yield byEmail
   }
 
-  def findById(id: UUID): Future[Option[User]] = database.users.findById(id)
-  def findByEmail(email: String): Future[Option[User]] = database.usersByEmail.findByEmail(email)
+  def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
+  def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
 }
 ```
 
@@ -162,7 +153,6 @@ Pretty much the only thing left is the `ResultSet`, and we can get rid of that t
 #### Using the DatabaseProvider to specify environments
 
 Ok, so now we have all the elements in place to create the cake pattern, the next step is to basically flesh out the environments we want. In almost 99% of all cases, we only have two provider traits in our entire app, one for `production` or runtime mode, the other for `test`, since we often want a test cluster to fire requests against during the `sbt test` phase.
-
 
 Let's go ahead and create two complete examples. We are going to make some simple assumptions about how settings for Cassandra look like in production/runtime vs tests, but don't take those seriously, they are just for example purposes more than anything, to show you what you can do with the phantom API.
 
@@ -191,7 +181,7 @@ And this is how you would use that provider trait now. We're going to assume Sca
 
 import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.outworkers.phantom.dsl.context
 
 class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
@@ -257,8 +247,11 @@ When you later call `database.create` or `database.createAsync` or any other fla
 
 ```scala
 
-class UserDatabase(override val connector: KeySpaceDef) extends Database(connector) {
-  object users extends ConcreteUsers with connector.Connector {
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
+
+  object users extends Users with Connector {
     def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
       create.ifNotExists()(keySpace)
         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
@@ -268,7 +261,7 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database(connect
         .and(dclocal_read_repair_chance eqs 5D)
     }
   }
-  object usersByEmail extends ConcreteUsersByEmail with connector.Connector
+  object usersByEmail extends UsersByEmail with Connector
 }
 
 ```
@@ -276,7 +269,15 @@ class UserDatabase(override val connector: KeySpaceDef) extends Database(connect
 By default, `autocreate` will simply try and perform a lightweight create query, as follows, which in the final CQL query will look very familiar. This is a simple example not related to any of the above examples.
 
 ```scala
-def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
+def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+  create.ifNotExists()(keySpace)
+}
 
-// CREATE TABLE IF NOT EXISTS $keyspace.$table (id uuid, name text, unixTimestamp timestamp, PRIMARY KEY (id, unixTimestamp))
+```sql
+CREATE TABLE IF NOT EXISTS $keyspace.$table (
+  id uuid,
+  name text,
+  unixTimestamp timestamp,
+  PRIMARY KEY (id, unixTimestamp)
+)
 ```

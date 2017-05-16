@@ -18,14 +18,35 @@ package com.outworkers.phantom.builder.primitives
 
 import java.nio.ByteBuffer
 
-import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{Assertion, FlatSpec, Matchers}
 import com.outworkers.util.samplers._
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
-class PrimitivesTest extends FlatSpec with Matchers {
+import scala.collection.generic.CanBuildFrom
+
+class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
+    PropertyCheckConfiguration(minSuccessful = 300)
+  }
+
+  def serialization[M[X] <: Traversable[X], T](
+    fn: M[T] => String
+  )(
+    implicit arb: Arbitrary[T],
+    ev: Primitive[T],
+    ev2: Primitive[M[T]],
+    cbf: CanBuildFrom[Nothing, T, M[T]]
+  ): Assertion = {
+    val colGen = Gen.buildableOf[M[T], T](arb)
+    forAll(colGen) { (col: M[T]) =>
+      ev2.asCql(col) shouldEqual fn(col)
+    }
+  }
 
   it should "coerce a DateTime into a valid timezone string" in {
     val date = new DateTime(2014, 6, 2, 10, 5, DateTimeZone.UTC)
@@ -90,6 +111,23 @@ class PrimitivesTest extends FlatSpec with Matchers {
 
   it should "freeze Tuple collection primitives" in {
     Primitive[(String, String, Int)].frozen shouldEqual true
+  }
+
+  it should "correctly serialize a primitive type" in {
+    val sample = gen[(String, String, Int)]
+    val qb = Primitive[(String, String, Int)].asCql(sample)
+  }
+
+  it should "serialize a Set[Int] primitive accordingly" in {
+    serialization[Set, Int](set => QueryBuilder.Collections.serialize(set.map(Primitive[Int].asCql)).queryString)
+  }
+
+  it should "serialize a Set[String] primitive accordingly" in {
+    serialization[Set, String](set => QueryBuilder.Collections.serialize(set.map(Primitive[String].asCql)).queryString)
+  }
+
+  it should "serialize a Set[Float] primitive accordingly" in {
+    serialization[Set, Float](set => QueryBuilder.Collections.serialize(set.map(Primitive[Float].asCql)).queryString)
   }
 
   it should "automatically generate a primitive for an enumeration" in {

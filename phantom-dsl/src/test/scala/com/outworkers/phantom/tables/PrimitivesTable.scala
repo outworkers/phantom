@@ -31,26 +31,26 @@ case class PrimitiveRecord(
   bi: BigInt
 )
 
-abstract class PrimitivesTable extends CassandraTable[PrimitivesTable, PrimitiveRecord] {
-  object pkey extends StringColumn(this) with PartitionKey
+abstract class PrimitivesTable extends Table[PrimitivesTable, PrimitiveRecord] {
+  object pkey extends StringColumn with PartitionKey
 
-  object long extends LongColumn(this)
+  object long extends LongColumn
 
-  object boolean extends BooleanColumn(this)
+  object boolean extends BooleanColumn
 
-  object bDecimal extends BigDecimalColumn(this)
+  object bDecimal extends BigDecimalColumn
 
-  object double extends DoubleColumn(this)
+  object double extends DoubleColumn
 
-  object float extends FloatColumn(this)
+  object float extends FloatColumn
 
-  object inet extends InetAddressColumn(this)
+  object inet extends InetAddressColumn
 
-  object int extends IntColumn(this)
+  object int extends IntColumn
 
-  object date extends DateColumn(this)
+  object date extends DateColumn
 
-  object uuid extends UUIDColumn(this)
+  object uuid extends UUIDColumn
 
-  object bi extends BigIntColumn(this)
+  object bi extends BigIntColumn
 }

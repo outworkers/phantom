@@ -25,12 +25,12 @@ case class PrimaryCollectionRecord(
   value: Int
 )
 
-class PrimaryCollectionTable extends CassandraTable[PrimaryCollectionTable, PrimaryCollectionRecord] {
-  object listIndex extends ListColumn[String](this) with PartitionKey
-  object setCol extends SetColumn[String](this) with PrimaryKey
-  object mapCol extends MapColumn[String, String](this) with PrimaryKey
-  object name extends StringColumn(this) with PrimaryKey
-  object value extends IntColumn(this)
+class PrimaryCollectionTable extends Table[PrimaryCollectionTable, PrimaryCollectionRecord] {
+  object listIndex extends ListColumn[String] with PartitionKey
+  object setCol extends SetColumn[String] with PrimaryKey
+  object mapCol extends MapColumn[String, String] with PrimaryKey
+  object name extends StringColumn with PrimaryKey
+  object value extends IntColumn
 }
 
 case class NestedCollections(
@@ -44,8 +44,8 @@ abstract class NestedCollectionTable extends Table[
   NestedCollectionTable,
   NestedCollections
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object text extends StringColumn(this)
-  object props extends MapColumn[String, List[String]](this)
-  object doubleProps extends MapColumn[Set[String], List[String]](this)
+  object id extends UUIDColumn with PartitionKey
+  object text extends StringColumn
+  object props extends MapColumn[String, List[String]]
+  object doubleProps extends MapColumn[Set[String], List[String]]
 }

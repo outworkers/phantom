@@ -25,11 +25,11 @@ import com.outworkers.phantom.dsl._
   name: String
 )
 
-abstract class SecondaryIndexTable extends CassandraTable[
+abstract class SecondaryIndexTable extends Table[
   SecondaryIndexTable,
   SecondaryIndexRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object secondary extends UUIDColumn(this) with Index
-  object name extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object secondary extends UUIDColumn with Index
+  object name extends StringColumn
 }

@@ -76,7 +76,9 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
     sep: String = defaultSep
   ): CQLQuery = wrap(col mkString sep)
 
-  override def space: String = ""
+  override def keyspace: String = ""
+
+  override def toString: String = queryString
 }
 
 object CQLQuery {

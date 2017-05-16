@@ -22,9 +22,9 @@ case class SchemaBug663A(a: Int) extends SchemaRecord663
 case class SchemaBug663B(b: Int) extends SchemaRecord663
 
 abstract class SchemaBug663Table extends CassandraTable[SchemaBug663Table, SchemaRecord663] {
-  object discriminator extends IntColumn(this) with PartitionKey
-  object a extends IntColumn(this)
-  object b extends IntColumn(this)
+  object discriminator extends IntColumn with PartitionKey
+  object a extends IntColumn
+  object b extends IntColumn
 
   override def fromRow(row: Row): SchemaRecord663 = {
     if (discriminator(row) % 2 == 0) {

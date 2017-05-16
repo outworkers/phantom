@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
+import com.outworkers.phantom.tables.ThriftRecord
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.util.samplers._
@@ -30,12 +30,12 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val expected = sample.thriftMap + toAdd
 
     val operation = for {
-      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future()
-      update <- ThriftDatabase.thriftColumnTable.update
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
+      update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftMap put toAdd)
         .future()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
+      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
     } yield select
 
     whenReady(operation) { items =>
@@ -49,9 +49,9 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val toAdd = gen[(String, ThriftTest)]
 
     val operation = for {
-      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).execute()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      insertDone <- thriftDb.thriftColumnTable.store(sample).execute
+      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).execute()
+      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -68,11 +68,11 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
-      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).future
-      update <- ThriftDatabase.thriftColumnTable.update
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future
+      update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftMap putAll toAdd).future()
-      select <- ThriftDatabase.thriftColumnTable
+      select <- thriftDb.thriftColumnTable
         .select(_.thriftMap)
         .where(_.id eqs sample.id)
         .one
@@ -92,9 +92,9 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
-      insertDone <- ThriftDatabase.thriftColumnTable.store(sample).execute()
-      update <- ThriftDatabase.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).execute()
-      select <- ThriftDatabase.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).execute()
+      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
     } yield select
 
     whenReady(operation.asScala) { items =>

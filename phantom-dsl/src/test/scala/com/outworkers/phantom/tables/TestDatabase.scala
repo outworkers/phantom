@@ -50,7 +50,7 @@ class TestDatabase(
   object jsonTable extends JsonTable with connector.Connector
   object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
-  object primitives extends Primitives with Connector
+  object primitives extends PrimitivesTable with Connector
 
   object primitivesJoda extends PrimitivesJoda with Connector
 
@@ -65,7 +65,7 @@ class TestDatabase(
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
   object staticTable extends StaticTableTest with Connector
-  object staticCollectionTable extends StaticCollectionTableTest with Connector
+  object staticCollectionTable extends StaticCollectionTable with Connector
 
   object tableWithSingleKey extends TableWithSingleKey with Connector
   object tableWithCompoundKey extends TableWithCompoundKey with Connector
@@ -106,7 +106,7 @@ object Connector {
         .setReadTimeoutMillis(20000)
       )
     ).noHeartbeat().keySpace(
-      KeySpaceSerializer("phantom").ifNotExists().`with`(
+      KeySpace("phantom").ifNotExists().`with`(
         replication eqs SimpleStrategy.replication_factor(1)
       )
     )

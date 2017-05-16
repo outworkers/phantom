@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.util.testing.twitter._
 import com.outworkers.phantom.dsl.context
 import com.outworkers.phantom.finagle._
+import com.twitter.util.Future
 
 class CreateQueryFinagleTests extends PhantomSuite {
 

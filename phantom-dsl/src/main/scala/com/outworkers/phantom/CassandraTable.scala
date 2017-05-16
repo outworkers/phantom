@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom
 
-import com.datastax.driver.core.{Row, Session}
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
@@ -32,10 +32,9 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  * @tparam T Type of this table.
  * @tparam R Type of record.
  */
-abstract class CassandraTable[
-  T <: CassandraTable[T, R],
-  R
-]()(implicit val helper: TableHelper[T, R]) extends SelectTable[T, R] { self =>
+abstract class CassandraTable[T <: CassandraTable[T, R], R](
+  implicit val helper: TableHelper[T, R]
+) extends SelectTable[T, R] with TableAliases[T, R] { self =>
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
@@ -49,36 +48,15 @@ abstract class CassandraTable[
 
   def tableKey: String = helper.tableKey(instance)
 
-  @deprecated("Method replaced with macro implementation", "2.0.0")
-  def defineTableKey(): String = tableKey
-
   def instance: T = self.asInstanceOf[T]
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
-
-  type ListColumn[RR] = com.outworkers.phantom.column.ListColumn[T, R, RR]
-  type SetColumn[RR] =  com.outworkers.phantom.column.SetColumn[T, R, RR]
-  type MapColumn[KK, VV] =  com.outworkers.phantom.column.MapColumn[T, R, KK, VV]
-  type JsonColumn[RR] = com.outworkers.phantom.column.JsonColumn[T, R, RR]
-  type OptionalJsonColumn[RR] = com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR]
-  type EnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type OptionalEnumColumn[RR <: Enumeration#Value] = com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR]
-  type JsonSetColumn[RR] = com.outworkers.phantom.column.JsonSetColumn[T, R, RR]
-  type JsonListColumn[RR] = com.outworkers.phantom.column.JsonListColumn[T, R, RR]
-  type JsonMapColumn[KK,VV] = com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV]
-  type PrimitiveColumn[RR] = com.outworkers.phantom.column.PrimitiveColumn[T, R, RR]
-  type TupleColumn[RR] =  PrimitiveColumn[RR]
-  type CustomColumn[RR] = PrimitiveColumn[RR]
-  type Col[RR] = PrimitiveColumn[RR]
-  type OptionalCol[RR] = Col[Option[RR]]
 
   def insertSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
-  ): Unit = {
-    Await.result(autocreate(keySpace).future(), 10.seconds)
-  }
+  ): Unit = Await.result(autocreate(keySpace).future(), 10.seconds)
 
   def tableName: String = helper.tableName
 
@@ -98,7 +76,9 @@ abstract class CassandraTable[
   final def alter[
     RR,
     NewType
-  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(implicit keySpace: KeySpace): AlterQuery.Default[T, RR] = {
+  ](columnSelect: T => AbstractColumn[RR])(newType: Primitive[NewType])(
+    implicit keySpace: KeySpace
+  ): AlterQuery.Default[T, RR] = {
     AlterQuery.alterType[T, RR, NewType](instance, columnSelect, newType)
   }
 

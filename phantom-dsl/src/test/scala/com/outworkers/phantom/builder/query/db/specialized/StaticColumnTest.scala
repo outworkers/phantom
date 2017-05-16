@@ -18,7 +18,8 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.StaticCollectionRecord
+import com.outworkers.phantom.macros.TableHelper
+import com.outworkers.phantom.tables.{StaticCollectionRecord, StaticCollectionTable}
 import com.outworkers.util.samplers._
 
 import scala.concurrent.Future
@@ -75,29 +76,22 @@ class StaticColumnTest extends PhantomSuite {
   it should "append a value to a static list and share the update among records" in {
     val id = gen[UUID]
 
+    val helper = TableHelper[StaticCollectionTable, StaticCollectionRecord]
+
     val sample = gen[StaticCollectionRecord].copy(id = id)
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
-
-    def updateQuery: Future[ResultSet] = if (cassandraVersion.value >= Version.`3.0.0`) {
-      db.staticCollectionTable.update.where(_.id eqs id)
-        //.and(_.clusteringId eqs sample.clustering)
-        .modify(_.staticList append "test")
-        .future()
-    } else {
-      db.staticCollectionTable.update.where(_.id eqs id)
-        .modify(_.staticList append "test")
-        .future()
-    }
 
     val chain = for {
       store1 <- db.staticCollectionTable.store(sample).future()
       store2 <- db.staticCollectionTable.store(sample2).future()
-      update <- updateQuery
+      update <- db.staticCollectionTable.update.where(_.id eqs id)
+        .modify(_.staticList append "test")
+        .future()
 
       rec <- database.staticCollectionTable
         .select
         .where(_.id eqs id)
-        .and(_.clusteringId eqs sample.clustering)
+        .and(_.clustering eqs sample.clustering)
         .one()
     } yield rec
 

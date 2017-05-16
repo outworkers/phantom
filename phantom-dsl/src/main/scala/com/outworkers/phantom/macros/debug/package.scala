@@ -13,26 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.codec
+package com.outworkers.phantom.macros
 
-import com.datastax.driver.core._
-import com.datastax.driver.extras.codecs.MappingCodec
-
-class JodaLocalDateCodec extends MappingCodec(TypeCodec.date(), classOf[org.joda.time.LocalDate]) {
-
-  override def serialize(value: org.joda.time.LocalDate): LocalDate = {
-    LocalDate.fromYearMonthDay(
-      value.getYear,
-      value.getMonthOfYear,
-      value.getDayOfMonth
-    )
-  }
-
-  override def deserialize(value: LocalDate): org.joda.time.LocalDate = {
-    new org.joda.time.LocalDate(
-      value.getYear,
-      value.getMonth,
-      value.getDay
-    )
+package object debug {
+  object options {
   }
 }

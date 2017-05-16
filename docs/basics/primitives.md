@@ -74,7 +74,7 @@ In essence, this is pretty straighforward, and now what I can do in any Cassandr
 case class Wrapper(id: UUID, test: Test)
 
 class MyTable extends CassandraTable[MyTable, Wrapper] {
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
   object test extends Col[Test](this)
 }
 ```
@@ -84,4 +84,4 @@ including a `where` clause, an `insert`, a `set` or `update` clause, you name it
 
 ### JDK8 Primitives
 
-Phantom also natively supports some `java.time.*` JDK8 specific primitives as native types, though with a couple notable observations. `OffsetDateTime` and `ZonedDateTime` are natively supported via `"com.outworkers" %% "phantom-jdk8" % version`, and all you have to do is `import com.outworkers.phantom.jdk8.dsl._`.
+Phantom also natively supports some `java.time.*` JDK8 specific primitives as native types, though with a couple notable observations. `OffsetDateTime` and `ZonedDateTime` are natively supported via `"com.outworkers" %% "phantom-jdk8" % version`, and all you have to do is `import com.outworkers.phantom.jdk8._`.

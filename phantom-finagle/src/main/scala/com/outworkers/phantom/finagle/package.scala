@@ -18,10 +18,16 @@ package com.outworkers.phantom
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
-import com.datastax.driver.core.{ Duration => DatastaxDuration, _ }
+import com.datastax.driver.core.{
+  Duration => DatastaxDuration,
+  PagingState,
+  ResultSet => DatastaxResultSet,
+  SimpleStatement,
+  Statement, Session
+}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
-import com.twitter.util._
+import com.twitter.util.{Duration => TwitterDuration, _}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
@@ -33,15 +39,14 @@ import com.outworkers.phantom.builder.query.options.{
 }
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
-
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContextExecutor
 
-package object finagle {
+package object finagle extends SessionAugmenterImplicits {
 
   protected[this] type Modifier = Statement => Statement
 
@@ -54,9 +59,9 @@ package object finagle {
     val promise = Promise[ResultSet]()
     val future = session.executeAsync(str)
 
-    val callback = new FutureCallback[ResultSet] {
-      def onSuccess(result: ResultSet): Unit = {
-        promise update Return(result)
+    val callback = new FutureCallback[DatastaxResultSet] {
+      def onSuccess(result: DatastaxResultSet): Unit = {
+        promise update Return(ResultSet(result, session.protocolVersion))
       }
 
       def onFailure(err: Throwable): Unit = {
@@ -86,7 +91,7 @@ package object finagle {
       executor: ExecutionContextExecutor
     ): Future[Spool[R]] = {
       block.all().execute() flatMap {
-        resultSet => ResultSpool.spool(resultSet).map(spool => spool map block.all.fromRow)
+        rs => ResultSpool.spool(rs).map(_ map block.all.fromRow)
       }
     }
   }
@@ -140,19 +145,17 @@ package object finagle {
     Limit <: LimitBound
   ](val query: ExecutableQuery[T, R, Limit]) extends AnyVal {
 
-    protected[this] def singleResult(row: Row): Option[R] = {
-      if (Option(row).isDefined) Some(query.fromRow(row)) else None
-    }
+    protected[this] def singleResult(row: Option[Row]): Option[R] = row map query.fromRow
 
-    protected[this] def directMapper(results: JavaList[Row]): List[R] = {
-      List.tabulate(results.size())(index => query.fromRow(results.get(index)))
+    protected[this] def directMapper(results: List[Row]): List[R] = {
+      results map query.fromRow
     }
 
     private[phantom] def singleCollect()(
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[Option[R]] = {
-      query.execute() map { res => singleResult(res.one) }
+      query.execute() map { res => singleResult(res.value()) }
     }
 
     /**
@@ -183,7 +186,7 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute() map { rs => directMapper(rs.all) }
+      query.execute() map { rs => directMapper(rs.allRows) }
     }
 
     /**
@@ -198,7 +201,7 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute(modifyStatement) map { resultSet => directMapper(resultSet.all) }
+      query.execute(modifyStatement) map (_.allRows().map(query.fromRow))
     }
 
     /**
@@ -213,7 +216,7 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[List[R]] = {
-      query.execute(_.setPagingState(pagingState)) map { rs => directMapper(rs.all) }
+      query.execute(_.setPagingState(pagingState)) map { rs => directMapper(rs.allRows) }
     }
 
     /**
@@ -228,7 +231,7 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute() map { rs => ListResult(directMapper(rs.all), rs) }
+      query.execute() map { rs => ListResult(directMapper(rs.allRows), rs) }
     }
 
     /**
@@ -243,7 +246,7 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(modifyStatement) map { rs => ListResult(directMapper(rs.all), rs) }
+      query.execute(modifyStatement) map { rs => ListResult(directMapper(rs.allRows), rs) }
     }
 
     /**
@@ -258,8 +261,8 @@ package object finagle {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
-      query.execute(st => st.setPagingState(pagingState)) map { rs =>
-        ListResult(directMapper(rs.all), rs)
+      query.execute(_.setPagingState(pagingState)) map { rs =>
+        ListResult(directMapper(rs.allRows), rs)
       }
     }
 
@@ -278,9 +281,9 @@ package object finagle {
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(directMapper(set.allRows), set)
       }) (state => query.execute(_.setPagingState(state)) map {
-        set => ListResult(directMapper(set.all), set)
+        set => ListResult(directMapper(set.allRows), set)
       })
     }
 }
@@ -400,7 +403,7 @@ package object finagle {
     Chain <: WhereBound,
     PS <: HList
   ](val query: Query[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
-    def ttl(duration: com.twitter.util.Duration): Query[Table, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: TwitterDuration): Query[Table, Record, Limit, Order, Status, Chain, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -431,7 +434,7 @@ package object finagle {
     ModifiedPrepared <: HList
   ](val query: AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: Duration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -447,7 +450,7 @@ package object finagle {
     ModifiedPrepared <: HList
   ](val query: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: Duration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
@@ -478,11 +481,11 @@ package object finagle {
   }
 
   implicit class TimeToLiveBuilderAugmenter(val builder: TimeToLiveBuilder) extends AnyVal {
-    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = builder.eqs(duration.inLongSeconds)
+    def eqs(duration: TwitterDuration): TablePropertyClause = builder.eqs(duration.inLongSeconds)
   }
 
   implicit class GcGraceSecondsBuilderAugmenter(val builder: GcGraceSecondsBuilder) extends AnyVal {
-    def eqs(duration: com.twitter.util.Duration): TablePropertyClause = builder.eqs(Seconds.seconds(duration.inSeconds))
+    def eqs(duration: TwitterDuration): TablePropertyClause = builder.eqs(Seconds.seconds(duration.inSeconds))
   }
 
   implicit class CompressionStrategyAugmenter[

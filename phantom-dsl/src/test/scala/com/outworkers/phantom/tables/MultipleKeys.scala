@@ -30,15 +30,15 @@ case class MultipleKeyRecord(
   timestamp: DateTime
 )
 
-abstract class MultipleKeys extends CassandraTable[MultipleKeys, MultipleKeyRecord] with RootConnector {
+abstract class MultipleKeys extends Table[MultipleKeys, MultipleKeyRecord] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
-  object intColumn1 extends IntColumn(this) with PrimaryKey with Index
-  object intColumn2 extends IntColumn(this) with PrimaryKey
-  object intColumn3 extends IntColumn(this) with PrimaryKey
-  object intColumn4 extends IntColumn(this) with PrimaryKey
-  object intColumn5 extends IntColumn(this) with PrimaryKey
-  object intColumn6 extends IntColumn(this) with PrimaryKey
-  object intColumn7 extends IntColumn(this) with PrimaryKey
-  object timestamp8 extends DateTimeColumn(this)
+  object pkey extends StringColumn with PartitionKey
+  object intColumn1 extends IntColumn with PrimaryKey with Index
+  object intColumn2 extends IntColumn with PrimaryKey
+  object intColumn3 extends IntColumn with PrimaryKey
+  object intColumn4 extends IntColumn with PrimaryKey
+  object intColumn5 extends IntColumn with PrimaryKey
+  object intColumn6 extends IntColumn with PrimaryKey
+  object intColumn7 extends IntColumn with PrimaryKey
+  object timestamp8 extends DateTimeColumn
 }

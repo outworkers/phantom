@@ -15,14 +15,17 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core._
+import com.datastax.driver.core.{
+  ConsistencyLevel,
+  Session,
+  SimpleStatement
+}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.{CassandraTable, Manager}
+import com.outworkers.phantom.{CassandraTable, Manager, ResultSet}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
@@ -37,7 +40,7 @@ class RootCreateQuery[
       keySpace.name,
       table.tableName,
       table.tableKey,
-      table.columns.map(_.qb).toSeq
+      table.columns.map(_.qb)
     )
   }
 

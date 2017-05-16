@@ -15,8 +15,8 @@
  */
 package com.outworkers.phantom.column
 
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -25,20 +25,25 @@ import scala.annotation.implicitNotFound
 import scala.util.Try
 
 @implicitNotFound(msg = "Type ${RR} must be a Cassandra primitive")
-class PrimitiveColumn[T <: CassandraTable[T, R], R, @specialized(Int, Double, Float, Long) RR : Primitive](t: CassandraTable[T, R])
-  extends Column[T, R, RR](t) {
+class PrimitiveColumn[
+  T <: CassandraTable[T, R],
+  R,
+  @specialized(Int, Double, Float, Long) RR
+](t: CassandraTable[T, R])(implicit ev: Primitive[RR]) extends Column[T, R, RR](t) {
 
-  def cassandraType: String = Primitive[RR].cassandraType
+  def cassandraType: String = ev.cassandraType
 
-  def asCql(v: RR): String = Primitive[RR].asCql(v)
+  def asCql(v: RR): String = ev.asCql(v)
 
-  def parse(r: Row): Try[RR] = implicitly[Primitive[RR]].fromRow(name, r)
+  def parse(r: Row): Try[RR] = ev.fromRow(name, r)
 
   override def qb: CQLQuery = {
     val root = CQLQuery(name).forcePad.append(cassandraType)
 
     if (isStaticColumn) {
       root.forcePad.append(CQLSyntax.static)
+    } else if (shouldFreeze && ev.frozen) {
+      QueryBuilder.Collections.frozen(root)
     } else {
       root
     }

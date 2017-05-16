@@ -33,6 +33,18 @@ class KeySpaceSerializerTest extends QuerySerializationTest {
     query shouldEqual expected
   }
 
+  it should "create a simple keyspace creation query using the package augmentation" in {
+    val query = KeySpace("test").builder.ifNotExists()
+      .`with`(replication eqs NetworkTopologyStrategy)
+      .and(durable_writes eqs true)
+      .qb.queryString
+
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
+      " AND DURABLE_WRITES = true"
+
+    query shouldEqual expected
+  }
+
   it should "create a keyspace query using QueryBuilder.keyspace" in {
     val sample = gen[KeySpace]
     QueryBuilder.keyspace(sample).ifNotExists().queryString shouldEqual s"CREATE KEYSPACE IF NOT EXISTS ${sample.name}"

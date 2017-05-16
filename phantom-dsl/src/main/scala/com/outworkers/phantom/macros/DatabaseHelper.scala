@@ -19,8 +19,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
 import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.connectors.KeySpace
-
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
@@ -35,31 +34,30 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c) {
+class DatabaseHelperMacro(val c: whitebox.Context) extends RootMacro {
   import c.universe._
 
-  private[this] val keySpaceTpe = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
-  private[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
   private[this] val seqTpe: Tree => Tree = { tpe =>
     tq"_root_.scala.collection.immutable.Seq[$tpe]"
   }
+
+  private[this] val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
 
   private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
 
   def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[T]
-    val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
 
     val accessors = filterMembers[CassandraTable[_, _]](tpe, Some(_))
 
     val prefix = q"_root_.com.outworkers.phantom.database"
 
-    val tableList = accessors.map(sym => {
+    val tableList = accessors.map { sym =>
       val name = sym.asTerm.name.toTermName
-      q"""db.$name"""
-    })
+      q"db.$name"
+    }
 
-    val queryList = tableList.map { tb => q"""$tb.autocreate(space)""" }
+    val queryList = tableList.map(tb => q"$tb.autocreate(space)")
 
     val listType = tq"$prefix.ExecutableCreateStatementsList"
 
@@ -69,7 +67,7 @@ class DatabaseHelperMacro(override val c: blackbox.Context) extends RootMacro(c)
            $seqCmp.apply[$tableSymbol](..$tableList)
          }
 
-         def createQueries(db: $tpe)(implicit space: $keySpaceTpe): $listType = {
+         def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
             new $prefix.ExecutableCreateStatementsList(
               space => $seqCmp.apply(..$queryList)
             )

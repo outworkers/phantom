@@ -15,19 +15,13 @@
  */
 package com.outworkers.phantom.column
 
-import java.nio.{BufferUnderflowException, ByteBuffer}
-
-import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.datastax.driver.core.{CodecUtils, ProtocolVersion, Row}
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters._
-import scala.collection.generic.CanBuildFrom
 import scala.util.{Failure, Success, Try}
 
 private[phantom] abstract class AbstractMapColumn[
@@ -40,10 +34,6 @@ private[phantom] abstract class AbstractMapColumn[
 
   def keyAsCql(v: K): String
 
-  def keyFromCql(c: String): K
-
-  override def fromString(c: String): V
-
   def asCql(v: Map[K, V]): String = QueryBuilder.Collections.serialize(v.map {
     case (a, b) => keyAsCql(a) -> valueAsCql(b)
   }).queryString
@@ -53,10 +43,9 @@ private[phantom] abstract class AbstractMapColumn[
       case Success(map) => map
 
       // Note null rows will not result in a failure, we return an empty map for those.
-      case Failure(ex) => {
+      case Failure(ex) =>
         table.logger.error(ex.getMessage)
         throw ex
-      }
     }
   }
 }
@@ -65,15 +54,15 @@ private[phantom] abstract class AbstractMapColumn[
 class MapColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  K : Primitive,
-  V : Primitive
-](table: CassandraTable[Owner, Record]) extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
-
-  private[this] val keyPrimitive = Primitive[K]
+  K,
+  V
+](table: CassandraTable[Owner, Record])(
+  implicit ev: Primitive[Map[K, V]],
+  keyPrimitive: Primitive[K],
+  val valuePrimitive: Primitive[V]
+) extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
 
   override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
-
-  override val valuePrimitive: Primitive[V] = Primitive[V]
 
   override val cassandraType: String = QueryBuilder.Collections.mapType(
     keyPrimitive,
@@ -88,25 +77,15 @@ class MapColumn[
     }
   }
 
-  override def keyFromCql(c: String): K = keyPrimitive.fromString(c)
-
   override def valueAsCql(v: V): String = valuePrimitive.asCql(v)
-
-  override def fromString(c: String): V = valuePrimitive.fromString(c)
 
   override def parse(r: Row): Try[Map[K, V]] = {
     if (r.isNull(name)) {
       Success(Map.empty[K, V])
     } else {
-      Try(
-        r.getMap(name, keyPrimitive.clz, valuePrimitive.clz).asScala.toMap map {
-          case (k, v) => keyPrimitive.extract(k) -> valuePrimitive.extract(v)
-        }
-      )
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version))
     }
   }
 
-  def apply(k: K): MapKeyUpdateClause[K, V] = {
-    new MapKeyUpdateClause[K, V](name, k)
-  }
+  def apply(k: K): MapKeyUpdateClause[K, V] = new MapKeyUpdateClause[K, V](name, k)
 }

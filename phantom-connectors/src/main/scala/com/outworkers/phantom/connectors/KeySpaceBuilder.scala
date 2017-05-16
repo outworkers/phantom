@@ -87,7 +87,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   def keySpace(
     query: KeySpaceCQLQuery
   ): CassandraConnection = {
-    new CassandraConnection(query.space, clusterBuilder, true, Some(query))
+    new CassandraConnection(query.keyspace, clusterBuilder, true, Some(query))
   }
 }
 
@@ -97,9 +97,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   * This allows connectors to be used in isolation from the rest of phantom DSL.
   */
 trait KeySpaceCQLQuery {
+  def keyspace: String
+
   def queryString: String
-
-  def space: String
 }
-
-

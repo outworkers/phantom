@@ -35,8 +35,8 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
   it should "throw an error if the schema has no PartitionKey" in {
     """
       |abstract class TableWithNoKey extends CassandraTable[TableWithNoKey, StubRecord] {
-      |  object id extends UUIDColumn(this)
-      |  object name extends StringColumn(this)
+      |  object id extends UUIDColumn
+      |  object name extends StringColumn
       |}
     """.stripMargin shouldNot compile
   }
@@ -44,11 +44,11 @@ class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExe
   it should "throw an error if the table uses a ClusteringColumn with PrimaryKeys" in {
     """
       |sealed class BrokenClusteringTable extends CassandraTable[BrokenClusteringTable, String] {
-      |  object id extends UUIDColumn(this) with PartitionKey
+      |  object id extends UUIDColumn with PartitionKey
       |
-      |  object id2 extends UUIDColumn(this) with PrimaryKey
-      |  object id3 extends UUIDColumn(this) with ClusteringOrder with Descending
-      |  object placeholder extends StringColumn(this) with ClusteringOrder with Descending
+      |  object id2 extends UUIDColumn with PrimaryKey
+      |  object id3 extends UUIDColumn with ClusteringOrder with Descending
+      |  object placeholder extends StringColumn with ClusteringOrder with Descending
       |
       |  override def fromRow(r: Row): String = placeholder(r)
       |}

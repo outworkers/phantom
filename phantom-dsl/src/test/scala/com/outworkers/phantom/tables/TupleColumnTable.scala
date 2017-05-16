@@ -24,12 +24,12 @@ import scala.concurrent.Future
 
 case class TupleRecord(id: UUID, tp: (String, Long))
 
-abstract class TupleColumnTable extends CassandraTable[
+abstract class TupleColumnTable extends Table[
   TupleColumnTable,
   TupleRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object tp extends TupleColumn[(String, Long)](this)
+  object id extends UUIDColumn with PartitionKey
+  object tp extends TupleColumn[(String, Long)]
 
   def findById(id: UUID): Future[Option[TupleRecord]] = {
     select.where(_.id eqs id).one()
@@ -41,12 +41,12 @@ case class NestedTupleRecord(
   tp: (String, (String, Long))
 )
 
-abstract class NestedTupleColumnTable extends CassandraTable[
+abstract class NestedTupleColumnTable extends Table[
   NestedTupleColumnTable,
   NestedTupleRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object tp extends TupleColumn[(String, (String, Long))](this)
+  object id extends UUIDColumn with PartitionKey
+  object tp extends TupleColumn[(String, (String, Long))]
 
   def findById(id: UUID): Future[Option[NestedTupleRecord]] = {
     select.where(_.id eqs id).one()
@@ -59,16 +59,18 @@ case class TupleCollectionRecord(
   uniqueTuples: Set[(Int, String)]
 )
 
-abstract class TupleCollectionsTable extends CassandraTable[
+abstract class TupleCollectionsTable extends Table[
   TupleCollectionsTable,
   TupleCollectionRecord
 ] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object tuples extends ListColumn[(Int, String)](this)
-  object uniqueTuples extends SetColumn[(Int, String)](this)
+  object id extends UUIDColumn with PartitionKey
+  object tuples extends ListColumn[(Int, String)]
+  object uniqueTuples extends SetColumn[(Int, String)]
 
   def findById(id: UUID): Future[Option[TupleCollectionRecord]] = {
     select.where(_.id eqs id).one()
   }
 }
+
+

@@ -17,24 +17,21 @@ package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.samplers._
-import org.joda.time.DateTime
 
 abstract class TimeSeriesTableWithTTL extends Table[
   TimeSeriesTableWithTTL,
   TimeSeriesRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Descending
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object timestamp extends DateTimeColumn with ClusteringOrder with Descending
 }
 
 abstract class TimeSeriesTableWithTTL2 extends Table[
   TimeSeriesTableWithTTL2,
   TimeSeriesRecord
-] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object timestamp extends DateTimeColumn(this)
+] {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object timestamp extends DateTimeColumn
 }
-

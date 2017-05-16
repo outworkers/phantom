@@ -30,9 +30,9 @@ abstract class StaticTableTest extends Table[
   StaticCollectionSingle
 ] with RootConnector {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with ClusteringOrder with Descending
-  object staticTest extends StringColumn(this) with StaticColumn
+  object id extends UUIDColumn with PartitionKey
+  object clusteringId extends UUIDColumn with ClusteringOrder with Descending
+  object staticTest extends StringColumn with StaticColumn
 }
 
 case class StaticCollectionRecord(
@@ -41,12 +41,11 @@ case class StaticCollectionRecord(
   list: List[String]
 )
 
-abstract class StaticCollectionTableTest extends Table[
-  StaticCollectionTableTest,
+abstract class StaticCollectionTable extends Table[
+  StaticCollectionTable,
   StaticCollectionRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object clusteringId extends UUIDColumn(this) with ClusteringOrder with Descending
-  object staticList extends ListColumn[String](this) with StaticColumn
+  object id extends UUIDColumn with PartitionKey
+  object clustering extends UUIDColumn with ClusteringOrder with Descending
+  object staticList extends ListColumn[String] with StaticColumn
 }
-

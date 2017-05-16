@@ -20,6 +20,9 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class DeleteQueryTests extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -28,7 +31,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   "A delete query" should "delete a row by its single primary key" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()
@@ -44,7 +47,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   "A delete query" should "delete a row by its single primary key if a single condition is met" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()
@@ -60,7 +63,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   "A delete query" should "not delete a row by its single primary key if a single condition is not met" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()
@@ -78,7 +81,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   it should "allow specifying a custom consistency level" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val time = gen[DateTime]
 
     val chain = for {
@@ -99,7 +102,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   "Using a timestamp" should "delete the record if the delete timestamp is the highest" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val time = gen[DateTime]
 
     val chain = for {
@@ -118,7 +121,7 @@ class DeleteQueryTests extends PhantomSuite {
   }
 
   "Using a timestamp" should "not delete the record if the delete timestamp is the lowest" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
     val time = gen[DateTime]
 
     val chain = for {

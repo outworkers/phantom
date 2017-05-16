@@ -19,9 +19,8 @@ import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8.dsl._
+import com.outworkers.phantom.jdk8._
 
 import scala.concurrent.Future
 
@@ -35,7 +34,7 @@ case class Jdk8Row(
 
 abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] with RootConnector {
 
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
   object offsetDateTime extends OffsetDateTimeColumn(this)
 

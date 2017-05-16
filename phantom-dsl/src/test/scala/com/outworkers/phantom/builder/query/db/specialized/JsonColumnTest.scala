@@ -83,7 +83,8 @@ class JsonColumnTest extends PhantomSuite {
     val chain = for {
       done <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
-      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonList setIdx (0, sample2.json) ).future()
+      update <- database.jsonTable.update.where(_.id eqs sample.id)
+        .modify(_.jsonList setIdx (0, sample2.json) ).future()
       select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 

@@ -16,39 +16,40 @@
 package com.outworkers.phantom.builder.query.prepared
 
 import com.datastax.driver.core.{QueryOptions => _, _}
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
-import com.outworkers.phantom.connectors.KeySpace
-import org.joda.time.DateTime
-import shapeless.{Generic, HList}
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.macros.BindHelper
+import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.ops.hlist.Tupler
+import shapeless.{Generic, HList, HNil}
 
-import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
 
 private[phantom] trait PrepareMark {
 
   def symbol: String = "?"
 
-  def qb: CQLQuery = CQLQuery("?")
+  def qb: CQLQuery = CQLQuery(symbol)
 }
 
-class ExecutablePreparedQuery(val statement: Statement, val options: QueryOptions) extends ExecutableStatement with Batchable {
+class ExecutablePreparedQuery(
+  val statement: Statement,
+  val options: QueryOptions
+) extends ExecutableStatement with Batchable {
   override val qb = CQLQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
-    statement
-      .setConsistencyLevel(options.consistencyLevel.orNull)
+    statement.setConsistencyLevel(options.consistencyLevel.orNull)
   }
 }
 
 class ExecutablePreparedSelectQuery[
-Table <: CassandraTable[Table, _],
-R,
-Limit <: LimitBound
+  Table <: CassandraTable[Table, _],
+  R,
+  Limit <: LimitBound
 ](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
 
   override def fromRow(r: Row): R = fn(r)
@@ -56,15 +57,11 @@ Limit <: LimitBound
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(st)
-  }
-
+  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(st)
 
   /**
     * Returns the first row from the select ignoring everything else
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param keySpace The implicit keySpace definition provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
     * @param ec The implicit Scala execution context.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
@@ -73,49 +70,17 @@ Limit <: LimitBound
     implicit session: Session,
     ev: =:=[Limit, Unlimited],
     ec: ExecutionContextExecutor
-  ): ScalaFuture[Option[R]] = {
-    singleFetch()
-  }
+  ): ScalaFuture[Option[R]] = singleFetch()
 
   override def qb: CQLQuery = CQLQuery.empty
 }
 
-abstract class PreparedFlattener(qb: CQLQuery)(implicit session: Session, keySpace: KeySpace) {
+abstract class PreparedFlattener(qb: CQLQuery)(
+  implicit session: Session, keySpace: KeySpace
+) extends SessionAugmenterImplicits {
 
   protected[this] val query: PreparedStatement = {
     blocking(session.prepare(qb.queryString))
-  }
-
-  def flattenOpt(param: Any): Any = {
-    //noinspection ComparingUnrelatedTypes
-    param match {
-      case x if x.isInstanceOf[Some[_]] => flattenOpt(x.asInstanceOf[Some[_]].get)
-      case x if x.isInstanceOf[None.type] => None.orNull.asInstanceOf[Any]
-      case x if x.isInstanceOf[List[_]] => x.asInstanceOf[List[Any]].asJava
-      case x if x.isInstanceOf[Set[_]] => x.asInstanceOf[Set[Any]].asJava
-      case x if x.isInstanceOf[Map[_, _]] => x.asInstanceOf[Map[Any, Any]].asJava
-      case x if x.isInstanceOf[DateTime] => x.asInstanceOf[DateTime].toDate
-      case x if x.isInstanceOf[Enumeration#Value] => x.asInstanceOf[Enumeration#Value].toString
-      case x if x.isInstanceOf[BigDecimal] => x.asInstanceOf[BigDecimal].bigDecimal
-      case x if x.isInstanceOf[BigInt] => x.asInstanceOf[BigInt].bigInteger
-      case x => x
-    }
-  }
-
-  /**
-    * Cleans up the series of parameters passed to the bind query to match
-    * the codec registry collection that the Java Driver has internally.
-    *
-    * If the type of the object passed through to the driver doesn't match a known type for the specific Cassandra column
-    * type, then the driver will crash with an error.
-    *
-    * There are known associations of (Cassandra Column Type -> Java Type) that we need to provide for binding to work.
-    *
-    * @param parameters The sequence of parameters to bind.
-    * @return A clansed set of parameters.
-    */
-  protected[this] def flattenOpt(parameters: Seq[Any]): Seq[AnyRef] = {
-    parameters map flattenOpt map (_.asInstanceOf[AnyRef])
   }
 }
 
@@ -134,10 +99,16 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     */
   def bind[V1 <: Product, Out <: HList](v1: V1)(
     implicit gen: Generic.Aux[V1, Out],
+    binder: BindHelper[V1],
     ev: Out =:= PS
   ): ExecutablePreparedQuery = {
-    val params = flattenOpt(v1.productIterator.toSeq)
-    new ExecutablePreparedQuery(query.bind(params: _*), options)
+    val bb = binder.bind(
+      query,
+      v1,
+      session.protocolVersion
+    )
+
+    new ExecutablePreparedQuery(bb, options)
   }
 
   /**
@@ -147,9 +118,14 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V](v: V): ExecutablePreparedQuery = {
-    val params = flattenOpt(Seq(v))
-    new ExecutablePreparedQuery(query.bind(params: _*), options)
+  def bind[V](v: V)(
+    implicit ev: Primitive[V],
+    binder: BindHelper[V]
+  ): ExecutablePreparedQuery = {
+    new ExecutablePreparedQuery(
+      binder.bind(query, v, session.protocolVersion),
+      options
+    )
   }
 }
 
@@ -173,10 +149,16 @@ class PreparedSelectBlock[
     */
   def bind[V1 <: Product, Out <: Product](v1: V1)(
     implicit tp: Tupler.Aux[PS, Out],
+    binder: BindHelper[V1],
     ev: V1 =:= Out
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
-    val params = flattenOpt(v1.productIterator.toSeq)
-    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, options)
+    val bb = binder.bind(
+      query,
+      v1,
+      session.protocolVersion
+    )
+
+    new ExecutablePreparedSelectQuery(bb, fn, options)
   }
 
   /**
@@ -186,9 +168,14 @@ class PreparedSelectBlock[
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V](v: V): ExecutablePreparedSelectQuery[T, R, Limit] = {
-    val params = flattenOpt(Seq(v))
-    new ExecutablePreparedSelectQuery(query.bind(params: _*), fn, options)
+  def bind[V](v: V)(
+    implicit ev: Primitive[V],
+    binder: BindHelper[V]
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    new ExecutablePreparedSelectQuery(
+      binder.bind(query, v, session.protocolVersion),
+      fn,
+      options
+    )
   }
-
 }

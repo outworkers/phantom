@@ -19,25 +19,25 @@ import com.twitter.sbt._
 import sbt.Defaults._
 
 lazy val Versions = new {
-  val logback = "1.2.1"
+  val logback = "1.2.3"
   val sbt = "0.13.13"
-  val util = "0.30.1"
-  val json4s = "3.5.0"
+  val util = "0.32.1"
+  val json4s = "3.5.1"
   val datastax = "3.2.0"
-  val scalatest = "3.0.0"
+  val scalatest = "3.0.1"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.42.0"
-  val scalameter = "0.8+"
-  val scalacheck = "1.13.4"
-  val slf4j = "1.7.21"
+  val scalameter = "0.8.2"
+  val scalacheck = "1.13.5"
+  val slf4j = "1.7.25"
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
 
-  val joda = "2.9.7"
+  val joda = "2.9.9"
   val jodaConvert = "1.8.1"
-  val scalamock = "3.4.2"
+  val scalamock = "3.5.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.0"
 
@@ -106,6 +106,19 @@ val PerformanceTest = config("perf").extend(Test)
 
 lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
+scalacOptions in ThisBuild ++= Seq(
+  "-language:experimental.macros",
+  "-language:postfixOps",
+  "-language:implicitConversions",
+  "-language:reflectiveCalls",
+  "-language:higherKinds",
+  "-language:existentials",
+  "-Xlint",
+  "-deprecation",
+  "-feature",
+  "-unchecked"
+)
+
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
@@ -115,18 +128,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
-  ),
-  scalacOptions in ThisBuild ++= Seq(
-    "-language:experimental.macros",
-    "-language:postfixOps",
-    "-language:implicitConversions",
-    "-language:reflectiveCalls",
-    "-language:higherKinds",
-    "-language:existentials",
-    "-Xlint",
-    "-deprecation",
-    "-feature",
-    "-unchecked"
   ),
   logLevel in ThisBuild := Level.Info,
   libraryDependencies ++= Seq(
@@ -139,7 +140,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   ),
-  gitTagName in ThisBuild := "version=%s".format(scalaVersion.value),
+  envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
+  gitTagName in ThisBuild := s"version=${scalaVersion.value}",
   testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
   testOptions in PerformanceTest := Seq(Tests.Filter(performanceFilter)),
@@ -196,7 +198,6 @@ lazy val phantomDsl = (project in file("phantom-dsl")).configs(
     "joda-time"                    %  "joda-time"                         % Versions.joda,
     "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
     "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-    "com.datastax.cassandra"       %  "cassandra-driver-extras"           % Versions.datastax,
     "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
     "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
     "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
@@ -258,10 +259,10 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),

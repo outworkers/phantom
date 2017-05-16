@@ -26,19 +26,19 @@ case class Recipe(
 
 abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 
-  object url extends StringColumn(this) with PartitionKey
+  object url extends StringColumn with PartitionKey
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn[String]
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
-  object uid extends UUIDColumn(this)
+  object uid extends UUIDColumn
 }
 
 class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
@@ -83,11 +83,11 @@ case class ExampleModel (
 )
 
 abstract class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object timestamp extends DateTimeColumn(this) with ClusteringOrder with Ascending
-  object name extends StringColumn(this)
-  object props extends MapColumn[ExampleRecord, ExampleModel, String, String](this)
-  object test extends OptionalIntColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object timestamp extends DateTimeColumn with ClusteringOrder with Ascending
+  object name extends StringColumn
+  object props extends MapColumn[String, String]
+  object test extends OptionalIntColumn
 ```
 
 
@@ -206,10 +206,10 @@ case class Record(
 
 abstract class MyTable extends CassandraTable[MyTable, Record] {
 
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object firstName extends StringColumn(this)
-  object email extends StringColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
 
   // Phantom now auto-generates the below method
   def store(record: Record): InsertQuery.Default[MyTable, Record] = {
@@ -269,11 +269,11 @@ case class Record(
 )
 
 abstract class RecordsByCountry extends CassandraTable[RecordsByCountry, Record] {
-  object countryCode extends StringColumn(this) with PartitionKey
-  object id extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-  object firstName extends StringColumn(this)
-  object email extends StringColumn(this)
+  object countryCode extends StringColumn with PartitionKey
+  object id extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
 
   // Phantom now auto-generates the below method
   def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
@@ -316,12 +316,12 @@ case class Record(
 )
 
 abstract class RecordsByCountryAndRegion extends CassandraTable[RecordsByCountryAndRegion, Record] {
-  object countryCode extends StringColumn(this) with PartitionKey
-  object region extends StringColumn(this) with PartitionKey
-  object id extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-  object firstName extends StringColumn(this)
-  object email extends StringColumn(this)
+  object countryCode extends StringColumn with PartitionKey
+  object region extends StringColumn with PartitionKey
+  object id extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
 
   // Phantom now auto-generates the below method
   def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {

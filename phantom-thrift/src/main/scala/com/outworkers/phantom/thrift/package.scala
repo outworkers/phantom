@@ -22,37 +22,45 @@ package object thrift {
 
   type ThriftColumn[
     T <: CassandraTable[T, R],
-    R, Model <: ThriftStruct
-  ] = com.outworkers.phantom.thrift.columns.ThriftColumn[T, R, Model]
+    R,
+    Model <: ThriftStruct
+  ] = columns.ThriftColumn[T, R, Model]
 
   type ThriftSetColumn[
     T <: CassandraTable[T, R],
     R,
     Model <: ThriftStruct
-  ] = com.outworkers.phantom.thrift.columns.ThriftSetColumn[T, R, Model]
+  ] = columns.ThriftSetColumn[T, R, Model]
 
   type ThriftListColumn[
     T <: CassandraTable[T, R],
     R,
     Model <: ThriftStruct
-  ] = com.outworkers.phantom.thrift.columns.ThriftListColumn[T, R, Model]
+  ] = columns.ThriftListColumn[T, R, Model]
 
   type ThriftMapColumn[
     T <: CassandraTable[T, R],
     R,
     KeyType,
     Model <: ThriftStruct
-  ] = com.outworkers.phantom.thrift.columns.ThriftMapColumn[T, R, KeyType, Model]
+  ] = columns.ThriftMapColumn[T, R, KeyType, Model]
 
   type OptionalThriftColumn[
     T <: CassandraTable[T, R],
     R,
     Model <: ThriftStruct
-  ] = com.outworkers.phantom.thrift.columns.OptionalThriftColumn[T, R, Model]
+  ] = columns.OptionalThriftColumn[T, R, Model]
 
-  def thriftPrimitive[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
+  implicit def thriftPrimitive[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
     val sz = hp.serializer
     Primitive.derive[T, String](sz.toString)(sz.fromString)
+  }
+
+  implicit class PrimitiveCompanionHelper(val obj: Primitive.type) extends AnyVal {
+    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
+      val sz = hp.serializer
+      Primitive.derive[T, String](sz.toString)(sz.fromString)
+    }
   }
 }
 

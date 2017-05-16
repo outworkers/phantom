@@ -15,11 +15,9 @@
  */
 package com.outworkers.phantom.column
 
-import com.datastax.driver.core.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 
 import scala.util.{Failure, Success, Try}
-
 
 abstract class Column[
   Owner <: CassandraTable[Owner, Record],
@@ -35,5 +33,4 @@ abstract class Column[
       table.logger.error(s"Unable to parse value for column $name from row", ex)
       throw ex
   }
-
 }

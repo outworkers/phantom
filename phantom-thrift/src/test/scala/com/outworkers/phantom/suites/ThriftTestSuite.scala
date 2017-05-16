@@ -18,15 +18,18 @@ package com.outworkers.phantom.suites
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{ThriftRecord, ThriftDatabase}
+import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.phantom.dsl.context
 import com.outworkers.util.samplers._
 
 trait ThriftTestSuite extends PhantomSuite {
 
+  def thriftDb: ThriftDatabase = ThriftDatabase
+
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ThriftDatabase.create()
+    thriftDb.create()
   }
 
   type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest

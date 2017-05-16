@@ -27,12 +27,12 @@ case class OptionalSecondaryRecord(
   secondary: Option[Int]
 )
 
-abstract class OptionalSecondaryIndexTable extends CassandraTable[
+abstract class OptionalSecondaryIndexTable extends Table[
   OptionalSecondaryIndexTable,
   OptionalSecondaryRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object secondary extends OptionalIntColumn(this) with Index
+  object id extends UUIDColumn with PartitionKey
+  object secondary extends OptionalIntColumn with Index
 
   def findById(id: UUID): Future[Option[OptionalSecondaryRecord]] = {
     select.where(_.id eqs id).one()
@@ -42,5 +42,3 @@ abstract class OptionalSecondaryIndexTable extends CassandraTable[
     select.where(_.secondary eqs sec).one()
   }
 }
-
-

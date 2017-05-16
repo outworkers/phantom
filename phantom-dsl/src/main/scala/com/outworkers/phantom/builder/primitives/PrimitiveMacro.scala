@@ -16,45 +16,53 @@
 package com.outworkers.phantom.builder.primitives
 
 import java.net.InetAddress
-import java.nio.ByteBuffer
+import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
-import macrocompat.bundle
+import com.datastax.driver.core.exceptions.InvalidTypeException
 import org.joda.time.DateTime
-
 import scala.collection.concurrent.TrieMap
-import scala.language.experimental.macros
+import scala.reflect.macros.blackbox
 
-@bundle
-class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
+@macrocompat.bundle
+class PrimitiveMacro(val c: blackbox.Context) {
   import c.universe._
 
-  val rowByNameType = tq"com.datastax.driver.core.GettableByNameData"
-  val rowByIndexType = tq"com.datastax.driver.core.GettableByIndexData"
-  val boolType = tq"scala.Boolean"
-  val strType: Tree = tq"java.lang.String"
-  val intType: Tree = tq"scala.Int"
-  val byteType: Tree = tq"scala.Byte"
-  val doubleType: Tree = tq"scala.Double"
-  val shortType: Tree = tq"scala.Short"
-  val uuidType: Tree = tq"java.util.UUID"
-  val longType: Tree = tq"scala.Long"
-  val floatType: Tree = tq"scala.Float"
-  val dateType: Tree = tq"java.util.Date"
-  val tupleValue: Tree = tq"com.datastax.driver.core.TupleValue"
-  val localDate: Tree = tq"com.datastax.driver.core.LocalDate"
-  val dateTimeType: Tree = tq"org.joda.time.DateTime"
-  val localJodaDate: Tree = tq"org.joda.time.LocalDate"
-  val bigDecimalType: Tree = tq"scala.math.BigDecimal"
-  val inetType: Tree = tq"java.net.InetAddress"
-  val bigIntType = tq"scala.math.BigInt"
-  val bufferType = tq"java.nio.ByteBuffer"
+  val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
+  val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
+  val pVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
+  private[this] val versionTerm = q"version"
+  private[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
 
-  val builder = q"com.outworkers.phantom.builder"
-  val cql = q"com.outworkers.phantom.builder.query.engine.CQLQuery"
-  val syntax = q"com.outworkers.phantom.builder.syntax.CQLSyntax"
+  val boolType = tq"_root_.scala.Boolean"
+  val strType: Tree = tq"_root_.java.lang.String"
+  val intType: Tree = tq"_root_.scala.Int"
+  val byteType: Tree = tq"_root_.scala.Byte"
+  val doubleType: Tree = tq"_root_.scala.Double"
+  val shortType: Tree = tq"_root_.scala.Short"
+  val uuidType: Tree = tq"_root_.java.util.UUID"
+  val longType: Tree = tq"_root_.scala.Long"
+  val floatType: Tree = tq"_root_.scala.Float"
+  val dateType: Tree = tq"_root_.java.util.Date"
+  val tupleValue: Tree = tq"_root_.com.datastax.driver.core.TupleValue"
+  val localDate: Tree = tq"_root_.com.datastax.driver.core.LocalDate"
+  val dateTimeType: Tree = tq"_root_.org.joda.time.DateTime"
+  val localJodaDate: Tree = tq"_root_.org.joda.time.LocalDate"
+  val bigDecimalType: Tree = tq"_root_.scala.math.BigDecimal"
+  val inetType: Tree = tq"_root_.java.net.InetAddress"
+  val bigIntType = tq"_root_.scala.math.BigInt"
+  val bufferType = tq"_root_.java.nio.ByteBuffer"
+  val bufferCompanion = q"_root_.java.nio.ByteBuffer"
 
-  val prefix = q"com.outworkers.phantom.builder.primitives"
+  val bufferException = typeOf[BufferUnderflowException]
+  val invalidTypeException = typeOf[InvalidTypeException]
+
+  val codecUtils = q"_root_.com.datastax.driver.core.CodecUtils"
+  val builder = q"_root_.com.outworkers.phantom.builder"
+  val cql = q"_root_.com.outworkers.phantom.builder.query.engine.CQLQuery"
+  val syntax = q"_root_.com.outworkers.phantom.builder.syntax.CQLSyntax"
+
+  val prefix = q"_root_.com.outworkers.phantom.builder.primitives"
 
   def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
   def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
@@ -100,7 +108,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val enum: Symbol = typed[Enumeration]
   }
 
-  def primitive(nm: String): Tree = q"new $prefix.Primitives.${TypeName(nm)}"
+  def primitive(nm: String): Tree = q"$prefix.Primitives.${TermName(nm)}"
 
   val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
 
@@ -142,9 +150,7 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     val innerTpe = tpe.typeArgs.headOption
 
     innerTpe match {
-      case Some(inner) => {
-        q"""$prefix.Primitives.list[$inner]"""
-      }
+      case Some(inner) => q"""$prefix.Primitives.list[$inner]"""
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
@@ -153,66 +159,123 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
     term: TermName,
     cassandraType: Tree,
     extractor: Tree,
-    serializer: Tree
+    serializer: Tree,
+    tpe: Type
   )
 
   def tupleFields(tpe: Type): List[TupleType] = {
     val sourceTerm = TermName("source")
-
     tpe.typeArgs.zipWithIndex.map {
-      case (argTpe, i) => {
+      case (argTpe, i) =>
         val currentTerm = TermName(s"tp${i + 1}")
         val tupleRef = TermName("_" + (i + 1).toString)
-
         val index = q"$i"
 
         TupleType(
           currentTerm,
           q"$prefix.Primitive[$argTpe].cassandraType",
           fq"$currentTerm <- $prefix.Primitive[$argTpe].fromRow(index = $index, row = $sourceTerm)",
-          q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)"
+          q"$prefix.Primitive[$argTpe].asCql(tp.$tupleRef)",
+          argTpe
         )
-      }
     }
   }
 
-  def tuplePrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
+  def tupleTerm(index: Int, aug: Int = 1): TermName = {
+    TermName("_" + (index + aug).toString)
+  }
 
-    val comp = tpe.typeSymbol.name.toTermName
-    val sourceTerm = TermName("source")
+  val sourceTerm = TermName("source")
+  def fieldTerm(i: Int): TermName = TermName(s"n$i")
+  def elTerm(i: Int): TermName = TermName(s"el$i")
+  def fqTerm(i: Int): TermName = TermName(s"fq$i")
 
+  def tuplePrimitive(tpe: Type): Tree = {
     val fields: List[TupleType] = tupleFields(tpe)
+    val indexedFields = fields.zipWithIndex
 
-    q"""new $prefix.Primitive[$tpe] {
-      override type PrimitiveType = $tupleValue
+    var sizeComp = indexedFields.map { case (f, i) =>
+      val term = elTerm(i)
+      fq"""
+        $term <- {
+          val $term = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
+          Some((4 + { if ($term == null) 0 else $term.remaining()}))
+        }
+      """
+    }
 
+    val serializedComponents = indexedFields.map { case (f, i) =>
+      fq""" ${elTerm(i)} <- {
+          val serialized = $prefix.Primitive[${f.tpe}].serialize(source.${tupleTerm(i)}, $versionTerm)
+
+          val buf = if (serialized == null) {
+             res.putInt(-1)
+           } else {
+             res.putInt(serialized.remaining())
+             res.put(serialized.duplicate())
+           }
+        Some(buf)
+      }
+      """
+    }
+
+    val inputTerm = TermName("input")
+
+    val deserializedFields = indexedFields.map { case (f, i) =>
+      val tm = fieldTerm(i)
+      val el = elTerm(i)
+      fq"""
+         ${fqTerm(i)} <- {
+            val $tm = $inputTerm.getInt()
+            val $el = if ($tm < 0) { null } else { $codecUtils.readBytes($inputTerm, $tm) }
+            Some($prefix.Primitive[${f.tpe}].deserialize($el, $versionTerm))
+         }
+      """
+    }
+
+    val sumTerm = indexedFields.foldRight(q"") { case ((_, pos), acc) =>
+      acc match {
+        case t if t.isEmpty => q"${elTerm(pos)}"
+        case _ => q"${elTerm(pos)} + $acc"
+      }
+    }
+
+    val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
+    val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
+
+    val tree = q"""new $prefix.Primitive[$tpe] {
       override def cassandraType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
           .queryString
       }
 
-      override def extract($sourceTerm: $tupleValue): $tpe = {
-        val tp = for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
-        tp.get
-      }
-
-      override def fromRow(name: $strType, row: $rowByNameType): ${tryT(tpe)} = {
-        if (scala.Option(row).isEmpty || row.isNull(name)) {
-          scala.util.Failure(new Exception("Column with name " + name + " is null") with scala.util.control.NoStackTrace)
+      override def serialize($sourceTerm: $tpe, $versionTerm: $pVersion): $bufferType = {
+        if ($sourceTerm == null) {
+           null
         } else {
-          val $sourceTerm = row.getTupleValue(name)
-          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+          val size = {for (..$sizeComp) yield ($sumTerm) } get
+
+          val length = ${fields.size}
+          val res = $bufferCompanion.allocate(size)
+          val buf = for (..$serializedComponents) yield ()
+          buf.get
+
+          res.flip().asInstanceOf[$bufferType]
         }
       }
 
-      override def fromRow(index: $intType, row: $rowByIndexType): ${tryT(tpe)}  = {
-        if (scala.Option(row).isEmpty || row.isNull(index)) {
-          scala.util.Failure(new Exception("Column with index " + index + " is null") with scala.util.control.NoStackTrace)
+      override def deserialize($sourceTerm: $bufferType, $versionTerm: $pVersion): $tpe = {
+        if ($sourceTerm == null) {
+          null
         } else {
-          val $sourceTerm = row.getTupleValue(index)
-          for (..${fields.map(_.extractor)}) yield $comp.apply(..${fields.map(_.term)})
+          try {
+            val $inputTerm = $sourceTerm.duplicate()
+            $fieldExtractor.get
+          } catch {
+            case e: $bufferException =>
+              throw new $invalidTypeException("Not enough bytes to deserialize a tuple", e)
+          }
         }
       }
 
@@ -220,12 +283,13 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
         $builder.QueryBuilder.Collections.tupled(..${fields.map(_.serializer)}).queryString
       }
 
-      override def fromString(value: $strType): $tpe = ???
-
-      override def clz: Class[$tupleValue] = classOf[$tupleValue]
-
       override def frozen: $boolType = true
     }"""
+
+    //c.echo(c.enclosingPosition, showCode(tree))
+    //Console.println(showCode(tree))
+
+    tree
   }
 
   def mapPrimitive[T : WeakTypeTag](): Tree = {
@@ -236,12 +300,8 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   }
 
   def setPrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
-
-    val innerTpe = tpe.typeArgs.headOption
-
-    innerTpe match {
-      case Some(inner) => q"""$prefix.Primitives.set[$inner]"""
+    weakTypeOf[T].typeArgs.headOption match {
+      case Some(inner) => q"$prefix.Primitives.set[$inner]"
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
@@ -261,93 +321,43 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
   }
 
   def enumPrimitive(tpe: Type): Tree = {
-
     val comp = tpe.typeSymbol.name.toTermName
 
-    q"""new $prefix.Primitive[$tpe#Value] {
-      val strP = implicitly[$prefix.Primitive[$strType]]
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: $strType = strP.cassandraType
-
-      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe#Value] = {
-        nullCheck(name, row) {
-          r => $comp.values.find(_.toString == r.getString(name)) match {
+    q"""
+      $prefix.Primitive.derive[$tpe#Value, $strType](_.toString)(
+        str =>
+          $comp.values.find(_.toString == str) match {
             case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+            case _ => throw new Exception(
+              "Value " + str + " not found in enumeration"
+            ) with scala.util.control.NoStackTrace
           }
-        }
-      }
-
-      override def fromRow(index: $intType, row: $rowByIndexType): scala.util.Try[$tpe#Value] = {
-        nullCheck(index, row) {
-          r => $comp.values.find(_.toString == r.getString(index)) match {
-            case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: $tpe#Value): $strType = {
-        strP.asCql(value.toString)
-      }
-
-      override def fromString(value: $strType): $tpe#Value = {
-        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
-      }
-
-      override def clz: Class[$strType] = classOf[$strType]
-    }"""
+      )
+    """
   }
 
   def enumValuePrimitive(tpe: Type): Tree = {
-
     val comp = c.parse(s"${tpe.toString.replace("#Value", "").replace(".Value", "")}")
 
-    q"""new $prefix.Primitive[$tpe] {
-      val strP = implicitly[$prefix.Primitive[$strType]]
-
-      override type PrimitiveType = java.lang.String
-
-      override def cassandraType: $strType = strP.cassandraType
-
-      override def fromRow(name: $strType, row: $rowByNameType): scala.util.Try[$tpe] = {
-        nullCheck(name, row) {
-          r => $comp.values.find(_.toString == r.getString(name)) match {
+    q"""
+      $prefix.Primitive.derive[$tpe, $strType](_.toString)(
+        str =>
+          $comp.values.find(_.toString == str) match {
             case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
+            case _ => throw new Exception(
+              "Value " + str + " not found in enumeration"
+            ) with scala.util.control.NoStackTrace
           }
-        }
-      }
-
-      override def fromRow(index: $intType, row: $rowByIndexType): scala.util.Try[$tpe] = {
-        nullCheck(index, row) {
-          r => $comp.values.find(_.toString == r.getString(index)) match {
-            case Some(value) => value
-            case _ => throw new Exception("Value not found in enumeration") with scala.util.control.NoStackTrace
-          }
-        }
-      }
-
-      override def asCql(value: $tpe): $strType = {
-        strP.asCql(value.toString)
-      }
-
-      override def fromString(value: $strType): $tpe = {
-        $comp.values.find(value == _.toString).getOrElse(scala.None.orNull)
-      }
-
-      override def clz: Class[$strType] = classOf[$strType]
-    }"""
+      )
+    """
   }
 
-  def materializer[T : c.WeakTypeTag]: c.Expr[Primitive[T]] = {
+  def materializer[T : c.WeakTypeTag]: Tree = {
     val wkType = weakTypeOf[T]
     val tpe = wkType.typeSymbol
 
     val tree = tpe match {
-      case _ if isTuple(wkType) => tuplePrimitive[T]()
+      case _ if isTuple(wkType) => tuplePrimitive(wkType)
       case _ if isOption(wkType) => optionPrimitive(wkType)
       case Symbols.boolSymbol => booleanPrimitive
       case Symbols.byteSymbol => bytePrimitive
@@ -374,6 +384,6 @@ class PrimitiveMacro(val c: scala.reflect.macros.blackbox.Context) {
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
-    c.Expr[Primitive[T]](tree)
+    tree
   }
 }

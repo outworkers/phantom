@@ -15,8 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
-import com.outworkers.phantom.CassandraTable
+import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
@@ -62,7 +62,13 @@ class DeleteQuery[
     S <: ConsistencyBound,
     C <: WhereBound,
     P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, part: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
+  ](
+    t: T,
+    q: CQLQuery,
+    r: Row => R,
+    part: UsingPart,
+    options: QueryOptions
+  ): QueryType[T, R, L, O, S, C, P] = {
     new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
   }
 
@@ -251,4 +257,3 @@ sealed class ConditionalDeleteQuery[
     )
   }
 }
-

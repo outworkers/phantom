@@ -21,27 +21,28 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
-class RootMacro(val c: blackbox.Context) {
-
+trait RootMacro {
+  val c: whitebox.Context
   import c.universe._
 
   protected[this] val logger = LoggerFactory.getLogger(this.getClass)
 
-  protected[this] val rowType = tq"com.datastax.driver.core.Row"
-  protected[this] val builder = q"com.outworkers.phantom.builder.QueryBuilder"
-  protected[this] val macroPkg = q"com.outworkers.phantom.macros"
-  protected[this] val builderPkg = q"com.outworkers.phantom.builder.query"
-  protected[this] val enginePkg = q"com.outworkers.phantom.builder.query.engine"
-  protected[this] val strTpe = tq"java.lang.String"
-  protected[this] val colType = tq"com.outworkers.phantom.column.AbstractColumn[_]"
-  protected[this] val collections = q"scala.collection.immutable"
+  protected[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
+  protected[this] val builder = q"_root_.com.outworkers.phantom.builder.QueryBuilder"
+  protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
+  protected[this] val builderPkg = q"_root_.com.outworkers.phantom.builder.query"
+  protected[this] val enginePkg = q"_root_.com.outworkers.phantom.builder.query.engine"
+  protected[this] val strTpe = tq"_root_.java.lang.String"
+  protected[this] val colType = tq"_root_.com.outworkers.phantom.column.AbstractColumn[_]"
+  protected[this] val collections = q"_root_.scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")
   protected[this] val inputTerm = TermName("input")
-  protected[this] val keyspaceType = tq"com.outworkers.phantom.connectors.KeySpace"
+  protected[this] val keyspaceType = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
+  private[this] val hnilTpe: Tree = tq"_root_.shapeless.HNil"
 
   val knownList = List("Any", "Object", "RootConnector")
 
@@ -54,12 +55,12 @@ class RootMacro(val c: blackbox.Context) {
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
   val fromRowName: TermName = TermName("fromRow")
 
-  def printType(tpe: Type): String = {
-    showCode(tq"${tpe.dealias}")
-  }
+  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
-  def showCollection[M[X] <: TraversableOnce[X]](traversable: M[Type], sep: String = ", "): String = {
-    traversable map (tpe => showCode(tq"$tpe")) mkString sep
+  def showCollection[
+    M[X] <: TraversableOnce[X]
+  ](traversable: M[Type], sep: String = ", "): String = {
+    traversable map(tpe => showCode(tq"$tpe")) mkString sep
   }
 
   trait RootField {
@@ -181,11 +182,11 @@ class RootMacro(val c: blackbox.Context) {
 
     def fromRow: Option[Tree] = {
       if (unmatched.isEmpty) {
-        val columnNames = matched.sortBy(_.left.index).map {
-          m => q"$tableTerm.${m.right.name}.apply($rowTerm)"
+        val columnNames = matched.sortBy(_.left.index).map { m =>
+          q"$tableTerm.${m.right.name}.apply($rowTerm)"
         }
-        val tree = q"""new $recordType(..$columnNames)"""
-        Some(tree)
+
+        Some(q"""new $recordType(..$columnNames)""")
       } else {
         None
       }
@@ -236,9 +237,9 @@ class RootMacro(val c: blackbox.Context) {
       *
       *   class Records extends CassandraTable[Records, Record] {
       *
-      *     object id extends UUIDColumn(this) with PartitionKey
-      *     object name extends StringColumn(this) with PrimaryKey
-      *     object timestamp extends DateTimeColumn(this)
+      *     object id extends UUIDColumn with PartitionKey
+      *     object name extends StringColumn with PrimaryKey
+      *     object timestamp extends DateTimeColumn
       *
       *     // Will end up with a store method that has the following type signature.
       *     def store(input: (UUID, Record)): InsertQuery.Default[Records, Record]
@@ -282,6 +283,10 @@ class RootMacro(val c: blackbox.Context) {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
+    def hlistType[M[X] <: Traversable[X]](col: M[Type]): Tree = {
+      (hnilTpe /: col)((acc, tp) => tq"$tp :: $acc")
+    }
+
     def storeMethod: Option[Tree] = storeType flatMap { sTpe =>
       if (unmatched.isEmpty) {
         val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
@@ -305,8 +310,25 @@ class RootMacro(val c: blackbox.Context) {
       if (unmatchedColumns.isEmpty) {
         recString
       } else {
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
         cols.mkString(", ") + s", $recString"
+      }
+    }
+
+    def hListStoreType: Option[Tree] = {
+      if (unmatchedColumns.isEmpty) {
+        Some(hlistType(List(recordType)))
+      } else {
+        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        val cols = unmatchedColumns.map(_.tpe) :+ recordType
+
+        if (cols.size > maxTupleSize) {
+          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
+          None
+        } else {
+          Some(hlistType(cols))
+        }
       }
     }
 
@@ -327,6 +349,8 @@ class RootMacro(val c: blackbox.Context) {
           logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
           None
         } else {
+          val hlist = hlistType(cols)
+          logger.debug(s"Inferred store type ${showCode(hlist)}")
           Some(tq"(..$cols)")
         }
       }
@@ -364,17 +388,17 @@ class RootMacro(val c: blackbox.Context) {
       case sym if sym.fullName.startsWith("scala.Tuple") =>
         (Seq.tabulate(tpe.typeArgs.size)(identity) map {
           index => tupleTerm(index)
-        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) => Record.Field(term, tp, index) }
+        } zip tpe.typeArgs).zipWithIndex map { case ((term, tp), index) =>
+          Record.Field(term, tp, index)
+        }
 
       case sym if sym.isClass && sym.asClass.isCaseClass =>
-        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) => Record.Field(nm.toTermName, tp, i) }
+        caseFields(tpe).zipWithIndex map { case ((nm, tp), i) =>
+          Record.Field(nm.toTermName, tp, i)
+        }
 
       case _ => Seq.empty[Record.Field]
     }
-  }
-
-  def filterDecls[Filter: TypeTag](source: Type): Seq[Symbol] = {
-    source.declarations.sorted.filter(_.typeSignature <:< typeOf[Filter])
   }
 
   def filterMembers[Filter : TypeTag](
@@ -387,7 +411,7 @@ class RootMacro(val c: blackbox.Context) {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-    ) (collection.breakOut) distinct
+    )(collection.breakOut) distinct
   }
 
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](
@@ -425,9 +449,15 @@ class RootMacro(val c: blackbox.Context) {
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
             )
-            case _ => c.abort(c.enclosingPosition, "Expected exactly one type parameter provided for root column type")
+            case _ => c.abort(
+              c.enclosingPosition,
+              "Expected exactly one type parameter provided for root column type"
+            )
           }
-        case None => c.abort(c.enclosingPosition, s"Could not find root column type for ${member.asModule.name}")
+        case None => c.abort(
+          c.enclosingPosition,
+          s"Could not find root column type for ${member.asModule.name}"
+        )
       }
     }
   }

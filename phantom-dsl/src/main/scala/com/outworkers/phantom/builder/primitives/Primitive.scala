@@ -15,9 +15,12 @@
  */
 package com.outworkers.phantom.builder.primitives
 
+import java.nio.ByteBuffer
 import java.util.Date
 
-import com.datastax.driver.core.{GettableByIndexData, GettableByNameData, GettableData, LocalDate}
+import com.datastax.driver.core.exceptions.InvalidTypeException
+import com.datastax.driver.core.{LocalDate, ProtocolVersion}
+import com.outworkers.phantom.Row
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -38,28 +41,43 @@ private[phantom] object DateSerializer {
 @implicitNotFound(msg = "Type ${RR} must be a pre-defined Cassandra primitive.")
 abstract class Primitive[RR] {
 
-  /**
-    * A way of maintaining compatibility with the underlying Java driver.
-    * The driver often type checks records before casting them and to do that
-    * it needs the correct Java Class obtained via classOf[] or .getClass in Java.
-    *
-    * We use this because the appropriate Scala type is often different than the
-    * Java equivalent. For instance, we don't want users to deal with [[java.util.List]],
-    * even if the Java Driver will attempt to look for one.
-    */
-  type PrimitiveType
+  protected[this] def notNull[T](value: T, msg: String = "Value cannot be null"): Unit = {
+    if (Option(value).isEmpty) throw new NullPointerException(msg)
+  }
 
-  protected[this] def nullCheck[T](column: String, row: GettableByNameData)(fn: GettableByNameData => T): Try[T] = {
-    if (Option(row).isEmpty || row.isNull(column)) {
-      Failure(new Exception(s"Column $column is null") with NoStackTrace)
+  protected[this] def nullValueCheck(source: RR)(fn: RR => ByteBuffer): ByteBuffer = {
+    if (source == Primitive.nullValue) Primitive.nullValue else fn(source)
+  }
+
+  protected[this] def checkNullsAndLength[T](
+    source: ByteBuffer,
+    len: Int,
+    msg: String
+  )(pf: PartialFunction[ByteBuffer, T]): T = {
+    source match {
+      case Primitive.nullValue => Primitive.nullValue.asInstanceOf[T]
+      case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len")
+      case bytes @ _ => pf(bytes)
+    }
+  }
+
+  protected[this] def nullCheck[T](
+    index: Int,
+    row: Row
+  )(fn: Row => T): Try[T] = {
+    if (Option(row).isEmpty || row.isNull(index)) {
+      Failure(new Exception(s"Column $index is null") with NoStackTrace)
     } else {
       Try(fn(row))
     }
   }
 
-  protected[this] def nullCheck[T](index: Int, row: GettableByIndexData)(fn: GettableByIndexData => T): Try[T] = {
-    if (Option(row).isEmpty || row.isNull(index)) {
-      Failure(new Exception(s"Column with index $index is null") with NoStackTrace)
+  protected[this] def nullCheck[T](
+    column: String,
+    row: Row
+  )(fn: Row => T): Try[T] = {
+    if (Option(row).isEmpty || row.isNull(column)) {
+      Failure(new Exception(s"Column $column is null") with NoStackTrace)
     } else {
       Try(fn(row))
     }
@@ -76,31 +94,35 @@ abstract class Primitive[RR] {
 
   def cassandraType: String
 
-  def fromRow(column: String, row: GettableByNameData): Try[RR]
+  def serialize(obj: RR, protocol: ProtocolVersion): ByteBuffer
 
-  def fromRow(index: Int, row: GettableByIndexData): Try[RR]
+  def deserialize(source: ByteBuffer, protocol: ProtocolVersion): RR
 
-  def fromString(value: String): RR
+  def fromRow(column: String, row: Row): Try[RR] = {
+    nullCheck(column, row)(r => deserialize(r.getBytesUnsafe(column), r.version))
+  }
 
-  def clz: Class[PrimitiveType]
+  def fromRow(index: Int, row: Row): Try[RR] = {
+    nullCheck(index, row)(r => deserialize(r.getBytesUnsafe(index), r.version))
+  }
 
-  def extract(obj: PrimitiveType): RR = identity(obj).asInstanceOf[RR]
-
+  /**
+    * Whether or not this primitive should freeze if used inside a collection column type
+    * or if used as part of a partition column.
+    * There are several kinds of primitives that must freeze in both scenarios:
+    * - Set columns
+    * - List columns
+    * - Map columns
+    * - Tuple columns
+    * - UDT columns
+    * @return A boolean that marks if this should be frozen.
+    */
   def frozen: Boolean = false
 }
 
 object Primitive {
 
-  /**
-    * A helper for implicit lookups that require the refined inner abstract type of a concrete
-    * primitive implementation produced by an implicit macro.
-    * This is useful to eliminate a compiler warning produced for map columns, where
-    * we need to manually cast values to their PrimitiveType after extraction
-    * just to please the compiler.
-    * @tparam Outer The outer, visible Scala type of a primitive.
-    * @tparam Inner The inner, primitive type, used to unwrap Java bindings.
-    */
-  type Aux[Outer, Inner] = Primitive[Outer] { type PrimitiveType = Inner }
+  val nullValue = None.orNull
 
   /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
@@ -120,36 +142,57 @@ object Primitive {
     * @return A new primitive that can interact with the target type.
     */
   def derive[Target, Source : Primitive](to: Target => Source)(from: Source => Target): Primitive[Target] = {
-
-    val source = implicitly[Primitive[Source]]
+    val primitive = implicitly[Primitive[Source]]
 
     new Primitive[Target] {
-      override type PrimitiveType = source.PrimitiveType
 
-      override def frozen: Boolean = source.frozen
+      override def frozen = primitive.frozen
 
-      /**
-        * Converts the type to a CQL compatible string.
-        * The primitive is responsible for handling all aspects of adequate escaping as well.
-        * This is used to generate the final queries from domain objects.
-        *
-        * @param value The strongly typed value.
-        * @return The string representation of the value with respect to CQL standards.
-        */
-      override def asCql(value: Target): String = source.asCql(to(value))
 
-      override def cassandraType: String = source.cassandraType
+      override def asCql(value: Target): String = primitive.asCql(to(value))
 
-      override def fromRow(column: String, row: GettableByNameData): Try[Target] = {
-        source.fromRow(column, row) map from
+      override def cassandraType: String = primitive.cassandraType
+
+      override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
+        primitive.serialize(to(obj), protocol)
       }
 
-      override def fromRow(index: Int, row: GettableByIndexData): Try[Target] = {
-        source.fromRow(index, row) map from
+      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Target = {
+        from(primitive.deserialize(source, protocol))
       }
-      override def fromString(value: String): Target = from(source.fromString(value))
+    }
+  }
 
-      override def clz: Class[source.PrimitiveType] = source.clz
+  /**
+    * Derives a primitive without implicit lookup in phantom itself.
+    * This is because the macro that empowers the implicit lookup for primitives
+    * cannot be used in the same compilation as the one its defined in.
+    * @param to The function that converts the derived value to the original one.
+    * @param from The function that will convert an original value to a derived one.
+    * @param ev Evidence that the source type is a Cassandra primitive.
+    * @tparam Target The target type of the new primitive.
+    * @tparam Source The type we are deriving from.
+    * @return A new primitive for the target type.
+    */
+  def manuallyDerive[Target, Source](
+    to: Target => Source,
+    from: Source => Target
+  )(ev: Primitive[Source])(tpe: String = ev.cassandraType): Primitive[Target] = {
+    new Primitive[Target] {
+
+      override def frozen = ev.frozen
+
+      override def asCql(value: Target): String = ev.asCql(to(value))
+
+      override def cassandraType: String = tpe
+
+      override def serialize(obj: Target, protocol: ProtocolVersion): ByteBuffer = {
+        ev.serialize(to(obj), protocol)
+      }
+
+      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Target = {
+        from(ev.deserialize(source, protocol))
+      }
     }
   }
 
@@ -159,5 +202,5 @@ object Primitive {
     * @tparam RR The type of the primitive to retrieve.
     * @return A reference to a concrete materialised implementation of a primitive for the given type.
     */
-  def apply[RR : Primitive]: Primitive[RR] = implicitly[Primitive[RR]]
+  def apply[RR]()(implicit ev: Primitive[RR]): Primitive[RR] = ev
 }

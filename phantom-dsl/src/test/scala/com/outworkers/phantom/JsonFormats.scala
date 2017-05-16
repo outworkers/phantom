@@ -35,11 +35,10 @@ trait JsonFormats {
         case JString(value) => try {
           UUID.fromString(value)
         }  catch {
-          case NonFatal(err) => {
+          case NonFatal(err) =>
             val exception = new MappingException(s"Couldn't extract an UUID from $value")
             exception.initCause(err)
             throw exception
-          }
         }
         case x => throw new MappingException("Can't convert " + x + " to UUID")
       }
@@ -67,16 +66,14 @@ trait JsonFormats {
               throw exception
             }
           }
-        case JInt(value) => {
+        case JInt(value) =>
           Try(new DateTime(value.toLong, DateTimeZone.UTC)) match {
             case Success(dt) => dt
-            case Failure(err) => {
+            case Failure(err) =>
               val exception = new MappingException(s"Couldn't extract a DateTime from $value")
               exception.initCause(err)
               throw exception
-            }
           }
-        }
         case x => throw new MappingException("Can't convert " + x + " to DateTime")
       }
     }

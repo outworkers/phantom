@@ -22,6 +22,9 @@ import com.outworkers.util.samplers._
 import org.json4s.Extraction
 import org.json4s.native._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -39,7 +42,7 @@ class InsertTest extends PhantomSuite {
   }
 
   "Insert" should "work fine for primitives columns" in {
-    val row = gen[Primitive]
+    val row = gen[PrimitiveRecord]
 
     val chain = for {
       store <- database.primitives.store(row).future()

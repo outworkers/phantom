@@ -54,8 +54,9 @@ package object streams {
    * @tparam CT the concrete type inheriting from [[CassandraTable]]
    * @tparam T the type of the streamed element
    */
-  implicit class StreamedCassandraTable[CT <: CassandraTable[CT, T], T](val ct: CassandraTable[CT, T]) extends AnyVal {
-
+  implicit class StreamedCassandraTable[CT <: CassandraTable[CT, T], T](
+    val ct: CassandraTable[CT, T]
+  ) extends AnyVal {
 
     /**
      * Gets a reactive streams [[org.reactivestreams.Subscriber]] with

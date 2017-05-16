@@ -15,17 +15,16 @@
  */
 package com.outworkers.phantom.macros
 
-import com.datastax.driver.core.Row
 import com.google.common.base.CaseFormat
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
+import shapeless.HList
 
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
-import scala.util.{ Failure, Success, Try }
 
 case class Debugger(
   storeType: String,
@@ -62,8 +61,8 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
-  import c.universe.{ Try => _, _ }
+class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
+  import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
     val sig = s.typeSignature.typeSymbol
@@ -130,8 +129,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     * Predicate that checks two fields refer to the same type.
     * @param left The source, which is a tuple of two [[Record.Field]] values.
     * @param right The source, which is a tuple of two [[Column.Field]] values.
-    * @return True if the left hand side of te tuple is equal to the right hand side
-    *         or if there is an implicit conversion from the left field type to the right field type.
+    * @return True if the left hand side of te tuple is equal to the right hand side.
+    *         Not true even if there is an implicit conversion from the left field type to the right field type,
+    *         we do not currently support the type mapping natively in the macro.
     */
   private[this] def predicate(left: Record.Field, right: Type): Boolean = {
     (left.tpe =:= right)// || (c.inferImplicitView(EmptyTree, left.tpe, right) != EmptyTree)
@@ -250,6 +250,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     recordFields match { case recField :: tail =>
       columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
         case None =>
+
+
+
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
           extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
 
@@ -313,10 +316,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     *     date: DateTime
     *   )
     *
-    *   class MyTable extends CassandraTable[MyTable, MyRecord] {
-    *     object id extends UUIDColumn(this) with PartitionKey
-    *     object email extends StringColumn(this)
-    *     object date extends DateTimeColumn(this)
+    *   class MyTable extends Table[MyTable, MyRecord] {
+    *     object id extends UUIDColumn with PartitionKey
+    *     object email extends StringColumn
+    *     object date extends DateTimeColumn
     *   }
     * }}}
     *
@@ -329,10 +332,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     *     email: String,
     *   )
     *
-    *   class MyTable extends CassandraTable[MyTable, MyRecord] {
-    *     object id extends UUIDColumn(this) with PartitionKey
-    *     object email extends StringColumn(this)
-    *     object date extends DateTimeColumn(this)
+    *   class MyTable extends Table[MyTable, MyRecord] {
+    *     object id extends UUIDColumn with PartitionKey
+    *     object email extends StringColumn
+    *     object date extends DateTimeColumn
     *   }
     * }}}
     *
@@ -397,14 +400,30 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
     val tableName = extractTableName(refTable)
     val columns = filterMembers[T, AbstractColumn[_]](exclusions)
     val descriptor = extractor(tableType, recordType, referenceColumns)
+    val abstractFromRow = refTable.member(fromRowName).asMethod
+    val fromRowFn = descriptor.fromRow
+    val notImplemented = q"???"
+
+    if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
+      val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
+      c.abort(
+        c.enclosingPosition,
+        s"""Please define def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}.
+          Found unmatched record columns on ${printType(tableType)}
+          $unmatched
+        """
+      )
+    } else {
+      logger.debug(descriptor.showExtractor)
+    }
+
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val notImplemented = q"???"
-    val nothingTpe = tq"_root_.scala.Nothing"
+    val nothingTpe: Tree = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
-    q"""
+    val tree = q"""
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = $storeTpe
 
@@ -433,5 +452,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
+
+    tree
   }
 }

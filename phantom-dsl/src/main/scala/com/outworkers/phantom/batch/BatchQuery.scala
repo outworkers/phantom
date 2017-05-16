@@ -15,12 +15,12 @@
  */
 package com.outworkers.phantom.batch
 
-import com.datastax.driver.core.{QueryOptions => _, _}
+import com.datastax.driver.core.{BatchStatement, ConsistencyLevel, Session, Statement}
+import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
-import com.outworkers.phantom.connectors.KeySpace
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
@@ -45,9 +45,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(makeBatch())
-  }
+  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(makeBatch())
 
   def initBatch(): BatchStatement = batchType match {
     case BatchType.Logged => new BatchStatement()

@@ -15,11 +15,9 @@
  */
 package com.outworkers.phantom.finagle
 
-import com.datastax.driver.core.{ResultSet, Row}
+import com.outworkers.phantom.{ResultSet, Row}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{FuturePool, Future => TFuture}
-
-import scala.collection.JavaConversions._
 
 /**
   * Wrapper for creating Spools of Rows
@@ -59,7 +57,7 @@ private[phantom] object ResultSpool {
     *      wait to get called back and chain onto that.
     */
   def spool(rs: ResultSet): TFuture[Spool[Row]] = {
-    val it = rs.iterator
+    val it = rs.iterate()
     if (!rs.isExhausted) {
       pool(it.next).map(x => loop(x, it, rs))
     } else {

@@ -24,22 +24,22 @@ abstract class CounterTableTest extends Table[
   CounterTableTest,
   CounterRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object count_entries extends CounterColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object count_entries extends CounterColumn
 }
 
 abstract class SecondaryCounterTable extends Table[
   SecondaryCounterTable,
   CounterRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object count_entries extends CounterColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object count_entries extends CounterColumn
 }
 
 abstract class BrokenCounterTableTest extends CassandraTable[
   BrokenCounterTableTest,
   CounterRecord
 ] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object count_entries extends CounterColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object count_entries extends CounterColumn
 }
