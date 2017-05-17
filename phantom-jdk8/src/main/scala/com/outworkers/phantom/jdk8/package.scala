@@ -89,7 +89,7 @@ package object jdk8 {
   type JdkLocalDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = column.PrimitiveColumn[Owner, Record, java.time.LocalDateTime]
+  ] = column.PrimitiveColumn[Owner, Record, JdkLocalDateTime]
 
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
@@ -109,7 +109,7 @@ package object jdk8 {
   type OptionalJdkLocalDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = column.OptionalPrimitiveColumn[Owner, Record, LocalDateTime]
+  ] = column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDateTime]
 
   def instantToTimeuuid(instant: Instant): UUID = {
     new UUID(

@@ -15,7 +15,9 @@
  */
 package com.outworkers.phantom
 
-import java.util.Random
+import java.net.InetAddress
+import java.nio.ByteBuffer
+import java.util.{ Date, Random }
 
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
@@ -46,6 +48,61 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
 
   trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with RootConnector
+
+  type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
+  type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
+  type OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.OptionalColumn[Owner, Record, T]
+
+  type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
+  type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, BigDecimal]
+
+  type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = PrimitiveColumn[Owner, Record, ByteBuffer]
+  type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, BigInt]
+  type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Boolean]
+  type DateColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Date]
+  type DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, DateTime]
+  type LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, LocalDate]
+  type DoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Double]
+  type FloatColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Float]
+  type IntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Int]
+  type SmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Short]
+  type TinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Byte]
+  type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, InetAddress]
+  type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Long]
+  type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, String]
+  type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, UUID]
+  type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.CounterColumn[Owner, Record]
+
+  class TimeUUIDColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ](t: CassandraTable[Owner, Record])(implicit ev: Primitive[UUID]) extends PrimitiveColumn[Owner, Record, UUID](t) {
+    override val cassandraType = CQLSyntax.Types.TimeUUID
+  }
+
+  type OptionalBlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = OptionalPrimitiveColumn[Owner, Record, ByteBuffer]
+  type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, BigDecimal]
+  type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, BigInt]
+  type OptionalBooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Boolean]
+  type OptionalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Date]
+  type OptionalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, DateTime]
+  type OptionalLocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, LocalDate]
+  type OptionalDoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Double]
+  type OptionalFloatColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Float]
+  type OptionalIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Int]
+  type OptionalSmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Short]
+  type OptionalTinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Byte]
+  type OptionalInetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, InetAddress]
+  type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Long]
+  type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, String]
+  type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, UUID]
+
+  class OptionalTimeUUIDColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ](t: CassandraTable[Owner, Record])(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID](t) {
+    override val cassandraType = CQLSyntax.Types.TimeUUID
+  }
 
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
