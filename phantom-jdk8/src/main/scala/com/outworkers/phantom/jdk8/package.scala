@@ -15,23 +15,60 @@
  */
 package com.outworkers.phantom
 
-import java.time._
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.builder.clauses.OperatorClause
 import com.outworkers.phantom.builder.ops.TimeUUIDOperator
+import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
+
+import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
+import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
-package object jdk8 extends DefaultJava8Primitives {
+package object jdk8 {
+
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
-
   implicit class Jdk8Columns[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
     class OffsetDateTimeColumn extends table.Col[OffsetDateTime]
+  }
+
+  implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
+    Primitive.derive[OffsetDateTime, (Long, String)](
+      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
+    ) { case (timestamp, zone) =>
+      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
+    }
+  }
+
+  implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
+
+  implicit val LocalDateIsPrimitive = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
+    l => {
+      val off = OffsetDateTime.of(l.atTime(0, 0), ZoneOffset.UTC)
+      DatastaxLocalDate.fromYearMonthDay(off.getYear, off.getMonthValue, off.getDayOfMonth)
+    }, s => {
+      val conv = OffsetDateTime.ofInstant(Instant.ofEpochMilli(s.getMillisSinceEpoch), ZoneOffset.UTC)
+      JavaLocalDate.of(conv.getYear, conv.getMonth, conv.getDayOfMonth)
+    }
+
+  )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
+
+  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
+    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
+      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
+    }
+  }
+
+  implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {
+    Primitive.derive[JavaLocalDateTime, DateTime](jd =>
+      new DateTime(jd.toInstant(ZoneOffset.UTC).toEpochMilli, DateTimeZone.UTC)
+    )(dt => JavaLocalDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneOffset.UTC))
   }
 
   type OffsetDateTimeColumn[
@@ -52,7 +89,7 @@ package object jdk8 extends DefaultJava8Primitives {
   type JdkLocalDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
-  ] = column.PrimitiveColumn[Owner, Record, LocalDateTime]
+  ] = column.PrimitiveColumn[Owner, Record, java.time.LocalDateTime]
 
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
