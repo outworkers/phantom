@@ -31,7 +31,7 @@ class PrimitiveColumn[
   @specialized(Int, Double, Float, Long) RR
 ](t: CassandraTable[T, R])(implicit ev: Primitive[RR]) extends Column[T, R, RR](t) {
 
-  def cassandraType: String = ev.dataType
+  def cassandraType: String = ev.cassandraType
 
   def asCql(v: RR): String = ev.asCql(v)
 
