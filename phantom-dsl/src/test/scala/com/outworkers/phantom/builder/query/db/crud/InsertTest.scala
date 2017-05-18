@@ -15,15 +15,13 @@
  */
 package com.outworkers.phantom.builder.query.db.crud
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 import org.json4s.Extraction
 import org.json4s.native._
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class InsertTest extends PhantomSuite {
 
@@ -43,7 +41,7 @@ class InsertTest extends PhantomSuite {
   }
 
   "Insert" should "work fine for primitives columns defined with the old DSL" in {
-    val row = gen[OldPrimitiveRecord]
+    val row = gen[OldPrimitiveRecord].copy(timeuuid = UUIDs.timeBased())
 
     val chain = for {
       store <- database.oldPrimitives.store(row).future()

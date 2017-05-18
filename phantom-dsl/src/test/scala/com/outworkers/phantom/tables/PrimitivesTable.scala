@@ -65,7 +65,7 @@ case class OldPrimitiveRecord(
   inet: java.net.InetAddress,
   int: Int,
   date: java.util.Date,
-  uuid: java.util.UUID,
+  uuid: UUID,
   bi: BigInt,
   timeuuid: UUID,
   localDate: LocalDate
