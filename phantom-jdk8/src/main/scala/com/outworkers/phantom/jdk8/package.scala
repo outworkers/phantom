@@ -34,10 +34,6 @@ package object jdk8 {
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
-  implicit class Jdk8Columns[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
-    class OffsetDateTimeColumn extends table.Col[OffsetDateTime]
-  }
-
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
     Primitive.derive[OffsetDateTime, (Long, String)](
       offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
@@ -71,41 +67,49 @@ package object jdk8 {
     )(dt => JavaLocalDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneOffset.UTC))
   }
 
+  @deprecated("Use Col[OffsetDateTime] without passing in the 'this' argument", "2.9.0")
   type OffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.PrimitiveColumn[Owner, Record, OffsetDateTime]
 
+  @deprecated("Use Col[ZonedDateTime] without passing in the 'this' argument", "2.9.0")
   type ZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.PrimitiveColumn[Owner, Record, ZonedDateTime]
 
+  @deprecated("Use Col[LocalDate] without passing in the 'this' argument", "2.9.0")
   type JdkLocalDateColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.PrimitiveColumn[Owner, Record, JdkLocalDate]
 
+  @deprecated("Use Col[LocalDateTime] without passing in the 'this' argument", "2.9.0")
   type JdkLocalDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.PrimitiveColumn[Owner, Record, JdkLocalDateTime]
 
+  @deprecated("Use OptionalCol[OffsetDateTime] without passing in the 'this' argument", "2.9.0")
   type OptionalOffsetDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.OptionalPrimitiveColumn[Owner, Record, OffsetDateTime]
 
+  @deprecated("Use OptionalCol[ZonedDateTime] without passing in the 'this' argument", "2.9.0")
   type OptionalZonedDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.OptionalPrimitiveColumn[Owner, Record, ZonedDateTime]
 
+  @deprecated("Use OptionalCol[LocalDate] without passing in the 'this' argument", "2.9.0")
   type OptionalJdkLocalDateColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
   ] = column.OptionalPrimitiveColumn[Owner, Record, JdkLocalDate]
 
+  @deprecated("Use OptionalCol[LocalDateTime] without passing in the 'this' argument", "2.9.0")
   type OptionalJdkLocalDateTimeColumn[
     Owner <: CassandraTable[Owner, Record],
     Record
