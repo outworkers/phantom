@@ -23,6 +23,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
 import com.outworkers.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.Primitives.LongPrimitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, Column}
@@ -81,6 +82,35 @@ sealed class DateOfCqlFunction extends CqlFunction {
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(op.qb.queryString)
 }
+
+
+sealed class AggregationFunction(operator: String) extends CqlFunction {
+  protected[this] def apply[T](nm: String)(
+    implicit ev: Primitive[T],
+    numeric: Numeric[T],
+    session: Session
+  ): TypedClause.Condition[T] = {
+    new TypedClause.Condition(QueryBuilder.Select.aggregation(operator, nm), row => {
+
+      if (row.getColumnDefinitions.contains(s"system.count($nm)")) {
+        ev.fromRow(s"system.$operator($nm)", row).get
+      } else {
+        ev.fromRow(s"$operator($nm)", row).get
+      }
+    })
+  }
+
+  def apply[T](pf: AbstractColumn[T])(
+    implicit ev: Primitive[T],
+    numeric: Numeric[T],
+    session: Session
+  ): TypedClause.Condition[T] = apply(pf.name)
+}
+
+sealed class SumCqlFunction extends AggregationFunction(CQLSyntax.Selection.sum)
+sealed class AvgCqlFunction extends AggregationFunction(CQLSyntax.Selection.avg)
+sealed class MinCqlFunction extends AggregationFunction(CQLSyntax.Selection.min)
+sealed class MaxCqlFunction extends AggregationFunction(CQLSyntax.Selection.max)
 
 sealed class NowCqlFunction extends CqlFunction {
   def apply()(implicit ev: Primitive[Long], session: Session): OperatorClause.Condition = {
@@ -177,5 +207,10 @@ trait Operators {
   object now extends NowCqlFunction
   object writetime extends WritetimeCqlFunction
   object ttl extends TTLOfFunction
+
+  object sum extends SumCqlFunction
+  object min extends MinCqlFunction
+  object max extends MaxCqlFunction
+  object avg extends AvgCqlFunction
 }
 

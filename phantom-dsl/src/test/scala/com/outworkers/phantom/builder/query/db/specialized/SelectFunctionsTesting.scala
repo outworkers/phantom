@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.query.db.specialized
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{Recipe, TimeUUIDRecord}
+import com.outworkers.phantom.tables.{PrimitiveRecord, Recipe, TimeUUIDRecord}
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 import org.joda.time.DateTimeZone
@@ -30,6 +30,7 @@ class SelectFunctionsTesting extends PhantomSuite {
     super.beforeAll()
     database.recipes.insertSchema()
     database.timeuuidTable.insertSchema()
+    database.primitives.insertSchema()
   }
 
   it should "retrieve the writetime of a field from Cassandra" in {
@@ -93,6 +94,329 @@ class SelectFunctionsTesting extends PhantomSuite {
     whenReady(chain) { res =>
       res shouldBe defined
       potentialList should contain (res.value.value)
+    }
+  }
+
+  it should "retrieve the sum of an int field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.int)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the sum of a double field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the sum of a Float field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.float)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the sum of a BigDecimal field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.bDecimal)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the sum of a BigInt field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.bi)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the sum of a long field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // MIN Aggregation
+  it should "retrieve the MIN of an int field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MIN of a double field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MIN of a Float field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the MIN of a BigDecimal field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the MIN of a BigInt field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MIN of a Long field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // MAX Aggregation
+  it should "retrieve the MAX of an int field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MAX of a double field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MAX of a Float field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the MAX of a BigDecimal field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the MAX of a BigInt field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the MAX of a Long field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // AVG Aggregation
+  it should "retrieve the average of an int field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.int)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the average of a double field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the average of a Float field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.float)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the average of a BigDecimal field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the average of a BigInt field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.bi)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  it should "retrieve the average of a Long field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
     }
   }
 }
