@@ -23,14 +23,13 @@ import com.outworkers.phantom.dsl._
 
 import scala.concurrent.{Future => ScalaFuture}
 
-
 // Now you want to enable querying Recipes by author.
 // Because of the massive performance overhead of filtering,
 // you can't really use a SecondaryKey for multi-billion record databases.
 
 // Instead, you create mapping tables and ensure consistency from the application level.
 // This will illustrate just how easy it is to do that with com.outworkers.phantom.
-abstract class AdvancedRecipesByTitle extends CassandraTable[AdvancedRecipesByTitle, (String, UUID)] with RootConnector {
+abstract class AdvancedRecipesByTitle extends Table[AdvancedRecipesByTitle, (String, UUID)] {
 
   // In this table, the author will be PrimaryKey and PartitionKey.
   object title extends StringColumn with PartitionKey

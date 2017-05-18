@@ -34,7 +34,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // You can seal the class and only allow importing the companion object.
 // It's not directly meant for end user consumption anyway, the correct approach
 // Keep reading for examples.
-abstract class AdvancedRecipes extends CassandraTable[AdvancedRecipes, Recipe] with RootConnector {
+abstract class AdvancedRecipes extends Table[AdvancedRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.

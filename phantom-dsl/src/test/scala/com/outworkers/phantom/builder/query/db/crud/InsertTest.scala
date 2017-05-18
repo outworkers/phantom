@@ -31,6 +31,7 @@ class InsertTest extends PhantomSuite {
     super.beforeAll()
     database.listCollectionTable.insertSchema()
     database.primitives.insertSchema()
+    database.oldPrimitives.insertSchema()
     database.optDerivedTable.insertSchema()
 
     if (session.v4orNewer) {

@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.example.basics
 
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift._
 import com.outworkers.phantom.example.basics.thrift.SampleModel
@@ -28,7 +27,7 @@ case class SampleRecord(
   thriftModel: SampleModel
 )
 
-abstract class ThriftTable extends CassandraTable[ThriftTable, SampleRecord] with RootConnector {
+abstract class ThriftTable extends Table[ThriftTable, SampleRecord] {
   object id extends UUIDColumn with PartitionKey
   object stuff extends StringColumn
   object someList extends ListColumn[String]

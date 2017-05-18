@@ -43,7 +43,7 @@ case class Recipe(
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+abstract class Recipes extends Table[Recipes, Recipe] {
 
   object id extends  UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.
