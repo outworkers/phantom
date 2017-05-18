@@ -67,7 +67,6 @@ case class OldPrimitiveRecord(
   date: java.util.Date,
   uuid: java.util.UUID,
   bi: BigInt,
-  counter: Long,
   timeuuid: UUID,
   localDate: LocalDate
 )
@@ -94,8 +93,6 @@ abstract class OldDslPrimitivesTable extends CassandraTable[OldDslPrimitivesTabl
   object uuid extends UUIDColumn(this)
 
   object bi extends BigIntColumn(this)
-
-  object counter extends CounterColumn(this)
 
   object timeuuid extends TimeUUIDColumn(this)
 
