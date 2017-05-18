@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.db.crud
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
@@ -22,15 +23,13 @@ import com.outworkers.util.samplers._
 import org.json4s.Extraction
 import org.json4s.native._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.listCollectionTable.insertSchema()
     database.primitives.insertSchema()
+    database.oldPrimitives.insertSchema()
     database.optDerivedTable.insertSchema()
 
     if (session.v4orNewer) {
@@ -39,6 +38,19 @@ class InsertTest extends PhantomSuite {
 
     database.testTable.insertSchema()
     database.recipes.insertSchema()
+  }
+
+  "Insert" should "work fine for primitives columns defined with the old DSL" in {
+    val row = gen[OldPrimitiveRecord].copy(timeuuid = UUIDs.timeBased())
+
+    val chain = for {
+      store <- database.oldPrimitives.store(row).future()
+      one <- database.oldPrimitives.select.where(_.pkey eqs row.pkey).one
+    } yield one
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
   }
 
   "Insert" should "work fine for primitives columns" in {

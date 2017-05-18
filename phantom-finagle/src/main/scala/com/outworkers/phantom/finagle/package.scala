@@ -18,31 +18,21 @@ package com.outworkers.phantom
 import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
-import com.datastax.driver.core.{
-  Duration => DatastaxDuration,
-  PagingState,
-  ResultSet => DatastaxResultSet,
-  SimpleStatement,
-  Statement, Session
-}
+import com.datastax.driver.core.{PagingState, Session, SimpleStatement, Statement, Duration => DatastaxDuration, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Duration => TwitterDuration, _}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.options.{
-  CompressionStrategy,
-  GcGraceSecondsBuilder,
-  TablePropertyClause,
-  TimeToLiveBuilder
-}
+import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import org.joda.time.Seconds
 import shapeless.HList
+
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContextExecutor
 
@@ -158,6 +148,14 @@ package object finagle extends SessionAugmenterImplicits {
       query.execute() map { res => singleResult(res.value()) }
     }
 
+    private[phantom] def singleOption[Inner]()(
+      implicit session: Session,
+      ev: R <:< Option[Inner],
+      executor: ExecutionContextExecutor
+    ): Future[Option[Inner]] = {
+      query.execute() map (_.value() flatMap query.fromRow)
+    }
+
     /**
       * Produces a [[com.twitter.concurrent.Spool]] of [R]ows
       * A spool is both lazily constructed and consumed, suitable for large
@@ -262,7 +260,7 @@ package object finagle extends SessionAugmenterImplicits {
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
       query.execute(_.setPagingState(pagingState)) map { rs =>
-        ListResult(directMapper(rs.allRows), rs)
+        ListResult(directMapper(rs.allRows()), rs)
       }
     }
 
@@ -281,9 +279,9 @@ package object finagle extends SessionAugmenterImplicits {
       executor: ExecutionContextExecutor
     ): Future[ListResult[R]] = {
       state.fold(query.execute().map {
-        set => ListResult(directMapper(set.allRows), set)
+        set => ListResult(directMapper(set.allRows()), set)
       }) (state => query.execute(_.setPagingState(state)) map {
-        set => ListResult(directMapper(set.allRows), set)
+        set => ListResult(directMapper(set.allRows()), set)
       })
     }
 }
@@ -392,6 +390,22 @@ package object finagle extends SessionAugmenterImplicits {
         options = select.options
       ).singleCollect()
     }
+
+
+    /**
+      * Returns the first row from the select ignoring everything else
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param ev The implicit limit for the query.
+      * @param ec The implicit Scala execution context.
+      * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+      */
+    @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
+    def aggregated[Inner]()(
+      implicit session: Session,
+      ev: Limit =:= Unlimited,
+      opt: Record <:< Option[Inner],
+      ec: ExecutionContextExecutor
+    ): Future[Option[Inner]] = select.singleOption()
   }
 
   implicit class GenericQueryAugmenter[

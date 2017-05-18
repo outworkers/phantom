@@ -134,7 +134,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     *         we do not currently support the type mapping natively in the macro.
     */
   private[this] def predicate(left: Record.Field, right: Type): Boolean = {
-    (left.tpe =:= right)// || (c.inferImplicitView(EmptyTree, left.tpe, right) != EmptyTree)
+    left.tpe.dealias =:= right.dealias // || (c.inferImplicitView(EmptyTree, left.tpe, right) != EmptyTree)
   }
 
   def variations(term: TermName): List[TermName] = {

@@ -282,6 +282,36 @@ class SelectQuery[
   }
 
   /**
+    * Returns the first row from the select ignoring everything else
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ev The implicit limit for the query.
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+    */
+  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
+  def aggregate[Inner]()(
+    implicit session: Session,
+    ev: Limit =:= Unlimited,
+    opt: Record <:< Option[Inner],
+    ec: ExecutionContextExecutor
+  ): ScalaFuture[Option[Inner]] = {
+    val enforceLimit = if (count) LimitedPart.empty else limitedPart append QueryBuilder.limit(1.toString)
+
+    new SelectQuery(
+      table = table,
+      rowFunc = rowFunc,
+      init = init,
+      wherePart = wherePart,
+      orderPart = orderPart,
+      limitedPart = enforceLimit,
+      filteringPart = filteringPart,
+      usingPart = usingPart,
+      count = count,
+      options = options
+    ).optionalFetch()
+  }
+
+  /**
    * Returns the first row from the select ignoring everything else
    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
    * @param ev The implicit limit for the query.
@@ -308,7 +338,6 @@ class SelectQuery[
       count = count,
       options = options
     ).singleFetch()
-
   }
 }
 
