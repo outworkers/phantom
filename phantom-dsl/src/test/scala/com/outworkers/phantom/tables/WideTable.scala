@@ -42,7 +42,7 @@ case class WideRow(
   field20: String
 )
 
-abstract class WideTable extends CassandraTable[WideTable, WideRow] with RootConnector {
+abstract class WideTable extends Table[WideTable, WideRow] {
 
   object id extends UUIDColumn with PartitionKey
 

@@ -243,6 +243,10 @@ private[builder] class SelectQueryBuilder {
     CQLQuery(CQLSyntax.Selection.DateOf).wrapn(column)
   }
 
+  def aggregation(operator: String, column: String): CQLQuery = {
+    CQLQuery(operator).wrapn(column)
+  }
+
   def ttl(column: String): CQLQuery = {
     CQLQuery(CQLSyntax.Selection.TTL).wrapn(column)
   }

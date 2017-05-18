@@ -51,7 +51,7 @@ abstract class Recipes extends Table[Recipes, Recipe] with RootConnector {
 
 case class SampleEvent(id: UUID, map: Map[Long, DateTime])
 
-abstract class Events extends CassandraTable[Events, SampleEvent] with RootConnector {
+abstract class Events extends Table[Events, SampleEvent] {
   object id extends UUIDColumn with PartitionKey
   object map extends MapColumn[Long, DateTime]
 

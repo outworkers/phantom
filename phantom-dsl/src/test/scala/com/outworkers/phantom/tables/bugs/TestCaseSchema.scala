@@ -23,10 +23,10 @@ case class TestCaseContext(
   name: String
 )
 
-abstract class TestCaseSchema extends CassandraTable[
+abstract class TestCaseSchema extends Table[
   TestCaseSchema,
   TestCaseContext
-] with RootConnector {
+] {
   object tenantId extends IntColumn with PartitionKey
   object productId extends IntColumn with PartitionKey
   object epicId extends IntColumn with PrimaryKey

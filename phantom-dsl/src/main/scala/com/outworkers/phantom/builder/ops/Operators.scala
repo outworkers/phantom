@@ -18,14 +18,14 @@ package com.outworkers.phantom.builder.ops
 import java.util.Date
 
 import com.datastax.driver.core.Session
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{CassandraTable, TableAliases}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
 import com.outworkers.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, Column}
+import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.{DateTime, DateTimeZone}
 import shapeless.{=:!=, HList}
@@ -34,7 +34,7 @@ sealed class CqlFunction extends SessionAugmenterImplicits
 
 sealed class UnixTimestampOfCqlFunction extends CqlFunction {
 
-  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
+  def apply[T <: CassandraTable[T, R], R](pf: TableAliases[T, R]#TimeUUIDColumn)(
     implicit ev: Primitive[Long],
     session: Session
   ): TypedClause.Condition[Option[Long]] = {
@@ -71,7 +71,7 @@ sealed class DateOfCqlFunction extends CqlFunction {
     })
   }
 
-  def apply[T <: CassandraTable[T, R], R](pf: CassandraTable[T, R]#TimeUUIDColumn)(
+  def apply[T <: CassandraTable[T, R], R](pf: TimeUUIDColumn[T, R])(
     implicit ev: Primitive[DateTime],
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(pf.name)
@@ -81,6 +81,35 @@ sealed class DateOfCqlFunction extends CqlFunction {
     session: Session
   ): TypedClause.Condition[Option[DateTime]] = apply(op.qb.queryString)
 }
+
+
+sealed class AggregationFunction(operator: String) extends CqlFunction {
+  protected[this] def apply[T](nm: String)(
+    implicit ev: Primitive[T],
+    numeric: Numeric[T],
+    session: Session
+  ): TypedClause.Condition[Option[T]] = {
+    new TypedClause.Condition(QueryBuilder.Select.aggregation(operator, nm), row => {
+
+      if (row.getColumnDefinitions.contains(s"system.$operator($nm)")) {
+        ev.fromRow(s"system.$operator($nm)", row).toOption
+      } else {
+        ev.fromRow(s"$operator($nm)", row).toOption
+      }
+    })
+  }
+
+  def apply[T](pf: AbstractColumn[T])(
+    implicit ev: Primitive[T],
+    numeric: Numeric[T],
+    session: Session
+  ): TypedClause.Condition[Option[T]] = apply(pf.name)
+}
+
+sealed class SumCqlFunction extends AggregationFunction(CQLSyntax.Selection.sum)
+sealed class AvgCqlFunction extends AggregationFunction(CQLSyntax.Selection.avg)
+sealed class MinCqlFunction extends AggregationFunction(CQLSyntax.Selection.min)
+sealed class MaxCqlFunction extends AggregationFunction(CQLSyntax.Selection.max)
 
 sealed class NowCqlFunction extends CqlFunction {
   def apply()(implicit ev: Primitive[Long], session: Session): OperatorClause.Condition = {
@@ -177,5 +206,10 @@ trait Operators {
   object now extends NowCqlFunction
   object writetime extends WritetimeCqlFunction
   object ttl extends TTLOfFunction
+
+  object sum extends SumCqlFunction
+  object min extends MinCqlFunction
+  object max extends MaxCqlFunction
+  object avg extends AvgCqlFunction
 }
 
