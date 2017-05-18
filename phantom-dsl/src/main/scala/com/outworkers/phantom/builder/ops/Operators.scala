@@ -92,7 +92,7 @@ sealed class AggregationFunction(operator: String) extends CqlFunction {
   ): TypedClause.Condition[T] = {
     new TypedClause.Condition(QueryBuilder.Select.aggregation(operator, nm), row => {
 
-      if (row.getColumnDefinitions.contains(s"system.count($nm)")) {
+      if (row.getColumnDefinitions.contains(s"system.$operator($nm)")) {
         ev.fromRow(s"system.$operator($nm)", row).get
       } else {
         ev.fromRow(s"$operator($nm)", row).get
