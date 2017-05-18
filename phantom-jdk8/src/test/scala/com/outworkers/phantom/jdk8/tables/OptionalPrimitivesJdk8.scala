@@ -32,10 +32,10 @@ case class OptionalJdk8Row(
   localDateTime: Option[LocalDateTime]
 )
 
-abstract class OptionalPrimitivesJdk8 extends CassandraTable[
+abstract class OptionalPrimitivesJdk8 extends Table[
   OptionalPrimitivesJdk8,
   OptionalJdk8Row
-] with RootConnector {
+] {
 
   object pkey extends StringColumn with PartitionKey
 

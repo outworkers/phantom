@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
 case class CounterRecord(id: UUID, count: Long)
@@ -23,7 +22,7 @@ case class CounterRecord(id: UUID, count: Long)
 abstract class CounterTableTest extends Table[
   CounterTableTest,
   CounterRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object count_entries extends CounterColumn
 }
@@ -31,15 +30,15 @@ abstract class CounterTableTest extends Table[
 abstract class SecondaryCounterTable extends Table[
   SecondaryCounterTable,
   CounterRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object count_entries extends CounterColumn
 }
 
-abstract class BrokenCounterTableTest extends CassandraTable[
+abstract class BrokenCounterTableTest extends Table[
   BrokenCounterTableTest,
   CounterRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object count_entries extends CounterColumn
 }
