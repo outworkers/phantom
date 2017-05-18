@@ -47,7 +47,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
 
-  trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with RootConnector
+  trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with TableAliases[T, R] with RootConnector
 
   @deprecated("Use Column[Type] without passing in the 'this' argument", "2.9.0")
   type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
@@ -113,12 +113,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.CounterColumn[Owner, Record]
 
   @deprecated("Use TimeUUIDColumn without passing in the 'this' argument", "2.9.0")
-  class TimeUUIDColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ](t: CassandraTable[Owner, Record])(implicit ev: Primitive[UUID]) extends PrimitiveColumn[Owner, Record, UUID](t) {
-    override val cassandraType = CQLSyntax.Types.TimeUUID
-  }
+  type TimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.TimeUUIDColumn[Owner, Record]
 
   @deprecated("Use OptionalBlobColumn without passing in the 'this' argument", "2.9.0")
   type OptionalBlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = OptionalPrimitiveColumn[Owner, Record, ByteBuffer]

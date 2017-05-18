@@ -54,3 +54,52 @@ abstract class PrimitivesTable extends Table[PrimitivesTable, PrimitiveRecord] {
 
   object bi extends BigIntColumn
 }
+
+case class OldPrimitiveRecord(
+  pkey: String,
+  long: Long,
+  boolean: Boolean,
+  bDecimal: BigDecimal,
+  double: Double,
+  float: Float,
+  inet: java.net.InetAddress,
+  int: Int,
+  date: java.util.Date,
+  uuid: java.util.UUID,
+  bi: BigInt,
+  counter: Long,
+  timeuuid: UUID,
+  localDate: LocalDate
+)
+
+abstract class OldDslPrimitivesTable extends CassandraTable[OldDslPrimitivesTable, OldPrimitiveRecord] with RootConnector {
+  object pkey extends StringColumn(this) with PartitionKey
+
+  object long extends LongColumn(this)
+
+  object boolean extends BooleanColumn(this)
+
+  object bDecimal extends BigDecimalColumn(this)
+
+  object double extends DoubleColumn(this)
+
+  object float extends FloatColumn(this)
+
+  object inet extends InetAddressColumn(this)
+
+  object int extends IntColumn(this)
+
+  object date extends DateColumn(this)
+
+  object uuid extends UUIDColumn(this)
+
+  object bi extends BigIntColumn(this)
+
+  object counter extends CounterColumn(this)
+
+  object timeuuid extends TimeUUIDColumn(this)
+
+  object ld extends LocalDateColumn(this)
+
+}
+

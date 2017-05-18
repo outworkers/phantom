@@ -51,6 +51,7 @@ class TestDatabase(
   object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends PrimitivesTable with Connector
+  object oldPrimitives extends OldDslPrimitivesTable with Connector
 
   object primitivesJoda extends PrimitivesJoda with Connector
 

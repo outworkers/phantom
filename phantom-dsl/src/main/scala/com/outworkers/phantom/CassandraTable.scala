@@ -34,7 +34,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
  */
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
-) extends SelectTable[T, R] with TableAliases[T, R] { self =>
+) extends SelectTable[T, R] { self =>
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 

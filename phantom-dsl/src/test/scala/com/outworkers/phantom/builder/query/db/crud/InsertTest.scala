@@ -41,6 +41,19 @@ class InsertTest extends PhantomSuite {
     database.recipes.insertSchema()
   }
 
+  "Insert" should "work fine for primitives columns defined with the old DSL" in {
+    val row = gen[OldPrimitiveRecord]
+
+    val chain = for {
+      store <- database.oldPrimitives.store(row).future()
+      one <- database.oldPrimitives.select.where(_.pkey eqs row.pkey).one
+    } yield one
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
   "Insert" should "work fine for primitives columns" in {
     val row = gen[PrimitiveRecord]
 
