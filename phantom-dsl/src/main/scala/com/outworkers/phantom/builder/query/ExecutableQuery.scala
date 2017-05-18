@@ -176,6 +176,12 @@ private[phantom] trait RootExecutableQuery[R] {
     row map fromRow
   }
 
+  protected[this] def flattenedOption[Inner](
+    row: Option[Row]
+  )(implicit ev: R <:< Option[Inner]): Option[Inner] = {
+    row flatMap fromRow
+  }
+
   protected[this] def directMapper(
     results: Iterator[Row]
   ): List[R] = results.map(fromRow).toList
@@ -203,6 +209,14 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     f: ScalaFuture[ResultSet]
   )(implicit ex: ExecutionContextExecutor): ScalaFuture[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
+  }
+
+  private[phantom] def optionalFetch[Inner]()(
+    implicit session: Session,
+    ec: ExecutionContextExecutor,
+    ev: R <:< Option[Inner]
+  ): ScalaFuture[Option[Inner]] = {
+    future() map { res => flattenedOption(res.value()) }
   }
 
   private[phantom] def singleFetch()(

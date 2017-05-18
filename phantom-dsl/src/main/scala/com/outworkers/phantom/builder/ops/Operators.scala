@@ -89,13 +89,13 @@ sealed class AggregationFunction(operator: String) extends CqlFunction {
     implicit ev: Primitive[T],
     numeric: Numeric[T],
     session: Session
-  ): TypedClause.Condition[T] = {
+  ): TypedClause.Condition[Option[T]] = {
     new TypedClause.Condition(QueryBuilder.Select.aggregation(operator, nm), row => {
 
       if (row.getColumnDefinitions.contains(s"system.$operator($nm)")) {
-        ev.fromRow(s"system.$operator($nm)", row).get
+        ev.fromRow(s"system.$operator($nm)", row).toOption
       } else {
-        ev.fromRow(s"$operator($nm)", row).get
+        ev.fromRow(s"$operator($nm)", row).toOption
       }
     })
   }
@@ -104,7 +104,7 @@ sealed class AggregationFunction(operator: String) extends CqlFunction {
     implicit ev: Primitive[T],
     numeric: Numeric[T],
     session: Session
-  ): TypedClause.Condition[T] = apply(pf.name)
+  ): TypedClause.Condition[Option[T]] = apply(pf.name)
 }
 
 sealed class SumCqlFunction extends AggregationFunction(CQLSyntax.Selection.sum)
