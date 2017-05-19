@@ -30,11 +30,11 @@ trait DatabaseHelper[T <: Database[T]] {
 object DatabaseHelper {
   implicit def macroMaterialise[
     T <: Database[T]
-  ]: DatabaseHelper[T] = macro DatabaseHelperMacro.macroImpl[T]
+  ]: DatabaseHelper[T] = macro DatabaseHelperMacro.materialize[T]
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(val c: whitebox.Context) extends RootMacro {
+class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
   import c.universe._
 
   private[this] val seqTpe: Tree => Tree = { tpe =>
@@ -45,9 +45,11 @@ class DatabaseHelperMacro(val c: whitebox.Context) extends RootMacro {
 
   private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
 
-  def macroImpl[T <: Database[T] : WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[T]
+  def materialize[T <: Database[T] : WeakTypeTag]: Tree = {
+    memoize[Type, Tree](WhiteboxToolbelt.ddHelperCache)(weakTypeOf[T], deriveHelper)
+  }
 
+  def deriveHelper(tpe: Type): Tree = {
     val accessors = filterMembers[CassandraTable[_, _]](tpe, Some(_))
 
     val prefix = q"_root_.com.outworkers.phantom.database"

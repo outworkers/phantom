@@ -27,6 +27,8 @@ private[phantom] object WhiteboxToolbelt {
   }
 
   final val tableHelperCache: Cache = new Cache()
+  final val bindHelperCache: Cache = new Cache()
+  final val ddHelperCache: Cache = new Cache()
 }
 
 private[phantom] class WhiteboxToolbelt(val c: whitebox.Context) {

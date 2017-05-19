@@ -36,7 +36,7 @@ object BindHelper {
 }
 
 @macrocompat.bundle
-class BindMacros(val c: whitebox.Context) extends RootMacro {
+class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
 
   import c.universe._
 
@@ -55,9 +55,6 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
   def bindSingle(tpe: Type): Tree = {
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
-
-
-
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
              $source.setBytesUnsafe(
                 0,
@@ -113,9 +110,7 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
     tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
   }
 
-  def materialize[TP : WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[TP]
-
+  protected[this] def deriveHelper(tpe: Type) = {
     if (isTuple(tpe)) {
       bindTuple(tpe)
     } else if (isCaseClass(tpe)) {
@@ -123,5 +118,10 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
     } else {
       bindSingle(tpe)
     }
+  }
+
+  def materialize[TP : WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[TP]
+    memoize[Type, Tree](WhiteboxToolbelt.bindHelperCache)(tpe, deriveHelper)
   }
 }
