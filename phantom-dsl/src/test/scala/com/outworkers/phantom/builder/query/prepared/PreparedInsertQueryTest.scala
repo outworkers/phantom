@@ -112,14 +112,6 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
-
-  implicit object $anon extends com.outworkers.phantom.macros.BindHelper[String] {
-    def bind(ps: BoundStatement, value: String, version: ProtocolVersion): BoundStatement = {
-      ps.setBytesUnsafe(0, Primitive[String].serialize(value, version))
-      ps
-    }
-  }
-
   if (session.v4orNewer) {
     it should "serialize a cassandra 2.2 primitives insert query" in {
       val sample = gen[PrimitiveCassandra22]

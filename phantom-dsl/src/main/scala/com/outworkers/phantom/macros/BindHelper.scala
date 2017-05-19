@@ -21,10 +21,14 @@ import scala.reflect.macros.whitebox
 
 trait BindHelper[TP] {
 
+  def debugString(values: TP): String
+
   def bind(ps: BoundStatement, values: TP, version: ProtocolVersion): BoundStatement
 
   def bind(ps: PreparedStatement, values: TP, version: ProtocolVersion): BoundStatement = {
-    bind(new BoundStatement(ps), values, version)
+    bind(new BoundStatement(ps) {
+      override def toString: String = ps.getQueryString + " | " + debugString(values)
+    }, values, version)
   }
 }
 
@@ -52,9 +56,22 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
     tpe.typeSymbol.fullName startsWith "scala.Tuple"
   }
 
+  def isCaseClass(tpe: Type): Boolean = {
+    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
+  }
+
+  def queryString(col: Iterable[(TermName, Type)]): Tree = {
+    val steps = col.map { case (nm, tpe) => q"$prefix.Primitive[$tpe].asCql($value.$nm)" }
+    q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(",")"""
+  }
+
   def bindSingle(tpe: Type): Tree = {
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+          override def debugString($value: $tpe): $strTpe = {
+            $prefix.Primitive[$tpe].asCql($value)
+          }
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
              $source.setBytesUnsafe(
                 0,
@@ -67,7 +84,8 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
   }
 
   def bindCaseClass(tpe: Type): Tree = {
-    val setters = caseFields(tpe).zipWithIndex.map { case (tp, i) =>
+    val fields = caseFields(tpe).map { case (nm, tp) => nm.toTermName -> tp }
+    val setters = fields.zipWithIndex.map { case (tp, i) =>
       q"""
         $source.setBytesUnsafe(
           $i,
@@ -78,6 +96,9 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
 
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+
+          override def debugString($value: $tpe): $strTpe = ${queryString(fields)}
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
             ..$setters
             $source
@@ -87,6 +108,9 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
   }
 
   def bindTuple(tpe: Type): Tree = {
+
+    val fields = tpe.typeArgs.zipWithIndex.map { case (tp, i) => tupleTerm(i) -> tp }
+
     val setters = tpe.typeArgs.zipWithIndex.map { case (tp, i) =>
       q"""
         $source.setBytesUnsafe(
@@ -98,16 +122,16 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
 
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+          override def debugString($value: $tpe): $strTpe = {
+            ${queryString(fields)}
+          }
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
             ..$setters
             $source
           }
        }
     """
-  }
-
-  def isCaseClass(tpe: Type): Boolean = {
-    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
   }
 
   protected[this] def deriveHelper(tpe: Type) = {
