@@ -36,6 +36,8 @@ private[phantom] class BlackboxToolbelt(val c: blackbox.Context) {
 
   import c.universe._
 
+  def printType(tpe: Type): String = showCode(tq"$tpe")
+
   lazy val showAborts =
     !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty
 

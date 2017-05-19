@@ -288,8 +288,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt(
       override def shouldFreeze: $boolType = true
     }"""
 
-    //c.echo(c.enclosingPosition, showCode(tree))
-    //Console.println(showCode(tree))
+    if (showTrees) c.echo(c.enclosingPosition, showCode(tree))
 
     tree
   }
@@ -306,10 +305,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt(
       case Some(inner) => q"$prefix.Primitives.set[$inner]"
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
-  }
-
-  def printType(tpe: Type): String = {
-    showCode(tq"${tpe.dealias}")
   }
 
   def optionPrimitive(tpe: Type): Tree = {
