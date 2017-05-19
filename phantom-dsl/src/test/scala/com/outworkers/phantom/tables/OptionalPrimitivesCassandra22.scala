@@ -76,7 +76,7 @@ case class OptTypesRecord(
  * To simulate the use case, we need a custom primitive
  * and an [[CassandraTable#OptionalCol]] with this newtype.
  */
-abstract class OptionalDerivedTable extends CassandraTable[
+abstract class OptionalDerivedTable extends Table[
   OptionalDerivedTable,
   OptTypesRecord
 ] {

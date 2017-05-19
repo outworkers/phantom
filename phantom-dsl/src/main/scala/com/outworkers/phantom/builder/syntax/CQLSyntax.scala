@@ -143,6 +143,11 @@ object CQLSyntax {
 
   object Selection {
     val count = "count"
+    val avg = "avg"
+    val min = "min"
+    val max = "max"
+    val sum = "sum"
+
     val BlobAsText = "blobAsText"
     val DateOf = "dateOf"
     val TTL = "TTL"

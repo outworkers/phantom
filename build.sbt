@@ -21,7 +21,7 @@ import sbt.Defaults._
 lazy val Versions = new {
   val logback = "1.2.3"
   val sbt = "0.13.13"
-  val util = "0.32.1"
+  val util = "0.34.0"
   val json4s = "3.5.1"
   val datastax = "3.2.0"
   val scalatest = "3.0.1"

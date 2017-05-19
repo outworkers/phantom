@@ -17,18 +17,16 @@ package com.outworkers.phantom.jdk8
 
 import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 
-import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
+import com.datastax.driver.core.{ LocalDate => DatastaxLocalDate }
 import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
-trait DefaultJava8Primitives {
+package object indexed {
 
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    Primitive.derive[OffsetDateTime, (Long, String)](
-      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
-    ) { case (timestamp, zone) =>
-      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
+    Primitive.derive[OffsetDateTime, Long](_.toInstant.toEpochMilli) { timestamp =>
+      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.UTC)
     }
   }
 
@@ -46,8 +44,8 @@ trait DefaultJava8Primitives {
   )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
-      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
+    Primitive.derive[ZonedDateTime, Long](_.toInstant.toEpochMilli) {
+      ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneOffset.UTC)
     }
   }
 
@@ -56,4 +54,5 @@ trait DefaultJava8Primitives {
       new DateTime(jd.toInstant(ZoneOffset.UTC).toEpochMilli, DateTimeZone.UTC)
     )(dt => JavaLocalDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneOffset.UTC))
   }
+
 }

@@ -28,7 +28,7 @@ import scala.concurrent.{Future => ScalaFuture}
 // You can seal the class and only allow importing the companion object.
 // The companion object is where you would implement your custom methods.
 // Keep reading for examples.
-abstract class CompositeKeyRecipes extends CassandraTable[CompositeKeyRecipes, Recipe] with RootConnector {
+abstract class CompositeKeyRecipes extends Table[CompositeKeyRecipes, Recipe] {
   // First the partition key, which is also a Primary key in Cassandra.
   object id extends UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.

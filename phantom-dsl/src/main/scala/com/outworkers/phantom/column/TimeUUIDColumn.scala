@@ -20,3 +20,12 @@ import java.util.UUID
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+
+class TimeUUIDColumn[
+  T <: CassandraTable[T, R],
+  R
+](table: CassandraTable[T, R])(
+  implicit ev: Primitive[UUID]
+) extends PrimitiveColumn[T, R, UUID](table) {
+  override val cassandraType = CQLSyntax.Types.TimeUUID
+}
