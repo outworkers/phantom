@@ -62,7 +62,7 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
 
   def queryString(col: Iterable[(TermName, Type)]): Tree = {
     val steps = col.map { case (nm, tpe) => q"$prefix.Primitive[$tpe].asCql($value.$nm)" }
-    q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(",")"""
+    q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(", ")"""
   }
 
   def bindSingle(tpe: Type): Tree = {

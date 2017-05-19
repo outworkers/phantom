@@ -12,7 +12,7 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="com.outworkers.phantom" level="ERROR"/>
+    <logger name="com.outworkers.phantom" level="DEBUG"/>
     <logger name="com.datastax.driver.core" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
 
