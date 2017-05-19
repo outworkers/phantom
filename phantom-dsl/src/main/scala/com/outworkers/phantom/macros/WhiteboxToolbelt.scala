@@ -32,6 +32,7 @@ private[phantom] object WhiteboxToolbelt {
   final val ddHelperCache: Cache = new Cache()
 }
 
+@macrocompat.bundle
 private[phantom] class WhiteboxToolbelt(val c: whitebox.Context) {
 
   import c.universe._

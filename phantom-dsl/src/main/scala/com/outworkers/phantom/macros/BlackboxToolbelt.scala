@@ -32,6 +32,7 @@ private[phantom] object BlackboxToolbelt {
   final val bindHelperCache: Cache = new Cache()
 }
 
+@macrocompat.bundle
 private[phantom] class BlackboxToolbelt(val c: blackbox.Context) {
 
   import c.universe._
