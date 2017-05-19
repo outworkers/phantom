@@ -419,12 +419,11 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
         """
       )
     } else {
-      logger.debug(descriptor.showExtractor)
+      c.echo(c.enclosingPosition, descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val nothingTpe: Tree = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 

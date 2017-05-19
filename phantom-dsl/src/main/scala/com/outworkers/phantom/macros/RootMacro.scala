@@ -43,6 +43,7 @@ trait RootMacro {
   protected[this] val inputTerm = TermName("input")
   protected[this] val keyspaceType = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
   private[this] val hnilTpe: Tree = tq"_root_.shapeless.HNil"
+  protected[this] val nothingTpe: Tree = tq"_root_.scala.Nothing"
 
   val knownList = List("Any", "Object", "RootConnector")
 
