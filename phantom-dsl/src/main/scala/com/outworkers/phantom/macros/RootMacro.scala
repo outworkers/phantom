@@ -61,7 +61,7 @@ trait RootMacro {
   def showCollection[
     M[X] <: TraversableOnce[X]
   ](traversable: M[Type], sep: String = ", "): String = {
-    traversable map(tpe => showCode(tq"$tpe")) mkString sep
+    traversable map printType mkString sep
   }
 
   trait RootField {
