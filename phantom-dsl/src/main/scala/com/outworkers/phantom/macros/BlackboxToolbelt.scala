@@ -15,13 +15,14 @@
  */
 package com.outworkers.phantom.macros
 
+import scala.collection.mutable.{ Map => MutableMap }
 import scala.reflect.macros.blackbox
 
 private[phantom] object BlackboxToolbelt {
   def apply(c: blackbox.Context): BlackboxToolbelt = new BlackboxToolbelt(c)
 
   final class Cache {
-    @volatile var underlying: Map[Any, Any] = Map.empty
+    val underlying: MutableMap[Any, Any] = MutableMap.empty
   }
 
   final val primitiveCache: Cache = new Cache()

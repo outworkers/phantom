@@ -21,24 +21,24 @@ package object debug {
     sealed trait ShowCache
     sealed trait ShowAborts
   }
-  
-  import optionTypes._
 
-  object options {
+
+  object Options {
 
     /** Import this value to have Iota print the macro generated code
       * to the console during compilation
       */
-    implicit val ShowTrees: ShowTrees = null.asInstanceOf[ShowTrees]
+    implicit object ShowTrees extends optionTypes.ShowTrees
 
     /** Import this value to have Iota print the cached computations
       * during macro expansion
       */
-    implicit val ShowCache: ShowCache = null.asInstanceOf[ShowCache]
+    implicit object ShowCache extends optionTypes.ShowCache
 
-    /** Import this value to have Iota print aborted instance
-      * materialization for [[TList]] and [[KList]] helpers
+    /** Import this value to have debug print aborted instance
+      * materialization for [[com.outworkers.phantom.builder.primitives.Primitive]] and [[DatabaseHelper]] macros.
       */
-    implicit val ShowAborts: ShowAborts = null.asInstanceOf[ShowAborts]
+    implicit object ShowAborts extends optionTypes.ShowAborts
   }
+
 }

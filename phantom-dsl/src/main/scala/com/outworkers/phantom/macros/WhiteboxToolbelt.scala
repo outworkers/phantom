@@ -16,12 +16,13 @@
 package com.outworkers.phantom.macros
 
 import scala.reflect.macros.whitebox
+import scala.collection.mutable.{ Map => MutableMap }
 
 private[phantom] object WhiteboxToolbelt {
   def apply(c: whitebox.Context): WhiteboxToolbelt = new WhiteboxToolbelt(c)
 
   final class Cache {
-    @volatile var underlying: Map[Any, Any] = Map.empty
+    val underlying: MutableMap[Any, Any] = MutableMap.empty
 
     def show: String = underlying.mkString("\n")
   }
