@@ -49,17 +49,12 @@ private[phantom] class BlackboxToolbelt(val c: blackbox.Context) {
   ): B = cache.underlying.synchronized {
     cache.underlying.get(a) match {
       case Some(b: B @unchecked) =>
-        if (showCache) {
-          c.echo(c.enclosingPosition, s"ShowCache: $b cached result $b")
-        }
+        if (showCache) c.echo(c.enclosingPosition, s"ShowCache: $b cached result $b")
         b
       case _ =>
         val b = f(a)
         cache.underlying += (a -> b)
-        if (showCache) {
-          c.echo(c.enclosingPosition, s"ShowCache: $a computed result $b")
-        }
-
+        if (showCache) c.echo(c.enclosingPosition, s"ShowCache: $a computed result $b")
         b
     }
   }
