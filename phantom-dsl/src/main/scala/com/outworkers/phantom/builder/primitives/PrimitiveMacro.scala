@@ -20,12 +20,14 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
+import com.outworkers.phantom.macros.BlackboxToolbelt
 import org.joda.time.DateTime
+
 import scala.collection.concurrent.TrieMap
 import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
-class PrimitiveMacro(val c: blackbox.Context) {
+class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt(c) {
   import c.universe._
 
   val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
@@ -144,9 +146,7 @@ class PrimitiveMacro(val c: blackbox.Context) {
 
   val bufferPrimitive: Tree = primitive("BlobIsPrimitive")
 
-  def listPrimitive[T : WeakTypeTag](): Tree = {
-    val tpe = weakTypeOf[T]
-
+  def listPrimitive(tpe: Type): Tree = {
     val innerTpe = tpe.typeArgs.headOption
 
     innerTpe match {
@@ -288,28 +288,23 @@ class PrimitiveMacro(val c: blackbox.Context) {
       override def shouldFreeze: $boolType = true
     }"""
 
-    //c.echo(c.enclosingPosition, showCode(tree))
-    //Console.println(showCode(tree))
+    if (showTrees) c.echo(c.enclosingPosition, showCode(tree))
 
     tree
   }
 
-  def mapPrimitive[T : WeakTypeTag](): Tree = {
-    weakTypeOf[T].typeArgs match {
+  def mapPrimitive(tpe: Type): Tree = {
+    tpe.typeArgs match {
       case k :: v :: Nil => q"""$prefix.Primitives.map[$k, $v]"""
       case _ => c.abort(c.enclosingPosition, "Expected exactly two type arguments to be provided to map")
     }
   }
 
-  def setPrimitive[T : WeakTypeTag](): Tree = {
-    weakTypeOf[T].typeArgs.headOption match {
+  def setPrimitive(tpe: Type): Tree = {
+    tpe.typeArgs.headOption match {
       case Some(inner) => q"$prefix.Primitives.set[$inner]"
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
-  }
-
-  def printType(tpe: Type): String = {
-    showCode(tq"${tpe.dealias}")
   }
 
   def optionPrimitive(tpe: Type): Tree = {
@@ -354,8 +349,8 @@ class PrimitiveMacro(val c: blackbox.Context) {
     """
   }
 
-  def materializer[T : c.WeakTypeTag]: Tree = {
-    val wkType = weakTypeOf[T]
+  def derivePrimitive(sourceTpe: Type): Tree = {
+    val wkType = sourceTpe
     val tpe = wkType.typeSymbol
 
     val tree = tpe match {
@@ -378,14 +373,19 @@ class PrimitiveMacro(val c: blackbox.Context) {
       case Symbols.bigInt => bigIntPrimitive
       case Symbols.bigDecimal => bigDecimalPrimitive
       case Symbols.buffer => bufferPrimitive
-      case Symbols.enum => treeCache.getOrElseUpdate(typed[T], enumPrimitive(wkType))
-      case Symbols.enumValue => treeCache.getOrElseUpdate(typed[T], enumValuePrimitive(wkType))
-      case Symbols.listSymbol => treeCache.getOrElseUpdate(typed[T], listPrimitive[T]())
-      case Symbols.setSymbol => treeCache.getOrElseUpdate(typed[T], setPrimitive[T]())
-      case Symbols.mapSymbol => treeCache.getOrElseUpdate(typed[T], mapPrimitive[T]())
+      case Symbols.enum => enumPrimitive(wkType)
+      case Symbols.enumValue => enumValuePrimitive(wkType)
+      case Symbols.listSymbol => listPrimitive(wkType)
+      case Symbols.setSymbol => setPrimitive(wkType)
+      case Symbols.mapSymbol => mapPrimitive(wkType)
       case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
     }
 
     tree
+  }
+
+  def materializer[T : c.WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[T]
+    memoize[Type, Tree](BlackboxToolbelt.primitiveCache)(tpe, derivePrimitive)
   }
 }

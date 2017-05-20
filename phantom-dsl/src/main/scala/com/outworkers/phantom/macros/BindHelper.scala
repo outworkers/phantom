@@ -21,10 +21,14 @@ import scala.reflect.macros.whitebox
 
 trait BindHelper[TP] {
 
+  def debugString(values: TP): String
+
   def bind(ps: BoundStatement, values: TP, version: ProtocolVersion): BoundStatement
 
   def bind(ps: PreparedStatement, values: TP, version: ProtocolVersion): BoundStatement = {
-    bind(new BoundStatement(ps), values, version)
+    bind(new BoundStatement(ps) {
+      override def toString: String = ps.getQueryString + " | " + debugString(values)
+    }, values, version)
   }
 }
 
@@ -36,7 +40,7 @@ object BindHelper {
 }
 
 @macrocompat.bundle
-class BindMacros(val c: whitebox.Context) extends RootMacro {
+class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
 
   import c.universe._
 
@@ -52,11 +56,40 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
     tpe.typeSymbol.fullName startsWith "scala.Tuple"
   }
 
+  def isCaseClass(tpe: Type): Boolean = {
+    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
+  }
+
+
+  lazy val showBoundStatements =
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowBoundStatements], silent = true).isEmpty
+
+  def queryString(col: Iterable[(TermName, Type)]): Tree = {
+    if (showBoundStatements) {
+      val steps = col.map { case (nm, tpe) => q"$prefix.Primitive[$tpe].asCql($value.$nm)" }
+      q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(", ")"""
+    } else {
+      q"""new $strTpe("")"""
+    }
+  }
+
   def bindSingle(tpe: Type): Tree = {
+
+    val debugTree = if (showBoundStatements) {
+      q"""
+        override def debugString($value: $tpe): $strTpe = {
+          $prefix.Primitive[$tpe].asCql($value)
+        }
+      """
+    } else {
+      q"""
+        override def debugString($value: $tpe): $strTpe = new $strTpe("")
+      """
+    }
+
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
-
-
+          $debugTree
 
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
              $source.setBytesUnsafe(
@@ -70,7 +103,8 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
   }
 
   def bindCaseClass(tpe: Type): Tree = {
-    val setters = caseFields(tpe).zipWithIndex.map { case (tp, i) =>
+    val fields = caseFields(tpe).map { case (nm, tp) => nm.toTermName -> tp }
+    val setters = fields.zipWithIndex.map { case (tp, i) =>
       q"""
         $source.setBytesUnsafe(
           $i,
@@ -81,6 +115,9 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
 
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+
+          override def debugString($value: $tpe): $strTpe = ${queryString(fields)}
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
             ..$setters
             $source
@@ -90,6 +127,9 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
   }
 
   def bindTuple(tpe: Type): Tree = {
+
+    val fields = tpe.typeArgs.zipWithIndex.map { case (tp, i) => tupleTerm(i) -> tp }
+
     val setters = tpe.typeArgs.zipWithIndex.map { case (tp, i) =>
       q"""
         $source.setBytesUnsafe(
@@ -101,6 +141,10 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
 
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
+          override def debugString($value: $tpe): $strTpe = {
+            ${queryString(fields)}
+          }
+
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
             ..$setters
             $source
@@ -109,13 +153,7 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
     """
   }
 
-  def isCaseClass(tpe: Type): Boolean = {
-    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
-  }
-
-  def materialize[TP : WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[TP]
-
+  protected[this] def deriveHelper(tpe: Type) = {
     if (isTuple(tpe)) {
       bindTuple(tpe)
     } else if (isCaseClass(tpe)) {
@@ -123,5 +161,10 @@ class BindMacros(val c: whitebox.Context) extends RootMacro {
     } else {
       bindSingle(tpe)
     }
+  }
+
+  def materialize[TP : WeakTypeTag]: Tree = {
+    val tpe = weakTypeOf[TP]
+    memoize[Type, Tree](WhiteboxToolbelt.bindHelperCache)(tpe, deriveHelper)
   }
 }

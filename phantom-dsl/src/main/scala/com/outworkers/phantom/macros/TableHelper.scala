@@ -53,7 +53,7 @@ object TableHelper {
   implicit def fieldsMacro[
     T <: CassandraTable[T, R],
     R
-  ]: TableHelper[T, R] = macro TableHelperMacro.macroImpl[T, R]
+  ]: TableHelper[T, R] = macro TableHelperMacro.materialize[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
@@ -61,7 +61,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
+class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -392,13 +392,18 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
     value.charAt(0).toLower + value.drop(1)
   }
 
-  def macroImpl[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
-    val tableType = weakTypeOf[T]
-    val recordType = weakTypeOf[R]
+  def materialize[T : WeakTypeTag, R : WeakTypeTag]: Tree = {
+    val tt = weakTypeOf[T]
+    val rt = weakTypeOf[R]
+
+    memoize[(Type, Type), Tree](WhiteboxToolbelt.tableHelperCache)(tt -> rt, { case (t, r) => macroImpl(t, r)})
+  }
+
+  def macroImpl(tableType: Type, recordType: Type): Tree = {
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
     val tableName = extractTableName(refTable)
-    val columns = filterMembers[T, AbstractColumn[_]](exclusions)
+    val columns = filterMembers[AbstractColumn[_]](tableType, exclusions)
     val descriptor = extractor(tableType, recordType, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName).asMethod
     val fromRowFn = descriptor.fromRow
@@ -414,12 +419,11 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
         """
       )
     } else {
-      logger.debug(descriptor.showExtractor)
+      c.echo(c.enclosingPosition, descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val nothingTpe: Tree = tq"_root_.scala.Nothing"
     val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
@@ -452,6 +456,14 @@ class TableHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
+
+    if (showTrees) {
+      c.echo(c.enclosingPosition, showCode(tree))
+    }
+
+    if (showCache) {
+      c.echo(c.enclosingPosition, WhiteboxToolbelt.tableHelperCache.show)
+    }
 
     tree
   }
