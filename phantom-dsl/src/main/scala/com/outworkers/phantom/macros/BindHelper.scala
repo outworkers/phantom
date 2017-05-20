@@ -60,17 +60,36 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) w
     tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
   }
 
+
+  lazy val showBoundStatements =
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowBoundStatements], silent = true).isEmpty
+
   def queryString(col: Iterable[(TermName, Type)]): Tree = {
-    val steps = col.map { case (nm, tpe) => q"$prefix.Primitive[$tpe].asCql($value.$nm)" }
-    q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(", ")"""
+    if (showBoundStatements) {
+      val steps = col.map { case (nm, tpe) => q"$prefix.Primitive[$tpe].asCql($value.$nm)" }
+      q"""_root_.scala.collection.immutable.List.apply(..$steps).mkString(", ")"""
+    } else {
+      q"""new $strTpe("")"""
+    }
   }
 
   def bindSingle(tpe: Type): Tree = {
+
+    val debugTree = if (showBoundStatements) {
+      q"""
+        override def debugString($value: $tpe): $strTpe = {
+          $prefix.Primitive[$tpe].asCql($value)
+        }
+      """
+    } else {
+      q"""
+        override def debugString($value: $tpe): $strTpe = new $strTpe("")
+      """
+    }
+
     q"""
        new com.outworkers.phantom.macros.BindHelper[$tpe] {
-          override def debugString($value: $tpe): $strTpe = {
-            $prefix.Primitive[$tpe].asCql($value)
-          }
+          $debugTree
 
           def bind($source: $boundTpe, $value: $tpe, $version: $protocolVersion): $boundTpe = {
              $source.setBytesUnsafe(
