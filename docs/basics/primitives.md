@@ -1,21 +1,16 @@
 ## Primitives
 
-One of the most important constructs in phantom is the `Primitive` type. Much like Java uses the same terminology
-to describe the set of types that are native to its platform, we leverage and overload the term to refer to a set of types
-that Cassandra can natively understand.
+ `Primitive` is a fundamental concept in phantom. Java uses the same terminology
+to describe its set of native types. Expanding on the same terminology, `Primitives` are types Cassandra can natively understand.
 
-The `Primitive` trait has a simplistic implementation that contains all the necessary information to
-basically serialize and de-serialize a given type as it is retrieved from the database, and that's the
-basic primary goal. Whether it's a normal column or a user defined type or anything similar, this is
-the construct that de-serializes everything into familiar Scala types.
+The `Primitive` trait contains all the information to serialize and de-serialize a type to and back from Cassandra,
+directly from a `java.nio.ByteBuffer`.
 
 
 ### Default primitives and columns
 
-This is the list of available columns and how they map to C* data types. The columns
-here are nothing more than simple helpers and they do not actually contain any
-specialized implementation. That means it is the primitives doing all the work,
-columns are just a nice way for you to write DSL code that's readable.
+This is the list of predefined available columns with their corresponding Cassandra data types.
+The columns are predefined for your convenience.
 
 | phantom columns               | Java/Scala type           | Cassandra type    |
 | ---------------               |-------------------        | ----------------- |
@@ -45,10 +40,9 @@ columns are just a nice way for you to write DSL code that's readable.
 ===================================================================
 
 Optional columns allow you to set a column to a ```null``` or a ```None```.
-Use them when you really want something to be optional.
 The outcome is that instead of a ```T``` you get an ```Option[T]``` and you can ```match, fold, flatMap, map``` on a ```None```.
 
-The ```Optional``` part is handled at a DSL level, it's not translated to Cassandra in any way.
+The ```Optional``` part is only handled at a DSL level, it's not translated to Cassandra in any way.
 
 | phantom columns               | Java/Scala type                   | Cassandra columns |
 | ---------------               | -------------------------         | ----------------- |
@@ -68,9 +62,8 @@ The ```Optional``` part is handled at a DSL level, it's not translated to Cassan
 | OptionalUUIDColumn            | Option[java.util.UUID]            | uuid              |
 | OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
-It is also possible to express your entire table logic using just `Col` if you
-prefer it. Because it is `Primitives` that do the real heavy lifting, the below
-are equivalent:
+It is also possible to express your entire table logic using just `Col` or `Column` if you. 
+`Primitives` that do the real heavy lifting, which makes the examples below equivalent:
 
 ```scala
 
@@ -113,24 +106,17 @@ class Recipes extends Table[Recipes, Recipe] {
 }
 ```
 
-There is virtually no difference whatsoever in doing things one way or the other,
-the encodings and serializers/deserializers are handled by the same macro, which
-will do its magic invisibly in the background and generate all the Cassandra I/O
-code required to marshall those types back and forth across the wire and to/from Cassandra.
+Both of the above examples use the same macros under the hood which generate all Cassandra I/O required to marshall types across the wire to and from Cassandra.
 
 ### The mechanism that generates primitives
 
-The physical implementation is based on the typeclass model, a very popular Scala concept, and phantom
-leverages implicit resolution to help Cassandra understand more Scala types and "prented" they are native.
-
-And there are a number of language features that in conjunction with appropriate Cassandra types we can leverage to produce seemingly native support for a wide variety of types.
+Primitive is a standard typeclass. `implicit` resolution is used to help Cassandra understand Scala types and "pretend" they are native. This feature enables support for a wide variety of types.
 
 Several concepts have a very direct translation into Cassandra:
 
 #### Tuples
 
-A `scala.Tuple` can be directly mapped to a `Cassandra.Tuple`. The tuple concept excepts natively within Cassandra and
- we can therefore produce directly translatable mappings between a Scala type and a Cassandra type.
+A `scala.Tuple` can be directly mapped to a `Cassandra.Tuple`, which is a native Cassandra type.
 
 Examples of such translations are visible below:
 
@@ -166,12 +152,8 @@ object SubRecord {
 }
 ```
 
-This would allow you to use `SubRecord` transparently as a natively Cassandra type
-and all necessary marshalling is generated at compile time with 0 runtime overhead using
-advanced macro machinery and you could arbitrarily use `SubRecord` as a valid column type.
-
-This is an extremely fast operation that will allow you to magically encode complex
-Scala types in Cassandra while maintaining high throughput.
+This would allow you to use `SubRecord` as a native type with all marshalling being at compile time with 0 runtime overhead.
+`SubRecord` is now a valid column type.
 
 ```scala
 
@@ -205,9 +187,9 @@ that helps educate Phantom and simultaneously Cassandra of what your type `means
 for any type `X` we want, provided there is a bijection from `T` to `X`, or in simple terms a way to convert a `T
  to an `X` and an `X` back to a `T` without losing any details in the process.
 
-The signature of `derive` looks like this. We use a context bound on `Source` to tell the compiler
-we expect type `Source` to have a pre-defined primitive, and the two parameters are the conversion
-functions. The output is a `Primitive[Target]`, as anticipated.
+The implementation of `derive`, uses context bound on `Source` to tell the compiler
+the type `Source` should be an already defined primitive, and the two parameters are the conversion
+functions from `Source` to `Target`. The output is a `Primitive[Target]`.
 
 ```
 def derive[
