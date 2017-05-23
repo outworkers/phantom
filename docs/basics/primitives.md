@@ -34,6 +34,9 @@ columns are just a nice way for you to write DSL code that's readable.
 | StringColumn                  | java.lang.String          | text              |
 | UUIDColumn                    | java.util.UUID            | uuid              |
 | TimeUUIDColumn                | java.util.UUID            | timeuuid          |
+| ListColumn[Type]              | immutable.List[Type]      | list<type>        |
+| SetColumn[Type]               | immutable.Set[Type]       | set<type>         |
+| MapColumn[Type, Type]         | immutable.Map[Type, Type] | map<type, type>   |
 | CounterColumn                 | scala.Long                | counter           |
 | StaticColumn&lt;type&gt;      | &lt;type&gt;              | type static       |
 
@@ -96,11 +99,11 @@ class Recipes extends Table[Recipes, Recipe] {
 
   object url extends Col[String] with PartitionKey
 
-  object description extends Col[Option[String]]
+  object description extends OptionalCol[String]
 
   object ingredients extends Col[List[String]]
 
-  object servings extends Col[Option[Int]]
+  object servings extends OptionalCol[Int]
 
   object lastcheckedat extends Col[DateTime]
 
@@ -113,17 +116,16 @@ class Recipes extends Table[Recipes, Recipe] {
 There is virtually no difference whatsoever in doing things one way or the other,
 the encodings and serializers/deserializers are handled by the same macro, which
 will do its magic invisibly in the background and generate all the Cassandra I/O
-code required to marshall those types back and forth.
+code required to marshall those types back and forth across the wire and to/from Cassandra.
 
 ### The mechanism that generates primitives
 
 The physical implementation is based on the typeclass model, a very popular Scala concept, and phantom
-leverages implicit resolution to help Cassandra understand more of your Scala types. And there are a number of language
-features that in conjunction with appropriate Cassandra types we can leverage to produce seemingly native support
-for a wide variety of types.
+leverages implicit resolution to help Cassandra understand more Scala types and "prented" they are native.
 
-Several concepts have very direct translation into Cassandra:
+And there are a number of language features that in conjunction with appropriate Cassandra types we can leverage to produce seemingly native support for a wide variety of types.
 
+Several concepts have a very direct translation into Cassandra:
 
 #### Tuples
 
@@ -132,10 +134,10 @@ A `scala.Tuple` can be directly mapped to a `Cassandra.Tuple`. The tuple concept
 
 Examples of such translations are visible below:
 
- | phantom columns                | Java/Scala type           | Cassandra type    |
- | ---------------                |-------------------        | ----------------- |
- | Col[(String, String)]          | Tuple2[String, String]    | tuple<text, text> |
- | Col[(String, Int)]             | Tuple2[String, Int]       | tuple<text, int> |
+ | phantom columns                      | Java/Scala type                             | Cassandra type    |
+ | ---------------                      |-------------------                          | ----------------- |
+ | Col[(String, String)]                | Tuple2[String, String]                      | tuple<text, text> |
+ | Col[(String, Int)]                   | Tuple2[String, Int]                         | tuple<text, int> |
  | Col[(String, Int, List[BigDecimal])] | Tuple3[String, Int, List[BigDecimal]]       | tuple<text, int, frozen<list<decimal>>> |
 
 As seen in the third example, freezing of types should happen automatically during schema auto-generation, and
@@ -144,6 +146,7 @@ this is valid for any kind of type that requires freezing, including:
 - Nested collection types.
 - Primary collection or tuple types.
 - UDT types in phantom pro.
+- Auto-derived primitives in phantom-pro.
 
 This also makes it possibly to derive arbitrary encodings for very complex types automatically.
 This feature is only available in phantom-pro using the `autotables` module.
@@ -167,6 +170,9 @@ This would allow you to use `SubRecord` transparently as a natively Cassandra ty
 and all necessary marshalling is generated at compile time with 0 runtime overhead using
 advanced macro machinery and you could arbitrarily use `SubRecord` as a valid column type.
 
+This is an extremely fast operation that will allow you to magically encode complex
+Scala types in Cassandra while maintaining high throughput.
+
 ```scala
 
 case class Record(
@@ -187,7 +193,7 @@ abstract class MyTable extends Table[MyTable, Record] {
 
 #### Deriving new primitives from existing ones
 
-Ok, so phantom comes with a pre-defined set that helps with the most common scenarios that are well known and
+Phantom comes with a pre-defined set that helps with the most common scenarios that are well known and
 loved in Cassandra. But what if you want to roll your own type? Well, you can obviously choose to fully implement
 the primitive trait though in some scenarios it's often just easier to simply leverage an existing implementation.
 
@@ -243,4 +249,99 @@ including a `where` clause, an `insert`, a `set` or `update` clause, you name it
 
 ### JDK8 Primitives
 
-Phantom also natively supports some `java.time.*` JDK8 specific primitives as native types, though with a couple notable observations. `OffsetDateTime` and `ZonedDateTime` are natively supported via `"com.outworkers" %% "phantom-jdk8" % version`, and all you have to do is `import com.outworkers.phantom.jdk8._`.
+Phantom also natively supports some `java.time.*` JDK8 specific primitives as native types, though with a couple notable observations.
+
+`OffsetDateTime` and `ZonedDateTime` are natively supported via the `phantom-jdk8` module, and all you have to do is `import com.outworkers.phantom.jdk8._`. This module is only compatible with Java 8 and requires an extra dependency as a result!
+
+```scala
+val phantomVersion = ".."
+
+libraryDependencies ++= Seq(
+  "com.outworkers" %% "phantom-jdk8" % phantomVersion
+)
+```
+
+Primitives for JDK8 time come in two flavours, those who can remember their timezone
+as part of the Cassandra marshalling and those which are automatically coerced
+to UTC and willingly lose timezone specificity. You would use the latter when
+you want to execute range queries based on these types.
+
+When you don't want indexing, dates are encoded as `tuple<timestamp, timezone>` and
+this is what allows to retrieve the timezone information back and have a bijective
+primitive.
+
+#### Using the compact `Table` DSL with JDK 8 columns
+ 
+Note unlike other columns in the framework, the JDK8 columns will require you to pass in the `this` argument
+even when you are using `Table`. This is a limitation of the Scala language itself, as we are not able
+to add class members to another class via implicit augmentation.
+
+That's why you should prefer to not use the now deprecated column aliases and instead rely on `Col` or `OptionalCol`.
+
+
+##### Old DSL
+
+```scala
+
+case class Jdk8Row(
+  pkey: String,
+  offsetDateTime: OffsetDateTime,
+  zonedDateTime: ZonedDateTime,
+  localDate: LocalDate,
+  localDateTime: LocalDateTime
+)
+
+abstract class PrimitivesJdk8 extends CassandraTable[PrimitivesJdk8, Jdk8Row] with RootConnector {
+
+  object pkey extends StringColumn(this) with PartitionKey
+
+  object offsetDateTime extends OffsetDateTimeColumn(this)
+
+  object zonedDateTime extends ZonedDateTimeColumn(this)
+
+  object localDate extends LocalDateColumn(this)
+
+  object localDateTime extends LocalDateTimeColumn(this)
+}
+```
+
+##### The new compact table DSL.
+
+```scala
+abstract class PrimitivesJdk8 extends Table[PrimitivesJdk8, Jdk8Row] {
+
+  object pkey extends StringColumn with PartitionKey
+
+  object offsetDateTime extends Col[OffsetDateTime]
+
+  object zonedDateTime extends Col[ZonedDateTime]
+
+  object localDate extends Col[LocalDate]
+
+  object localDateTime extends Col[LocalDateTime]
+}
+```
+
+#### Timezone preserving primitives
+
+These will be by default available under `import com.outworkers.phantom.jdk8._`. The only
+exception is `java.time.LocalDateTimeColumn` which is indexed with both imports.
+
+| phantom columns               | Java/Scala type           | Cassandra type      |
+| ---------------               |-------------------        | -----------------   |
+| OffsetDateTimeColumn          | java.time.OffsetDateTime  | tuple<bigint, text> |
+| ZonedDateTimeColumn           | java.time.ZonedDateTime   | tuple<bigint, text> |
+| LocalDate                     | java.time.LocalDate       | localdate           |
+| LocalDateTime                 | java.time.LocalDateTime   | timestamp           |
+
+#### UTC indexed time primitives
+
+These will be by default available under `import com.outworkers.phantom.jdk8.indexed._`
+
+| phantom columns               | Java/Scala type           | Cassandra type      |
+| ---------------               |-------------------        | -----------------   |
+| OffsetDateTimeColumn          | java.time.OffsetDateTime  | timestamp           |
+| ZonedDateTimeColumn           | java.time.ZonedDateTime   | timestamp           |
+| LocalDate                     | java.time.LocalDate       | localdate           |
+| LocalDateTime                 | java.time.LocalDateTime   | timestamp           |
+
