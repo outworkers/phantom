@@ -175,19 +175,16 @@ abstract class MyTable extends Table[MyTable, Record] {
 
 #### Deriving new primitives from existing ones
 
-Phantom comes with a pre-defined set that helps with the most common scenarios that are well known and
-loved in Cassandra. But what if you want to roll your own type? Well, you can obviously choose to fully implement
-the primitive trait though in some scenarios it's often just easier to simply leverage an existing implementation.
+This allows you to implement new primitives based on already available ones, often it's easier to leverage an existing implementation.
 
-For the sake of argument, let's assume you are trying to derive a primitive for `case class Test(value: String)`. Phantom makes
-this reasonably simply, all you have to do is to use `Primitive.derive` to produce a new implicit primitive in scope
-that helps educate Phantom and simultaneously Cassandra of what your type `means`.
+Let's assume you are trying to derive a primitive for `case class Test(value: String)`. Phantom allows this via
+ `Primitive.derive` to produce a new implicit primitive for your custom type.
 
-"Deriving" is very simple, if we have a primitive for a type `T` that already exists, then we can define a new primitive
+"Deriving" is simple, for a  a primitive of type `T` that already exists, we can define a new primitive
 for any type `X` we want, provided there is a bijection from `T` to `X`, or in simple terms a way to convert a `T
  to an `X` and an `X` back to a `T` without losing any details in the process.
 
-The implementation of `derive`, uses context bound on `Source` to tell the compiler
+The implementation of `derive` uses context bound on `Source` to tell the compiler
 the type `Source` should be an already defined primitive, and the two parameters are the conversion
 functions from `Source` to `Target`. The output is a `Primitive[Target]`.
 
@@ -198,10 +195,7 @@ def derive[
 ](to: Target => Source)(from: Source => Target): Primitive[Target]
 ```
 
-In practice, using `derive` for a simple scenario looks like the below. In this example the implicit primitive
-is defined in the companion object of a class, and this is only because in Scala the compiler "knows" to look
-here for any implicit for type `Test`. This is a default characteristic of the implicit resolution mechanism
-in the language itself, so we are not doing anything special per say other than leveraging Scala features.
+In practice, using `derive` for a simple scenario looks like this:
 
 ```scala
 
