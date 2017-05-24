@@ -409,11 +409,13 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
 
     if (strategy.isEmpty) {
-      c.echo(c.enclosingPosition, "No NamingStrategy found in implicit scope.")
+      c.info(c.enclosingPosition, "No NamingStrategy found in implicit scope.", force = false)
       q"$table"
     } else {
-      c.echo(c.enclosingPosition, s"Altering table name with strategy ${showCode(strategy)}")
-      q"$strategy.inferName($table)"
+      c.info(c.enclosingPosition, s"Altering table name with strategy ${showCode(strategy)}", force = false)
+      val tree = q"$strategy.inferName($table)"
+      c.info(c.enclosingPosition, showCode(tree), force = false)
+      tree
     }
   }
 

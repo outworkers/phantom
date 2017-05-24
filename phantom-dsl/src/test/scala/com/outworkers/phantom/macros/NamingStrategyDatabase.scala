@@ -15,17 +15,10 @@
  */
 package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.connectors.CassandraConnection
-import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import Strategy._
+import com.outworkers.phantom.macros.tables.NamedArticlesByAuthor
 
-abstract class NamedArticlesByAuthor extends Table[NamedArticlesByAuthor, Article] {
-  object id extends UUIDColumn with PartitionKey
-  object name extends StringColumn
-  object orderId extends LongColumn
-}
 
 class NamingStrategyDatabase(
   override val connector: CassandraConnection

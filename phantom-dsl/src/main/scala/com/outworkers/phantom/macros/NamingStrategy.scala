@@ -17,31 +17,23 @@ package com.outworkers.phantom.macros
 
 import com.google.common.base.CaseFormat
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.macros.NamingStrategy.CamelCase
 
-trait NamingStrategy {
+abstract class NamingStrategy(protected[this] val isCaseSensitive: Boolean = false) {
   def strategy: String
-
-  type NameType <: NamingStrategy
 
   def inferName(name: String): String
 
   def apply(name: String): String = inferName(name)
-
-  protected[this] def isCaseSensitive: Boolean = false
-
-  def caseSensitive: NameType
-  def caseInsensitive: NameType
 }
 
-class CamelCase extends NamingStrategy {
-
-  override type NameType = CamelCase
+sealed class CamelCase(
+  override protected[this] val isCaseSensitive: Boolean
+) extends NamingStrategy(isCaseSensitive) {
 
   override def strategy: String = "camel_case"
 
   override def inferName(name: String): String = {
-    val source = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, name)
+    val source = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name)
 
     if (isCaseSensitive) {
       CQLQuery.escape(source)
@@ -49,17 +41,11 @@ class CamelCase extends NamingStrategy {
       source
     }
   }
-
-  override def caseSensitive: CamelCase = new CamelCase {
-    override protected[this] def isCaseSensitive: Boolean = true
-  }
-
-  override def caseInsensitive: CamelCase = new CamelCase {
-    override protected[this] def isCaseSensitive: Boolean = false
-  }
 }
 
-class SnakeCase extends NamingStrategy {
+sealed class SnakeCase(
+  override protected[this] val isCaseSensitive: Boolean
+) extends NamingStrategy(isCaseSensitive) {
   override def strategy: String = "snake_case"
 
   override def inferName(name: String): String = {
@@ -70,21 +56,11 @@ class SnakeCase extends NamingStrategy {
       source
     }
   }
-
-  override type NameType = SnakeCase
-
-  override def caseSensitive: SnakeCase = new SnakeCase {
-    override protected[this] def isCaseSensitive: Boolean = true
-  }
-
-  override def caseInsensitive: SnakeCase = new SnakeCase {
-    override protected[this] def isCaseSensitive: Boolean = false
-  }
 }
 
-class IdentityStrategy extends NamingStrategy {
-
-  override type NameType = IdentityStrategy
+sealed class IdentityStrategy(
+  override protected[this] val isCaseSensitive: Boolean
+) extends NamingStrategy(isCaseSensitive) {
 
   override def strategy: String = "identity"
 
@@ -95,25 +71,26 @@ class IdentityStrategy extends NamingStrategy {
       source
     }
   }
-
-  override def caseSensitive: IdentityStrategy = new IdentityStrategy {
-    override protected[this] def isCaseSensitive: Boolean = true
-  }
-
-  override def caseInsensitive: IdentityStrategy = new IdentityStrategy {
-    override protected[this] def isCaseSensitive: Boolean = true
-  }
 }
 
 trait LowPriorityImplicits {
-  implicit val identityStrategy: NamingStrategy = new IdentityStrategy
+  implicit val identityStrategy: NamingStrategy = new IdentityStrategy(false)
 }
 
 object NamingStrategy extends LowPriorityImplicits {
 
-  object IdentityStrategy extends IdentityStrategy
+  object CamelCase {
+    implicit val caseSensitive: NamingStrategy = new CamelCase(true)
+    implicit val caseInsensitive: NamingStrategy = new CamelCase(false)
+  }
 
-  object SnakeCase extends SnakeCase
+  object SnakeCase {
+    implicit val caseSensitive: NamingStrategy = new SnakeCase(true)
+    implicit val caseInsensitive: NamingStrategy = new SnakeCase(false)
+  }
 
-  object CamelCase extends CamelCase
+  object Default {
+    implicit val caseSensitive: NamingStrategy = new IdentityStrategy(true)
+    implicit val caseInsensitive: NamingStrategy = new IdentityStrategy(false)
+  }
 }

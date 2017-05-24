@@ -24,6 +24,35 @@ class NamingStrategyTests extends FlatSpec with Matchers {
     TestDatabase.recipes.tableName shouldEqual "recipes"
   }
 
+  it should "convert a name to snake_case from camelCase" in {
+    NamingStrategy.SnakeCase.caseInsensitive.inferName("tableName") shouldEqual "table_name"
+  }
+
+  it should "convert escape a name and convert to snake_case from camelCase" in {
+    NamingStrategy.SnakeCase.caseSensitive.inferName("tableName") shouldEqual "'table_name'"
+  }
+
+  it should "convert escape a name and convert to camelCase from snake_case" in {
+    NamingStrategy.CamelCase.caseSensitive.inferName("camel_case") shouldEqual "'camelCase'"
+  }
+
+  it should "preserve a table name using an identity strategy" in {
+    NamingStrategy.Default.caseInsensitive.inferName("snake_case") shouldEqual "snake_case"
+  }
+
+  it should "escape and preserve a table name using an identity strategy" in {
+    NamingStrategy.Default.caseSensitive.inferName("snake_case") shouldEqual "'snake_case'"
+  }
+
+  it should "convert a name and convert to camelCase from snake_case" in {
+    NamingStrategy.CamelCase.caseInsensitive.inferName("snake_case") shouldEqual "snakeCase"
+  }
+
+
+  it should "convert and escape a name to camelCase from snake_case" in {
+    NamingStrategy.CamelCase.caseSensitive.inferName("snake_case") shouldEqual "'snakeCase'"
+  }
+
   it should "alter the name of a table if a NamingStrategy exists in scope" in {
     NamingStrategyDatabase.articlesByAuthor.tableName shouldEqual "'named_articles_by_author'"
   }
