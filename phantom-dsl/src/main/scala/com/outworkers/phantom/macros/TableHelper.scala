@@ -399,6 +399,24 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     memoize[(Type, Type), Tree](WhiteboxToolbelt.tableHelperCache)(tt -> rt, { case (t, r) => macroImpl(t, r)})
   }
 
+  /**
+    * This will search the implicit scope for a [[NamingStrategy]] defined.
+    * If none is found, this will return the table name as is.
+    * @param table The name of the table as derived from the user input.
+    * @return A new table name adjusted according to the [[NamingStrategy]].
+    */
+  def adjustedTableName(table: String): Tree = {
+    val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
+
+    if (strategy.isEmpty) {
+      c.echo(c.enclosingPosition, "No NamingStrategy found in implicit scope.")
+      q"$table"
+    } else {
+      c.echo(c.enclosingPosition, s"Altering table name with strategy ${showCode(strategy)}")
+      q"$strategy.inferName($table)"
+    }
+  }
+
   def macroImpl(tableType: Type, recordType: Type): Tree = {
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
@@ -431,7 +449,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
        final class $clsName extends $macroPkg.TableHelper[$tableType, $recordType] {
           type Repr = $storeTpe
 
-          def tableName: $strTpe = $tableName
+          def tableName: $strTpe = ${adjustedTableName(tableName)}
 
           def store($tableTerm: $tableType, $inputTerm: $storeTpe)(
            implicit space: $keyspaceType
