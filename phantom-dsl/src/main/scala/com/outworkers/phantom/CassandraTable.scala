@@ -19,7 +19,8 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
@@ -35,6 +36,51 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
+
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  class ListColumn[RR](t: CassandraTable[T, R])(
+    implicit ev: Primitive[RR],
+    ev2: Primitive[List[RR]]
+  ) extends CollectionColumn[T, R, List, RR](t, CQLSyntax.Collections.list)
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  class SetColumn[RR](t: CassandraTable[T, R])(
+    implicit ev: Primitive[RR],
+    ev2: Primitive[Set[RR]]
+  ) extends CollectionColumn[T, R, Set, RR](t, CQLSyntax.Collections.set)
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  class MapColumn[KK, VV](t: CassandraTable[T, R])(
+    implicit ev: Primitive[KK],
+    ev2: Primitive[VV],
+    ev3: Primitive[Map[KK, VV]]
+  ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](t)
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  abstract class JsonSetColumn[RR](
+    t: CassandraTable[T, R]
+  )(
+    implicit ev: Primitive[Set[String]],
+    ev2: Primitive[String]
+  ) extends column.JsonSetColumn[T, R, RR](t)
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  abstract class JsonListColumn[RR](
+    t: CassandraTable[T, R]
+  )(
+    implicit ev: Primitive[List[String]],
+    ev2: Primitive[String]
+  ) extends column.JsonListColumn[T, R, RR](t)
+
+  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
+  abstract class JsonMapColumn[KK, VV](
+    t: CassandraTable[T, R]
+  )(
+    implicit ev: Primitive[Map[KK, String]],
+    ev2: Primitive[String],
+    ev3: Primitive[KK]
+  ) extends com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV](t)
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
