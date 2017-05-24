@@ -65,7 +65,35 @@ class MyDb(override val connector: CassandraConnection) extends Database[MyDb](c
 }
 ```
 
+### The name of the table can be controlled using `NamingStrategy`.
 
+A single import controls how table names are generated. Phantom offers three variants,
+implemented via `com.outworkers.phantom.NamingStrategy`. These control only the `tableName`,
+not the columns or anything else.
+
+
+```
+| Strategy                    | Casing                        | 
+| =========================== | ============================= |
+| NamingStrategy.CamelCase    | lowCamelCase                  |
+| NamingStrategy.SnakeCase    | low_snake_case                |
+| NamingStrategy.Default      | Preserves the user input      |
+```
+
+All available imports will have two flavours. It's important to note they only work
+when imported in the scope where tables are defined. That's where the macro will evaluate
+the call site for implicits.
+
+```scala
+import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
+import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
+
+import com.outworkers.phantom.NamingStrategy.SnakeCase.caseSensitive
+import com.outworkers.phantom.NamingStrategy.SnakeCase.caseInsensitive
+
+import com.outworkers.phantom.NamingStrategy.Default.caseSensitive
+import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
+```
 
 <a id="data-modeling">Data modeling with phantom</a>
 ====================================================

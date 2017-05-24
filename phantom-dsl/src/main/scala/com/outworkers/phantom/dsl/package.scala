@@ -193,6 +193,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
+  type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
 
   val Version = DefaultVersions
