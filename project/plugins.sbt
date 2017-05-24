@@ -49,6 +49,8 @@ if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
   addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 }
 
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC3")
+
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
