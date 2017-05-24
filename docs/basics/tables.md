@@ -67,8 +67,8 @@ class MyDb(override val connector: CassandraConnection) extends Database[MyDb](c
 
 ### The name of the table can be controlled using `NamingStrategy`.
 
-A simple import can help you control how table names are generated. Phantom offers three variants,
-all available via `com.outworkers.phantom.NamingStrategy`. These control only the `tableName`,
+A single import controls how table names are generated. Phantom offers three variants,
+implemented via `com.outworkers.phantom.NamingStrategy`. These control only the `tableName`,
 not the columns or anything else.
 
 
