@@ -80,7 +80,7 @@ not the columns or anything else.
 | NamingStrategy.Default      | Preserves the user input      |
 ```
 
-All available imports will have two flavours, and it's important to note they only work
+All available imports will have two flavours. It's important to note they only work
 when imported in the scope where tables are defined. That's where the macro will evaluate
 the call site for implicits.
 
