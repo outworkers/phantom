@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.macros
 
+import com.outworkers.phantom.NamingStrategy
 import com.outworkers.phantom.tables.TestDatabase
 import org.scalatest.{FlatSpec, Matchers}
 
