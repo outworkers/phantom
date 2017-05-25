@@ -47,7 +47,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     }
 
     Futures.addCallback(future, callback, ex)
-    promise
+    promise.future
   }
 
   protected[this] def preparedStatementToPromise(st: String)(

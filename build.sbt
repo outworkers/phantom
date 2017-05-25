@@ -301,7 +301,6 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
-      Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value) exclude ("com.typesafe", "config"),
