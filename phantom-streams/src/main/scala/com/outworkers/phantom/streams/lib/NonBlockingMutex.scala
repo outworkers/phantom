@@ -64,24 +64,27 @@ private[streams] final class NonBlockingMutex {
 
   private type Op = () => Unit
 
-  private val state = new AtomicReference[Vector[Op]](null)
+  private[this] val state = new AtomicReference[Vector[Op]](NonBlockingMutex.nullValue)
 
   @tailrec
-  private def schedule(op: Op): Unit = {
+  private[this] def schedule(op: Op): Unit = {
     val prevState = state.get
     val newState = prevState match {
-      case null => Vector.empty // This is very cheap because Vector.empty is only allocated once
+      case NonBlockingMutex.nullValue => Vector.empty // This is very cheap because Vector.empty is only allocated once
       case pending => pending :+ op
     }
     if (state.compareAndSet(prevState, newState)) {
       prevState match {
-        case null =>
+        case NonBlockingMutex.nullValue =>
           // We've update the state to say that we're running an op,
           // so we need to actually start it running.
           executeAll(op)
         case _ =>
       }
-    } else schedule(op) // Try again
+    } else {
+      // Try again
+      schedule(op)
+    }
   }
 
   @tailrec
@@ -98,13 +101,14 @@ private[streams] final class NonBlockingMutex {
   private def dequeueNextOpToExecute(): Option[Op] = {
     val prevState = state.get
     val (newState, nextOp) = prevState match {
-      case null => throw new IllegalStateException("When executing, must have a queue of pending elements")
+      case NonBlockingMutex.nullValue => throw new IllegalStateException("When executing, must have a queue of pending elements")
       case pending if pending.isEmpty => (None.orNull, None)
       case pending => (pending.tail, Some(pending.head))
     }
     if (state.compareAndSet(prevState, newState)) nextOp else dequeueNextOpToExecute()
   }
-
 }
 
-
+object NonBlockingMutex {
+  private[phantom] val nullValue = None.orNull
+}
