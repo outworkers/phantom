@@ -15,13 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{
-  PreparedStatement,
-  Session,
-  Statement,
-  ResultSet => DatastaxResultSet
-}
-import com.google.common.util.concurrent.{FutureCallback, Futures}
+import com.datastax.driver.core.{PreparedStatement, Session, Statement, ResultSet => DatastaxResultSet}
+import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
@@ -34,6 +29,25 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
     scalaQueryStringToPromise(st).future
+  }
+
+  protected[this] def guavaFutureAsScala[T](
+    future: ListenableFuture[T]
+  )(implicit ex: ExecutionContextExecutor): ScalaFuture[T] = {
+    val promise = ScalaPromise[T]
+    val callback = new FutureCallback[T] {
+      def onSuccess(result: T): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(err.getMessage)
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(future, callback, ex)
+    promise
   }
 
   protected[this] def preparedStatementToPromise(st: String)(

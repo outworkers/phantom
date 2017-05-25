@@ -88,9 +88,9 @@ lazy val Versions = new {
     val v = play(s)
     CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor == 12=> {
-        "com.typesafe.play" %% "play-reactive-streams" % v
+        "com.typesafe.play" %% "play-streams" % "2.6.0-RC1"
       }
-      case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
+      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8=> {
         "com.typesafe.play" %% "play-streams" % v
       }
       case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
@@ -121,7 +121,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.1",
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -298,7 +298,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
       Versions.playStreams(scalaVersion.value),

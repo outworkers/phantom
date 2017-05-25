@@ -25,7 +25,7 @@ import com.outworkers.phantom.dsl.{context => _}
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
-import play.api.libs.streams.Streams
+import play.api.libs.streams.{ AkkaStreams => Streams }
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
