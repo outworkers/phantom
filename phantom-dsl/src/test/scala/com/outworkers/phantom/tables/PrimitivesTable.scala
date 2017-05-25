@@ -68,10 +68,16 @@ case class OldPrimitiveRecord(
   uuid: UUID,
   bi: BigInt,
   timeuuid: UUID,
-  localDate: LocalDate
+  localDate: LocalDate,
+  stringList: List[String],
+  stringSet: Set[String],
+  mapCol: Map[String, Int]
 )
 
-abstract class OldDslPrimitivesTable extends CassandraTable[OldDslPrimitivesTable, OldPrimitiveRecord] with RootConnector {
+abstract class OldDslPrimitivesTable extends CassandraTable[
+  OldDslPrimitivesTable,
+  OldPrimitiveRecord
+] with RootConnector {
   object pkey extends StringColumn(this) with PartitionKey
 
   object long extends LongColumn(this)
@@ -97,6 +103,12 @@ abstract class OldDslPrimitivesTable extends CassandraTable[OldDslPrimitivesTabl
   object timeuuid extends TimeUUIDColumn(this)
 
   object ld extends LocalDateColumn(this)
+
+  object stringList extends ListColumn[String](this)
+
+  object stringSet extends SetColumn[String](this)
+
+  object mapCol extends MapColumn[String, Int](this)
 
 }
 

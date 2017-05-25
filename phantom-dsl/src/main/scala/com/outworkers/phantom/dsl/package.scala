@@ -17,7 +17,7 @@ package com.outworkers.phantom
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.util.{ Date, Random }
+import java.util.{Date, Random}
 
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
@@ -26,6 +26,7 @@ import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
