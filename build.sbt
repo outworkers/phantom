@@ -83,23 +83,8 @@ lazy val Versions = new {
       case _ => "2.4.8"
     }
   }
-
-  val playStreams: String => ModuleID = s => {
-    val v = play(s)
-    CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor == 12=> {
-        "com.typesafe.play" %% "play-streams" % "2.6.0-RC1"
-      }
-      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8=> {
-        "com.typesafe.play" %% "play-streams" % v
-      }
-      case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
-        "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
-      }
-      case _ => "com.typesafe.play" %% "play-streams-experimental" % v
-    }
-  }
 }
+
 val defaultConcurrency = 4
 
 val PerformanceTest = config("perf").extend(Test)
