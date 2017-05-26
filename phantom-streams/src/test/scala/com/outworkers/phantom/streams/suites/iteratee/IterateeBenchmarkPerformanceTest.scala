@@ -34,7 +34,7 @@ class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase
   }
 
   val limit = 100
-  val sampleGenLimit = 30000
+  val sampleGenLimit = 30
 
   val fs = for {
     step <- 1 to 3

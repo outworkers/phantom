@@ -45,34 +45,32 @@ class IterateePerformanceTest extends PhantomSuite {
       b.add(statement)
     })
 
-    val w = batch.future() map (_ => TestDatabase.primitivesJoda.select.fetchEnumerator)
-    whenReady(w) { en =>
-      val result = en run Iteratee.collect()
-      whenReady(result) { seqR =>
-        for (row <- seqR) rows.contains(row) shouldEqual true
-        seqR.size shouldEqual rows.size
-      }
+    val chain = for {
+      w <- batch.future()
+      seqR <- TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.collect()
+    } yield seqR
+
+    whenReady(chain) { seqR =>
+      seqR should contain theSameElementsAs rows
+      seqR.size shouldEqual rows.size
     }
   }
 
-  it should "get correctly retrieve the right number of records using asynchronous iterators" in {
+  it should "retrieve the right number of records using asynchronous iterators" in {
     val rows = for (i <- 1 to 100) yield gen[PrimitiveRecord]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       b.add(database.primitives.store(row))
     })
 
-    val w = database.primitives.truncate.future().flatMap {
-      _ => batch.future().map(_ => TestDatabase.primitives.select.fetchEnumerator())
-    }
+    val counter = new AtomicInteger(0)
 
-    val counter: AtomicInteger = new AtomicInteger(0)
-    val m = w flatMap {
-      _ run Iteratee.forEach(x => {
-        counter.incrementAndGet(); assert(rows.contains(x))
-      })
-    }
+    val chain = for {
+      truncate <-  database.primitives.truncate.future()
+      execBatch <- batch.future()
+      enum <- TestDatabase.primitives.select.fetchEnumerator() run Iteratee.forEach(x => counter.incrementAndGet())
+    } yield enum
 
-    whenReady(m) { _ =>
+    whenReady(chain) { _ =>
       counter.intValue() shouldEqual rows.size
     }
   }

@@ -50,22 +50,17 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
       r = Await.result(f, 200 seconds)
     } yield f map (_ => r)
 
-
-    val combinedFuture = Future.sequence(fs) map {
-      r => TestDatabase.primitivesJoda.select.count.one()
-    }
-
     val counter: AtomicLong = new AtomicLong(0)
-    val result = combinedFuture flatMap {
-       rs => {
-         info(s"done, inserted: $rs rows - start parsing")
-         TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r => counter.incrementAndGet() }
-       }
-    }
 
-    whenReady(result flatMap (_ => combinedFuture)) { r =>
+    val chain = for {
+      res <- TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r => counter.incrementAndGet() }
+      seq <- Future.sequence(fs)
+      count <- TestDatabase.primitivesJoda.select.count.one()
+    } yield count
+
+    whenReady(chain) { count =>
       info(s"done, reading: ${counter.addAndGet(0)}")
-      counter.get() shouldEqual r
+      Some(counter.get()) shouldEqual count
     }
   }
 }
