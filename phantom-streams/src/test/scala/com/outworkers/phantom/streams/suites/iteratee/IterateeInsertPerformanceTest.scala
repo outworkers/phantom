@@ -30,12 +30,12 @@ import scala.concurrent.{Await, Future}
 class IterateeInsertPerformanceTest extends BigTest with Matchers {
 
   implicit val s: PatienceConfiguration.Timeout = timeout(12 minutes)
-  private[this] final val iteratorLimit = 10000
+  private[this] final val iteratorLimit = 100
 
   it should "retrieve the right amount of results" in {
     TestDatabase.primitivesJoda.insertSchema()
     val fs = for {
-      step <- 1 to 100
+      step <- 1 to 50
       rows = Iterator.fill(iteratorLimit)(gen[JodaRow])
 
       batch = rows.foldLeft(Batch.unlogged)((b, row) => {

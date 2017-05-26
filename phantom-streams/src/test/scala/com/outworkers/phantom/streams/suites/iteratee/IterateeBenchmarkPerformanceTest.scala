@@ -33,7 +33,7 @@ class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }
 
-  val limit = 10000
+  val limit = 100
   val sampleGenLimit = 30000
 
   val fs = for {
@@ -41,11 +41,7 @@ class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase
     rows = Iterator.fill(limit)(gen[JodaRow])
 
     batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = TestDatabase.primitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.intColumn)
-        .value(_.timestamp, row.timestamp)
-      b.add(statement)
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
     w = batch.future()
     f = w map (_ => println(s"step $step was completed successfully"))

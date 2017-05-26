@@ -27,14 +27,17 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
   it should "read the correct number of records found in the table" in {
     val counter = new AtomicLong(0)
 
-    val result = database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
-      r => counter.incrementAndGet()
-    }
+    val chain = for {
+      res <-  database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+        r => counter.incrementAndGet()
+      }
+      count <- database.primitivesJoda.select.count().one()
+    } yield count
 
-    whenReady(result) { query =>
+    whenReady(chain) { query =>
       val count = counter.getAndIncrement()
       info(s"Done, reading: $count elements from the table.")
-      count shouldEqual 2000000
+      count shouldEqual count
     }
   }
 }
