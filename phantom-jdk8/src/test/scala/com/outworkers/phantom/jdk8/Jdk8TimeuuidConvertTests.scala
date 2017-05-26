@@ -15,36 +15,15 @@
  */
 package com.outworkers.phantom.jdk8
 
-import java.time.{Instant, OffsetDateTime, ZoneId, ZonedDateTime}
-import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
-import scala.collection.JavaConverters._
+import com.outworkers.phantom.jdk8.tables._
 
 class Jdk8TimeuuidConvertTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
-
-  private[this] val genLower: Int = -100000
-  private[this] val genHigher: Int = -genLower
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 300)
   }
-
-  val zoneIdGen: Gen[ZoneId] = Gen.oneOf(ZoneId.getAvailableZoneIds.asScala.toSeq) map ZoneId.of
-
-  val zonedDateTimeGen: Gen[ZonedDateTime] = for {
-    offset <- Gen.choose(genLower, genHigher)
-    time = Instant.now().toEpochMilli
-    dt = time + offset
-    zone <- zoneIdGen
-  } yield ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt), zone)
-
-  val offsetDateTimeGen: Gen[OffsetDateTime] = for {
-    offset <- Gen.choose(genLower, genHigher)
-    time = Instant.now().toEpochMilli
-    dt = time + offset
-    zone <- zoneIdGen
-  } yield OffsetDateTime.ofInstant(Instant.ofEpochMilli(dt), zone)
 
   it should "convert a ZonedDateTime to a Timeuuid and back using the ZoneID argument method" in {
     forAll(zonedDateTimeGen) { dt =>

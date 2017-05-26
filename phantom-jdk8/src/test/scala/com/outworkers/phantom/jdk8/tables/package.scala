@@ -17,13 +17,36 @@ package com.outworkers.phantom.jdk8
 
 import java.time._
 
+import com.datastax.driver.core.ProtocolVersion
 import com.outworkers.util.samplers._
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
 import scala.collection.JavaConverters._
 import scala.util.Random
 
 package object tables {
+
+  private[this] val genLower: Int = -100000
+  private[this] val genHigher: Int = -genLower
+
+  val protocolGen: Gen[ProtocolVersion] = Gen.oneOf(ProtocolVersion.values())
+
+  val zoneIdGen: Gen[ZoneId] = Gen.oneOf(ZoneId.getAvailableZoneIds.asScala.toSeq) map ZoneId.of
+
+  val zonedDateTimeGen: Gen[ZonedDateTime] = for {
+    offset <- Gen.choose(genLower, genHigher)
+    time = Instant.now().toEpochMilli
+    dt = time + offset
+    zone <- zoneIdGen
+  } yield ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt), zone)
+
+  val offsetDateTimeGen: Gen[OffsetDateTime] = for {
+    offset <- Gen.choose(genLower, genHigher)
+    time = Instant.now().toEpochMilli
+    dt = time + offset
+    zone <- zoneIdGen
+  } yield OffsetDateTime.ofInstant(Instant.ofEpochMilli(dt), zone)
+
 
   implicit object ZoneIdSampler extends Sample[ZoneId] {
     override def sample: ZoneId = ZoneId.of(Generators.oneOf(ZoneId.getAvailableZoneIds.asScala.toSeq))
