@@ -90,7 +90,6 @@ private[streams] class EnumeratorSubscription[T, U >: T](
   }
 
   // Streams methods
-
   override def request(elements: Long): Unit = {
     if (elements <= 0) throw new IllegalArgumentException(s"The number of requested elements must be > 0: requested $elements elements")
     exclusive {
@@ -99,7 +98,7 @@ private[streams] class EnumeratorSubscription[T, U >: T](
       case Requested(n, its) =>
         state = Requested(n + elements, its)
       case Completed | Cancelled =>
-        () // FIXME: Check rules
+        ()
     }
   }
 
