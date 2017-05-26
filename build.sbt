@@ -83,28 +83,9 @@ lazy val Versions = new {
       case _ => "2.4.8"
     }
   }
-
-  val playStreams: String => ModuleID = s => {
-    val v = play(s)
-    CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor == 12=> {
-        "com.typesafe.play" %% "play-reactive-streams" % v
-      }
-      case Some((_, minor)) if minor == 11 && Publishing.isJdk8 => {
-        "com.typesafe.play" %% "play-streams" % v
-      }
-      case Some((_, minor)) if minor >= 11  && !Publishing.isJdk8 => {
-        "com.typesafe.play" %% "play-streams-experimental" % "2.4.8"
-      }
-      case _ => "com.typesafe.play" %% "play-streams-experimental" % v
-    }
-  }
 }
+
 val defaultConcurrency = 4
-
-val PerformanceTest = config("perf").extend(Test)
-
-lazy val performanceFilter: String => Boolean = _.endsWith("PerformanceTest")
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:experimental.macros",
@@ -121,7 +102,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.1",
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -142,10 +123,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   gitTagName in ThisBuild := s"version=${scalaVersion.value}",
-  testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
-  testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
-  testOptions in PerformanceTest := Seq(Tests.Filter(performanceFilter)),
-  fork in PerformanceTest := false,
+  testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
   GitProject.gitSettings ++
@@ -163,11 +141,7 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
 lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
 
 lazy val phantom = (project in file("."))
-  .configs(
-    PerformanceTest
-  ).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks): _*
-  ).settings(
+  .settings(
     sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
@@ -177,37 +151,33 @@ lazy val phantom = (project in file("."))
     fullProjectList: _*
   ).enablePlugins(CrossPerProjectPlugin)
 
-lazy val phantomDsl = (project in file("phantom-dsl")).configs(
-  PerformanceTest
-).settings(
-  inConfig(PerformanceTest)(Defaults.testTasks): _*
-).settings(
-  sharedSettings: _*
-).settings(
-  name := "phantom-dsl",
-  moduleName := "phantom-dsl",
-  concurrentRestrictions in Test := Seq(
-    Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
-  ),
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
-  libraryDependencies ++= Seq(
-    "org.typelevel" %% "macro-compat" % Versions.macrocompat,
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-    "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
-    "joda-time"                    %  "joda-time"                         % Versions.joda,
-    "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
-    "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-    "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
-    "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
-    "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
-    "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
-    "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
-    "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
-  )
-).dependsOn(
-  phantomConnectors
-).enablePlugins(CrossPerProjectPlugin)
+lazy val phantomDsl = (project in file("phantom-dsl"))
+  .settings(sharedSettings: _*)
+  .settings(
+    name := "phantom-dsl",
+    moduleName := "phantom-dsl",
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
+    ),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
+      "joda-time"                    %  "joda-time"                         % Versions.joda,
+      "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
+      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
+      "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
+      "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
+      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
+      "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
+    )
+  ).dependsOn(
+    phantomConnectors
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
@@ -225,7 +195,6 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomConnectors = (project in file("phantom-connectors"))
-  .configs(PerformanceTest)
   .settings(
     sharedSettings: _*
   ).settings(
@@ -238,7 +207,8 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
   ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))
-  .configs(PerformanceTest).settings(
+  .settings(sharedSettings: _*)
+  .settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
@@ -248,8 +218,6 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
       "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     )
-  ).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks) ++ sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
   ).enablePlugins(CrossPerProjectPlugin)
@@ -259,7 +227,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -298,10 +266,9 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
-      Versions.playStreams(scalaVersion.value),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value) exclude ("com.typesafe", "config"),

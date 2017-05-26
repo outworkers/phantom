@@ -33,18 +33,14 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
   implicit object JodaTimeSampler extends Sample[DateTime] {
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }
-
+  val sampleSize = 100
 
   val fs: IndexedSeq[Future[Unit]] = for {
     step <- 1 to 3
-    rows = Iterator.fill(10000)(gen[JodaRow])
+    rows = Iterator.fill(sampleSize)(gen[JodaRow])
 
     batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = TestDatabase.primitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.intColumn)
-        .value(_.timestamp, row.timestamp)
-      b.add(statement)
+      b.add(TestDatabase.primitivesJoda.store(row))
     })
     w = batch.future()
     f = w map (_ => println(s"step $step has succeed") )

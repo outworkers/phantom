@@ -35,44 +35,40 @@ class IterateePerformanceTest extends PhantomSuite {
     database.primitivesJoda.insertSchema()
   }
 
-  it should "get retrieve the correct number of results from the database and collect them using an iterator" in {
-    val rows = for (i <- 1 to 1000) yield gen[JodaRow]
+  it should "retrieve the correct number of results from the database and collect them using an iterator" in {
+    val rows = for (i <- 1 to 100) yield gen[JodaRow]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = TestDatabase.primitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.intColumn)
-        .value(_.timestamp, row.timestamp)
-      b.add(statement)
+      b.add(db.primitivesJoda.store(row))
     })
 
-    val w = batch.future() map (_ => TestDatabase.primitivesJoda.select.fetchEnumerator)
-    whenReady(w) { en =>
-      val result = en run Iteratee.collect()
-      whenReady(result) { seqR =>
-        for (row <- seqR) rows.contains(row) shouldEqual true
-        seqR.size shouldEqual rows.size
-      }
+    val chain = for {
+      truncate <- db.primitivesJoda.truncate().future()
+      w <- batch.future()
+      seqR <- db.primitivesJoda.select.fetchEnumerator run Iteratee.collect()
+    } yield seqR
+
+    whenReady(chain) { seqR =>
+      seqR should contain theSameElementsAs rows
+      seqR.size shouldEqual rows.size
     }
   }
 
-  it should "get correctly retrieve the right number of records using asynchronous iterators" in {
-    val rows = for (i <- 1 to 100) yield gen[PrimitiveRecord]
+  it should "retrieve the right number of records using asynchronous iterators" in {
+    val sampleSize = 50
+    val rows = genList[PrimitiveRecord](sampleSize)
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       b.add(database.primitives.store(row))
     })
 
-    val w = database.primitives.truncate.future().flatMap {
-      _ => batch.future().map(_ => TestDatabase.primitives.select.fetchEnumerator())
-    }
+    val counter = new AtomicInteger(0)
 
-    val counter: AtomicInteger = new AtomicInteger(0)
-    val m = w flatMap {
-      _ run Iteratee.forEach(x => {
-        counter.incrementAndGet(); assert(rows.contains(x))
-      })
-    }
+    val chain = for {
+      truncate <- db.primitives.truncate.future()
+      execBatch <- batch.future()
+      enum <- db.primitives.select.fetchEnumerator() run Iteratee.forEach(x => counter.incrementAndGet())
+    } yield enum
 
-    whenReady(m) { _ =>
+    whenReady(chain) { _ =>
       counter.intValue() shouldEqual rows.size
     }
   }

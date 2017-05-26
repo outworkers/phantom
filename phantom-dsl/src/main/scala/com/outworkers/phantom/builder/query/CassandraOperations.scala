@@ -15,13 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{
-  PreparedStatement,
-  Session,
-  Statement,
-  ResultSet => DatastaxResultSet
-}
-import com.google.common.util.concurrent.{FutureCallback, Futures}
+import com.datastax.driver.core.{PreparedStatement, Session, Statement, ResultSet => DatastaxResultSet}
+import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
