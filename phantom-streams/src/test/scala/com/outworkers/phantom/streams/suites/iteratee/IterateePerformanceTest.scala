@@ -35,19 +35,16 @@ class IterateePerformanceTest extends PhantomSuite {
     database.primitivesJoda.insertSchema()
   }
 
-  it should "get retrieve the correct number of results from the database and collect them using an iterator" in {
-    val rows = for (i <- 1 to 1000) yield gen[JodaRow]
+  it should "retrieve the correct number of results from the database and collect them using an iterator" in {
+    val rows = for (i <- 1 to 100) yield gen[JodaRow]
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      val statement = TestDatabase.primitivesJoda.insert
-        .value(_.pkey, row.pkey)
-        .value(_.intColumn, row.intColumn)
-        .value(_.timestamp, row.timestamp)
-      b.add(statement)
+      b.add(db.primitivesJoda.store(row))
     })
 
     val chain = for {
+      truncate <- db.primitivesJoda.truncate().future()
       w <- batch.future()
-      seqR <- TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.collect()
+      seqR <- db.primitivesJoda.select.fetchEnumerator run Iteratee.collect()
     } yield seqR
 
     whenReady(chain) { seqR =>
@@ -57,7 +54,8 @@ class IterateePerformanceTest extends PhantomSuite {
   }
 
   it should "retrieve the right number of records using asynchronous iterators" in {
-    val rows = for (i <- 1 to 100) yield gen[PrimitiveRecord]
+    val sampleSize = 50
+    val rows = genList[PrimitiveRecord](sampleSize)
     val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
       b.add(database.primitives.store(row))
     })
@@ -65,9 +63,9 @@ class IterateePerformanceTest extends PhantomSuite {
     val counter = new AtomicInteger(0)
 
     val chain = for {
-      truncate <-  database.primitives.truncate.future()
+      truncate <- db.primitives.truncate.future()
       execBatch <- batch.future()
-      enum <- TestDatabase.primitives.select.fetchEnumerator() run Iteratee.forEach(x => counter.incrementAndGet())
+      enum <- db.primitives.select.fetchEnumerator() run Iteratee.forEach(x => counter.incrementAndGet())
     } yield enum
 
     whenReady(chain) { _ =>

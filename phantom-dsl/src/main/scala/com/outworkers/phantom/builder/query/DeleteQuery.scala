@@ -246,7 +246,9 @@ sealed class ConditionalDeleteQuery[
 
   override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
-  final def and(clause: Table => CompareAndSetClause.Condition): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  final def and(
+    clause: Table => CompareAndSetClause.Condition
+  ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     new ConditionalDeleteQuery(
       table,
       init,

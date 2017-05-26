@@ -33,7 +33,7 @@ class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }
 
-  val limit = 100
+  val limit = 50
   val sampleGenLimit = 30
 
   val fs = for {
@@ -45,7 +45,7 @@ class IterateeBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase
     })
     w = batch.future()
     f = w map (_ => println(s"step $step was completed successfully"))
-    r = Await.result(f, 200 seconds)
+    r = Await.result(f, 20 seconds)
   } yield f map (_ => r)
 
   Await.ready(Future.sequence(fs), 20 seconds)

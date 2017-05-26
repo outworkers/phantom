@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.builder.primitives
 
+import com.outworkers.util.samplers.{Sample, Samples}
+
 case class DerivedField(value: String)
 
 object DerivedField {
@@ -34,3 +36,21 @@ object DerivedTupleField {
   }
 }
 
+sealed trait HashStatus
+trait Serialized extends HashStatus
+trait Unserialized extends HashStatus
+
+sealed case class Username[T <: HashStatus](name: String)
+
+object Username {
+
+  implicit val usernamePrimitive: Primitive[Username[Serialized]] = {
+    Primitive.derive[Username[Serialized], String](_.name)(Username.apply)
+  }
+
+  implicit val usernameSampler: Sample[Username[Serialized]] = {
+    Samples.derive[String, Username[Serialized]](Username.apply)
+  }
+
+  def apply(st: String, trigger: Int = 0): Username[Serialized] = new Username[Serialized](st)
+}
