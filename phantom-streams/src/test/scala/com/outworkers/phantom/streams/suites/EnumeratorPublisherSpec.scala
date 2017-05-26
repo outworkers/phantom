@@ -23,6 +23,7 @@ import play.api.libs.iteratee.{Concurrent, Enumerator, Input}
 import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.NonFatal
 
 class EnumeratorPublisherSpec extends FlatSpec with Matchers {
 
@@ -98,6 +99,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
   }
 
   it should "be done enumerating after EOF" in {
+    val size = 4
     val testEnv = new TestEnv[Int]
     val enumDone = Promise[Boolean]()
     val enum = (Enumerator(1, 2, 3) >>> Enumerator.eof).onDoneEnumerating {
@@ -106,24 +108,25 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     val pubr = new EnumeratorPublisher(enum)
     pubr.subscribe(testEnv.Subscriber)
     testEnv.next shouldEqual OnSubscribe
-    testEnv.request(4)
-    testEnv.next shouldEqual RequestMore(4)
+    testEnv.request(size)
+    testEnv.next shouldEqual RequestMore(size)
     testEnv.next shouldEqual OnNext(1)
     testEnv.next shouldEqual OnNext(2)
     testEnv.next shouldEqual OnNext(3)
     testEnv.next shouldEqual OnComplete
     testEnv.isEmptyAfterDelay() shouldBe true
-    Await.result(enumDone.future, Duration(5, SECONDS)) shouldBe true
+    Await.result(enumDone.future, 10.seconds) shouldBe true
   }
 
   it should "complete the subscriber when done enumerating without eof" in {
+    val size = 4
     val testEnv = new TestEnv[Int]
     val enum = Enumerator(1, 2, 3)
     val pubr = new EnumeratorPublisher(enum)
     pubr.subscribe(testEnv.Subscriber)
     testEnv.next shouldEqual OnSubscribe
-    testEnv.request(4)
-    testEnv.next shouldEqual RequestMore(4)
+    testEnv.request(size)
+    testEnv.next shouldEqual RequestMore(size)
     testEnv.next shouldEqual OnNext(1)
     testEnv.next shouldEqual OnNext(2)
     testEnv.next shouldEqual OnNext(3)
@@ -132,6 +135,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
   }
 
   it should "be done enumerating after being cancelled" in {
+    val size = 4
     val testEnv = new TestEnv[Int]
     val enumDone = Promise[Boolean]()
     val (broadcastEnum, channel) = Concurrent.broadcast[Int]
@@ -141,8 +145,8 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     val pubr = new EnumeratorPublisher(enum)
     pubr.subscribe(testEnv.Subscriber)
     testEnv.next shouldEqual OnSubscribe
-    testEnv.request(4)
-    testEnv.next shouldEqual RequestMore(4)
+    testEnv.request(size)
+    testEnv.next shouldEqual RequestMore(size)
     testEnv.isEmptyAfterDelay() shouldBe true
     testEnv.cancel()
     testEnv.next shouldEqual Cancel
@@ -152,13 +156,13 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     // Done iteratee caused by the cancel.
     try {
       channel.push(0)
-      Await.result(enumDone.future, Duration(5, SECONDS)) shouldBe true
+      Await.result(enumDone.future, 10.seconds) shouldBe true
     } catch {
-      case t: Throwable =>
+      case NonFatal(t) =>
         // If it didn't work the first time, try again, since cancel only guarantees that the publisher will
         // eventually finish
         channel.push(0)
-        Await.result(enumDone.future, Duration(5, SECONDS)) shouldBe true
+        Await.result(enumDone.future, 10.seconds) shouldBe true
     }
   }
 
@@ -212,6 +216,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     testEnv.next shouldEqual RequestMore(1)
     testEnv.next() match {
       case OnError(e) => e.getMessage shouldEqual exception.getMessage
+      case _ => fail("Expecting error to happen, got a different item in the publisher")
     }
     testEnv.isEmptyAfterDelay() shouldBe true
   }
