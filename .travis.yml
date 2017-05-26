@@ -1,12 +1,9 @@
 language: scala
-
 sudo: required
 dist: trusty
-
 scala:
 - 2.10.6
 - 2.11.8
-
 env:
   global:
   - GH_REF: github.com/outworkers/phantom.git
@@ -15,40 +12,32 @@ env:
   - secure: hbuc+lReAC/tzOfmF3M70L4Qfb48S6fI/gqchctnBD7TcZ6i13EOLhsjgPkFwTuINYU7Bvwd54yjy9simu1Se34+DaGtxKPJ8NZIeWk0ciCGyFxNiz0QVkE+/Cc0kZLD7hJXb0UpLsbMwpIQFlL6FHcB/2xGmMhgYvGHe7+64zM=
   - secure: ma0SLHvjzABno6RmwR/LSZQVC6rv6UcUt5kJAz1l4yJmASpdxkivoa8xWXahsjYP1O05IWuPFGHy/o0Vu7fxykgqN5gOg01wVQ0irjguWR04nNLUQTrOUgKPXR3w22USAbPpzxxqQrGc0ZS/2QFpiu9fvLNsBTkZcosA3oLpyiY=
   - secure: hihHuKLYf8YemlopCITLM1QvvgJH7ITTTsLRvLxKOGfzzBsOLd1m6LKpDOrmWdoKtcigyON+J3AP24DBd4zO95Y8r+Cwq8I4IVfZol3qwhJxvYMSB4Tyje3ssSUGqr/LBUBdLAe8H5pBeoeAECt/iSjDcYYRLKVexWRaJJBafXY=
-
+  - secure: "EyY0mxgk+rA0Vc0O/rb6pkcN1H5jXfPLkG6lJzH9PhljzLRc/5PltOJ3HMTCe1lgNQBa4kdVRqGAEkMcaFLWWLiCWJeN1lTTvBeFDBGtF9Abyc0Fr1Z0eOjiQofUwQoEyUagfsd5f8ypikruGubxvfh4bQndJdDpqMAi9z/u8ks="
 notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
   email:
   - dev@outworkers.com
-
 branches:
   only:
   - master
   - develop
-
 jdk:
 - oraclejdk7
 - oraclejdk8
-
 matrix:
   include:
   - scala: 2.12.1
     jdk: oraclejdk8
-
 addons:
   apt:
     packages:
-      - oracle-java8-installer
-
+    - oracle-java8-installer
 before_install: unset SBT_OPTS JVM_OPTS
-
-
 before_script:
-  - mkdir -p $HOME/.sbt/launchers/0.13.15/
-  - curl -L -o $HOME/.sbt/launchers/0.13.15/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.15/sbt-launch.jar
-  - travis_retry sbt "plz $TRAVIS_SCALA_VERSION update"
-
+- mkdir -p $HOME/.sbt/launchers/0.13.15/
+- curl -L -o $HOME/.sbt/launchers/0.13.15/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.15/sbt-launch.jar
+- travis_retry sbt "plz $TRAVIS_SCALA_VERSION update"
 install: ./build/install_cassandra.sh
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh
