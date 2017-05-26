@@ -15,14 +15,13 @@
  */
 package com.outworkers.phantom.jdk8.indexed
 
-import java.time.{LocalDate, LocalDateTime, OffsetDateTime, ZoneOffset, ZonedDateTime}
+import java.time.ZoneOffset
 
-import com.outworkers.phantom.jdk8.tables._
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.util.samplers.Sample
+import com.outworkers.phantom.jdk8.tables._
 import org.scalacheck.Gen
-import org.scalatest.{Assertion, FlatSpec, Matchers}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{Assertion, FlatSpec, Matchers}
 
 class IndexedRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
 
@@ -34,15 +33,6 @@ class IndexedRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenP
   }
 
 
-  def roundtrip[T](fn: T => T)(
-    implicit ev: Primitive[T],
-    sm: Sample[T]
-  ): Assertion = {
-    forAll(Sample.generator[T], protocolGen) { (sample, version) =>
-      ev.deserialize(ev.serialize(sample, version), version) shouldEqual fn(sample)
-    }
-  }
-
   def roundtrip[T](gen: Gen[T])(fn: T => T)(implicit ev: Primitive[T]): Assertion = {
     forAll(gen, protocolGen) { (sample, version) =>
       ev.deserialize(ev.serialize(sample, version), version) shouldEqual fn(sample)
@@ -50,18 +40,18 @@ class IndexedRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenP
   }
 
   it should "serialize and deserialize ZonedDateTime instances using indexed primitives" in {
-    roundtrip[ZonedDateTime](_.withZoneSameInstant(ZoneOffset.UTC))
+    roundtrip(zonedDateTimeGen)(_.withZoneSameInstant(ZoneOffset.UTC))
   }
 
   it should "serialize and deserialize OffsetDateTime instances using indexed primitives" in {
-    roundtrip[OffsetDateTime](_.withOffsetSameInstant(ZoneOffset.UTC))
+    roundtrip(offsetDateTimeGen)(_.withOffsetSameInstant(ZoneOffset.UTC))
   }
 
   it should "serialize and deserialize LocalDate instances using indexed primitives" in {
-    roundtrip[LocalDate](identity)
+    roundtrip(localDateGen)(identity)
   }
 
   it should "serialize and deserialize LocalDateTime instances using indexed primitives" in {
-    roundtrip[LocalDateTime](identity)
+    roundtrip(localDateTimeGen)(identity)
   }
 }

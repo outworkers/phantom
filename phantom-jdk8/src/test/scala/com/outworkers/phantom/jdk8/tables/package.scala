@@ -40,6 +40,12 @@ package object tables {
     zone <- zoneIdGen
   } yield ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt), zone)
 
+
+  val localDateGen: Gen[LocalDate] = zonedDateTimeGen.map(_.toLocalDate)
+
+  val localDateTimeGen: Gen[LocalDateTime] = zonedDateTimeGen.map(_.toLocalDateTime)
+
+
   val offsetDateTimeGen: Gen[OffsetDateTime] = for {
     offset <- Gen.choose(genLower, genHigher)
     time = Instant.now().toEpochMilli
