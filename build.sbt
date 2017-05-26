@@ -123,7 +123,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   gitTagName in ThisBuild := s"version=${scalaVersion.value}",
-  testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
   parallelExecution in ThisBuild := false
 ) ++ VersionManagement.newSettings ++
   GitProject.gitSettings ++
@@ -212,6 +211,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
@@ -266,6 +266,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
+    testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % Versions.typesafeConfig force(),

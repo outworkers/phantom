@@ -60,7 +60,7 @@ class MapColumn[
   implicit ev: Primitive[Map[K, V]],
   keyPrimitive: Primitive[K],
   val valuePrimitive: Primitive[V]
-) extends AbstractMapColumn[Owner, Record, K, V](table) with PrimitiveCollectionValue[V] {
+) extends AbstractMapColumn[Owner, Record, K, V](table) {
 
   override def keyAsCql(v: K): String = keyPrimitive.asCql(v)
 
