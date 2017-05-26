@@ -23,6 +23,7 @@ import play.api.libs.iteratee.{Concurrent, Enumerator, Input}
 import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 import scala.util.control.NonFatal
 
 class EnumeratorPublisherSpec extends FlatSpec with Matchers {
@@ -154,15 +155,17 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     // However it is necessary to have an event so that the publisher's
     // Cont is satisfied. We want to advance the iteratee to pick up the
     // Done iteratee caused by the cancel.
-    try {
+    Try {
       channel.push(0)
       Await.result(enumDone.future, 10.seconds) shouldBe true
-    } catch {
+    } recover {
       case NonFatal(t) =>
         // If it didn't work the first time, try again, since cancel only guarantees that the publisher will
         // eventually finish
         channel.push(0)
         Await.result(enumDone.future, 10.seconds) shouldBe true
+
+      case e @ _ => throw e
     }
   }
 
