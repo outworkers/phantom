@@ -33,7 +33,7 @@ object OperaPublisher extends Publisher[Opera] {
         val end = start + l.toInt
 
         if (start < OperaData.operas.size) {
-          OperaData.operas.slice(start, end).foreach(s.onNext)
+          OperaData.operas.slice(start, end).foreach(i => s.onNext(i))
         } else {
           s.onComplete()
         }
