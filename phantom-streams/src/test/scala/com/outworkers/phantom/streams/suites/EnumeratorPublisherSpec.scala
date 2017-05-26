@@ -99,7 +99,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
 
   it should "be done enumerating after EOF" in {
     val testEnv = new TestEnv[Int]
-    var enumDone = Promise[Boolean]()
+    val enumDone = Promise[Boolean]()
     val enum = (Enumerator(1, 2, 3) >>> Enumerator.eof).onDoneEnumerating {
       enumDone.success(true)
     }
@@ -203,7 +203,6 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
 
   it should "handle errors when enumerating" in {
     val testEnv = new TestEnv[Int]
-    val lotsOfItems = 0 until 25
     val exception = new Exception("x")
     val enum = Enumerator.flatten(Future.failed(exception))
     val pubr = new EnumeratorPublisher[Nothing](enum)
@@ -211,9 +210,9 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
     testEnv.next shouldEqual OnSubscribe
     testEnv.request(1)
     testEnv.next shouldEqual RequestMore(1)
-    /*testEnv.next shouldEqual beLike {
+    testEnv.next() match {
       case OnError(e) => e.getMessage shouldEqual exception.getMessage
-    }*/
+    }
     testEnv.isEmptyAfterDelay() shouldBe true
   }
 
