@@ -79,6 +79,8 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       c.abort(c.enclosingPosition, s"Unable to derive store type for ${printType(tpe)}")
     }
 
+    Console.println(showCode(tree))
+    
     if (showTrees) {
       c.echo(c.enclosingPosition, showCode(tree))
     }

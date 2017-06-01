@@ -439,7 +439,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
         """
       )
     } else {
-      c.echo(c.enclosingPosition, descriptor.showExtractor)
+      c.info(c.enclosingPosition, descriptor.showExtractor, force = false)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
