@@ -25,7 +25,7 @@ import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
-trait RootMacro {
+trait RootMacro extends HListHelpers {
   val c: whitebox.Context
   import c.universe._
 
@@ -45,10 +45,6 @@ trait RootMacro {
   protected[this] val keyspaceType = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
   protected[this] val nothingTpe: Type = typeOf[scala.Nothing]
 
-  def hlistTpe: Type = typeOf[HList]
-  def hnilTpe: Type = typeOf[HNil]
-  def hconsTpe: Type = typeOf[shapeless.::[_, _]].typeConstructor
-
   val knownList = List("Any", "Object", "RootConnector")
 
   val tableSym: Symbol = typeOf[CassandraTable[_, _]].typeSymbol
@@ -59,14 +55,6 @@ trait RootMacro {
   val notImplementedName: TermName = TermName("???")
   val notImplemented: Symbol = typeOf[Predef.type].member(notImplementedName)
   val fromRowName: TermName = TermName("fromRow")
-
-  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
-
-  def showCollection[
-    M[X] <: TraversableOnce[X]
-  ](traversable: M[Type], sep: String = ", "): String = {
-    traversable map printType mkString sep
-  }
 
   trait RootField {
     def name: TermName
@@ -288,41 +276,6 @@ trait RootMacro {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
-    def isVararg(tpe: Type): Boolean =
-      tpe.typeSymbol == c.universe.definitions.RepeatedParamClass
-
-    def devarargify(tpe: Type): Type =
-      tpe match {
-        case TypeRef(pre, _, args) if isVararg(tpe) =>
-          appliedType(typeOf[scala.collection.Seq[_]].typeConstructor, args)
-        case _ => tpe
-      }
-
-    def mkCompoundTpe(nil: Type, cons: Type, items: List[Type]): Type = {
-      items.foldRight(nil) {
-        case (tpe, acc) => appliedType(cons, List(devarargify(tpe), acc))
-      }
-    }
-
-    def hlistType(col: List[Type]): Type = {
-      Console.println("Should print the fucking store type")
-      scala.util.Try {
-        mkCompoundTpe(hnilTpe, hconsTpe, col)
-      } match {
-        case scala.util.Success(value) => {
-          Console.println(printType(value))
-          value
-        }
-        case scala.util.Failure(err) => {
-          Console.println(s"Crapping out on HList type ${err.getMessage}")
-          c.abort(
-            c.enclosingPosition,
-            s"${err.getMessage}, Unable to derive HList type for ${showCollection(col)}"
-          )
-        }
-      }
-    }
-
     def hlistNatRef(index: Int): Tree = {
       val indexTerm = TermName("_" + index.toString)
 
@@ -343,7 +296,6 @@ trait RootMacro {
         logger.debug(s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}")
 
         val tree = q"""$tableTerm.insert.values(..$finalDefinitions)"""
-        c.echo(c.enclosingPosition, showCode(tree))
         Some(tree)
       } else {
         None
@@ -363,7 +315,7 @@ trait RootMacro {
 
     def hListStoreType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
-        Some(hlistType(List(recordType)))
+        Some(mkHListType(List(recordType)))
       } else {
         logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
@@ -372,7 +324,7 @@ trait RootMacro {
           logger.debug(s"Created an HList type of ${cols.size} fields, consider reducing the column count.")
         }
 
-        Some(hlistType(cols.toList))
+        Some(mkHListType(cols.toList))
       }
     }
 
@@ -384,7 +336,7 @@ trait RootMacro {
      */
     def storeType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
-        Some(hlistType(recordType :: Nil))
+        Some(mkHListType(recordType :: Nil))
       } else {
         logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
@@ -393,9 +345,7 @@ trait RootMacro {
           logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
           None
         } else {
-          val hlist = hlistType(cols.toList)
-          c.echo(c.enclosingPosition, s"Inferred store type ${printType(hlist)}")
-          Some(hlist)
+          Some(mkHListType(cols.toList))
         }
       }
     }

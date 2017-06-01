@@ -45,28 +45,3 @@ abstract class AdvancedRecipesByTitle extends Table[AdvancedRecipesByTitle, (Str
     select.where(_.title eqs title).one()
   }
 }
-
-object AdvancedRecipesByTitle {
-  {
-    final class anon$macro$2 extends _root_.com.outworkers.phantom.macros.TableHelper[com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle, (String, java.util.UUID)] {
-      type Repr = shapeless.::[(String, java.util.UUID),shapeless.HNil];
-      def tableName: _root_.java.lang.String = com.outworkers.phantom.NamingStrategy.identityStrategy.inferName("advancedRecipesByTitle");
-      def store(table: com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle, input: shapeless.::[(String, java.util.UUID),shapeless.HNil])(implicit space: _root_.com.outworkers.phantom.connectors.KeySpace): _root_.com.outworkers.phantom.builder.query.InsertQuery.Default[com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle, (String, java.util.UUID)] = table.insert.values(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.asCql(input.apply(_root_.shapeless.Nat.apply(0))._1))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.asCql(input.apply(_root_.shapeless.Nat.apply(0))._2))));
-      def tableKey(table: com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle): _root_.java.lang.String = _root_.com.outworkers.phantom.builder.QueryBuilder.Create.primaryKey(_root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })](table.title).map(((x$2) => x$2.name)), _root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })]().map(((x$3) => x$3.name))).queryString;
-      def fromRow(table: com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle, row: _root_.com.outworkers.phantom.Row): (String, java.util.UUID) = new (String, java.util.UUID)(table.title.apply(row), table.id.apply(row));
-      def fields(table: com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle): scala.collection.immutable.Seq[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })] = scala.collection.immutable.Seq.apply[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })](table.instance.title, table.instance.id);
-      def debug: _root_.com.outworkers.phantom.macros.Debugger = new _root_.com.outworkers.phantom.macros.Debugger("record: (String, java.util.UUID)", _root_.scala.collection.immutable.Map.apply[String, String](_root_.scala.Tuple2("_1".+(":").+("String"), "_1".+(":").+("String")), _root_.scala.Tuple2("_2".+(":").+("java.util.UUID"), "_2".+(":").+("java.util.UUID"))), """rec._1 -> table.title | String
-rec._2 -> table.id | java.util.UUID""")
-    };
-    ((new anon$macro$2()): _root_.com.outworkers.phantom.macros.TableHelper.Aux[com.outworkers.phantom.example.advanced.AdvancedRecipesByTitle, (String, java.util.UUID), shapeless.::[(String, java.util.UUID),shapeless.HNil]])
-  }
-
-}

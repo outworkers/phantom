@@ -34,7 +34,7 @@ case class Debugger(
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
-  type Repr
+  type Repr <: HList
 
   def tableName: String
 
@@ -61,7 +61,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
+class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -476,8 +476,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
-
-    Console.println(showCode(tree))
 
     if (showTrees) {
       c.echo(c.enclosingPosition, showCode(tree))
