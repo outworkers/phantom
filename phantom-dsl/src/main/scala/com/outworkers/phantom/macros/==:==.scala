@@ -20,61 +20,35 @@ import shapeless.{HList, HNil}
 import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
 
-trait ==:==[Left <: HList, Right <: HList]
+/**
+  * A special implicitly materialized typeclass that compares HLists for equality.
+  * This also prints more useful information to the end user if the HLists don't match.
+  * However, it is required because the standard [[=:=]] type class in Scala
+  * is not able to see through an HList generated as an abstract type member of another
+  * implicitly materialized type class.
+  * @tparam LL The left [[shapeless.HList]] type.
+  * @tparam RR The right [[shapeless.HList]] type.
+  */
+trait ==:==[LL <: HList, RR <: HList]
 
 object ==:== {
 
-  def apply[Left <: HList, Right <: HList](implicit ev: Left ==:== Right): ==:==[Left, Right] = ev
+  def apply[LL <: HList, RR <: HList](implicit ev: LL ==:== RR): ==:==[LL, RR] = ev
 
   implicit def materialize[
-    Left <: HList, Right <: HList
-  ]: ==:==[Left, Right] = macro EqsMacro.materialize[Left, Right]
+    LL <: HList,
+    RR <: HList
+  ]: ==:==[LL, RR] = macro EqsMacro.materialize[LL, RR]
 }
 
 
 @macrocompat.bundle
-class EqsMacro(val c: whitebox.Context) {
+class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpers {
 
   import c.universe._
 
-  private[this] def hlistTpe = typeOf[HList]
-  private[this] def hnilTpe = typeOf[HNil]
-  private[this] def hconsTpe = typeOf[shapeless.::[_, _]].typeConstructor
-
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
 
-  def prefix(tpe: Type): Type = {
-    val global = c.universe.asInstanceOf[scala.tools.nsc.Global]
-    val gTpe = tpe.asInstanceOf[global.Type]
-    gTpe.prefix.asInstanceOf[Type]
-  }
-
-  def showCollection[
-    M[X] <: TraversableOnce[X]
-  ](traversable: M[Type], sep: String = ", "): String = {
-    traversable map printType mkString ("[", sep, "]")
-  }
-
-  def unpackHListTpe(tpe: Type): List[Type] = {
-    @tailrec
-    def unfold(u: Type, acc: List[Type]): List[Type] = {
-      val HNilTpe = hnilTpe
-      val HConsPre = prefix(hconsTpe)
-      val HConsSym = hconsTpe.typeSymbol
-      if(u <:< HNilTpe) {
-        acc
-      } else {
-        u baseType HConsSym match {
-          case TypeRef(pre, _, List(hd, tl)) if pre =:= HConsPre => unfold(tl, hd :: acc)
-          case _ => c.abort(c.enclosingPosition, s"$tpe is not an HList type")
-        }
-      }
-    }
-
-    unfold(tpe, List()).reverse
-  }
-
-  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
   def materialize[Left <: HList : c.WeakTypeTag, Right <: HList : c.WeakTypeTag]: Tree = {
 
@@ -82,12 +56,16 @@ class EqsMacro(val c: whitebox.Context) {
     val right = weakTypeOf[Right]
 
     if (left =:= right) {
-      q"""new $macroPkg.==:==[$left, $right] {}"""
+      val tree = q"""new $macroPkg.==:==[$left, $right] {}"""
+      if (showTrees) {
+        c.echo(c.enclosingPosition, showCode(tree))
+      }
+
+      tree
     } else {
       val leftUnpacked = unpackHListTpe(left)
       val rightUnpacked = unpackHListTpe(right)
       val debugString = s"Types ${showCollection(leftUnpacked)} did not equal ${showCollection(rightUnpacked)}"
-      Console.println(debugString)
       c.info(c.enclosingPosition, debugString, force = true)
       c.abort(c.enclosingPosition, debugString)
     }

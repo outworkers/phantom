@@ -80,7 +80,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     }
 
     Console.println(showCode(tree))
-    
+
     if (showTrees) {
       c.echo(c.enclosingPosition, showCode(tree))
     }

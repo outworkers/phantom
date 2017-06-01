@@ -17,6 +17,7 @@ package com.outworkers.phantom.macros
 
 import shapeless.{HList, HNil}
 
+import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
@@ -54,5 +55,31 @@ trait HListHelpers {
   }
 
   def mkHListType(col: List[Type]): Type = mkCompoundTpe(hnilTpe, hconsTpe, col)
+
+  def prefix(tpe: Type): Type = {
+    val global = c.universe.asInstanceOf[scala.tools.nsc.Global]
+    val gTpe = tpe.asInstanceOf[global.Type]
+    gTpe.prefix.asInstanceOf[Type]
+  }
+
+  def unpackHListTpe(tpe: Type): List[Type] = {
+    @tailrec
+    def unfold(u: Type, acc: List[Type]): List[Type] = {
+      val HNilTpe = hnilTpe
+      val HConsPre = prefix(hconsTpe)
+      val HConsSym = hconsTpe.typeSymbol
+      if(u <:< HNilTpe) {
+        acc
+      } else {
+        u baseType HConsSym match {
+          case TypeRef(pre, _, List(hd, tl)) if pre =:= HConsPre => unfold(tl, hd :: acc)
+          case _ => c.abort(c.enclosingPosition, s"$tpe is not an HList type")
+        }
+      }
+    }
+
+    unfold(tpe, List()).reverse
+  }
+
 
 }
