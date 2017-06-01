@@ -47,12 +47,6 @@ abstract class Users extends Table[Users, User] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
 
-  def save(user: User): Future[ResultSet] = {
-    store(user)
-      .consistencyLevel_=(ConsistencyLevel.ALL)
-      .future()
-  }
-
   def getById(id: UUID): Future[Option[User]] = {
     select.where(_.id eqs id).one()
   }

@@ -80,17 +80,24 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     val res = mkHListType(tpe :: Nil)
     val genTpe = genericTpe(tpe)
 
+    Console.println(s"Input record normal ${printType(tpe)}")
+    Console.println(s"Input record type ${printType(res)}")
+    Console.println(s"Store type ${printType(store)}")
+    Console.println(s"Generic type ${printType(generic)}")
+
     val tree = if (store =:= generic) {
+      Console.println("Singe generic implmentation using Shapeless")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
             type Repr = $generic
 
-            def to(source: $tpe)(implicit gen: $genTpe): $generic = gen to source
+            def to(source: $tpe)(implicit gen: $genTpe): gen.Repr = gen to source
 
-            def from(hl: $generic)(implicit gen: $genTpe): $tpe = gen from hl
+            def from(hl: $generic)(implicit gen: $genTpe): $tpe = (gen from hl.asInstanceOf[gen.Repr])
           }
       """
-    } else if (store =:= res) {
+    } else if (res =:= store) {
+      Console.println("Singe generic implmentation using duct type HLists")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
             type Repr = $res
