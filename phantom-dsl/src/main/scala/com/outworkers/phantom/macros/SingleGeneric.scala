@@ -19,6 +19,31 @@ import shapeless.Generic
 
 import scala.reflect.macros.whitebox
 
+/**
+  * A very dirty typeclass used to duct type single argument calls to the store varargs autotupled method.
+  * We currently expect the store method to auto-tuple argument types, which leads to problems when a single
+  * tuple argument is passed. In order to fix this, this type class will effectively pick a matching type
+  * between our single implementation of [[SingleGeneric]] and the traditional [[shapeless.Generic]].
+  *
+  * Unlike the traditional implementation, a single tuple argument must not be expanded into a [[shapeless.HList]] of its
+  * enclosing types, but rather an [[shapeless.HList]] that merely wraps around the source type.
+  *
+  * Example: {{{
+  *   val singleGeneric = SingleGeneric[(String, Int)].Repr
+  *   (String, Int) :: HNil
+  *
+  *   val shapelessGeneric = Generic[(String, Int)]
+  *   String :: Int :: HNil
+  * }}}
+  *
+  * Unlike the traditional implementation of [[Generic]] we don't always need to destructure tuples, but because
+  * we cannot effectively distinguish, we are forced to duct-type and pick the appropiate implementation
+  * based on which variation between [[GenR]] and [[Store]] matches the input type.
+  *
+  * @tparam T The source type of the record that is passed to the store method as an auto-tupling argument.
+  * @tparam Store The HList input type inferred by [[TableHelper]].
+  * @tparam GenR The generic HList type inferred by [[shapeless.Generic]].
+  */
 trait SingleGeneric[T, Store, GenR] extends Serializable {
   /** The generic representation type for {T}, which will be composed of {Coproduct} and {HList} types  */
   type Repr
