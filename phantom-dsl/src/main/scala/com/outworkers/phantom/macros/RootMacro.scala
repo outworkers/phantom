@@ -18,6 +18,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 import com.outworkers.phantom.column.AbstractColumn
 import org.slf4j.LoggerFactory
+import shapeless.{HList, HNil}
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
@@ -42,8 +43,11 @@ trait RootMacro {
   protected[this] val tableTerm = TermName("table")
   protected[this] val inputTerm = TermName("input")
   protected[this] val keyspaceType = tq"_root_.com.outworkers.phantom.connectors.KeySpace"
-  private[this] val hnilTpe: Tree = tq"_root_.shapeless.HNil"
-  protected[this] val nothingTpe: Tree = tq"_root_.scala.Nothing"
+  protected[this] val nothingTpe: Type = typeOf[scala.Nothing]
+
+  def hlistTpe: Type = typeOf[HList]
+  def hnilTpe: Type = typeOf[HNil]
+  def hconsTpe: Type = typeOf[shapeless.::[_, _]].typeConstructor
 
   val knownList = List("Any", "Object", "RootConnector")
 
@@ -254,21 +258,21 @@ trait RootMacro {
       *
       * @return An optional [[TermName]] of the form [[TermName]]
       */
-    val referenceTerm: Option[TermName] = {
+    val referenceTerm: Option[Tree] = {
       if (unmatchedColumns.isEmpty) {
-        None
+        Some(hlistNatRef(0))
       } else {
-        Some(tupleTerm(unmatchedColumns.size))
+        Some(hlistNatRef(unmatchedColumns.size))
       }
     }
 
-    protected[this] def unmatchedValue(field: Column.Field, ref: TermName) = {
-      q"$enginePkg.CQLQuery($tableTerm.${field.name}.asCql($inputTerm.$ref))"
+    protected[this] def unmatchedValue(field: Column.Field, ref: Tree) = {
+      q"$enginePkg.CQLQuery($tableTerm.${field.name}.asCql($ref))"
     }
 
-    protected[this] def valueTerm(field: MatchedField, refTerm: Option[TermName]) = {
+    protected[this] def valueTerm(field: MatchedField, refTerm: Option[Tree]) = {
       refTerm match {
-        case Some(ref) => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($inputTerm.$ref.${field.left.name}))"
+        case Some(ref) => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($ref.${field.left.name}))"
         case None => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($inputTerm.${field.left.name}))"
       }
     }
@@ -284,14 +288,51 @@ trait RootMacro {
       q"$enginePkg.CQLQuery($tableTerm.$fieldName.name)"
     }
 
-    def hlistType[M[X] <: Traversable[X]](col: M[Type]): Tree = {
-      (hnilTpe /: col)((acc, tp) => tq"$tp :: $acc")
+    def isVararg(tpe: Type): Boolean =
+      tpe.typeSymbol == c.universe.definitions.RepeatedParamClass
+
+    def devarargify(tpe: Type): Type =
+      tpe match {
+        case TypeRef(pre, _, args) if isVararg(tpe) =>
+          appliedType(typeOf[scala.collection.Seq[_]].typeConstructor, args)
+        case _ => tpe
+      }
+
+    def mkCompoundTpe(nil: Type, cons: Type, items: List[Type]): Type = {
+      items.foldRight(nil) {
+        case (tpe, acc) => appliedType(cons, List(devarargify(tpe), acc))
+      }
+    }
+
+    def hlistType(col: List[Type]): Type = {
+      Console.println("Should print the fucking store type")
+      scala.util.Try {
+        mkCompoundTpe(hnilTpe, hconsTpe, col)
+      } match {
+        case scala.util.Success(value) => {
+          Console.println(printType(value))
+          value
+        }
+        case scala.util.Failure(err) => {
+          Console.println(s"Crapping out on HList type ${err.getMessage}")
+          c.abort(
+            c.enclosingPosition,
+            s"${err.getMessage}, Unable to derive HList type for ${showCollection(col)}"
+          )
+        }
+      }
+    }
+
+    def hlistNatRef(index: Int): Tree = {
+      val indexTerm = TermName(index.toString)
+
+      q"$inputTerm.apply(_root_.shapeless.Nat.apply($indexTerm))"
     }
 
     def storeMethod: Option[Tree] = storeType flatMap { sTpe =>
       if (unmatched.isEmpty) {
         val unmatchedColumnInserts = unmatchedColumns.zipWithIndex map { case (field, index) =>
-          q"${tableField(field.name)} -> ${unmatchedValue(field, tupleTerm(index))}"
+          q"${tableField(field.name)} -> ${unmatchedValue(field, hlistNatRef(index))}"
         }
 
         val insertions = matched map { field =>
@@ -299,8 +340,11 @@ trait RootMacro {
         }
 
         val finalDefinitions = unmatchedColumnInserts ++ insertions
-        logger.info(s"Inferred store input type: ${showCode(sTpe)} for ${printType(tableTpe)}")
-        Some(q"""$tableTerm.insert.values(..$finalDefinitions)""")
+        logger.debug(s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}")
+
+        val tree = q"""$tableTerm.insert.values(..$finalDefinitions)"""
+        c.echo(c.enclosingPosition, showCode(tree))
+        Some(tree)
       } else {
         None
       }
@@ -317,7 +361,7 @@ trait RootMacro {
       }
     }
 
-    def hListStoreType: Option[Tree] = {
+    def hListStoreType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
         Some(hlistType(List(recordType)))
       } else {
@@ -325,11 +369,10 @@ trait RootMacro {
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
         if (cols.size > maxTupleSize) {
-          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
-          None
-        } else {
-          Some(hlistType(cols))
+          logger.debug(s"Created an HList type of ${cols.size} fields, consider reducing the column count.")
         }
+
+        Some(hlistType(cols.toList))
       }
     }
 
@@ -339,9 +382,9 @@ trait RootMacro {
      * Automatically tuples the types found in a table as described in the
      * documentation.
      */
-    def storeType: Option[Tree] = {
+    def storeType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
-        Some(tq"$recordType")
+        Some(hlistType(recordType :: Nil))
       } else {
         logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
@@ -350,9 +393,9 @@ trait RootMacro {
           logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
           None
         } else {
-          val hlist = hlistType(cols)
-          logger.debug(s"Inferred store type ${showCode(hlist)}")
-          Some(tq"(..$cols)")
+          val hlist = hlistType(cols.toList)
+          c.echo(c.enclosingPosition, s"Inferred store type ${printType(hlist)}")
+          Some(hlist)
         }
       }
     }
@@ -366,7 +409,7 @@ trait RootMacro {
     def empty(table: Type, rec: Type, members: Seq[Column.Field]): TableDescriptor = {
       new TableDescriptor(table, rec, members) {
         override def storeMethod: Option[c.universe.Tree] = None
-        override def storeType: Option[Tree] = None
+        override def storeType: Option[Type] = None
         override def fromRow: Option[Tree] = None
       }
     }

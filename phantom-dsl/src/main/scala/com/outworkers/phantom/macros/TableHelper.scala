@@ -444,7 +444,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
+    val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
     val tree = q"""
@@ -476,6 +476,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
+
+    Console.println(showCode(tree))
 
     if (showTrees) {
       c.echo(c.enclosingPosition, showCode(tree))
