@@ -34,10 +34,9 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
  * @tparam T Type of this table.
  * @tparam R Type of record.
  */
-abstract class CassandraTable[T <: CassandraTable[T, R], R](
-  implicit val helper: TableHelper[T, R]
-) extends SelectTable[T, R] { self =>
+abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
 
+  implicit val helper: TableHelper[T, R] = implicitly[TableHelper[T, R]]
 
   @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
   class ListColumn[RR](t: CassandraTable[T, R])(
@@ -147,12 +146,14 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1, HL <: HList](input: V1)(
+  def store[V1, Repr <: HList, HL <: HList](input: V1)(
     implicit keySpace: KeySpace,
+    thl: TableHelper.Aux[T, R, Repr],
     gen: Generic.Aux[V1, HL],
-    ev: HL =:= helper.Repr
-  ): InsertQuery.Default[T, R] = helper.store(instance, gen to input)
+    ev: HL =:= Repr
+  ): InsertQuery.Default[T, R] = thl.store(instance, gen to input)
 
+  /*
   def storeRecord[V1, HL <: HList](input: V1)(
     implicit keySpace: KeySpace,
     session: Session,
@@ -160,6 +161,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     gen: Generic.Aux[V1, HL],
     ev: HL =:= helper.Repr
   ): Future[ResultSet] = store(input).future()
+  */
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
