@@ -24,9 +24,10 @@ import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.TableHelper
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.{Generic, HList}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 /**
  * Main representation of a Cassandra table.
@@ -146,9 +147,19 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1](input: V1)(
-    implicit keySpace: KeySpace
-  ): InsertQuery.Default[T, R] = helper.store(instance, input.asInstanceOf[helper.Repr])
+  def store[V1, HL <: HList](input: V1)(
+    implicit keySpace: KeySpace,
+    gen: Generic.Aux[V1, HL],
+    ev: HL =:= helper.Repr
+  ): InsertQuery.Default[T, R] = helper.store(instance, gen to input)
+
+  def storeRecord[V1, HL <: HList](input: V1)(
+    implicit keySpace: KeySpace,
+    session: Session,
+    ex: ExecutionContextExecutor,
+    gen: Generic.Aux[V1, HL],
+    ev: HL =:= helper.Repr
+  ): Future[ResultSet] = store(input).future()
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

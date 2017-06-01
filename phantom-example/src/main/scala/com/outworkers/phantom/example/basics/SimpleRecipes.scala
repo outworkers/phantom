@@ -123,19 +123,27 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 
 
 object Recipes {
-    final class anon$macro$5 extends _root_.com.outworkers.phantom.macros.TableHelper[com.outworkers.phantom.example.basics.Recipes, com.outworkers.phantom.example.basics.Recipe] {
-      type Repr = shapeless.::[com.outworkers.phantom.example.basics.Recipe,shapeless.HNil];
-      def tableName: _root_.java.lang.String = com.outworkers.phantom.NamingStrategy.identityStrategy.inferName("recipes");
-      def store(table: com.outworkers.phantom.example.basics.Recipes, input: shapeless.::[com.outworkers.phantom.example.basics.Recipe,shapeless.HNil])(implicit space: _root_.com.outworkers.phantom.connectors.KeySpace): _root_.com.outworkers.phantom.builder.query.InsertQuery.Default[com.outworkers.phantom.example.basics.Recipes, com.outworkers.phantom.example.basics.Recipe] = table.insert.values(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.asCql(input.apply(_root_.shapeless.Nat.apply(0)).id))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.name.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.name.asCql(input.apply(_root_.shapeless.Nat.apply(0)).name))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.asCql(input.apply(_root_.shapeless.Nat.apply(0)).title))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.author.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.author.asCql(input.apply(_root_.shapeless.Nat.apply(0)).author))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.asCql(input.apply(_root_.shapeless.Nat.apply(0)).description))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.asCql(input.apply(_root_.shapeless.Nat.apply(0)).ingredients))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.asCql(input.apply(_root_.shapeless.Nat.apply(0)).props))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.timestamp.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.timestamp.asCql(input.apply(_root_.shapeless.Nat.apply(0)).timestamp))));
-      def tableKey(table: com.outworkers.phantom.example.basics.Recipes): _root_.java.lang.String = _root_.com.outworkers.phantom.builder.QueryBuilder.Create.primaryKey(_root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })](table.id).map(((x$12) => x$12.name)), _root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })]().map(((x$13) => x$13.name))).queryString;
-      def fromRow(table: com.outworkers.phantom.example.basics.Recipes, row: _root_.com.outworkers.phantom.Row): com.outworkers.phantom.example.basics.Recipe = new com.outworkers.phantom.example.basics.Recipe(table.id.apply(row), table.name.apply(row), table.title.apply(row), table.author.apply(row), table.description.apply(row), table.ingredients.apply(row), table.props.apply(row), table.timestamp.apply(row));
-      def fields(table: com.outworkers.phantom.example.basics.Recipes): scala.collection.immutable.Seq[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })] = scala.collection.immutable.Seq.apply[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
-        type _$1
-      })](table.instance.id, table.instance.name, table.instance.title, table.instance.author, table.instance.description, table.instance.ingredients, table.instance.props, table.instance.timestamp);
+
+  final class anon$macro$5 extends _root_.com.outworkers.phantom.macros.TableHelper[com.outworkers.phantom.example.basics.Recipes, com.outworkers.phantom.example.basics.Recipe] {
+    override type Repr = shapeless.::[com.outworkers.phantom.example.basics.Recipe, shapeless.HNil]
+
+    def tableName: _root_.java.lang.String = com.outworkers.phantom.NamingStrategy.identityStrategy.inferName("recipes")
+
+    def store(table: com.outworkers.phantom.example.basics.Recipes, input: shapeless.::[com.outworkers.phantom.example.basics.Recipe, shapeless.HNil])(implicit space: _root_.com.outworkers.phantom.connectors.KeySpace): _root_.com.outworkers.phantom.builder.query.InsertQuery.Default[com.outworkers.phantom.example.basics.Recipes, com.outworkers.phantom.example.basics.Recipe] = table.insert.values(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.id.asCql(input.apply(_root_.shapeless.Nat._0).id))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.name.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.name.asCql(input.apply(_root_.shapeless.Nat.apply(0)).name))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.title.asCql(input.apply(_root_.shapeless.Nat.apply(0)).title))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.author.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.author.asCql(input.apply(_root_.shapeless.Nat.apply(0)).author))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.asCql(input.apply(_root_.shapeless.Nat.apply(0)).description))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.asCql(input.apply(_root_.shapeless.Nat.apply(0)).ingredients))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.asCql(input.apply(_root_.shapeless.Nat.apply(0)).props))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.timestamp.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.timestamp.asCql(input.apply(_root_.shapeless.Nat._0).timestamp))));
+
+    def tableKey(table: com.outworkers.phantom.example.basics.Recipes): _root_.java.lang.String = _root_.com.outworkers.phantom.builder.QueryBuilder.Create.primaryKey(_root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
+      type _$1
+    })](table.id).map(((x$12) => x$12.name)), _root_.scala.collection.immutable.List[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
+      type _$1
+    })]().map(((x$13) => x$13.name))).queryString
+
+    def fromRow(table: com.outworkers.phantom.example.basics.Recipes, row: _root_.com.outworkers.phantom.Row): com.outworkers.phantom.example.basics.Recipe = new com.outworkers.phantom.example.basics.Recipe(table.id.apply(row), table.name.apply(row), table.title.apply(row), table.author.apply(row), table.description.apply(row), table.ingredients.apply(row), table.props.apply(row), table.timestamp.apply(row));
+
+    def fields(table: com.outworkers.phantom.example.basics.Recipes): scala.collection.immutable.Seq[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
+      type _$1
+    })] = scala.collection.immutable.Seq.apply[(_root_.com.outworkers.phantom.column.AbstractColumn[_$1] forSome {
+      type _$1
+    })](table.instance.id, table.instance.name, table.instance.title, table.instance.author, table.instance.description, table.instance.ingredients, table.instance.props, table.instance.timestamp);
+  }
+
 }

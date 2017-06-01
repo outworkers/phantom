@@ -324,9 +324,9 @@ trait RootMacro {
     }
 
     def hlistNatRef(index: Int): Tree = {
-      val indexTerm = TermName(index.toString)
+      val indexTerm = TermName("_" + index.toString)
 
-      q"$inputTerm.apply(_root_.shapeless.Nat.apply($indexTerm))"
+      q"$inputTerm.apply(_root_.shapeless.Nat.$indexTerm)"
     }
 
     def storeMethod: Option[Tree] = storeType flatMap { sTpe =>
