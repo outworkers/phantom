@@ -17,10 +17,8 @@ package com.outworkers.phantom.builder.query.prepared
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.macros.SingleGeneric
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
-import shapeless.{ HNil, :: }
 
 class PreparedSelectQueryTest extends PhantomSuite {
 
