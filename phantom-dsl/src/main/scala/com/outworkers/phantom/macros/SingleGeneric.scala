@@ -80,24 +80,22 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     val res = mkHListType(tpe :: Nil)
     val genTpe = genericTpe(tpe)
 
-    Console.println(s"Input record normal ${printType(tpe)}")
-    Console.println(s"Input record type ${printType(res)}")
-    Console.println(s"Store type ${printType(store)}")
-    Console.println(s"Generic type ${printType(generic)}")
-
     val tree = if (store =:= generic) {
-      Console.println("Singe generic implmentation using Shapeless")
+      info(s"Singe generic implementation using Shapeless for ${printType(tpe)}")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
             type Repr = $generic
 
-            def to(source: $tpe)(implicit gen: $genTpe): gen.Repr = gen to source
+            def to(source: $tpe)(implicit gen: ${genericTpe(tpe)}): $generic = {
+              (gen to source).asInstanceOf[$generic]
+            }
 
             def from(hl: $generic)(implicit gen: $genTpe): $tpe = (gen from hl.asInstanceOf[gen.Repr])
           }
       """
     } else if (res =:= store) {
-      Console.println("Singe generic implmentation using duct type HLists")
+      info(s"Single generic implementation using duct type collided HLists for ${printType(tpe)}")
+
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
             type Repr = $res
@@ -111,11 +109,10 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       c.abort(c.enclosingPosition, s"Unable to derive store type for ${printType(tpe)}")
     }
 
-    Console.println(showCode(tree))
-
     if (showTrees) {
-      c.echo(c.enclosingPosition, showCode(tree))
+      echo(showCode(tree))
     }
+
     tree
   }
 
@@ -123,9 +120,10 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     val tpe = weakTypeOf[T]
     val store = weakTypeOf[Store]
     val generic = weakTypeOf[HL]
+    mkGeneric(tpe, store, generic)
 
-    memoize[(Type, Type, Type), Tree](
+    /*memoize[(Type, Type, Type), Tree](
       WhiteboxToolbelt.singeGenericCache
-    )(Tuple3(tpe, store,generic), { case (t, s, g) => mkGeneric(t, s, g)})
+    )(Tuple3(tpe, store, generic), { case (t, s, g) => mkGeneric(t, s, g)})*/
   }
 }

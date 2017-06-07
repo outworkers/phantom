@@ -43,6 +43,12 @@ private[phantom] trait WhiteboxToolbelt {
 
   import c.universe._
 
+  def info(msg: String, force: Boolean = false): Unit = c.info(c.enclosingPosition, msg, force)
+
+  def echo(msg: String): Unit = c.echo(c.enclosingPosition, msg)
+
+  def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
+
   lazy val showAborts =
     !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty
 

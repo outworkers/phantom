@@ -34,9 +34,9 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
  * @tparam T Type of this table.
  * @tparam R Type of record.
  */
-abstract class CassandraTable[T <: CassandraTable[T, R], R] extends SelectTable[T, R] { self =>
-
-  implicit val helper: TableHelper[T, R] = implicitly[TableHelper[T, R]]
+abstract class CassandraTable[T <: CassandraTable[T, R], R](
+  implicit val helper: TableHelper[T, R]
+) extends SelectTable[T, R] { self =>
 
   @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
   class ListColumn[RR](t: CassandraTable[T, R])(

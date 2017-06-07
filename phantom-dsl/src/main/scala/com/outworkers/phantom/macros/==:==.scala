@@ -58,7 +58,7 @@ class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpe
     if (left =:= right) {
       val tree = q"""new $macroPkg.==:==[$left, $right] {}"""
       if (showTrees) {
-        c.echo(c.enclosingPosition, showCode(tree))
+        echo(showCode(tree))
       }
 
       tree
@@ -66,8 +66,9 @@ class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpe
       val leftUnpacked = unpackHListTpe(left)
       val rightUnpacked = unpackHListTpe(right)
       val debugString = s"Types ${showCollection(leftUnpacked)} did not equal ${showCollection(rightUnpacked)}"
-      c.info(c.enclosingPosition, debugString, force = true)
-      c.abort(c.enclosingPosition, debugString)
+      echo(debugString)
+
+      abort( debugString)
     }
   }
 

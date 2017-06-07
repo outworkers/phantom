@@ -50,7 +50,7 @@ trait HListHelpers {
 
   def mkCompoundTpe(nil: Type, cons: Type, items: List[Type]): Type = {
     items.foldRight(nil) {
-      case (tpe, acc) => appliedType(cons, List(devarargify(tpe), acc))
+      case (tpe, acc) => appliedType(cons, List(devarargify(tpe.dealias), acc))
     }
   }
 
@@ -80,6 +80,4 @@ trait HListHelpers {
 
     unfold(tpe, List()).reverse
   }
-
-
 }

@@ -145,9 +145,9 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
       val datastax = codec.serialize(javaCol, version)
 
       if (!java.util.Arrays.equals(phantom.array(), datastax.array())) {
-        Console.println("Comparison between phantom and datastax")
-        Console.println(phantom.array().mkString(", "))
-        Console.println(datastax.array().mkString(", "))
+        info("Comparison between phantom and datastax")
+        info(phantom.array().mkString(", "))
+        info(datastax.array().mkString(", "))
       }
 
       phantom shouldEqual datastax
