@@ -70,4 +70,16 @@ class PreparedDeleteQueryTest extends PhantomSuite {
       afterDelete shouldBe empty
     }
   }
+
+  it should "not compile invalid arguments sent to a store method" in {
+    val (author, cat, article) = gen[(UUID, UUID, Article)]
+
+    "database.articlesByAuthor.store(author, cat, article, cat)" shouldNot compile
+  }
+
+  it should "not compile invalid argument orders sent to store method" in {
+    val (author, cat, article) = gen[(UUID, UUID, Article)]
+
+    "database.articlesByAuthor.store(article, cat, author)" shouldNot compile
+  }
 }

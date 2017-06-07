@@ -45,6 +45,8 @@ private[phantom] trait WhiteboxToolbelt {
 
   def info(msg: String, force: Boolean = false): Unit = c.info(c.enclosingPosition, msg, force)
 
+  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
+
   def echo(msg: String): Unit = c.echo(c.enclosingPosition, msg)
 
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)

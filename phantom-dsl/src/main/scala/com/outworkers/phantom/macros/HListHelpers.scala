@@ -62,6 +62,8 @@ trait HListHelpers {
     gTpe.prefix.asInstanceOf[Type]
   }
 
+  def showHList(tpe: Type): String = showCollection(unpackHListTpe(tpe))
+
   def unpackHListTpe(tpe: Type): List[Type] = {
     @tailrec
     def unfold(u: Type, acc: List[Type]): List[Type] = {

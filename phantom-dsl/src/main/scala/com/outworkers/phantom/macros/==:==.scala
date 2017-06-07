@@ -50,11 +50,7 @@ class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpe
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
 
 
-  def materialize[Left <: HList : c.WeakTypeTag, Right <: HList : c.WeakTypeTag]: Tree = {
-
-    val left = weakTypeOf[Left]
-    val right = weakTypeOf[Right]
-
+  def mkEqs(left: Type, right: Type): Tree = {
     if (left =:= right) {
       val tree = q"""new $macroPkg.==:==[$left, $right] {}"""
       if (showTrees) {
@@ -63,13 +59,19 @@ class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpe
 
       tree
     } else {
-      val leftUnpacked = unpackHListTpe(left)
-      val rightUnpacked = unpackHListTpe(right)
-      val debugString = s"Types ${showCollection(leftUnpacked)} did not equal ${showCollection(rightUnpacked)}"
-      echo(debugString)
-
+      val debugString = s"Types ${showHList(left)} did not equal ${showHList(right)}"
+      error(debugString)
       abort( debugString)
     }
+  }
+
+  def materialize[LL <: HList : c.WeakTypeTag, RR <: HList : c.WeakTypeTag]: Tree = {
+    val left = weakTypeOf[LL]
+    val right = weakTypeOf[RR]
+
+    memoize[(Type, Type), Tree](
+      WhiteboxToolbelt.specialEqsCache
+    )(Tuple2(left, right), { case (t, s) => mkEqs(t, s)})
   }
 
 

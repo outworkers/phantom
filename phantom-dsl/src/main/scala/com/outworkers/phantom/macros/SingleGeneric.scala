@@ -94,7 +94,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else if (res =:= store) {
-      info(s"Single generic implementation using duct type collided HLists for ${printType(tpe)}")
+      info(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
 
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
@@ -106,7 +106,9 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else {
-      c.abort(c.enclosingPosition, s"Unable to derive store type for ${printType(tpe)}")
+      val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
+      error(debugString)
+      abort(debugString)
     }
 
     if (showTrees) {
@@ -120,10 +122,9 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     val tpe = weakTypeOf[T]
     val store = weakTypeOf[Store]
     val generic = weakTypeOf[HL]
-    mkGeneric(tpe, store, generic)
 
-    /*memoize[(Type, Type, Type), Tree](
+    memoize[(Type, Type, Type), Tree](
       WhiteboxToolbelt.singeGenericCache
-    )(Tuple3(tpe, store, generic), { case (t, s, g) => mkGeneric(t, s, g)})*/
+    )(Tuple3(tpe, store, generic), { case (t, s, g) => mkGeneric(t, s, g)})
   }
 }
