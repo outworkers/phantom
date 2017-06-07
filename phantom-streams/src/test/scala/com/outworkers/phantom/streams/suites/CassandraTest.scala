@@ -35,7 +35,7 @@ trait TestImplicits {
     override def request(ct: OperaTable, t: Opera)(
       implicit session: Session,
       keySpace: KeySpace
-    ): ExecutableStatement with Batchable = ct.store(t)
+    ): ExecutableStatement with Batchable = ct.insert.value(_.name, t.name)
   }
 
 }
@@ -64,7 +64,7 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
   override def afterAll(): Unit = {
     super.afterAll()
     // Note we are intentionally using the deprecated API here to make sure we do not break Scala 2.10
-    // compatibility. Please do not yet use [[system.terminate()]].
+    // compatibility. Please do not use [[system.terminate()]] just yet.
     system.shutdown()
   }
 
