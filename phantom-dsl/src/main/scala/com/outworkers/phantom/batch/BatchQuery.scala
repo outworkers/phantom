@@ -31,11 +31,10 @@ object BatchType {
   case object Logged extends BatchType(CQLSyntax.Batch.Logged)
   case object Unlogged extends BatchType(CQLSyntax.Batch.Unlogged)
   case object Counter extends BatchType(CQLSyntax.Batch.Counter)
-
 }
 
 sealed class BatchQuery[Status <: ConsistencyBound](
-  val iterator: Iterator[_ <: Statement],
+  val iterator: Iterator[Batchable with ExecutableStatement],
   batchType: BatchType,
   usingPart: UsingPart = UsingPart.empty,
   added: Boolean = false,
@@ -45,7 +44,11 @@ sealed class BatchQuery[Status <: ConsistencyBound](
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(makeBatch())
+  ): ScalaFuture[ResultSet] = {
+    val (queries, batch) = makeBatch()
+
+    statementToPromise(batch, s"BEGIN BATCH $batchType (${queries.mkString("\n")}) APPLY BATCH;").future
+  }
 
   def initBatch(): BatchStatement = batchType match {
     case BatchType.Logged => new BatchStatement()
@@ -53,23 +56,28 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
   }
 
-  def makeBatch()(implicit session: Session): Statement = {
+  def makeBatch()(implicit session: Session): (List[String], Statement) = {
     val batch = initBatch()
 
+    val builder = List.newBuilder[String]
+
     for (st <- iterator) {
-      batch.add(st)
+      builder += st.queryString
+      batch.add(st.statement())
     }
 
     options.consistencyLevel match {
-      case Some(level) => batch.setConsistencyLevel(level)
-      case None => batch
+      case Some(level) => builder.result() -> batch.setConsistencyLevel(level)
+      case None => builder.result() -> batch
     }
-
   }
 
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  final def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): BatchQuery[Specified] = {
+  final def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified,
+    session: Session
+  ): BatchQuery[Specified] = {
     if (session.protocolConsistency) {
       new BatchQuery[Specified](
         iterator,
@@ -91,7 +99,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   def add(query: Batchable with ExecutableStatement)(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ Iterator(query.statement()),
+      iterator ++ Iterator(query),
       batchType,
       usingPart,
       added,
@@ -101,7 +109,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   def add(queries: Batchable with ExecutableStatement*)(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ queries.map(_.statement()).iterator,
+      iterator ++ queries.iterator,
       batchType,
       usingPart,
       added,
@@ -111,7 +119,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
 
   def add(queries: Iterator[Batchable with ExecutableStatement])(implicit session: Session): BatchQuery[Status] = {
     new BatchQuery(
-      iterator ++ queries.map(_.statement()),
+      iterator ++ queries,
       batchType,
       usingPart,
       added,

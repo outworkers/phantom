@@ -28,10 +28,15 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    scalaQueryStringToPromise(st).future
+    statementToPromise(st).future
   }
 
-  protected[this] def scalaQueryStringToPromise(st: Statement)(
+  protected[this] def statementToPromise(st: Statement, queryString: String): ScalaPromise[ResultSet] = {
+    Manager.logger.debug(s"Executing query: $queryString")
+    statementToPromise(st)
+  }
+
+  protected[this] def statementToPromise(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {
