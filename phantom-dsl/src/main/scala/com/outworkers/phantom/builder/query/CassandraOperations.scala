@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{PreparedStatement, Session, Statement, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.outworkers.phantom.batch.BatchWithQuery
 import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
@@ -28,15 +29,18 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    statementToPromise(st).future
+    batchToPromise(st).future
   }
 
-  protected[this] def statementToPromise(st: Statement, queryString: String): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $queryString")
-    statementToPromise(st)
+  protected[this] def batchToPromise(batch: BatchWithQuery)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): ScalaPromise[ResultSet] = {
+    Manager.logger.debug(s"Executing query: ${batch.debugString}")
+    batchToPromise(batch)
   }
 
-  protected[this] def statementToPromise(st: Statement)(
+  protected[this] def batchToPromise(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {

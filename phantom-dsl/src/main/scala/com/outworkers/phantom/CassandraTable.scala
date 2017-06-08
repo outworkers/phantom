@@ -146,7 +146,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
+  def store[V1, Repr <: HList, HL, Out <: HList](input: V1)(
     implicit keySpace: KeySpace,
     thl: TableHelper.Aux[T, R, Repr],
     gen: Generic.Aux[V1, HL],

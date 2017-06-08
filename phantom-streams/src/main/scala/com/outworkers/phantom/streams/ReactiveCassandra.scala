@@ -175,7 +175,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
 
   private[this] def executeStatements(): Unit = {
     val query = new BatchQuery(
-      buffer.map(r => builder.request(table, r).statement()).toIterator,
+      buffer.map(builder.request(table, _)).iterator,
       batchType,
       UsingPart.empty,
       false,

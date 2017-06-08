@@ -15,14 +15,11 @@
  */
 package com.outworkers.phantom
 
-import java.util.concurrent.Executor
 import java.util.{List => JavaList}
 
 import com.datastax.driver.core.{PagingState, Session, SimpleStatement, Statement, Duration => DatastaxDuration, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.twitter.concurrent.Spool
-import com.twitter.util.{Duration => TwitterDuration, _}
-import com.outworkers.phantom.batch.BatchQuery
+import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
@@ -30,6 +27,8 @@ import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQue
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.database.ExecutableCreateStatementsList
+import com.twitter.concurrent.Spool
+import com.twitter.util.{Duration => TwitterDuration, _}
 import org.joda.time.Seconds
 import shapeless.HList
 
@@ -40,7 +39,15 @@ package object finagle extends SessionAugmenterImplicits {
 
   protected[this] type Modifier = Statement => Statement
 
-  protected[this] def twitterQueryStringExecuteToFuture(str: Statement)(
+  protected[this] def batchToPromise(batch: BatchWithQuery)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): Future[ResultSet] = {
+    Manager.logger.debug(s"Executing query: ${batch.debugString}")
+    batchToPromise(batch.statement)
+  }
+
+  protected[this] def batchToPromise(str: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Future[ResultSet] = {
@@ -103,7 +110,7 @@ package object finagle extends SessionAugmenterImplicits {
       * @return
       */
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
-      twitterQueryStringExecuteToFuture(query.statement())
+      batchToPromise(query.statement())
     }
 
     /**
@@ -125,7 +132,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ResultSet] = {
-      twitterQueryStringExecuteToFuture(modifyStatement(query.statement()))
+      batchToPromise(modifyStatement(query.statement()))
     }
   }
 
@@ -288,14 +295,14 @@ package object finagle extends SessionAugmenterImplicits {
 
   implicit class BatchQueryAugmenter[ST <: ConsistencyBound](val batch: BatchQuery[ST]) extends AnyVal {
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
-      twitterQueryStringExecuteToFuture(batch.makeBatch())
+      batchToPromise(batch.makeBatch())
     }
   }
 
   implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
-        twitterQueryStringExecuteToFuture(new SimpleStatement(item.terminate.queryString))
+        batchToPromise(new SimpleStatement(item.terminate.queryString))
       }))
     }
   }
@@ -311,7 +318,7 @@ package object finagle extends SessionAugmenterImplicits {
       ex: ExecutionContextExecutor
     ): Future[ResultSet] = {
 
-      val root = twitterQueryStringExecuteToFuture(new SimpleStatement(query.qb.terminate.queryString))
+      val root = batchToPromise(new SimpleStatement(query.qb.terminate.queryString))
 
       if (query.table.secondaryKeys.isEmpty) {
         root
@@ -490,7 +497,7 @@ package object finagle extends SessionAugmenterImplicits {
     ): Future[Option[Record]] = block.singleCollect()
 
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
-      twitterQueryStringExecuteToFuture(block.st)
+      batchToPromise(block.st)
     }
   }
 

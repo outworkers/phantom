@@ -111,6 +111,8 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       abort(debugString)
     }
 
+    Console.println(showCode(tree))
+
     if (showTrees) {
       echo(showCode(tree))
     }

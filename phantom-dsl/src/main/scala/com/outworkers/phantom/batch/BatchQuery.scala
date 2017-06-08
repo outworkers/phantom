@@ -25,6 +25,14 @@ import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
+case class BatchWithQuery(
+  statement: Statement,
+  queries: List[String],
+  batchType: BatchType
+) {
+  def debugString: String = s"BEGIN BATCH $batchType (${queries.mkString("\n")}) APPLY BATCH;"
+}
+
 class BatchType(val batch: String)
 
 object BatchType {
@@ -45,9 +53,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    val (queries, batch) = makeBatch()
-
-    statementToPromise(batch, s"BEGIN BATCH $batchType (${queries.mkString("\n")}) APPLY BATCH;").future
+    batchToPromise(makeBatch()).future
   }
 
   def initBatch(): BatchStatement = batchType match {
@@ -56,7 +62,7 @@ sealed class BatchQuery[Status <: ConsistencyBound](
     case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
   }
 
-  def makeBatch()(implicit session: Session): (List[String], Statement) = {
+  def makeBatch()(implicit session: Session): BatchWithQuery = {
     val batch = initBatch()
 
     val builder = List.newBuilder[String]
@@ -66,10 +72,12 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batch.add(st.statement())
     }
 
-    options.consistencyLevel match {
-      case Some(level) => builder.result() -> batch.setConsistencyLevel(level)
-      case None => builder.result() -> batch
+    val statement = options.consistencyLevel match {
+      case Some(level) => batch.setConsistencyLevel(level)
+      case None => batch
     }
+
+    BatchWithQuery(statement, builder.result(), batchType)
   }
 
 
