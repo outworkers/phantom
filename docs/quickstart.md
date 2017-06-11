@@ -19,6 +19,16 @@ libraryDependencies ++= Seq(
 )
 ```
 
+If you are still using Scala 2.10, you must also add a compile time dependency on the macro paradise plugin. This
+is because phantom uses `shapeless.Generic` under the hood and that needs the `paradise` plugin to work on
+Scala 2.10.
+
+```scala
+libraryDependencies ++= Seq(
+  compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
+)
+```
+
 #### The full list of available modules
 
 The full list of available modules is:
@@ -43,7 +53,21 @@ resolvers += "twitter-repo" at "http://maven.twttr.com"
 
 #### Using phantom-sbt to test requires custom resolvers
 
-In your `plugins.sbt`, you will also need this if you plan to use `phantom-sbt`:
+In your `plugins.sbt`, you will also need this if you plan to use `phantom-sbt`. Phantom SBT is no longer
+actively maintained as we are looking to produce a replacement for it. There are many many problems with
+running embedded Cassandra in a forked VM that are very difficult to address and not worthwhile, as even a perfect
+implementation is severely lacking in features.
+
+The replacement module will not be available open source, but it will allow you to:
+
+- Configure the Cassandra setup from within SBT or tests.
+- Uses more powerful mechanisms under the hood to allow testing against an entire cluster instead of just one node.
+- Allow you to configure which version of Cassandra to target.
+- Has in depth options for configuring logging, health metrics, VM performance and much more.
+- It will also have the capacity to auto-generate the entire schema for a project using an SBT task
+in a way compatible with `phantom-migrations`.
+
+This will be available via a phantom-pro paid subscription only.
 
 ```scala
 
@@ -56,7 +80,6 @@ resolvers ++= Seq(
 )
 
 addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
-
 ```
 
 
