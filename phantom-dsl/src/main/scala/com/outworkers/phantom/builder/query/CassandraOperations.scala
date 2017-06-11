@@ -29,7 +29,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    batchToPromise(st).future
+    statementToPromise(st).future
   }
 
   protected[this] def batchToPromise(batch: BatchWithQuery)(
@@ -37,10 +37,10 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {
     Manager.logger.debug(s"Executing query: ${batch.debugString}")
-    batchToPromise(batch)
+    statementToPromise(batch.statement)
   }
 
-  protected[this] def batchToPromise(st: Statement)(
+  protected[this] def statementToPromise(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaPromise[ResultSet] = {

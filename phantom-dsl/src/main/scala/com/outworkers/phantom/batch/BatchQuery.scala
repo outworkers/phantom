@@ -27,10 +27,10 @@ import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 case class BatchWithQuery(
   statement: Statement,
-  queries: List[String],
+  queries: String,
   batchType: BatchType
 ) {
-  def debugString: String = s"BEGIN BATCH $batchType (${queries.mkString("\n")}) APPLY BATCH;"
+  val debugString = s"BEGIN BATCH ${batchType.batch} ($queries) APPLY BATCH;"
 }
 
 class BatchType(val batch: String)
@@ -72,12 +72,9 @@ sealed class BatchQuery[Status <: ConsistencyBound](
       batch.add(st.statement())
     }
 
-    val statement = options.consistencyLevel match {
-      case Some(level) => batch.setConsistencyLevel(level)
-      case None => batch
-    }
-
-    BatchWithQuery(statement, builder.result(), batchType)
+    val statement = options.consistencyLevel.fold[Statement](batch)(l => batch.setConsistencyLevel(l))
+    val strings = builder.result()
+    BatchWithQuery(statement, strings.mkString("\n"), batchType)
   }
 
 

@@ -102,7 +102,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.10.6",
+  scalaVersion := "2.12.1",
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
