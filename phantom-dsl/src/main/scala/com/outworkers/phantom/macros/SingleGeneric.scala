@@ -81,7 +81,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     val genTpe = genericTpe(tpe)
 
     val tree = if (store =:= generic) {
-      info(s"Singe generic implementation using Shapeless for ${printType(tpe)}")
+      info(s"Generic implementation using Shapeless for ${printType(tpe)}")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
             type Repr = $generic
@@ -110,8 +110,6 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       error(debugString)
       abort(debugString)
     }
-
-    Console.println(showCode(tree))
 
     if (showTrees) {
       echo(showCode(tree))
