@@ -22,11 +22,12 @@ import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.macros.TableHelper
+import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
+import shapeless.{Generic, HList}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 /**
  * Main representation of a Cassandra table.
@@ -36,7 +37,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
-
 
   @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
   class ListColumn[RR](t: CassandraTable[T, R])(
@@ -146,9 +146,23 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1](input: V1)(
-    implicit keySpace: KeySpace
-  ): InsertQuery.Default[T, R] = helper.store(instance, input.asInstanceOf[helper.Repr])
+  def store[V1, Repr <: HList, HL, Out <: HList](input: V1)(
+    implicit keySpace: KeySpace,
+    thl: TableHelper.Aux[T, R, Repr],
+    gen: Generic.Aux[V1, HL],
+    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+    ev: Out ==:== Repr
+  ): InsertQuery.Default[T, R] = thl.store(instance, (sg to input).asInstanceOf[Repr])
+
+  def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
+    implicit keySpace: KeySpace,
+    session: Session,
+    thl: TableHelper.Aux[T, R, Repr],
+    ex: ExecutionContextExecutor,
+    gen: Generic.Aux[V1, HL],
+    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+    ev: Out ==:== Repr
+  ): Future[ResultSet] = store(input).future()
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

@@ -8,14 +8,24 @@
 There are no additional resolvers required for any version of phantom newer than 2.0.0. All Outworkers libraries are open source, licensed via Apache V2. As of version 2.2.1, phantom has no external transitive dependencies other than shapeless
 and the Java driver.
 
-#### For must things, all you need is a dependency on the phantom-dsl module.
+#### For most things, all you need is a dependency on the phantom-dsl module.
 
-For most things, all you need is the main `phantom-ds` module. This will bring in the default module with all the query generation ability, as well as `phantom-connectors` and database objects that help you manage your entire database layer on the fly. All other modules implement enhanced integration with other tools, but you don't need them to get started.
+For most things, all you need is the main `phantom-dsl` module. This will bring in the default module with all the query generation ability, as well as `phantom-connectors` and database objects that help you manage your entire database layer on the fly. All other modules implement enhanced integration with other tools, but you don't need them to get started.
 This module only depends on the `datastax-java-driver` and the `shapeless` library.
 
 ```scala
 libraryDependencies ++= Seq(
   "com.outworkers"  %% "phantom-dsl" % phantomVersion
+)
+```
+
+If you are still using Scala 2.10, you must also add a compile time dependency on the macro paradise plugin. This
+is because phantom uses `shapeless.Generic` under the hood and that needs the `paradise` plugin to work on
+Scala 2.10.
+
+```scala
+libraryDependencies ++= Seq(
+  compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
 )
 ```
 
@@ -43,7 +53,21 @@ resolvers += "twitter-repo" at "http://maven.twttr.com"
 
 #### Using phantom-sbt to test requires custom resolvers
 
-In your `plugins.sbt`, you will also need this if you plan to use `phantom-sbt`:
+In your `plugins.sbt`, you will also need this if you plan to use `phantom-sbt`. Phantom SBT is no longer
+actively maintained as we are looking to produce a replacement for it. There are many many problems with
+running embedded Cassandra in a forked VM that are very difficult to address and not worthwhile, as even a perfect
+implementation is severely lacking in features.
+
+The replacement module will not be available open source, but it will allow you to:
+
+- Configure the Cassandra setup from within SBT or tests.
+- Uses more powerful mechanisms under the hood to allow testing against an entire cluster instead of just one node.
+- Allow you to configure which version of Cassandra to target.
+- Has in depth options for configuring logging, health metrics, VM performance and much more.
+- It will also have the capacity to auto-generate the entire schema for a project using an SBT task
+in a way compatible with `phantom-migrations`.
+
+This will be available via a phantom-pro paid subscription only.
 
 ```scala
 
@@ -56,7 +80,6 @@ resolvers ++= Seq(
 )
 
 addSbtPlugin("com.outworkers" %% "phantom-sbt" % phantomVersion)
-
 ```
 
 

@@ -15,10 +15,13 @@
  */
 package com.outworkers.phantom.example.advanced
 
+import java.util.UUID
+
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
-import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.dsl.{UUID, _}
 import com.outworkers.phantom.example.basics._
+import shapeless.{::, Generic, HList, HNil}
 
 import scala.concurrent.{Future => ScalaFuture}
 
@@ -61,9 +64,9 @@ class RecipesDatabase(override val connector: CassandraConnection) extends Datab
   // Non blocking, 3 lines of code, 15 seconds of typing effort. Done.
   def store(recipe: Recipe): ScalaFuture[ResultSet] = {
     for {
-      _ <- AdvancedRecipes.store(recipe).future()
+      first <- AdvancedRecipes.store(recipe).future()
       byTitle <- AdvancedRecipesByTitle.store(recipe.title -> recipe.id).future()
-    } yield byTitle
+    } yield first
   }
 }
 

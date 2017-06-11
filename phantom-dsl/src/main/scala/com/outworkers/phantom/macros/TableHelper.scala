@@ -34,7 +34,7 @@ case class Debugger(
 
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
-  type Repr
+  type Repr <: HList
 
   def tableName: String
 
@@ -61,7 +61,7 @@ object TableHelper {
 }
 
 @macrocompat.bundle
-class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
+class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 
   val exclusions: Symbol => Option[Symbol] = s => {
@@ -93,8 +93,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
       .map(name => q"$tableTerm.$name")
 
     if (partitionKeys.isEmpty) {
-      c.abort(
-        c.enclosingPosition,
+      error(
         s"Table $tableName needs to have at least one partition key"
       )
     }
@@ -409,12 +408,15 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
 
     if (strategy.isEmpty) {
-      c.info(c.enclosingPosition, "No NamingStrategy found in implicit scope.", force = false)
+      echo("No NamingStrategy found in implicit scope.")
       q"$table"
     } else {
-      c.info(c.enclosingPosition, s"Altering table name with strategy ${showCode(strategy)}", force = false)
+      echo(s"Altering table name with strategy ${showCode(strategy)}")
       val tree = q"$strategy.inferName($table)"
-      c.info(c.enclosingPosition, showCode(tree), force = false)
+      if (showTrees) {
+        echo(showCode(tree))
+      }
+
       tree
     }
   }
@@ -431,20 +433,19 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
       val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
-      c.abort(
-        c.enclosingPosition,
+      error(
         s"""Please define def fromRow(row: ${showCode(rowType)}): ${printType(recordType)}.
           Found unmatched record columns on ${printType(tableType)}
           $unmatched
         """
       )
     } else {
-      c.echo(c.enclosingPosition, descriptor.showExtractor)
+      info(descriptor.showExtractor)
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     val clsName = TypeName(c.freshName("anon$"))
-    val storeTpe = descriptor.storeType.getOrElse(nothingTpe)
+    val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
 
     val tree = q"""
@@ -478,11 +479,11 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     """
 
     if (showTrees) {
-      c.echo(c.enclosingPosition, showCode(tree))
+      echo(showCode(tree))
     }
 
     if (showCache) {
-      c.echo(c.enclosingPosition, WhiteboxToolbelt.tableHelperCache.show)
+      echo(WhiteboxToolbelt.tableHelperCache.show)
     }
 
     tree

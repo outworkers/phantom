@@ -34,7 +34,7 @@ object DatabaseHelper {
 }
 
 @macrocompat.bundle
-class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
+class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 
   private[this] val seqTpe: Tree => Tree = { tpe =>

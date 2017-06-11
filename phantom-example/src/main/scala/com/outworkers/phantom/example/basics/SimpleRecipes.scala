@@ -17,8 +17,12 @@ package com.outworkers.phantom.example.basics
 
 import java.util.UUID
 
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+
 import scala.concurrent.{Future => ScalaFuture}
 import com.outworkers.phantom.dsl._
+import shapeless.Nat
 
 /**
  * In this example we will create a simple table storing recipes.

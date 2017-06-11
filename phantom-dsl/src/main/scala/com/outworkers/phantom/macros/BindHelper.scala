@@ -40,7 +40,7 @@ object BindHelper {
 }
 
 @macrocompat.bundle
-class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt(c) with RootMacro {
+class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
 
   import c.universe._
 

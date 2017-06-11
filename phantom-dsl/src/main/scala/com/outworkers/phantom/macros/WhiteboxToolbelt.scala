@@ -19,7 +19,9 @@ import scala.reflect.macros.whitebox
 import scala.collection.mutable.{ Map => MutableMap }
 
 private[phantom] object WhiteboxToolbelt {
-  def apply(c: whitebox.Context): WhiteboxToolbelt = new WhiteboxToolbelt(c)
+  def apply(ctx: whitebox.Context): WhiteboxToolbelt = new WhiteboxToolbelt {
+    override val c: whitebox.Context = ctx
+  }
 
   final class Cache {
     val underlying: MutableMap[Any, Any] = MutableMap.empty
@@ -30,12 +32,24 @@ private[phantom] object WhiteboxToolbelt {
   final val tableHelperCache: Cache = new Cache()
   final val bindHelperCache: Cache = new Cache()
   final val ddHelperCache: Cache = new Cache()
+  final val singeGenericCache: Cache = new Cache()
+  final val specialEqsCache: Cache = new Cache()
 }
 
 @macrocompat.bundle
-private[phantom] class WhiteboxToolbelt(val c: whitebox.Context) {
+private[phantom] trait WhiteboxToolbelt {
+
+  val c: whitebox.Context
 
   import c.universe._
+
+  def info(msg: String, force: Boolean = false): Unit = c.info(c.enclosingPosition, msg, force)
+
+  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
+
+  def echo(msg: String): Unit = c.echo(c.enclosingPosition, msg)
+
+  def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
   lazy val showAborts =
     !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty

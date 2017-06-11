@@ -186,6 +186,9 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
+    ),
+    libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
     )
   ).settings(
     sharedSettings: _*
@@ -213,6 +216,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test,
@@ -269,6 +273,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -289,6 +294,7 @@ lazy val phantomExample = (project in file("phantom-example"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     ),
