@@ -44,10 +44,10 @@ package object finagle extends SessionAugmenterImplicits {
     executor: ExecutionContextExecutor
   ): Future[ResultSet] = {
     Manager.logger.debug(s"Executing query: ${batch.debugString}")
-    batchToPromise(batch.statement)
+    statementToPromise(batch.statement)
   }
 
-  protected[this] def batchToPromise(str: Statement)(
+  protected[this] def statementToPromise(str: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Future[ResultSet] = {
@@ -110,7 +110,7 @@ package object finagle extends SessionAugmenterImplicits {
       * @return
       */
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
-      batchToPromise(query.statement())
+      statementToPromise(query.statement())
     }
 
     /**
@@ -132,7 +132,7 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       executor: ExecutionContextExecutor
     ): Future[ResultSet] = {
-      batchToPromise(modifyStatement(query.statement()))
+      statementToPromise(modifyStatement(query.statement()))
     }
   }
 
@@ -302,7 +302,7 @@ package object finagle extends SessionAugmenterImplicits {
   implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
-        batchToPromise(new SimpleStatement(item.terminate.queryString))
+        statementToPromise(new SimpleStatement(item.terminate.queryString))
       }))
     }
   }
@@ -318,7 +318,7 @@ package object finagle extends SessionAugmenterImplicits {
       ex: ExecutionContextExecutor
     ): Future[ResultSet] = {
 
-      val root = batchToPromise(new SimpleStatement(query.qb.terminate.queryString))
+      val root = statementToPromise(new SimpleStatement(query.qb.terminate.queryString))
 
       if (query.table.secondaryKeys.isEmpty) {
         root
@@ -497,7 +497,7 @@ package object finagle extends SessionAugmenterImplicits {
     ): Future[Option[Record]] = block.singleCollect()
 
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[ResultSet] = {
-      batchToPromise(block.st)
+      statementToPromise(block.st)
     }
   }
 
