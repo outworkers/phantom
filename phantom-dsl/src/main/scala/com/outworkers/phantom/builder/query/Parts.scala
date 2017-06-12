@@ -162,13 +162,13 @@ sealed class OptionPart(override val queries: Seq[CQLQuery] = Seq.empty) extends
   override def instance(l: Seq[CQLQuery]): OptionPart = new OptionPart(l)
 
   def option(key: String, value: String): OptionPart = {
-    val qb = QueryBuilder.Utils.option(
-      CQLQuery.escape(key),
-      CQLSyntax.Symbols.colon,
-      value
-    )
-
-    this.append(qb)
+    append {
+      QueryBuilder.Utils.option(
+        CQLQuery.escape(key),
+        CQLSyntax.Symbols.colon,
+        value
+      )
+    }
   }
 
   def option(key: String, value: Boolean): OptionPart = {

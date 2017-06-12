@@ -26,6 +26,7 @@ class SASIOptionsTest extends PhantomSuite {
 
   it should "allow setting case sensitivity to true on a NonTokenizingAnalyzer" in {
     val query = Analyzer.NonTokenizingAnalyzer.caseSensitive(true).qb.queryString
+    Console.println(query)
 
     query shouldEqual
       """

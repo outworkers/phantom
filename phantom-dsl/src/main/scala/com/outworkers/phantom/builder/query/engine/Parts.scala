@@ -73,7 +73,7 @@ case class MergeList(queries: Seq[CQLQuery]) {
     val appendable = part build init
 
     if (appendable.nonEmpty) {
-      apply(Seq(appendable) ++ queries)
+      apply(queries :+ appendable)
     } else {
       this
     }

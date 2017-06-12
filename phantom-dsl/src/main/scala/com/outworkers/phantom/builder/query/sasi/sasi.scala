@@ -48,7 +48,7 @@ private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) 
     this(options option (CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)))
   }
 
-  def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options build CQLQuery.empty)
+  def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options.qb)
 }
 
 
