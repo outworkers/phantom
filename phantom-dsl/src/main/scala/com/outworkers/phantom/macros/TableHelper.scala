@@ -18,8 +18,10 @@ package com.outworkers.phantom.macros
 import com.google.common.base.CaseFormat
 import com.outworkers.phantom.{CassandraTable, NamingStrategy, Row}
 import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.builder.query.sasi.Analyzer
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.dsl.SASIIndex
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey}
 import shapeless.HList
 
@@ -37,6 +39,8 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
   def tableKey(table: T): String
 
   def fields(table: T): Seq[AbstractColumn[_]]
+
+  def sasiIndexes(table: T): Seq[SASIIndex[_ <: Analyzer[_]] with AbstractColumn[_]]
 
   def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
@@ -410,12 +414,15 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
   def macroImpl(tableType: Type, recordType: Type): Tree = {
     val refTable = determineReferenceTable(tableType).map(_.typeSignature).getOrElse(tableType)
     val referenceColumns = refTable.decls.sorted.filter(_.typeSignature <:< typeOf[AbstractColumn[_]])
+    val refColumnTypes = referenceColumns.map(_.typeSignature)
     val tableName = extractTableName(refTable)
     val columns = filterMembers[AbstractColumn[_]](tableType, exclusions)
+
     val descriptor = extractor(tableType, recordType, referenceColumns)
     val abstractFromRow = refTable.member(fromRowName).asMethod
     val fromRowFn = descriptor.fromRow
     val notImplemented = q"???"
+    val sasiIndexes = filterColumns[SASIIndex[_]](refColumnTypes)
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
       val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
@@ -447,7 +454,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
           }
 
           def tableKey($tableTerm: $tableType): $strTpe = {
-            ${inferPrimaryKey(tableName, tableType, referenceColumns.map(_.typeSignature))}
+            ${inferPrimaryKey(tableName, tableType, refColumnTypes)}
           }
 
           def fromRow($tableTerm: $tableType, $rowTerm: $rowType): $recordType = {
@@ -456,6 +463,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
+          }
+
+          def sasiIndexes($tableTerm: $tableType): scala.collection.immutable.Seq[$sasiIndexColumnTpe] = {
+            scala.collection.immutable.Seq.apply[$sasiIndexColumnTpe](..$sasiIndexes)
           }
        }
 

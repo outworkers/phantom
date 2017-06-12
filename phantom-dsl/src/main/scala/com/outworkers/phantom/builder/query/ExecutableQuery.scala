@@ -77,7 +77,7 @@ trait ExecutableStatement extends CassandraOperations {
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(statement)
+    statementToFuture(statement)
   }
 
   /**
@@ -99,7 +99,7 @@ trait ExecutableStatement extends CassandraOperations {
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    scalaQueryStringExecuteToFuture(modifyStatement(statement))
+    statementToFuture(modifyStatement(statement))
   }
 }
 
@@ -123,6 +123,8 @@ class ExecutableStatementList[
 ](val queries: M[CQLQuery])(
   implicit cbf: CanBuildFrom[M[CQLQuery], CQLQuery, M[CQLQuery]]
 ) extends CassandraOperations {
+
+  def isEmpty: Boolean = queries.isEmpty
 
   def add(appendable: M[CQLQuery]): ExecutableStatementList[M] = {
     val builder = cbf(queries)
@@ -152,7 +154,7 @@ class ExecutableStatementList[
 
     val builder = fbf()
 
-    for (q <- queries) builder += scalaQueryStringExecuteToFuture(new SimpleStatement(q.terminate.queryString))
+    for (q <- queries) builder += statementToFuture(new SimpleStatement(q.terminate.queryString))
 
     ScalaFuture.sequence(builder.result())(ebf, ec)
   }
@@ -163,7 +165,7 @@ class ExecutableStatementList[
     cbf: CanBuildFrom[M[CQLQuery], ResultSet, M[ResultSet]]
   ): ScalaFuture[M[ResultSet]] = {
     SequentialFutures.sequencedTraverse(queries) {
-      q => scalaQueryStringExecuteToFuture(new SimpleStatement(q.terminate.queryString))
+      q => statementToFuture(new SimpleStatement(q.terminate.queryString))
     }
   }
 }

@@ -16,12 +16,14 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.dsl.Analyzer
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
@@ -138,6 +140,19 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
+
+  def sasiQueries()(implicit keySpace: KeySpace): ExecutableStatementList[Seq] = {
+    val queries = helper.sasiIndexes(instance).map { index =>
+      QueryBuilder.Create.createSASIIndex(
+        keySpace,
+        tableName,
+        QueryBuilder.Create.sasiIndexName(tableName, index.name),
+        index.name,
+        index.analyzer.qb
+      )
+    }
+    new ExecutableStatementList[Seq](queries)
+  }
 
   /**
     * Automatically generated store method for the record type.

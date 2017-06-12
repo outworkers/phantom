@@ -26,7 +26,6 @@ import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
-import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
@@ -196,6 +195,10 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
   type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
+  val Analyzer = com.outworkers.phantom.builder.query.sasi.Analyzer
+  type Analyzer[A <: Analyzer[A]] = com.outworkers.phantom.builder.query.sasi.Analyzer[A]
+  type SASIIndex[A <: Analyzer[A]] = com.outworkers.phantom.keys.SASIIndex[A]
+  type CustomIndex[A <: Analyzer[A]] = SASIIndex[A]
 
   val Version = DefaultVersions
 

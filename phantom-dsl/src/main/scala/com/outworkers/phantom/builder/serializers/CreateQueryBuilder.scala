@@ -186,7 +186,7 @@ private[builder] class CreateTableBuilder {
   }
 
   def `with`(clause: CQLQuery): CQLQuery = {
-    CQLQuery(CQLSyntax.With).pad.append(clause)
+    CQLQuery(CQLSyntax.With).forcePad.append(clause)
   }
 
   /**
@@ -251,6 +251,35 @@ private[builder] class CreateTableBuilder {
     }
 
     CQLQuery(CQLSyntax.CreateOptions.clustering_order).wrap(list)
+  }
+
+  def sasiIndexName(tableName: String, columnName: String): CQLQuery = {
+    CQLQuery(tableName)
+      .append(CQLSyntax.Symbols.underscsore)
+      .append(columnName)
+      .append(CQLSyntax.Symbols.underscsore)
+      .append(CQLSyntax.SASI.suffix)
+  }
+
+  def createSASIIndex(
+    keySpace: KeySpace,
+    tableName: String,
+    indexName: CQLQuery,
+    columnName: String,
+    options: CQLQuery
+  ): CQLQuery = {
+    CQLQuery(CQLSyntax.create)
+      .forcePad.append(CQLSyntax.custom)
+      .forcePad.append(CQLSyntax.index)
+      .forcePad.append(indexName)
+      .forcePad.append(CQLSyntax.On)
+      .forcePad.append(keySpace.name)
+      .forcePad.append(CQLSyntax.Symbols.dot)
+      .forcePad.append(tableName)
+      .wrapn(columnName)
+      .forcePad.append(CQLSyntax.using)
+      .forcePad.append(CQLQuery.escape(CQLSyntax.SASI.indexClass))
+      .forcePad.append(`with`(options))
   }
 
   def defaultCreateQuery(

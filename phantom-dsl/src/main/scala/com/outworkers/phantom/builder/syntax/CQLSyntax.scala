@@ -56,6 +56,7 @@ object CQLSyntax {
   val distinct = "DISTINCT"
 
   val create = "CREATE"
+  val custom = "CUSTOM"
 
   val insert = "INSERT"
   val ifNotExists = "IF NOT EXISTS"
@@ -106,6 +107,7 @@ object CQLSyntax {
     val `}` = "}"
     val `[` = "["
     val `]` = "]"
+    val underscsore = "_"
 
     val dot = "."
     val colon = ":"
@@ -266,6 +268,7 @@ object CQLSyntax {
 
   object SASI {
 
+    val suffix = "idx"
     val indexClass = "org.apache.cassandra.index.sasi.SASIIndex"
 
     object Analyzer {

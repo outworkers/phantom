@@ -16,6 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.collection.generic.CanBuildFrom
@@ -34,6 +35,8 @@ trait RootMacro extends HListHelpers {
   protected[this] val enginePkg = q"_root_.com.outworkers.phantom.builder.query.engine"
   protected[this] val strTpe = tq"_root_.java.lang.String"
   protected[this] val colType = tq"_root_.com.outworkers.phantom.column.AbstractColumn[_]"
+  protected[this] val sasiIndexTpe = typeOf[SASIIndex[_]]
+  protected[this] val sasiIndexColumnTpe = typeOf[SASIIndex[_] with AbstractColumn[_]]
   protected[this] val collections = q"_root_.scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")

@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.keys
+package com.outworkers.phantom.tables.sasi
 
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.sasi.Analyzer
-import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.Article
 
-trait SASIIndex[A <: Analyzer[A]] { self: AbstractColumn[_] =>
-  def analyzer: A
+abstract class SASIIndexedArticles extends Table[SASIIndexedArticles, Article] {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
 
-  def analyzerOptions: CQLQuery = analyzer.qb
+  object orderId extends LongColumn with SASIIndex[StandardAnalyzer] {
+    override def analyzer: StandardAnalyzer = Analyzer.StandardAnalyzer.enableStemming(true)
+  }
 }
-

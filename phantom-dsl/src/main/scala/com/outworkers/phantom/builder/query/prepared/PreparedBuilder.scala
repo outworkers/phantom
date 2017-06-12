@@ -57,7 +57,7 @@ class ExecutablePreparedSelectQuery[
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = scalaQueryStringExecuteToFuture(st)
+  ): ScalaFuture[ResultSet] = statementToFuture(st)
 
   /**
     * Returns the first row from the select ignoring everything else

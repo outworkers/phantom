@@ -15,11 +15,7 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{
-  ConsistencyLevel,
-  Session,
-  SimpleStatement
-}
+import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
@@ -49,7 +45,7 @@ class RootCreateQuery[
       keySpace.name,
       table.tableName,
       table.tableKey,
-      table.columns.map(_.qb).toSeq
+      table.columns.map(_.qb)
     )
   }
 
@@ -182,16 +178,23 @@ class CreateQuery[
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {
-    if (table.secondaryKeys.isEmpty) {
-      scalaQueryStringExecuteToFuture(new SimpleStatement(qb.terminate.queryString))
-    } else {
-      super.future() flatMap { res =>
-        indexList.future() map { _ =>
-          Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-          res
+    for {
+      init <- super.future()
+      secondaryIndexFuture = if (indexList.isEmpty) ScalaFuture.successful(Seq.empty[ResultSet]) else indexList.future()
+      secondaryIndexes <- secondaryIndexFuture map { results =>
+        Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
+        results
+      }
+      sasiFutures = {
+        val sasiQueries = table.sasiQueries()
+        if (sasiQueries.isEmpty) {
+          ScalaFuture.successful(Seq.empty[ResultSet])
+        } else {
+          sasiQueries.future()
         }
       }
-    }
+      sasiIndexes <- sasiFutures
+    } yield init
   }
 }
 

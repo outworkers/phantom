@@ -51,8 +51,13 @@ private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) 
   def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options.qb)
 }
 
+class DefaultAnalyzer(options: OptionPart) extends Analyzer[DefaultAnalyzer](options) {
+  override protected[this] def instance(optionPart: OptionPart): DefaultAnalyzer = new DefaultAnalyzer(optionPart)
+}
 
 object Analyzer {
+
+  def apply(options: OptionPart = OptionPart.empty): DefaultAnalyzer = new DefaultAnalyzer(options)
 
   class StandardAnalyzer(options: OptionPart) extends Analyzer[StandardAnalyzer](
     AnalyzerClass.StandardAnalyzer,
