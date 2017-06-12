@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.builder.query.sasi
 
+import java.util.Locale
+
 import com.outworkers.phantom.PhantomSuite
 
 class SASIOptionsTest extends PhantomSuite {
@@ -65,5 +67,35 @@ class SASIOptionsTest extends PhantomSuite {
   it should "automatically produce default options for a StandardAnalyzer" in {
     val query = Analyzer.StandardAnalyzer.qb.queryString
     query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer'}"
+  }
+
+  it should "allow using tokenization_normalise_lowecase on StandardAnalyzer" in {
+    val query = Analyzer.StandardAnalyzer.normalizeLowercase(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_normalize_lowercase': 'true'}"
+  }
+
+  it should "allow using tokenization_normalise_uppercase on StandardAnalyzer" in {
+    val query = Analyzer.StandardAnalyzer.normalizeUppercase(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_normalize_uppercase': 'true'}"
+  }
+
+  it should "allow using skip_stop_words on StandardAnalyzer" in {
+    val query = Analyzer.StandardAnalyzer.skipStopWords(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_skip_stop_words': 'true'}"
+  }
+
+  it should "allow using enable_stemming on StandardAnalyzer" in {
+    val query = Analyzer.StandardAnalyzer.enableStemming(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
+  }
+
+  it should "allow passing a string locale to StandardAnalyzer.locale" in {
+    val query = Analyzer.StandardAnalyzer.locale("EN").qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_locale': 'EN'}"
+  }
+
+  it should "allow passing a Java Locale to StandardAnalyzer.locale" in {
+    val query = Analyzer.StandardAnalyzer.locale(Locale.ENGLISH).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_locale': 'English'}"
   }
 }
