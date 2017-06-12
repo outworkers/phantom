@@ -106,6 +106,7 @@ sealed class AggregationFunction(operator: String) extends CqlFunction {
   ): TypedClause.Condition[Option[T]] = apply(pf.name)
 }
 
+sealed class CountCqlFunction extends AggregationFunction(CQLSyntax.Selection.count)
 sealed class SumCqlFunction extends AggregationFunction(CQLSyntax.Selection.sum)
 sealed class AvgCqlFunction extends AggregationFunction(CQLSyntax.Selection.avg)
 sealed class MinCqlFunction extends AggregationFunction(CQLSyntax.Selection.min)
@@ -207,6 +208,7 @@ trait Operators {
   object writetime extends WritetimeCqlFunction
   object ttl extends TTLOfFunction
 
+  object count extends CountCqlFunction
   object sum extends SumCqlFunction
   object min extends MinCqlFunction
   object max extends MaxCqlFunction

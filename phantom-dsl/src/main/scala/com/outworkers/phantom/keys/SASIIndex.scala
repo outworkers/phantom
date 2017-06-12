@@ -19,9 +19,13 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.sasi.Analyzer
 import com.outworkers.phantom.column.AbstractColumn
 
-trait SASIIndex[A <: Analyzer[A]] { self: AbstractColumn[_] =>
+trait SASIIndex[A <: Analyzer[A]] {
+  self: AbstractColumn[_] =>
+
   def analyzer: A
 
   def analyzerOptions: CQLQuery = analyzer.qb
+
+  //abstract override def isSASI: Boolean = true
 }
 

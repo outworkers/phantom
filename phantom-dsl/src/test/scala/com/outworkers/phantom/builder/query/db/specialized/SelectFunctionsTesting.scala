@@ -419,4 +419,18 @@ class SelectFunctionsTesting extends PhantomSuite {
       res shouldBe defined
     }
   }
+
+  // COUNT function
+  it should "retrieve the count of records from from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => count(t.int)).where(_.pkey eqs record.pkey).aggregate()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
 }

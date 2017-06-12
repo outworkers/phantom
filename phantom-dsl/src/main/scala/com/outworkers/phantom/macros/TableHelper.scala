@@ -422,7 +422,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val abstractFromRow = refTable.member(fromRowName).asMethod
     val fromRowFn = descriptor.fromRow
     val notImplemented = q"???"
-    val sasiIndexes = filterColumns[SASIIndex[_]](refColumnTypes)
+    val sasiIndexes = filterColumns[SASIIndex[_ <: Analyzer[_]] with AbstractColumn[_] ](refColumnTypes)
 
     if (fromRowFn.isEmpty && abstractFromRow.isAbstract) {
       val unmatched = descriptor.debugList(descriptor.unmatched.map(_.field)).mkString("\n")
@@ -472,6 +472,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
+
+    Console.println(showCode(tree))
 
     if (showTrees) {
       echo(showCode(tree))

@@ -18,12 +18,10 @@ package com.outworkers.phantom.builder.serializers
 import java.util.concurrent.TimeUnit
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.SerializationTest
+import com.outworkers.phantom.builder.query.{OptionPart, SerializationTest}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.tables.TestDatabase
 import org.joda.time.Seconds
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -480,6 +478,20 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(keys(col))"
       }
+    }
+  }
+
+  "should allow creating SASI indexes" - {
+    "create a basic index definition from two strings" in {
+      val qb = QueryBuilder.Create.sasiIndexName("table", "column")
+      qb.queryString shouldEqual s"table_column_${CQLSyntax.SASI.suffix}"
+    }
+
+    "create a full SASI index definition" in {
+      val index = QueryBuilder.Create.sasiIndexName("table", "column")
+      val qb = QueryBuilder.Create.createSASIIndex(KeySpace("keyspace"), "table", index, "column", OptionPart.empty.qb)
+
+      qb.queryString shouldEqual s"CREATE CUSTOM INDEX $index ON keyspace.table(column) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH {}"
     }
   }
 }

@@ -186,7 +186,11 @@ private[builder] class CreateTableBuilder {
   }
 
   def `with`(clause: CQLQuery): CQLQuery = {
-    CQLQuery(CQLSyntax.With).forcePad.append(clause)
+    if (clause.nonEmpty) {
+      CQLQuery(CQLSyntax.With).forcePad.append(clause)
+    } else {
+      CQLQuery.empty
+    }
   }
 
   /**
@@ -274,8 +278,8 @@ private[builder] class CreateTableBuilder {
       .forcePad.append(indexName)
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(keySpace.name)
-      .forcePad.append(CQLSyntax.Symbols.dot)
-      .forcePad.append(tableName)
+      .append(CQLSyntax.Symbols.dot)
+      .append(tableName)
       .wrapn(columnName)
       .forcePad.append(CQLSyntax.using)
       .forcePad.append(CQLQuery.escape(CQLSyntax.SASI.indexClass))
