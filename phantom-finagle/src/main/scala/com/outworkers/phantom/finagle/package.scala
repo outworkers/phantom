@@ -330,11 +330,11 @@ package object finagle extends SessionAugmenterImplicits {
           results
         }
         sasiFutures = {
-          val sasiQueries = query.table.sasiQueries()
+          val sasiQueries = query.table.sasiQueries()(query.keySpace)
           if (sasiQueries.isEmpty) {
             Future.value(Seq.empty[ResultSet])
           } else {
-            sasiQueries
+            sasiQueries.execute()
           }
         }
         sasiIndexes <- sasiFutures

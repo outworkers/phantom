@@ -473,8 +473,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
 
-    Console.println(showCode(tree))
-
     if (showTrees) {
       echo(showCode(tree))
     }

@@ -70,23 +70,6 @@ sealed class CasConditionalOperators[RR](col: AbstractColumn[RR]) {
   }
 }
 
-sealed class SetConditionals[
-  T <: CassandraTable[T, R],
-  R, RR
-](val col: AbstractColColumn[T, R, Set, RR]) {
-
-  /**
-   * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
-   * @param elem The element to check for in the contains clause.
-   * @return A Where clause.
-   */
-  final def contains(elem: RR): WhereClause.Condition = {
-    new WhereClause.Condition(
-      QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
-    )
-  }
-}
-
 sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKeyUpdateClause[K, V]) {
 
   /**
@@ -160,12 +143,6 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey): OrderingColumn[RR] = new OrderingColumn[RR](col)
 
-  implicit def setColumnToQueryColumn[
-    T <: CassandraTable[T, R],
-    R,
-    RR
-  ](col: AbstractColColumn[T, R, Set, RR] with Index): SetConditionals[T, R, RR] = new SetConditionals(col)
-
   /**
     * Definition used to cast a comparison clause to Map entry lookup based on a secondary index.
     * @param cond The column update clause generated from MapColumn.apply(keyValue)
@@ -196,21 +173,4 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   )(implicit ev: col.type <:!< Keys): MapConditionals[T, R, K, V] = {
     new MapConditionals(col)
   }
-
-  /**
-    * Definition used to cast an index map column with keys indexed to a query-able definition.
-    * This will allow users to use "CONTAINS KEY" clauses to search for matches based on map keys.
-    *
-    * @param col The map column to cast to a Map column secondary index query.
-    * @tparam T The Cassandra table inner type.
-    * @tparam R The record type of the table.
-    * @tparam K The type of the key held in the map.
-    * @tparam V The type of the value held in the map.
-    * @return A MapConditionals class with CONTAINS KEY support.
-    */
-  implicit def mapKeysColumnToQueryColumn[T <: CassandraTable[T, R], R, K, V](
-    col: AbstractMapColumn[T, R, K, V] with Index with Keys): MapKeyConditionals[T, R, K, V] = {
-    new MapKeyConditionals(col)
-  }
-
 }
