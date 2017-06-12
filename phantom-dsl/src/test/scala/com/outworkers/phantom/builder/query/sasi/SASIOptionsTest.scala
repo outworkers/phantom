@@ -26,17 +26,41 @@ class SASIOptionsTest extends PhantomSuite {
 
   it should "allow setting case sensitivity to true on a NonTokenizingAnalyzer" in {
     val query = Analyzer.NonTokenizingAnalyzer.caseSensitive(true).qb.queryString
-    Console.println(query)
 
     query shouldEqual
-      """
-        |OPTIONS = {
-        |'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer',
-        |'case_sensitive': 'true'
-        |}
-      """.stripMargin.replaceAll("\n", "")
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'true'}"""
   }
 
+  it should "allow setting case sensitivity to false on a NonTokenizingAnalyzer" in {
+    val query = Analyzer.NonTokenizingAnalyzer.caseSensitive(false).qb.queryString
+
+    query shouldEqual
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'false'}"""
+  }
+
+  it should "allow setting normalise_lowercase to false on a NonTokenizingAnalyzer" in {
+    val query = Analyzer.NonTokenizingAnalyzer.normalizeLowercase(false).qb.queryString
+
+    query shouldEqual
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'normalize_lowercase': 'false'}"""
+  }
+
+  it should "allow setting normalise_uppercase to false on a NonTokenizingAnalyzer" in {
+    val query = Analyzer.NonTokenizingAnalyzer.normalizeUppercase(false).qb.queryString
+
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'normalize_uppercase': 'false'}"
+  }
+
+  it should "allow combining case sensitivity and normalisation on NonTokenizingAnalyzer" in {
+    val query = Analyzer.NonTokenizingAnalyzer
+      .caseSensitive(true)
+      .normalizeUppercase(false)
+      .normalizeLowercase(true)
+      .qb.queryString
+
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'true', " +
+      "'normalize_uppercase': 'false', 'normalize_lowercase': 'true'}"
+  }
 
   it should "automatically produce default options for a StandardAnalyzer" in {
     val query = Analyzer.StandardAnalyzer.qb.queryString

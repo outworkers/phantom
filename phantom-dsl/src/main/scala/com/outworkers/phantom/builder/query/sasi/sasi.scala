@@ -45,7 +45,7 @@ private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) 
   def analyzed(flag: Boolean): A = instance(options option (CQLSyntax.SASI.analyzed, flag.toString))
 
   def this(analyzerClass: AnalyzerClass, options: OptionPart) {
-    this(options option (CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)))
+    this(OptionPart.empty.option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)) append options)
   }
 
   def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options.qb)

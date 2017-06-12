@@ -33,6 +33,8 @@ abstract class QueryPart[T <: QueryPart[T]](val queries: Seq[CQLQuery] = Nil) {
 
   def append(q: Seq[CQLQuery]): T = instance(queries ++ q)
 
+  def append(other: T): T = instance(queries ++ other.queries)
+
   def mergeList(list: Seq[CQLQuery]): MergeList
 
   def merge[X <: QueryPart[X]](part: X): MergeList = {
