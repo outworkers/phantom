@@ -30,15 +30,15 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
       "initialize the inner query list to the empty list" in {
         val part = new WherePart()
 
-        part.list.isEmpty shouldEqual true
-        part.list.isEmpty shouldEqual true
+        part.queries.isEmpty shouldEqual true
+        part.queries.isEmpty shouldEqual true
       }
 
       "correctly identify the parts lit as non empty" in {
         val list = genList[CQLQuery]()
         val part = new WherePart(list)
 
-        part.list.nonEmpty shouldEqual true
+        part.queries.nonEmpty shouldEqual true
       }
 
       "append a query to the inner list while preserving order" in {
@@ -50,7 +50,7 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
 
         val appended = part.append(l1).append(l2)
 
-        appended.list shouldEqual List(l1, l2)
+        appended.queries shouldEqual List(l1, l2)
       }
 
       "append a sequence of queries to the inner list using varags" in {
@@ -63,9 +63,9 @@ class PartsSerializationTest extends FreeSpec with SerializationTest {
         val l3 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("e", "f"))
         val l4 = QueryBuilder.Update.where(QueryBuilder.Where.eqs("g", "h"))
 
-        val appended = part.append(l1).append(l2, l3, l4)
+        val appended = part.append(l1).append(Seq(l2, l3, l4))
 
-        appended.list shouldEqual List(l1, l2, l3, l4)
+        appended.queries shouldEqual List(l1, l2, l3, l4)
       }
 
 

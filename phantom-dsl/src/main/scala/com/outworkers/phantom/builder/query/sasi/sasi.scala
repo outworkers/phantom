@@ -17,7 +17,9 @@ package com.outworkers.phantom.builder.query.sasi
 
 import java.util.Locale
 
+import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.OptionPart
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 sealed abstract class Mode(val value: String)
@@ -35,14 +37,18 @@ object AnalyzerClass {
   case object NonTokenizingAnalyzer extends AnalyzerClass(CQLSyntax.SASI.Analyzer.nonTokenizing)
 }
 
-sealed abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) {
+private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) {
   protected[this] def instance(optionPart: OptionPart): A
 
   def mode(mode: Mode): A = instance(options option (CQLSyntax.SASI.mode, mode.value))
 
+  def analyzed(flag: Boolean): A = instance(options option (CQLSyntax.SASI.analyzed, flag.toString))
+
   def this(analyzerClass: AnalyzerClass, options: OptionPart) {
-    this(options option (CQLSyntax.SASI.analyzer_class, analyzerClass.value))
+    this(options option (CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)))
   }
+
+  def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options build CQLQuery.empty)
 }
 
 
@@ -50,57 +56,61 @@ object Analyzer {
 
   class StandardAnalyzer(options: OptionPart) extends Analyzer[StandardAnalyzer](
     AnalyzerClass.StandardAnalyzer,
-    OptionPart.empty
+    options
   ) {
     override protected[this] def instance(optionPart: OptionPart): StandardAnalyzer = {
       new StandardAnalyzer(optionPart)
     }
 
     def normalizeUppercase(flag: Boolean): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_normalize_uppercase, flag.toString))
+      instance(options option(CQLSyntax.SASI.tokenization_normalize_uppercase, flag))
     }
 
     def normalizeLowercase(flag: Boolean): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_normalize_lowercase, flag.toString))
+      instance(options option(CQLSyntax.SASI.tokenization_normalize_lowercase, flag))
     }
 
     def skipStopWords(flag: Boolean): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_skip_stop_words, flag.toString))
+      instance(options option(CQLSyntax.SASI.tokenization_skip_stop_words, flag))
     }
 
     def enableStemming(flag: Boolean): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_enable_stemming, flag.toString))
+      instance(options option(CQLSyntax.SASI.tokenization_enable_stemming, flag))
     }
 
-    def locale(locale: String): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_locale, locale))
+    def locale(loc: String): StandardAnalyzer = {
+      instance(options option(CQLSyntax.SASI.tokenization_locale, CQLQuery.escape(loc)))
     }
 
-    def locale(locale: Locale): StandardAnalyzer = {
-      instance(options option(CQLSyntax.SASI.tokenization_locale, locale.getDisplayName))
+    def locale(loc: Locale): StandardAnalyzer = {
+      locale(loc.getDisplayName)
     }
   }
 
-  class NonTokenizingAnalyzer(options: OptionPart) extends Analyzer[NonTokenizingAnalyzer](
+  object StandardAnalyzer extends StandardAnalyzer(OptionPart.empty)
+
+  sealed class NonTokenizingAnalyzer(options: OptionPart) extends Analyzer[NonTokenizingAnalyzer](
     AnalyzerClass.NonTokenizingAnalyzer,
-    OptionPart.empty
+    options
   ) {
     override protected[this] def instance(optionPart: OptionPart): NonTokenizingAnalyzer = {
       new NonTokenizingAnalyzer(optionPart)
     }
 
     def caseSensitive(flag: Boolean): NonTokenizingAnalyzer = {
-      instance(options option (CQLSyntax.SASI.case_sensitive, flag.toString))
+      instance(options option (CQLSyntax.SASI.case_sensitive, flag))
     }
 
     def normalizeUppercase(flag: Boolean): NonTokenizingAnalyzer = {
-      instance(options option(CQLSyntax.SASI.normalize_uppercase, flag.toString))
+      instance(options option(CQLSyntax.SASI.normalize_uppercase, flag))
     }
 
     def normalizeLowercase(flag: Boolean): NonTokenizingAnalyzer = {
-      instance(options option(CQLSyntax.SASI.normalize_lowercase, flag.toString))
+      instance(options option(CQLSyntax.SASI.normalize_lowercase, flag))
     }
   }
+
+  object NonTokenizingAnalyzer extends NonTokenizingAnalyzer(OptionPart.empty)
 }
 
 

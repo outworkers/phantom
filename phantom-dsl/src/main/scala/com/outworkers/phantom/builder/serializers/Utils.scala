@@ -76,7 +76,7 @@ private[builder] trait Utils {
     * @param sep A separator to use during query creation.
     * @return A CQL query of the specified format.
     */
-  def options(clauses: List[CQLQuery], sep: String = ", "): CQLQuery = {
+  def options(clauses: Seq[CQLQuery], sep: String = ", "): CQLQuery = {
     Utils.curlyWrap(clauses.map(_.queryString).mkString(sep))
   }
 

@@ -49,6 +49,8 @@ private[phantom] trait WhiteboxToolbelt {
 
   def echo(msg: String): Unit = c.echo(c.enclosingPosition, msg)
 
+  def warning(msg: String): Unit = c.warning(c.enclosingPosition, msg)
+
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
   lazy val showAborts =

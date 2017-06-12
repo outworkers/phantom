@@ -266,6 +266,8 @@ object CQLSyntax {
 
   object SASI {
 
+    val indexClass = "org.apache.cassandra.index.sasi.SASIIndex"
+
     object Analyzer {
       val nonTokenizing = "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer"
       val standard = "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer"
@@ -273,7 +275,9 @@ object CQLSyntax {
 
     val mode = "mode"
     val case_sensitive = "case_sensitive"
+    val analyzed = "analyzed"
     val analyzer_class = "analyzer_class"
+    val options = "OPTIONS"
     val normalize_lowercase = "normalize_lowercase"
     val normalize_uppercase = "normalize_uppercase"
 

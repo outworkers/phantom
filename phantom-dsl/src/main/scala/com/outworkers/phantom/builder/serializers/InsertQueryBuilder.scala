@@ -39,12 +39,12 @@ private[phantom] trait InsertQueryBuilder {
     init.pad.append("JSON").pad.append(CQLQuery.escape(jsonString))
   }
 
-  def columns(list: List[CQLQuery]): CQLQuery = {
-    CQLQuery.empty.wrapn(list.map(_.queryString))
+  def columns(seq: Seq[CQLQuery]): CQLQuery = {
+    CQLQuery.empty.wrapn(seq.map(_.queryString))
   }
 
-  def values(list: List[CQLQuery]): CQLQuery = {
-    CQLQuery(CQLSyntax.values).wrapn(list.map(_.queryString))
+  def values(seq: Seq[CQLQuery]): CQLQuery = {
+    CQLQuery(CQLSyntax.values).wrapn(seq.map(_.queryString))
   }
 
 }

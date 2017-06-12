@@ -58,15 +58,15 @@ private[builder] class UpdateQueryBuilder {
     Utils.operator(CQLSyntax.and, condition)
   }
 
-  def clauses(clauses: List[CQLQuery], sep: String = " "): CQLQuery = {
+  def clauses(clauses: Seq[CQLQuery], sep: String = " "): CQLQuery = {
     CQLQuery.empty.append(clauses.map(_.queryString).mkString(sep))
   }
 
-  def chain(clauses: List[CQLQuery]): CQLQuery = {
+  def chain(clauses: Seq[CQLQuery]): CQLQuery = {
     CQLQuery.empty.append(clauses.map(_.queryString).mkString(", "))
   }
 
-  def usingPart(queries: List[CQLQuery]): CQLQuery = {
+  def usingPart(queries: Seq[CQLQuery]): CQLQuery = {
     CQLQuery(CQLSyntax.using)
       .forcePad
       .append(clauses(queries, " " + CQLSyntax.And + " "))

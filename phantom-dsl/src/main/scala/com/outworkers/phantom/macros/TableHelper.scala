@@ -26,12 +26,6 @@ import shapeless.HList
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
-case class Debugger(
-  storeType: String,
-  recordMap: Map[String, String],
-  extractor: String
-)
-
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr <: HList
@@ -45,8 +39,6 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
   def fields(table: T): Seq[AbstractColumn[_]]
 
   def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
-
-  def debug: Debugger
 }
 
 object TableHelper {
@@ -74,7 +66,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     }
   }
 
-  def insertQueryType(table: Type, record: Type): Tree = {
+  protected[this] def insertQueryType(table: Type, record: Type): Tree = {
     tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
   }
 
@@ -93,9 +85,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
       .map(name => q"$tableTerm.$name")
 
     if (partitionKeys.isEmpty) {
-      error(
-        s"Table $tableName needs to have at least one partition key"
-      )
+      error(s"Table $tableName needs to have at least one partition key")
     }
 
     val primaries = filterColumns[PrimaryKey](columns)
@@ -177,7 +167,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
             // In theory this case should not re-occur because we only add elements
             // to the unprocessed if no direct term name matches were found.
             case Some(matchingName) =>
-              logger.warn(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
+              info(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
               val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
               hardMatch(columnFields - (recField.tpe, matchingName), tail, descriptor withMatch m)
 
@@ -199,7 +189,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
                     // Under such circumstances we use the first available column term name
                     // with respect to the write order.
                     val firstName = seq.headOption.getOrElse(
-                      c.abort(c.enclosingPosition, "Found empty term sequence which should never happen!!!")
+                      abort("Found empty term sequence which should never happen!!!")
                     )
 
                     val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
@@ -249,9 +239,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     recordFields match { case recField :: tail =>
       columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
         case None =>
-
-
-
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
           extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
 
@@ -265,7 +252,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
         case Some(seq) => seq.find(recField.name ==) match {
           case Some(matchingName) =>
-            logger.debug(s"Found multiple possible matches for ${recField.debugString}")
+            info(s"Found multiple possible matches for ${recField.debugString}")
             val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
 
             extractorRec(
@@ -349,9 +336,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 
-
     if (recordMembers.isEmpty) {
-      logger.debug(s"Supplied record type $recordTpe has no fields defined, are you sure this is what you want?")
+      warning(s"Supplied record type $recordTpe has no fields defined, are you sure this is what you want?")
       TableDescriptor.empty(tableTpe, recordTpe, colFields)
     } else {
       extractorRec(
@@ -408,10 +394,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
 
     if (strategy.isEmpty) {
-      echo("No NamingStrategy found in implicit scope.")
+      info("No NamingStrategy found in implicit scope.")
       q"$table"
     } else {
-      echo(s"Altering table name with strategy ${showCode(strategy)}")
+      info(s"Altering table name with strategy ${showCode(strategy)}")
       val tree = q"$strategy.inferName($table)"
       if (showTrees) {
         echo(showCode(tree))
@@ -471,8 +457,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
           def fields($tableTerm: $tableType): scala.collection.immutable.Seq[$colType] = {
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
-
-          def debug: $macroPkg.Debugger = ${descriptor.debugger}
        }
 
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]

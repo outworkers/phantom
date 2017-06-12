@@ -15,45 +15,43 @@
  */
 package com.outworkers.phantom.builder.query.engine
 
-abstract class QueryPart[T <: QueryPart[T]](val list: List[CQLQuery] = Nil) {
+abstract class QueryPart[T <: QueryPart[T]](val queries: Seq[CQLQuery] = Nil) {
 
-  def instance(l: List[CQLQuery]): T
+  def instance(l: Seq[CQLQuery]): T
 
-  def nonEmpty: Boolean = list.nonEmpty
+  def nonEmpty: Boolean = queries.nonEmpty
 
   def qb: CQLQuery
 
   def build(init: CQLQuery): CQLQuery = if (init.nonEmpty) {
     qb.bpad.prepend(init)
   } else {
-    qb.prepend(init)
+    qb
   }
 
-  def append(q: CQLQuery): T = instance(list ::: (q :: Nil))
+  def append(q: CQLQuery): T = instance(queries :+ q)
 
-  def append(q: CQLQuery*): T = instance(list ::: q.toList)
+  def append(q: Seq[CQLQuery]): T = instance(queries ++ q)
 
-  def append(q: List[CQLQuery]): T = instance(q ::: list)
-
-  def mergeList(list: List[CQLQuery]): MergeList
+  def mergeList(list: Seq[CQLQuery]): MergeList
 
   def merge[X <: QueryPart[X]](part: X): MergeList = {
-    val list = if (part.qb.nonEmpty) List(qb, part.qb) else List(qb)
+    val list = if (part.qb.nonEmpty) Seq(qb, part.qb) else Seq(qb)
 
     mergeList(list)
   }
 }
 
 
-case class MergeList(list: List[CQLQuery]) {
+case class MergeList(queries: Seq[CQLQuery]) {
 
-  def this(query: CQLQuery) = this(List(query))
+  def this(query: CQLQuery) = this(Seq(query))
 
-  def nonEmpty: Boolean = list.nonEmpty
+  def nonEmpty: Boolean = queries.nonEmpty
 
-  def apply(list: List[CQLQuery]): MergeList = new MergeList(list)
+  def apply(list: Seq[CQLQuery]): MergeList = new MergeList(list)
 
-  def build: CQLQuery = CQLQuery(list.map(_.queryString).mkString(" "))
+  def build: CQLQuery = CQLQuery(queries.map(_.queryString).mkString(" "))
 
   /**
     * This will build a merge list into a final executable query.
@@ -65,7 +63,7 @@ case class MergeList(list: List[CQLQuery]) {
     * @param init The initialisation query of the part merge.
     * @return A final, executable CQL query with all the parts merged.
     */
-  def build(init: CQLQuery): CQLQuery = if (list.exists(_.nonEmpty)) {
+  def build(init: CQLQuery): CQLQuery = if (queries.exists(_.nonEmpty)) {
     build.bpad.prepend(init.queryString)
   } else {
     init
@@ -75,7 +73,7 @@ case class MergeList(list: List[CQLQuery]) {
     val appendable = part build init
 
     if (appendable.nonEmpty) {
-      apply(list ::: List(appendable))
+      apply(Seq(appendable) ++ queries)
     } else {
       this
     }

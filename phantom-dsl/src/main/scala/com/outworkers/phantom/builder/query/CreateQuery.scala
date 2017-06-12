@@ -113,7 +113,7 @@ class CreateQuery[
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause): CreateQuery[Table, Record, Status] = {
-    if (withClause.list.isEmpty) {
+    if (withClause.queries.isEmpty) {
       new CreateQuery(
         table,
         init,
