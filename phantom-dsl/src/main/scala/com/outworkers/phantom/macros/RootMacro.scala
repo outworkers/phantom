@@ -29,8 +29,6 @@ trait RootMacro extends HListHelpers {
   val c: whitebox.Context
   import c.universe._
 
-  protected[this] val logger = LoggerFactory.getLogger(this.getClass)
-
   protected[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
   protected[this] val builder = q"_root_.com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"

@@ -264,4 +264,24 @@ object CQLSyntax {
     val CompactStorage = "COMPACT STORAGE"
   }
 
+  object SASI {
+
+    object Analyzer {
+      val nonTokenizing = "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer"
+      val standard = "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer"
+    }
+
+    val mode = "mode"
+    val case_sensitive = "case_sensitive"
+    val analyzer_class = "analyzer_class"
+    val normalize_lowercase = "normalize_lowercase"
+    val normalize_uppercase = "normalize_uppercase"
+
+    val tokenization_locale = "tokenization_locale"
+    val tokenization_enable_stemming = "tokenization_enable_stemming"
+    val tokenization_skip_stop_words = "tokenization_skip_stop_words"
+    val tokenization_normalize_lowercase = "tokenization_normalize_lowercase"
+    val tokenization_normalize_uppercase = "tokenization_normalize_uppercase"
+  }
+
 }

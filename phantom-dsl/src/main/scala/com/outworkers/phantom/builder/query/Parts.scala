@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.{CQLQuery, MergeList, QueryPart}
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 sealed abstract class CQLQueryPart[Part <: CQLQueryPart[Part]](
   override val list: List[CQLQuery]
@@ -159,6 +160,16 @@ sealed class OptionPart(override val list: List[CQLQuery] = Nil) extends CQLQuer
   override def qb: CQLQuery = QueryBuilder.Utils.options(list)
 
   override def instance(l: List[CQLQuery]): OptionPart = new OptionPart(l)
+
+  def option(key: String, value: String): OptionPart = {
+    val qb = QueryBuilder.Utils.option(
+      CQLQuery.escape(key),
+      CQLSyntax.Symbols.colon,
+      value
+    )
+
+    this.append(qb)
+  }
 }
 
 object OptionPart {
