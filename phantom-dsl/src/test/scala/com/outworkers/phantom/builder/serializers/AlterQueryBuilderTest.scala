@@ -27,7 +27,6 @@ import org.joda.time.Seconds
 
 import scala.concurrent.duration._
 
-
 class AlterQueryBuilderTest extends QueryBuilderTest {
 
   private[this] val basicTable = TestDatabase.basicTable

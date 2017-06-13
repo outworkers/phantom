@@ -19,11 +19,12 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.sasi.Analyzer
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.Analyzer
+import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
@@ -142,7 +143,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
   def sasiQueries()(implicit keySpace: KeySpace): ExecutableStatementList[Seq] = {
-    val queries = helper.sasiIndexes(instance).map { index =>
+    val queries = sasiIndexes.map { index =>
       QueryBuilder.Create.createSASIIndex(
         keySpace,
         tableName,
@@ -153,6 +154,8 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     }
     new ExecutableStatementList[Seq](queries)
   }
+
+  def sasiIndexes: Seq[SASIIndex[_ <: Analyzer[_]]] = helper.sasiIndexes(instance)
 
   /**
     * Automatically generated store method for the record type.

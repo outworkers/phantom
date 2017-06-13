@@ -36,8 +36,7 @@ trait RootMacro extends HListHelpers {
   protected[this] val enginePkg = q"_root_.com.outworkers.phantom.builder.query.engine"
   protected[this] val strTpe = tq"_root_.java.lang.String"
   protected[this] val colType = tq"_root_.com.outworkers.phantom.column.AbstractColumn[_]"
-  protected[this] val sasiIndexTpe = typeOf[SASIIndex[_]]
-  protected[this] val sasiIndexColumnTpe = typeOf[SASIIndex[_ <: Analyzer[_]] with AbstractColumn[_]]
+  protected[this] val sasiIndexTpe = typeOf[SASIIndex[_ <: Analyzer[_]]]
   protected[this] val collections = q"_root_.scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")
@@ -412,6 +411,11 @@ trait RootMacro extends HListHelpers {
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
     columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol ==))
+  }
+
+
+  def filterColumns(columns: Seq[Type], filter: Type): Seq[Type] = {
+    columns.filter(t => t <:< filter)
   }
 
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {

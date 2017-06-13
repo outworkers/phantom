@@ -16,16 +16,21 @@
 package com.outworkers.phantom.builder.query.sasi
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.macros.TableHelper
-import com.outworkers.phantom.tables.Article
-import com.outworkers.phantom.tables.sasi.SASIIndexedArticles
 
 class SASIQueriesTest extends PhantomSuite {
 
   it should "automatically find SASI indexed columns " in {
-    val th = TableHelper[SASIIndexedArticles, Article]
-    val sasiColumns = th.sasiIndexes(database.sasiIndexedArticles)
-
+    val sasiColumns = database.sasiIndexedArticles.sasiIndexes
+    database.sasiIndexedArticles.sasiQueries().queries.size shouldEqual 1
     sasiColumns.exists(_.name == database.sasiIndexedArticles.orderId.name) shouldEqual true
+  }
+
+  it should "generate a correct query for a SASI index" in {
+    val queries = database.sasiIndexedArticles.sasiQueries().queries
+    queries.size shouldEqual 1
+
+    val qs = queries.headOption.value.queryString
+    val expected = "CREATE CUSTOM INDEX sASIIndexedArticles_orderId_idx ON phantom.sASIIndexedArticles(orderId) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
+    qs shouldEqual expected
   }
 }
