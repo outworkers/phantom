@@ -40,7 +40,7 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   def fields(table: T): Seq[AbstractColumn[_]]
 
-  def sasiIndexes(table: T): Seq[SASIIndex[_ <: Analyzer[_]] with AbstractColumn[_]]
+  def sasiIndexes(table: T): Seq[SASIIndex[_ <: Analyzer[_]]]
 
   def store(table: T, input: Repr)(implicit space: KeySpace): InsertQuery.Default[T, R]
 }
@@ -465,8 +465,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
             scala.collection.immutable.Seq.apply[$colType](..$accessors)
           }
 
-          def sasiIndexes($tableTerm: $tableType): scala.collection.immutable.Seq[$sasiIndexColumnTpe] = {
-            scala.collection.immutable.Seq.apply[$sasiIndexColumnTpe](..$sasiIndexes)
+          def sasiIndexes($tableTerm: $tableType): scala.collection.immutable.Seq[$sasiIndexTpe] = {
+            scala.collection.immutable.Seq.apply[$sasiIndexTpe](..$sasiIndexes)
           }
        }
 

@@ -22,6 +22,8 @@ import com.outworkers.phantom.column.AbstractColumn
 trait SASIIndex[A <: Analyzer[A]] {
   self: AbstractColumn[_] =>
 
+  def name: String
+
   def analyzer: A
 
   def analyzerOptions: CQLQuery = analyzer.qb
