@@ -27,9 +27,9 @@ class SelectFunctionsTesting extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
-    database.timeuuidTable.insertSchema()
-    database.primitives.insertSchema()
+    database.recipes.createSchema()
+    database.timeuuidTable.createSchema()
+    database.primitives.createSchema()
   }
 
   implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {

@@ -27,7 +27,7 @@ class DeleteQueryTests extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
+    database.primitives.createSchema()
   }
 
   "A delete query" should "delete a row by its single primary key" in {

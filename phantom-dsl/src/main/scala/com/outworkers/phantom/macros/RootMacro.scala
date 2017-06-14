@@ -15,10 +15,10 @@
  */
 package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.{CassandraTable, SelectTable}
+import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
 import com.outworkers.phantom.column.AbstractColumn
-import org.slf4j.LoggerFactory
-import shapeless.{HList, HNil}
+import com.outworkers.phantom.keys.SASIIndex
+import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
@@ -29,8 +29,6 @@ trait RootMacro extends HListHelpers {
   val c: whitebox.Context
   import c.universe._
 
-  protected[this] val logger = LoggerFactory.getLogger(this.getClass)
-
   protected[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
   protected[this] val builder = q"_root_.com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
@@ -38,6 +36,7 @@ trait RootMacro extends HListHelpers {
   protected[this] val enginePkg = q"_root_.com.outworkers.phantom.builder.query.engine"
   protected[this] val strTpe = tq"_root_.java.lang.String"
   protected[this] val colType = tq"_root_.com.outworkers.phantom.column.AbstractColumn[_]"
+  protected[this] val sasiIndexTpe = typeOf[SASIIndex[_ <: Mode]]
   protected[this] val collections = q"_root_.scala.collection.immutable"
   protected[this] val rowTerm = TermName("row")
   protected[this] val tableTerm = TermName("table")
@@ -211,15 +210,6 @@ trait RootMacro extends HListHelpers {
     }
 
     /**
-      * Creates a quoted tree wrapping a [[com.outworkers.phantom.macros.Debugger]] instance definition.
-      * This will contain debug information about the macro output.
-      * @return A tree with the definition.
-      */
-    def debugger: Tree = {
-      q"new $macroPkg.Debugger($storeTypeDebugString, $debugMap, $showExtractor)"
-    }
-
-    /**
       * The reference term is a tuple field pointing to the tuple index found on a store type.
       * If the Cassandra table has more columns than the record field, such as when users
       * chose to store a denormalised variant of a record indexed by a new ID, the store
@@ -293,7 +283,11 @@ trait RootMacro extends HListHelpers {
         }
 
         val finalDefinitions = unmatchedColumnInserts ++ insertions
-        logger.debug(s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}")
+        c.info(
+          c.enclosingPosition,
+          s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}",
+          force = false
+        )
 
         val tree = q"""$tableTerm.insert.values(..$finalDefinitions)"""
         Some(tree)
@@ -302,26 +296,22 @@ trait RootMacro extends HListHelpers {
       }
     }
 
-    def storeTypeDebugString: String = {
-      val recString = s"record: ${printType(recordType)}"
-      if (unmatchedColumns.isEmpty) {
-        recString
-      } else {
-        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
-        val cols = unmatchedColumns.map(f => s"${f.name.decodedName.toString} -> ${printType(f.tpe)}")
-        cols.mkString(", ") + s", $recString"
-      }
-    }
-
     def hListStoreType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
         Some(mkHListType(List(recordType)))
       } else {
-        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        c.warning(
+          c.enclosingPosition,
+          s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}"
+        )
+
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
         if (cols.size > maxTupleSize) {
-          logger.debug(s"Created an HList type of ${cols.size} fields, consider reducing the column count.")
+          c.warning(
+            c.enclosingPosition,
+            s"Created an HList type of ${cols.size} fields, consider reducing the column count for clarity"
+          )
         }
 
         Some(mkHListType(cols.toList))
@@ -331,22 +321,27 @@ trait RootMacro extends HListHelpers {
     private[this] val maxTupleSize = 22
 
     /**
-     * Automatically tuples the types found in a table as described in the
-     * documentation.
+     * Automatically creates a [[shapeless.HList]] from the types found in a table as described in the documentation.
      */
     def storeType: Option[Type] = {
       if (unmatchedColumns.isEmpty) {
         Some(mkHListType(recordType :: Nil))
       } else {
-        logger.debug(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
+        c.info(
+          c.enclosingPosition,
+          s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}",
+          force = false
+        )
+
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
         if (cols.size > maxTupleSize) {
-          logger.debug(s"Unable to create a tupled type for ${cols.size} fields, too many unmatched columns for ${printType(tableTpe)}")
-          None
-        } else {
-          Some(mkHListType(cols.toList))
+          c.warning(
+            c.enclosingPosition,
+            s"Table ${printType(tableTpe)} has ${cols.size} fields, consider reducing the number of columns"
+          )
         }
+        Some(mkHListType(cols.toList))
       }
     }
 
@@ -416,6 +411,11 @@ trait RootMacro extends HListHelpers {
 
   def filterColumns[Filter : TypeTag](columns: Seq[Type]): Seq[Type] = {
     columns.filter(_.baseClasses.exists(typeOf[Filter].typeSymbol ==))
+  }
+
+
+  def filterColumns(columns: Seq[Type], filter: Type): Seq[Type] = {
+    columns.filter(t => t <:< filter)
   }
 
   def extractColumnMembers(table: Type, columns: List[Symbol]): List[Column.Field] = {

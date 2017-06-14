@@ -16,11 +16,12 @@
 package com.outworkers.phantom.builder.ops
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.{WhereClause, OrderingColumn, CompareAndSetClause}
+import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.sasi.{Mode, SASINumericOps, SASITextOps}
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.keys.{Undroppable, Indexed}
+import com.outworkers.phantom.keys.{Indexed, Undroppable}
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
@@ -67,23 +68,6 @@ sealed class CasConditionalOperators[RR](col: AbstractColumn[RR]) {
 
   final def isLte(value: RR): CompareAndSetClause.Condition = {
     new CompareAndSetClause.Condition(QueryBuilder.Where.lte(col.name, col.asCql(value)))
-  }
-}
-
-sealed class SetConditionals[
-  T <: CassandraTable[T, R],
-  R, RR
-](val col: AbstractColColumn[T, R, Set, RR]) {
-
-  /**
-   * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
-   * @param elem The element to check for in the contains clause.
-   * @return A Where clause.
-   */
-  final def contains(elem: RR): WhereClause.Condition = {
-    new WhereClause.Condition(
-      QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
-    )
   }
 }
 
@@ -160,12 +144,6 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   implicit def orderingColumn[RR](col: AbstractColumn[RR] with PrimaryKey): OrderingColumn[RR] = new OrderingColumn[RR](col)
 
-  implicit def setColumnToQueryColumn[
-    T <: CassandraTable[T, R],
-    R,
-    RR
-  ](col: AbstractColColumn[T, R, Set, RR] with Index): SetConditionals[T, R, RR] = new SetConditionals(col)
-
   /**
     * Definition used to cast a comparison clause to Map entry lookup based on a secondary index.
     * @param cond The column update clause generated from MapColumn.apply(keyValue)
@@ -197,20 +175,21 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new MapConditionals(col)
   }
 
-  /**
-    * Definition used to cast an index map column with keys indexed to a query-able definition.
-    * This will allow users to use "CONTAINS KEY" clauses to search for matches based on map keys.
-    *
-    * @param col The map column to cast to a Map column secondary index query.
-    * @tparam T The Cassandra table inner type.
-    * @tparam R The record type of the table.
-    * @tparam K The type of the key held in the map.
-    * @tparam V The type of the value held in the map.
-    * @return A MapConditionals class with CONTAINS KEY support.
-    */
-  implicit def mapKeysColumnToQueryColumn[T <: CassandraTable[T, R], R, K, V](
-    col: AbstractMapColumn[T, R, K, V] with Index with Keys): MapKeyConditionals[T, R, K, V] = {
-    new MapKeyConditionals(col)
+  implicit def sasiGenericOps[RR : Primitive](
+    col: AbstractColumn[RR] with SASIIndex[_ <: Mode]
+  ): QueryColumn[RR] = {
+    new QueryColumn[RR](col.name)
   }
 
+  implicit def sasiNumericOps[RR : Primitive : Numeric](
+    col: AbstractColumn[RR] with SASIIndex[Mode.Sparse]
+  ): SASINumericOps[RR] = {
+    new SASINumericOps[RR](col.name)
+  }
+
+  implicit def sasiTextOps[M <: Mode](
+    col: AbstractColumn[String] with SASIIndex[M]
+  )(implicit ev: Primitive[String]): SASITextOps[M] = {
+    new SASITextOps[M](col.name)
+  }
 }

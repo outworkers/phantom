@@ -25,7 +25,7 @@ class OptionalIndexesTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.optionalIndexesTable.insertSchema()
+    database.optionalIndexesTable.createSchema()
   }
 
   it should "store a record and then retrieve it using an optional index" in {

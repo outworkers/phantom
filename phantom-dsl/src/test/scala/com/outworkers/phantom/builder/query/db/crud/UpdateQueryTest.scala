@@ -28,9 +28,9 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
-    database.optionalPrimitives.insertSchema()
-    database.testTable.insertSchema()
+    database.primitives.createSchema()
+    database.optionalPrimitives.createSchema()
+    database.testTable.createSchema()
   }
 
   "Update" should "work fine for primitives columns" in {
@@ -164,7 +164,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
       .modify(_.boolean setIfDefined Some(updatedBool))
       .and(_.date setIfDefined None)
 
-    query.setPart.list.size shouldEqual 1
+    query.setPart.queries.size shouldEqual 1
     query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
       database.optionalPrimitives.boolean.name,
       updatedBool.toString
@@ -197,7 +197,7 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
       .and(_.inet setIfDefined None)
 
 
-    query.setPart.list.size shouldEqual 1
+    query.setPart.queries.size shouldEqual 1
     query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
       database.optionalPrimitives.boolean.name,
       updatedBool.toString

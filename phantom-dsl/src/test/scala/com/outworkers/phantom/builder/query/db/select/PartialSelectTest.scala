@@ -26,8 +26,8 @@ class PartialSelectTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
-    database.wideTable.insertSchema()
+    database.primitives.createSchema()
+    database.wideTable.createSchema()
   }
 
   "Partially selecting 1 fields" should "select 1 field" in {

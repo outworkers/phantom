@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture, Promis
 
 private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
 
-  protected[this] def scalaQueryStringExecuteToFuture(st: Statement)(
+  protected[this] def statementToFuture(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): ScalaFuture[ResultSet] = {

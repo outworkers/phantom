@@ -23,9 +23,9 @@ import com.outworkers.phantom.dsl._
 class TupleColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.tuple2Table.insertSchema()
-    database.nestedTupleTable.insertSchema()
-    database.tupleCollectionsTable.insertSchema()
+    database.tuple2Table.createSchema()
+    database.nestedTupleTable.createSchema()
+    database.tupleCollectionsTable.createSchema()
   }
 
   it should "store and retrieve a record with a tuple column" in {

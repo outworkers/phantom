@@ -27,17 +27,17 @@ class InsertTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.listCollectionTable.insertSchema()
-    database.primitives.insertSchema()
-    database.oldPrimitives.insertSchema()
-    database.optDerivedTable.insertSchema()
+    database.listCollectionTable.createSchema()
+    database.primitives.createSchema()
+    database.oldPrimitives.createSchema()
+    database.optDerivedTable.createSchema()
 
     if (session.v4orNewer) {
-      database.primitivesCassandra22.insertSchema()
+      database.primitivesCassandra22.createSchema()
     }
 
-    database.testTable.insertSchema()
-    database.recipes.insertSchema()
+    database.testTable.createSchema()
+    database.recipes.createSchema()
   }
 
   "Insert" should "work fine for primitives columns defined with the old DSL" in {

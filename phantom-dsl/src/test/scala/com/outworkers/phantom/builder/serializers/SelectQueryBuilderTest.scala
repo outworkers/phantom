@@ -80,7 +80,7 @@ class SelectQueryBuilderTest extends QueryBuilderTest {
           QueryBuilder.Select.Ordering.descending("test_3")
         )
 
-        val qb = QueryBuilder.Select.Ordering.orderBy(orderings: _*).queryString
+        val qb = QueryBuilder.Select.Ordering.orderBy(orderings).queryString
 
         qb shouldEqual "ORDER BY test ASC, test_2 ASC, test_3 DESC"
       }

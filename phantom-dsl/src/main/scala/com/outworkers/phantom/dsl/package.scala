@@ -26,14 +26,15 @@ import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
-import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
+import com.outworkers.phantom.keys.Indexed
 import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
 
@@ -44,7 +45,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with Operators
   with UsingClauseOperations
   with KeySpaceConstruction
-  with DeleteImplicits {
+  with DeleteImplicits
+  with DefaultSASIOps {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
 
@@ -196,6 +198,14 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
   type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
+  val Analyzer = com.outworkers.phantom.builder.query.sasi.Analyzer
+  val Mode = com.outworkers.phantom.builder.query.sasi.Mode
+  type Analyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer[M]
+  type SASIIndex[M <: Mode] = com.outworkers.phantom.keys.SASIIndex[M]
+  type CustomIndex[M <: Mode] = SASIIndex[M]
+
+  type StandardAnalyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer[M]
+  type NonTokenizingAnalyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer.NonTokenizingAnalyzer[M]
 
   val Version = DefaultVersions
 
@@ -451,6 +461,59 @@ package object dsl extends ImplicitMechanism with CreateImplicits
         QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
           col.keyAsCql(key) -> col.valueAsCql(value)
         }.toSeq : _*)
+      )
+    }
+  }
+
+  implicit class SetConditionals[
+    T <: CassandraTable[T, R],
+    R, RR
+  ](val col: AbstractColColumn[T, R, Set, RR]) extends AnyVal {
+
+    /**
+      * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
+      * @param elem The element to check for in the contains clause.
+      * @return A Where clause.
+      */
+    final def contains(elem: RR): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
+      )
+    }
+  }
+
+  /**
+    * Definition used to cast an index map column with keys indexed to a query-able definition.
+    * This will allow users to use "CONTAINS KEY" clauses to search for matches based on map keys.
+    *
+    * @param col The map column to cast to a Map column secondary index query.
+    * @tparam T The Cassandra table inner type.
+    * @tparam R The record type of the table.
+    * @tparam K The type of the key held in the map.
+    * @tparam V The type of the value held in the map.
+    * @return A MapConditionals class with CONTAINS KEY support.
+    */
+  implicit class MapKeyConditionals[
+    T <: CassandraTable[T, R],
+    R,
+    K,
+    V
+  ](val col: AbstractMapColumn[T, R, K, V] with Indexed with Keys) extends AnyVal {
+
+    /**
+      * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
+      * This allows users to lookup records by a KEY inside a map column of a table.
+      *
+      * Key support is not yet enabled in phantom because index generation has to be done differently.
+      * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
+      * This limitation will be lifted in the future.
+      *
+      * @param elem The element to check for in the contains clause.
+      * @return A Where clause.
+      */
+    final def containsKey(elem: K): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
       )
     }
   }

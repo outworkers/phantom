@@ -16,12 +16,15 @@
 package com.outworkers.phantom
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
@@ -98,11 +101,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def insertSchema()(
+  def createSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
-  ): Unit = Await.result(autocreate(keySpace).future(), 10.seconds)
+  ): ResultSet = Await.result(autocreate(keySpace).future(), 10.seconds)
 
   def tableName: String = helper.tableName
 
@@ -138,6 +141,21 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   final def update()(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = UpdateQuery(instance)
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
+
+  def sasiQueries()(implicit keySpace: KeySpace): ExecutableStatementList[Seq] = {
+    val queries = sasiIndexes.map { index =>
+      QueryBuilder.Create.createSASIIndex(
+        keySpace,
+        tableName,
+        QueryBuilder.Create.sasiIndexName(tableName, index.name),
+        index.name,
+        index.analyzer.qb
+      )
+    }
+    new ExecutableStatementList[Seq](queries)
+  }
+
+  def sasiIndexes: Seq[SASIIndex[_ <: Mode]] = helper.sasiIndexes(instance)
 
   /**
     * Automatically generated store method for the record type.

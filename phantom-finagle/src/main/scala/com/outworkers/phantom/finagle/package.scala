@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom
 
-import java.util.{List => JavaList}
-
 import com.datastax.driver.core.{PagingState, Session, SimpleStatement, Statement, Duration => DatastaxDuration, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
@@ -320,18 +318,27 @@ package object finagle extends SessionAugmenterImplicits {
 
       val root = statementToPromise(new SimpleStatement(query.qb.terminate.queryString))
 
-      if (query.table.secondaryKeys.isEmpty) {
-        root
-      } else {
-        root flatMap {
-          res => query.indexList.execute() map { _ =>
-            Manager.logger.debug(
-              s"Creating secondary indexes on ${QueryBuilder.keyspace(query.keySpace.name, query.table.tableName).queryString}"
-            )
-            res
+      for {
+        init <- root
+        secondaryIndexFuture = if (query.indexList.isEmpty) Future.value(Seq.empty[ResultSet]) else query.indexList.execute()
+        secondaryIndexes <- secondaryIndexFuture map { results =>
+          Manager.logger.debug(
+            s"""
+              Creating secondary indexes on ${QueryBuilder.keyspace(query.keySpace.name, query.table.tableName).queryString}
+            """
+          )
+          results
+        }
+        sasiFutures = {
+          val sasiQueries = query.table.sasiQueries()(query.keySpace)
+          if (sasiQueries.isEmpty) {
+            Future.value(Seq.empty[ResultSet])
+          } else {
+            sasiQueries.execute()
           }
         }
-      }
+        sasiIndexes <- sasiFutures
+      } yield init
     }
   }
 

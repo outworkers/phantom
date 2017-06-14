@@ -56,6 +56,7 @@ object CQLSyntax {
   val distinct = "DISTINCT"
 
   val create = "CREATE"
+  val custom = "CUSTOM"
 
   val insert = "INSERT"
   val ifNotExists = "IF NOT EXISTS"
@@ -106,6 +107,8 @@ object CQLSyntax {
     val `}` = "}"
     val `[` = "["
     val `]` = "]"
+    val underscsore = "_"
+    val percent = "%"
 
     val dot = "."
     val colon = ":"
@@ -135,6 +138,7 @@ object CQLSyntax {
 
     val in = "IN"
     val eqs = "="
+    val like = "LIKE"
     val notEqs = "!="
 
     val contains = "CONTAINS"
@@ -262,6 +266,38 @@ object CQLSyntax {
 
   object StorageMechanisms {
     val CompactStorage = "COMPACT STORAGE"
+  }
+
+  object SASI {
+
+    val suffix = "idx"
+    val indexClass = "org.apache.cassandra.index.sasi.SASIIndex"
+
+    object Analyzer {
+      val nonTokenizing = "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer"
+      val standard = "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer"
+    }
+
+    val mode = "mode"
+
+    object Modes {
+      val Contains = "CONTAINS"
+      val Prefix = "PREFIX"
+      val Sparse = "SPARSE"
+    }
+
+    val case_sensitive = "case_sensitive"
+    val analyzed = "analyzed"
+    val analyzer_class = "analyzer_class"
+    val options = "OPTIONS"
+    val normalize_lowercase = "normalize_lowercase"
+    val normalize_uppercase = "normalize_uppercase"
+
+    val tokenization_locale = "tokenization_locale"
+    val tokenization_enable_stemming = "tokenization_enable_stemming"
+    val tokenization_skip_stop_words = "tokenization_skip_stop_words"
+    val tokenization_normalize_lowercase = "tokenization_normalize_lowercase"
+    val tokenization_normalize_uppercase = "tokenization_normalize_uppercase"
   }
 
 }

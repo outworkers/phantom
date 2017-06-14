@@ -45,7 +45,7 @@ class RelationalOperatorsTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    database.timeSeriesTable.insertSchema()
+    database.timeSeriesTable.createSchema()
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()

@@ -31,8 +31,8 @@ class IterateePerformanceTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
-    database.primitivesJoda.insertSchema()
+    database.primitives.createSchema()
+    database.primitivesJoda.createSchema()
   }
 
   it should "retrieve the correct number of results from the database and collect them using an iterator" in {

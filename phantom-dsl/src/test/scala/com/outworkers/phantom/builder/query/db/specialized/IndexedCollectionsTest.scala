@@ -26,11 +26,11 @@ class IndexedCollectionsTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     if (cassandraVersion.value >= Version.`2.3.0`) {
-      database.indexedCollectionsTable.insertSchema()
+      database.indexedCollectionsTable.createSchema()
     }
 
     if (cassandraVersion.value >= Version.`2.3.0`) {
-      database.indexedEntriesTable.insertSchema()
+      database.indexedEntriesTable.createSchema()
     }
   }
 

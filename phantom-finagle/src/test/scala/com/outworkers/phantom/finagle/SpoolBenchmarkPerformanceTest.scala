@@ -28,7 +28,7 @@ import scala.concurrent.{Await, Future}
 
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
-  TestDatabase.primitivesJoda.insertSchema()
+  TestDatabase.primitivesJoda.createSchema()
 
   implicit object JodaTimeSampler extends Sample[DateTime] {
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)

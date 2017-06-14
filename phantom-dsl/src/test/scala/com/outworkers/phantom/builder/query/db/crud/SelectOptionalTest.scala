@@ -24,9 +24,9 @@ class SelectOptionalTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.optionalPrimitives.insertSchema()
+    database.optionalPrimitives.createSchema()
     if (session.v4orNewer) {
-      database.optionalPrimitivesCassandra22.insertSchema()
+      database.optionalPrimitivesCassandra22.createSchema()
     }
   }
 

@@ -30,7 +30,7 @@ class OrderByTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeuuidTable.insertSchema()
+    database.timeuuidTable.createSchema()
   }
 
   it should "store a series of records and retrieve them in the right order" in {

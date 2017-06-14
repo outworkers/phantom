@@ -28,9 +28,9 @@ class SelectFunctionsTesting extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
-    database.timeuuidTable.insertSchema()
-    database.primitives.insertSchema()
+    database.recipes.createSchema()
+    database.timeuuidTable.createSchema()
+    database.primitives.createSchema()
   }
 
   it should "retrieve the writetime of a field from Cassandra" in {
@@ -413,6 +413,20 @@ class SelectFunctionsTesting extends PhantomSuite {
     val chain = for {
       _ <- database.primitives.store(record).future()
       res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).aggregate()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // COUNT function
+  it should "retrieve the count of records from from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(count()).aggregate()
     } yield res
 
     whenReady(chain) { res =>

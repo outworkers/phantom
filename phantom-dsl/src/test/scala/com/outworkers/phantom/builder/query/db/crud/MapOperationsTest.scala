@@ -25,9 +25,9 @@ class MapOperationsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
-    database.events.insertSchema()
-    database.scalaPrimitivesTable.insertSchema()
+    database.recipes.createSchema()
+    database.events.createSchema()
+    database.scalaPrimitivesTable.createSchema()
   }
 
   it should "support a single item map put operation" in {

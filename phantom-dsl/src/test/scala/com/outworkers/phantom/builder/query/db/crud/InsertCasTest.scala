@@ -25,10 +25,10 @@ class InsertCasTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
+    database.primitives.createSchema()
     database.primitives.truncate().future().block(defaultScalaTimeout)
-    database.testTable.insertSchema()
-    database.recipes.insertSchema()
+    database.testTable.createSchema()
+    database.recipes.createSchema()
   }
 
   "Standard inserts" should "not create multiple database entries and perform upserts instead" in {

@@ -400,6 +400,22 @@ private[phantom] class RootSelectBlock[
     }
   }
 
+  def function[RR](f1: TypedClause.Condition[RR])(
+    implicit keySpace: KeySpace
+  ): SelectQuery.Default[T, RR] = {
+    new SelectQuery(
+      table,
+      f1.extractor,
+      QueryBuilder.Select.select(table.tableName, keySpace.name, f1.qb),
+      WherePart.empty,
+      OrderPart.empty,
+      LimitedPart.empty,
+      FilteringPart.empty,
+      UsingPart.empty,
+      count = false
+    )
+  }
+
   def function[RR](f1: T => TypedClause.Condition[RR])(
     implicit keySpace: KeySpace
   ): SelectQuery.Default[T, RR] = {

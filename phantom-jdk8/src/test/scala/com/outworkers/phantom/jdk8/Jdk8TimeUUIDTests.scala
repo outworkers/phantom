@@ -31,7 +31,7 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeuuidTable.insertSchema()
+    database.timeuuidTable.createSchema()
   }
 
   it should "be able to store and retrieve a time slice of records based on an OffsetDateTime" in {

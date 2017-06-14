@@ -28,8 +28,8 @@ class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.staticTable.insertSchema()
-    database.staticCollectionTable.insertSchema()
+    database.staticTable.createSchema()
+    database.staticCollectionTable.createSchema()
   }
 
   it should "use a static value for a static column" in {

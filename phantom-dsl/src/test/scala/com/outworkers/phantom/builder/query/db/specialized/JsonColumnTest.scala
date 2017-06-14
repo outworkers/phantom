@@ -24,7 +24,7 @@ class JsonColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.jsonTable.insertSchema()
+    database.jsonTable.createSchema()
   }
 
   it should "allow storing a JSON record" in {

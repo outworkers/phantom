@@ -24,7 +24,7 @@ class CountTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.insertSchema()
+    database.primitivesJoda.createSchema()
   }
 
 

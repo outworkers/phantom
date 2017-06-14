@@ -17,12 +17,12 @@ package com.outworkers.phantom.tables
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.bugs.{SchemaBug656Table, SchemaBug663Table}
+import com.outworkers.phantom.tables.sasi.{MultiSASITable, SASIIndexedArticles}
 
 class TestDatabase(
   override val connector: CassandraConnection
@@ -99,6 +99,8 @@ class TestDatabase(
   object schemaBug663Table extends SchemaBug663Table with Connector
 
   object derivedPrimitivesTable extends DerivedPrimitivesTable with Connector
+  object sasiIndexedArticles extends SASIIndexedArticles with Connector
+  object multiSasiTable extends MultiSASITable with Connector
 }
 
 object Connector {

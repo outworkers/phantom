@@ -33,7 +33,7 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
   private[this] final val iteratorLimit = 100
 
   it should "retrieve the right amount of results" in {
-    TestDatabase.primitivesJoda.insertSchema()
+    TestDatabase.primitivesJoda.createSchema()
     val fs = for {
       step <- 1 to 50
       rows = Iterator.fill(iteratorLimit)(gen[JodaRow])
