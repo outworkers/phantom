@@ -26,11 +26,11 @@ class PreparedSelectQueryTest extends PhantomSuite {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
 
-    database.recipes.insertSchema()
-    database.articlesByAuthor.insertSchema()
-    database.primitives.insertSchema()
+    database.recipes.createSchema()
+    database.articlesByAuthor.createSchema()
+    database.primitives.createSchema()
     if (session.v4orNewer) {
-      database.primitivesCassandra22.insertSchema()
+      database.primitivesCassandra22.createSchema()
     }
   }
 

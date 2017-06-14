@@ -30,7 +30,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
+    database.primitives.createSchema()
   }
 
   override def withFixture(test: NoArgTest): Outcome = {

@@ -31,7 +31,7 @@ abstract class SASIIndexedArticles extends Table[SASIIndexedArticles, Article] {
 case class MultiSASIRecord(
   id: UUID,
   name: String,
-  description: String,
+  customers: Int,
   phoneNumber: String,
   set: Set[Int],
   list: List[String]
@@ -46,10 +46,8 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
     }
   }
 
-  object description extends StringColumn with SASIIndex[Mode.Sparse] {
-    override def analyzer: StandardAnalyzer[Mode.Sparse] = {
-      Analyzer.StandardAnalyzer[Mode.Sparse]().skipStopWords(true).enableStemming(true)
-    }
+  object customers extends IntColumn with SASIIndex[Mode.Sparse] {
+    override def analyzer: Analyzer[Mode.Sparse] = Analyzer[Mode.Sparse]()
   }
 
   object phoneNumber extends StringColumn with SASIIndex[Mode.Prefix] {
@@ -58,6 +56,6 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
     }
   }
 
-  object set extends SetColumn[Int]
-  object list extends ListColumn[String]
+  object setCol extends SetColumn[Int]
+  object listCol extends ListColumn[String]
 }

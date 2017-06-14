@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.ops
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.sasi.{Mode, SASITextOps}
+import com.outworkers.phantom.builder.query.sasi.{Mode, SASINumericOps, SASITextOps}
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.keys.{Indexed, Undroppable}
@@ -181,9 +181,15 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new QueryColumn[RR](col.name)
   }
 
+  implicit def sasiNumericOps[RR : Primitive : Numeric](
+    col: AbstractColumn[RR] with SASIIndex[Mode.Sparse]
+  ): SASINumericOps[RR] = {
+    new SASINumericOps[RR](col.name)
+  }
+
   implicit def sasiTextOps[M <: Mode](
     col: AbstractColumn[String] with SASIIndex[M]
   )(implicit ev: Primitive[String]): SASITextOps[M] = {
-    new SASITextOps[M](col)
+    new SASITextOps[M](col.name)
   }
 }

@@ -25,7 +25,7 @@ class BatchQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.insertSchema()
+    database.primitivesJoda.createSchema()
   }
 
   it should "correctly execute a chain of INSERT queries" in {

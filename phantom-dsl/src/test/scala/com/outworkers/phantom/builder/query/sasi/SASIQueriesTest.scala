@@ -31,7 +31,7 @@ class SASIQueriesTest extends PhantomSuite {
     queries.size shouldEqual 1
 
     val qs = queries.headOption.value.queryString
-    val expected = "CREATE CUSTOM INDEX sASIIndexedArticles_orderId_idx ON phantom.sASIIndexedArticles(orderId) " +
+    val expected = "CREATE CUSTOM INDEX IF NOT EXISTS sASIIndexedArticles_orderId_idx ON phantom.sASIIndexedArticles(orderId) " +
       "USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = " +
       "{'mode': 'PREFIX', 'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
     qs shouldEqual expected
@@ -67,9 +67,9 @@ class SASIQueriesTest extends PhantomSuite {
   }
 
   it should "allow using a prefix clause on a Mode.Sparse Text column" in {
-    val qb = database.multiSasiTable.select.where(_.description like prefix("test")).queryString
+    val qb = database.multiSasiTable.select.where(_.customers like prefix(5)).queryString
 
-    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE description LIKE 'test%';"
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE customers LIKE '5%';"
   }
 
   it should "not allow using a suffix clause on a Mode.Sparse Text column" in {
@@ -77,7 +77,7 @@ class SASIQueriesTest extends PhantomSuite {
   }
 
   it should "not allow using a contains clause on a Mode.Sparse Text column" in {
-    """database.multiSasiTable.select.where(_.description like contains("test"))""" shouldNot compile
+    """database.multiSasiTable.select.where(_.customers like contains(5))""" shouldNot compile
   }
 
   it should "not allow using a suffix clause on a Mode.Prefix Text column" in {

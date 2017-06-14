@@ -101,11 +101,11 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def insertSchema()(
+  def createSchema()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor
-  ): Unit = Await.result(autocreate(keySpace).future(), 10.seconds)
+  ): ResultSet = Await.result(autocreate(keySpace).future(), 10.seconds)
 
   def tableName: String = helper.tableName
 

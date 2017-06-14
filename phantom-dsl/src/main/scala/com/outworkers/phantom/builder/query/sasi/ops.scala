@@ -19,55 +19,85 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.WhereClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.sasi.Mode.{Contains, Prefix, Sparse}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.dsl._
 
-trait SASIOp {
+trait SASIOp[RR] {
   def qb: CQLQuery
 }
 
-sealed class PrefixOp(value: String) extends SASIOp {
+sealed class PrefixOp[RR](value: String) extends SASIOp[RR] {
   override def qb: CQLQuery = QueryBuilder.SASI.prefixValue(value)
 }
 
-sealed class SuffixOp(value: String) extends SASIOp {
+sealed class SuffixOp[RR](value: String) extends SASIOp[RR] {
   override def qb: CQLQuery = QueryBuilder.SASI.suffixValue(value)
 }
 
-sealed class ContainsOp(value: String) extends SASIOp {
+sealed class ContainsOp[RR](value: String) extends SASIOp[RR] {
   override def qb: CQLQuery = QueryBuilder.SASI.containsValue(value)
 }
 
 private[phantom] trait DefaultSASIOps {
   object prefix {
-    def apply(value: String): PrefixOp = new PrefixOp(value)
+    def apply(value: String): PrefixOp[String] = new PrefixOp(value)
+
+    def apply[RR : Numeric](value: RR): PrefixOp[RR] = new PrefixOp(value.toString)
   }
 
   object suffix {
-    def apply(value: String): SuffixOp = new SuffixOp(value)
+    def apply(value: String): SuffixOp[String] = new SuffixOp(value)
+
+    def apply[RR : Numeric](value: RR): SuffixOp[RR] = new SuffixOp(value.toString)
   }
 
   object contains {
-    def apply(value: String): ContainsOp = new ContainsOp(value)
+    def apply(value: String): ContainsOp[String] = new ContainsOp(value)
+
+    def apply[RR : Numeric](value: RR): ContainsOp[RR] = new ContainsOp(value.toString)
   }
 }
 
-trait AllowedSASIOp[M <: Mode, Op <: SASIOp]
+trait AllowedSASIOp[M <: Mode, Op <: SASIOp[_]]
 
 object AllowedSASIOp {
-  implicit val modePrefixCanPrefix = new AllowedSASIOp[Mode.Prefix, PrefixOp] {}
-  implicit val modeContainsCanPrefix = new AllowedSASIOp[Mode.Contains, PrefixOp] {}
-  implicit val modeSparseCanPrefix = new AllowedSASIOp[Mode.Sparse, PrefixOp] {}
-  implicit val modeContainsCanSuffix = new AllowedSASIOp[Mode.Contains, SuffixOp] {}
-  implicit val modeContainsCanContains = new AllowedSASIOp[Mode.Contains, ContainsOp] {}
+  implicit def modePrefixCanPrefix[T]: AllowedSASIOp[Prefix, PrefixOp[T]] = {
+    new AllowedSASIOp[Mode.Prefix, PrefixOp[T]] {}
+  }
+
+  implicit def modeContainsCanPrefix[T]: AllowedSASIOp[Contains, PrefixOp[T]] = {
+    new AllowedSASIOp[Mode.Contains, PrefixOp[T]] {}
+  }
+
+  implicit def modeSparseCanPrefix[T]: AllowedSASIOp[Sparse, PrefixOp[T]] = {
+    new AllowedSASIOp[Mode.Sparse, PrefixOp[T]] {}
+  }
+
+  implicit def modeContainsCanSuffix[T]: AllowedSASIOp[Contains, SuffixOp[T]] = {
+    new AllowedSASIOp[Mode.Contains, SuffixOp[T]] {}
+  }
+
+  implicit def modeContainsCanContains[T]: AllowedSASIOp[Contains, ContainsOp[T]] = {
+    new AllowedSASIOp[Mode.Contains, ContainsOp[T]] {}
+  }
 }
 
 class SASITextOps[M <: Mode](
-  index: SASIIndex[M] with AbstractColumn[String]
+  col: String
 )(implicit ev: Primitive[String]) {
 
-  def like[Op <: SASIOp](op: Op)(implicit ev: AllowedSASIOp[M, Op]): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.SASI.likeAny(index.name, op.qb.queryString))
+  def like[Op <: SASIOp[String]](op: Op)(implicit ev: AllowedSASIOp[M, Op]): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
+  }
+}
+
+class SASINumericOps[RR : Numeric](
+  col: String
+)(implicit ev: Primitive[String]) {
+
+  def like[Op <: SASIOp[RR]](op: Op)(implicit ev: AllowedSASIOp[Mode.Sparse, Op]): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
   }
 }
 

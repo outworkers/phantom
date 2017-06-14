@@ -24,7 +24,7 @@ class ListOperatorsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
+    database.recipes.createSchema()
   }
 
   it should "store items in a list in the same order" in {

@@ -27,7 +27,7 @@ class BatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.insertSchema()
+    database.primitivesJoda.createSchema()
   }
 
   it should "get the correct count for batch queries" in {

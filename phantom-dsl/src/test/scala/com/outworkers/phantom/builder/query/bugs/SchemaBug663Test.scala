@@ -24,7 +24,7 @@ class SchemaBug663Test extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.schemaBug663Table.insertSchema()
+    database.schemaBug663Table.createSchema()
   }
 
   it should "automatically extract an A record if the discriminator is an even number" in {

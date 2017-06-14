@@ -27,7 +27,7 @@ class InOperatorTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
+    database.recipes.createSchema()
   }
 
 

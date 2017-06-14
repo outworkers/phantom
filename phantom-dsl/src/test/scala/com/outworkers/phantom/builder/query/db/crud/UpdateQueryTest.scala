@@ -28,9 +28,9 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.insertSchema()
-    database.optionalPrimitives.insertSchema()
-    database.testTable.insertSchema()
+    database.primitives.createSchema()
+    database.optionalPrimitives.createSchema()
+    database.testTable.createSchema()
   }
 
   "Update" should "work fine for primitives columns" in {

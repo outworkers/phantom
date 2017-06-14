@@ -275,6 +275,7 @@ private[builder] class CreateTableBuilder {
     CQLQuery(CQLSyntax.create)
       .forcePad.append(CQLSyntax.custom)
       .forcePad.append(CQLSyntax.index)
+      .forcePad.append(CQLSyntax.ifNotExists)
       .forcePad.append(indexName)
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(keySpace.name)

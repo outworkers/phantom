@@ -24,7 +24,7 @@ class JodaDateTimeColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.insertSchema()
+    database.primitivesJoda.createSchema()
   }
 
   it should "correctly insert and extract a JodaTime date" in {

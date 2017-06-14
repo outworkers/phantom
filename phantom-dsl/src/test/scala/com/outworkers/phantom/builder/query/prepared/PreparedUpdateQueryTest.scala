@@ -24,7 +24,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
+    database.recipes.createSchema()
   }
 
   it should "execute a prepared update query with a single argument bind" in {

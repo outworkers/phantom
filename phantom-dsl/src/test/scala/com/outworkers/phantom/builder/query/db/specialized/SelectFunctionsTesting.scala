@@ -28,9 +28,9 @@ class SelectFunctionsTesting extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.insertSchema()
-    database.timeuuidTable.insertSchema()
-    database.primitives.insertSchema()
+    database.recipes.createSchema()
+    database.timeuuidTable.createSchema()
+    database.primitives.createSchema()
   }
 
   it should "retrieve the writetime of a field from Cassandra" in {
