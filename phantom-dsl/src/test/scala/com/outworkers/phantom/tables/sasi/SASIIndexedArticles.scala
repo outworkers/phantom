@@ -32,6 +32,7 @@ case class MultiSASIRecord(
   id: UUID,
   name: String,
   description: String,
+  phoneNumber: String,
   set: Set[Int],
   list: List[String]
 )
@@ -48,6 +49,12 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
   object description extends StringColumn with SASIIndex[Mode.Sparse] {
     override def analyzer: StandardAnalyzer[Mode.Sparse] = {
       Analyzer.StandardAnalyzer[Mode.Sparse]().skipStopWords(true).enableStemming(true)
+    }
+  }
+
+  object phoneNumber extends StringColumn with SASIIndex[Mode.Prefix] {
+    override def analyzer: StandardAnalyzer[Mode.Prefix] = {
+      Analyzer.StandardAnalyzer[Mode.Prefix]().skipStopWords(true).enableStemming(true)
     }
   }
 

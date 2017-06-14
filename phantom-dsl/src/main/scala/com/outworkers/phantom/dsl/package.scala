@@ -26,11 +26,10 @@ import com.outworkers.phantom.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
-import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
-import com.outworkers.phantom.builder.query.sasi.Mode
+import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
@@ -46,7 +45,8 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   with Operators
   with UsingClauseOperations
   with KeySpaceConstruction
-  with DeleteImplicits {
+  with DeleteImplicits
+  with DefaultSASIOps {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
 

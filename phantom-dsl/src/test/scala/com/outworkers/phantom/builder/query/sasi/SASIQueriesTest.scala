@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.query.sasi
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.dsl._
 
 class SASIQueriesTest extends PhantomSuite {
 
@@ -38,6 +39,52 @@ class SASIQueriesTest extends PhantomSuite {
 
 
   it should "automatically find multiple SASI indexed columns " in {
-    database.multiSasiTable.sasiQueries().queries.size shouldEqual 2
+    database.multiSasiTable.sasiQueries().queries.size shouldEqual 3
+  }
+
+  it should "allow using a prefix clause on a Mode.Contains Text column" in {
+    val qb = database.multiSasiTable.select.where(_.name like prefix("test")).queryString
+
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE name LIKE 'test%';"
+  }
+
+  it should "allow using a suffix clause on a Mode.Contains Text column" in {
+    val qb = database.multiSasiTable.select.where(_.name like suffix("test")).queryString
+
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE name LIKE '%test';"
+  }
+
+  it should "allow using a contains clause on a Mode.Contains Text column" in {
+    val qb = database.multiSasiTable.select.where(_.name like contains("test")).queryString
+
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE name LIKE '%test%';"
+  }
+
+  it should "allow using a prefix clause on a Mode.Prefix Text column" in {
+    val qb = database.multiSasiTable.select.where(_.phoneNumber like prefix("078")).queryString
+
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE phoneNumber LIKE '078%';"
+  }
+
+  it should "allow using a prefix clause on a Mode.Sparse Text column" in {
+    val qb = database.multiSasiTable.select.where(_.description like prefix("test")).queryString
+
+    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE description LIKE 'test%';"
+  }
+
+  it should "not allow using a suffix clause on a Mode.Sparse Text column" in {
+    """database.multiSasiTable.select.where(_.description like prefix("test"))""" shouldNot compile
+  }
+
+  it should "not allow using a contains clause on a Mode.Sparse Text column" in {
+    """database.multiSasiTable.select.where(_.description like contains("test"))""" shouldNot compile
+  }
+
+  it should "not allow using a suffix clause on a Mode.Prefix Text column" in {
+    """database.multiSasiTable.select.where(_.phoneNumber like prefix("078"))""" shouldNot compile
+  }
+
+  it should "not allow using a contains clause on a Mode.Prefix Text column" in {
+    """database.multiSasiTable.select.where(_.phoneNumber like contains("078"))""" shouldNot compile
   }
 }
