@@ -23,7 +23,7 @@ abstract class SASIIndexedArticles extends Table[SASIIndexedArticles, Article] {
   object name extends StringColumn
 
   object orderId extends LongColumn with SASIIndex[Mode.Prefix] {
-    override def analyzer: StandardAnalyzer[Mode.Prefix] = Analyzer.StandardAnalyzer().enableStemming(true)
+    override def analyzer: StandardAnalyzer[Mode.Prefix] = Analyzer.StandardAnalyzer[Mode.Prefix]().enableStemming(true)
   }
 }
 
@@ -41,13 +41,13 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
 
   object name extends StringColumn with SASIIndex[Mode.Contains] {
     override def analyzer: NonTokenizingAnalyzer[Mode.Contains] = {
-      Analyzer.NonTokenizingAnalyzer().normalizeLowercase(true)
+      Analyzer.NonTokenizingAnalyzer[Mode.Contains]().normalizeLowercase(true)
     }
   }
 
   object description extends StringColumn with SASIIndex[Mode.Sparse] {
     override def analyzer: StandardAnalyzer[Mode.Sparse] = {
-      Analyzer.StandardAnalyzer().skipStopWords(true).enableStemming(true)
+      Analyzer.StandardAnalyzer[Mode.Sparse]().skipStopWords(true).enableStemming(true)
     }
   }
 

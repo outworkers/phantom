@@ -38,7 +38,6 @@ class SASIQueriesTest extends PhantomSuite {
 
 
   it should "automatically find multiple SASI indexed columns " in {
-    val sasiColumns = database.multiSasiTable.sasiIndexes
-    database.sasiIndexedArticles.sasiQueries().queries.size shouldEqual 2
+    database.multiSasiTable.sasiQueries().queries.size shouldEqual 2
   }
 }
