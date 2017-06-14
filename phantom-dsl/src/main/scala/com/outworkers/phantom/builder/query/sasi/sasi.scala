@@ -156,12 +156,17 @@ object Analyzer {
 }
 
 
+trait SASIOp {
+  def qb: CQLQuery
+}
 
-class SASIOp(val qb: CQLQuery)
+sealed class PrefixOp(value: String) extends SASIOp {
+  override def qb: CQLQuery = QueryBuilder.SASI.prefixValue(value)
+}
 
-sealed class PrefixOp(override val qb: CQLQuery) extends SASIOp(qb)
-
-sealed class SuffixOp(override val qb: CQLQuery) extends SASIOp(qb)
+sealed class SuffixOp(value: String) extends SASIOp {
+  override def qb: CQLQuery = QueryBuilder.SASI.suffixValue(value)
+}
 
 class SASITextOps[M <: Mode](
   index: SASIIndex[M] with AbstractColumn[String]

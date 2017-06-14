@@ -29,13 +29,21 @@ class SASIQueryBuilder extends BaseModifiers {
   def like(column: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad
       .append(CQLSyntax.Operators.like)
-      .forcePad.appendEscape(percentEscape(value))
+      .forcePad.appendSingleQuote(percentEscape(value))
   }
 
   def likeAny(column: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad
       .append(CQLSyntax.Operators.like)
       .forcePad.append(value)
+  }
+
+  def prefixValue(value: String): CQLQuery = {
+    CQLQuery.empty.appendSingleQuote(value + CQLSyntax.Symbols.percent)
+  }
+
+  def suffixValue(value: String): CQLQuery = {
+    CQLQuery.empty.appendSingleQuote(CQLSyntax.Symbols.percent + value)
   }
 
   def prefix(column: String, value: String): CQLQuery = {
@@ -47,7 +55,7 @@ class SASIQueryBuilder extends BaseModifiers {
   def suffix(column: String, value: String): CQLQuery = {
     CQLQuery(column).forcePad
       .append(CQLSyntax.Operators.like)
-      .forcePad.append(CQLQuery.escape(value + CQLSyntax.Symbols.percent))
+      .forcePad.appendSingleQuote(value + CQLSyntax.Symbols.percent)
   }
 
 }

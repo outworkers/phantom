@@ -16,14 +16,32 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.SerializationTest
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
 class SASIQueryBuilderTest extends FlatSpec with SerializationTest {
 
   it should "define a LIKE operator clause" in {
     val qb = QueryBuilder.SASI.like("name", "value").queryString
-    qb shouldEqual "LIKE '%value%'"
+    qb shouldEqual "name LIKE '%value%'"
+  }
+
+  it should "prefix a value clause" in {
+    val ev = Primitive[String]
+    val value = gen[ShortString].value
+    val qb = QueryBuilder.SASI.prefixValue(value).queryString
+
+    qb shouldEqual s"'$value%'"
+  }
+
+  it should "suffix a value clause" in {
+    val ev = Primitive[String]
+    val value = gen[ShortString].value
+    val qb = QueryBuilder.SASI.suffixValue(value).queryString
+
+    qb shouldEqual s"'%$value'"
   }
 
 }

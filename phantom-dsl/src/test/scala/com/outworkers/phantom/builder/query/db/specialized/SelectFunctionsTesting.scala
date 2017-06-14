@@ -426,7 +426,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     val chain = for {
       _ <- database.primitives.store(record).future()
-      res <- database.primitives.select.function(t => count(t.int)).aggregate()
+      res <- database.primitives.select.function(count()).aggregate()
     } yield res
 
     whenReady(chain) { res =>
