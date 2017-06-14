@@ -491,7 +491,7 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
       val index = QueryBuilder.Create.sasiIndexName("table", "column")
       val qb = QueryBuilder.Create.createSASIIndex(KeySpace("keyspace"), "table", index, "column", OptionPart.empty.qb)
 
-      qb.queryString shouldEqual s"CREATE CUSTOM INDEX $index ON keyspace.table(column) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH {}"
+      qb.queryString shouldEqual s"CREATE CUSTOM INDEX IF NOT EXISTS $index ON keyspace.table(column) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH {}"
     }
   }
 }
