@@ -22,11 +22,6 @@ import org.scalatest.FlatSpec
 
 class SASIQueryBuilderTest extends FlatSpec with SerializationTest {
 
-  it should "define a LIKE operator clause" in {
-    val qb = QueryBuilder.SASI.like("name", "value").queryString
-    qb shouldEqual "name LIKE '%value%'"
-  }
-
   it should "prefix a value clause" in {
     val value = gen[ShortString].value
     val qb = QueryBuilder.SASI.prefixValue(value).queryString
