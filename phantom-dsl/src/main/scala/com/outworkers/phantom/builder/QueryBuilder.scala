@@ -38,6 +38,8 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
 
   case object Where extends IndexModifiers
 
+  case object SASI extends SASIQueryBuilder
+
   case object Select extends SelectQueryBuilder
 
   case object Batch extends BatchQueryBuilder

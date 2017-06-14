@@ -17,10 +17,15 @@ package com.outworkers.phantom.builder.query.sasi
 
 import java.util.Locale
 
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
+import com.outworkers.phantom.builder.clauses.WhereClause
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.OptionPart
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.dsl.SASIIndex
 
 sealed abstract class AnalyzerClass(val value: String)
 
@@ -150,4 +155,25 @@ object Analyzer {
   }
 }
 
+
+
+class SASIOp(val qb: CQLQuery)
+
+sealed class PrefixOp(override val qb: CQLQuery) extends SASIOp(qb)
+
+sealed class SuffixOp(override val qb: CQLQuery) extends SASIOp(qb)
+
+class SASITextOps[M <: Mode](
+  index: SASIIndex[M] with AbstractColumn[String]
+)(implicit ev: Primitive[String]) {
+
+  def like(value: String): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.SASI.like(index.name, value))
+  }
+
+  def like(op: PrefixOp)(implicit ev: M =:= Mode.Prefix): WhereClause.Condition = {
+    new WhereClause.Condition(QueryBuilder.SASI.likeAny(index.name, op.qb.queryString))
+  }
+
+}
 

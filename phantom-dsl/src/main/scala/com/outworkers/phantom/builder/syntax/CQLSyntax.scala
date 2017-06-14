@@ -108,6 +108,7 @@ object CQLSyntax {
     val `[` = "["
     val `]` = "]"
     val underscsore = "_"
+    val percent = "%"
 
     val dot = "."
     val colon = ":"
@@ -137,6 +138,7 @@ object CQLSyntax {
 
     val in = "IN"
     val eqs = "="
+    val like = "LIKE"
     val notEqs = "!="
 
     val contains = "CONTAINS"
