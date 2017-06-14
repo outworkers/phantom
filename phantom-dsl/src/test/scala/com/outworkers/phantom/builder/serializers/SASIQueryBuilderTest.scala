@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
@@ -29,7 +28,6 @@ class SASIQueryBuilderTest extends FlatSpec with SerializationTest {
   }
 
   it should "prefix a value clause" in {
-    val ev = Primitive[String]
     val value = gen[ShortString].value
     val qb = QueryBuilder.SASI.prefixValue(value).queryString
 
@@ -37,7 +35,6 @@ class SASIQueryBuilderTest extends FlatSpec with SerializationTest {
   }
 
   it should "suffix a value clause" in {
-    val ev = Primitive[String]
     val value = gen[ShortString].value
     val qb = QueryBuilder.SASI.suffixValue(value).queryString
 
