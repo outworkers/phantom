@@ -22,8 +22,8 @@ abstract class SASIIndexedArticles extends Table[SASIIndexedArticles, Article] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
 
-  object orderId extends LongColumn with SASIIndex[StandardAnalyzer] {
-    override def analyzer: StandardAnalyzer = Analyzer.StandardAnalyzer.enableStemming(true)
+  object orderId extends LongColumn with SASIIndex[Mode.Prefix] {
+    override def analyzer: StandardAnalyzer[Mode.Prefix] = Analyzer.StandardAnalyzer().enableStemming(true)
   }
 }
 
@@ -39,12 +39,16 @@ case class MultiSASIRecord(
 abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
   object id extends UUIDColumn with PartitionKey
 
-  object name extends StringColumn with SASIIndex[NonTokenizingAnalyzer] {
-    override def analyzer: NonTokenizingAnalyzer = Analyzer.NonTokenizingAnalyzer.normalizeLowercase(true)
+  object name extends StringColumn with SASIIndex[Mode.Contains] {
+    override def analyzer: NonTokenizingAnalyzer[Mode.Contains] = {
+      Analyzer.NonTokenizingAnalyzer().normalizeLowercase(true)
+    }
   }
 
-  object description extends StringColumn with SASIIndex[StandardAnalyzer] {
-    override def analyzer: StandardAnalyzer = Analyzer.StandardAnalyzer.skipStopWords(true).enableStemming(true)
+  object description extends StringColumn with SASIIndex[Mode.Sparse] {
+    override def analyzer: StandardAnalyzer[Mode.Sparse] = {
+      Analyzer.StandardAnalyzer().skipStopWords(true).enableStemming(true)
+    }
   }
 
   object set extends SetColumn[Int]

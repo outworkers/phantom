@@ -277,6 +277,13 @@ object CQLSyntax {
     }
 
     val mode = "mode"
+
+    object Modes {
+      val Contains = "CONTAINS"
+      val Prefix = "PREFIX"
+      val Sparse = "SPARSE"
+    }
+
     val case_sensitive = "case_sensitive"
     val analyzed = "analyzed"
     val analyzer_class = "analyzer_class"

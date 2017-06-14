@@ -16,15 +16,15 @@
 package com.outworkers.phantom.keys
 
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.sasi.Analyzer
+import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
 import com.outworkers.phantom.column.AbstractColumn
 
-trait SASIIndex[A <: Analyzer[A]] {
+trait SASIIndex[M <: Mode] {
   self: AbstractColumn[_] =>
 
   def name: String
 
-  def analyzer: A
+  def analyzer: Analyzer[M]
 
   def analyzerOptions: CQLQuery = analyzer.qb
 

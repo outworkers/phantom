@@ -22,27 +22,47 @@ import com.outworkers.phantom.builder.query.OptionPart
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
-sealed abstract class Mode(val value: String)
+sealed abstract class AnalyzerClass(val value: String)
+
+abstract class Mode
 
 object Mode {
-  case object Contains extends Mode("CONTAINS")
-  case object Prefix extends Mode("PREFIX")
-  case object Sparse extends Mode("SPARSE")
+  class Contains extends Mode
+  class Prefix extends Mode
+  class Sparse extends Mode
 }
 
-sealed abstract class AnalyzerClass(val value: String)
+trait ModeDef[M <: Mode] {
+  def value: String
+}
+
+object ModeDef {
+  implicit val containsDef: ModeDef[Mode.Contains] = new ModeDef[Mode.Contains] {
+    override def value: String = CQLSyntax.SASI.Modes.Contains
+  }
+
+  implicit val sparseDef: ModeDef[Mode.Sparse] = new ModeDef[Mode.Sparse] {
+    override def value: String = CQLSyntax.SASI.Modes.Sparse
+  }
+
+  implicit val prefixDef: ModeDef[Mode.Prefix] = new ModeDef[Mode.Prefix] {
+    override def value: String = CQLSyntax.SASI.Modes.Prefix
+  }
+}
 
 object AnalyzerClass {
   case object StandardAnalyzer extends AnalyzerClass(CQLSyntax.SASI.Analyzer.standard)
   case object NonTokenizingAnalyzer extends AnalyzerClass(CQLSyntax.SASI.Analyzer.nonTokenizing)
 }
 
-private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) {
-  protected[this] def instance(optionPart: OptionPart): A
+private[phantom] abstract class Analyzer[
+  M <: Mode : ModeDef
+](options: OptionPart) {
+  protected[this] def instance(optionPart: OptionPart): Analyzer[M]
 
-  def mode(mode: Mode): A = instance(options option (CQLSyntax.SASI.mode, mode.value))
+  def mode(mode: M): Analyzer[M] = instance(options option (CQLSyntax.SASI.mode, implicitly[ModeDef[M]].value))
 
-  def analyzed(flag: Boolean): A = instance(options option (CQLSyntax.SASI.analyzed, flag.toString))
+  def analyzed(flag: Boolean): Analyzer[M] = instance(options option (CQLSyntax.SASI.analyzed, flag.toString))
 
   def this(analyzerClass: AnalyzerClass, options: OptionPart) {
     this(OptionPart.empty.option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)) append options)
@@ -51,71 +71,83 @@ private[phantom] abstract class Analyzer[A <: Analyzer[A]](options: OptionPart) 
   def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options.qb)
 }
 
-class DefaultAnalyzer(options: OptionPart) extends Analyzer[DefaultAnalyzer](options) {
-  override protected[this] def instance(optionPart: OptionPart): DefaultAnalyzer = new DefaultAnalyzer(optionPart)
+class DefaultAnalyzer[M <: Mode : ModeDef](options: OptionPart) extends Analyzer[M](options) {
+  override protected[this] def instance(optionPart: OptionPart): DefaultAnalyzer[M] = new DefaultAnalyzer(optionPart)
 }
 
 object Analyzer {
 
-  def apply(options: OptionPart = OptionPart.empty): DefaultAnalyzer = new DefaultAnalyzer(options)
+  def apply[M <: Mode : ModeDef](
+    options: OptionPart = OptionPart.empty
+  ): DefaultAnalyzer[M] = new DefaultAnalyzer(options)
 
-  class StandardAnalyzer(options: OptionPart) extends Analyzer[StandardAnalyzer](
+  class StandardAnalyzer[M <: Mode : ModeDef](options: OptionPart) extends Analyzer[M](
     AnalyzerClass.StandardAnalyzer,
     options
   ) {
-    override protected[this] def instance(optionPart: OptionPart): StandardAnalyzer = {
+    override protected[this] def instance(optionPart: OptionPart): StandardAnalyzer[M] = {
       new StandardAnalyzer(optionPart)
     }
 
-    def normalizeUppercase(flag: Boolean): StandardAnalyzer = {
+    def normalizeUppercase(flag: Boolean): StandardAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.tokenization_normalize_uppercase, flag))
     }
 
-    def normalizeLowercase(flag: Boolean): StandardAnalyzer = {
+    def normalizeLowercase(flag: Boolean): StandardAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.tokenization_normalize_lowercase, flag))
     }
 
-    def skipStopWords(flag: Boolean): StandardAnalyzer = {
+    def skipStopWords(flag: Boolean): StandardAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.tokenization_skip_stop_words, flag))
     }
 
-    def enableStemming(flag: Boolean): StandardAnalyzer = {
+    def enableStemming(flag: Boolean): StandardAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.tokenization_enable_stemming, flag))
     }
 
-    def locale(loc: String): StandardAnalyzer = {
+    def locale(loc: String): StandardAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.tokenization_locale, CQLQuery.escape(loc)))
     }
 
-    def locale(loc: Locale): StandardAnalyzer = {
+    def locale(loc: Locale): StandardAnalyzer[M] = {
       locale(loc.getDisplayName)
     }
   }
 
-  object StandardAnalyzer extends StandardAnalyzer(OptionPart.empty)
+  object StandardAnalyzer {
+    def apply[M <: Mode : ModeDef](opts: OptionPart = OptionPart.empty): StandardAnalyzer[M] = {
+      new StandardAnalyzer[M](opts)
+    }
+  }
 
-  sealed class NonTokenizingAnalyzer(options: OptionPart) extends Analyzer[NonTokenizingAnalyzer](
+  sealed class NonTokenizingAnalyzer[M <: Mode : ModeDef](
+    options: OptionPart
+  ) extends Analyzer[M](
     AnalyzerClass.NonTokenizingAnalyzer,
     options
   ) {
-    override protected[this] def instance(optionPart: OptionPart): NonTokenizingAnalyzer = {
+    override protected[this] def instance(optionPart: OptionPart): NonTokenizingAnalyzer[M] = {
       new NonTokenizingAnalyzer(optionPart)
     }
 
-    def caseSensitive(flag: Boolean): NonTokenizingAnalyzer = {
+    def caseSensitive(flag: Boolean): NonTokenizingAnalyzer[M] = {
       instance(options option (CQLSyntax.SASI.case_sensitive, flag))
     }
 
-    def normalizeUppercase(flag: Boolean): NonTokenizingAnalyzer = {
+    def normalizeUppercase(flag: Boolean): NonTokenizingAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.normalize_uppercase, flag))
     }
 
-    def normalizeLowercase(flag: Boolean): NonTokenizingAnalyzer = {
+    def normalizeLowercase(flag: Boolean): NonTokenizingAnalyzer[M] = {
       instance(options option(CQLSyntax.SASI.normalize_lowercase, flag))
     }
   }
 
-  object NonTokenizingAnalyzer extends NonTokenizingAnalyzer(OptionPart.empty)
+  object NonTokenizingAnalyzer {
+    def apply[M <: Mode : ModeDef](opts: OptionPart = OptionPart.empty): NonTokenizingAnalyzer[M] = {
+      new NonTokenizingAnalyzer(opts)
+    }
+  }
 }
 
 

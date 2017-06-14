@@ -30,6 +30,7 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
@@ -198,12 +199,13 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type CassandraConnection = com.outworkers.phantom.connectors.CassandraConnection
   type RootConnector = com.outworkers.phantom.connectors.RootConnector
   val Analyzer = com.outworkers.phantom.builder.query.sasi.Analyzer
-  type Analyzer[A <: Analyzer[A]] = com.outworkers.phantom.builder.query.sasi.Analyzer[A]
-  type SASIIndex[A <: Analyzer[A]] = com.outworkers.phantom.keys.SASIIndex[A]
-  type CustomIndex[A <: Analyzer[A]] = SASIIndex[A]
+  val Mode = com.outworkers.phantom.builder.query.sasi.Mode
+  type Analyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer[M]
+  type SASIIndex[M <: Mode] = com.outworkers.phantom.keys.SASIIndex[M]
+  type CustomIndex[M <: Mode] = SASIIndex[M]
 
-  type StandardAnalyzer = com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer
-  type NonTokenizingAnalyzer = com.outworkers.phantom.builder.query.sasi.Analyzer.NonTokenizingAnalyzer
+  type StandardAnalyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer[M]
+  type NonTokenizingAnalyzer[M <: Mode] = com.outworkers.phantom.builder.query.sasi.Analyzer.NonTokenizingAnalyzer[M]
 
   val Version = DefaultVersions
 

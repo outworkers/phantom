@@ -22,80 +22,80 @@ import com.outworkers.phantom.PhantomSuite
 class SASIOptionsTest extends PhantomSuite {
 
   it should "automatically produce default options for a NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer.qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer'}"
+    val query = Analyzer.NonTokenizingAnalyzer().qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()'}"
   }
 
   it should "allow setting case sensitivity to true on a NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer.caseSensitive(true).qb.queryString
+    val query = Analyzer.NonTokenizingAnalyzer().caseSensitive(true).qb.queryString
 
     query shouldEqual
-      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'true'}"""
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()', 'case_sensitive': 'true'}"""
   }
 
   it should "allow setting case sensitivity to false on a NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer.caseSensitive(false).qb.queryString
+    val query = Analyzer.NonTokenizingAnalyzer().caseSensitive(false).qb.queryString
 
     query shouldEqual
-      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'false'}"""
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()', 'case_sensitive': 'false'}"""
   }
 
   it should "allow setting normalise_lowercase to false on a NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer.normalizeLowercase(false).qb.queryString
+    val query = Analyzer.NonTokenizingAnalyzer().normalizeLowercase(false).qb.queryString
 
     query shouldEqual
-      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'normalize_lowercase': 'false'}"""
+      """OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()', 'normalize_lowercase': 'false'}"""
   }
 
   it should "allow setting normalise_uppercase to false on a NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer.normalizeUppercase(false).qb.queryString
+    val query = Analyzer.NonTokenizingAnalyzer().normalizeUppercase(false).qb.queryString
 
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'normalize_uppercase': 'false'}"
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()', 'normalize_uppercase': 'false'}"
   }
 
   it should "allow combining case sensitivity and normalisation on NonTokenizingAnalyzer" in {
-    val query = Analyzer.NonTokenizingAnalyzer
+    val query = Analyzer.NonTokenizingAnalyzer()
       .caseSensitive(true)
       .normalizeUppercase(false)
       .normalizeLowercase(true)
       .qb.queryString
 
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer', 'case_sensitive': 'true', " +
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.NonTokenizingAnalyzer()', 'case_sensitive': 'true', " +
       "'normalize_uppercase': 'false', 'normalize_lowercase': 'true'}"
   }
 
   it should "automatically produce default options for a StandardAnalyzer" in {
-    val query = Analyzer.StandardAnalyzer.qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer'}"
+    val query = Analyzer.StandardAnalyzer().qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()'}"
   }
 
   it should "allow using tokenization_normalise_lowecase on StandardAnalyzer" in {
-    val query = Analyzer.StandardAnalyzer.normalizeLowercase(true).qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_normalize_lowercase': 'true'}"
+    val query = Analyzer.StandardAnalyzer().normalizeLowercase(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_normalize_lowercase': 'true'}"
   }
 
   it should "allow using tokenization_normalise_uppercase on StandardAnalyzer" in {
-    val query = Analyzer.StandardAnalyzer.normalizeUppercase(true).qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_normalize_uppercase': 'true'}"
+    val query = Analyzer.StandardAnalyzer().normalizeUppercase(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_normalize_uppercase': 'true'}"
   }
 
   it should "allow using skip_stop_words on StandardAnalyzer" in {
-    val query = Analyzer.StandardAnalyzer.skipStopWords(true).qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_skip_stop_words': 'true'}"
+    val query = Analyzer.StandardAnalyzer().skipStopWords(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_skip_stop_words': 'true'}"
   }
 
   it should "allow using enable_stemming on StandardAnalyzer" in {
-    val query = Analyzer.StandardAnalyzer.enableStemming(true).qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
+    val query = Analyzer.StandardAnalyzer().enableStemming(true).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_enable_stemming': 'true'}"
   }
 
   it should "allow passing a string locale to StandardAnalyzer.locale" in {
-    val query = Analyzer.StandardAnalyzer.locale("EN").qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_locale': 'EN'}"
+    val query = Analyzer.StandardAnalyzer().locale("EN").qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_locale': 'EN'}"
   }
 
   it should "allow passing a Java Locale to StandardAnalyzer.locale" in {
-    val query = Analyzer.StandardAnalyzer.locale(Locale.ENGLISH).qb.queryString
-    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_locale': 'English'}"
+    val query = Analyzer.StandardAnalyzer().locale(Locale.ENGLISH).qb.queryString
+    query shouldEqual "OPTIONS = {'analyzer_class': 'org.apache.cassandra.index.sasi.Analyzer.StandardAnalyzer()', 'tokenization_locale': 'English'}"
   }
 }

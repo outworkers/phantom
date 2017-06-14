@@ -19,7 +19,7 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.sasi.Analyzer
+import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
@@ -155,7 +155,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     new ExecutableStatementList[Seq](queries)
   }
 
-  def sasiIndexes: Seq[SASIIndex[_ <: Analyzer[_]]] = helper.sasiIndexes(instance)
+  def sasiIndexes: Seq[SASIIndex[_ <: Mode]] = helper.sasiIndexes(instance)
 
   /**
     * Automatically generated store method for the record type.
