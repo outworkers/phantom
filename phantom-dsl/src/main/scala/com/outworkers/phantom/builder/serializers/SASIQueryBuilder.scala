@@ -38,6 +38,10 @@ class SASIQueryBuilder extends BaseModifiers {
       .forcePad.append(value)
   }
 
+  def containsValue(value: String): CQLQuery = {
+    CQLQuery.empty.appendSingleQuote(percentEscape(value))
+  }
+
   def prefixValue(value: String): CQLQuery = {
     CQLQuery.empty.appendSingleQuote(value + CQLSyntax.Symbols.percent)
   }

@@ -16,11 +16,12 @@
 package com.outworkers.phantom.builder.ops
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.{WhereClause, OrderingColumn, CompareAndSetClause}
+import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.sasi.{Mode, SASITextOps}
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.keys.{Undroppable, Indexed}
+import com.outworkers.phantom.keys.{Indexed, Undroppable}
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
@@ -172,5 +173,15 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     col: AbstractMapColumn[T, R, K, V] with Index
   )(implicit ev: col.type <:!< Keys): MapConditionals[T, R, K, V] = {
     new MapConditionals(col)
+  }
+
+  implicit def sasiGenericOps[RR : Primitive](
+    col: AbstractColumn[String] with SASIIndex[_ <: Mode]
+  ): QueryColumn[RR] = {
+    new QueryColumn[RR](col.name)
+  }
+
+  implicit def sasiTextOps[M <: Mode](col: AbstractColumn[String] with SASIIndex[M]): SASITextOps[M] = {
+    new SASITextOps[M](col)
   }
 }

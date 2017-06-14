@@ -41,4 +41,12 @@ class SASIQueryBuilderTest extends FlatSpec with SerializationTest {
     qb shouldEqual s"'%$value'"
   }
 
+
+  it should "serialize a contains value clause" in {
+    val value = gen[ShortString].value
+    val qb = QueryBuilder.SASI.containsValue(value).queryString
+
+    qb shouldEqual s"'%$value%'"
+  }
+
 }

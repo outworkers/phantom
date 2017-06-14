@@ -17,43 +17,12 @@ package com.outworkers.phantom.builder.query.sasi
 
 import java.util.Locale
 
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
-import com.outworkers.phantom.builder.clauses.WhereClause
-import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.OptionPart
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl.SASIIndex
 
 sealed abstract class AnalyzerClass(val value: String)
-
-abstract class Mode
-
-object Mode {
-  class Contains extends Mode
-  class Prefix extends Mode
-  class Sparse extends Mode
-}
-
-trait ModeDef[M <: Mode] {
-  def value: String
-}
-
-object ModeDef {
-  implicit val containsDef: ModeDef[Mode.Contains] = new ModeDef[Mode.Contains] {
-    override def value: String = CQLSyntax.SASI.Modes.Contains
-  }
-
-  implicit val sparseDef: ModeDef[Mode.Sparse] = new ModeDef[Mode.Sparse] {
-    override def value: String = CQLSyntax.SASI.Modes.Sparse
-  }
-
-  implicit val prefixDef: ModeDef[Mode.Prefix] = new ModeDef[Mode.Prefix] {
-    override def value: String = CQLSyntax.SASI.Modes.Prefix
-  }
-}
 
 object AnalyzerClass {
   case object StandardAnalyzer extends AnalyzerClass(CQLSyntax.SASI.Analyzer.standard)
@@ -65,12 +34,14 @@ private[phantom] abstract class Analyzer[
 ](options: OptionPart) {
   protected[this] def instance(optionPart: OptionPart): Analyzer[M]
 
-  def mode(mode: M): Analyzer[M] = instance(options option (CQLSyntax.SASI.mode, implicitly[ModeDef[M]].value))
-
   def analyzed(flag: Boolean): Analyzer[M] = instance(options option (CQLSyntax.SASI.analyzed, flag.toString))
 
   def this(analyzerClass: AnalyzerClass, options: OptionPart) {
-    this(OptionPart.empty.option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)) append options)
+    this(
+      OptionPart.empty
+        .option(CQLSyntax.SASI.mode, CQLQuery.escape(implicitly[ModeDef[M]].value)) append options
+        .option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)) append options
+    )
   }
 
   def qb: CQLQuery = Utils.tableOption(CQLSyntax.SASI.options, options.qb)
@@ -154,31 +125,3 @@ object Analyzer {
     }
   }
 }
-
-
-trait SASIOp {
-  def qb: CQLQuery
-}
-
-sealed class PrefixOp(value: String) extends SASIOp {
-  override def qb: CQLQuery = QueryBuilder.SASI.prefixValue(value)
-}
-
-sealed class SuffixOp(value: String) extends SASIOp {
-  override def qb: CQLQuery = QueryBuilder.SASI.suffixValue(value)
-}
-
-class SASITextOps[M <: Mode](
-  index: SASIIndex[M] with AbstractColumn[String]
-)(implicit ev: Primitive[String]) {
-
-  def like(value: String): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.SASI.like(index.name, value))
-  }
-
-  def like(op: PrefixOp)(implicit ev: M =:= Mode.Prefix): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.SASI.likeAny(index.name, op.qb.queryString))
-  }
-
-}
-
