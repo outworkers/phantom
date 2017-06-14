@@ -32,7 +32,7 @@ class SASIQueriesTest extends PhantomSuite {
     val qs = queries.headOption.value.queryString
     val expected = "CREATE CUSTOM INDEX sASIIndexedArticles_orderId_idx ON phantom.sASIIndexedArticles(orderId) " +
       "USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = " +
-      "{'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
+      "{'mode': 'PREFIX', 'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'tokenization_enable_stemming': 'true'}"
     qs shouldEqual expected
   }
 

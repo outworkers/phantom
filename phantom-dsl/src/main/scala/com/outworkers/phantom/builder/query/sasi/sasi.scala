@@ -39,8 +39,9 @@ private[phantom] abstract class Analyzer[
   def this(analyzerClass: AnalyzerClass, options: OptionPart) {
     this(
       OptionPart.empty
-        .option(CQLSyntax.SASI.mode, CQLQuery.escape(implicitly[ModeDef[M]].value)) append options
-        .option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value)) append options
+        .option(CQLSyntax.SASI.mode, CQLQuery.escape(implicitly[ModeDef[M]].value))
+        .option(CQLSyntax.SASI.analyzer_class, CQLQuery.escape(analyzerClass.value))
+        .append(options)
     )
   }
 
