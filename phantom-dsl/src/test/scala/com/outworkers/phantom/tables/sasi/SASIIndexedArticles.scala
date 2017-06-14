@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.tables.sasi
 
-import com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Article
 
@@ -26,4 +25,28 @@ abstract class SASIIndexedArticles extends Table[SASIIndexedArticles, Article] {
   object orderId extends LongColumn with SASIIndex[StandardAnalyzer] {
     override def analyzer: StandardAnalyzer = Analyzer.StandardAnalyzer.enableStemming(true)
   }
+}
+
+
+case class MultiSASIRecord(
+  id: UUID,
+  name: String,
+  description: String,
+  set: Set[Int],
+  list: List[String]
+)
+
+abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
+  object id extends UUIDColumn with PartitionKey
+
+  object name extends StringColumn with SASIIndex[NonTokenizingAnalyzer] {
+    override def analyzer: NonTokenizingAnalyzer = Analyzer.NonTokenizingAnalyzer.normalizeLowercase(true)
+  }
+
+  object description extends StringColumn with SASIIndex[StandardAnalyzer] {
+    override def analyzer: StandardAnalyzer = Analyzer.StandardAnalyzer.skipStopWords(true).enableStemming(true)
+  }
+
+  object set extends SetColumn[Int]
+  object list extends ListColumn[String]
 }

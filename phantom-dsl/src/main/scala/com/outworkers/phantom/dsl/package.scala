@@ -202,6 +202,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type SASIIndex[A <: Analyzer[A]] = com.outworkers.phantom.keys.SASIIndex[A]
   type CustomIndex[A <: Analyzer[A]] = SASIIndex[A]
 
+  type StandardAnalyzer = com.outworkers.phantom.builder.query.sasi.Analyzer.StandardAnalyzer
+  type NonTokenizingAnalyzer = com.outworkers.phantom.builder.query.sasi.Analyzer.NonTokenizingAnalyzer
+
   val Version = DefaultVersions
 
   type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
