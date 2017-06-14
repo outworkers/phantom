@@ -181,7 +181,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new QueryColumn[RR](col.name)
   }
 
-  implicit def sasiTextOps[M <: Mode](col: AbstractColumn[String] with SASIIndex[M]): SASITextOps[M] = {
+  implicit def sasiTextOps[M <: Mode](
+    col: AbstractColumn[String] with SASIIndex[M]
+  )(implicit ev: Primitive[String]): SASITextOps[M] = {
     new SASITextOps[M](col)
   }
 }
