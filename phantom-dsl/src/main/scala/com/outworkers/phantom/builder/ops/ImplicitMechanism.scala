@@ -176,7 +176,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   }
 
   implicit def sasiGenericOps[RR : Primitive](
-    col: AbstractColumn[String] with SASIIndex[_ <: Mode]
+    col: AbstractColumn[RR] with SASIIndex[_ <: Mode]
   ): QueryColumn[RR] = {
     new QueryColumn[RR](col.name)
   }
