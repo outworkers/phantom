@@ -52,3 +52,92 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
 }
 ```
 
+
+#### Analyzers
+
+SASI ships with 3 basic analyzers that are re-created in phantom.
+
+- `Analzyer.NonTokenizingAnalyzer`
+- `Analyzer.StandardAnalyzer`
+- `Analyzer.DefaultAnalyzer`
+
+The `DefaultAnalyzer` will allow you to set all the properties from the root, and the other two are nothing more
+than specialised forms.
+
+
+#### Modes
+
+Phantom SASI support incldues all three supported modes for SASI. All analyzers include support for basic comparison
+ operations, as listed below. Some operators have two flavours, such as `==` and `eqs`, `<` and `lt` and so on. They
+ are all available via the standard `import com.outworkers.phantom.dsl._` import.
+ 
+  
+| Operator | Natural Language equivalent            |
+| ======== | ====================================== |
+| `==`     | Equality operator                      |
+| `eqs`    | Equality operator                      |
+| `<`      | Strictly lower than operator           |
+| `lt`     | Strictly lower than operator           |
+| `<=`     | Lower than or equal to operator        |
+| `lte`    | Lower than or equal to operator        |
+| `>`      | Strictly greater than operator         |
+| `gt`     | Strictly greater than operator         |
+| `>=`     | Greater than or equal to operator      |
+| `gte`    | Greater than or equal to operator      |   
+  
+  
+There are two modes directed specifically at text columns, namely `Mode.Prefix` and `Mode.Contains`. By using
+  these modes, you will be able to perform text specific queries using the `like` operator. 
+  
+##### Mode.Prefix
+
+In addition to the standard operations, the `Prefix` mode will allow you to perform `like(prefix("text"))` style
+ queries.
+ 
+Examples can be found in [SASIIntegrationTest.scala](../phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+ 
+Example query, based on the schema defined above.
+
+```scala
+db.multiSasiTable.select.where(_.phoneNumber like prefix(pre)).fetch()
+```
+  
+#### Mode.Contains
+  
+This will enable further queries for text columns, such as `like(suffix("value"))` and `like(contains("value`))`, as well
+as prefix style queries.
+
+Examples can be found in [SASIIntegrationTest.scala](../phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+
+Example possible queries, based on the schema defined above.
+
+```scala
+val pre = "text"
+db.multiSasiTable.select.where(_.name like prefix(pre)).fetch()
+db.multiSasiTable.select.where(_.name like contains(pre)).fetch()
+db.multiSasiTable.select.where(_.name like suffix(pre)).fetch()
+```
+
+#### Mode.Sparse
+
+As suggested in the official SASI tutorial, `Mode.Sparse` is directly targeted at numerical columns and it's a way
+to enable standard operators for numerical columns that are not part of the primary key. All standard operators can be used.
+
+Sparse mode SASI indexes cannot define analyzers, and automated schema creation will fail if you attempt to use an analyzer
+in `Mode.Sparse`
+
+Examples can be found in [SASIIntegrationTest.scala](../phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+
+Example possible queries.
+
+```scala
+val target = 5-
+db.multiSasiTable.select.where(_.customers eqs 50).fetch()
+
+// Select all entries with at least 50 customers
+db.multiSasiTable.select.where(_.customers >= 50).fetch()
+
+// Select all entries with at most 50 customers
+db.multiSasiTable.select.where(_.customers <= 50).fetch()
+```
+

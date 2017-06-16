@@ -70,10 +70,6 @@ object AllowedSASIOp {
     new AllowedSASIOp[Mode.Contains, PrefixOp[T]] {}
   }
 
-  implicit def modeSparseCanPrefix[T]: AllowedSASIOp[Sparse, PrefixOp[T]] = {
-    new AllowedSASIOp[Mode.Sparse, PrefixOp[T]] {}
-  }
-
   implicit def modeContainsCanSuffix[T]: AllowedSASIOp[Contains, SuffixOp[T]] = {
     new AllowedSASIOp[Mode.Contains, SuffixOp[T]] {}
   }

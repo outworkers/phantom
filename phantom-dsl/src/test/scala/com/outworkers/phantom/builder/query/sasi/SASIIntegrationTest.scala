@@ -97,4 +97,73 @@ class SASIIntegrationTest extends PhantomSuite {
   }
 
 
+  it should "allow retrieving gte results using a normal operator in Mode.Sparse" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- Future.sequence(samples.map(db.multiSasiTable.storeRecord(_)))
+        query <- db.multiSasiTable.select.where(_.customers >= pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+  it should "allow retrieving lte results using a normal operator in Mode.Sparse" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- Future.sequence(samples.map(db.multiSasiTable.storeRecord(_)))
+        query <- db.multiSasiTable.select.where(_.customers <= pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+
+  it should "allow retrieving == results using a normal operator in Mode.Sparse" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- Future.sequence(samples.map(db.multiSasiTable.storeRecord(_)))
+        query <- db.multiSasiTable.select.where(_.customers eqs pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+  it should "retrieve no results for an invalid clause in Mode.Sparse" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- Future.sequence(samples.map(db.multiSasiTable.storeRecord(_)))
+        query <- db.multiSasiTable.select.where(_.customers > pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results.size shouldEqual 0
+      }
+    }
+  }
+
 }

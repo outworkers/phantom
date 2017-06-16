@@ -28,9 +28,7 @@ import com.outworkers.phantom.builder.query.prepared.{PrepareMark}
  * @param name The name of the column.
  * @tparam RR The type of the value the column holds.
  */
-sealed class QueryColumn[RR : Primitive](val name: String) {
-
-  private[this] val p = implicitly[Primitive[RR]]
+sealed class QueryColumn[RR](val name: String)(implicit p: Primitive[RR]) {
 
   def eqs(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
