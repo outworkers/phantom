@@ -30,7 +30,7 @@ jdk_version_8_or_more=$(check_java_version)
 
 if [ "$jdk_version_8_or_more" = true ];
   then
-    cassandra_version="3.2"
+    cassandra_version="3.8"
   else
     cassandra_version="2.2.9"
 fi

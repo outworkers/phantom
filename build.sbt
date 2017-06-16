@@ -21,7 +21,7 @@ import sbt.Defaults._
 lazy val Versions = new {
   val logback = "1.2.3"
   val sbt = "0.13.13"
-  val util = "0.34.0"
+  val util = "0.36.0"
   val json4s = "3.5.1"
   val datastax = "3.2.0"
   val scalatest = "3.0.1"
@@ -145,10 +145,15 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass
+    pgpPassphrase := Publishing.pgpPass,
+    tutSourceDirectory := {
+      val directory = baseDirectory.value / "docs"
+      println(directory.getAbsolutePath.toString)
+      directory
+    }
   ).aggregate(
     fullProjectList: _*
-  ).enablePlugins(CrossPerProjectPlugin)
+  ).enablePlugins(CrossPerProjectPlugin).enablePlugins(TutPlugin)
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)

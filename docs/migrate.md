@@ -115,19 +115,19 @@ As of phantom 2.5.0, if you have a manually defined method to insert records int
 For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs. 
 This is because phantom successfully auto-generates a basic store method that looks like this below.
 
-```scala
+```tut
 
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
 
 case class Record(
-  id: java.util.UUID,
+  id: UUID,
   name: String,
   firstName: String,
   email: String
 )
 
-abstract class MyTable extends CassandraTable[MyTable, Record] {
+abstract class MyTable extends Table[MyTable, Record] {
 
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
