@@ -27,7 +27,5 @@ trait SASIIndex[M <: Mode] {
   def analyzer: Analyzer[M]
 
   def analyzerOptions: CQLQuery = analyzer.qb
-
-  //abstract override def isSASI: Boolean = true
 }
 

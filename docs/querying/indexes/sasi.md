@@ -13,9 +13,11 @@ performance wise after a couple thousand records.
 SASI indexes are natively supported in the standard `phantom-dsl` module, so as long as you have the following in your 
 `build.sbt` you will not require any special dependencies.
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11)
+
 ```scala
 
-val phantomVersion = "2.11.0"
+val phantomVersion = "__check_badge_above__"
 
 libraryDependencies ++= Seq(
   "com.outworkers" %% "phantom-dsl" % phantomVersion
