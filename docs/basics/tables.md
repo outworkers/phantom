@@ -24,7 +24,7 @@ case class Recipe(
   uid: UUID
 )
 
-abstract class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+abstract class Recipes extends Table[Recipes, Recipe] {
 
   object url extends StringColumn with PartitionKey
 
@@ -72,13 +72,11 @@ implemented via `com.outworkers.phantom.NamingStrategy`. These control only the 
 not the columns or anything else.
 
 
-```
-| Strategy                    | Casing                        | 
-| =========================== | ============================= |
-| NamingStrategy.CamelCase    | lowCamelCase                  |
-| NamingStrategy.SnakeCase    | low_snake_case                |
-| NamingStrategy.Default      | Preserves the user input      |
-```
+| Strategy                      | Casing                        |
+| ----------------------------- | ----------------------------- |
+| `NamingStrategy.CamelCase`    | lowCamelCase                  |
+| `NamingStrategy.SnakeCase`    | low_snake_case                |
+| `NamingStrategy.Default`      | Preserves the user input      |
 
 All available imports will have two flavours. It's important to note they only work
 when imported in the scope where tables are defined. That's where the macro will evaluate
@@ -110,7 +108,7 @@ case class ExampleModel (
   test: Option[Int]
 )
 
-abstract class ExampleRecord extends CassandraTable[ExampleRecord, ExampleModel] with RootConnector {
+abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
   object id extends UUIDColumn with PartitionKey
   object timestamp extends DateTimeColumn with ClusteringOrder with Ascending
   object name extends StringColumn
@@ -232,7 +230,7 @@ case class Record(
   email: String
 )
 
-abstract class MyTable extends CassandraTable[MyTable, Record] {
+abstract class MyTable extends Table[MyTable, Record] {
 
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
@@ -296,7 +294,7 @@ case class Record(
   email: String
 )
 
-abstract class RecordsByCountry extends CassandraTable[RecordsByCountry, Record] {
+abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object countryCode extends StringColumn with PartitionKey
   object id extends UUIDColumn with PrimaryKey
   object name extends StringColumn
@@ -343,7 +341,7 @@ case class Record(
   email: String
 )
 
-abstract class RecordsByCountryAndRegion extends CassandraTable[RecordsByCountryAndRegion, Record] {
+abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion, Record] {
   object countryCode extends StringColumn with PartitionKey
   object region extends StringColumn with PartitionKey
   object id extends UUIDColumn with PrimaryKey

@@ -44,8 +44,8 @@ The following is the list of available query methods on a select, and it can be 
  in various ways.
  
  
-| Method name           | Return type | Purpose                                               |
-| ===================== | =================================== | =====================================================  |
+| Method name           | Return type                         | Purpose                                                |
+| --------------------- | ----------------------------------- | -----------------------------------------------------  |
 | `future`              | `com.ouwotkers.phantom.ResultSet`   | Available on all queries, returns the raw result type. |
 | `one`                 | `Option[R]`                         | Select a single result as an `Option[R]`               |
 | `fetch`               | `List[R]`                           | Select a small list of records without a paging state  |
@@ -77,7 +77,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 
 
 | Scala operator     | Cassandra operator   | Return type           |
-| ==============     | ==================== | ===================== |
+| --------------     | -------------------- | --------------------- |
 | `sum[T : Numeric]` | SUM                  | `Option[T : Numeric]` |
 | `min[T : Numeric]` | MIN                  | `Option[T : Numeric]` |
 | `max[T : Numeric]` | MAX                  | `Option[T : Numeric]` |
