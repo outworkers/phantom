@@ -96,7 +96,7 @@ There are two modes directed specifically at text columns, namely `Mode.Prefix` 
 In addition to the standard operations, the `Prefix` mode will allow you to perform `like(prefix("text"))` style
  queries.
  
-Examples can be found in [SASIIntegrationTest.scala](phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
  
 Example query, based on the schema defined above.
 
@@ -109,7 +109,7 @@ db.multiSasiTable.select.where(_.phoneNumber like prefix(pre)).fetch()
 This will enable further queries for text columns, such as `like(suffix("value"))` and `like(contains("value`))`, as well
 as prefix style queries.
 
-Examples can be found in [SASIIntegrationTest.scala](phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
 
 Example possible queries, based on the schema defined above.
 
@@ -128,7 +128,7 @@ to enable standard operators for numerical columns that are not part of the prim
 Sparse mode SASI indexes cannot define analyzers, and automated schema creation will fail if you attempt to use an analyzer
 in `Mode.Sparse`
 
-Examples can be found in [SASIIntegrationTest.scala](phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
+Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
 
 Example possible queries.
 
