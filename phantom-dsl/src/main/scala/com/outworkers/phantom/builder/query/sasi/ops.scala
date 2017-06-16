@@ -87,13 +87,3 @@ class SASITextOps[M <: Mode](
     new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
   }
 }
-
-class SASINumericOps[RR : Numeric](
-  col: String
-) {
-
-  def like[Op <: SASIOp[RR]](op: Op)(implicit ev: AllowedSASIOp[Mode.Sparse, Op]): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
-  }
-}
-
