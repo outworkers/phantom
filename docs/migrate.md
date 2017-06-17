@@ -18,6 +18,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License. 
 - [x] Publish `outworkers-util` and all sub modules to Maven Central.
 - [x] Publish `outworkers-diesel` and all sub modules to Maven Central.
+- [x] Drop all dependencies outside of `shapeless` and `datastax-java-driver` from `phantom-dsl`.
 - [x] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
 - [x] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
 - [x] Create a `1.30.x` release that allows users to transition to a no custom resolver version of Phantom 1.0.x even before 2.0.0 is stable.
@@ -33,6 +34,16 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Generate the `fromRow` if the fields match, they are in arbitrary order, but there are no duplicate types.
 - [x] Allow arbitrary inheritance and usage patterns for Cassandra tables, and resolve inheritance resolutions with macros to correctly identify desired table structures.
 
+#### Vast improvements
+
+- [x] Re-implement primitive types using native macro derived marshallers/unmarshallers.
+- [x] Re-implement prepared statement binds to use macro derived serializers.
+- [x] Add debug strings to `BatchQuery`.
+- [x] Use `AnyVal` in the `ImplicitMechanism` where possible.
+- [x] Enforce `store` method typechecking at compile time.
+- [x] Use `shapeless.HList` as the core primitive inside table store methods.
+- [x] Add advanced debugging to the macro API.
+
 #### Tech debt
 
 - [x] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
@@ -42,11 +53,12 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 #### Features
 
 - [ ] Native support for multi-tenanted environments via cached sessions.
-- [ ] Case sensitive CQL.
-- [ ] Materialized views.
-- [ ] SASI index support
+- [x] Case sensitive CQL.
+- [ ] Materialized views.(phantom pro)
+- [x] SASI index support
 - [ ] Support for `PER PARTITION LIMIT` in `SelectQuery`.
 - [ ] Support for `GROUP BY` in `SelectQuery`.
+- [x] Implement a compact table DSL that does not require passing in `this` to columns.
 
 #### Scala 2.12 support
 
@@ -55,7 +67,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 - [x] Add support for Scala 2.12 in `phantom-dsl`
 - [x] Add support for Scala 2.12 in `phantom-connectors`
 - [x] Add support for Scala 2.12 in `phantom-example`
-- [ ] Add support for Scala 2.12 in `phantom-streams`
+- [x] Add support for Scala 2.12 in `phantom-streams`
 - [x] Add support for Scala 2.12 in `phantom-thrift`
 - [x] Add support for Scala 2.12 in `phantom-finagle`
 
