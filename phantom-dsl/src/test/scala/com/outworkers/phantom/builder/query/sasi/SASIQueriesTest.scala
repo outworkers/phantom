@@ -66,10 +66,9 @@ class SASIQueriesTest extends PhantomSuite {
     qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE phoneNumber LIKE '078%';"
   }
 
-  it should "allow using a prefix clause on a Mode.Sparse Text column" in {
-    val qb = database.multiSasiTable.select.where(_.customers like prefix(5)).queryString
-
-    qb shouldEqual s"SELECT * FROM ${db.space.name}.${database.multiSasiTable.tableName} WHERE customers LIKE '5%';"
+  it should "not allow like queries in Mode.Sparse" in {
+    val pre = 55
+    "db.multiSasiTable.select.where(_.customers like(prefix(pre)) pre).fetch()" shouldNot compile
   }
 
   it should "not allow using a suffix clause on a Mode.Sparse Text column" in {

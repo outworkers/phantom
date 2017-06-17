@@ -70,10 +70,6 @@ object AllowedSASIOp {
     new AllowedSASIOp[Mode.Contains, PrefixOp[T]] {}
   }
 
-  implicit def modeSparseCanPrefix[T]: AllowedSASIOp[Sparse, PrefixOp[T]] = {
-    new AllowedSASIOp[Mode.Sparse, PrefixOp[T]] {}
-  }
-
   implicit def modeContainsCanSuffix[T]: AllowedSASIOp[Contains, SuffixOp[T]] = {
     new AllowedSASIOp[Mode.Contains, SuffixOp[T]] {}
   }
@@ -91,13 +87,3 @@ class SASITextOps[M <: Mode](
     new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
   }
 }
-
-class SASINumericOps[RR : Numeric](
-  col: String
-) {
-
-  def like[Op <: SASIOp[RR]](op: Op)(implicit ev: AllowedSASIOp[Mode.Sparse, Op]): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.SASI.likeAny(col, op.qb.queryString))
-  }
-}
-

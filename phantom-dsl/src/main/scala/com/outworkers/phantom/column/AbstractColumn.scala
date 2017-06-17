@@ -50,7 +50,6 @@ trait AbstractColumn[@specialized(Int, Double, Float, Long, Boolean, Short) T] {
   def isAscending: Boolean = false
   def isMapKeyIndex: Boolean = false
   def isMapEntryIndex: Boolean = false
-  def isSASI: Boolean = false
 
   private[this] lazy val _name: String = {
     cm.reflect(this).symbol.name.toTypeName.decodedName.toString

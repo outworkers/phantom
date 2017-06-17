@@ -18,7 +18,8 @@ If we would just use a timestamp type, if we were to receive two logs for the sa
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
-```scala
+```tut
+
 import com.outworkers.phantom.dsl._
 
 case class CarMetric(
@@ -28,7 +29,7 @@ case class CarMetric(
   tirePressure: Double
 )
 
-abstract class AnalyticsEntries extends CassandraTable[AnalyticsEntries, CarMetric] with RootConnector {
+abstract class AnalyticsEntries extends Table[AnalyticsEntries, CarMetric] {
   object car extends UUIDColumn with PartitionKey
   object id extends TimeUUIDColumn with ClusteringOrder with Descending
   object velocity extends DoubleColumn
@@ -43,9 +44,13 @@ The following is the list of available query methods on a select, and it can be 
  in various ways.
  
  
-| Method name | Return type | Purpose |
-| =========== | =========== | ======= |
-
+| Method name           | Return type                         | Purpose                                                |
+| --------------------- | ----------------------------------- | -----------------------------------------------------  |
+| `future`              | `com.ouwotkers.phantom.ResultSet`   | Available on all queries, returns the raw result type. |
+| `one`                 | `Option[R]`                         | Select a single result as an `Option[R]`               |
+| `fetch`               | `List[R]`                           | Select a small list of records without a paging state  |
+| `fetch(modifier)`     | `List[R]`                           | Select a small list of records without a paging state  |
+| `fetchRecord`         | `ListResult[R]`                     | Fetch a small result together with the `ResultSet`     |
 
 
 #### Paginating results by leveraging paging states and automated Cassandra pagination.
@@ -72,7 +77,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 
 
 | Scala operator     | Cassandra operator   | Return type           |
-| ==============     | ==================== | ===================== |
+| --------------     | -------------------- | --------------------- |
 | `sum[T : Numeric]` | SUM                  | `Option[T : Numeric]` |
 | `min[T : Numeric]` | MIN                  | `Option[T : Numeric]` |
 | `max[T : Numeric]` | MAX                  | `Option[T : Numeric]` |
@@ -80,7 +85,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 | `count`            | COUNT                | `Option[scala.Long]`  |
 
 To take advantage of these operators, simply use the default import, combined with the `function` argument
-and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](https://github.com/outworkers/phantom/blob/develop/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
+and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
 
 The structure of an aggregation query is simple, and the rturn type is 
 

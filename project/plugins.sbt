@@ -59,4 +59,6 @@ addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
+
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
