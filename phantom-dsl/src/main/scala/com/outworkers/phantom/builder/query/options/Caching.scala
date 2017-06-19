@@ -48,6 +48,10 @@ private[phantom] trait CachingStrategies {
     def rows_per_partition(value: String = CQLSyntax.CacheStrategies.All): QType = {
       instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
     }
+
+    def rows_per_partition(value: Int): QType = {
+      instance(QueryBuilder.Create.Caching.rowsPerPartition(qb, value))
+    }
   }
 
   /**

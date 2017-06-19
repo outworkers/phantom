@@ -295,6 +295,11 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
         }
       }
 
+      "specify a Cache rows_per_partition as an integer value" in {
+        val qb = BasicTable.create.`with`(caching eqs Cache.All().rows_per_partition(5)).qb.queryString
+        qb shouldEqual s"$root WITH caching = {'keys': 'all', 'rows_per_partition': 'all', 'rows_per_partition': 5}"
+      }
+
       "specify Cache.All as a caching strategy" in {
         val qb = BasicTable.create.`with`(caching eqs Cache.All()).qb.queryString
         if (session.v4orNewer) {
