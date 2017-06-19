@@ -16,11 +16,9 @@
 import sbt.Keys._
 import sbt._
 import com.twitter.sbt._
-import sbt.Defaults._
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val sbt = "0.13.13"
   val util = "0.36.0"
   val json4s = "3.5.1"
   val datastax = "3.2.0"
@@ -34,7 +32,7 @@ lazy val Versions = new {
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.0.0.1"
   val javaxServlet = "3.0.1"
-
+  val monix = "2.3.0"
   val joda = "2.9.9"
   val jodaConvert = "1.8.1"
   val scalamock = "3.5.0"
@@ -309,4 +307,19 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
     phantomThrift
+  ).enablePlugins(CrossPerProjectPlugin)
+
+lazy val phantomMonix = (project in file("phantom-monix"))
+  .settings(
+    name := "phantom-monix",
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    moduleName := "phantom-monix",
+    libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "io.monix" %% "monix" % Versions.monix
+    )
+  ).settings(
+    sharedSettings: _*
+  ).dependsOn(
+    phantomDsl % "test->test;compile->compile;"
   ).enablePlugins(CrossPerProjectPlugin)
