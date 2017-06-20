@@ -65,4 +65,3 @@ private[phantom] object ResultSpool {
     }
   }
 }
-
