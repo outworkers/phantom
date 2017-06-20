@@ -29,25 +29,17 @@ import scala.concurrent.{Await, Future}
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
   TestDatabase.primitivesJoda.createSchema()
+  TestDatabase.primitivesJoda.truncate()
 
   implicit object JodaTimeSampler extends Sample[DateTime] {
     override def sample: DateTime = DateTime.now(DateTimeZone.UTC)
   }
-  val sampleSize = 100
 
-  val fs: IndexedSeq[Future[Unit]] = for {
-    step <- 1 to 3
-    rows = Iterator.fill(sampleSize)(gen[JodaRow])
-
-    batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-      b.add(TestDatabase.primitivesJoda.store(row))
-    })
-    w = batch.future()
-    f = w map (_ => println(s"step $step has succeed") )
-    r = Await.result(f, 200 seconds)
-  } yield f map (_ => r)
-
-  Await.ready(Future.sequence(fs), 20 seconds)
+  val sampleSize = 30000
+  Iterator.fill(sampleSize)(gen[JodaRow]).grouped(256).foreach { rs =>
+    val chain = rs.map(r => TestDatabase.primitivesJoda.store(r).future.map(_ => ()))
+    Await.ready(Future.sequence(chain), 1.minutes)
+  }
 
   val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
 
@@ -55,7 +47,7 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
     measure method "fetchSpool" in {
       using(sizes) in {
         size => TwitterAwait.ready {
-          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(_.toSeq)
+          TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(_.force)
         }
       }
     }
