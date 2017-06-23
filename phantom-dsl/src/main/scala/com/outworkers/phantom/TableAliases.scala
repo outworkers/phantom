@@ -44,7 +44,10 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](this)
 
   abstract class JsonColumn[RR]()(implicit ev: Primitive[RR]) extends Col[RR]
-  abstract class OptionalJsonColumn[RR]()(implicit ev: Primitive[RR]) extends OptionalCol[RR]
+  abstract class OptionalJsonColumn[RR]()(
+    implicit ev: Primitive[RR],
+    optEv: Primitive[Option[RR]]
+  ) extends OptionalCol[RR]
 
   class EnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
   class OptionalEnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
