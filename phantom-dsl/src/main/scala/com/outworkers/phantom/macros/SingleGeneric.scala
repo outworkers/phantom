@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.macros
 
+import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 import shapeless.Generic
 
 import scala.reflect.macros.whitebox
@@ -107,7 +108,6 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       """
     } else {
       val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      logger.error(debugString)
       error(debugString)
       abort(debugString)
     }

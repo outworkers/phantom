@@ -43,27 +43,27 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
     ev3: Primitive[Map[KK, VV]]
   ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](this)
 
-  abstract class JsonColumn[RR] extends com.outworkers.phantom.column.JsonColumn[T, R, RR](this)
-  abstract class OptionalJsonColumn[RR] extends com.outworkers.phantom.column.OptionalJsonColumn[T, R, RR](this)
+  abstract class JsonColumn[RR : Primitive] extends Col[RR]
+  abstract class OptionalJsonColumn[RR : Primitive] extends OptionalCol[RR]
 
   class EnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
   class OptionalEnumColumn[RR <: Enumeration#Value : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
 
   abstract class JsonSetColumn[RR]()(
-    implicit ev: Primitive[Set[String]],
-    ev2: Primitive[String]
-  ) extends column.JsonSetColumn[T, R, RR](this)
+    implicit ev: Primitive[Set[RR]],
+    ev2: Primitive[RR]
+  ) extends SetColumn[RR](this)
 
   abstract class JsonListColumn[RR]()(
-    implicit ev: Primitive[List[String]],
-    ev2: Primitive[String]
-  ) extends column.JsonListColumn[T, R, RR](this)
+    implicit ev: Primitive[List[RR]],
+    ev2: Primitive[RR]
+  ) extends ListColumn[RR](this)
 
-  abstract class JsonMapColumn[KK, VV]()(
-    implicit ev: Primitive[Map[KK, String]],
-    ev2: Primitive[String],
-    ev3: Primitive[KK]
-  ) extends com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV](this)
+  class JsonMapColumn[KK, VV]()(implicit
+    ev: Primitive[KK],
+    ev2: Primitive[VV],
+    ev3: Primitive[Map[KK, VV]]
+  ) extends MapColumn[KK, VV](this)
 
   class PrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]

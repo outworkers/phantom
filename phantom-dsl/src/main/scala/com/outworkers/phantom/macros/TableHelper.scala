@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey, SASIIndex}
+import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, WhiteboxToolbelt}
 import shapeless.HList
 
 import scala.collection.immutable.ListMap
