@@ -20,15 +20,18 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.macros.BlackboxToolbelt
+import com.outworkers.phantom.macros.HListHelpers
+import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
 import org.joda.time.DateTime
 
 import scala.collection.concurrent.TrieMap
 import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
-class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt(c) {
+class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt {
   import c.universe._
+
+  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
   val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
   val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
