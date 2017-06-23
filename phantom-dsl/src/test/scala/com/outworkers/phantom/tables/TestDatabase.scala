@@ -21,7 +21,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.bugs.{SchemaBug656Table, SchemaBug663Table}
+import com.outworkers.phantom.tables.bugs.{JsonPreparedTable, SchemaBug656Table, SchemaBug663Table}
 import com.outworkers.phantom.tables.sasi.{MultiSASITable, SASIIndexedArticles}
 
 class TestDatabase(
@@ -47,7 +47,7 @@ class TestDatabase(
 
   object indexedCollectionsTable extends IndexedCollectionsTable with Connector
   object indexedEntriesTable extends IndexedEntriesTable with Connector
-  object jsonTable extends JsonTable with connector.Connector
+  object jsonTable extends JsonTable with Connector
   object listCollectionTable extends ListCollectionTable with Connector
   object optionalPrimitives extends OptionalPrimitives with Connector
   object primitives extends PrimitivesTable with Connector
@@ -101,6 +101,7 @@ class TestDatabase(
   object derivedPrimitivesTable extends DerivedPrimitivesTable with Connector
   object sasiIndexedArticles extends SASIIndexedArticles with Connector
   object multiSasiTable extends MultiSASITable with Connector
+  object jsonPreparedTable extends JsonPreparedTable with Connector
 }
 
 object Connector {
