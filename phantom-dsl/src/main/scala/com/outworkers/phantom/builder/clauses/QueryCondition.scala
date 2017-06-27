@@ -54,7 +54,7 @@ class WhereClause extends Clause {
    *
    * @tparam T Type of argument
    */
-  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition(qb)
+  class ParametricCondition[T <: HList](override val qb: CQLQuery) extends QueryCondition[T](qb)
 }
 
 object WhereClause extends WhereClause
