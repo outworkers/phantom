@@ -36,7 +36,7 @@ class IteratorTest extends BigTest with ScalaFutures {
     val rows = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
 
     val chain = for {
-      _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
+      _ <- database.timeuuidTable.storeRecords(rows)
       iterator <- database.timeuuidTable.select.where(_.user eqs user).iterator()
     } yield iterator
 
@@ -58,10 +58,16 @@ class IteratorTest extends BigTest with ScalaFutures {
     } sortBy(_.id) reverse
 
     val chain = for {
-      _ <- Future.sequence(rows.map(row => database.timeuuidTable.store(row).future()))
+      _ <- database.timeuuidTable.storeRecords(rows)
       count <- database.timeuuidTable.select.count().where(_.user eqs user).one()
-      firstHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(_.setFetchSize(fetchSize))
-      secondHalf <- database.timeuuidTable.select.where(_.user eqs user).orderBy(_.id desc).paginateRecord(firstHalf.pagingState)
+      firstHalf <- database.timeuuidTable.select.where(_.user eqs user)
+        .orderBy(_.id desc)
+        .paginateRecord(_.setFetchSize(fetchSize))
+
+      secondHalf <- database.timeuuidTable.select.where(_.user eqs user)
+        .orderBy(_.id desc)
+        .paginateRecord(firstHalf.pagingState)
+
     } yield (count, firstHalf, secondHalf)
 
     whenReady(chain) { case (count, firstBatch, secondBatch) =>
@@ -70,6 +76,7 @@ class IteratorTest extends BigTest with ScalaFutures {
       count.value shouldEqual generationSize
 
       Option(firstBatch.pagingState) shouldBe defined
+      firstBatch.state shouldBe defined
       firstBatch.records.size shouldEqual fetchSize
       firstBatch.records should contain theSameElementsAs (rows take fetchSize)
 

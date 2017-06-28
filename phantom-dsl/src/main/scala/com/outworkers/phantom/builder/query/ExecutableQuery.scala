@@ -31,6 +31,8 @@ trait RecordResult[R] {
   def result: ResultSet
 
   def pagingState: PagingState = result.getExecutionInfo.getPagingState
+
+  def state: Option[PagingState] = Option(result.getExecutionInfo.getPagingState)
 }
 
 case class ListResult[R](records: List[R], result: ResultSet) extends RecordResult[R]

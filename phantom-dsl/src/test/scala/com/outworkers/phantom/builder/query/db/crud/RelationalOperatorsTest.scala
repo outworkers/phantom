@@ -49,7 +49,7 @@ class RelationalOperatorsTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      inserts <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      inserts <- database.timeSeriesTable.storeRecords(records)
     } yield inserts
 
     whenReady(chain) { inserts =>

@@ -36,7 +36,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     val result = for {
       _ <- Articles.truncate().future()
-      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      _ <- Articles.storeRecords(articles)
       one <- Articles.select.one
       next <- Articles.select.where(_.id gtToken one.value.id).fetch
     } yield next
@@ -52,7 +52,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     val result = for {
       _ <- Articles.truncate().future()
-      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      _ <- Articles.storeRecords(articles)
       list <- Articles.select.fetch
       next <- Articles.select.where(_.id ltToken list.last.id).fetch
     } yield next
@@ -68,7 +68,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     val result = for {
       _ <- Articles.truncate().future()
-      _ <- Future.sequence(articles.map(Articles.store(_).future()))
+      _ <- Articles.storeRecords(articles)
       list <- Articles.select.fetch
       next <- Articles.select.where(_.id lteToken list.last.id).fetch
     } yield next
@@ -84,7 +84,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store(_).future()))
+      store <- Articles.storeRecords(articles)
       next <- Articles.select.where(_.id eqsToken articles.headOption.value.id).fetch
     } yield next
 
@@ -99,7 +99,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
     val result = for {
       truncate <- Articles.truncate.future()
-      store <- Future.sequence(articles.map(Articles.store(_).future()))
+      store <- Articles.storeRecords(articles)
       list <- Articles.select.fetch
       next <- Articles.select.where(_.id gteToken list.headOption.value.id).fetch
     } yield next
