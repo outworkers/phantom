@@ -23,6 +23,7 @@ phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
 
 Batch.logged
     .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
@@ -38,6 +39,7 @@ Batch.logged
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
 
 Batch.counter
     .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
@@ -51,6 +53,7 @@ you can also use `+=` and `-=` to achieve the same thing.
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
 
 Batch.counter
     .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter += 500L))
@@ -64,6 +67,7 @@ Batch.counter
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
 
 Batch.unlogged
     .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))

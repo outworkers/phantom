@@ -9,7 +9,7 @@ of a `Database` class.
 
 Let's consider the below example.
 
-```scala
+```tut
 
 import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
@@ -57,7 +57,10 @@ This enables inheritance, but it does not support singletons/objects, so as a re
 scenario, the macro engine will infer the table name as "Recipes", based on the type information. If you hit trouble upgrading because names no longer match, simply
 override the table name manually inside the table definition.
 
-```scala
+```tut
+
+import com.outworkers.phantom.dsl._
+
 class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
   object recipes extends Recipes with Connector {
     override def tableName: String = "recipes"
@@ -82,7 +85,7 @@ All available imports will have two flavours. It's important to note they only w
 when imported in the scope where tables are defined. That's where the macro will evaluate
 the call site for implicits.
 
-```scala
+```tut
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 
@@ -97,7 +100,9 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
-```scala
+```tut
+
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 
 case class ExampleModel (
@@ -282,8 +287,9 @@ The macro will always create a `Tuple` as described initially, of all the types 
 by the `Record` type.
 
 
-```scala
+```tut
 
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
 
@@ -319,7 +325,7 @@ key that would allow us to retrieve all records by both `country` and `region`.
 
 So the new type of the generated store method will now be:
 
-```
+```tut
   def store(
     countryCode: String,
     region: String,
@@ -329,7 +335,7 @@ So the new type of the generated store method will now be:
 
 The new table definition to store the above is:
 
-```scala
+```tut
 
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._

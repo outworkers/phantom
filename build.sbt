@@ -21,7 +21,7 @@ lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.36.0"
   val json4s = "3.5.1"
-  val datastax = "3.2.0"
+  val datastax = "3.3.0"
   val scalatest = "3.0.1"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
@@ -132,7 +132,9 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomConnectors,
   phantomFinagle,
   phantomStreams,
-  phantomThrift
+  phantomThrift,
+  phantomMonix,
+  readme
 )
 
 lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
@@ -143,15 +145,26 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass,
-    tutSourceDirectory := {
-      val directory = baseDirectory.value / "docs"
-      println(directory.getAbsolutePath.toString)
-      directory
-    }
+    pgpPassphrase := Publishing.pgpPass
   ).aggregate(
     fullProjectList: _*
-  ).enablePlugins(CrossPerProjectPlugin).enablePlugins(TutPlugin)
+  ).enablePlugins(CrossPerProjectPlugin)
+
+lazy val readme = (project in file("readme"))
+  .settings(sharedSettings ++ Publishing.noPublishSettings)
+  .settings(
+    tutSourceDirectory := sourceDirectory.value / "tut" / "src",
+    tutTargetDirectory := baseDirectory.value / "docs"
+  ).dependsOn(
+    phantomDsl,
+    phantomJdk8,
+    phantomExample,
+    phantomConnectors,
+    phantomFinagle,
+    phantomMonix,
+    phantomStreams,
+    phantomThrift
+  ).enablePlugins(TutPlugin)
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)
@@ -197,7 +210,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  ).enablePlugins(CrossPerProjectPlugin)
+  ).enablePlugins(CrossPerProjectPlugin).enablePlugins(TutPlugin)
 
 lazy val phantomConnectors = (project in file("phantom-connectors"))
   .settings(

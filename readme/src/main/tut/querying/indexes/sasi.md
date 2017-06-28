@@ -15,7 +15,7 @@ SASI indexes are natively supported in the standard `phantom-dsl` module, so as 
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11)
 
-```scala
+```tut
 
 val phantomVersion = "__check_badge_above__"
 

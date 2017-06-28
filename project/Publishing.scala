@@ -132,4 +132,7 @@ object Publishing {
   lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
     if (bool) ref :: Nil else Nil
 
+  lazy val addRef: (Boolean, ClasspathDep[ProjectReference]) => Seq[ClasspathDep[ProjectReference]] = (bool, ref) =>
+    if (bool) Seq(ref) else Seq.empty
+
 }
