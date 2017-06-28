@@ -287,6 +287,9 @@ By default, `autocreate` will simply try and perform a lightweight create query,
 def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
   create.ifNotExists()(keySpace)
 }
+```
+
+The result will look like the below.
 
 ```sql
 CREATE TABLE IF NOT EXISTS $keyspace.$table (
@@ -296,3 +299,4 @@ CREATE TABLE IF NOT EXISTS $keyspace.$table (
   PRIMARY KEY (id, unixTimestamp)
 )
 ```
+

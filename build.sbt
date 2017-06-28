@@ -153,6 +153,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     tutSourceDirectory := sourceDirectory.value / "tut" / "src",
     tutTargetDirectory := baseDirectory.value / "docs"
   ).dependsOn(
@@ -164,7 +165,10 @@ lazy val readme = (project in file("readme"))
     phantomMonix,
     phantomStreams,
     phantomThrift
-  ).enablePlugins(TutPlugin)
+  ).enablePlugins(
+    TutPlugin,
+    CrossPerProjectPlugin
+  )
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)

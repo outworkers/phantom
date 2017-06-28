@@ -10,7 +10,6 @@ We offer a comprehensive range of elite Scala development services, including bu
 - Remote contractors for hire
 - Advanced Scala and Cassandra training
 
-
 We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, click [here](http://www.outworkers.com/work).
 
 ### phantom-pro
