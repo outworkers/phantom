@@ -470,7 +470,7 @@ private[phantom] trait SelectImplicits {
   final implicit def rootSelectBlockToSelectQuery[
     T <: CassandraTable[T, _],
     R
-  ]( root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
+  ](root: RootSelectBlock[T, R])(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     root.all
   }
 }

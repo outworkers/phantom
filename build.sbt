@@ -154,7 +154,7 @@ lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
-    tutSourceDirectory := sourceDirectory.value / "tut" / "src",
+    tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := baseDirectory.value / "docs"
   ).dependsOn(
     phantomDsl,

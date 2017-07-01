@@ -20,7 +20,7 @@ phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 <a id="logged-batch-statements">LOGGED batch statements</a>
 ===========================================================
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
@@ -36,7 +36,7 @@ Batch.logged
 ============================================================
 <a href="#table-of-contents">back to top</a>
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
@@ -50,7 +50,7 @@ Batch.counter
 Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
 you can also use `+=` and `-=` to achieve the same thing.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
@@ -64,7 +64,7 @@ Batch.counter
 <a id="unlogged-batch-statements">UNLOGGED batch statements</a>
 ============================================================
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._

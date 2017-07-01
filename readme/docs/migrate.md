@@ -127,7 +127,7 @@ As of phantom 2.5.0, if you have a manually defined method to insert records int
 For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs. 
 This is because phantom successfully auto-generates a basic store method that looks like this below.
 
-```tut:silent
+```scala
 
 import scala.concurrent.duration._
 import scala.concurrent.Future

@@ -115,7 +115,6 @@ object Connector {
         replication eqs SimpleStrategy.replication_factor(1)
       )
     )
-
 }
 
 object TestDatabase extends TestDatabase(Connector.default)
