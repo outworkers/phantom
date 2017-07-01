@@ -156,7 +156,7 @@ lazy val readme = (project in file("readme"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := {
-      val dir = baseDirectory.value / "docs"
+      val dir = (phantom.base) / "docs"
       println(dir)
       dir
     }
