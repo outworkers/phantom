@@ -155,7 +155,11 @@ lazy val readme = (project in file("readme"))
   .settings(
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
-    tutTargetDirectory := baseDirectory.value / "docs"
+    tutTargetDirectory := {
+      val dir = baseDirectory.value / "docs"
+      println(dir)
+      dir
+    }
   ).dependsOn(
     phantomDsl,
     phantomJdk8,
