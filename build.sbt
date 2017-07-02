@@ -195,6 +195,8 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
+      "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
       "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
       "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
       "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,

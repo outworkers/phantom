@@ -7,3 +7,54 @@ to make your types act as primitive to Cassandra. There are several options at h
 
 
 ### JSON Columns
+
+One simple way to encode case classes or other Scala types as Cassandra native is to use native JSON support in phantom.
+This works in a really simple way, phantom will automatically use implicits to serialize/de-serialize your types
+to something Cassandra understands, namely string types.
+
+Let's explore a simple example using the [circe](https://github.com/circe/circe) library.
+Phantom does not ship with any particular JSON library, you have complete freedom over what JSON library you use.
+
+
+```tut:silent
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.dsl._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
+
+case class JsonTest(prop1: String, prop2: String)
+
+object JsonTest {
+
+  implicit val jsonPrimitive: Primitive[JsonTest] = {
+    Primitive.json[JsonTest](js => js.asJson.noSpaces)))(jsonString => Json.parse(jsonString).validate[JsonTest].get)
+  }
+}
+
+case class JsonClass(
+  id: UUID,
+  name: String,
+  json: JsonTest,
+  optionalJson : Option[JsonTest],
+  jsonList: List[JsonTest],
+  jsonSet: Set[JsonTest]
+)
+
+abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
+
+  object id extends UUIDColumn with PartitionKey
+
+  object name extends StringColumn
+
+  object json extends JsonColumn[JsonTest]
+
+  object optionalJson extends OptionalJsonColumn[JsonTest]
+
+  object jsonList extends JsonListColumn[JsonTest]
+
+  object jsonSet extends JsonSetColumn[JsonTest]
+
+}
+
+```
