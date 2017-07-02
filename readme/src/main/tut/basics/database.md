@@ -255,22 +255,28 @@ As far as we are concerned, that was of doing things is old school and deprecate
 
 For example:
 
-```scala
-database.users.create.ifNotExists()
+```tut:silent
+trait ExampleAdvancedQuery extends AppDatabaseProvider {
+  database.users.create.ifNotExists()
+}
 ```
 
 Now obviously that's the super simplistic example, so let's look at how you might implement more advanced scenarios. Phantom provides a full schema DSL including all alter and create query options so it should be quite trivial to implement any kind of query no matter how complex.
 
 Without respect to how effective these settings would be in a production environment(no do not try at home), this is meant to illustrate that you could create very complex queries with the existing DSL.
 
-```scala
-database.users
-  .create.ifNotExists()
-  .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
-  .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-  .and(comment eqs "testing")
-  .and(read_repair_chance eqs 5D)
-  .and(dclocal_read_repair_chance eqs 5D)
+```tut:silent
+
+trait ExampleAdvancedQuery extends AppDatabaseProvider {
+
+  val customCreate = database.users
+      .create.ifNotExists()
+      .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+      .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+      .and(comment eqs "testing")
+      .and(read_repair_chance eqs 5D)
+      .and(dclocal_read_repair_chance eqs 5D)
+}
 ```
 
 To override the settings that will be used during schema auto-generation at `Database` level, phantom provides the `autocreate` method inside every table which can be easily overriden. This is again an example of chaining numerous DSL methods and doesn't attempt to demonstrate any kind of effective production settings.
