@@ -27,7 +27,7 @@ case class TupleRecord(id: UUID, tp: (String, Long))
 abstract class TupleColumnTable extends Table[
   TupleColumnTable,
   TupleRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object tp extends TupleColumn[(String, Long)]
 
@@ -44,7 +44,7 @@ case class NestedTupleRecord(
 abstract class NestedTupleColumnTable extends Table[
   NestedTupleColumnTable,
   NestedTupleRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object tp extends TupleColumn[(String, (String, Long))]
 
@@ -62,7 +62,7 @@ case class TupleCollectionRecord(
 abstract class TupleCollectionsTable extends Table[
   TupleCollectionsTable,
   TupleCollectionRecord
-] with RootConnector {
+] {
 
   object id extends UUIDColumn with PartitionKey
   object tuples extends ListColumn[(Int, String)]

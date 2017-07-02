@@ -23,18 +23,18 @@ case class StubRecord(
   name: String
 )
 
-abstract class TableWithSingleKey extends Table[TableWithSingleKey, StubRecord] with RootConnector {
+abstract class TableWithSingleKey extends Table[TableWithSingleKey, StubRecord] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
 }
 
-abstract class TableWithCompoundKey extends Table[TableWithCompoundKey, StubRecord] with RootConnector {
+abstract class TableWithCompoundKey extends Table[TableWithCompoundKey, StubRecord] {
   object id extends UUIDColumn with PartitionKey
   object second extends UUIDColumn with PrimaryKey
   object name extends StringColumn
 }
 
-abstract class TableWithCompositeKey extends Table[TableWithCompositeKey, StubRecord] with RootConnector {
+abstract class TableWithCompositeKey extends Table[TableWithCompositeKey, StubRecord] {
   object id extends UUIDColumn with PartitionKey
   object second_part extends UUIDColumn with PartitionKey
   object second extends UUIDColumn with PrimaryKey

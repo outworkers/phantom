@@ -30,7 +30,7 @@ case class PrimitiveCassandra22(
 abstract class PrimitivesCassandra22 extends Table[
   PrimitivesCassandra22,
   PrimitiveCassandra22
-] with RootConnector {
+] {
 
   object pkey extends StringColumn with PartitionKey
 

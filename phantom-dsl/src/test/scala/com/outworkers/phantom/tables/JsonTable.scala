@@ -41,7 +41,7 @@ case class JsonClass(
   jsonSet: Set[JsonTest]
 )
 
-abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
+abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object id extends UUIDColumn with PartitionKey
 

@@ -86,7 +86,7 @@ object OptionalPrimitive {
 abstract class OptionalPrimitives extends Table[
   OptionalPrimitives,
   OptionalPrimitive
-] with RootConnector {
+] {
   object pkey extends StringColumn with PartitionKey
 
   object string extends OptionalStringColumn

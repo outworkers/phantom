@@ -23,12 +23,14 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 
-case class JsonTest(prop1: String, prop2: String)
+case class JsonTest(
+  prop1: String,
+  prop2: String
+)
 
 object JsonTest {
-
   implicit val jsonPrimitive: Primitive[JsonTest] = {
-    Primitive.json[JsonTest](js => js.asJson.noSpaces)))(jsonString => Json.parse(jsonString).validate[JsonTest].get)
+    Primitive.json[JsonTest](js => js.asJson.noSpaces)(jsonString => decode[JsonTest](jsonString).right.get)
   }
 }
 
@@ -41,7 +43,7 @@ case class JsonClass(
   jsonSet: Set[JsonTest]
 )
 
-abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
+abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object id extends UUIDColumn with PartitionKey
 

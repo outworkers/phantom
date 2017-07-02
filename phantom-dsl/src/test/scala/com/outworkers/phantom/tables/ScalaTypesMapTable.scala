@@ -28,7 +28,7 @@ case class ScalaPrimitiveMapRecord(
 abstract class ScalaTypesMapTable extends Table[
   ScalaTypesMapTable,
   ScalaPrimitiveMapRecord
-] with RootConnector {
+] {
 
   object id extends UUIDColumn with PartitionKey
   object map extends MapColumn[DateTime, BigDecimal]

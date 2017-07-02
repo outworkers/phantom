@@ -10,45 +10,40 @@ of a `Database` class.
 Let's consider the below example.
 
 ```scala
-scala> import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.dsl._
 
-scala> import org.joda.time.DateTime
+import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
 
-scala> case class Recipe(
-     |   url: String,
-     |   description: Option[String],
-     |   ingredients: List[String],
-     |   servings: Option[Int],
-     |   lastCheckedAt: DateTime,
-     |   props: Map[String, String],
-     |   uid: UUID
-     | )
-defined class Recipe
+case class Recipe(
+  url: String,
+  description: Option[String],
+  ingredients: List[String],
+  servings: Option[Int],
+  lastCheckedAt: DateTime,
+  props: Map[String, String],
+  uid: UUID
+)
 
-scala> abstract class Recipes extends Table[Recipes, Recipe] {
-     | 
-     |   object url extends StringColumn with PartitionKey
-     | 
-     |   object description extends OptionalStringColumn
-     | 
-     |   object ingredients extends ListColumn[String]
-     | 
-     |   object servings extends OptionalIntColumn
-     | 
-     |   object lastcheckedat extends DateTimeColumn
-     | 
-     |   object props extends MapColumn[String, String]
-     | 
-     |   object uid extends UUIDColumn
-     | }
-defined class Recipes
+abstract class Recipes extends Table[Recipes, Recipe] {
 
-scala> class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
-     |   object recipes extends Recipes with Connector
-     | }
-defined class MyDb
+  object url extends StringColumn with PartitionKey
+
+  object description extends OptionalStringColumn
+
+  object ingredients extends ListColumn[String]
+
+  object servings extends OptionalIntColumn
+
+  object lastcheckedat extends DateTimeColumn
+
+  object props extends MapColumn[String, String]
+
+  object uid extends UUIDColumn
+}
+
+class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+  object recipes extends Recipes with Connector
+}
 ```
 
 In the past, when the table was nested within a `Database`, such as as above, the reflection mechanism
@@ -63,15 +58,14 @@ scenario, the macro engine will infer the table name as "Recipes", based on the 
 override the table name manually inside the table definition.
 
 ```scala
-scala> import com.outworkers.phantom.dsl._
+
 import com.outworkers.phantom.dsl._
 
-scala> class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
-     |   object recipes extends Recipes with Connector {
-     |     override def tableName: String = "recipes"
-     |   }
-     | }
-defined class MyDb
+class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+  object recipes extends Recipes with Connector {
+    override def tableName: String = "recipes"
+  }
+}
 ```
 
 ### The name of the table can be controlled using `NamingStrategy`.
@@ -92,22 +86,13 @@ when imported in the scope where tables are defined. That's where the macro will
 the call site for implicits.
 
 ```scala
-scala> import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
-
-scala> import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 
-scala> import com.outworkers.phantom.NamingStrategy.SnakeCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.SnakeCase.caseSensitive
-
-scala> import com.outworkers.phantom.NamingStrategy.SnakeCase.caseInsensitive
 import com.outworkers.phantom.NamingStrategy.SnakeCase.caseInsensitive
 
-scala> import com.outworkers.phantom.NamingStrategy.Default.caseSensitive
 import com.outworkers.phantom.NamingStrategy.Default.caseSensitive
-
-scala> import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 ```
 
@@ -116,27 +101,24 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 <a href="#table-of-contents">back to top</a>
 
 ```scala
-scala> import java.util.UUID
-import java.util.UUID
 
-scala> import com.outworkers.phantom.dsl._
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 
-scala> case class ExampleModel (
-     |   id: UUID,
-     |   name: String,
-     |   props: Map[String, String],
-     |   timestamp: Int,
-     |   test: Option[Int]
-     | )
-defined class ExampleModel
+case class ExampleModel (
+  id: UUID,
+  name: String,
+  props: Map[String, String],
+  timestamp: Int,
+  test: Option[Int]
+)
 
-scala> abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
-     |   object id extends UUIDColumn with PartitionKey
-     |   object timestamp extends DateTimeColumn with ClusteringOrder with Ascending
-     |   object name extends StringColumn
-     |   object props extends MapColumn[String, String]
-     |   object test extends OptionalIntColumn
+abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
+  object id extends UUIDColumn with PartitionKey
+  object timestamp extends DateTimeColumn with ClusteringOrder with Ascending
+  object name extends StringColumn
+  object props extends MapColumn[String, String]
+  object test extends OptionalIntColumn
 ```
 
 
@@ -287,7 +269,7 @@ be mapped.
 
 So the new type of the generated store method will now be:
 
-```
+```scala
   def store(
     countryCode: String,
     record: Record
@@ -306,36 +288,36 @@ by the `Record` type.
 
 
 ```scala
-     | 
-     | import java.util.UUID
-     | import com.outworkers.phantom.dsl._
-     | import scala.concurrent.duration._
-     | 
-     | case class Record(
-     |   id: java.util.UUID,
-     |   name: String,
-     |   firstName: String,
-     |   email: String
-     | )
-     | 
-     | abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
-     |   object countryCode extends StringColumn with PartitionKey
-     |   object id extends UUIDColumn with PrimaryKey
-     |   object name extends StringColumn
-     |   object firstName extends StringColumn
-     |   object email extends StringColumn
-     | 
-     |   // Phantom now auto-generates the below method
-     |   def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
-     |     insert
-     |       .value(_.countryCode, countryCode)
-     |       .value(_.id, record.id)
-     |       .value(_.name, record.name)
-     |       .value(_.firstName, record.firstName)
-     |       .value(_.email, record.email)
-     |   }
-     | 
-     | }
+
+import java.util.UUID
+import com.outworkers.phantom.dsl._
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
+  object countryCode extends StringColumn with PartitionKey
+  object id extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
+
+  // Phantom now auto-generates the below method
+  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
+    insert
+      .value(_.countryCode, countryCode)
+      .value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_.firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+
+}
 ```
 
 To see how this logic might be further extended, let's add a `region` partition key to create a `Compound` primary
@@ -354,35 +336,36 @@ So the new type of the generated store method will now be:
 The new table definition to store the above is:
 
 ```scala
-     | 
-     | import com.outworkers.phantom.dsl._
-     | import scala.concurrent.duration._
-     | 
-     | case class Record(
-     |   id: java.util.UUID,
-     |   name: String,
-     |   firstName: String,
-     |   email: String
-     | )
-     | 
-     | abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion, Record] {
-     |   object countryCode extends StringColumn with PartitionKey
-     |   object region extends StringColumn with PartitionKey
-     |   object id extends UUIDColumn with PrimaryKey
-     |   object name extends StringColumn
-     |   object firstName extends StringColumn
-     |   object email extends StringColumn
-     | 
-     |   // Phantom now auto-generates the below method
-     |   def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {
-     |     insert
-     |       .value(_.countryCode, countryCode)
-     |       .value(_.region, region)
-     |       .value(_.id, record.id)
-     |       .value(_.name, record.name)
-     |       .value(_.firstName, record.firstName)
-     |       .value(_.email, record.email)
-     |   }
-     | 
-     | }
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
+import scala.concurrent.duration._
+
+case class Record(
+  id: java.util.UUID,
+  name: String,
+  firstName: String,
+  email: String
+)
+
+abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion, Record] {
+  object countryCode extends StringColumn with PartitionKey
+  object region extends StringColumn with PartitionKey
+  object id extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object firstName extends StringColumn
+  object email extends StringColumn
+
+  // Phantom now auto-generates the below method
+  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
+    insert
+      .value(_.countryCode, countryCode)
+      .value(_.region, region)
+      .value(_.id, record.id)
+      .value(_.name, record.name)
+      .value(_.firstName, record.firstName)
+      .value(_.email, record.email)
+  }
+
+}
 ```
