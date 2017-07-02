@@ -70,7 +70,7 @@ abstract class Articles extends Table[Articles, Article] {
 
 class TestDatabase(
   override val connector: CassandraConnection
-) extends Database[TestDatabase] {
+) extends Database[TestDatabase](connector) {
   object articles extends Articles with Connector
 }
 

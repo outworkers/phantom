@@ -143,19 +143,18 @@ defined class UsersByEmail
 
 scala> class AppDatabase(
      |   override val connector: CassandraConnection
-     | ) extends Database[UserDatabase](connector) {
+     | ) extends Database[AppDatabase](connector) {
      |   object users extends Users with Connector
      |   object usersByEmail extends UsersByEmail with Connector
      | }
-<console>:29: error: not found: type UserDatabase
-       ) extends Database[UserDatabase](connector) {
-                          ^
-     | 
-     | // So now we are saying we have a trait
+defined class AppDatabase
+
+scala> // So now we are saying we have a trait
      | // that will eventually provide a reference to a specific database.
      | trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
-     | 
-     | trait UserService extends AppDatabaseProvider {
+defined trait AppDatabaseProvider
+
+scala> trait UserService extends AppDatabaseProvider {
      | 
      |   /**
      |    * Stores a user into the database guaranteeing application level consistency of data.
@@ -175,6 +174,18 @@ scala> class AppDatabase(
      |   def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
      |   def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
      | }
+<console>:40: error: value flatMap is not a member of com.outworkers.phantom.builder.query.InsertQuery.Default[Users,User]
+             byId <- db.users.store(user)
+                                   ^
+<console>:41: error: value map is not a member of com.outworkers.phantom.builder.query.InsertQuery.Default[UsersByEmail,User]
+             byEmail <- db.usersByEmail.store(user)
+                                             ^
+<console>:45: error: value findById is not a member of object AppDatabase#users
+         def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
+                                                                 ^
+<console>:46: error: value findByEmail is not a member of object AppDatabase#usersByEmail
+         def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
+                                                                                ^
 ```
 
 If I as your colleague and developer would now want to consume the `UserService`, I would basically create an instance or use a pre-existing one to basically consume methods that only require passing in known domain objects as parameters. Notice how `session`, `keySpace` and everything else Cassandra specific has gone away?
@@ -221,6 +232,7 @@ import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
 
+
 class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
   val userService = new UserService with TestDatabaseProvider {}
@@ -232,8 +244,12 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
-    val user = User(...)
-
+    val user = User(
+      UUID.randomUUID,
+      "test@outworkers.com",
+      "John Doe"
+    )
+    
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)

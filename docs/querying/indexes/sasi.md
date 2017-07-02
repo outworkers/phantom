@@ -47,7 +47,6 @@ object Connector {
 }
 ```
 
-
 Simple example:
 
 ```scala

@@ -4,7 +4,7 @@ phantom
 <a id="batch-statements">Batch statements</a>
 =============================================
 
-Phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/outworkers/phantom/blob/develop/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/iteratee/IterateeBigReadPerformanceTest.scala). Before you read further, you should remember **batch statements are not used to improve performance**.
+Phantom also brings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/outworkers/phantom/blob/develop/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/iteratee/IterateeBigReadPerformanceTest.scala). Before you read further, you should remember **batch statements are not used to improve performance**.
 
 Read [the official docs](http://docs.datastax.com/en/cql/3.1/cql/cql_reference/batch_r.html) for more details, but in short **batches guarantee atomicity and they are about 30% slower on average than parallel writes** at least, as they require more round trips. If you think you're optimising performance with batches, you might need to find alternative means.
 
@@ -16,6 +16,67 @@ Batches are immutable and adding a new record will result in a new Batch, just l
 
 phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 
+To start, we need an example database connection.
+
+```scala
+
+import com.datastax.driver.core.SocketOptions
+import com.outworkers.phantom.connectors._
+import com.outworkers.phantom.dsl._
+
+object Connector {
+  val default: CassandraConnection = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    ).noHeartbeat().keySpace(
+      KeySpace("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
+}
+```
+
+First, let's define a base table to explore batching options.
+
+```scala
+
+import scala.concurrent.Future
+import com.outworkers.phantom.dsl._
+
+case class CounterRecord(id: UUID, count: Long)
+
+abstract class CounterTableTest extends Table[
+  CounterTableTest,
+  CounterRecord
+] {
+  object id extends UUIDColumn with PartitionKey
+  object count_entries extends CounterColumn
+}
+
+case class Article(
+  id: UUID,
+  name: String,
+  orderId: Long
+)
+
+abstract class Articles extends Table[Articles, Article] {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object orderId extends LongColumn
+}
+
+class TestDatabase(
+  override val connector: CassandraConnection
+) extends Database[TestDatabase] {
+  object articles extends Articles with Connector
+}
+
+val db = new TestDatabase(Connector.default)
+
+```
 
 <a id="logged-batch-statements">LOGGED batch statements</a>
 ===========================================================
@@ -25,9 +86,11 @@ phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
+val id = UUID.randomUUID
+
 Batch.logged
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
+    .add(db.articles.update.where(_.id eqs id).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs id).modify(_.name setTo "blabla2"))
     .future()
 
 ```
@@ -42,8 +105,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
 Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
+    .add(db.exampleTable.update.where(_.id eqs id).modify(_.someCounter increment 500L))
+    .add(db.exampleTable.update.where(_.id eqs id).modify(_.someCounter decrement 300L))
     .future()
 ```
 

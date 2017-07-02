@@ -120,7 +120,7 @@ abstract class Users extends Table[Users, User] {
   object email extends StringColumn
   object name extends StringColumn
 
-  def getById(id: UUID): Future[Option[User]] = {
+  def findById(id: UUID): Future[Option[User]] = {
     select.where(_.id eqs id).one()
   }
 }
@@ -130,7 +130,7 @@ abstract class UsersByEmail extends Table[UsersByEmail, User] {
   object id extends UUIDColumn
   object name extends StringColumn
 
-  def getById(email: String): Future[Option[User]] = {
+  def findByEmail(email: String): Future[Option[User]] = {
     select.where(_.email eqs email).one()
   }
 }
@@ -158,8 +158,8 @@ trait UserService extends AppDatabaseProvider {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- db.users.store(user)
-      byEmail <- db.usersByEmail.store(user)
+      byId <- db.users.storeRecord(user)
+      byEmail <- db.usersByEmail.storeRecord(user)
     } yield byEmail
   }
 
@@ -238,7 +238,7 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
     whenReady(chain) { case (byId, byEmail) =>
       byId shouldBe defined
-      byId.value shouldEqual user
+      byId.value shouldEqual user§
 
       byEmail shouldBe defined
       byEmail.value shouldEqual user
