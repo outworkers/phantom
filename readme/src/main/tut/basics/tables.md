@@ -9,7 +9,7 @@ of a `Database` class.
 
 Let's consider the below example.
 
-```tut
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
@@ -57,7 +57,7 @@ This enables inheritance, but it does not support singletons/objects, so as a re
 scenario, the macro engine will infer the table name as "Recipes", based on the type information. If you hit trouble upgrading because names no longer match, simply
 override the table name manually inside the table definition.
 
-```tut
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -85,7 +85,7 @@ All available imports will have two flavours. It's important to note they only w
 when imported in the scope where tables are defined. That's where the macro will evaluate
 the call site for implicits.
 
-```tut
+```tut:silent
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 
@@ -100,7 +100,7 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
-```tut
+```tut:silent
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -223,7 +223,7 @@ This is the most standard use case, where your table has the exact same number o
  record and there is a perfect mapping(bijection) between your table and your record. In this case,
  the generated `store` method will simply take a single argument of type `Record`, as illustrated below.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
@@ -269,7 +269,7 @@ be mapped.
 
 So the new type of the generated store method will now be:
 
-```
+```scala
   def store(
     countryCode: String,
     record: Record
@@ -287,7 +287,7 @@ The macro will always create a `Tuple` as described initially, of all the types 
 by the `Record` type.
 
 
-```tut
+```tut:silent
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -308,7 +308,7 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
@@ -335,9 +335,10 @@ So the new type of the generated store method will now be:
 
 The new table definition to store the above is:
 
-```tut
+```tut:silent
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
 import scala.concurrent.duration._
 
 case class Record(
@@ -356,7 +357,7 @@ abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.region, region)
