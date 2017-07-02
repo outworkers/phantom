@@ -156,14 +156,12 @@ lazy val readme = (project in file("readme"))
   .settings(
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
-    tutTargetDirectory := {
-      val dir = (phantom.base) / "docs"
-      println(dir)
-      dir
-    },
+    tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
+      "com.outworkers" %% "util-samplers" % Versions.util % "tut",
       "io.circe" %% "circe-parser" % Versions.circe % "tut",
-      "io.circe" %% "circe-generic" % Versions.circe % "tut"
+      "io.circe" %% "circe-generic" % Versions.circe % "tut",
+      "org.scalatest" %% "scalatest" % Versions.scalatest % "tut"
     )
   ).dependsOn(
     phantomDsl,

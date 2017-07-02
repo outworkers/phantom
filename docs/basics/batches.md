@@ -8,9 +8,9 @@ Phantom also brings in support for batch statements. To use them, see [IterateeB
 
 Read [the official docs](http://docs.datastax.com/en/cql/3.1/cql/cql_reference/batch_r.html) for more details, but in short **batches guarantee atomicity and they are about 30% slower on average than parallel writes** at least, as they require more round trips. If you think you're optimising performance with batches, you might need to find alternative means.
 
-We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
+We have tested with 100 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
-Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
+Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with very large numbers of batches.
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
 
@@ -39,7 +39,7 @@ object Connector {
 }
 ```
 
-First, let's define a base table to explore batching options.
+Now let's define a few tables to allow us to exemplify batch queries.
 
 ```scala
 
@@ -53,28 +53,29 @@ abstract class CounterTableTest extends Table[
   CounterRecord
 ] {
   object id extends UUIDColumn with PartitionKey
-  object count_entries extends CounterColumn
+  object entries extends CounterColumn
 }
 
 case class Article(
   id: UUID,
   name: String,
-  orderId: Long
+  content: String
 )
 
 abstract class Articles extends Table[Articles, Article] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
-  object orderId extends LongColumn
+  object content extends StringColumn
 }
 
 class TestDatabase(
   override val connector: CassandraConnection
-) extends Database[TestDatabase] {
+) extends Database[TestDatabase](connector) {
   object articles extends Articles with Connector
+  object counterTable extends CounterTableTest with Connector
 }
 
-val db = new TestDatabase(Connector.default)
+object db extends TestDatabase(Connector.default)
 
 ```
 
@@ -83,17 +84,33 @@ val db = new TestDatabase(Connector.default)
 
 ```scala
 
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-val id = UUID.randomUUID
-
 Batch.logged
-    .add(db.articles.update.where(_.id eqs id).modify(_.name setTo "blabla"))
-    .add(db.articles.update.where(_.id eqs id).modify(_.name setTo "blabla2"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
     .future()
 
 ```
+
+
+<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
+============================================================
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
+
+Batch.unlogged
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
+    .future()
+
+```
+
 
 <a id="counter-batch-statements">COUNTER batch statements</a>
 ============================================================
@@ -105,8 +122,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
 Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs id).modify(_.someCounter increment 500L))
-    .add(db.exampleTable.update.where(_.id eqs id).modify(_.someCounter decrement 300L))
+    .add(db.exampleTable.update.where(_.id eqs UUID.randomUUID).modify(_.someCounter increment 500L))
+    .add(db.exampleTable.update.where(_.id eqs UUID.randomUUID).modify(_.someCounter decrement 300L))
     .future()
 ```
 
@@ -119,22 +136,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
 Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter += 500L))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.someCounter _= 300L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries += 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries _= 300L))
     .future()
 ```
 
-<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
-============================================================
-
-```scala
-
-import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
-
-Batch.unlogged
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
-    .future()
-
-```

@@ -208,19 +208,18 @@ And this is how you would use that provider trait now. We're going to assume Sca
 
 import com.outworkers.phantom.dsl._
 
-import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
+import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
 
-
-class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with OptionValues with BeforeAndAfterAll {
 
   val userService = new UserService with TestDatabaseProvider {}
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // all our tables will now be initialised automatically against the target keyspace.
-    database.create()
+    userService.database.create()
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
@@ -238,7 +237,7 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
     whenReady(chain) { case (byId, byEmail) =>
       byId shouldBe defined
-      byId.value shouldEqual user§
+      byId.value shouldEqual user
 
       byEmail shouldBe defined
       byEmail.value shouldEqual user
@@ -281,6 +280,7 @@ When you later call `database.create` or `database.createAsync` or any other fla
 
 ```tut
 
+import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.dsl._
 
 class UserDatabase(

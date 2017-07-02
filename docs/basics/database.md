@@ -124,7 +124,7 @@ scala> abstract class Users extends Table[Users, User] {
      |   object email extends StringColumn
      |   object name extends StringColumn
      | 
-     |   def getById(id: UUID): Future[Option[User]] = {
+     |   def findById(id: UUID): Future[Option[User]] = {
      |     select.where(_.id eqs id).one()
      |   }
      | }
@@ -135,7 +135,7 @@ scala> abstract class UsersByEmail extends Table[UsersByEmail, User] {
      |   object id extends UUIDColumn
      |   object name extends StringColumn
      | 
-     |   def getById(email: String): Future[Option[User]] = {
+     |   def findByEmail(email: String): Future[Option[User]] = {
      |     select.where(_.email eqs email).one()
      |   }
      | }
@@ -166,26 +166,15 @@ scala> trait UserService extends AppDatabaseProvider {
      |    */
      |   def store(user: User): Future[ResultSet] = {
      |     for {
-     |       byId <- db.users.store(user)
-     |       byEmail <- db.usersByEmail.store(user)
+     |       byId <- db.users.storeRecord(user)
+     |       byEmail <- db.usersByEmail.storeRecord(user)
      |     } yield byEmail
      |   }
      | 
      |   def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
      |   def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
      | }
-<console>:40: error: value flatMap is not a member of com.outworkers.phantom.builder.query.InsertQuery.Default[Users,User]
-             byId <- db.users.store(user)
-                                   ^
-<console>:41: error: value map is not a member of com.outworkers.phantom.builder.query.InsertQuery.Default[UsersByEmail,User]
-             byEmail <- db.usersByEmail.store(user)
-                                             ^
-<console>:45: error: value findById is not a member of object AppDatabase#users
-         def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
-                                                                 ^
-<console>:46: error: value findByEmail is not a member of object AppDatabase#usersByEmail
-         def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
-                                                                                ^
+defined trait UserService
 ```
 
 If I as your colleague and developer would now want to consume the `UserService`, I would basically create an instance or use a pre-existing one to basically consume methods that only require passing in known domain objects as parameters. Notice how `session`, `keySpace` and everything else Cassandra specific has gone away?
@@ -204,20 +193,23 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
 ```scala
-     | 
-     | import com.outworkers.phantom.dsl._
-     | 
-     | object TestConnector {
+scala> import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.dsl._
+
+scala> object TestConnector {
      |   val connector = ContactPoint.local
      |     .noHeartbeat()
      |     .keySpace("myapp_example")
      | }
-     | 
-     | object TestDatabase extends AppDatabase(TestConnector.connector)
-     | 
-     | trait TestDatabaseProvider extends AppDatabaseProvider {
+defined object TestConnector
+
+scala> object TestDatabase extends AppDatabase(TestConnector.connector)
+defined object TestDatabase
+
+scala> trait TestDatabaseProvider extends AppDatabaseProvider {
      |   override def database: AppDatabase = TestDatabase
      | }
+defined trait TestDatabaseProvider
 ```
 
 It may feel verbose or slightly too much at first, but the objects wrapping the constructs are basically working a lot in our favour to guarantee the thread safe just in time init static access to various bits that we truly want to be static. Again, we don't want more than one contact point initialised, more than one session and so on, we want it all crystal clear static from the get go.
@@ -228,19 +220,18 @@ And this is how you would use that provider trait now. We're going to assume Sca
 
 import com.outworkers.phantom.dsl._
 
-import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
+import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
 
-
-class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with OptionValues with BeforeAndAfterAll {
 
   val userService = new UserService with TestDatabaseProvider {}
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // all our tables will now be initialised automatically against the target keyspace.
-    database.create()
+    userService.database.create()
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
@@ -302,8 +293,9 @@ When you later call `database.create` or `database.createAsync` or any other fla
 ```scala
      | 
      | import com.outworkers.phantom.dsl._
-     | 
-     | class UserDatabase(
+import com.outworkers.phantom.dsl._
+
+scala> class UserDatabase(
      |   override val connector: CassandraConnection
      | ) extends Database[UserDatabase](connector) {
      | 
@@ -319,6 +311,12 @@ When you later call `database.create` or `database.createAsync` or any other fla
      |   }
      |   object usersByEmail extends UsersByEmail with Connector
      | }
+<console>:46: error: not found: value CreateQuery
+           def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+                                               ^
+<console>:43: error: could not find implicit value for parameter helper: com.outworkers.phantom.macros.DatabaseHelper[UserDatabase]
+       ) extends Database[UserDatabase](connector) {
+                 ^
      | 
 ```
 
