@@ -75,7 +75,11 @@ class TestDatabase(
   object counterTable extends CounterTableTest with Connector
 }
 
-object db extends TestDatabase(Connector.default)
+object TestDatabase extends TestDatabase(Connector.default)
+
+trait TestDbProvider extends DatabaseProvider[TestDatabase] {
+  override val database = TestDatabase
+}
 
 ```
 
@@ -88,10 +92,13 @@ import java.util.UUID
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.logged
+trait LoggedQueries extends TestDbProvider {
+
+  Batch.logged
     .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
     .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
     .future()
+}
 
 ```
 
@@ -104,10 +111,13 @@ Batch.logged
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.unlogged
+trait UnloggedQueries extends TestDbProvider {
+
+  Batch.unlogged
     .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
     .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
     .future()
+}
 
 ```
 
@@ -121,10 +131,14 @@ Batch.unlogged
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs UUID.randomUUID).modify(_.someCounter increment 500L))
-    .add(db.exampleTable.update.where(_.id eqs UUID.randomUUID).modify(_.someCounter decrement 300L))
+trait CounterQueries extends TestDbProvider {
+
+  Batch.counter
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries increment 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries decrement 300L))
     .future()
+}
+
 ```
 
 Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
@@ -135,9 +149,12 @@ you can also use `+=` and `-=` to achieve the same thing.
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.counter
+trait CounterOpsQueries extends TestDbProvier {
+
+  Batch.counter
     .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries += 500L))
-    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries _= 300L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries -= 300L))
     .future()
+}    
 ```
 
