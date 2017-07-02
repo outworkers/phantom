@@ -149,7 +149,7 @@ you can also use `+=` and `-=` to achieve the same thing.
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-trait CounterOpsQueries extends TestDbProvier {
+trait CounterOpsQueries extends TestDbProvider {
 
   Batch.counter
     .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries += 500L))
