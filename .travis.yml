@@ -23,7 +23,6 @@ branches:
   - master
   - develop
 jdk:
-- oraclejdk7
 - oraclejdk8
 matrix:
   include:

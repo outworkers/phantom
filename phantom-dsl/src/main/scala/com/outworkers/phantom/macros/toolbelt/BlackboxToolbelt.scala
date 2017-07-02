@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.macros
+package com.outworkers.phantom.macros.toolbelt
 
-import scala.reflect.macros.whitebox
-import scala.collection.mutable.{ Map => MutableMap }
 
-private[phantom] object WhiteboxToolbelt {
-  def apply(ctx: whitebox.Context): WhiteboxToolbelt = new WhiteboxToolbelt {
-    override val c: whitebox.Context = ctx
+import scala.collection.mutable.{Map => MutableMap}
+import com.outworkers.phantom.macros.debug
+import scala.reflect.macros.blackbox
+
+private[phantom] object BlackboxToolbelt {
+  def apply(ctx: blackbox.Context): BlackboxToolbelt = new BlackboxToolbelt {
+    override val c: blackbox.Context = ctx
   }
 
   final class Cache {
@@ -29,17 +31,16 @@ private[phantom] object WhiteboxToolbelt {
     def show: String = underlying.mkString("\n")
   }
 
+  final val primitiveCache: Cache = new Cache()
   final val tableHelperCache: Cache = new Cache()
-  final val bindHelperCache: Cache = new Cache()
-  final val ddHelperCache: Cache = new Cache()
   final val singeGenericCache: Cache = new Cache()
   final val specialEqsCache: Cache = new Cache()
 }
 
 @macrocompat.bundle
-private[phantom] trait WhiteboxToolbelt {
+private[phantom] trait BlackboxToolbelt {
 
-  val c: whitebox.Context
+  val c: blackbox.Context
 
   import c.universe._
 
@@ -62,7 +63,7 @@ private[phantom] trait WhiteboxToolbelt {
   lazy val showTrees =
     !c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).isEmpty
 
-  def memoize[A, B](cache: WhiteboxToolbelt.Cache)(
+  def memoize[A, B](cache: BlackboxToolbelt.Cache)(
     a: A, f: A => B
   ): B = cache.underlying.synchronized {
     cache.underlying.get(a) match {

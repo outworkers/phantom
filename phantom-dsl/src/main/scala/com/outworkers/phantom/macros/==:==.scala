@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.macros
 
+import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 import shapeless.{HList, HNil}
 
 import scala.annotation.tailrec

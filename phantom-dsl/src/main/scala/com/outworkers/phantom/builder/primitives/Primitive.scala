@@ -22,6 +22,7 @@ import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -178,6 +179,12 @@ object Primitive {
     }
   }
 
+  def json[Target](to: Target => String)(from: String => Target)(
+    implicit ev: Primitive[String]
+  ): Primitive[Target] = {
+    derive[Target, String](to)(from)
+  }
+
   /**
     * Derives a primitive without implicit lookup in phantom itself.
     * This is because the macro that empowers the implicit lookup for primitives
@@ -220,4 +227,5 @@ object Primitive {
     * @return A reference to a concrete materialised implementation of a primitive for the given type.
     */
   def apply[RR]()(implicit ev: Primitive[RR]): Primitive[RR] = ev
+
 }

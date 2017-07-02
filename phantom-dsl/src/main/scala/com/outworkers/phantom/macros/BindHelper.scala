@@ -16,6 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, ProtocolVersion}
+import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, WhiteboxToolbelt}
 
 import scala.reflect.macros.whitebox
 
@@ -104,11 +105,11 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt with
 
   def bindCaseClass(tpe: Type): Tree = {
     val fields = caseFields(tpe).map { case (nm, tp) => nm.toTermName -> tp }
-    val setters = fields.zipWithIndex.map { case (tp, i) =>
+    val setters = fields.zipWithIndex.map { case ((fieldName, fieldTpe), i) =>
       q"""
         $source.setBytesUnsafe(
           $i,
-          $prefix.Primitive[${tp._2}].serialize($value.${tp._1.toTermName}, $version)
+          $prefix.Primitive[$fieldTpe].serialize($value.$fieldName, $version)
         )
       """
     }

@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.macros
 
-import org.slf4j.LoggerFactory
 import shapeless.{HList, HNil}
 
 import scala.annotation.tailrec
@@ -26,8 +25,6 @@ trait HListHelpers {
   val c: whitebox.Context
 
   import c.universe._
-
-  protected[this] val logger = LoggerFactory.getLogger(this.getClass)
 
   protected[this] def hlistTpe: Type = typeOf[HList]
   protected[this] def hnilTpe: Type = typeOf[HNil]

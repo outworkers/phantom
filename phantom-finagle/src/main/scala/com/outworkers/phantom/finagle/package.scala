@@ -84,9 +84,9 @@ package object finagle extends SessionAugmenterImplicits {
       implicit session: Session,
       keySpace: KeySpace,
       executor: ExecutionContextExecutor
-    ): Future[Spool[R]] = {
+    ): Future[Spool[Seq[R]]] = {
       block.all().execute() flatMap {
-        rs => ResultSpool.spool(rs).map(_ map block.all.fromRow)
+        rs => ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
       }
     }
   }
@@ -170,9 +170,9 @@ package object finagle extends SessionAugmenterImplicits {
       * @param executor The implicit Java executor.
       * @return A Spool of R.
       */
-    def fetchSpool()(implicit session: Session, executor: ExecutionContextExecutor): Future[Spool[R]] = {
+    def fetchSpool()(implicit session: Session, executor: ExecutionContextExecutor): Future[Spool[Seq[R]]] = {
       query.execute() flatMap { rs =>
-        ResultSpool.spool(rs).map(spool => spool map query.fromRow)
+        ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
       }
     }
 
