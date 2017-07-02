@@ -38,6 +38,7 @@ lazy val Versions = new {
   val scalamock = "3.5.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.0"
+  val circe = "0.8.0"
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
     "1.3.1"
@@ -159,7 +160,11 @@ lazy val readme = (project in file("readme"))
       val dir = (phantom.base) / "docs"
       println(dir)
       dir
-    }
+    },
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-parser" % Versions.circe % "tut",
+      "io.circe" %% "circe-generic" % Versions.circe % "tut"
+    )
   ).dependsOn(
     phantomDsl,
     phantomJdk8,
