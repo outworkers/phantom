@@ -25,7 +25,7 @@ However, from an app or service consumer perspective, when pulling in dependenci
 
 That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector`.
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import org.joda.time.DateTime
@@ -60,21 +60,22 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
-```tut
-
+```scala
+scala> import com.datastax.driver.core.Session
 import com.datastax.driver.core.Session
 
-trait RootConnector {
-
-  implicit def space: KeySpace
-
-  implicit def session: Session
-}
+scala> trait RootConnector {
+     | 
+     |   implicit def space: KeySpace
+     | 
+     |   implicit def session: Session
+     | }
+defined trait RootConnector
 ```
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -108,64 +109,72 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
-```tut
-
+```scala
+scala> import scala.concurrent.Future
 import scala.concurrent.Future
+
+scala> import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.dsl._
 
-case class User(id: UUID, email: String, name: String)
+scala> case class User(id: UUID, email: String, name: String)
+defined class User
 
-abstract class Users extends Table[Users, User] {
-  object id extends UUIDColumn with PartitionKey
-  object email extends StringColumn
-  object name extends StringColumn
+scala> abstract class Users extends Table[Users, User] {
+     |   object id extends UUIDColumn with PartitionKey
+     |   object email extends StringColumn
+     |   object name extends StringColumn
+     | 
+     |   def getById(id: UUID): Future[Option[User]] = {
+     |     select.where(_.id eqs id).one()
+     |   }
+     | }
+defined class Users
 
-  def getById(id: UUID): Future[Option[User]] = {
-    select.where(_.id eqs id).one()
-  }
-}
+scala> abstract class UsersByEmail extends Table[UsersByEmail, User] {
+     |   object email extends StringColumn with PartitionKey
+     |   object id extends UUIDColumn
+     |   object name extends StringColumn
+     | 
+     |   def getById(email: String): Future[Option[User]] = {
+     |     select.where(_.email eqs email).one()
+     |   }
+     | }
+defined class UsersByEmail
 
-abstract class UsersByEmail extends Table[UsersByEmail, User] {
-  object email extends StringColumn with PartitionKey
-  object id extends UUIDColumn
-  object name extends StringColumn
-
-  def getById(email: String): Future[Option[User]] = {
-    select.where(_.email eqs email).one()
-  }
-}
-
-class AppDatabase(
-  override val connector: CassandraConnection
-) extends Database[AppDatabase](connector) {
-  object users extends Users with Connector
-  object usersByEmail extends UsersByEmail with Connector
-}
-
-// So now we are saying we have a trait
-// that will eventually provide a reference to a specific database.
-trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
-
-trait UserService extends AppDatabaseProvider {
-
-  /**
-   * Stores a user into the database guaranteeing application level consistency of data.
-   * E.g we have two tables, one indexing users by ID and another indexing users by email.
-   * As in Cassandra we need to de-normalise data, it's natural we need to store it twice.
-   * But that also means we have to write to 2 tables every time, and here's how
-   * @param user A user case class instance.
-   * @return A future containing the result of the last write operation in the sequence.
-   */
-  def store(user: User): Future[ResultSet] = {
-    for {
-      byId <- db.users.store(user)
-      byEmail <- db.usersByEmail.store(user)
-    } yield byEmail
-  }
-
-  def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
-  def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
-}
+scala> class AppDatabase(
+     |   override val connector: CassandraConnection
+     | ) extends Database[UserDatabase](connector) {
+     |   object users extends Users with Connector
+     |   object usersByEmail extends UsersByEmail with Connector
+     | }
+<console>:29: error: not found: type UserDatabase
+       ) extends Database[UserDatabase](connector) {
+                          ^
+     | 
+     | // So now we are saying we have a trait
+     | // that will eventually provide a reference to a specific database.
+     | trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
+     | 
+     | trait UserService extends AppDatabaseProvider {
+     | 
+     |   /**
+     |    * Stores a user into the database guaranteeing application level consistency of data.
+     |    * E.g we have two tables, one indexing users by ID and another indexing users by email.
+     |    * As in Cassandra we need to de-normalise data, it's natural we need to store it twice.
+     |    * But that also means we have to write to 2 tables every time, and here's how
+     |    * @param user A user case class instance.
+     |    * @return A future containing the result of the last write operation in the sequence.
+     |    */
+     |   def store(user: User): Future[ResultSet] = {
+     |     for {
+     |       byId <- db.users.store(user)
+     |       byEmail <- db.usersByEmail.store(user)
+     |     } yield byEmail
+     |   }
+     | 
+     |   def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
+     |   def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
+     | }
 ```
 
 If I as your colleague and developer would now want to consume the `UserService`, I would basically create an instance or use a pre-existing one to basically consume methods that only require passing in known domain objects as parameters. Notice how `session`, `keySpace` and everything else Cassandra specific has gone away?
@@ -183,35 +192,34 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
-```tut
-
-import com.outworkers.phantom.dsl._
-
-object TestConnector {
-  val connector = ContactPoint.local
-    .noHeartbeat()
-    .keySpace("myapp_example")
-}
-
-object TestDatabase extends AppDatabase(TestConnector.connector)
-
-trait TestDatabaseProvider extends AppDatabaseProvider {
-  override def database: AppDatabase = TestDatabase
-}
+```scala
+     | 
+     | import com.outworkers.phantom.dsl._
+     | 
+     | object TestConnector {
+     |   val connector = ContactPoint.local
+     |     .noHeartbeat()
+     |     .keySpace("myapp_example")
+     | }
+     | 
+     | object TestDatabase extends AppDatabase(TestConnector.connector)
+     | 
+     | trait TestDatabaseProvider extends AppDatabaseProvider {
+     |   override def database: AppDatabase = TestDatabase
+     | }
 ```
 
 It may feel verbose or slightly too much at first, but the objects wrapping the constructs are basically working a lot in our favour to guarantee the thread safe just in time init static access to various bits that we truly want to be static. Again, we don't want more than one contact point initialised, more than one session and so on, we want it all crystal clear static from the get go.
 
 And this is how you would use that provider trait now. We're going to assume ScalaTest is the testing framework in use, but of course that doesn't matter.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 
 import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
-
 
 class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
@@ -224,12 +232,8 @@ class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
-    val user = User(
-      UUID.randomUUID,
-      "test@outworkers.com",
-      "John Doe"
-    )
-    
+    val user = User(...)
+
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)
@@ -279,27 +283,27 @@ To override the settings that will be used during schema auto-generation at `Dat
 
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
-```tut
-
-import com.outworkers.phantom.dsl._
-
-class UserDatabase(
-  override val connector: CassandraConnection
-) extends Database[UserDatabase](connector) {
-
-  object users extends Users with Connector {
-    def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
-      create.ifNotExists()(keySpace)
-        .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
-        .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-        .and(comment eqs "testing")
-        .and(read_repair_chance eqs 5D)
-        .and(dclocal_read_repair_chance eqs 5D)
-    }
-  }
-  object usersByEmail extends UsersByEmail with Connector
-}
-
+```scala
+     | 
+     | import com.outworkers.phantom.dsl._
+     | 
+     | class UserDatabase(
+     |   override val connector: CassandraConnection
+     | ) extends Database[UserDatabase](connector) {
+     | 
+     |   object users extends Users with Connector {
+     |     def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+     |       create.ifNotExists()(keySpace)
+     |         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+     |         .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+     |         .and(comment eqs "testing")
+     |         .and(read_repair_chance eqs 5D)
+     |         .and(dclocal_read_repair_chance eqs 5D)
+     |     }
+     |   }
+     |   object usersByEmail extends UsersByEmail with Connector
+     | }
+     | 
 ```
 
 By default, `autocreate` will simply try and perform a lightweight create query, as follows, which in the final CQL query will look very familiar. This is a simple example not related to any of the above examples.
