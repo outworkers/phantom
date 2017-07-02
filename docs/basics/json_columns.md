@@ -16,7 +16,7 @@ Let's explore a simple example using the [circe](https://github.com/circe/circe)
 Phantom does not ship with any particular JSON library, you have complete freedom over what JSON library you use.
 
 
-```tut:silent
+```scala
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 import io.circe.generic.auto._
@@ -30,7 +30,7 @@ case class JsonTest(
 
 object JsonTest {
   implicit val jsonPrimitive: Primitive[JsonTest] = {
-    Primitive.json[JsonTest](js => js.asJson.noSpaces)(jsonString => decode[JsonTest](jsonString).right.get)
+    Primitive.json[JsonTest](_.asJson.noSpaces)(decode[JsonTest](_).right.get)
   }
 }
 
