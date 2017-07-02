@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.ops
 
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column.AbstractColumn
 import shapeless._
 
@@ -27,6 +28,17 @@ object TokenTypes {
 }
 
 sealed trait TokenValueApplyOps {
+
+  def apply[R1](value: R1)(
+    implicit ev: Primitive[R1]
+  ): TokenConstructor[R1 :: HNil, TokenTypes.ValueToken] = {
+    new TokenConstructor(Seq(ev.asCql(value)))
+  }
+
+  def apply[RR](value: PrepareMark)(
+  ): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
+    new TokenConstructor(Seq(value.qb.queryString))
+  }
 
   def apply[R1, R2, VL <: HList](value: R1, value2: R2)(
     implicit ev: Primitive[R1],
@@ -57,6 +69,12 @@ sealed trait TokenValueApplyOps {
 }
 
 sealed trait TokenColumnApplyOps {
+
+  def apply[
+    X1 <: AbstractColumn[_]
+  ](value: X1): TokenConstructor[X1#Value :: HNil, TokenTypes.ColumnToken] = {
+    new TokenConstructor(Seq(value.name))
+  }
 
   def apply[
     X1 <: AbstractColumn[_],

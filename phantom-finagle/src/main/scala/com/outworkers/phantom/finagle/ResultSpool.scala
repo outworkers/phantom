@@ -15,37 +15,35 @@
  */
 package com.outworkers.phantom.finagle
 
+import com.datastax.driver.core.{ResultSet => DatastaxResultSet}
 import com.outworkers.phantom.{ResultSet, Row}
 import com.twitter.concurrent.Spool
-import com.twitter.util.{FuturePool, Future => TFuture}
+import com.twitter.util.{Future, Promise, Try}
+import com.google.common.util.concurrent.{
+  ListenableFuture,
+  MoreExecutors,
+  Uninterruptibles
+}
 
 /**
   * Wrapper for creating Spools of Rows
   */
 private[phantom] object ResultSpool {
-  lazy val pool = FuturePool.unboundedPool
+  def loop(it: Iterator[Row], rs: ResultSet): Spool[Seq[Row]] = {
+    if (rs.isExhausted) {
+      Spool.empty[Seq[Row]]
+    } else {
+      val buf = new Array[Row](rs.getAvailableWithoutFetching)
+      it.copyToArray(buf)
+      val head = buf.toSeq
+      val more = rs.fetchMoreResults
 
-  def loop(head: Row, it: Iterator[Row], rs: ResultSet): Spool[Row] = {
-    lazy val tail =
-      if (rs.isExhausted) {
-        TFuture.value(Spool.empty)
-      } else {
-        val a = rs.getAvailableWithoutFetching
-
-        // 100 is somewhat arbitrary. In practice it might not matter that much
-        // but it should be tested.
-        if (a < 100 && !rs.isFullyFetched) {
-          rs.fetchMoreResults
-        }
-
-        if (a > 0) {
-          TFuture.value(loop(it.next(), it, rs))
-        } else {
-          pool(it.next()).map(x => loop(x, it, rs))
-        }
+      head *:: {
+        val p = Promise[DatastaxResultSet]
+        more.addListener(new TFutureListener(more, p), MoreExecutors.directExecutor)
+        p.map(_ => loop(it, rs))
       }
-
-    head *:: tail
+    }
   }
 
   /**
@@ -56,13 +54,23 @@ private[phantom] object ResultSpool {
     *   2) If we don't have anything else to do we submit to the thread pool and
     *      wait to get called back and chain onto that.
     */
-  def spool(rs: ResultSet): TFuture[Spool[Row]] = {
+  def spool(rs: ResultSet): Future[Spool[Seq[Row]]] = {
     val it = rs.iterate()
-    if (!rs.isExhausted) {
-      pool(it.next).map(x => loop(x, it, rs))
-    } else {
-      TFuture.value(Spool.empty)
-    }
+    Future.value(loop(it, rs))
   }
 }
 
+private[phantom] class TFutureListener[A](
+  future: ListenableFuture[A],
+  promise: Promise[A]
+) extends Runnable {
+  def run: Unit = {
+    promise.update {
+      Try {
+        if (!future.isDone)
+          throw new IllegalStateException("future not complete")
+        Uninterruptibles.getUninterruptibly(future)
+      }
+    }
+  }
+}
