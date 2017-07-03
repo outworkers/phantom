@@ -70,6 +70,30 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     }
   }
 
+  /**
+    * A set of reserved CQL keywords that should not be used as column names.
+    * They are described here: [[http://docs.datastax.com/en/cql/3.1/cql/cql_reference/keywords_r.html]].
+    */
+  protected[this] val forbiddenNames = Set(
+    TermName("set"),
+    TermName("list"),
+    TermName("map"),
+    TermName("provider")
+  )
+
+  protected[this] val columnNameRegex = "^[a-zA-Z0-9_]*$"
+
+  protected[this] def validateColumnName(termName: TermName): TermName = {
+    if (
+      forbiddenNames.exists(_.toString.toLowerCase == termName.toString.toLowerCase) ||
+      !termName.toString.matches(columnNameRegex)
+    ) {
+      abort(s"Invalid column name $termName, column names cannot be ${forbiddenNames.mkString(", ")} and they have to match $columnNameRegex")
+    } else {
+      termName
+    }
+  }
+
   protected[this] def insertQueryType(table: Type, record: Type): Tree = {
     tq"com.outworkers.phantom.builder.query.InsertQuery.Default[$table, $record]"
   }
@@ -439,6 +463,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
+    // Validate that column names at compile time.
+    //columns.map(col => validateColumnName(col.asTerm.name))
+
     val clsName = TypeName(c.freshName("anon$"))
     val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)
