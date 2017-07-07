@@ -19,7 +19,7 @@ Phantom does not ship with any particular JSON library, you have complete freedo
 ```tut:silent
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
-import io.circe.generic.auto._
+import io.circe.generic.semiauto._
 import io.circe.parser._
 import io.circe.syntax._
 
@@ -29,6 +29,10 @@ case class JsonTest(
 )
 
 object JsonTest {
+
+  implicit val jsonDecoder: Decoder[JsonTest] = deriveDecoder[JsonTest]
+  implicit val jsonEncoder: Encoder[JsonTest] = deriveEncoder[JsonTest]
+
   implicit val jsonPrimitive: Primitive[JsonTest] = {
     Primitive.json[JsonTest](_.asJson.noSpaces)(decode[JsonTest](_).right.get)
   }
