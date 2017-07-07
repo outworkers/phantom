@@ -139,6 +139,8 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   readme
 )
 
+addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
+
 lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
 
 lazy val phantom = (project in file("."))
@@ -147,8 +149,7 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass,
-    addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
+    pgpPassphrase := Publishing.pgpPass
   ).aggregate(
     fullProjectList: _*
   ).enablePlugins(CrossPerProjectPlugin)
