@@ -147,7 +147,8 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass
+    pgpPassphrase := Publishing.pgpPass,
+    addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
   ).aggregate(
     fullProjectList: _*
   ).enablePlugins(CrossPerProjectPlugin)
