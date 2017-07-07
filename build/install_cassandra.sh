@@ -15,20 +15,19 @@ function check_java_version {
   if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     echo version "$version"
-    if [[ "$version" > "1.8" ]]; then
+    if [[ ("$version" > "1.8") || ("$version" = "1.8") ]]; then
       echo "version is more than 1.8"
-      return true
+      return 1
     else
       echo "version is less than 1.8"
-      return false
+      return -1
     fi
   fi
-
 }
 
 jdk_version_8_or_more=$(check_java_version)
 
-if [ "$jdk_version_8_or_more" = true ];
+if [ "$jdk_version_8_or_more" > 1 ];
   then
     cassandra_version="3.8"
   else
