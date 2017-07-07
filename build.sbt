@@ -103,6 +103,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
+  addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
@@ -138,8 +139,6 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomSbtPlugin,
   readme
 )
-
-addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
 
 lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
 
