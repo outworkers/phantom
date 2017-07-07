@@ -30,7 +30,7 @@ lazy val Versions = new {
   val scalacheck = "1.13.5"
   val slf4j = "1.7.25"
   val reactivestreams = "1.0.0"
-  val cassandraUnit = "3.0.0.1"
+  val cassandraUnit = "3.1.3.2"
   val javaxServlet = "3.0.1"
   val monix = "2.3.0"
   val joda = "2.9.9"
@@ -101,7 +101,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.10.6",
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -135,6 +135,7 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomStreams,
   phantomThrift,
   phantomMonix,
+  phantomSbtPlugin,
   readme
 )
 

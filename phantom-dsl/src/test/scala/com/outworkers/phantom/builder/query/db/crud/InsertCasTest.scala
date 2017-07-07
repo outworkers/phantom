@@ -26,7 +26,6 @@ class InsertCasTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.primitives.createSchema()
-    database.primitives.truncate().future().block(defaultScalaTimeout)
     database.testTable.createSchema()
     database.recipes.createSchema()
   }

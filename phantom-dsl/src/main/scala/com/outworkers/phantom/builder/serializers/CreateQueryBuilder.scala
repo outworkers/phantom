@@ -21,6 +21,8 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 
+import scala.util.Try
+
 sealed trait CreateOptionsBuilder {
   protected[this] def quotedValue(qb: CQLQuery, option: String, value: String): CQLQuery = {
     if (qb.nonEmpty) {
@@ -54,7 +56,11 @@ sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   }
 
   def rowsPerPartition(qb: CQLQuery, value: String): CQLQuery = {
-    quotedValue(qb, CQLSyntax.RowsPerPartition, value)
+    if (Try(value.toInt).isSuccess) {
+      simpleValue(qb, CQLSyntax.RowsPerPartition, value.toString)
+    } else {
+      quotedValue(qb, CQLSyntax.RowsPerPartition, value)
+    }
   }
 
   def rowsPerPartition(qb: CQLQuery, value: Int): CQLQuery = {
