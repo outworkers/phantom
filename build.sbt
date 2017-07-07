@@ -103,7 +103,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
   credentials ++= Publishing.defaultCredentials,
-  addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls"),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
@@ -148,7 +147,8 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass
+    pgpPassphrase := Publishing.pgpPass,
+   addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
   ).aggregate(
     fullProjectList: _*
   ).enablePlugins(CrossPerProjectPlugin)
