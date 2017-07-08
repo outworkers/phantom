@@ -148,7 +148,14 @@ lazy val phantom = (project in file("."))
     name := "phantom",
     moduleName := "phantom",
     pgpPassphrase := Publishing.pgpPass,
-   addCommandAlias("testsWithCoverage", ";coverage; test; coverageReport; coverageAggregate; coveralls")
+    commands += Command.command("testsWithCoverage") { state =>
+      "coverage" ::
+      "test" ::
+      "coverageReport" ::
+      "coverageAggregate" ::
+      "coveralls" ::
+      state
+    }
   ).aggregate(
     fullProjectList: _*
   ).enablePlugins(CrossPerProjectPlugin)
