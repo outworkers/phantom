@@ -19,32 +19,34 @@ Phantom does not ship with any particular JSON library, you have complete freedo
 ```tut:silent
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
+
+import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.parser._
 import io.circe.syntax._
 
-case class JsonTest(
+case class JsonRecord(
   prop1: String,
   prop2: String
 )
 
-object JsonTest {
+object JsonRecord {
 
-  implicit val jsonDecoder: Decoder[JsonTest] = deriveDecoder[JsonTest]
-  implicit val jsonEncoder: Encoder[JsonTest] = deriveEncoder[JsonTest]
+  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
+  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
 
-  implicit val jsonPrimitive: Primitive[JsonTest] = {
-    Primitive.json[JsonTest](_.asJson.noSpaces)(decode[JsonTest](_).right.get)
+  implicit val jsonPrimitive: Primitive[JsonRecord] = {
+    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
   }
 }
 
 case class JsonClass(
   id: UUID,
   name: String,
-  json: JsonTest,
-  optionalJson : Option[JsonTest],
-  jsonList: List[JsonTest],
-  jsonSet: Set[JsonTest]
+  json: JsonRecord,
+  optionalJson : Option[JsonRecord],
+  jsonList: List[JsonRecord],
+  jsonSet: Set[JsonRecord]
 )
 
 abstract class JsonTable extends Table[JsonTable, JsonClass] {
@@ -53,13 +55,13 @@ abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object name extends StringColumn
 
-  object json extends JsonColumn[JsonTest]
+  object json extends JsonColumn[JsonRecord]
 
-  object optionalJson extends OptionalJsonColumn[JsonTest]
+  object optionalJson extends OptionalJsonColumn[JsonRecord]
 
-  object jsonList extends JsonListColumn[JsonTest]
+  object jsonList extends JsonListColumn[JsonRecord]
 
-  object jsonSet extends JsonSetColumn[JsonTest]
+  object jsonSet extends JsonSetColumn[JsonRecord]
 
 }
 ```
