@@ -190,7 +190,6 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -217,7 +216,6 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
     testOptions in Test += Tests.Argument("-oF"),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
@@ -235,7 +233,6 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -247,7 +244,6 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -264,7 +260,6 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
@@ -289,7 +284,6 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
     name := "phantom-sbt",
     moduleName := "phantom-sbt",
-    crossScalaVersions := Seq("2.10.6"),
     publishMavenStyle := false,
     sbtPlugin := true,
     publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
@@ -306,7 +300,6 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     name := "phantom-streams",
     moduleName := "phantom-streams",
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
@@ -326,7 +319,6 @@ lazy val phantomStreams = (project in file("phantom-streams"))
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
     moduleName := "phantom-example",
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
