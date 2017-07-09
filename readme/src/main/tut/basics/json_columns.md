@@ -17,7 +17,7 @@ Phantom does not ship with any particular JSON library, you have complete freedo
 
 
 ```tut:silent
-import com.outworkers.phantom.builder.query.InsertQuery
+
 import com.outworkers.phantom.dsl._
 
 import io.circe._
@@ -30,16 +30,6 @@ case class JsonRecord(
   prop2: String
 )
 
-object JsonRecord {
-
-  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
-  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
-
-  implicit val jsonPrimitive: Primitive[JsonRecord] = {
-    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
-  }
-}
-
 case class JsonClass(
   id: UUID,
   name: String,
@@ -50,6 +40,16 @@ case class JsonClass(
 )
 
 abstract class JsonTable extends Table[JsonTable, JsonClass] {
+
+  // Implicits should be in the companion object, but the plugin that compiles our documentation can't deal with that
+  // That's why we put them here instead, but normally you should move them out of here.
+  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
+  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
+  
+  implicit val jsonPrimitive: Primitive[JsonRecord] = {
+    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
+  }
+
 
   object id extends UUIDColumn with PartitionKey
 

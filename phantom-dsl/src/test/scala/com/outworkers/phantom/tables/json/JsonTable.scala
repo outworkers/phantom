@@ -13,30 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.tables
+package com.outworkers.phantom.tables.json
 
 import com.outworkers.phantom.dsl._
-import org.json4s.Extraction
-import org.json4s.native._
 
-case class JsonTest(prop1: String, prop2: String)
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.parser._
+import io.circe.syntax._
 
-object JsonTest {
+case class JsonRecord(
+  prop1: String,
+  prop2: String
+)
 
-  implicit val formats = org.json4s.DefaultFormats
+object JsonRecord {
 
-  implicit val jsonPrimitive: Primitive[JsonTest] = {
-    Primitive.json[JsonTest](js => compactJson(renderJValue(Extraction.decompose(js))))(JsonParser.parse(_).extract[JsonTest])
+  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
+  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
+
+  implicit val jsonPrimitive: Primitive[JsonRecord] = {
+    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
   }
 }
 
 case class JsonClass(
   id: UUID,
   name: String,
-  json: JsonTest,
-  optionalJson : Option[JsonTest],
-  jsonList: List[JsonTest],
-  jsonSet: Set[JsonTest]
+  json: JsonRecord,
+  optionalJson : Option[JsonRecord],
+  jsonList: List[JsonRecord],
+  jsonSet: Set[JsonRecord]
 )
 
 abstract class JsonTable extends Table[JsonTable, JsonClass] {
@@ -45,12 +52,12 @@ abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object name extends StringColumn
 
-  object json extends JsonColumn[JsonTest]
+  object json extends JsonColumn[JsonRecord]
 
-  object optionalJson extends OptionalJsonColumn[JsonTest]
+  object optionalJson extends OptionalJsonColumn[JsonRecord]
 
-  object jsonList extends JsonListColumn[JsonTest]
+  object jsonList extends JsonListColumn[JsonRecord]
 
-  object jsonSet extends JsonSetColumn[JsonTest]
+  object jsonSet extends JsonSetColumn[JsonRecord]
 
 }
