@@ -166,6 +166,9 @@ lazy val readme = (project in file("readme"))
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat % "tut",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "tut",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.outworkers" %% "util-samplers" % Versions.util % "tut",
       "io.circe" %% "circe-parser" % Versions.circe % "tut",
       "io.circe" %% "circe-generic" % Versions.circe % "tut",
