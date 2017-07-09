@@ -6,7 +6,7 @@ then
     exit $?
 else
     echo "Running tests without attempting to submit coverage reports"
-    sbt ";plz $TRAVIS_SCALA_VERSION test; project readme; tut"
+    sbt ";plz $TRAVIS_SCALA_VERSION test; project readme;"
     exit $?
 fi
 q

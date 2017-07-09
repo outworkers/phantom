@@ -296,6 +296,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     crossScalaVersions := Seq("2.10.6"),
     publishMavenStyle := false,
     sbtPlugin := true,
+    publishArtifact := !Publishing.publishingToMaven,
     libraryDependencies ++= Seq(
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
