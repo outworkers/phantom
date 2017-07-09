@@ -57,8 +57,6 @@ addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
-
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.8.1")

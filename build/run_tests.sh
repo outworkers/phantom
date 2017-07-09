@@ -2,11 +2,11 @@
 if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
 then
     echo "Running tests with coverage and report submission"
-    sbt ";plz $TRAVIS_SCALA_VERSION testsWithCoverage; project readme; tut"
+    sbt ";++$TRAVIS_SCALA_VERSION testsWithCoverage; project readme; tut"
     exit $?
 else
-    echo "Running tests without attempting to submit coverage reports"
-    sbt ";plz $TRAVIS_SCALA_VERSION test; project readme;"
+    echo "Running tests without attempting to submit coverage reports or run tut"
+    sbt "++$TRAVIS_SCALA_VERSION test"
     exit $?
 fi
 q

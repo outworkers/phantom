@@ -102,6 +102,7 @@ scalacOptions in ThisBuild ++= Seq(
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -134,7 +135,6 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomFinagle,
   phantomStreams,
   phantomThrift,
-  phantomMonix,
   phantomSbtPlugin,
   readme
 )
@@ -158,7 +158,7 @@ lazy val phantom = (project in file("."))
     }
   ).aggregate(
     fullProjectList: _*
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
@@ -178,13 +178,9 @@ lazy val readme = (project in file("readme"))
     phantomExample,
     phantomConnectors,
     phantomFinagle,
-    phantomMonix,
     phantomStreams,
     phantomThrift
-  ).enablePlugins(
-    TutPlugin,
-    CrossPerProjectPlugin
-  )
+  ).enablePlugins(TutPlugin)
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)
@@ -214,7 +210,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     )
   ).dependsOn(
     phantomConnectors
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
@@ -232,7 +228,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  ).enablePlugins(CrossPerProjectPlugin).enablePlugins(TutPlugin)
+  )
 
 lazy val phantomConnectors = (project in file("phantom-connectors"))
   .settings(
@@ -244,7 +240,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))
   .settings(sharedSettings: _*)
@@ -262,7 +258,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     )
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
@@ -285,7 +281,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).dependsOn(
     phantomDsl % "compile->compile;test->test;",
     phantomFinagle
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   .settings(
@@ -296,14 +292,14 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     crossScalaVersions := Seq("2.10.6"),
     publishMavenStyle := false,
     sbtPlugin := true,
-    publishArtifact := !Publishing.publishingToMaven,
+    publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
     libraryDependencies ++= Seq(
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
     )
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
@@ -325,7 +321,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
 
 lazy val phantomExample = (project in file("phantom-example"))
   .settings(
@@ -343,19 +339,4 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
     phantomThrift
-  ).enablePlugins(CrossPerProjectPlugin)
-
-lazy val phantomMonix = (project in file("phantom-monix"))
-  .settings(
-    name := "phantom-monix",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
-    moduleName := "phantom-monix",
-    libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-      "io.monix" %% "monix" % Versions.monix
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl % "test->test;compile->compile;"
-  ).enablePlugins(CrossPerProjectPlugin)
+  )
