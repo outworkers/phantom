@@ -87,7 +87,7 @@ then
         fi
 
         echo "Publishing new version to bintray"
-        sbt "such publish"
+        sbt "+publish"
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
@@ -101,7 +101,7 @@ then
             echo "Setting MAVEN_PUBLISH mode to true"
             export MAVEN_PUBLISH="true"
             export pgp_passphrase=${maven_password}
-            sbt "such publishSigned"
+            sbt "+publishSigned"
             sbt sonatypeReleaseAll
             exit $?
         else
