@@ -18,7 +18,7 @@ If we would just use a timestamp type, if we were to receive two logs for the sa
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
-```tut
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -44,13 +44,16 @@ The following is the list of available query methods on a select, and it can be 
  in various ways.
  
  
-| Method name           | Return type                         | Purpose                                                |
-| --------------------- | ----------------------------------- | -----------------------------------------------------  |
-| `future`              | `com.ouwotkers.phantom.ResultSet`   | Available on all queries, returns the raw result type. |
-| `one`                 | `Option[R]`                         | Select a single result as an `Option[R]`               |
-| `fetch`               | `List[R]`                           | Select a small list of records without a paging state  |
-| `fetch(modifier)`     | `List[R]`                           | Select a small list of records without a paging state  |
-| `fetchRecord`         | `ListResult[R]`                     | Fetch a small result together with the `ResultSet`     |
+| Method name                   | Return type                         | Purpose                                                |
+| ----------------------------- | ----------------------------------- | -----------------------------------------------------  |
+| `future`                      | `com.ouwotkers.phantom.ResultSet`   | Available on all queries, returns the raw result type. |
+| `one`                         | `Option[R]`                         | Select a single result as an `Option[R]`               |
+| `fetch`                       | `List[R]`                           | Select a small list of records without a paging state  |
+| `fetch(modifier)`             | `List[R]`                           | Select a small list of records without a paging state  |
+| `fetchRecord`                 | `ListResult[R]`                     | Fetch a small result together with the `ResultSet`     |
+| `paginateRecord`              | `ListResult[R]`                     | Fetch a paginated result together with the `ResultSet` and `PagingState` |
+| `paginateRecord(modifier)`    | `ListResult[R]`                     | Fetch a paginated result together with the `ResultSet` and `PagingState` |
+| `paginateRecord(pagingState)` | `ListResult[R]`                     | Fetch a paginated result together with the `ResultSet` and `PagingState` |
 
 
 #### Paginating results by leveraging paging states and automated Cassandra pagination.

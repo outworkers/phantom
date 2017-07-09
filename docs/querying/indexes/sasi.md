@@ -24,11 +24,44 @@ libraryDependencies ++= Seq(
 )
 ```
 
+Then let's start from a simple Cassandra connection:
+
+```scala
+
+import com.datastax.driver.core.SocketOptions
+import com.outworkers.phantom.connectors._
+import com.outworkers.phantom.dsl._
+
+object Connector {
+  val default: CassandraConnection = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    ).noHeartbeat().keySpace(
+      KeySpace("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
+}
+```
+
 Simple example:
 
-```tut
+```scala
 
+import com.outworkers.phantom.connectors._
 import com.outworkers.phantom.dsl._
+
+case class MultiSASIRecord(
+  id: UUID,
+  name: String,
+  customers: Int,
+  phoneNumber: String,
+  set: Set[Int],
+  list: List[String]
+)
 
 abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
   object id extends UUIDColumn with PartitionKey
@@ -52,6 +85,16 @@ abstract class MultiSASITable extends Table[MultiSASITable, MultiSASIRecord] {
   object setCol extends SetColumn[Int]
   object listCol extends ListColumn[String]
 }
+
+
+class SASIDatabase(override val connector: CassandraConnection) extends Database[SASIDatabase](connector) {
+  object multiSasiTable extends MultiSASITable with Connector
+}
+
+object SASIDatabase extends SASIDatabase(Connector.default)
+
+val db = SASIDatabase
+
 ```
 
 
@@ -101,7 +144,12 @@ Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala
 Example query, based on the schema defined above.
 
 ```scala
-db.multiSasiTable.select.where(_.phoneNumber like prefix(pre)).fetch()
+
+import com.outworkers.phantom.dsl._
+
+import db._
+
+db.multiSasiTable.select.where(_.phoneNumber like prefix("example")).fetch()
 ```
   
 #### Mode.Contains
@@ -114,7 +162,13 @@ Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala
 Example possible queries, based on the schema defined above.
 
 ```scala
+
+import com.outworkers.phantom.dsl._
+
+import db._
+
 val pre = "text"
+
 db.multiSasiTable.select.where(_.name like prefix(pre)).fetch()
 db.multiSasiTable.select.where(_.name like contains(pre)).fetch()
 db.multiSasiTable.select.where(_.name like suffix(pre)).fetch()
@@ -133,7 +187,11 @@ Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala
 Example possible queries.
 
 ```scala
-val target = 5-
+
+import com.outworkers.phantom.dsl._
+
+import db._
+
 db.multiSasiTable.select.where(_.customers eqs 50).fetch()
 
 // Select all entries with at least 50 customers
@@ -141,5 +199,6 @@ db.multiSasiTable.select.where(_.customers >= 50).fetch()
 
 // Select all entries with at most 50 customers
 db.multiSasiTable.select.where(_.customers <= 50).fetch()
+
 ```
 

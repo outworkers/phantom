@@ -39,7 +39,7 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     val chain = for {
       truncate <- StreamDatabase.operaTable.truncate().future()
-      store <- Future.sequence(samples.map(StreamDatabase.operaTable.store(_).future()))
+      store <- StreamDatabase.operaTable.storeRecords(samples)
     } yield store
 
     Await.result(chain, 30.seconds)

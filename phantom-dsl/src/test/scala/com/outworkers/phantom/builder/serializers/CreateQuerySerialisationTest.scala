@@ -29,6 +29,20 @@ class CreateQuerySerialisationTest extends QueryBuilderTest {
         qb shouldEqual "CREATE TABLE phantom.timeSeriesTable (id uuid, name text, unixTimestamp timestamp, " +
           "PRIMARY KEY (id, unixTimestamp)) WITH CLUSTERING ORDER BY (unixTimestamp DESC)"
       }
+
+      "retrieve clustering columns in the order they are written" in {
+        val qb = TestDatabase.clusteringTable.create.qb.queryString
+
+        qb shouldEqual "CREATE TABLE phantom.clusteringTable (id uuid, id2 uuid, id3 uuid, placeholder text, " +
+          "PRIMARY KEY (id, id2, id3)) WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC)"
+      }
+
+      "retrieve clustering columns in the order they are written for three clustering columns" in {
+        val qb = TestDatabase.complexClusteringTable.create.qb.queryString
+
+        qb shouldEqual "CREATE TABLE phantom.complexClusteringTable (id uuid, id2 uuid, id3 uuid, placeholder text, " +
+          "PRIMARY KEY (id, id2, id3, placeholder)) WITH CLUSTERING ORDER BY (id2 ASC, id3 DESC, placeholder DESC)"
+      }
     }
   }
 }

@@ -48,7 +48,7 @@ class TimeSeriesTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      insert <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      insert <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select.limit(limit).fetch()
     } yield chunks
 
@@ -69,7 +69,7 @@ class TimeSeriesTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      insert <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      insert <- database.timeSeriesTable.storeRecords(records)
       chunks <- query.bind(ref).fetch()
     } yield chunks
 
@@ -85,7 +85,7 @@ class TimeSeriesTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      insert <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      insert <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select
         .where(_.id eqs ref)
         .orderBy(_.timestamp.asc)
@@ -111,7 +111,7 @@ class TimeSeriesTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      insert <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      insert <- database.timeSeriesTable.storeRecords(records)
       chunks <- query.bind(ref).fetch()
     } yield chunks
 
@@ -127,7 +127,7 @@ class TimeSeriesTest extends PhantomSuite {
 
     val chain = for {
       truncate <- database.timeSeriesTable.truncate.future()
-      insert <- Future.sequence(records map (database.timeSeriesTable.store(_).future))
+      insert <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select
         .where(_.id eqs ref)
         .orderBy(_.timestamp.descending)
@@ -140,7 +140,7 @@ class TimeSeriesTest extends PhantomSuite {
 
   def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
     whenReady(futureResults) { results =>
-      results shouldEqual expected
+      results should contain theSameElementsAs expected
     }
   }
 }

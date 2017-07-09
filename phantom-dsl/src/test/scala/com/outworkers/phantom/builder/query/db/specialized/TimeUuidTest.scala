@@ -122,7 +122,7 @@ class TimeUuidTest extends PhantomSuite {
       )
 
     val chain = for {
-      _ <- Future.sequence(records.map(r => database.timeuuidTable.store(r).future()))
+      _ <- database.timeuuidTable.storeRecords(records)
       get <- database.timeuuidTable.select
         .where(_.user eqs user)
         .and(_.id >= minTimeuuid(start.plusSeconds(-3 * intervalOffset)))

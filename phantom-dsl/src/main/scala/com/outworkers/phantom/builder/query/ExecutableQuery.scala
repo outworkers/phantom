@@ -31,6 +31,8 @@ trait RecordResult[R] {
   def result: ResultSet
 
   def pagingState: PagingState = result.getExecutionInfo.getPagingState
+
+  def state: Option[PagingState] = Option(result.getExecutionInfo.getPagingState)
 }
 
 case class ListResult[R](records: List[R], result: ResultSet) extends RecordResult[R]
@@ -228,6 +230,16 @@ trait ExecutableQuery[T <: CassandraTable[T, _], R, Limit <: LimitBound]
     future() map { res => singleResult(res.value()) }
   }
 
+  /**
+    * Paginates a [[ResultSet]] by manually parsing [[Row]] into the Record type [[R]]
+    * by applying the [[fromRow]] method up to [[com.datastax.driver.core.ResultSet#getAvailableWithoutFetching]].
+    * This ensures we do not map more records that already retrieved from the database, thereby honouring the
+    * fetch size set on the underlying query.
+    * @param res The underlying [[ResultSet]] used.
+    * @param cbf The [[CanBuildFrom]] instance used to build the final collection.
+    * @tparam M The higher kinded type used to abstract over the implementation of the resulting collection.
+    * @return A tuple of the mapped collection and the original [[ResultSet]].
+    */
   private[phantom] def pagination[M[X] <: TraversableOnce[X]](res: ResultSet)(
     implicit cbf: CanBuildFrom[Nothing, R, M[R]]
   ): (M[R], ResultSet) = {

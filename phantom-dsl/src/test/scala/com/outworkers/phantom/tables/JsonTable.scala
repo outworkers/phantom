@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 import org.json4s.Extraction
 import org.json4s.native._
@@ -41,7 +39,7 @@ case class JsonClass(
   jsonSet: Set[JsonTest]
 )
 
-abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
+abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object id extends UUIDColumn with PartitionKey
 

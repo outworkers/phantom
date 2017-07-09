@@ -119,7 +119,11 @@ object Publishing {
   ) ++ defaultPublishingSettings
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
-    if (sys.env.contains("MAVEN_PUBLISH")) mavenSettings else bintraySettings
+    if (publishingToMaven) mavenSettings else bintraySettings
+  }
+
+  def publishingToMaven: Boolean = {
+    sys.env.contains("MAVEN_PUBLISH")
   }
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
@@ -131,5 +135,8 @@ object Publishing {
 
   lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
     if (bool) ref :: Nil else Nil
+
+  lazy val addRef: (Boolean, ClasspathDep[ProjectReference]) => Seq[ClasspathDep[ProjectReference]] = (bool, ref) =>
+    if (bool) Seq(ref) else Seq.empty
 
 }

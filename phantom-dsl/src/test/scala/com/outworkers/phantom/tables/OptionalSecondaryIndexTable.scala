@@ -30,7 +30,7 @@ case class OptionalSecondaryRecord(
 abstract class OptionalSecondaryIndexTable extends Table[
   OptionalSecondaryIndexTable,
   OptionalSecondaryRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object secondary extends OptionalIntColumn with Index
 

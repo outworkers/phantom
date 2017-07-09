@@ -16,8 +16,7 @@ Let's explore some of the design goals in more detail to understand how things w
 Being the final level of segregation between the database layer of your application and every other layer, essentially guaranteeing encapsulation. Beyond this point, no other consumer of your database service should ever know that you are using `Cassandra` as a database.
 
 At the very bottom level, phantom queries require several implicits in scope to execute:
-
-- The `implicit session: com.datastax.driver.core.Session`, that tells us which Cassandra cluster to target.
+Fhich Cassandra cluster to target.
 - The `implicit keySpace: KeySpace`, describing which keyspace to target. It's just a `String`, but it's more strongly typed as we don't want `implicit` strings in our code, ever.
 - The `implicit ex: ExecutionContextExecutor`, which is a Java compatible flavour of `scala.concurrent.ExecutionContext` and basically allows users to supply any context of their choosing for executing database queries.
 
@@ -25,7 +24,11 @@ However, from an app or service consumer perspective, when pulling in dependenci
 
 That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector`.
 
-```tut
+```scala
+
+import java.util.UUID
+import org.joda.time.DateTime
+import com.outworkers.phantom.dsl._
 
 case class Recipe(
   url: String,
@@ -37,7 +40,7 @@ case class Recipe(
   uid: UUID
 )
 
-class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
+abstract class Recipes extends Table[Recipes, Recipe] {
 
   object url extends StringColumn with PartitionKey
 
@@ -56,7 +59,7 @@ class Recipes extends CassandraTable[Recipes, Recipe] with RootConnector {
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
-```tut
+```scala
 
 import com.datastax.driver.core.Session
 
@@ -70,7 +73,7 @@ trait RootConnector {
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
 
-```tut
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -102,35 +105,47 @@ Sometimes developers can choose to wrap a `database` further, into specific data
 
 And this is why we offer another native construct, namely the `DatabaseProvider` trait. This is another really simple but really powerful trait that's generally used cake pattern style.
 
-```tut
-
-import com.outworkers.phantom.dsl._
-
-trait DatabaseProvider[T <: Database[T]] {
-  def database: T
-}
-```
-
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
-```tut
+```scala
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
 
-class UserDatabase(
+case class User(id: UUID, email: String, name: String)
+
+abstract class Users extends Table[Users, User] {
+  object id extends UUIDColumn with PartitionKey
+  object email extends StringColumn
+  object name extends StringColumn
+
+  def findById(id: UUID): Future[Option[User]] = {
+    select.where(_.id eqs id).one()
+  }
+}
+
+abstract class UsersByEmail extends Table[UsersByEmail, User] {
+  object email extends StringColumn with PartitionKey
+  object id extends UUIDColumn
+  object name extends StringColumn
+
+  def findByEmail(email: String): Future[Option[User]] = {
+    select.where(_.email eqs email).one()
+  }
+}
+
+class AppDatabase(
   override val connector: CassandraConnection
-) extends Database[UserDatabase](connector) {
+) extends Database[AppDatabase](connector) {
   object users extends Users with Connector
   object usersByEmail extends UsersByEmail with Connector
 }
 
-
 // So now we are saying we have a trait
 // that will eventually provide a reference to a specific database.
-trait AppDatabase extends DatabaseProvider[AppDatabase]
+trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
 
-trait UserService extends AppDatabase {
+trait UserService extends AppDatabaseProvider {
 
   /**
    * Stores a user into the database guaranteeing application level consistency of data.
@@ -142,8 +157,8 @@ trait UserService extends AppDatabase {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- db.users.store(user)
-      byEmail <- db.usersByEmail.store(user)
+      byId <- db.users.storeRecord(user)
+      byEmail <- db.usersByEmail.storeRecord(user)
     } yield byEmail
   }
 
@@ -167,7 +182,7 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
-```tut
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -188,27 +203,31 @@ It may feel verbose or slightly too much at first, but the objects wrapping the 
 
 And this is how you would use that provider trait now. We're going to assume ScalaTest is the testing framework in use, but of course that doesn't matter.
 
-```tut
+```scala
 
 import com.outworkers.phantom.dsl._
 
-import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
+import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
 
-class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with OptionValues with BeforeAndAfterAll {
 
   val userService = new UserService with TestDatabaseProvider {}
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // all our tables will now be initialised automatically against the target keyspace.
-    database.create()
+    userService.database.create()
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
-    val user = User(...)
-
+    val user = User(
+      UUID.randomUUID,
+      "test@outworkers.com",
+      "John Doe"
+    )
+    
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)
@@ -237,7 +256,9 @@ As far as we are concerned, that was of doing things is old school and deprecate
 For example:
 
 ```scala
-database.users.create.ifNotExists()
+trait ExampleAdvancedQuery extends AppDatabaseProvider {
+  database.users.create.ifNotExists()
+}
 ```
 
 Now obviously that's the super simplistic example, so let's look at how you might implement more advanced scenarios. Phantom provides a full schema DSL including all alter and create query options so it should be quite trivial to implement any kind of query no matter how complex.
@@ -245,21 +266,26 @@ Now obviously that's the super simplistic example, so let's look at how you migh
 Without respect to how effective these settings would be in a production environment(no do not try at home), this is meant to illustrate that you could create very complex queries with the existing DSL.
 
 ```scala
-database.users
-  .create.ifNotExists()
-  .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
-  .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-  .and(comment eqs "testing")
-  .and(read_repair_chance eqs 5D)
-  .and(dclocal_read_repair_chance eqs 5D)
+
+trait ExampleAdvancedQuery extends AppDatabaseProvider {
+
+  val customCreate = database.users
+      .create.ifNotExists()
+      .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+      .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+      .and(comment eqs "testing")
+      .and(read_repair_chance eqs 5D)
+      .and(dclocal_read_repair_chance eqs 5D)
+}
 ```
 
 To override the settings that will be used during schema auto-generation at `Database` level, phantom provides the `autocreate` method inside every table which can be easily overriden. This is again an example of chaining numerous DSL methods and doesn't attempt to demonstrate any kind of effective production settings.
 
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
-```tut
+```scala
 
+import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.dsl._
 
 class UserDatabase(
@@ -267,7 +293,7 @@ class UserDatabase(
 ) extends Database[UserDatabase](connector) {
 
   object users extends Users with Connector {
-    def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+    override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
       create.ifNotExists()(keySpace)
         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
         .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
@@ -287,6 +313,9 @@ By default, `autocreate` will simply try and perform a lightweight create query,
 def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
   create.ifNotExists()(keySpace)
 }
+```
+
+The result will look like the below.
 
 ```sql
 CREATE TABLE IF NOT EXISTS $keyspace.$table (
@@ -296,3 +325,4 @@ CREATE TABLE IF NOT EXISTS $keyspace.$table (
   PRIMARY KEY (id, unixTimestamp)
 )
 ```
+

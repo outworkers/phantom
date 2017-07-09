@@ -30,7 +30,7 @@ case class MultipleKeyRecord(
   timestamp: DateTime
 )
 
-abstract class MultipleKeys extends Table[MultipleKeys, MultipleKeyRecord] with RootConnector {
+abstract class MultipleKeys extends Table[MultipleKeys, MultipleKeyRecord] {
 
   object pkey extends StringColumn with PartitionKey
   object intColumn1 extends IntColumn with PrimaryKey with Index

@@ -137,6 +137,10 @@ object Primitive {
 
   val nullValue = None.orNull
 
+  def enumByIndex[En <: Enumeration](enum: En): Primitive[En#Value] = {
+    Primitive.manuallyDerive[En#Value, Int](e => e.id, id => enum.apply(id))(Primitives.IntPrimitive)()
+  }
+
   /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
     * library to macro materialise an instance of the required primitive based on the type argument.

@@ -15,13 +15,12 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
 abstract class TimeSeriesTableWithTTL extends Table[
   TimeSeriesTableWithTTL,
   TimeSeriesRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
   object timestamp extends DateTimeColumn with ClusteringOrder with Descending

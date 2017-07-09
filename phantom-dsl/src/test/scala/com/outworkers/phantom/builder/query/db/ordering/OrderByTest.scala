@@ -42,7 +42,7 @@ class OrderByTest extends PhantomSuite {
     }
 
     val chain = for {
-      _ <- Future.sequence(records.map(database.timeuuidTable.store(_).future()))
+      _ <- database.timeuuidTable.storeRecords(records)
       get <- database.timeuuidTable.retrieve(user)
       desc <- database.timeuuidTable.retrieveDescending(user)
     } yield (get, desc)
@@ -59,9 +59,6 @@ class OrderByTest extends PhantomSuite {
         info(orderedAsc.mkString("\n"))
 
         asc should contain theSameElementsAs orderedAsc
-
-
-        //implicit val timeUUIDRecordOrdering = Ordering.fromLessThan[TimeUUIDRecord] { case (a, b) => a.id.compareTo(b.id) >= 0 }
 
         val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
 

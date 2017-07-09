@@ -39,10 +39,7 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
       rows = Iterator.fill(iteratorLimit)(gen[JodaRow])
 
       batch = rows.foldLeft(Batch.unlogged)((b, row) => {
-        val statement = TestDatabase.primitivesJoda.insert
-          .value(_.pkey, row.pkey)
-          .value(_.intColumn, row.intColumn)
-          .value(_.timestamp, row.timestamp)
+        val statement = TestDatabase.primitivesJoda.store(row)
         b.add(statement)
       })
       w = batch.future()

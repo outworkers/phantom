@@ -34,7 +34,7 @@ class TruncateTest extends PhantomSuite {
 
     val result = for {
       truncateBefore <- database.articles.truncate.future()
-      store <- Future.sequence(articles.map(database.articles.store(_).future()))
+      store <- database.articles.storeRecords(articles)
       records <- database.articles.select.fetch
       truncate <- database.articles.truncate.future()
       records1 <- database.articles.select.fetch
@@ -55,7 +55,7 @@ class TruncateTest extends PhantomSuite {
 
     val result = for {
       truncateBefore <- database.articles.truncate.future()
-      i1 <- Future.sequence(articles.map(database.articles.store(_).future()))
+      i1 <- database.articles.storeRecords(articles)
       records <- database.articles.select.fetch
       truncate <- database.articles.truncate.consistencyLevel_=(ConsistencyLevel.ONE).future()
       records1 <- database.articles.select.fetch

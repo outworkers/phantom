@@ -134,6 +134,7 @@ object EmbeddedCassandra {
             case (None, None) =>
               logger.info("Starting Cassandra in embedded mode with default configuration.")
               EmbeddedCassandraServerHelper.startEmbeddedCassandra()
+              logger.info("Successfully started embedded Cassandra")
           }
         }
       }
@@ -146,7 +147,7 @@ object EmbeddedCassandra {
 
   def cleanup(logger: Logger): Unit = {
     this.synchronized {
-      if (started.get()) {
+      if (started.compareAndSet(true, false)) {
         logger.info("Cleaning up embedded Cassandra")
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
       } else {

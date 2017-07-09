@@ -43,7 +43,7 @@ case class NestedCollections(
 abstract class NestedCollectionTable extends Table[
   NestedCollectionTable,
   NestedCollections
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object text extends StringColumn
   object props extends MapColumn[String, List[String]]

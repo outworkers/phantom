@@ -72,7 +72,6 @@ abstract class EnumTable extends Table[EnumTable, EnumRecord] {
   object singleton extends EnumColumn[SingletonEnum.Value]
 }
 
-
 abstract class NamedEnumTable extends Table[NamedEnumTable, NamedEnumRecord] {
   object id extends StringColumn with PartitionKey
   object enum extends EnumColumn[NamedRecords#Value]
@@ -82,7 +81,7 @@ abstract class NamedEnumTable extends Table[NamedEnumTable, NamedEnumRecord] {
 abstract class NamedPartitionEnumTable extends Table[
   NamedPartitionEnumTable,
   NamedPartitionRecord
-] with RootConnector {
+] {
   object enum extends EnumColumn[NamedRecords#Value] with PartitionKey
   object id extends UUIDColumn with PrimaryKey
 }

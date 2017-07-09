@@ -17,7 +17,7 @@ package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.dsl._
 
-abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, TestRow] with RootConnector {
+abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, TestRow] {
 
   object key extends StringColumn with PartitionKey
 
@@ -35,7 +35,7 @@ abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, Te
 }
 
 
-abstract class IndexedEntriesTable extends Table[IndexedEntriesTable, TestRow] with RootConnector {
+abstract class IndexedEntriesTable extends Table[IndexedEntriesTable, TestRow] {
 
   object key extends StringColumn with PartitionKey
 

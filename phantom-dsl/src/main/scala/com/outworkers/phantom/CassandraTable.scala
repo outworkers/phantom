@@ -29,6 +29,7 @@ import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
 
+import scala.collection.generic.CanBuildFrom
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
@@ -156,6 +157,19 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     sg: SingleGeneric.Aux[V1, Repr, HL, Out],
     ev: Out ==:== Repr
   ): Future[ResultSet] = store(input).future()
+
+  def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
+    implicit keySpace: KeySpace,
+    session: Session,
+    thl: TableHelper.Aux[T, R, Repr],
+    ex: ExecutionContextExecutor,
+    gen: Generic.Aux[V1, HL],
+    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+    ev: Out ==:== Repr,
+    cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]]
+  ): Future[M[ResultSet]] = {
+    Future.traverse(inputs)(el => storeRecord(el))
+  }
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 

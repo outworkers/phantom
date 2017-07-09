@@ -150,8 +150,14 @@ class TableHelperTest extends PhantomSuite with MockFactory {
   it should "correctly retrieve a list of keys" in {
     val table = new ClusteredTable with database.Connector
     val fields = TableHelper[ClusteredTable, ClusteredRecord].fields(table)
-    fields shouldEqual Seq(table.partition, table.id, table.id2, table.id3)
+    fields should contain theSameElementsInOrderAs Seq(table.partition, table.id, table.id2, table.id3)
   }
+
+  it should "retrieve clustering keys in the order they are written" in {
+    val table = new ClusteredTable with database.Connector
+    table.clusteringColumns should contain theSameElementsInOrderAs Seq(table.id, table.id2, table.id3)
+  }
+
 
   it should "generate a fromRow method from a partial table definition" in {
     val row = stub[Row]

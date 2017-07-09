@@ -58,6 +58,9 @@ scenario, the macro engine will infer the table name as "Recipes", based on the 
 override the table name manually inside the table definition.
 
 ```scala
+
+import com.outworkers.phantom.dsl._
+
 class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
   object recipes extends Recipes with Connector {
     override def tableName: String = "recipes"
@@ -98,6 +101,8 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 <a href="#table-of-contents">back to top</a>
 
 ```scala
+
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 
 case class ExampleModel (
@@ -264,7 +269,7 @@ be mapped.
 
 So the new type of the generated store method will now be:
 
-```
+```scala
   def store(
     countryCode: String,
     record: Record
@@ -284,6 +289,7 @@ by the `Record` type.
 
 ```scala
 
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
 
@@ -302,7 +308,7 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
@@ -319,12 +325,12 @@ key that would allow us to retrieve all records by both `country` and `region`.
 
 So the new type of the generated store method will now be:
 
-```
-  def store(
-    countryCode: String,
-    region: String,
-    record: Record
-  ): InsertQuery.Default[RecordsByCountry, Record]   
+```scala
+     |   def store(
+     |     countryCode: String,
+     |     region: String,
+     |     record: Record
+     |   ): InsertQuery.Default[RecordsByCountry, Record]   
 ```
 
 The new table definition to store the above is:
@@ -332,6 +338,7 @@ The new table definition to store the above is:
 ```scala
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
 import scala.concurrent.duration._
 
 case class Record(
@@ -350,7 +357,7 @@ abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.region, region)

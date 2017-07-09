@@ -127,10 +127,12 @@ As of phantom 2.5.0, if you have a manually defined method to insert records int
 For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs. 
 This is because phantom successfully auto-generates a basic store method that looks like this below.
 
-```tut
+```scala
 
-import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
+import scala.concurrent.Future
+import com.outworkers.phantom.builder.query.InsertQuery
+import com.outworkers.phantom.dsl._
 
 case class Record(
   id: UUID,
@@ -150,7 +152,7 @@ abstract class MyTable extends Table[MyTable, Record] {
   def store(record: Record): InsertQuery.Default[MyTable, Record] = {
     insert.value(_.id, record.id)
       .value(_.name, record.name)
-      .value(_firstName, record.firstName)
+      .value(_.firstName, record.firstName)
       .value(_.email, record.email)
   }
   
