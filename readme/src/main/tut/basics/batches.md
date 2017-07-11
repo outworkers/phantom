@@ -4,33 +4,123 @@ phantom
 <a id="batch-statements">Batch statements</a>
 =============================================
 
-Phantom also brrings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/outworkers/phantom/blob/develop/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/iteratee/IterateeBigReadPerformanceTest.scala). Before you read further, you should remember **batch statements are not used to improve performance**.
+Phantom also brings in support for batch statements. To use them, see [IterateeBigTest.scala](https://github.com/outworkers/phantom/blob/develop/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/iteratee/IterateeBigReadPerformanceTest.scala). Before you read further, you should remember **batch statements are not used to improve performance**.
 
 Read [the official docs](http://docs.datastax.com/en/cql/3.1/cql/cql_reference/batch_r.html) for more details, but in short **batches guarantee atomicity and they are about 30% slower on average than parallel writes** at least, as they require more round trips. If you think you're optimising performance with batches, you might need to find alternative means.
 
-We have tested with 10,000 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
+We have tested with 100 statements per batch, and 1000 batches processed simultaneously. Before you run the test, beware that it takes ~40 minutes.
 
-Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with 1 000 000 statements per batch.
+Batches use lazy iterators and daisy chain them to offer thread safe behaviour. They are not memory intensive and you can expect consistent processing speed even with very large numbers of batches.
 
 Batches are immutable and adding a new record will result in a new Batch, just like most things Scala, so be careful to chain the calls.
 
 phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 
+To start, we need an example database connection.
+
+```tut:silent
+
+import com.datastax.driver.core.SocketOptions
+import com.outworkers.phantom.connectors._
+import com.outworkers.phantom.dsl._
+
+object Connector {
+  val default: CassandraConnection = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    ).noHeartbeat().keySpace(
+      KeySpace("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
+}
+```
+
+Now let's define a few tables to allow us to exemplify batch queries.
+
+```tut:silent
+
+import scala.concurrent.Future
+import com.outworkers.phantom.dsl._
+
+case class CounterRecord(id: UUID, count: Long)
+
+abstract class CounterTableTest extends Table[
+  CounterTableTest,
+  CounterRecord
+] {
+  object id extends UUIDColumn with PartitionKey
+  object entries extends CounterColumn
+}
+
+case class Article(
+  id: UUID,
+  name: String,
+  content: String
+)
+
+abstract class Articles extends Table[Articles, Article] {
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object content extends StringColumn
+}
+
+class TestDatabase(
+  override val connector: CassandraConnection
+) extends Database[TestDatabase](connector) {
+  object articles extends Articles with Connector
+  object counterTable extends CounterTableTest with Connector
+}
+
+object TestDatabase extends TestDatabase(Connector.default)
+
+trait TestDbProvider extends DatabaseProvider[TestDatabase] {
+  override val database = TestDatabase
+}
+
+```
 
 <a id="logged-batch-statements">LOGGED batch statements</a>
 ===========================================================
 
 ```tut:silent
 
+import java.util.UUID
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.logged
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
+trait LoggedQueries extends TestDbProvider {
+
+  Batch.logged
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
     .future()
+}
 
 ```
+
+
+<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
+============================================================
+
+```tut:silent
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.batch._
+
+trait UnloggedQueries extends TestDbProvider {
+
+  Batch.unlogged
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
+    .future()
+}
+
+```
+
 
 <a id="counter-batch-statements">COUNTER batch statements</a>
 ============================================================
@@ -41,10 +131,14 @@ Batch.logged
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter increment 500L))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.someCounter decrement 300L))
+trait CounterQueries extends TestDbProvider {
+
+  Batch.counter
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries increment 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries decrement 300L))
     .future()
+}
+
 ```
 
 Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
@@ -55,23 +149,12 @@ you can also use `+=` and `-=` to achieve the same thing.
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.batch._
 
-Batch.counter
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.someCounter += 500L))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.someCounter _= 300L))
+trait CounterOpsQueries extends TestDbProvider {
+
+  Batch.counter
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries += 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries -= 300L))
     .future()
+}    
 ```
 
-<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
-============================================================
-
-```tut:silent
-
-import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
-
-Batch.unlogged
-    .add(db.exampleTable.update.where(_.id eqs someId).modify(_.name setTo "blabla"))
-    .add(db.exampleTable.update.where(_.id eqs someOtherId).modify(_.name setTo "blabla2"))
-    .future()
-
-```

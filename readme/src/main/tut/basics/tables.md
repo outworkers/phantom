@@ -269,7 +269,7 @@ be mapped.
 
 So the new type of the generated store method will now be:
 
-```
+```scala
   def store(
     countryCode: String,
     record: Record
@@ -308,7 +308,7 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
@@ -338,6 +338,7 @@ The new table definition to store the above is:
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.InsertQuery
 import scala.concurrent.duration._
 
 case class Record(
@@ -356,7 +357,7 @@ abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.region, region)

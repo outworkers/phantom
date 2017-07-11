@@ -23,7 +23,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.11.1"
+    version := "2.12.3"
   )
 
   lazy val noPublishSettings = Seq(
@@ -119,7 +119,11 @@ object Publishing {
   ) ++ defaultPublishingSettings
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
-    if (sys.env.contains("MAVEN_PUBLISH")) mavenSettings else bintraySettings
+    if (publishingToMaven) mavenSettings else bintraySettings
+  }
+
+  def publishingToMaven: Boolean = {
+    sys.env.contains("MAVEN_PUBLISH")
   }
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined

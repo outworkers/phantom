@@ -47,7 +47,6 @@ object Connector {
 }
 ```
 
-
 Simple example:
 
 ```scala
@@ -150,7 +149,7 @@ import com.outworkers.phantom.dsl._
 
 import db._
 
-db.multiSasiTable.select.where(_.phoneNumber like prefix(pre)).fetch()
+db.multiSasiTable.select.where(_.phoneNumber like prefix("example")).fetch()
 ```
   
 #### Mode.Contains

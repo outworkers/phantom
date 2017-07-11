@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 case class StaticCollectionSingle(
@@ -28,7 +26,7 @@ case class StaticCollectionSingle(
 abstract class StaticTableTest extends Table[
   StaticTableTest,
   StaticCollectionSingle
-] with RootConnector {
+] {
 
   object id extends UUIDColumn with PartitionKey
   object clusteringId extends UUIDColumn with ClusteringOrder with Descending
@@ -44,7 +42,7 @@ case class StaticCollectionRecord(
 abstract class StaticCollectionTable extends Table[
   StaticCollectionTable,
   StaticCollectionRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object clustering extends UUIDColumn with ClusteringOrder with Descending
   object staticList extends ListColumn[String] with StaticColumn

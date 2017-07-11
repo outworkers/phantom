@@ -23,7 +23,6 @@ branches:
   - master
   - develop
 jdk:
-- oraclejdk7
 - oraclejdk8
 matrix:
   include:
@@ -37,7 +36,7 @@ before_install: unset SBT_OPTS JVM_OPTS
 before_script:
 - mkdir -p $HOME/.sbt/launchers/0.13.15/
 - curl -L -o $HOME/.sbt/launchers/0.13.15/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.15/sbt-launch.jar
-- travis_retry sbt "plz $TRAVIS_SCALA_VERSION update"
+- travis_retry sbt "++$TRAVIS_SCALA_VERSION update"
 install: ./build/install_cassandra.sh
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh

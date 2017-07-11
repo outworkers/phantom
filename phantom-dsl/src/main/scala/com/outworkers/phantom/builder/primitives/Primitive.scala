@@ -22,6 +22,7 @@ import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -136,6 +137,10 @@ object Primitive {
 
   val nullValue = None.orNull
 
+  def enumByIndex[En <: Enumeration](enum: En): Primitive[En#Value] = {
+    Primitive.manuallyDerive[En#Value, Int](e => e.id, id => enum.apply(id))(Primitives.IntPrimitive)()
+  }
+
   /**
     * !! Warning !! Black magic going on. This will use the excellent macro compat
     * library to macro materialise an instance of the required primitive based on the type argument.
@@ -172,6 +177,12 @@ object Primitive {
         from(primitive.deserialize(source, protocol))
       }
     }
+  }
+
+  def json[Target](to: Target => String)(from: String => Target)(
+    implicit ev: Primitive[String]
+  ): Primitive[Target] = {
+    derive[Target, String](to)(from)
   }
 
   /**
@@ -216,4 +227,5 @@ object Primitive {
     * @return A reference to a concrete materialised implementation of a primitive for the given type.
     */
   def apply[RR]()(implicit ev: Primitive[RR]): Primitive[RR] = ev
+
 }

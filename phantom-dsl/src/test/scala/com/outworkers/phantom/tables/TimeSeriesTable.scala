@@ -36,7 +36,7 @@ case class TimeUUIDRecord(
   def timestamp: DateTime = id.datetime
 }
 
-abstract class TimeSeriesTable extends Table[TimeSeriesTable, TimeSeriesRecord] with RootConnector {
+abstract class TimeSeriesTable extends Table[TimeSeriesTable, TimeSeriesRecord] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
   object timestamp extends DateTimeColumn with ClusteringOrder with Descending {
@@ -44,7 +44,7 @@ abstract class TimeSeriesTable extends Table[TimeSeriesTable, TimeSeriesRecord] 
   }
 }
 
-abstract class TimeUUIDTable extends Table[TimeUUIDTable, TimeUUIDRecord] with RootConnector {
+abstract class TimeUUIDTable extends Table[TimeUUIDTable, TimeUUIDRecord] {
 
   object user extends UUIDColumn with PartitionKey
   object id extends TimeUUIDColumn with ClusteringOrder with Descending

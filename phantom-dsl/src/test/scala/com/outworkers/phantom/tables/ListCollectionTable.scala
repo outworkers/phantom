@@ -24,7 +24,7 @@ case class MyTestRow(
   stringlist: List[String]
 )
 
-abstract class ListCollectionTable extends Table[ListCollectionTable, MyTestRow] with RootConnector {
+abstract class ListCollectionTable extends Table[ListCollectionTable, MyTestRow] {
 
   object key extends StringColumn with PartitionKey
 

@@ -61,31 +61,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     ev3: Primitive[Map[KK, VV]]
   ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](t)
 
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  abstract class JsonSetColumn[RR](
-    t: CassandraTable[T, R]
-  )(
-    implicit ev: Primitive[Set[String]],
-    ev2: Primitive[String]
-  ) extends column.JsonSetColumn[T, R, RR](t)
-
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  abstract class JsonListColumn[RR](
-    t: CassandraTable[T, R]
-  )(
-    implicit ev: Primitive[List[String]],
-    ev2: Primitive[String]
-  ) extends column.JsonListColumn[T, R, RR](t)
-
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  abstract class JsonMapColumn[KK, VV](
-    t: CassandraTable[T, R]
-  )(
-    implicit ev: Primitive[Map[KK, String]],
-    ev2: Primitive[String],
-    ev3: Primitive[KK]
-  ) extends com.outworkers.phantom.column.JsonMapColumn[T, R, KK, VV](t)
-
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
   def secondaryKeys: Seq[AbstractColumn[_]] = columns.filter(_.isSecondaryKey)

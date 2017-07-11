@@ -44,7 +44,7 @@ object OptionalPrimitiveCassandra22 {
 abstract class OptionalPrimitivesCassandra22 extends Table[
   OptionalPrimitivesCassandra22,
   OptionalPrimitiveCassandra22
-] with RootConnector {
+] {
 
   object pkey extends StringColumn with PartitionKey
 

@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
  case class SecondaryIndexRecord(
@@ -28,7 +26,7 @@ import com.outworkers.phantom.dsl._
 abstract class SecondaryIndexTable extends Table[
   SecondaryIndexTable,
   SecondaryIndexRecord
-] with RootConnector {
+] {
   object id extends UUIDColumn with PartitionKey
   object secondary extends UUIDColumn with Index
   object name extends StringColumn

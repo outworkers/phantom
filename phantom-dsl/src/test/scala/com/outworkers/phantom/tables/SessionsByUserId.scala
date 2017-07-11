@@ -37,7 +37,7 @@ case class OAuth2Session(
 abstract class SessionsByUserId extends Table[
   SessionsByUserId,
   OAuth2Session
-] with RootConnector {
+] {
 
   object user_id extends UUIDColumn with PartitionKey
   object client_id extends UUIDColumn

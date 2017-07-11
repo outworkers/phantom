@@ -15,13 +15,20 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 import org.json4s.Extraction
 import org.json4s.native._
 
 case class JsonTest(prop1: String, prop2: String)
+
+object JsonTest {
+
+  implicit val formats = org.json4s.DefaultFormats
+
+  implicit val jsonPrimitive: Primitive[JsonTest] = {
+    Primitive.json[JsonTest](js => compactJson(renderJValue(Extraction.decompose(js))))(JsonParser.parse(_).extract[JsonTest])
+  }
+}
 
 case class JsonClass(
   id: UUID,
@@ -32,49 +39,18 @@ case class JsonClass(
   jsonSet: Set[JsonTest]
 )
 
-abstract class JsonTable extends Table[JsonTable, JsonClass] with RootConnector {
-
-  implicit val formats = org.json4s.DefaultFormats
+abstract class JsonTable extends Table[JsonTable, JsonClass] {
 
   object id extends UUIDColumn with PartitionKey
 
   object name extends StringColumn
 
-  object json extends JsonColumn[JsonTest] {
-    override def fromJson(obj: String): JsonTest = {
-      JsonParser.parse(obj).extract[JsonTest]
-    }
+  object json extends JsonColumn[JsonTest]
 
-    override def toJson(obj: JsonTest): String = compactJson(renderJValue(Extraction.decompose(obj)))
-  }
+  object optionalJson extends OptionalJsonColumn[JsonTest]
 
-  object optionalJson extends OptionalJsonColumn[JsonTest] {
-    override def fromJson(obj: String): JsonTest = {
-      JsonParser.parse(obj).extract[JsonTest]
-    }
+  object jsonList extends JsonListColumn[JsonTest]
 
-    override def toJson(obj: JsonTest): String = compactJson(renderJValue(Extraction.decompose(obj)))
-  }
-
-
-  object jsonList extends JsonListColumn[JsonTest] {
-    override def fromJson(obj: String): JsonTest = {
-      JsonParser.parse(obj).extract[JsonTest]
-    }
-
-    override def toJson(obj: JsonTest): String = {
-      compactJson(renderJValue(Extraction.decompose(obj)))
-    }
-  }
-
-  object jsonSet extends JsonSetColumn[JsonTest] {
-    override def fromJson(obj: String): JsonTest = {
-      JsonParser.parse(obj).extract[JsonTest]
-    }
-
-    override def toJson(obj: JsonTest): String = {
-      compactJson(renderJValue(Extraction.decompose(obj)))
-    }
-  }
+  object jsonSet extends JsonSetColumn[JsonTest]
 
 }

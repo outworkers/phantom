@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey, SASIIndex}
+import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, WhiteboxToolbelt}
 import shapeless.HList
 
 import scala.collection.immutable.ListMap
@@ -66,6 +67,30 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
       None
     } else {
       Some(s)
+    }
+  }
+
+  /**
+    * A set of reserved CQL keywords that should not be used as column names.
+    * They are described here: [[http://docs.datastax.com/en/cql/3.1/cql/cql_reference/keywords_r.html]].
+    */
+  protected[this] val forbiddenNames = Set(
+    TermName("set"),
+    TermName("list"),
+    TermName("map"),
+    TermName("provider")
+  )
+
+  protected[this] val columnNameRegex = "^[a-zA-Z0-9_]*$"
+
+  protected[this] def validateColumnName(termName: TermName): TermName = {
+    if (
+      forbiddenNames.exists(_.toString.toLowerCase == termName.toString.toLowerCase) ||
+      !termName.toString.matches(columnNameRegex)
+    ) {
+      abort(s"Invalid column name $termName, column names cannot be ${forbiddenNames.mkString(", ")} and they have to match $columnNameRegex")
+    } else {
+      termName
     }
   }
 
@@ -438,6 +463,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     }
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
+    // Validate that column names at compile time.
+    //columns.map(col => validateColumnName(col.asTerm.name))
+
     val clsName = TypeName(c.freshName("anon$"))
     val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)
     val storeMethod = descriptor.storeMethod.getOrElse(notImplemented)

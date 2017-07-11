@@ -32,7 +32,7 @@ case class Recipe(
   uid: UUID
 )
 
-abstract class Recipes extends Table[Recipes, Recipe] with RootConnector {
+abstract class Recipes extends Table[Recipes, Recipe] {
 
   object url extends StringColumn with PartitionKey
 

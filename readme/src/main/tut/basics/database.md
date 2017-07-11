@@ -16,8 +16,7 @@ Let's explore some of the design goals in more detail to understand how things w
 Being the final level of segregation between the database layer of your application and every other layer, essentially guaranteeing encapsulation. Beyond this point, no other consumer of your database service should ever know that you are using `Cassandra` as a database.
 
 At the very bottom level, phantom queries require several implicits in scope to execute:
-
-- The `implicit session: com.datastax.driver.core.Session`, that tells us which Cassandra cluster to target.
+Fhich Cassandra cluster to target.
 - The `implicit keySpace: KeySpace`, describing which keyspace to target. It's just a `String`, but it's more strongly typed as we don't want `implicit` strings in our code, ever.
 - The `implicit ex: ExecutionContextExecutor`, which is a Java compatible flavour of `scala.concurrent.ExecutionContext` and basically allows users to supply any context of their choosing for executing database queries.
 

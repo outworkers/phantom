@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
 case class TestRow(
@@ -28,7 +27,7 @@ case class TestRow(
   mapIntToInt: Map[Int, Int]
 )
 
-abstract class TestTable extends Table[TestTable, TestRow] with RootConnector {
+abstract class TestTable extends Table[TestTable, TestRow] {
 
   object key extends StringColumn with PartitionKey
 
