@@ -16,10 +16,11 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{ CassandraTable, Row }
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime

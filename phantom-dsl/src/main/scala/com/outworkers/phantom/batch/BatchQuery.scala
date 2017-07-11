@@ -19,6 +19,7 @@ import com.datastax.driver.core.{BatchStatement, ConsistencyLevel, Session, Stat
 import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 

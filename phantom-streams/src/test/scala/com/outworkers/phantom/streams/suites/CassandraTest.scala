@@ -16,7 +16,8 @@
 package com.outworkers.phantom.streams.suites
 
 import akka.actor.ActorSystem
-import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
+import com.outworkers.phantom.builder.query.{Batchable, InsertQuery}
 import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._

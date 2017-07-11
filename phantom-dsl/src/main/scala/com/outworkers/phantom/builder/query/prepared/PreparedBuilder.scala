@@ -19,6 +19,7 @@ import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
@@ -57,7 +58,7 @@ class ExecutablePreparedSelectQuery[
   override def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = statementToFuture(st)
+  ): ScalaFuture[ResultSet] = fromGuava(st)
 
   /**
     * Returns the first row from the select ignoring everything else

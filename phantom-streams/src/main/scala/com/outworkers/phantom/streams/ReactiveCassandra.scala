@@ -19,7 +19,8 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.batch.{BatchQuery, BatchType}
-import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, QueryOptions, UsingPart}
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
+import com.outworkers.phantom.builder.query.{Batchable, QueryOptions, UsingPart}
 import com.outworkers.phantom.dsl._
 import org.reactivestreams.{Subscriber, Subscription}
 

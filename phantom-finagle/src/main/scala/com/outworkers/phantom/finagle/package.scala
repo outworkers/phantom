@@ -20,6 +20,7 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatementList}
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax

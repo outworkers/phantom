@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatementList}
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace

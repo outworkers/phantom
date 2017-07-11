@@ -18,8 +18,9 @@ package com.outworkers.phantom.database
 import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
+import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableStatementList
+import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.duration._

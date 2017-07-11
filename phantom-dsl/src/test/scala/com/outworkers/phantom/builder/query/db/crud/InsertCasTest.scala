@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.query.ExecutableStatementList
+import com.outworkers.phantom.builder.query.execution.ExecutableStatementList
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
