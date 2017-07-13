@@ -15,10 +15,10 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ResultSet => _, Row => _}
+import com.datastax.driver.core.{Session, Statement, ResultSet => _, Row => _}
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.query.execution.ResultQueryInterface
-import com.outworkers.phantom.{CassandraTable, Row}
+import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
@@ -50,7 +50,12 @@ trait ExecutableQuery[
   T <: CassandraTable[T, _],
   R,
   Limit <: LimitBound
-] extends ResultQueryInterface[ScalaFuture, T, R, Limit] {
+] extends ResultQueryInterface[ScalaFuture, T, R, Limit] with CassandraOperations {
+
+  override def fromGuava(in: Statement)(
+    implicit session: Session,
+    ctx: ExecutionContextExecutor
+  ): ScalaFuture[ResultSet] = statementToFuture(in)
 
   def fromRow(r: Row): R
 

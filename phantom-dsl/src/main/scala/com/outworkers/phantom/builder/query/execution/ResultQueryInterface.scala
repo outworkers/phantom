@@ -81,12 +81,12 @@ abstract class ResultQueryInterface[
     * fetch size set on the underlying query.
     * @param res The underlying [[ResultSet]] used.
     * @param cbf The [[CanBuildFrom]] instance used to build the final collection.
-    * @tparam M The higher kinded type used to abstract over the implementation of the resulting collection.
+    * @tparam Col The higher kinded type used to abstract over the implementation of the resulting collection.
     * @return A tuple of the mapped collection and the original [[ResultSet]].
     */
-  private[phantom] def pagination[M[X] <: TraversableOnce[X]](res: ResultSet)(
-    implicit cbf: CanBuildFrom[Nothing, R, M[R]]
-  ): (M[R], ResultSet) = {
+  private[phantom] def pagination[Col[X] <: TraversableOnce[X]](res: ResultSet)(
+    implicit cbf: CanBuildFrom[Nothing, R, Col[R]]
+  ): (Col[R], ResultSet) = {
     val builder = cbf()
     val count = res.getAvailableWithoutFetching
     builder.sizeHint(count)

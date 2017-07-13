@@ -17,9 +17,8 @@ package com.outworkers.phantom.database
 
 import com.datastax.driver.core.{ResultSet, Session}
 import com.outworkers.phantom.{CassandraTable, Manager}
-import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatementList
+import com.outworkers.phantom.builder.query.execution.QueryCollection
 import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
 
@@ -30,7 +29,9 @@ private object Lock
 
 abstract class Database[
   DB <: Database[DB]
-](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
+](val connector: CassandraConnection)(
+  implicit helper: DatabaseHelper[DB]
+) {
 
   trait Connector extends connector.Connector
 
@@ -98,8 +99,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autodrop(): ExecutableStatementList[Seq] = {
-    new ExecutableStatementList(tables.map {
+  private[phantom] def autodrop(): QueryCollection[Seq] = {
+    new QueryCollection(tables.map {
       table => table.alter().drop().qb
     })
   }
@@ -138,8 +139,8 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autotruncate(): ExecutableStatementList[Seq] = {
-    new ExecutableStatementList(tables.map(_.truncate().qb))
+  private[phantom] def autotruncate(): QueryCollection[Seq] = {
+    new QueryCollection(tables.map(_.truncate().qb))
   }
 
   /**

@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatementList}
+import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, QueryCollection}
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
@@ -161,10 +161,10 @@ class CreateQuery[
 
   override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
-  private[phantom] val indexList: ExecutableStatementList[Seq] = {
+  private[phantom] val indexList: QueryCollection[Seq] = {
     val name = keySpace.name
 
-    new ExecutableStatementList(table.secondaryKeys map { key =>
+    new QueryCollection(table.secondaryKeys map { key =>
       if (key.isMapKeyIndex) {
         QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
       } else if (key.isMapEntryIndex) {

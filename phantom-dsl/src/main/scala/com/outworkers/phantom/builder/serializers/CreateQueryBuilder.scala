@@ -66,10 +66,6 @@ sealed trait CachingQueryBuilder extends CreateOptionsBuilder {
   def rowsPerPartition(qb: CQLQuery, value: Int): CQLQuery = {
     simpleValue(qb, CQLSyntax.RowsPerPartition, value.toString)
   }
-
-  def rowsPerPartition(qb: CQLQuery, value: Int): CQLQuery = {
-    simpleValue(qb, CQLSyntax.RowsPerPartition, value.toString)
-  }
 }
 
 private[builder] class CreateTableBuilder {

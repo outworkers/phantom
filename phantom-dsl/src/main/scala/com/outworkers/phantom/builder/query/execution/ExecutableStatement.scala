@@ -12,4 +12,5 @@ trait ExecutableStatement extends QueryInterface[Future] with CassandraOperation
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Future[ResultSet] = statementToFuture(st)
+
 }

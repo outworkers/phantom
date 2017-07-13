@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.query.execution
 
 import cats.Monad
+import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -30,23 +31,16 @@ trait GuavaAdapter[F[_]] {
   ): F[ResultSet]
 }
 
+
+
 class ExecutableStatementList[
   F[_],
   M[X] <: TraversableOnce[X]
-](val queries: M[CQLQuery])(
+](val queryCol: QueryCollection[M])(
   implicit cbf: CanBuildFrom[M[CQLQuery], CQLQuery, M[CQLQuery]],
   fMonad: Monad[F],
   adapter: GuavaAdapter[F]
 ) {
-
-  def isEmpty: Boolean = queries.isEmpty
-
-  def add(appendable: M[CQLQuery]): ExecutableStatementList[F, M] = {
-    val builder = cbf(queries)
-    for (q <- appendable) builder += q
-    new ExecutableStatementList(builder.result())
-  }
-
   def sequencedTraverse[A, B](in: M[A])(fn: A => F[B])(
     implicit executor: ExecutionContextExecutor,
     cbf: CanBuildFrom[M[A], B, M[B]]
@@ -70,12 +64,8 @@ class ExecutableStatementList[
   ): F[M[A]] = {
     in.foldLeft(fMonad.pure(cbf(in))) { (fr, fa) =>
       fr.zipWith(fa)(_ += _)
-    }.map(_.result())(executor)
+    }.map(_.result())
   }
-
-  def ++(appendable: M[CQLQuery]): ExecutableStatementList[F, M] = add(appendable)
-
-  def ++(st: ExecutableStatementList[F, M]): ExecutableStatementList[F, M] = add(st.queries)
 
   /**
     *
@@ -94,7 +84,7 @@ class ExecutableStatementList[
 
     val builder = fbf()
 
-    for (q <- queries) builder += adapter.fromGuava(new SimpleStatement(q.terminate.queryString))
+    for (q <- queryCol.queries) builder += adapter.fromGuava(new SimpleStatement(q.terminate.queryString))
 
     parallel(builder.result())(ebf, ec)
   }
@@ -104,7 +94,7 @@ class ExecutableStatementList[
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[M[CQLQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
-    sequencedTraverse(queries) {
+    sequencedTraverse(queryCol.queries) {
       q => adapter.fromGuava(new SimpleStatement(q.terminate.queryString))
     }
   }

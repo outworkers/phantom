@@ -193,7 +193,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.outworkers.phantom.Row
-  type ResultSet = com.datastax.driver.core.ResultSet
+  type ResultSet = com.outworkers.phantom.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
@@ -210,9 +210,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   val Version = DefaultVersions
 
-  type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
-  type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
-  type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
+  type ListResult[R] = com.outworkers.phantom.builder.query.execution.ListResult[R]
+  type IteratorResult[R] = com.outworkers.phantom.builder.query.execution.IteratorResult[R]
+  type RecordResult[R] = com.outworkers.phantom.builder.query.execution.RecordResult[R]
 
   type Primitive[RR] = com.outworkers.phantom.builder.primitives.Primitive[RR]
   val Primitive = com.outworkers.phantom.builder.primitives.Primitive
@@ -523,13 +523,13 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     Owner <: CassandraTable[Owner, Record],
     Record, T
   ](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
-    def apply(r: Row): T = col.apply(r)
+    def apply(r: Row): T = col(r)
   }
 
   implicit class SelectColumnOptional[
     Owner <: CassandraTable[Owner, Record],
     Record, T
   ](col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
-    def apply(r: Row): Option[T] = col.apply(r)
+    def apply(r: Row): Option[T] = col(r)
   }
 }
