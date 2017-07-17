@@ -93,13 +93,3 @@ abstract class Database[
     new QueryCollection(tables.map(table => ExecutableCqlQuery(table.truncate().qb)))
   }
 }
-
-sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
-  def future()(
-    implicit session: Session,
-    keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): Future[Seq[ResultSet]] = {
-    Future.sequence(queries(keySpace).map(_.future()))
-  }
-}
