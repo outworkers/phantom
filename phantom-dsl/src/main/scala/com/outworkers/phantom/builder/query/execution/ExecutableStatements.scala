@@ -19,25 +19,39 @@ import cats.Monad
 import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.ResultSet
+import com.outworkers.phantom.builder.query.{CassandraOperations, QueryOptions}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 trait GuavaAdapter[F[_]] {
-  def fromGuava(in: Statement)(
+  def fromGuava(in: Statement, options: QueryOptions)(
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[ResultSet]
+
+  def fromGuava(qb: CQLQuery, options: QueryOptions)(
+    implicit session: Session,
+    ctx: ExecutionContextExecutor
+  ): F[ResultSet] = {
+    fromGuava(new SimpleStatement(qb.terminate.queryString), options)
+  }
 }
 
+object ScalaGuavaAdapter extends GuavaAdapter[Future] with CassandraOperations {
 
+  override def fromGuava(in: Statement, options: QueryOptions)(
+    implicit session:Session,
+    ctx: ExecutionContextExecutor
+  ): Future[ResultSet] = statementToFuture(in)
+}
 
-class ExecutableStatementList[
+class ExecutableStatements[
   F[_],
   M[X] <: TraversableOnce[X]
 ](val queryCol: QueryCollection[M])(
-  implicit cbf: CanBuildFrom[M[CQLQuery], CQLQuery, M[CQLQuery]],
+  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
   fMonad: Monad[F],
   adapter: GuavaAdapter[F]
 ) {
@@ -62,9 +76,7 @@ class ExecutableStatementList[
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
     executor: ExecutionContextExecutor
   ): F[M[A]] = {
-    in.foldLeft(fMonad.pure(cbf(in))) { (fr, fa) =>
-      fr.zipWith(fa)(_ += _)
-    }.map(_.result())
+    in.foldLeft(fMonad.pure(cbf(in))) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
 
   /**
@@ -84,7 +96,7 @@ class ExecutableStatementList[
 
     val builder = fbf()
 
-    for (q <- queryCol.queries) builder += adapter.fromGuava(new SimpleStatement(q.terminate.queryString))
+    for (q <- queryCol.queries) builder += adapter.fromGuava(new SimpleStatement(q.qb.terminate.queryString), q.options)
 
     parallel(builder.result())(ebf, ec)
   }
@@ -92,10 +104,10 @@ class ExecutableStatementList[
   def sequence()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[M[CQLQuery], ResultSet, M[ResultSet]]
+    cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     sequencedTraverse(queryCol.queries) {
-      q => adapter.fromGuava(new SimpleStatement(q.terminate.queryString))
+      q => adapter.fromGuava(new SimpleStatement(q.qb.terminate.queryString), q.options)
     }
   }
 }

@@ -20,7 +20,7 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatementList}
+import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatements}
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -298,7 +298,7 @@ package object finagle extends SessionAugmenterImplicits {
     }
   }
 
-  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatementList[Seq]) extends AnyVal {
+  implicit class ExecutableStatementListAugmenter(val list: ExecutableStatements[Seq]) extends AnyVal {
     def execute()(implicit session: Session, executor: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
       Future.collect(list.queries.map(item => {
         statementToPromise(new SimpleStatement(item.terminate.queryString))

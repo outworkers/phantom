@@ -15,15 +15,61 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.ConsistencyLevel
+import com.datastax.driver.core.{ConsistencyLevel, PagingState, Statement}
 
-class QueryOptions(
-  val consistencyLevel: Option[ConsistencyLevel],
-  val serialConsistencyLevel: Option[ConsistencyLevel],
-  val pagingState: Option[String] = None,
-  val enableTracing: Option[Boolean] = None,
-  val fetchSize: Option[Int] = None
+class ConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends (Statement => Statement) {
+  override def apply(v1: Statement): Statement = {
+    (level map v1.setConsistencyLevel).getOrElse(v1)
+  }
+}
+
+class SerialConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends (Statement => Statement) {
+  override def apply(v1: Statement): Statement = {
+    (level map v1.setSerialConsistencyLevel).getOrElse(v1)
+  }
+}
+
+class PagingStateModifier(level: Option[PagingState]) extends (Statement => Statement) {
+  override def apply(v1: Statement): Statement = {
+    (level map v1.setPagingState).getOrElse(v1)
+  }
+}
+
+class EnableTracingModifier(level: Option[Boolean]) extends (Statement => Statement) {
+  override def apply(v1: Statement): Statement = {
+    level match {
+      case Some(true) => v1.enableTracing()
+      case Some(false) => v1.disableTracing()
+      case None => v1
+    }
+  }
+}
+
+class FetchSizeModifier(level: Option[Int]) extends (Statement => Statement) {
+  override def apply(v1: Statement): Statement = {
+    (level map v1.setFetchSize).getOrElse(v1)
+  }
+}
+
+case class QueryOptions(
+  consistencyLevel: Option[ConsistencyLevel],
+  serialConsistencyLevel: Option[ConsistencyLevel],
+  pagingState: Option[PagingState] = None,
+  enableTracing: Option[Boolean] = None,
+  fetchSize: Option[Int] = None
 ) {
+
+  def apply(st: Statement): Statement = {
+    val applier = List(
+      new ConsistencyLevelModifier(consistencyLevel),
+      new SerialConsistencyLevelModifier(serialConsistencyLevel),
+      new PagingStateModifier(pagingState),
+      new EnableTracingModifier(enableTracing),
+      new FetchSizeModifier(fetchSize)
+    ) reduce(_ andThen _)
+
+    applier(st)
+  }
 
   def options: com.datastax.driver.core.QueryOptions = {
     val opt = new com.datastax.driver.core.QueryOptions()
@@ -36,45 +82,20 @@ class QueryOptions(
   }
 
   def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
-    new QueryOptions(
-      Some(level),
-      serialConsistencyLevel,
-      pagingState,
-      enableTracing,
-      fetchSize
-    )
+    this.copy(consistencyLevel = Some(level))
   }
 
   def serialConsistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
-    new QueryOptions(
-      consistencyLevel,
-      Some(level),
-      pagingState,
-      enableTracing,
-      fetchSize
-    )
+    this.copy(serialConsistencyLevel = Some(level))
   }
 
   def enableTracing_=(flag: Boolean): QueryOptions = {
-    new QueryOptions(
-      consistencyLevel,
-      serialConsistencyLevel,
-      pagingState,
-      Some(flag),
-      fetchSize
-    )
+    this.copy(enableTracing = Some(flag))
   }
 
   def fetchSize_=(size: Int): QueryOptions = {
-    new QueryOptions(
-      consistencyLevel,
-      serialConsistencyLevel,
-      pagingState,
-      enableTracing,
-      Some(size)
-    )
+    this.copy(fetchSize = Some(size))
   }
-
 }
 
 object QueryOptions {

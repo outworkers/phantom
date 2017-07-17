@@ -19,7 +19,7 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatementList, QueryCollection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection}
 import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -121,13 +121,13 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   def sasiQueries()(implicit keySpace: KeySpace): QueryCollection[Seq] = {
     val queries = sasiIndexes.map { index =>
-      QueryBuilder.Create.createSASIIndex(
+      ExecutableCqlQuery(QueryBuilder.Create.createSASIIndex(
         keySpace,
         tableName,
         QueryBuilder.Create.sasiIndexName(tableName, index.name),
         index.name,
         index.analyzer.qb
-      )
+      ))
     }
     new QueryCollection[Seq](queries)
   }

@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.outworkers.phantom.builder.query.execution
 
-import com.datastax.driver.core.{Session, Statement}
-import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.CassandraOperations
+import com.outworkers.phantom.builder.query.QueryOptions
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-
-trait ExecutableStatement extends QueryInterface[Future] with CassandraOperations {
-
-  override protected[this] def fromGuava(st: Statement)(
-    implicit session: Session,
-    executor: ExecutionContextExecutor
-  ): Future[ResultSet] = statementToFuture(st)
-
-}
+case class ExecutableCqlQuery(
+  qb: CQLQuery,
+  options: QueryOptions = QueryOptions.empty
+)

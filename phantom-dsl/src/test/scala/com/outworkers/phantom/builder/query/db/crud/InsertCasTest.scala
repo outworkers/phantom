@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.query.execution.ExecutableStatementList
+import com.outworkers.phantom.builder.query.execution.ExecutableStatements
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
@@ -33,7 +33,7 @@ class InsertCasTest extends PhantomSuite {
   "Standard inserts" should "not create multiple database entries and perform upserts instead" in {
     val row = gen[PrimitiveRecord]
 
-    val insertion = new ExecutableStatementList(
+    val insertion = new ExecutableStatements(
       List(
         database.primitives.store(row).ifNotExists().qb,
         database.primitives.store(row).ifNotExists().qb,
@@ -66,7 +66,7 @@ class InsertCasTest extends PhantomSuite {
   "Conditional inserts" should "not create duplicate database entries" in {
     val row = gen[PrimitiveRecord]
 
-    val insertion = new ExecutableStatementList(
+    val insertion = new ExecutableStatements(
       List(
         database.primitives.store(row).ifNotExists().qb,
         database.primitives.store(row).ifNotExists().qb,

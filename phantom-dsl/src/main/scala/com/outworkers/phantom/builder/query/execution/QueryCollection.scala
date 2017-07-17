@@ -15,19 +15,26 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.collection.generic.CanBuildFrom
 
-class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[CQLQuery])(
-  implicit cbf: CanBuildFrom[M[CQLQuery], CQLQuery, M[CQLQuery]]
+class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQuery])(
+  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
 ) {
 
   def isEmpty: Boolean = queries.isEmpty
 
-  def add(appendable: M[CQLQuery]): QueryCollection[M] = {
+  def add(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
     val builder = cbf(queries)
     for (q <- appendable) builder += q
+    new QueryCollection(builder.result())
+  }
+
+  def add(appendable: M[CQLQuery]): QueryCollection[M] = {
+    val builder = cbf(queries)
+    for (q <- appendable) builder += ExecutableCqlQuery(q, QueryOptions.empty)
     new QueryCollection(builder.result())
   }
 

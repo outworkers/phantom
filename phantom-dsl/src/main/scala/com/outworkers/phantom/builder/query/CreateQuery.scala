@@ -16,16 +16,15 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, QueryCollection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement, QueryCollection}
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.{CassandraTable, Manager, ResultSet}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
@@ -166,37 +165,16 @@ class CreateQuery[
 
     new QueryCollection(table.secondaryKeys map { key =>
       if (key.isMapKeyIndex) {
-        QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.mapIndex(table.tableName, name, key.name))
       } else if (key.isMapEntryIndex) {
-        QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.mapEntries(table.tableName, name, key.name))
       } else {
-        QueryBuilder.Create.index(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.index(table.tableName, name, key.name))
       }
     })
   }
 
-  override def future()(
-    implicit session: Session,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    for {
-      init <- super.future()
-      secondaryIndexFuture = if (indexList.isEmpty) ScalaFuture.successful(Seq.empty[ResultSet]) else indexList.future()
-      secondaryIndexes <- secondaryIndexFuture map { results =>
-        Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-        results
-      }
-      sasiFutures = {
-        val sasiQueries = table.sasiQueries()
-        if (sasiQueries.isEmpty) {
-          ScalaFuture.successful(Seq.empty[ResultSet])
-        } else {
-          sasiQueries.future()
-        }
-      }
-      sasiIndexes <- sasiFutures
-    } yield init
-  }
+  val queries = new QueryCollection[Seq](Seq(ExecutableCqlQuery(qb))) ++ indexList ++ table.sasiQueries
 }
 
 object CreateQuery {

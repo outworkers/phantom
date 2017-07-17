@@ -51,30 +51,7 @@ class ExecutablePreparedSelectQuery[
   Table <: CassandraTable[Table, _],
   R,
   Limit <: LimitBound
-](val st: Statement, fn: Row => R, val options: QueryOptions) extends ExecutableQuery[Table, R, Limit] {
-
-  override def fromRow(r: Row): R = fn(r)
-
-  override def future()(
-    implicit session: Session,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = fromGuava(st)
-
-  /**
-    * Returns the first row from the select ignoring everything else
-    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-    * @param ev The implicit limit for the query.
-    * @param ec The implicit Scala execution context.
-    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
-    */
-  override def one()(
-    implicit session: Session,
-    ev: =:=[Limit, Unlimited],
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[Option[R]] = singleFetch()
-
-  override def qb: CQLQuery = CQLQuery.empty
-}
+](val st: Statement, fn: Row => R, val options: QueryOptions)
 
 abstract class PreparedFlattener(qb: CQLQuery)(
   implicit session: Session, keySpace: KeySpace
