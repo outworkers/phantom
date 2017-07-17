@@ -28,7 +28,7 @@ import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperatio
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement, ExecutableStatements, GuavaAdapter, QueryCollection, ScalaGuavaAdapter}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}

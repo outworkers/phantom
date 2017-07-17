@@ -13,40 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.query
+package com.outworkers.phantom.builder.query.execution
 
-import com.datastax.driver.core.{PreparedStatement, Session, Statement, ResultSet => DatastaxResultSet}
-import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.datastax.driver.core.{Session, Statement, ResultSet => DatastaxResultSet}
+import com.google.common.util.concurrent.{FutureCallback, Futures}
+import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.batch.BatchWithQuery
-import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
-import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture, Promise => ScalaPromise}
+import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
-private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
+trait ExecutableStatement extends QueryInterface[Future] with SessionAugmenterImplicits {
 
   protected[this] def statementToFuture(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    statementToPromise(st).future
+  ): Future[ResultSet] = {
+    fromGuava(st).future
   }
 
   protected[this] def batchToPromise(batch: BatchWithQuery)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: ${batch.debugString}")
-    statementToPromise(batch.statement)
+  ): Promise[ResultSet] = {
+    //Manager.logger.debug(s"Executing query: ${batch.debugString}")
+    fromGuava(batch.statement)
   }
 
-  protected[this] def statementToPromise(st: Statement)(
+  override def fromGuava(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): ScalaPromise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $st")
+  ): Promise[ResultSet] = {
+    //Manager.logger.debug(s"Executing query: $st")
 
-    val promise = ScalaPromise[ResultSet]()
+    val promise = Promise[ResultSet]()
 
     val future = session.executeAsync(st)
 
@@ -56,7 +56,7 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
       }
 
       def onFailure(err: Throwable): Unit = {
-        Manager.logger.error(s"Failed to execute query $st", err)
+        //Manager.logger.error(s"Failed to execute query $st", err)
         promise failure err
       }
     }

@@ -54,7 +54,7 @@ class SelectQuery[
   rowFunc,
   usingPart,
   options
-) with ExecutableQuery[Table, Record, Limit] {
+) {
 
   def fromRow(row: Row): Record = rowFunc(row)
 

@@ -19,8 +19,8 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection}
-import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
+import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}

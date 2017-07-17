@@ -15,10 +15,7 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{Session, Statement, ResultSet => _, Row => _}
-import com.outworkers.phantom.builder.LimitBound
-import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, ResultQueryInterface}
-import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
+import com.datastax.driver.core.{ResultSet => _, Row => _}
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
@@ -45,7 +42,7 @@ private[this] object SequentialFutures {
  *
  * @tparam T The class owning the table.
  * @tparam R The record type to store.
- */
+
 trait ExecutableQuery[
   T <: CassandraTable[T, _],
   R,
@@ -59,5 +56,5 @@ trait ExecutableQuery[
   ): ScalaFuture[ResultSet] = statementToFuture(in)
 
   def fromRow(r: Row): R
-
 }
+  */
