@@ -19,9 +19,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.WhereClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.sasi.Mode.{Contains, Prefix, Sparse}
-import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.sasi.Mode.{Contains, Prefix}
 
 trait SASIOp[RR] {
   def qb: CQLQuery

@@ -15,18 +15,16 @@
  */
 package com.outworkers.phantom.builder.ops
 
-import com.outworkers.phantom.Manager
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.sasi.{Mode, SASITextOps}
 import com.outworkers.phantom.column._
-import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.keys.{Indexed, Undroppable}
+import com.outworkers.phantom.keys._
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.ExecutionContextExecutor
 
 sealed class DropColumn[RR](val column: AbstractColumn[RR])
 

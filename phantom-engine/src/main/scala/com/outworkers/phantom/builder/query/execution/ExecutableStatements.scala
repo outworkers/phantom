@@ -19,7 +19,7 @@ import cats.Monad
 import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.{CassandraOperations, QueryOptions}
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.collection.generic.CanBuildFrom
@@ -37,14 +37,6 @@ trait GuavaAdapter[F[_]] {
   ): F[ResultSet] = {
     fromGuava(new SimpleStatement(qb.terminate.queryString), options)
   }
-}
-
-object ScalaGuavaAdapter extends GuavaAdapter[Future] with CassandraOperations {
-
-  override def fromGuava(in: Statement, options: QueryOptions)(
-    implicit session:Session,
-    ctx: ExecutionContextExecutor
-  ): Future[ResultSet] = statementToFuture(in)
 }
 
 class ExecutableStatements[

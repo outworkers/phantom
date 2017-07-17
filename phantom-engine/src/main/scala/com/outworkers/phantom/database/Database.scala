@@ -20,7 +20,7 @@ import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
-import com.outworkers.phantom.{CassandraTable, Manager, ResultSet}
+import com.outworkers.phantom.{CassandraTable, ResultSet}
 
 import scala.concurrent.{ExecutionContextExecutor, Future, blocking}
 
@@ -40,7 +40,6 @@ abstract class Database[
 
   def shutdown(): Unit = {
     blocking {
-      Manager.shutdown()
       session.getCluster.close()
       session.close()
     }

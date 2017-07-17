@@ -47,9 +47,7 @@ abstract class QueryInterface[M[_]] {
     * database end.
     *
     * The execution context of the transformation is provided by phantom via
-    * [[com.outworkers.phantom.Manager.scalaExecutor]] and it is recommended to
-    * use [[com.outworkers.phantom.dsl.context]] for operations that chain
-    * database calls.
+    * based on the execution engine used.
     *
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ec The implicit Scala execution context.
@@ -68,9 +66,7 @@ abstract class QueryInterface[M[_]] {
     * database end.
     *
     * The execution context of the transformation is provided by phantom via
-    * [[com.outworkers.phantom.Manager.scalaExecutor]] and it is recommended to
-    * use [[com.outworkers.phantom.dsl.context]] for operations that chain
-    * database calls.
+    * based on the execution engine used.
     *
     * @param modifyStatement The function allowing to modify underlying [[Statement]]
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].

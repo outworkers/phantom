@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.query.execution
+package com.outworkers.phantom
 
-import com.outworkers.phantom.ResultSet
+import com.datastax.driver.core.{Session, Statement}
+import com.outworkers.phantom.builder.query.QueryOptions
+import com.outworkers.phantom.builder.query.execution.GuavaAdapter
+
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 
-trait ExecutionEngine[F[_]] {
+object ScalaGuavaAdapter extends GuavaAdapter[Future] {
 
-  def future[M[X] <: TraversableOnce[X]](col: QueryCollection[M]): F[M[ResultSet]]
-
+  override def fromGuava(in: Statement, options: QueryOptions)(
+    implicit session:Session,
+    ctx: ExecutionContextExecutor
+  ): Future[ResultSet] = statementToFuture(in)
 }

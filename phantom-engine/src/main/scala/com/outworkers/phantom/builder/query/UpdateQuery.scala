@@ -23,13 +23,13 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.DateTime
+import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
-class UpdateQuery[
+case class UpdateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -83,14 +83,7 @@ class UpdateQuery[
   }
 
   override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new UpdateQuery(
-      table,
-      init, usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
-      casPart,
-      options
-    )
+    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
   /**
@@ -107,15 +100,7 @@ class UpdateQuery[
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.where(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
   /**
@@ -132,15 +117,7 @@ class UpdateQuery[
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.and(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
   final def modify[
@@ -149,15 +126,7 @@ class UpdateQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped),
-      casPart = casPart,
-      options = options
-    )
+    copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
   /**
@@ -168,19 +137,11 @@ class UpdateQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb))
   }
 }
 
-sealed class AssignmentsQuery[
+sealed case class AssignmentsQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -190,7 +151,7 @@ sealed class AssignmentsQuery[
   PS <: HList,
   ModifyPrepared <: HList
 ](table: Table,
-  val init: CQLQuery,
+  init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
@@ -206,63 +167,23 @@ sealed class AssignmentsQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, ModifyPrepared, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
-      casPart = casPart,
-      options = options
-    )
+    copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(value),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
   }
 
   final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(value.getMillis),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value.getMillis))
   }
 
   final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString))
   }
 
   final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.ttl(seconds.toString),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.ttl(seconds.toString))
   }
 
   final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
@@ -292,27 +213,11 @@ sealed class AssignmentsQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb))
   }
 
   def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.ifExists,
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.ifExists)
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
@@ -320,31 +225,14 @@ sealed class AssignmentsQuery[
     session: Session
   ): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
     if (session.protocolConsistency) {
-      new AssignmentsQuery(
-        table,
-        init,
-        usingPart,
-        wherePart,
-        setPart,
-        casPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new AssignmentsQuery(
-        table,
-        init,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        wherePart,
-        setPart,
-        casPart,
-        options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
-
   }
 }
 
-sealed class ConditionalQuery[
+sealed case class ConditionalQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -354,7 +242,7 @@ sealed class ConditionalQuery[
   PS <: HList,
   ModifyPrepared <: HList
 ](table: Table,
-  val init: CQLQuery,
+  init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
@@ -369,53 +257,21 @@ sealed class ConditionalQuery[
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.and(clause(table).qb),
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.and(clause(table).qb))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
     if (session.protocolConsistency) {
-      new ConditionalQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart,
-        wherePart = wherePart,
-        setPart = setPart,
-        casPart = casPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new ConditionalQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
-        wherePart = wherePart,
-        setPart = setPart,
-        casPart = casPart,
-        options = options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 
   def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
-      casPart,
-      options
-    )
+    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
   final def ttl(duration: ScalaDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {

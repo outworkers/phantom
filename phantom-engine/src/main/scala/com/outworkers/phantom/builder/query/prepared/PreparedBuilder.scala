@@ -36,6 +36,10 @@ private[phantom] trait PrepareMark {
   def qb: CQLQuery = CQLQuery(symbol)
 }
 
+object PrepareMark {
+  val ? = new PrepareMark {}
+}
+
 class ExecutablePreparedQuery(
   val statement: Statement,
   val options: QueryOptions
