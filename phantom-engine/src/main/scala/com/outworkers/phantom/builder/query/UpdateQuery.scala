@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
@@ -126,7 +126,15 @@ case class UpdateQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-    copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
+    AssignmentsQuery(
+      table = table,
+      init = init,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart appendConditionally(clause(table).qb, !clause(table).skipped),
+      casPart = casPart,
+      options = options
+    )
   }
 
   /**
@@ -137,7 +145,15 @@ case class UpdateQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
-    copy(casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb))
+    ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      options
+    )
   }
 }
 
@@ -156,8 +172,8 @@ sealed case class AssignmentsQuery[
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement with Batchable {
+  options: QueryOptions
+) extends Batchable with SessionAugmenterImplicits {
 
   val qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
@@ -213,11 +229,27 @@ sealed case class AssignmentsQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb))
+    ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      options
+    )
   }
 
   def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(casPart = casPart append QueryBuilder.Update.ifExists)
+    ConditionalQuery(
+      table,
+      init,
+      usingPart,
+      wherePart,
+      setPart,
+      casPart append QueryBuilder.Update.ifExists,
+      options
+    )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
@@ -229,6 +261,7 @@ sealed case class AssignmentsQuery[
     } else {
       copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
+
   }
 }
 

@@ -16,11 +16,12 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.QueryCondition
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
+import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.HList
 import shapeless.ops.hlist.Prepend
 
@@ -30,7 +31,7 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, val options: QueryOptions) {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -46,7 +47,10 @@ abstract class RootQuery[
 
 
   @implicitNotFound("You have already specified a ConsistencyLevel for this query")
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified]
+  def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified,
+    session: Session
+  ): QueryType[Table, Record, Specified]
 }
 
 
@@ -60,11 +64,11 @@ abstract class Query[
   PS <: HList
 ](
   table: Table,
-  override val qb: CQLQuery,
+  val qb: CQLQuery,
   row: Row => Record,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement {
+  val options: QueryOptions
+) extends SessionAugmenterImplicits {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -158,4 +162,6 @@ abstract class Query[
   }
 }
 
-trait Batchable { self: ExecutableStatement => }
+private[phantom] trait Batchable {
+  def qb: ExecutableCqlQuery
+}
