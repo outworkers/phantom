@@ -17,6 +17,7 @@ package com.outworkers.phantom
 
 import java.util.Random
 
+import cats.Monad
 import cats.instances.FutureInstances
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
@@ -27,15 +28,7 @@ import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperatio
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{
-  ExecutableCqlQuery,
-  ExecutableStatement,
-  ExecutableStatements,
-  GuavaAdapter,
-  QueryCollection,
-  ScalaGuavaAdapter
-}
-
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement, ExecutableStatements, GuavaAdapter, QueryCollection, ScalaGuavaAdapter}
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
@@ -168,11 +161,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
    *   KeySpace("test").ifNotExists
    * }}}
    */
-  implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = {
-    new RootSerializer(k)
-  }
-
-  implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
+  implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = new RootSerializer(k)
 
   implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey) extends AnyVal {
 
@@ -422,12 +411,88 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
-    def future()(
+    def executable()(
       implicit session: Session,
       ctx: ExecutionContextExecutor,
       cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-    ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
+    ): ExecutableStatements[Future, M] = {
+      implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
+      new ExecutableStatements[Future, M](qc)
+    }
   }
 
   implicit val scalaGuavaAdapter: GuavaAdapter[Future] = ScalaGuavaAdapter
+
+  private[this] val defaultTimeout = 10.seconds
+
+  implicit class DbOps[DB <: Database[DB]](val db: DB) extends AnyVal {
+
+    import db._
+
+    /**
+      * A blocking method that will create all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @param timeout The timeout for the initialisation call.
+      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
+      * @return A sequence of result sets, where every result is the result of a single create operation.
+      */
+    def create(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+      Await.result(createAsync(), timeout)
+    }
+
+    /**
+      * An asynchronous method that will create all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @return A sequence of result sets, where every result is the result of a single create operation.
+      */
+    def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+      db.autocreate().future()(db.session, db.space, ex)
+    }
+
+    /**
+      * An async method that will drop all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @return A sequence of result sets, where every result is the result of a single drop operation.
+      */
+    def dropAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+      db.autodrop().executable().future()
+    }
+
+    /**
+      * A blocking method that will drop all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @param timeout The timeout for the initialisation call.
+      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
+      * @return A sequence of result sets, where every result is the result of a single drop operation.
+      */
+    def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+      Await.result(dropAsync(), timeout)
+    }
+
+    /**
+      * A blocking method that will truncate all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @param timeout The timeout for the initialisation call.
+      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
+      * @return A sequence of result sets, where every result is the result of a single truncate operation.
+      */
+    def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+      Await.result(truncateAsync(), timeout)
+    }
+
+    /**
+      * An async method that will truncate all the tables. This is designed to prevent the
+      * requirement of the implicit session to escape the enclosure of the database object.
+      *
+      * @return A sequence of result sets, where every result is the result of a single truncate operation.
+      */
+    def truncateAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+      db.autotruncate().executable().future()
+    }
+  }
 }

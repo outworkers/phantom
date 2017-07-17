@@ -23,7 +23,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 
 trait ExecutableStatement extends QueryInterface[Future] with CassandraOperations {
 
-  override protected[this] def fromGuava(st: Statement)(
+  override def fromGuava(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Future[ResultSet] = statementToFuture(st)

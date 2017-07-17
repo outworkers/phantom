@@ -15,15 +15,14 @@
  */
 package com.outworkers.phantom.database
 
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
-import com.outworkers.phantom.{CassandraTable, Manager}
+import com.outworkers.phantom.{CassandraTable, Manager, ResultSet}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
+import scala.concurrent.{ExecutionContextExecutor, Future, blocking}
 
 abstract class Database[
   DB <: Database[DB]
@@ -93,80 +92,6 @@ abstract class Database[
    */
   private[phantom] def autotruncate(): QueryCollection[Seq] = {
     new QueryCollection(tables.map(table => ExecutableCqlQuery(table.truncate().qb)))
-  }
-}
-
-object Database {
-
-  private[this] val defaultTimeout = 10.seconds
-
-  implicit class DbOps[DB <: Database[DB]](val db: DB) extends AnyVal {
-
-    /**
-      * A blocking method that will create all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @param timeout The timeout for the initialisation call.
-      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-      * @return A sequence of result sets, where every result is the result of a single create operation.
-      */
-    def create(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-      Await.result(createAsync(), timeout)
-    }
-
-    /**
-      * An asynchronous method that will create all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @return A sequence of result sets, where every result is the result of a single create operation.
-      */
-    def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-      db.autocreate().future()
-    }
-
-    /**
-      * An async method that will drop all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @return A sequence of result sets, where every result is the result of a single drop operation.
-      */
-    def dropAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-      db.autodrop().future()
-    }
-
-    /**
-      * A blocking method that will drop all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @param timeout The timeout for the initialisation call.
-      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-      * @return A sequence of result sets, where every result is the result of a single drop operation.
-      */
-    def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-      Await.result(dropAsync(), timeout)
-    }
-
-    /**
-      * A blocking method that will truncate all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @param timeout The timeout for the initialisation call.
-      *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-      * @return A sequence of result sets, where every result is the result of a single truncate operation.
-      */
-    def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-      Await.result(truncateAsync(), timeout)
-    }
-
-    /**
-      * An async method that will truncate all the tables. This is designed to prevent the
-      * requirement of the implicit session to escape the enclosure of the database object.
-      *
-      * @return A sequence of result sets, where every result is the result of a single truncate operation.
-      */
-    def truncateAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-      db.autotruncate().future()
-    }
   }
 }
 

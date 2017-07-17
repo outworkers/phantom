@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.ops
 
+import com.outworkers.phantom.Manager
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
@@ -25,6 +26,7 @@ import com.outworkers.phantom.keys.{Indexed, Undroppable}
 import shapeless.<:!<
 
 import scala.annotation.implicitNotFound
+import scala.concurrent.ExecutionContextExecutor
 
 sealed class DropColumn[RR](val column: AbstractColumn[RR])
 
@@ -129,6 +131,8 @@ sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: Abstra
 
 
 private[phantom] trait ImplicitMechanism extends ModifyMechanism {
+
+  // implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
   @implicitNotFound(msg = "Compare-and-set queries can only be applied to non indexed primitive columns.")
   implicit final def columnToCasCompareColumn[RR](col: AbstractColumn[RR])(implicit ev: col.type <:!< Indexed): CasConditionalOperators[RR] = {
