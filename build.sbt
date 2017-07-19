@@ -182,7 +182,7 @@ lazy val readme = (project in file("readme"))
     phantomFinagle,
     phantomStreams,
     phantomThrift
-  ).enablePlugins(TutPlugin)
+  ).enablePlugins(TutPlugin, CrossPerProjectPlugin)
 
 lazy val phantomEngine = (project in file("phantom-engine"))
   .settings(sharedSettings: _*)
@@ -242,6 +242,8 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     )
   ).dependsOn(
     phantomEngine
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomJdk8 = (project in file("phantom-jdk8"))
@@ -259,6 +261,8 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomConnectors = (project in file("phantom-connectors"))
@@ -270,6 +274,8 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
+  ).enablePlugins(
+   CrossPerProjectPlugin
   )
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))
@@ -287,6 +293,8 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     )
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
+  ).enablePlugins(
+   CrossPerProjectPlugin
   )
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
@@ -309,6 +317,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).dependsOn(
     phantomDsl % "compile->compile;test->test;",
     phantomFinagle
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
@@ -317,6 +327,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
     name := "phantom-sbt",
     moduleName := "phantom-sbt",
+    crossScalaVersions := Seq("2.10.6"),
     publishMavenStyle := false,
     sbtPlugin := true,
     publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
@@ -326,6 +337,8 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
         ExclusionRule("org.slf4j", "slf4j-jdk14")
       )
     )
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomStreams = (project in file("phantom-streams"))
@@ -347,6 +360,8 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     sharedSettings: _*
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomExample = (project in file("phantom-example"))
@@ -364,6 +379,8 @@ lazy val phantomExample = (project in file("phantom-example"))
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
     phantomThrift
+  ).enablePlugins(
+    CrossPerProjectPlugin
   )
 
 lazy val phantomMonix = (project in file("phantom-monix"))

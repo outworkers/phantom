@@ -57,7 +57,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
+  private[phantom] def autocreate(): QueryCollection[Seq] = helper.createQueries(this.asInstanceOf[DB])
 
   /**
    * Returns a list of executable statements that will be parallelized with futures

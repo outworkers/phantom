@@ -16,7 +16,8 @@
 package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
+import com.outworkers.phantom.builder.query.execution.QueryCollection
+import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
@@ -25,7 +26,7 @@ import scala.reflect.macros.whitebox
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
 
-  def createQueries(db: T)(implicit keySpace: KeySpace): ExecutableCreateStatementsList
+  def createQueries(db: T)(implicit keySpace: KeySpace): QueryCollection[Seq]
 }
 
 object DatabaseHelper {
@@ -44,7 +45,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
   private[this] val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
 
-  private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
+  private[this] val seqCmp = q"_root_.scala.collection.Seq"
 
   def materialize[T <: Database[T] : WeakTypeTag]: Tree = {
     memoize[Type, Tree](WhiteboxToolbelt.ddHelperCache)(weakTypeOf[T], deriveHelper)
@@ -62,7 +63,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
     val queryList = tableList.map(tb => q"$tb.autocreate(space)")
 
-    val listType = tq"$prefix.ExecutableCreateStatementsList"
+    val listType = tq"$prefix.QueryCollection[_root_.scala.collection.Seq]"
 
     q"""
        new $macroPkg.DatabaseHelper[$tpe] {
@@ -71,7 +72,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
          }
 
          def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
-            new $prefix.ExecutableCreateStatementsList(
+            new $prefix.QueryCollection(
               space => $seqCmp.apply(..$queryList)
             )
          }

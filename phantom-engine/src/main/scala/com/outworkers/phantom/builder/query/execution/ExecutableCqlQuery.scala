@@ -16,10 +16,20 @@
 
 package com.outworkers.phantom.builder.query.execution
 
+import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 case class ExecutableCqlQuery(
   qb: CQLQuery,
   options: QueryOptions = QueryOptions.empty
-)
+) {
+
+  def statement()(implicit session: Session): Statement = {
+    options(new SimpleStatement(qb.terminate.queryString))
+  }
+}
+
+object ExecutableCqlQuery {
+  def empty: ExecutableCqlQuery = ExecutableCqlQuery(CQLQuery.empty, QueryOptions.empty)
+}

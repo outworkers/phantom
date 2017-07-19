@@ -61,8 +61,8 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     val builder = List.newBuilder[String]
 
     for (st <- iterator) {
-      builder += st.qb.qb.queryString
-      batch.add(st.qb.statement())
+      builder += st.executableQuery.qb.queryString
+      batch.add(st.executableQuery.statement())
     }
 
     val strings = builder.result()

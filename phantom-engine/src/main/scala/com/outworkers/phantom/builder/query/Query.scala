@@ -70,6 +70,8 @@ abstract class Query[
   val options: QueryOptions
 ) extends SessionAugmenterImplicits {
 
+  def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
     R,
@@ -163,5 +165,5 @@ abstract class Query[
 }
 
 private[phantom] trait Batchable {
-  def qb: ExecutableCqlQuery
+  def executableQuery: ExecutableCqlQuery
 }

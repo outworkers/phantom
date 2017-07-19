@@ -20,7 +20,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement}
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
@@ -29,7 +29,7 @@ import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
-class InsertQuery[
+case class InsertQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound,
@@ -41,8 +41,8 @@ class InsertQuery[
   private[this] val valuePart: ValuePart = ValuePart.empty,
   private[this] val usingPart: UsingPart = UsingPart.empty,
   private[this] val lightweightPart: LightweightPart = LightweightPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-) extends ExecutableStatement with Batchable {
+  options: QueryOptions = QueryOptions.empty
+) extends Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
     new InsertJsonQuery(
@@ -107,14 +107,9 @@ class InsertQuery[
     col: Table => AbstractColumn[RR],
     value: RR
   )(): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append CQLQuery(col(table).asCql(value)),
-      usingPart,
-      lightweightPart,
-      options
+    copy(
+      columnsPart = columnsPart append CQLQuery(col(table).name),
+      valuePart = valuePart append CQLQuery(col(table).asCql(value))
     )
   }
 
@@ -122,6 +117,12 @@ class InsertQuery[
     col: Table => AbstractColumn[RR],
     value: PrepareMark
   ): InsertQuery[Table, Record, Status, RR :: PS] = {
+
+    copy(
+      columnsPart = columnsPart append CQLQuery(col(table).name),
+      valuePart = valuePart append CQLQuery(col(table).asCql(value))
+    )
+
     new InsertQuery(
       table,
       init,

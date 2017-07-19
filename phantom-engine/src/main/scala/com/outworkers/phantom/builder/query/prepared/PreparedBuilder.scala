@@ -19,7 +19,7 @@ import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement}
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
@@ -44,7 +44,7 @@ class ExecutablePreparedQuery(
   val statement: Statement,
   val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
-  override val qb = CQLQuery.empty
+  override val qb: ExecutableCqlQuery = ExecutableCqlQuery.empty
 
   override def statement()(implicit session: Session): Statement = {
     statement.setConsistencyLevel(options.consistencyLevel.orNull)

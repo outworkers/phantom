@@ -55,9 +55,9 @@ class SelectQueryOps[
     implicit session: Session,
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor
-  ): Future[Option[Record]] = {
+  ): F[Option[Record]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    query.copy(limitedPart = enforceLimit).singleFetch()
+    singleFetch(fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   /**
@@ -73,9 +73,9 @@ class SelectQueryOps[
     ev: Limit =:= Unlimited,
     opt: Record <:< Option[Inner],
     ec: ExecutionContextExecutor
-  ): Future[Option[Inner]] = {
+  ): F[Option[Inner]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    query.copy(limitedPart = enforceLimit).optionalFetch()
+    optionalFetch(fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)

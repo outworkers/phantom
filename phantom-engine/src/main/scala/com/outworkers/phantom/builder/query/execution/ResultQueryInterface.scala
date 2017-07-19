@@ -59,19 +59,19 @@ abstract class ResultQueryInterface[
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
   }
 
-  private[phantom] def optionalFetch[Inner]()(
+  private[phantom] def optionalFetch[Inner](source: M[ResultSet])(
     implicit session: Session,
     ec: ExecutionContextExecutor,
     ev: R <:< Option[Inner]
   ): M[Option[Inner]] = {
-    future() map { res => flattenedOption(res.value()) }
+    source map { res => flattenedOption(res.value()) }
   }
 
-  private[phantom] def singleFetch()(
+  private[phantom] def singleFetch(source: M[ResultSet])(
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): M[Option[R]] = {
-    future() map { res => singleResult(res.value()) }
+    source map { res => singleResult(res.value()) }
   }
 
   /**
@@ -127,11 +127,11 @@ abstract class ResultQueryInterface[
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch()(
+  def fetch(source: M[ResultSet])(
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): M[List[R]] = {
-    future() map (_.allRows().map(fromRow))
+    source map (_.allRows().map(fromRow))
   }
 
   /**

@@ -36,8 +36,7 @@ abstract class QueryInterface[M[_]] {
   def queryString: String = qb.terminate.queryString
 
   def statement()(implicit session: Session): Statement = {
-    new SimpleStatement(qb.terminate.queryString)
-      .setConsistencyLevel(options.consistencyLevel.orNull)
+    options(new SimpleStatement(qb.terminate.queryString))
   }
 
   /**
