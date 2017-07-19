@@ -41,7 +41,8 @@ libraryDependencies ++= Seq(
   "com.outworkers"   %% "phantom-finagle" % phantomVersion,
   "com.outworkers"   %% "phantom-jdk8" % phantomVersion,
   "com.outworkers"   %% "phantom-thrift" % phantomVersion,
-  "com.outworkers"   %% "phantom-streams" % phantomVersion
+  "com.outworkers"   %% "phantom-streams" % phantomVersion,
+  "com.outworkers"   %% "phantom-sbt" % phantomVersion
 )
 ```
 If you include `phantom-finagle` or `phantom-thrift`, make sure to add the following resolvers:

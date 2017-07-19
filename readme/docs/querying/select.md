@@ -19,23 +19,24 @@ the entries would override each other in Cassandra, because in effect they would
 and the same clustering key, so the whole primary key would be identical.
 
 ```scala
-
+scala> import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.dsl._
 
-case class CarMetric(
-  car: UUID,
-  id: UUID,
-  velocity: Double,
-  tirePressure: Double
-)
+scala> case class CarMetric(
+     |   car: UUID,
+     |   id: UUID,
+     |   velocity: Double,
+     |   tirePressure: Double
+     | )
+defined class CarMetric
 
-abstract class AnalyticsEntries extends Table[AnalyticsEntries, CarMetric] {
-  object car extends UUIDColumn with PartitionKey
-  object id extends TimeUUIDColumn with ClusteringOrder with Descending
-  object velocity extends DoubleColumn
-  object tirePressure extends DoubleColumn
-}
-
+scala> abstract class AnalyticsEntries extends Table[AnalyticsEntries, CarMetric] {
+     |   object car extends UUIDColumn with PartitionKey
+     |   object id extends TimeUUIDColumn with ClusteringOrder with Descending
+     |   object velocity extends DoubleColumn
+     |   object tirePressure extends DoubleColumn
+     | }
+defined class AnalyticsEntries
 ```
 
 #### Available query methods.

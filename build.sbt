@@ -102,7 +102,7 @@ scalacOptions in ThisBuild ++= Seq(
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -184,11 +184,11 @@ lazy val readme = (project in file("readme"))
     phantomThrift
   ).enablePlugins(TutPlugin, CrossPerProjectPlugin)
 
-lazy val phantomDsl = (project in file("phantom-dsl"))
+lazy val phantomEngine = (project in file("phantom-engine"))
   .settings(sharedSettings: _*)
   .settings(
-    name := "phantom-dsl",
-    moduleName := "phantom-dsl",
+    name := "phantom-engine",
+    moduleName := "phantom-engine",
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
@@ -196,6 +196,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "org.typelevel"                %% "cats"                              % "0.9.0",
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -210,7 +211,37 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
     )
   ).dependsOn(
-    phantomConnectors
+  phantomConnectors
+)
+
+lazy val phantomDsl = (project in file("phantom-dsl"))
+  .settings(sharedSettings: _*)
+  .settings(
+    name := "phantom-dsl",
+    moduleName := "phantom-dsl",
+    concurrentRestrictions in Test := Seq(
+      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
+    ),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "org.typelevel"                %% "cats"                              % "0.9.0",
+      "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
+      "joda-time"                    %  "joda-time"                         % Versions.joda,
+      "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
+      "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
+      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
+      "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
+      "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
+      "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
+      "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
+      "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
+      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
+      "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
+    )
+  ).dependsOn(
+    phantomEngine
   ).enablePlugins(
     CrossPerProjectPlugin
   )
@@ -350,4 +381,19 @@ lazy val phantomExample = (project in file("phantom-example"))
     phantomThrift
   ).enablePlugins(
     CrossPerProjectPlugin
+  )
+
+lazy val phantomMonix = (project in file("phantom-monix"))
+  .settings(
+    name := "phantom-monix",
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    moduleName := "phantom-monix",
+    libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "io.monix" %% "monix" % Versions.monix
+    )
+  ).settings(
+    sharedSettings: _*
+  ).dependsOn(
+    phantomDsl % "test->test;compile->compile;"
   )
