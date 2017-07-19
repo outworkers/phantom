@@ -26,16 +26,16 @@ import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 trait GuavaAdapter[F[_]] {
-  def fromGuava(in: Statement, options: QueryOptions)(
+  def fromGuava(in: Statement)(
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[ResultSet]
 
-  def fromGuava(qb: CQLQuery, options: QueryOptions)(
+  def fromGuava(qb: CQLQuery)(
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[ResultSet] = {
-    fromGuava(new SimpleStatement(qb.terminate.queryString), options)
+    fromGuava(new SimpleStatement(qb.terminate.queryString))
   }
 }
 
@@ -88,7 +88,7 @@ class ExecutableStatements[
 
     val builder = fbf()
 
-    for (q <- queryCol.queries) builder += adapter.fromGuava(new SimpleStatement(q.qb.terminate.queryString), q.options)
+    for (q <- queryCol.queries) builder += adapter.fromGuava(q.statement())
 
     parallel(builder.result())(ebf, ec)
   }
