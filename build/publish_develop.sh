@@ -4,7 +4,7 @@ echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
-    if [ "${TRAVIS_SCALA_VERSION}" == "2.12.1" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    if [ "${TRAVIS_SCALA_VERSION}" == "2.12.2" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
     then
 
         echo "Setting git user email to ci@outworkers.com"
@@ -109,7 +109,7 @@ then
         fi
 
     else
-        echo "Only publishing version for Scala 2.12.1 and Oracle JDK 8 to prevent multiple artifacts"
+        echo "Only publishing version for Scala 2.12.2 and Oracle JDK 8 to prevent multiple artifacts"
     fi
 else
     echo "This is either a pull request or the branch is not develop, deployment not necessary"
