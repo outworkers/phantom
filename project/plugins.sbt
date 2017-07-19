@@ -18,9 +18,9 @@ resolvers ++= Seq(
   "Twitter Repo" at "http://maven.twttr.com/",
   Resolver.sonatypeRepo("releases"),
   Resolver.bintrayRepo("websudos", "oss-releases"),
-  Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns),
-  Resolver.url("bintray-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.mavenStylePatterns),
-  Resolver.url("twitter-csl-sbt-plugins", url("https://dl.bintray.com/twittercsl/sbt-plugins"))(Resolver.ivyStylePatterns)
+  Resolver.bintrayIvyRepo("sksamuel", "sbt-plugins"),
+  Resolver.bintrayIvyRepo("twittercsl-ivy", "sbt-plugins"),
+  Resolver.bintrayRepo("twittercsl", "sbt-plugins")
 )
 
 lazy val scalaTravisEnv = sys.env.get("TRAVIS_SCALA_VERSION")
@@ -60,5 +60,7 @@ addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.8.1")
+
+addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
