@@ -100,8 +100,7 @@ scalacOptions in ThisBuild ++= Seq(
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+  scalaVersion := "2.12.2",
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -162,6 +161,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
+    crossScalaVersions := Seq("2.11.11", "2.12.2"),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
@@ -272,7 +272,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
-    crossScalaVersions := Seq("2.11.11", "2.12.1"),
+    crossScalaVersions := Seq("2.11.11", "2.12.2"),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
