@@ -69,12 +69,11 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.14.0"
+      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.18.0"
       case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
       case _ => "4.7.0"
     }
   }
-
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor == 12 => "2.6.1"
@@ -102,7 +101,6 @@ scalacOptions in ThisBuild ++= Seq(
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
@@ -189,6 +187,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(
     name := "phantom-dsl",
     moduleName := "phantom-dsl",
+    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
@@ -219,6 +218,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
+    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
     testOptions in Test += Tests.Argument("-oF"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
@@ -239,6 +239,8 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     sharedSettings: _*
   ).settings(
     name := "phantom-connectors",
+    moduleName := "phantom-connectors",
+    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -252,6 +254,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
+    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -268,6 +271,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
+    crossScalaVersions := Seq("2.11.11", "2.12.1"),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -314,6 +318,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
+    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -337,6 +342,7 @@ lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
     moduleName := "phantom-example",
+    crossScalaVersions := Seq("2.11.11", "2.12.2"),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
@@ -345,6 +351,8 @@ lazy val phantomExample = (project in file("phantom-example"))
     coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(
     sharedSettings: _*
+  ).settings(
+    Publishing.noPublishSettings
   ).dependsOn(
     phantomDsl % "test->test;compile->compile;",
     phantomThrift

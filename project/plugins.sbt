@@ -29,9 +29,9 @@ lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
   val scrooge = if (isCi) {
-    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.14.0" else "4.7.0"
+    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.18.0" else "4.7.0"
   } else {
-    if (sys.props("java.specification.version") == "1.8") "4.14.0" else "4.7.0"
+    if (sys.props("java.specification.version") == "1.8") "4.18.0" else "4.7.0"
   }
 }
 
