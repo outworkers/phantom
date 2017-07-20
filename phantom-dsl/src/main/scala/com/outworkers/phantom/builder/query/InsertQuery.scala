@@ -20,13 +20,15 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
+import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
+
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class InsertQuery[
   Table <: CassandraTable[Table, _],
@@ -138,7 +140,22 @@ class InsertQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev]
   ): PreparedBlock[Rev] = {
-    new PreparedBlock(qb, options)
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
   }
 
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
@@ -282,8 +299,28 @@ class InsertJsonQuery[
   override val options: QueryOptions
 ) extends ExecutableStatement with Batchable {
 
-  def prepare()(implicit session: Session, keySpace: KeySpace): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, options)
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
   }
 
   override val qb: CQLQuery = (lightweightPart merge usingPart) build init

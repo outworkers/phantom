@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound,
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedSelectBlock}
+import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 import shapeless.ops.hlist.{Prepend, Reverse}
@@ -116,7 +116,22 @@ class SelectQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev]
   ): PreparedSelectBlock[Table, Record, Limit, Rev] = {
-    new PreparedSelectBlock[Table, Record, Limit, Rev] (qb, rowFunc, options)
+    val flatten = new PreparedFlattener(qb)
+    new PreparedSelectBlock[Table, Record, Limit, Rev] (flatten.query, flatten.protocolVersion, rowFunc, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): ScalaFuture[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedSelectBlock[Table, Record, Limit, Rev](ps, flatten.protocolVersion, rowFunc, options)
+    }
   }
 
   /**
