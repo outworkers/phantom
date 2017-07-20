@@ -45,20 +45,19 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (initial, afterUpdate) => {
-        initial shouldBe defined
-        initial.value shouldEqual recipe
+    whenReady(chain) { case (initial, afterUpdate) =>
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.url shouldEqual recipe.url
-        afterUpdate.value.props shouldEqual recipe.props
-        afterUpdate.value.ingredients shouldEqual recipe.ingredients
-        afterUpdate.value.servings shouldEqual recipe.servings
-        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        afterUpdate.value.uid shouldEqual recipe.uid
-        afterUpdate.value.description shouldEqual updated
-      }
+      initial shouldBe defined
+      initial.value shouldEqual recipe
+
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual recipe.uid
+      afterUpdate.value.description shouldEqual updated
     }
   }
 

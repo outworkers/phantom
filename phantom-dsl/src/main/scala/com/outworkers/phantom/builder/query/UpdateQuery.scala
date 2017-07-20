@@ -147,12 +147,12 @@ case class UpdateQuery[
     implicit prepend: Prepend.Aux[HL, HNil, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
 
-    new AssignmentsQuery(
+    AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped),
+      setPart = setPart appendConditionally(clause(table).qb, !clause(table).skipped),
       casPart = casPart,
       options = options
     )
@@ -227,14 +227,40 @@ sealed case class AssignmentsQuery[
     ttl(duration.toSeconds)
   }
 
-  def prepare[Rev <: HList]()(
+  def prepare[
+    Rev <: HList,
+    Reversed <: HList,
+    Out <: HList
+  ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): PreparedBlock[Rev] = {
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend.Aux[Reversed, Rev, Out]
+  ): PreparedBlock[Out] = {
     val flatten = new PreparedFlattener(qb)
-    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+    new PreparedBlock[Out](flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[
+    Rev <: HList,
+    Reversed <: HList,
+    Out <: HList
+  ]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend.Aux[Reversed, Rev, Out]
+  ): Future[PreparedBlock[Out]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
+    }
   }
 
   def prepareAsync[Rev <: HList]()(
@@ -247,7 +273,7 @@ sealed case class AssignmentsQuery[
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
-      new PreparedBlock(ps, flatten.protocolVersion, options)
+      new PreparedBlock[Rev](ps, flatten.protocolVersion, options)
     }
   }
 
