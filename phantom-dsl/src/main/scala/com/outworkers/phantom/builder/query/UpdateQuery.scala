@@ -16,19 +16,20 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{ CassandraTable, Row }
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
+import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
-class UpdateQuery[
+case class UpdateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -57,8 +58,28 @@ class UpdateQuery[
     P <: HList
   ] = UpdateQuery[T, R, L, O, S, C, P]
 
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, options)
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
   }
 
   protected[this] def create[
@@ -82,14 +103,7 @@ class UpdateQuery[
   }
 
   override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new UpdateQuery(
-      table,
-      init, usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
-      casPart,
-      options
-    )
+    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
   /**
@@ -106,15 +120,7 @@ class UpdateQuery[
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.where(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
   /**
@@ -131,15 +137,7 @@ class UpdateQuery[
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new UpdateQuery(
-      table,
-      init,
-      usingPart,
-      wherePart append QueryBuilder.Update.and(condition(table).qb),
-      setPart,
-      casPart,
-      options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
   final def modify[
@@ -148,12 +146,13 @@ class UpdateQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-    new AssignmentsQuery(
+
+    AssignmentsQuery(
       table = table,
       init = init,
       usingPart = usingPart,
       wherePart = wherePart,
-      setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped),
+      setPart = setPart appendConditionally(clause(table).qb, !clause(table).skipped),
       casPart = casPart,
       options = options
     )
@@ -167,7 +166,7 @@ class UpdateQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
-    new ConditionalQuery(
+    ConditionalQuery(
       table,
       init,
       usingPart,
@@ -179,7 +178,7 @@ class UpdateQuery[
   }
 }
 
-sealed class AssignmentsQuery[
+sealed case class AssignmentsQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -189,7 +188,7 @@ sealed class AssignmentsQuery[
   PS <: HList,
   ModifyPrepared <: HList
 ](table: Table,
-  val init: CQLQuery,
+  init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
@@ -205,63 +204,23 @@ sealed class AssignmentsQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, ModifyPrepared, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart,
-      wherePart = wherePart,
-      setPart appendConditionally (clause(table).qb, !clause(table).skipped),
-      casPart = casPart,
-      options = options
-    )
+    copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(value),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
   }
 
   final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.timestamp(value.getMillis),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value.getMillis))
   }
 
   final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString))
   }
 
   final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new AssignmentsQuery(
-      table = table,
-      init = init,
-      usingPart = usingPart append QueryBuilder.ttl(seconds.toString),
-      wherePart = wherePart,
-      setPart = setPart,
-      casPart = casPart,
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.ttl(seconds.toString))
   }
 
   final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
@@ -280,7 +239,28 @@ sealed class AssignmentsQuery[
     rev2: Reverse.Aux[ModifyPrepared, Reversed],
     prepend: Prepend.Aux[Reversed, Rev, Out]
   ): PreparedBlock[Out] = {
-    new PreparedBlock(qb, options)
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock[Out](flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[
+    Rev <: HList,
+    Reversed <: HList,
+    Out <: HList
+  ]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend.Aux[Reversed, Rev, Out]
+  ): Future[PreparedBlock[Out]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
+    }
   }
 
   /**
@@ -291,7 +271,7 @@ sealed class AssignmentsQuery[
    * @return A conditional query, now bound by a compare-and-set part.
    */
   def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
+    ConditionalQuery(
       table,
       init,
       usingPart,
@@ -303,7 +283,7 @@ sealed class AssignmentsQuery[
   }
 
   def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
+    ConditionalQuery(
       table,
       init,
       usingPart,
@@ -319,31 +299,14 @@ sealed class AssignmentsQuery[
     session: Session
   ): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
     if (session.protocolConsistency) {
-      new AssignmentsQuery(
-        table,
-        init,
-        usingPart,
-        wherePart,
-        setPart,
-        casPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new AssignmentsQuery(
-        table,
-        init,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        wherePart,
-        setPart,
-        casPart,
-        options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
-
   }
 }
 
-sealed class ConditionalQuery[
+sealed case class ConditionalQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -368,67 +331,50 @@ sealed class ConditionalQuery[
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.and(clause(table).qb),
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.and(clause(table).qb))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): ConditionalQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
     if (session.protocolConsistency) {
-      new ConditionalQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart,
-        wherePart = wherePart,
-        setPart = setPart,
-        casPart = casPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new ConditionalQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
-        wherePart = wherePart,
-        setPart = setPart,
-        casPart = casPart,
-        options = options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 
   def ttl(seconds: Long): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    new ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart append QueryBuilder.ttl(seconds.toString),
-      casPart,
-      options
-    )
+    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
   final def ttl(duration: ScalaDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ttl(duration.toSeconds)
   }
 
-  def prepare[Rev <: HList, Rev2 <: HList, Out <: HList]()(
+  def prepare[Rev <: HList]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    rev2: Reverse.Aux[ModifyPrepared, Rev2],
-    prepend: Prepend.Aux[Rev2, Rev, Out]
-  ): PreparedBlock[Out] = new PreparedBlock(qb, options)
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
+  }
 }
 
 object UpdateQuery {
