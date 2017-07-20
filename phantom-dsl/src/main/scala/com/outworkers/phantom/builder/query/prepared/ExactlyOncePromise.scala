@@ -19,23 +19,23 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.concurrent.{Future, Promise}
 
-class ExactlyOncePromise[T](f: => Promise[T]) {
+class ExactlyOncePromise[T](f: => Future[T]) {
   private[this] val promise = Promise[T]()
 
-  def future: Future[T] = promise.future
+  def future: Future[T] = init
 
   private[this] val flag = new AtomicBoolean(false)
 
   def init: Future[T] = {
-    if (!flag.getAndSet(true)) {
-      promise.tryCompleteWith(f.future)
+    if (flag.compareAndSet(false, true)) {
+      promise.tryCompleteWith(f)
     }
-    future
+    promise.future
   }
 }
 
 object ExactlyOncePromise {
-  def apply[T](f: => Promise[T]): ExactlyOncePromise[T] = new ExactlyOncePromise[T](f)
+  def apply[T](f: => Future[T]): ExactlyOncePromise[T] = new ExactlyOncePromise[T](f)
 }
 
 

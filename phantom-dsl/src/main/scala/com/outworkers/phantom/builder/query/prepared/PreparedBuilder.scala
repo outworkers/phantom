@@ -87,7 +87,7 @@ class PreparedFlattener(qb: CQLQuery)(
   }
 
   def async()(implicit executor: ExecutionContextExecutor): ScalaFuture[PreparedStatement] = {
-    ExactlyOncePromise(guavaToScala(session.prepareAsync(qb.queryString))).future
+    ExactlyOncePromise(guavaToScala(session.prepareAsync(qb.queryString)).future).future
   }
 }
 
