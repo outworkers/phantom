@@ -263,20 +263,6 @@ sealed case class AssignmentsQuery[
     }
   }
 
-  def prepareAsync[Rev <: HList]()(
-    implicit session: Session,
-    executor: ExecutionContextExecutor,
-    keySpace: KeySpace,
-    ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
-    val flatten = new PreparedFlattener(qb)
-
-    flatten.async map { ps =>
-      new PreparedBlock[Rev](ps, flatten.protocolVersion, options)
-    }
-  }
-
   /**
    * Generates a conditional query clause based on CQL lightweight transactions.
    * Compare and set transactions only get executed if a particular condition is true.
