@@ -19,7 +19,6 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.batch.{BatchQuery, BatchType}
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.{Batchable, QueryOptions, UsingPart}
 import com.outworkers.phantom.dsl._
 import org.reactivestreams.{Subscriber, Subscription}
@@ -182,7 +181,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
       false,
       QueryOptions.empty
     )
-    query.future().onComplete {
+    query.executableQuery.onComplete {
       case Failure(e) => self ! ErrorWrapper(e)
       case Success(resp) => self ! resp
     }
@@ -208,5 +207,5 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
  * @tparam T the type of streamed elements
  */
 trait RequestBuilder[CT <: CassandraTable[CT, T], T] {
-  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): ExecutableStatement with Batchable
+  def request(ct: CT, t: T)(implicit session: Session, keySpace: KeySpace): Batchable
 }

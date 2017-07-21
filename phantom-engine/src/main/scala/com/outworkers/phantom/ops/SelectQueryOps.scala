@@ -16,16 +16,20 @@
 package com.outworkers.phantom.ops
 
 import cats.Monad
-import com.datastax.driver.core.{Session, Statement}
+import cats.syntax.functor._
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, PromiseInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.prepared.{PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.query.{LimitedPart, QueryOptions, SelectQuery}
-import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
-import shapeless.HList
+import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.{CassandraTable, Row}
+import shapeless.ops.hlist.Reverse
+import shapeless.{=:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
 class SelectQueryOps[
   F[_],
@@ -83,4 +87,21 @@ class SelectQueryOps[
   override def options: QueryOptions = query.options
 
   override def qb: CQLQuery = query.qb
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedSelectBlock[Table, Record, Limit, Rev](ps, flatten.protocolVersion, fromRow, options)
+    }
+  }
 }
