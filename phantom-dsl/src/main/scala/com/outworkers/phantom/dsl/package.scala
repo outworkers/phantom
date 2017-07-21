@@ -36,12 +36,12 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
+import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.joda.time.DateTimeZone
-import shapeless.{::, HNil}
+import shapeless.{::, Generic, HList, HNil}
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 package object dsl extends ImplicitMechanism with CreateImplicits
   with SelectImplicits
@@ -115,13 +115,14 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val SERIAL = CLevel.SERIAL
   }
 
-  def cql(str: CQLQuery): ExecutableStatement = new ExecutableStatement {
+  def cql(str: CQLQuery): QueryInterface[Future] = new QueryInterface[Future]() {
+
     override def options: QueryOptions = QueryOptions.empty
 
     override def qb: CQLQuery = str
   }
 
-  def cql(str: String): ExecutableStatement = cql(CQLQuery(str))
+  def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
 
   type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
@@ -422,5 +423,32 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   }
 
   implicit val scalaGuavaAdapter: GuavaAdapter[Future] = ScalaGuavaAdapter
+
+  implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) extends AnyVal {
+
+    def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
+      implicit keySpace: KeySpace,
+      session: Session,
+      thl: TableHelper.Aux[T, R, Repr],
+      ex: ExecutionContextExecutor,
+      gen: Generic.Aux[V1, HL],
+      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+      ev: Out ==:== Repr
+    ): Future[ResultSet] = scalaGuavaAdapter.fromGuava(table.store(input).executableQuery)
+
+    def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
+      implicit keySpace: KeySpace,
+      session: Session,
+      thl: TableHelper.Aux[T, R, Repr],
+      ex: ExecutionContextExecutor,
+      gen: Generic.Aux[V1, HL],
+      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+      ev: Out ==:== Repr,
+      cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]]
+    ): Future[M[ResultSet]] = {
+      Future.traverse(inputs)(el => storeRecord(el))
+    }
+
+  }
 
 }

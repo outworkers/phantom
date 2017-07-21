@@ -15,19 +15,20 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
+import cats.Monad
 import com.datastax.driver.core.{QueryOptions => _, _}
+import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement}
-import com.outworkers.phantom.builder.{LimitBound, Unlimited}
+import com.outworkers.phantom.builder.query.execution.{ExactlyOncePromise, ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
-import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
+import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList, HNil}
+import shapeless.{Generic, HList}
 
-import scala.concurrent.{ExecutionContextExecutor, blocking, Future => ScalaFuture}
+import scala.concurrent.{ExecutionContextExecutor, blocking}
 
 private[phantom] trait PrepareMark {
 
@@ -43,12 +44,9 @@ object PrepareMark {
 class ExecutablePreparedQuery(
   val statement: Statement,
   val options: QueryOptions
-) extends ExecutableStatement with Batchable {
-  override val qb: ExecutableCqlQuery = ExecutableCqlQuery.empty
+) extends Batchable {
 
-  override def statement()(implicit session: Session): Statement = {
-    statement.setConsistencyLevel(options.consistencyLevel.orNull)
-  }
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery.empty
 }
 
 class ExecutablePreparedSelectQuery[
@@ -60,7 +58,7 @@ class ExecutablePreparedSelectQuery[
 class PreparedFlattener(qb: CQLQuery)(
   implicit session: Session,
   keySpace: KeySpace
-) extends SessionAugmenterImplicits with CassandraOperations {
+) extends SessionAugmenterImplicits {
 
   val protocolVersion: ProtocolVersion = session.protocolVersion
 
@@ -68,8 +66,15 @@ class PreparedFlattener(qb: CQLQuery)(
     blocking(session.prepare(qb.queryString))
   }
 
-  def async()(implicit executor: ExecutionContextExecutor): ScalaFuture[PreparedStatement] = {
-    ExactlyOncePromise(guavaToScala(session.prepareAsync(qb.queryString)).future).future
+  def async[F[_]]()(
+    implicit executor: ExecutionContextExecutor,
+    monad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedStatement] = {
+    new ExactlyOncePromise[F, PreparedStatement](
+      adapter.fromGuava(session.prepareAsync(qb.queryString))
+    ).future
   }
 }
 

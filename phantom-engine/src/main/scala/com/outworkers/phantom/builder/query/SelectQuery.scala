@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.query
 
+import cats.Monad
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
@@ -29,6 +30,8 @@ import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
+import cats.syntax.functor._
+import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, PromiseInterface}
 
 case class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -109,13 +112,16 @@ case class SelectQuery[
     new PreparedSelectBlock[Table, Record, Limit, Rev] (flatten.query, flatten.protocolVersion, rowFunc, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): ScalaFuture[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>

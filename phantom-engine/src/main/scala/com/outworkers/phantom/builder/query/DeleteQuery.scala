@@ -15,22 +15,25 @@
  */
 package com.outworkers.phantom.builder.query
 
+import cats.Monad
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
+import cats.syntax.functor._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
-class DeleteQuery[
+case class DeleteQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -84,29 +87,25 @@ class DeleteQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    monad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
-    flatten.async map { ps =>
+    flatten.async[F]() map { ps =>
       new PreparedBlock(ps, flatten.protocolVersion, options)
     }
   }
 
   def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    new DeleteQuery(
-      table = table,
-      init = init,
-      wherePart = wherePart,
-      casPart = casPart,
-      usingPart = usingPart append QueryBuilder.timestamp(time),
-      options = options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(time))
   }
 
   def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
@@ -128,14 +127,7 @@ class DeleteQuery[
     implicit ev: =:=[Chain, Unchainned],
     prepend: Prepend.Aux[HL, PS, Out]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new DeleteQuery(
-      table = table,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
-      casPart = casPart,
-      usingPart = usingPart,
-      options = options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
   /**
@@ -153,49 +145,21 @@ class DeleteQuery[
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    new DeleteQuery(
-      table = table,
-      init = init,
-      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
-      casPart = casPart,
-      usingPart = usingPart,
-      options = options
-    )
+    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
   override def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.protocolConsistency) {
-      new DeleteQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart,
-        wherePart = wherePart,
-        casPart = casPart,
-        options = options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new DeleteQuery(
-        table = table,
-        init = init,
-        usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString),
-        wherePart = wherePart,
-        casPart = casPart,
-        options = options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 
   def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new DeleteQuery(
-      table,
-      init,
-      wherePart,
-      casPart append QueryBuilder.Update.ifExists,
-      usingPart,
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.ifExists)
   }
 
   /**
@@ -245,7 +209,7 @@ object DeleteQuery {
   }
 }
 
-sealed class ConditionalDeleteQuery[
+sealed case class ConditionalDeleteQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Limit <: LimitBound,
@@ -254,25 +218,20 @@ sealed class ConditionalDeleteQuery[
   Chain <: WhereBound,
   PS <: HList
 ](table: Table,
-  val init: CQLQuery,
+  init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions
- ) extends ExecutableStatement with Batchable {
+  options: QueryOptions
+ ) extends Batchable {
 
-  override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
+  val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new ConditionalDeleteQuery(
-      table,
-      init,
-      wherePart,
-      casPart append QueryBuilder.Update.and(clause(table).qb),
-      usingPart,
-      options
-    )
+    copy(casPart = casPart append QueryBuilder.Update.and(clause(table).qb))
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }

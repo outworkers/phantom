@@ -22,12 +22,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.concurrent.ExecutionContextExecutor
 
-abstract class QueryInterface[M[_]] {
-
-  def fromGuava(in: Statement)(
-    implicit session: Session,
-    ctx: ExecutionContextExecutor
-  ): M[ResultSet]
+abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
 
   def options: QueryOptions
 
@@ -56,7 +51,7 @@ abstract class QueryInterface[M[_]] {
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): M[ResultSet] = {
-    fromGuava(statement)
+    adapter.fromGuava(statement)
   }
 
   /**
@@ -75,8 +70,6 @@ abstract class QueryInterface[M[_]] {
   def future(modifyStatement: Statement => Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): M[ResultSet] = {
-    fromGuava(modifyStatement(statement))
-  }
+  ): M[ResultSet] = adapter.fromGuava(modifyStatement(statement))
 }
 

@@ -15,36 +15,38 @@
  */
 package com.outworkers.phantom.builder.query
 
+import cats.Monad
+import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.clauses.{OperatorClause, UsingClause}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatement}
-import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
-class InsertQuery[
-  Table <: CassandraTable[Table, _],
+case class InsertQuery[
+  Table <: CassandraTable[Table, Record],
   Record,
   Status <: ConsistencyBound,
   PS <: HList
 ](
-  private[this] val table: Table,
-  private[this] val init: CQLQuery,
-  private[this] val columnsPart: ColumnsPart = ColumnsPart.empty,
-  private[this] val valuePart: ValuePart = ValuePart.empty,
-  private[this] val usingPart: UsingPart = UsingPart.empty,
-  private[this] val lightweightPart: LightweightPart = LightweightPart.empty,
+  private val table: Table,
+  private val init: CQLQuery,
+  private val columnsPart: ColumnsPart = ColumnsPart.empty,
+  private val valuePart: ValuePart = ValuePart.empty,
+  private val usingPart: UsingPart = UsingPart.empty,
+  private val lightweightPart: LightweightPart = LightweightPart.empty,
   options: QueryOptions = QueryOptions.empty
-) extends Batchable {
+) extends Batchable with SessionAugmenterImplicits {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
     new InsertJsonQuery(
@@ -57,7 +59,7 @@ class InsertQuery[
   }
 
   final def json(value: PrepareMark): InsertJsonQuery[Table, Record, Status, String :: PS] = {
-    new InsertJsonQuery(
+    new InsertJsonQuery[Table, Record, Status, String :: PS](
       table = table,
       init = QueryBuilder.Insert.json(init, value.qb.queryString),
       usingPart = usingPart,
@@ -78,14 +80,9 @@ class InsertQuery[
     col: Table => AbstractColumn[_],
     value: OperatorClause.Condition
   ): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append value.qb,
-      usingPart,
-      lightweightPart,
-      options
+    copy(
+      columnsPart = columnsPart append CQLQuery(col(table).name),
+      valuePart = valuePart append value.qb
     )
   }
 
@@ -94,15 +91,7 @@ class InsertQuery[
       case ((columnRef, valueRef), (cols, vals)) => Tuple2(cols append columnRef, vals append valueRef)
     }
 
-    new InsertQuery(
-      table,
-      init,
-      appendedCols,
-      appendedVals,
-      usingPart,
-      lightweightPart,
-      options
-    )
+    copy(columnsPart = appendedCols, valuePart = appendedVals)
   }
 
   def value[RR](
@@ -119,20 +108,9 @@ class InsertQuery[
     col: Table => AbstractColumn[RR],
     value: PrepareMark
   ): InsertQuery[Table, Record, Status, RR :: PS] = {
-
     copy(
       columnsPart = columnsPart append CQLQuery(col(table).name),
-      valuePart = valuePart append CQLQuery(col(table).asCql(value))
-    )
-
-    new InsertQuery(
-      table,
-      init,
-      columnsPart append CQLQuery(col(table).name),
-      valuePart append value.qb,
-      usingPart,
-      lightweightPart,
-      options
+      valuePart = valuePart append value.qb
     )
   }
 
@@ -146,13 +124,16 @@ class InsertQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
@@ -163,23 +144,17 @@ class InsertQuery[
   final def valueOrNull[RR](col: Table => AbstractColumn[RR], value: RR) : InsertQuery[Table, Record, Status, PS] = {
     if (Option(value).isDefined) {
       val insertValue = col(table).asCql(value)
-      new InsertQuery(
-        table,
-        init,
-        columnsPart append CQLQuery(col(table).name),
-        valuePart append CQLQuery(insertValue),
-        usingPart,
-        lightweightPart,
-        options
+
+      copy(
+        columnsPart = columnsPart append CQLQuery(col(table).name),
+        valuePart = valuePart append CQLQuery(insertValue)
       )
     } else {
       this
     }
   }
 
-  override def qb: CQLQuery = {
-    (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
-  }
+  val qb: CQLQuery = (columnsPart merge valuePart merge lightweightPart merge usingPart) build init
 
   final def ttl(value: PrepareMark): InsertQuery[Table, Record, Status, Int :: PS] = {
     new InsertQuery(
@@ -194,15 +169,7 @@ class InsertQuery[
   }
 
   def ttl(seconds: Int): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart append QueryBuilder.ttl(seconds.toString),
-      lightweightPart,
-      options
-    )
+    copy(usingPart = usingPart append QueryBuilder.ttl(seconds.toString))
   }
 
   def ttl(seconds: Long): InsertQuery[Table, Record, Status, PS] = ttl(seconds.toInt)
@@ -212,50 +179,18 @@ class InsertQuery[
   }
 
   def using(clause: UsingClause.Condition): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart append clause.qb,
-      lightweightPart,
-      options
-    )
+    copy(usingPart = usingPart append clause.qb)
   }
 
   final def timestamp(value: Long): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart append QueryBuilder.timestamp(value),
-      lightweightPart,
-      options
-    )
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
     if (session.protocolConsistency) {
-      new InsertQuery(
-        table,
-        init,
-        columnsPart,
-        valuePart,
-        usingPart,
-        lightweightPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new InsertQuery(
-        table,
-        init,
-        columnsPart,
-        valuePart,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        lightweightPart,
-        options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 
@@ -264,23 +199,17 @@ class InsertQuery[
   }
 
   def ifNotExists(): InsertQuery[Table, Record, Status, PS] = {
-    new InsertQuery(
-      table,
-      init,
-      columnsPart,
-      valuePart,
-      usingPart,
-      lightweightPart append CQLQuery(CQLSyntax.ifNotExists),
-      options
-    )
+    copy(lightweightPart = lightweightPart append CQLQuery(CQLSyntax.ifNotExists))
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 object InsertQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = InsertQuery[T, R, Unspecified, HNil]
+  type Default[T <: CassandraTable[T, R], R] = InsertQuery[T, R, Unspecified, HNil]
 
-  def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
+  def apply[T <: CassandraTable[T, R], R](table: T)(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = {
     new InsertQuery(
       table,
       QueryBuilder.Insert.insert(QueryBuilder.keyspace(keySpace.name, table.tableName))
@@ -298,8 +227,8 @@ class InsertJsonQuery[
   val init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement with Batchable {
+  val options: QueryOptions
+) extends  Batchable {
 
   def prepare[Rev <: HList]()(
     implicit session: Session,
@@ -311,13 +240,16 @@ class InsertJsonQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[F]
+  ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
@@ -325,7 +257,9 @@ class InsertJsonQuery[
     }
   }
 
-  override val qb: CQLQuery = (lightweightPart merge usingPart) build init
+  val qb: CQLQuery = (lightweightPart merge usingPart) build init
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 

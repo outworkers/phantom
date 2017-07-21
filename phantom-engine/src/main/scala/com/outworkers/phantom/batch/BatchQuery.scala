@@ -16,10 +16,7 @@
 package com.outworkers.phantom.batch
 
 import com.datastax.driver.core.{BatchStatement, ConsistencyLevel, Session, Statement}
-import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
@@ -92,15 +89,15 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add(query: Batchable with ExecutableStatement)(implicit session: Session): BatchQuery[Status] = {
+  def add(query: Batchable)(implicit session: Session): BatchQuery[Status] = {
     copy(iterator = iterator ++ Iterator(query))
   }
 
-  def add(queries: Batchable with ExecutableStatement*)(implicit session: Session): BatchQuery[Status] = {
+  def add(queries: Batchable*)(implicit session: Session): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries.iterator)
   }
 
-  def add(queries: Iterator[Batchable with ExecutableStatement])(implicit session: Session): BatchQuery[Status] = {
+  def add(queries: Iterator[Batchable])(implicit session: Session): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries)
   }
 

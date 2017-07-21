@@ -18,14 +18,24 @@ package com.outworkers.phantom.builder.query.execution
 import cats.Monad
 import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
+import com.google.common.util.concurrent.ListenableFuture
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
 trait GuavaAdapter[F[_]] {
+
+  def fromGuava[T](source: ListenableFuture[T])(
+    implicit executor: ExecutionContextExecutor
+  ): F[T]
+
+  def fromGuava(in: ExecutableCqlQuery)(
+    implicit session: Session,
+    ctx: ExecutionContextExecutor
+  ): F[ResultSet] = fromGuava(in.statement())
+
   def fromGuava(in: Statement)(
     implicit session: Session,
     ctx: ExecutionContextExecutor
@@ -57,7 +67,7 @@ class ExecutableStatements[
   }
 
   /**
-    * Simple version of `Future.traverse`. Asynchronously and non-blockingly transforms a `TraversableOnce[Future[A]]`
+    * Simple version of `Future.traverse`. Asynchronously transforms a `TraversableOnce[Future[A]]`
     *  into a `Future[TraversableOnce[A]]`. Useful for reducing many `Future`s into a single `Future`.
     *
     * @tparam A        the type of the value inside the Futures
@@ -98,8 +108,6 @@ class ExecutableStatements[
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
-    sequencedTraverse(queryCol.queries) {
-      q => adapter.fromGuava(new SimpleStatement(q.qb.terminate.queryString), q.options)
-    }
+    sequencedTraverse(queryCol.queries)(adapter.fromGuava)
   }
 }

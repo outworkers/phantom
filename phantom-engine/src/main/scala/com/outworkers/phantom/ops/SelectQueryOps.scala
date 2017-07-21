@@ -57,7 +57,7 @@ class SelectQueryOps[
     ec: ExecutionContextExecutor
   ): F[Option[Record]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    singleFetch(fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   /**
@@ -75,15 +75,10 @@ class SelectQueryOps[
     ec: ExecutionContextExecutor
   ): F[Option[Inner]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    optionalFetch(fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    optionalFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)
-
-  override def fromGuava(in: Statement)(
-    implicit session: Session,
-    ctx: ExecutionContextExecutor
-  ): F[ResultSet] = adapter.fromGuava(in, query.options)
 
   override def options: QueryOptions = query.options
 

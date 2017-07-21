@@ -15,17 +15,82 @@
  */
 package com.outworkers.phantom
 
-import com.datastax.driver.core.{Session, Statement}
-import com.outworkers.phantom.builder.query.QueryOptions
+import com.datastax.driver.core.{Session, Statement, ResultSet => DatastaxResultSet}
+import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.outworkers.phantom.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.execution.GuavaAdapter
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
 
-object ScalaGuavaAdapter extends GuavaAdapter[Future] {
+object ScalaGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImplicits {
 
-  override def fromGuava(in: Statement, options: QueryOptions)(
-    implicit session:Session,
+  protected[this] def statementToFuture(st: Statement)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): Future[ResultSet] = {
+    statementToPromise(st).future
+  }
+
+  protected[this] def batchToPromise(batch: BatchWithQuery)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): Promise[ResultSet] = {
+    Manager.logger.debug(s"Executing query: ${batch.debugString}")
+    statementToPromise(batch.statement)
+  }
+
+  def guavaToScala[T](source: ListenableFuture[T])(
+    implicit executor: ExecutionContextExecutor
+  ): Promise[T] = {
+    val promise = Promise[T]()
+
+    val callback = new FutureCallback[T] {
+      def onSuccess(result: T): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(source, callback, executor)
+    promise
+  }
+
+  protected[this] def statementToPromise(st: Statement)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): Promise[ResultSet] = {
+    Manager.logger.debug(s"Executing query: $st")
+
+    val promise = Promise[ResultSet]()
+
+    val future = session.executeAsync(st)
+
+    val callback = new FutureCallback[DatastaxResultSet] {
+      def onSuccess(result: DatastaxResultSet): Unit = {
+        promise success ResultSet(result, session.protocolVersion)
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        Manager.logger.error(s"Failed to execute query $st", err)
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(future, callback, executor)
+    promise
+  }
+
+  override def fromGuava(in: Statement)(
+    implicit session: Session,
     ctx: ExecutionContextExecutor
   ): Future[ResultSet] = statementToFuture(in)
+
+  override def fromGuava[T](source: ListenableFuture[T])(
+    implicit executor: ExecutionContextExecutor
+  ): Future[T] = ???
 }
