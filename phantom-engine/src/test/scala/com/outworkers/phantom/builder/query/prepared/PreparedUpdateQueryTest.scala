@@ -45,20 +45,48 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (initial, afterUpdate) => {
-        initial shouldBe defined
-        initial.value shouldEqual recipe
+    whenReady(chain) { case (initial, afterUpdate) =>
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.url shouldEqual recipe.url
-        afterUpdate.value.props shouldEqual recipe.props
-        afterUpdate.value.ingredients shouldEqual recipe.ingredients
-        afterUpdate.value.servings shouldEqual recipe.servings
-        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        afterUpdate.value.uid shouldEqual recipe.uid
-        afterUpdate.value.description shouldEqual updated
-      }
+      initial shouldBe defined
+      initial.value shouldEqual recipe
+
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual recipe.uid
+      afterUpdate.value.description shouldEqual updated
+    }
+  }
+
+  it should "execute an asynchronous prepared update query with a single argument bind" in {
+    val updated = genOpt[ShortString].map(_.value)
+
+    val recipe = gen[Recipe]
+
+    val chain = for {
+      query <- database.recipes.update.where(_.url eqs ?).modify(_.description setTo ?).prepareAsync()
+      store <- database.recipes.store(recipe).future()
+      get <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- query.bind(updated, recipe.url).future()
+      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (get, get2)
+
+    whenReady(chain) { case (initial, afterUpdate) =>
+
+      initial shouldBe defined
+      initial.value shouldEqual recipe
+
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual recipe.uid
+      afterUpdate.value.description shouldEqual updated
     }
   }
 
@@ -96,6 +124,41 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         afterUpdate.value.uid shouldEqual updatedUid
         afterUpdate.value.description shouldEqual updated
       }
+    }
+  }
+
+  it should "execute an async prepared update query with a three argument bind" in {
+
+    val updated = genOpt[ShortString].map(_.value)
+    val updatedUid = gen[UUID]
+
+    val recipe = gen[Recipe]
+
+    val chain = for {
+      query <- database.recipes
+        .update
+        .where(_.url eqs ?)
+        .modify(_.description setTo ?)
+        .and(_.uid setTo ?)
+        .prepareAsync()
+      store <- database.recipes.store(recipe).future()
+      get <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- query.bind(updated, updatedUid, recipe.url).future()
+      get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (get, get2)
+
+    whenReady(chain) { case (initial, afterUpdate) =>
+      initial shouldBe defined
+      initial.value shouldEqual recipe
+
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual updatedUid
+      afterUpdate.value.description shouldEqual updated
     }
   }
 }

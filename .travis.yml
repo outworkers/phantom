@@ -3,7 +3,19 @@ sudo: required
 dist: trusty
 scala:
 - 2.10.6
-- 2.11.8
+- 2.11.11
+
+cache:
+  directories:
+   - $HOME/.m2
+   - $HOME/.ivy2
+   - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
+
+before_cache:
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt -name "*.lock" -delete
+
 env:
   global:
   - GH_REF: github.com/outworkers/phantom.git
@@ -26,7 +38,7 @@ jdk:
 - oraclejdk8
 matrix:
   include:
-  - scala: 2.12.1
+  - scala: 2.12.2
     jdk: oraclejdk8
 addons:
   apt:

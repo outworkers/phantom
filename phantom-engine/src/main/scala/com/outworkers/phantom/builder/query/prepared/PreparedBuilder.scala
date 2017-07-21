@@ -57,17 +57,27 @@ class ExecutablePreparedSelectQuery[
   Limit <: LimitBound
 ](val st: Statement, fn: Row => R, val options: QueryOptions)
 
-abstract class PreparedFlattener(qb: CQLQuery)(
-  implicit session: Session, keySpace: KeySpace
-) extends SessionAugmenterImplicits {
+class PreparedFlattener(qb: CQLQuery)(
+  implicit session: Session,
+  keySpace: KeySpace
+) extends SessionAugmenterImplicits with CassandraOperations {
 
-  protected[this] val query: PreparedStatement = {
+  val protocolVersion: ProtocolVersion = session.protocolVersion
+
+  def query: PreparedStatement = {
     blocking(session.prepare(qb.queryString))
+  }
+
+  def async()(implicit executor: ExecutionContextExecutor): ScalaFuture[PreparedStatement] = {
+    ExactlyOncePromise(guavaToScala(session.prepareAsync(qb.queryString)).future).future
   }
 }
 
-class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
-  (implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
+class PreparedBlock[PS <: HList](
+  query: PreparedStatement,
+  protocolVersion: ProtocolVersion,
+  val options: QueryOptions
+)(implicit session: Session, keySpace: KeySpace) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
@@ -87,7 +97,7 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     val bb = binder.bind(
       query,
       v1,
-      session.protocolVersion
+      protocolVersion
     )
 
     new ExecutablePreparedQuery(bb, options)
@@ -105,7 +115,7 @@ class PreparedBlock[PS <: HList](val qb: CQLQuery, val options: QueryOptions)
     binder: BindHelper[V]
   ): ExecutablePreparedQuery = {
     new ExecutablePreparedQuery(
-      binder.bind(query, v, session.protocolVersion),
+      binder.bind(query, v, protocolVersion),
       options
     )
   }
@@ -116,8 +126,12 @@ class PreparedSelectBlock[
   R,
   Limit <: LimitBound,
   PS <: HList
-  ](qb: CQLQuery, fn: Row => R, options: QueryOptions)
-(implicit session: Session, keySpace: KeySpace) extends PreparedFlattener(qb) {
+](
+  query: PreparedStatement,
+  protocolVersion: ProtocolVersion,
+  fn: Row => R,
+  options: QueryOptions
+)(implicit session: Session, keySpace: KeySpace) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
@@ -137,7 +151,7 @@ class PreparedSelectBlock[
     val bb = binder.bind(
       query,
       v1,
-      session.protocolVersion
+      protocolVersion
     )
 
     new ExecutablePreparedSelectQuery(bb, fn, options)
@@ -155,7 +169,7 @@ class PreparedSelectBlock[
     binder: BindHelper[V]
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     new ExecutablePreparedSelectQuery(
-      binder.bind(query, v, session.protocolVersion),
+      binder.bind(query, v, protocolVersion),
       fn,
       options
     )

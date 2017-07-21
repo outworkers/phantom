@@ -39,6 +39,25 @@ private[phantom] trait CassandraOperations extends SessionAugmenterImplicits {
     statementToPromise(batch.statement)
   }
 
+  def guavaToScala[T](source: ListenableFuture[T])(
+    implicit executor: ExecutionContextExecutor
+  ): ScalaPromise[T] = {
+    val promise = ScalaPromise[T]()
+
+    val callback = new FutureCallback[T] {
+      def onSuccess(result: T): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(source, callback, executor)
+    promise
+  }
+
   protected[this] def statementToPromise(st: Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor

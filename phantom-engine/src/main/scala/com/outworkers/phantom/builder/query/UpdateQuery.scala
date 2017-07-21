@@ -27,6 +27,7 @@ import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 case class UpdateQuery[
@@ -58,8 +59,28 @@ case class UpdateQuery[
     P <: HList
   ] = UpdateQuery[T, R, L, O, S, C, P]
 
-  def prepare()(implicit session: Session, keySpace: KeySpace, ev: PS =:!= HNil): PreparedBlock[PS] = {
-    new PreparedBlock[PS](qb, options)
+  def prepare[Rev <: HList]()(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
   }
 
   protected[this] def create[
@@ -218,7 +239,28 @@ sealed case class AssignmentsQuery[
     rev2: Reverse.Aux[ModifyPrepared, Reversed],
     prepend: Prepend.Aux[Reversed, Rev, Out]
   ): PreparedBlock[Out] = {
-    new PreparedBlock(qb, options)
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock[Out](flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[
+    Rev <: HList,
+    Reversed <: HList,
+    Out <: HList
+  ]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend.Aux[Reversed, Rev, Out]
+  ): Future[PreparedBlock[Out]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
+    }
   }
 
   /**
@@ -261,7 +303,6 @@ sealed case class AssignmentsQuery[
     } else {
       copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
-
   }
 }
 
@@ -311,14 +352,29 @@ sealed case class ConditionalQuery[
     ttl(duration.toSeconds)
   }
 
-  def prepare[Rev <: HList, Rev2 <: HList, Out <: HList]()(
+  def prepare[Rev <: HList]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    rev2: Reverse.Aux[ModifyPrepared, Rev2],
-    prepend: Prepend.Aux[Rev2, Rev, Out]
-  ): PreparedBlock[Out] = new PreparedBlock(qb, options)
+    rev: Reverse.Aux[PS, Rev]
+  ): PreparedBlock[Rev] = {
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
+  }
 }
 
 object UpdateQuery {

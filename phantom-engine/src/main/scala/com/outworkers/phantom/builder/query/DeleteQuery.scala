@@ -21,13 +21,14 @@ import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
-import com.outworkers.phantom.builder.query.prepared.PreparedBlock
+import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
+
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class DeleteQuery[
   Table <: CassandraTable[Table, _],
@@ -79,7 +80,22 @@ class DeleteQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev]
   ): PreparedBlock[Rev] = {
-    new PreparedBlock(qb, options)
+    val flatten = new PreparedFlattener(qb)
+    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
+  }
+
+  def prepareAsync[Rev <: HList]()(
+    implicit session: Session,
+    executor: ExecutionContextExecutor,
+    keySpace: KeySpace,
+    ev: PS =:!= HNil,
+    rev: Reverse.Aux[PS, Rev]
+  ): Future[PreparedBlock[Rev]] = {
+    val flatten = new PreparedFlattener(qb)
+
+    flatten.async map { ps =>
+      new PreparedBlock(ps, flatten.protocolVersion, options)
+    }
   }
 
   def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
