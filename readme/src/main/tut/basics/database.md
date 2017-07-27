@@ -59,7 +59,7 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
-```tut:silent
+```tut
 
 import com.datastax.driver.core.Session
 
@@ -107,7 +107,7 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
-```tut:silent
+```tut
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
@@ -119,7 +119,7 @@ abstract class Users extends Table[Users, User] {
   object email extends StringColumn
   object name extends StringColumn
 
-  def findById(id: UUID): Future[Option[User]] = {
+  def getById(id: UUID): Future[Option[User]] = {
     select.where(_.id eqs id).one()
   }
 }
@@ -129,14 +129,14 @@ abstract class UsersByEmail extends Table[UsersByEmail, User] {
   object id extends UUIDColumn
   object name extends StringColumn
 
-  def findByEmail(email: String): Future[Option[User]] = {
+  def getById(email: String): Future[Option[User]] = {
     select.where(_.email eqs email).one()
   }
 }
 
 class AppDatabase(
   override val connector: CassandraConnection
-) extends Database[AppDatabase](connector) {
+) extends Database[UserDatabase](connector) {
   object users extends Users with Connector
   object usersByEmail extends UsersByEmail with Connector
 }
@@ -157,8 +157,8 @@ trait UserService extends AppDatabaseProvider {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- db.users.storeRecord(user)
-      byEmail <- db.usersByEmail.storeRecord(user)
+      byId <- db.users.store(user)
+      byEmail <- db.usersByEmail.store(user)
     } yield byEmail
   }
 
@@ -182,7 +182,7 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
-```tut:silent
+```tut
 
 import com.outworkers.phantom.dsl._
 
@@ -207,27 +207,23 @@ And this is how you would use that provider trait now. We're going to assume Sca
 
 import com.outworkers.phantom.dsl._
 
-import org.scalatest._
+import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.phantom.dsl.context
 
-class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with OptionValues with BeforeAndAfterAll {
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
 
   val userService = new UserService with TestDatabaseProvider {}
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // all our tables will now be initialised automatically against the target keyspace.
-    userService.database.create()
+    database.create()
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
-    val user = User(
-      UUID.randomUUID,
-      "test@outworkers.com",
-      "John Doe"
-    )
-    
+    val user = User(...)
+
     val chain = for {
       store <- userService.store(user)
       byId <- userService.findById(user.id)
@@ -255,37 +251,30 @@ As far as we are concerned, that was of doing things is old school and deprecate
 
 For example:
 
-```tut:silent
-trait ExampleAdvancedQuery extends AppDatabaseProvider {
-  database.users.create.ifNotExists()
-}
+```scala
+database.users.create.ifNotExists()
 ```
 
 Now obviously that's the super simplistic example, so let's look at how you might implement more advanced scenarios. Phantom provides a full schema DSL including all alter and create query options so it should be quite trivial to implement any kind of query no matter how complex.
 
 Without respect to how effective these settings would be in a production environment(no do not try at home), this is meant to illustrate that you could create very complex queries with the existing DSL.
 
-```tut:silent
-
-trait ExampleAdvancedQuery extends AppDatabaseProvider {
-
-  val customCreate = database.users
-      .create.ifNotExists()
-      .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
-      .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-      .and(comment eqs "testing")
-      .and(read_repair_chance eqs 5D)
-      .and(dclocal_read_repair_chance eqs 5D)
-}
+```scala
+database.users
+  .create.ifNotExists()
+  .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+  .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+  .and(comment eqs "testing")
+  .and(read_repair_chance eqs 5D)
+  .and(dclocal_read_repair_chance eqs 5D)
 ```
 
 To override the settings that will be used during schema auto-generation at `Database` level, phantom provides the `autocreate` method inside every table which can be easily overriden. This is again an example of chaining numerous DSL methods and doesn't attempt to demonstrate any kind of effective production settings.
 
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
-```tut:silent
+```tut
 
-import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.dsl._
 
 class UserDatabase(
@@ -293,7 +282,7 @@ class UserDatabase(
 ) extends Database[UserDatabase](connector) {
 
   object users extends Users with Connector {
-    override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
+    def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
       create.ifNotExists()(keySpace)
         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
         .and(compression eqs LZ4Compressor.crc_check_chance(0.5))

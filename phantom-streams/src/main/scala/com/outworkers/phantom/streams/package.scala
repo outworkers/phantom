@@ -19,6 +19,7 @@ import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.batch.BatchType
 import com.outworkers.phantom.builder.LimitBound
+import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _}
@@ -26,6 +27,7 @@ import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomI
 import com.outworkers.phantom.streams.lib.EnumeratorPublisher
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
+
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
 
@@ -92,7 +94,7 @@ package object streams {
      *                      been reached yet. Useful in never-ending streams that will never been completed.
      * @param completionFn  a function that will be invoked when the stream is completed
      * @param errorFn       a function that will be invoked when an error occurs
-     * @param builder       an implicitly resolved [[RequestBuilder]] that wraps a phantom [[com.outworkers.phantom.builder.query.ExecutableStatement]].
+     * @param builder       an implicitly resolved [[RequestBuilder]] that wraps a phantom [[ExecutableStatement]].
      *                      Every T element that gets into the stream from the upstream is turned into a ExecutableStatement
      *                      by means of this builder.
      * @param system        the underlying [[ActorSystem]]. This [[org.reactivestreams.Subscriber]] implementation uses Akka

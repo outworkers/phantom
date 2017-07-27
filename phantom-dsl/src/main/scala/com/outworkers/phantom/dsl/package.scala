@@ -15,10 +15,10 @@
  */
 package com.outworkers.phantom
 
-import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.util.{Date, Random}
+import java.util.Random
 
+import cats.Monad
+import cats.instances.FutureInstances
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
@@ -28,6 +28,7 @@ import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperatio
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
@@ -35,14 +36,17 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
+import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.joda.time.DateTimeZone
-import shapeless.{::, HNil}
+import shapeless.{::, Generic, HList, HNil}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.collection.generic.CanBuildFrom
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
-package object dsl extends ImplicitMechanism with CreateImplicits
+package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
+  with FutureInstances
   with UsingClauseOperations
   with KeySpaceConstruction
   with DeleteImplicits
@@ -51,128 +55,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
 
   trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with TableAliases[T, R] with RootConnector
-
-  @deprecated("Use Column[Type] without passing in the 'this' argument", "2.9.0")
-  type Column[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.Column[Owner, Record, T]
-
-  @deprecated("Use Column[Type] without passing in the 'this' argument", "2.9.0")
-  type PrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.PrimitiveColumn[Owner, Record, T]
-
-  @deprecated("Use OptionalCol[Type] without passing in the 'this' argument", "2.9.0")
-  type OptionalColumn[Owner <: CassandraTable[Owner, Record], Record, T] =  com.outworkers.phantom.column.OptionalColumn[Owner, Record, T]
-
-  @deprecated("Use OptionalCol[Type] without passing in the 'this' argument", "2.9.0")
-  type OptionalPrimitiveColumn[Owner <: CassandraTable[Owner, Record], Record, T] = com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, T]
-
-  @deprecated("Use BigDecimalColumn without passing in the 'this' argument", "2.9.0")
-  type BigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, BigDecimal]
-
-  @deprecated("Use BlobColumn without passing in the 'this' argument", "2.9.0")
-  type BlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = PrimitiveColumn[Owner, Record, ByteBuffer]
-
-  @deprecated("Use BigIntColumn without passing in the 'this' argument", "2.9.0")
-  type BigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, BigInt]
-
-  @deprecated("Use BooleanColumn without passing in the 'this' argument", "2.9.0")
-  type BooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Boolean]
-
-  @deprecated("Use DateColumn without passing in the 'this' argument", "2.9.0")
-  type DateColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Date]
-
-  @deprecated("Use DateTimeColumn without passing in the 'this' argument", "2.9.0")
-  type DateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, DateTime]
-
-  @deprecated("Use LocalDateColumn without passing in the 'this' argument", "2.9.0")
-  type LocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, LocalDate]
-
-  @deprecated("Use DoubleColumn without passing in the 'this' argument", "2.9.0")
-  type DoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Double]
-
-  @deprecated("Use FloatColumn without passing in the 'this' argument", "2.9.0")
-  type FloatColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Float]
-
-  @deprecated("Use IntColumn without passing in the 'this' argument", "2.9.0")
-  type IntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Int]
-
-  @deprecated("Use SmallIntColumn without passing in the 'this' argument", "2.9.0")
-  type SmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Short]
-
-  @deprecated("Use TinyIntColumn without passing in the 'this' argument", "2.9.0")
-  type TinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Byte]
-
-  @deprecated("Use InetAddressColumn without passing in the 'this' argument", "2.9.0")
-  type InetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, InetAddress]
-
-  @deprecated("Use LongColumn without passing in the 'this' argument", "2.9.0")
-  type LongColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, Long]
-
-  @deprecated("Use StringColumn without passing in the 'this' argument", "2.9.0")
-  type StringColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, String]
-
-  @deprecated("Use UUIDColumn without passing in the 'this' argument", "2.9.0")
-  type UUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = PrimitiveColumn[Owner, Record, UUID]
-
-  @deprecated("Use CounterColumn without passing in the 'this' argument", "2.9.0")
-  type CounterColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.CounterColumn[Owner, Record]
-
-  @deprecated("Use TimeUUIDColumn without passing in the 'this' argument", "2.9.0")
-  type TimeUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = com.outworkers.phantom.column.TimeUUIDColumn[Owner, Record]
-
-  @deprecated("Use OptionalBlobColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalBlobColumn[Owner <: CassandraTable[Owner, Record], Record, T] = OptionalPrimitiveColumn[Owner, Record, ByteBuffer]
-
-  @deprecated("Use OptionalBigDecimalColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalBigDecimalColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, BigDecimal]
-
-  @deprecated("Use OptionalBigIntColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalBigIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, BigInt]
-
-  @deprecated("Use OptionalBooleanColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalBooleanColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Boolean]
-
-  @deprecated("Use OptionalDateColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Date]
-
-  @deprecated("Use OptionalDateTimeColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalDateTimeColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, DateTime]
-
-  @deprecated("Use OptionalLocalDateColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalLocalDateColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, LocalDate]
-
-  @deprecated("Use OptionalDoubleColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalDoubleColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Double]
-
-  @deprecated("Use OptionalFloatColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalFloatColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Float]
-
-  @deprecated("Use OptionalIntColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Int]
-
-  @deprecated("Use OptionalSmallIntColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalSmallIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Short]
-
-  @deprecated("Use OptionalTinyIntColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalTinyIntColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Byte]
-
-  @deprecated("Use OptionalInetAddressColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalInetAddressColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, InetAddress]
-
-  @deprecated("Use OptionalLongColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalLongColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, Long]
-
-  @deprecated("Use OptionalStringColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalStringColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, String]
-
-  @deprecated("Use OptionalUUIDColumn without passing in the 'this' argument", "2.9.0")
-  type OptionalUUIDColumn[Owner <: CassandraTable[Owner, Record], Record] = OptionalPrimitiveColumn[Owner, Record, UUID]
-
-  @deprecated("Use OptionalTimeUUIDColumn without passing in the 'this' argument", "2.9.0")
-  class OptionalTimeUUIDColumn[
-    Owner <: CassandraTable[Owner, Record],
-    Record
-  ](t: CassandraTable[Owner, Record])(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.OptionalPrimitiveColumn[Owner, Record, UUID](t) {
-    override val cassandraType = CQLSyntax.Types.TimeUUID
-  }
 
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
@@ -192,7 +74,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
   type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.outworkers.phantom.Row
-  type ResultSet = com.datastax.driver.core.ResultSet
+  type ResultSet = com.outworkers.phantom.ResultSet
   type Session = com.datastax.driver.core.Session
   type KeySpace = com.outworkers.phantom.connectors.KeySpace
   val KeySpace = com.outworkers.phantom.connectors.KeySpace
@@ -209,9 +91,9 @@ package object dsl extends ImplicitMechanism with CreateImplicits
 
   val Version = DefaultVersions
 
-  type ListResult[R] = com.outworkers.phantom.builder.query.ListResult[R]
-  type IteratorResult[R] = com.outworkers.phantom.builder.query.IteratorResult[R]
-  type RecordResult[R] = com.outworkers.phantom.builder.query.RecordResult[R]
+  type ListResult[R] = com.outworkers.phantom.builder.query.execution.ListResult[R]
+  type IteratorResult[R] = com.outworkers.phantom.builder.query.execution.IteratorResult[R]
+  type RecordResult[R] = com.outworkers.phantom.builder.query.execution.RecordResult[R]
 
   type Primitive[RR] = com.outworkers.phantom.builder.primitives.Primitive[RR]
   val Primitive = com.outworkers.phantom.builder.primitives.Primitive
@@ -233,13 +115,14 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     val SERIAL = CLevel.SERIAL
   }
 
-  def cql(str: CQLQuery): ExecutableStatement = new ExecutableStatement {
+  def cql(str: CQLQuery): QueryInterface[Future] = new QueryInterface[Future]() {
+
     override def options: QueryOptions = QueryOptions.empty
 
     override def qb: CQLQuery = str
   }
 
-  def cql(str: String): ExecutableStatement = cql(CQLQuery(str))
+  def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
 
   type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
@@ -279,11 +162,7 @@ package object dsl extends ImplicitMechanism with CreateImplicits
    *   KeySpace("test").ifNotExists
    * }}}
    */
-  implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = {
-    new RootSerializer(k)
-  }
-
-  implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
+  implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = new RootSerializer(k)
 
   implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey) extends AnyVal {
 
@@ -522,13 +401,27 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     Owner <: CassandraTable[Owner, Record],
     Record, T
   ](col: Column[Owner, Record, T]) extends SelectColumn[T](col) {
-    def apply(r: Row): T = col.apply(r)
+    def apply(r: Row): T = col(r)
   }
 
   implicit class SelectColumnOptional[
     Owner <: CassandraTable[Owner, Record],
     Record, T
   ](col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
-    def apply(r: Row): Option[T] = col.apply(r)
+    def apply(r: Row): Option[T] = col(r)
   }
+
+  implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
+    def executable()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor,
+      cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+    ): ExecutableStatements[Future, M] = {
+      implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
+      new ExecutableStatements[Future, M](qc)
+    }
+  }
+
+  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
+
 }
