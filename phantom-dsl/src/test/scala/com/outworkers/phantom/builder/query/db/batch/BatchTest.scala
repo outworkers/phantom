@@ -20,8 +20,6 @@ import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
 import org.joda.time.DateTime
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class BatchTest extends PhantomSuite {
 
@@ -32,6 +30,7 @@ class BatchTest extends PhantomSuite {
 
   it should "get the correct count for batch queries" in {
     val row = gen[JodaRow]
+
     val statement3 = database.primitivesJoda.update
       .where(_.pkey eqs row.pkey)
       .modify(_.intColumn setTo row.intColumn)
@@ -42,6 +41,7 @@ class BatchTest extends PhantomSuite {
 
     val batch = Batch.logged.add(statement3, statement4)
 
+    batch.iterator.size shouldEqual 2
   }
 
   ignore should "serialize a multiple table batch query applied to multiple statements" in {
@@ -176,8 +176,6 @@ class BatchTest extends PhantomSuite {
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
-
-    //Await.result(batch.future(), 10.seconds)
 
     val chain = for {
       s1 <- database.primitivesJoda.store(row).future()

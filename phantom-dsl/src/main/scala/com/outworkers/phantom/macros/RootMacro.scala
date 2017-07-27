@@ -15,9 +15,10 @@
  */
 package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
+import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.keys.SASIIndex
+import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.collection.generic.CanBuildFrom
@@ -25,7 +26,7 @@ import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
 @macrocompat.bundle
-trait RootMacro extends HListHelpers {
+trait RootMacro extends HListHelpers with WhiteboxToolbelt {
   val c: whitebox.Context
   import c.universe._
 
@@ -283,11 +284,8 @@ trait RootMacro extends HListHelpers {
         }
 
         val finalDefinitions = unmatchedColumnInserts ++ insertions
-        c.info(
-          c.enclosingPosition,
-          s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}",
-          force = false
-        )
+
+        info(s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}")
 
         val tree = q"""$tableTerm.insert.values(..$finalDefinitions)"""
         Some(tree)
@@ -327,11 +325,7 @@ trait RootMacro extends HListHelpers {
       if (unmatchedColumns.isEmpty) {
         Some(mkHListType(recordType :: Nil))
       } else {
-        c.info(
-          c.enclosingPosition,
-          s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}",
-          force = false
-        )
+        info(s"Found unmatched columns for ${printType(tableTpe)}: ${debugList(unmatchedColumns)}")
 
         val cols = unmatchedColumns.map(_.tpe) :+ recordType
 
