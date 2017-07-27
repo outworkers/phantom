@@ -21,6 +21,7 @@ package object debug {
     sealed trait ShowCache
     sealed trait ShowAborts
     sealed trait ShowBoundStatements
+    sealed trait ShowCompileLog
   }
 
 
@@ -31,6 +32,12 @@ package object debug {
       * to the console during compilation
       */
     implicit object ShowTrees extends optionTypes.ShowTrees
+
+    /**
+      * Shows the internal compilation log for phantom tables.
+      * If this is not imported all the c.info level logs are hidden.
+      */
+    implicit object ShowLog extends optionTypes.ShowCompileLog
 
     /**
       * Import this value to have Iota print the cached computations

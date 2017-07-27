@@ -44,15 +44,10 @@ private[phantom] trait WhiteboxToolbelt {
 
   import c.universe._
 
-  def info(msg: String, force: Boolean = false): Unit = c.info(c.enclosingPosition, msg, force)
-
-  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
-
-  def echo(msg: String): Unit = c.echo(c.enclosingPosition, msg)
-
-  def warning(msg: String): Unit = c.warning(c.enclosingPosition, msg)
-
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
+
+  lazy val showLogs =
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).isEmpty
 
   lazy val showAborts =
     !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty
@@ -82,4 +77,23 @@ private[phantom] trait WhiteboxToolbelt {
         b
     }
   }
+
+
+  def info(msg: String, force: Boolean = false): Unit = {
+    if (showLogs) {
+      c.info(c.enclosingPosition, msg, force)
+    }
+  }
+
+  def echo(msg: String): Unit = {
+    if (showLogs) {
+      c.echo(c.enclosingPosition, msg)
+    }
+  }
+
+  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
+
+
+  def warning(msg: String): Unit = c.warning(c.enclosingPosition, msg)
+
 }

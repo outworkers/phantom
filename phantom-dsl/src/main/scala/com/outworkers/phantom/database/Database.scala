@@ -25,8 +25,6 @@ import com.outworkers.phantom.macros.DatabaseHelper
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
 
-private object Lock
-
 abstract class Database[
   DB <: Database[DB]
 ](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
