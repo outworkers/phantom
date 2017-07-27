@@ -71,7 +71,7 @@ case class UpdateQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -79,7 +79,7 @@ case class UpdateQuery[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
@@ -249,6 +249,7 @@ sealed case class AssignmentsQuery[
   }
 
   def prepareAsync[
+    P[_],
     F[_],
     Rev <: HList,
     Reversed <: HList,
@@ -263,7 +264,7 @@ sealed case class AssignmentsQuery[
     prepend: Prepend.Aux[Reversed, Rev, Out],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Out]] = {
     val flatten = new PreparedFlattener(qb)
 
@@ -371,7 +372,7 @@ sealed case class ConditionalQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -379,7 +380,7 @@ sealed case class ConditionalQuery[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 

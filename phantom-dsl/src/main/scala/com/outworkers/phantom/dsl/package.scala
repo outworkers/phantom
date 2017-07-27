@@ -43,7 +43,7 @@ import shapeless.{::, Generic, HList, HNil}
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-package object dsl extends ImplicitMechanism with CreateImplicits
+package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateImplicits
   with SelectImplicits
   with Operators
   with FutureInstances
@@ -422,33 +422,6 @@ package object dsl extends ImplicitMechanism with CreateImplicits
     }
   }
 
-  implicit val scalaGuavaAdapter: GuavaAdapter[Future] = ScalaGuavaAdapter
-
-  implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) extends AnyVal {
-
-    def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
-      implicit keySpace: KeySpace,
-      session: Session,
-      thl: TableHelper.Aux[T, R, Repr],
-      ex: ExecutionContextExecutor,
-      gen: Generic.Aux[V1, HL],
-      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ev: Out ==:== Repr
-    ): Future[ResultSet] = scalaGuavaAdapter.fromGuava(table.store(input).executableQuery)
-
-    def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
-      implicit keySpace: KeySpace,
-      session: Session,
-      thl: TableHelper.Aux[T, R, Repr],
-      ex: ExecutionContextExecutor,
-      gen: Generic.Aux[V1, HL],
-      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ev: Out ==:== Repr,
-      cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]]
-    ): Future[M[ResultSet]] = {
-      Future.traverse(inputs)(el => storeRecord(el))
-    }
-
-  }
+  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
 
 }

@@ -17,9 +17,10 @@ package com.outworkers.phantom.ops
 
 import cats.Monad
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatements, QueryCollection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection}
 import com.outworkers.phantom.database.Database
 
+import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
 
 abstract class DbOps[
@@ -30,7 +31,9 @@ abstract class DbOps[
 
   import db._
 
-  def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M]): ExecutableStatements[F, M]
+  def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
+    implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+  ): ExecutableStatements[F, M]
 
   def defaultTimeout: Timeout
 

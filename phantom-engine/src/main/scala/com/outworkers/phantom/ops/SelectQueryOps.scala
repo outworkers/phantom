@@ -32,6 +32,7 @@ import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContextExecutor
 
 class SelectQueryOps[
+  P[_],
   F[_],
   Table <: CassandraTable[Table, _],
   Record,
@@ -96,7 +97,7 @@ class SelectQueryOps[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
     val flatten = new PreparedFlattener(qb)
 

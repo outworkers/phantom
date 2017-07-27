@@ -19,27 +19,29 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import cats.Monad
 
-trait PromiseInterface[F[_]] {
+trait PromiseInterface[P[_], F[_]] {
 
-  def empty[T]: F[T]
+  def empty[T]: P[T]
 
-  def become[T](source: F[T], value: F[T]): F[T]
+  def become[T](source: P[T], value: F[T]): P[T]
+
+  def future[T](source: P[T]): F[T]
 }
 
-class ExactlyOncePromise[F[_], T](
+class ExactlyOncePromise[P[_], F[_], T](
   fn: => F[T]
 )(
   implicit fMonad: Monad[F],
-  interface: PromiseInterface[F]
+  interface: PromiseInterface[P, F]
 ) {
 
-  private[this] val promise: F[T] = interface.empty[T]
+  private[this] val promise: P[T] = interface.empty[T]
 
-  def future: F[T] = init
+  def future: F[T] = interface.future(promise)
 
   private[this] val flag = new AtomicBoolean(false)
 
-  private[this] def init: F[T] = {
+  private[this] def init: P[T] = {
     if (flag.compareAndSet(false, true)) {
       interface.become(promise, fn)
     }

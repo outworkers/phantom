@@ -87,7 +87,7 @@ case class DeleteQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -95,11 +95,11 @@ case class DeleteQuery[
     rev: Reverse.Aux[PS, Rev],
     monad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
-    flatten.async[F]() map { ps =>
+    flatten.async() map { ps =>
       new PreparedBlock(ps, flatten.protocolVersion, options)
     }
   }

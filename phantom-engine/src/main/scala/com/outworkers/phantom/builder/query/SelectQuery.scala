@@ -112,7 +112,7 @@ case class SelectQuery[
     new PreparedSelectBlock[Table, Record, Limit, Rev] (flatten.query, flatten.protocolVersion, rowFunc, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -120,7 +120,7 @@ case class SelectQuery[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
     val flatten = new PreparedFlattener(qb)
 

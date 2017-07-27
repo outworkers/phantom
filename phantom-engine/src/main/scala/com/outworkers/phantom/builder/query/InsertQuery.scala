@@ -124,7 +124,7 @@ case class InsertQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -132,7 +132,7 @@ case class InsertQuery[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
@@ -240,7 +240,7 @@ class InsertJsonQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[F[_], Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
@@ -248,7 +248,7 @@ class InsertJsonQuery[
     rev: Reverse.Aux[PS, Rev],
     fMonad: Monad[F],
     adapter: GuavaAdapter[F],
-    interface: PromiseInterface[F]
+    interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
