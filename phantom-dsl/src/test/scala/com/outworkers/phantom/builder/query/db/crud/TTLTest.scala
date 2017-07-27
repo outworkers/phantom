@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.query.prepared._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.PrimitiveRecord
 import com.outworkers.util.samplers._

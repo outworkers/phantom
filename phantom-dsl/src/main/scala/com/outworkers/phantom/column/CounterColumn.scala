@@ -16,7 +16,6 @@
 package com.outworkers.phantom.column
 
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.keys.Unmodifiable
 import com.outworkers.phantom.{CassandraTable, Row}
@@ -38,8 +37,6 @@ class CounterColumn[
   def parse(r: Row): Try[Long] = primitive.fromRow(name, r) recover {
     case e: Exception if r.isNull(name) => 0L
   }
-
-  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
 
   override def asCql(v: Long): String = primitive.asCql(v)
 }
