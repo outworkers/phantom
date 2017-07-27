@@ -19,12 +19,9 @@ import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
-import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
-import org.joda.time.{DateTime, DateTimeZone}
-
-import scala.concurrent.Future
+import com.outworkers.phantom.tables.TimeUUIDRecord
+import com.outworkers.util.samplers._
 
 class OrderByTest extends PhantomSuite {
 
@@ -48,27 +45,26 @@ class OrderByTest extends PhantomSuite {
     } yield (get, desc)
 
 
-    whenReady(chain) {
-      case (asc, desc) =>
-        val orderedAsc = records.sortWith((a, b) => { a.id.compareTo(b.id) <= 0 })
+    whenReady(chain) { case (asc, desc) =>
+      val orderedAsc = records.sortWith((a, b) => { a.id.compareTo(b.id) <= 0 })
 
-        info("The ascending results retrieved from the DB")
-        info(asc.mkString("\n"))
+      info("The ascending results retrieved from the DB")
+      info(asc.mkString("\n"))
 
-        info("The ascending results expected")
-        info(orderedAsc.mkString("\n"))
+      info("The ascending results expected")
+      info(orderedAsc.mkString("\n"))
 
-        asc should contain theSameElementsAs orderedAsc
+      asc should contain theSameElementsAs orderedAsc
 
-        val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
+      val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
 
-        info("The descending results retrieved from the DB")
-        info(desc.mkString("\n"))
+      info("The descending results retrieved from the DB")
+      info(desc.mkString("\n"))
 
-        info("The descending results expected")
-        info(orderedDesc.mkString("\n"))
+      info("The descending results expected")
+      info(orderedDesc.mkString("\n"))
 
-        desc should contain theSameElementsAs orderedDesc
+      desc should contain theSameElementsAs orderedDesc
     }
   }
 

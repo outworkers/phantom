@@ -15,11 +15,10 @@
  */
 package com.outworkers.phantom.column
 
-import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.keys.Unmodifiable
+import com.outworkers.phantom.{CassandraTable, Row}
 
 import scala.util.Try
 
@@ -35,9 +34,9 @@ class CounterColumn[
 
   override val isCounterColumn = true
 
-  def parse(r: Row): Try[Long] = primitive.fromRow(name, r)
-
-  override def qb: CQLQuery = CQLQuery(name).forcePad.append(cassandraType)
+  def parse(r: Row): Try[Long] = primitive.fromRow(name, r) recover {
+    case e: Exception if r.isNull(name) => 0L
+  }
 
   override def asCql(v: Long): String = primitive.asCql(v)
 }

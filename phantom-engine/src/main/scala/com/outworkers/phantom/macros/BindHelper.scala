@@ -16,7 +16,7 @@
 package com.outworkers.phantom.macros
 
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, ProtocolVersion}
-import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, WhiteboxToolbelt}
+import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
 

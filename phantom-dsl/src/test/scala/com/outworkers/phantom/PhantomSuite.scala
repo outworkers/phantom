@@ -18,7 +18,6 @@ package com.outworkers.phantom
 import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.database.DatabaseProvider
 import com.outworkers.phantom.tables.TestDatabase
 import org.json4s.Formats

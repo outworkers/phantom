@@ -17,16 +17,14 @@ package com.outworkers.phantom.builder.query.db.specialized
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Recipe, TestDatabase}
+import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
-
-import scala.concurrent.duration._
 
 class ConditionalQueriesTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.create.ifNotExists().future().block(defaultScalaTimeout)
+    database.recipes.create.ifNotExists().future().block(defaultScalaTimeout)
   }
 
   it should "update the record if the optional column based condition matches" in {
@@ -35,28 +33,26 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description).future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
-        info("The first record should not be empty")
-        initial shouldBe defined
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        initial shouldBe defined
+      info("The updated record should not be empty")
+      initial shouldBe defined
 
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 
@@ -66,28 +62,26 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is recipe.ingredients).future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
-        info("The first record should not be empty")
-        initial shouldBe defined
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        initial shouldBe defined
+      info("The updated record should not be empty")
+      initial shouldBe defined
 
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 
@@ -97,28 +91,26 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is invalidMatch).future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
-        info("The first record should not be empty")
-        initial shouldBe defined
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        second shouldBe defined
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("And it shouldn't have updated the value")
-        second.value.description shouldNot equal(updated)
-      }
+      info("And it shouldn't have updated the value")
+      second.value.description shouldNot equal(updated)
     }
   }
 
@@ -128,29 +120,27 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is updated).future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
+    whenReady(chain) { case (initial, second) =>
 
-        info("The first record should not be empty")
-        initial shouldBe defined
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        second shouldBe defined
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldNot equal(updated)
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldNot equal(updated)
     }
   }
 
@@ -160,31 +150,29 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.uid is recipe.uid).future()
 
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
+    whenReady(chain) { case (initial, second) =>
 
-        info("The first record should not be empty")
-        initial shouldBe defined
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        second shouldBe defined
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 
@@ -194,31 +182,28 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.lastcheckedat is recipe.lastCheckedAt)
         .and(_.uid is recipe.uid).future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("The first record should not be empty")
-        initial shouldBe defined
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("The updated record should not be empty")
-        second shouldBe defined
-
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 
@@ -228,31 +213,28 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.ingredients is recipe.ingredients)
         .future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("The first record should not be empty")
-        initial shouldBe defined
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("The updated record should not be empty")
-        second shouldBe defined
-
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 
@@ -262,31 +244,29 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- TestDatabase.recipes.store(recipe).future()
-      select1 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
-      update <- TestDatabase.recipes.update.where(_.url eqs recipe.url)
+      insert <- database.recipes.store(recipe).future()
+      select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
+      update <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.uid is recipe.uid)
         .and(_.ingredients is recipe.ingredients)
         .future()
-      select2 <- TestDatabase.recipes.select.where(_.url eqs recipe.url).one()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select1, select2)
 
-    whenReady(chain) {
-      case (initial, second) => {
-        info("The first record should not be empty")
-        initial shouldBe defined
+    whenReady(chain) { case (initial, second) =>
+      info("The first record should not be empty")
+      initial shouldBe defined
 
-        info("And it should match the inserted values")
-        initial.value.url shouldEqual recipe.url
+      info("And it should match the inserted values")
+      initial.value.url shouldEqual recipe.url
 
-        info("The updated record should not be empty")
-        second shouldBe defined
+      info("The updated record should not be empty")
+      second shouldBe defined
 
-        info("And it should contain the updated value of the uid")
-        second.value.description shouldEqual updated
-      }
+      info("And it should contain the updated value of the uid")
+      second.value.description shouldEqual updated
     }
   }
 }
