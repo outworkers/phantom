@@ -23,17 +23,14 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection}
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
-import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
+import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
 
-import scala.collection.generic.CanBuildFrom
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
 /**
  * Main representation of a Cassandra table.

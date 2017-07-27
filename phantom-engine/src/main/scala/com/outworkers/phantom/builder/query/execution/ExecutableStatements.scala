@@ -53,13 +53,11 @@ class ExecutableStatements[
   F[_],
   M[X] <: TraversableOnce[X]
 ](val queryCol: QueryCollection[M])(
-  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
-  fMonad: Monad[F],
+  implicit fMonad: Monad[F],
   adapter: GuavaAdapter[F]
 ) {
   def sequencedTraverse[A, B](in: M[A])(fn: A => F[B])(
-    implicit executor: ExecutionContextExecutor,
-    cbf: CanBuildFrom[M[A], B, M[B]]
+    implicit cbf: CanBuildFrom[M[A], B, M[B]]
   ): F[M[B]] = {
     in.foldLeft(fMonad.pure(cbf(in))) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
@@ -75,8 +73,7 @@ class ExecutableStatements[
     * @return          the `Future` of the `TraversableOnce` of results
     */
   def parallel[A](in: M[F[A]])(
-    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
-    executor: ExecutionContextExecutor
+    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]]
   ): F[M[A]] = {
     in.foldLeft(fMonad.pure(cbf(in))) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
@@ -98,9 +95,9 @@ class ExecutableStatements[
 
     val builder = fbf()
 
-    for (q <- queryCol.queries) builder += adapter.fromGuava(q.statement())
+    for (q <- queryCol.queries) builder += adapter.fromGuava(q)
 
-    parallel(builder.result())(ebf, ec)
+    parallel(builder.result())(ebf)
   }
 
   def sequence()(
