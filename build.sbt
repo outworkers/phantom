@@ -167,7 +167,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings)
   .settings(
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
