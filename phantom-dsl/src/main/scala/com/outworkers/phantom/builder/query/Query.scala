@@ -31,8 +31,9 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, val options: QueryOptions) extends SessionAugmenterImplicits
-
+] extends SessionAugmenterImplicits {
+  def executableQuery: ExecutableCqlQuery
+}
 
 abstract class Query[
   Table <: CassandraTable[Table, _],
@@ -44,13 +45,11 @@ abstract class Query[
   PS <: HList
 ](
   table: Table,
-  override val qb: CQLQuery,
+  val qb: CQLQuery,
   row: Row => Record,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions
-) extends RootQuery[Table, Record, Status](table, qb, options) {
-
-  def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  val options: QueryOptions
+) extends RootQuery[Table, Record, Status] {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],

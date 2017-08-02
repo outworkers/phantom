@@ -66,6 +66,7 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     BatchWithQuery(options(batch), strings.mkString("\n"), batchType)
   }
 
+  def queryString: String = makeBatch().debugString
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   final def consistencyLevel_=(level: ConsistencyLevel)(
@@ -73,19 +74,9 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     session: Session
   ): BatchQuery[Specified] = {
     if (session.protocolConsistency) {
-      new BatchQuery[Specified](
-        iterator,
-        batchType,
-        usingPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new BatchQuery[Specified](
-        iterator,
-        batchType,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 

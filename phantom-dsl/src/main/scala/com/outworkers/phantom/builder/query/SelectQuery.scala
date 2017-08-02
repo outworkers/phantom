@@ -31,7 +31,7 @@ import shapeless.{::, =:!=, HList, HNil}
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 import cats.syntax.functor._
-import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 
 case class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -200,6 +200,8 @@ case class SelectQuery[
   ): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
     copy(orderPart = orderPart append clauses.map(_(table).qb).toList)
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 private[phantom] class RootSelectBlock[

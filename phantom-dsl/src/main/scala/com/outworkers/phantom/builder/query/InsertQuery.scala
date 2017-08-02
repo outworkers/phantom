@@ -46,7 +46,7 @@ case class InsertQuery[
   private val usingPart: UsingPart = UsingPart.empty,
   private val lightweightPart: LightweightPart = LightweightPart.empty,
   options: QueryOptions = QueryOptions.empty
-) extends Batchable with SessionAugmenterImplicits {
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   final def json(value: String): InsertJsonQuery[Table, Record, Status, PS] = {
     new InsertJsonQuery(

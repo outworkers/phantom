@@ -17,8 +17,9 @@ package com.outworkers.phantom.ops
 
 import cats.Monad
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.{CassandraTable, ResultSet}
-import com.outworkers.phantom.builder.query.SelectQuery
+import com.outworkers.phantom.builder.query.{RootQuery, SelectQuery}
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection}
 import com.outworkers.phantom.connectors.KeySpace
@@ -44,6 +45,23 @@ abstract class QueryContext[P[_], F[_], Timeout](
   }
 
   def await[T](f: F[T], timeout: Timeout): T
+
+  implicit class BatchOps[Status <: ConsistencyBound](val query: BatchQuery[Status]) {
+    def future()(implicit session: Session, ctx: ExecutionContextExecutor): F[ResultSet] = {
+      adapter.executeBatch(query.makeBatch())
+    }
+  }
+
+  implicit class RootQueryOps[
+    Table <: CassandraTable[Table, _],
+    Record,
+    Status <: ConsistencyBound
+  ](val query: RootQuery[Table, Record, Status]) {
+    def future()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): F[ResultSet] = adapter.fromGuava(query.executableQuery)
+  }
 
   implicit class SelectOps[
     Table <: CassandraTable[Table, _],

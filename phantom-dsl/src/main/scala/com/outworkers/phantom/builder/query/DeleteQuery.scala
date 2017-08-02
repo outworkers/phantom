@@ -183,6 +183,8 @@ case class DeleteQuery[
   }
 
   override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 

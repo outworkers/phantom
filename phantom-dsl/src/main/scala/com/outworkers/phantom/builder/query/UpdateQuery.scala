@@ -181,6 +181,8 @@ case class UpdateQuery[
       options
     )
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 sealed case class AssignmentsQuery[
