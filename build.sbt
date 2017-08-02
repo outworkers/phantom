@@ -191,36 +191,6 @@ lazy val readme = (project in file("readme"))
     phantomThrift
   ).enablePlugins(TutPlugin, CrossPerProjectPlugin)
 
-lazy val phantomEngine = (project in file("phantom-engine"))
-  .settings(sharedSettings: _*)
-  .settings(
-    name := "phantom-engine",
-    moduleName := "phantom-engine",
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
-    ),
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-      "org.typelevel"                %% "cats"                              % "0.9.0",
-      "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
-      "joda-time"                    %  "joda-time"                         % Versions.joda,
-      "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
-      "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-      "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
-      "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
-      "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
-      "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
-      "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
-      "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
-      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
-      "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
-    )
-  ).dependsOn(
-  phantomConnectors
-)
-
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)
   .settings(
@@ -249,7 +219,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
     )
   ).dependsOn(
-    phantomEngine % "compile->compile;test->test;"
+    phantomConnectors
   ).enablePlugins(
     CrossPerProjectPlugin
   )
