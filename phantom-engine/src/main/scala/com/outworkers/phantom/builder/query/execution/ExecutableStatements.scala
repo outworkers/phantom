@@ -89,7 +89,7 @@ class ExecutableStatements[
   def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    fbf: CanBuildFrom[Nothing, F[ResultSet], M[F[ResultSet]]],
+    fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
     ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
 

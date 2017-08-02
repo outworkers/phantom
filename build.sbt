@@ -40,6 +40,14 @@ lazy val Versions = new {
   val macroParadise = "2.1.0"
   val circe = "0.8.0"
 
+
+  val scala = new {
+    val scala210 = "2.10.6"
+    val scala211 = "2.11.11"
+    val scala212 = "2.11.3"
+    val all = Seq(scala210, scala211, scala212)
+  }
+
   val typesafeConfig: String = if (Publishing.isJdk8) {
     "1.3.1"
   } else {
@@ -161,7 +169,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
-    crossScalaVersions := Seq("2.11.11", "2.12.2"),
+    crossScalaVersions := Seq(Versions.scala.scala211, Versions.scala.scala212),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
@@ -218,7 +226,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(
     name := "phantom-dsl",
     moduleName := "phantom-dsl",
-    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+    crossScalaVersions := Versions.scala.all,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
@@ -250,7 +258,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
-    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+    crossScalaVersions := Versions.scala.all,
     testOptions in Test += Tests.Argument("-oF"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
@@ -272,7 +280,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
   ).settings(
     name := "phantom-connectors",
     moduleName := "phantom-connectors",
-    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+    crossScalaVersions := Versions.scala.all,
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -286,7 +294,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
-    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+    crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -303,7 +311,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
 
 lazy val phantomThrift = (project in file("phantom-thrift"))
   .settings(
-    crossScalaVersions := Seq("2.11.11", "2.12.2"),
+    crossScalaVersions := Seq(Versions.scala.scala211, Versions.scala.scala212),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -332,7 +340,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
     name := "phantom-sbt",
     moduleName := "phantom-sbt",
-    crossScalaVersions := Seq("2.10.6"),
+    crossScalaVersions := Seq(Versions.scala.scala210),
     publishMavenStyle := false,
     sbtPlugin := true,
     publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
@@ -350,7 +358,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2"),
+    crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -374,7 +382,7 @@ lazy val phantomExample = (project in file("phantom-example"))
   .settings(
     name := "phantom-example",
     moduleName := "phantom-example",
-    crossScalaVersions := Seq("2.11.11", "2.12.2"),
+    crossScalaVersions := Seq(Versions.scala.scala211, Versions.scala.scala212),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
@@ -395,7 +403,7 @@ lazy val phantomExample = (project in file("phantom-example"))
 lazy val phantomMonix = (project in file("phantom-monix"))
   .settings(
     name := "phantom-monix",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+    crossScalaVersions := Versions.scala.all,
     moduleName := "phantom-monix",
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
