@@ -22,7 +22,7 @@ import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
-import com.outworkers.phantom.builder.query.{RootQuery, SelectQuery}
+import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
@@ -143,6 +143,17 @@ abstract class QueryContext[P[_], F[_], Timeout](
     ): F[Option[R]] = future() map (_.value().map(query.fn))
 
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
+  }
+
+  implicit class CreateQueryOps[
+    Table <: CassandraTable[Table, Record],
+    Record,
+    Consistency <: ConsistencyBound
+  ](query: CreateQuery[Table, Record, Consistency]) {
+    def futur()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): F[Seq[ResultSet]] = new ExecutableStatements[F, Seq](query.queries).future()
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) {
