@@ -16,15 +16,17 @@
 package com.outworkers.phantom.ops
 
 import cats.Monad
+import cats.syntax.functor._
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.batch.BatchQuery
-import com.outworkers.phantom.{CassandraTable, ResultSet}
+import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query.{RootQuery, SelectQuery}
-import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
+import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.{Generic, HList}
 
 import scala.collection.generic.CanBuildFrom
@@ -73,7 +75,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     PS <: HList
   ](
     override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
-  ) extends SelectQueryOps(query)
+  ) extends SelectQueryOps(query) {
+    override def executableQuery: ExecutableCqlQuery = query.executableQuery
+  }
 
 
   implicit class DatabaseOperation[DB <: Database[DB]](
@@ -88,6 +92,57 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def defaultTimeout: Timeout = outer.defaultTimeout
 
     override def await[T](f: F[T], timeout: Timeout): T = outer.await(f, timeout)
+  }
+
+  implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) {
+    def future()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): F[ResultSet] = adapter.fromGuava(query.options(query.statement))
+  }
+
+  implicit class ExecutablePreparedSelect[
+    Table <: CassandraTable[Table, _],
+    R,
+    Limit <: LimitBound
+  ](query: ExecutablePreparedSelectQuery[Table, R, Limit]) extends ResultQueryInterface[F, Table, R, Limit] {
+    override def fromRow(r: Row): R = query.fromRow(r)
+
+    /**
+      * Default asynchronous query execution method. This will convert the underlying
+      * call to Cassandra done with Google Guava ListenableFuture to a consumable
+      * Scala Future that will be completed once the operation is completed on the
+      * database end.
+      *
+      * The execution context of the transformation is provided by phantom via
+      * based on the execution engine used.
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param ec The implicit Scala execution context.
+      * @return An asynchronous Scala future wrapping the Datastax result set.
+      */
+    override def future()(
+      implicit session: Session,
+      ec: ExecutionContextExecutor
+    ): F[ResultSet] = {
+      adapter.fromGuava(query.options(query.st))
+    }
+
+    /**
+      * Returns the first row from the select ignoring everything else
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param ev      The implicit limit for the query.
+      * @param ec      The implicit Scala execution context.
+      * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+      */
+    override def one()(
+      implicit session: Session,
+      ev: Limit =:= Unlimited,
+      ec: ExecutionContextExecutor
+    ): F[Option[R]] = future() map (_.value().map(query.fn))
+
+    override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) {

@@ -20,7 +20,7 @@ import cats.syntax.functor._
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{GuavaAdapter, PromiseInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.prepared.{PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.query.{LimitedPart, QueryOptions, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
@@ -85,10 +85,6 @@ class SelectQueryOps[
 
   override def fromRow(r: Row): Record = query.fromRow(r)
 
-  override def options: QueryOptions = query.options
-
-  override def qb: CQLQuery = query.qb
-
   def prepareAsync[Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
@@ -99,10 +95,12 @@ class SelectQueryOps[
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
-    val flatten = new PreparedFlattener(qb)
+    val flatten = new PreparedFlattener(executableQuery.qb)
 
     flatten.async map { ps =>
-      new PreparedSelectBlock[Table, Record, Limit, Rev](ps, flatten.protocolVersion, fromRow, options)
+      new PreparedSelectBlock[Table, Record, Limit, Rev](ps, flatten.protocolVersion, fromRow, executableQuery.options)
     }
   }
+
+  override def executableQuery: ExecutableCqlQuery = query.executableQuery
 }

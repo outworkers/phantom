@@ -116,10 +116,7 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
   }
 
   def cql(str: CQLQuery): QueryInterface[Future] = new QueryInterface[Future]() {
-
-    override def options: QueryOptions = QueryOptions.empty
-
-    override def qb: CQLQuery = str
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, QueryOptions.empty)
   }
 
   def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))

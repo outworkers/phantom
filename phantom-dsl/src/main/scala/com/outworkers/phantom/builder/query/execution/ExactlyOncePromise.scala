@@ -37,7 +37,7 @@ class ExactlyOncePromise[P[_], F[_], T](
 
   private[this] val promise: P[T] = interface.empty[T]
 
-  def future: F[T] = interface.future(promise)
+  def future: F[T] = interface.future(init)
 
   private[this] val flag = new AtomicBoolean(false)
 

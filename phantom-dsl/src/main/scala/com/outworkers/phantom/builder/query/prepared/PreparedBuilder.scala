@@ -53,7 +53,7 @@ class ExecutablePreparedSelectQuery[
   Table <: CassandraTable[Table, _],
   R,
   Limit <: LimitBound
-](val st: Statement, fn: Row => R, val options: QueryOptions)
+](val st: Statement, val fn: Row => R, val options: QueryOptions)
 
 class PreparedFlattener(qb: CQLQuery)(
   implicit session: Session,

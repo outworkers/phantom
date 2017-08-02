@@ -66,7 +66,7 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     BatchWithQuery(options(batch), strings.mkString("\n"), batchType)
   }
 
-  def queryString: String = makeBatch().debugString
+  def queryString()(implicit session: Session): String = makeBatch().debugString
 
   @implicitNotFound("A ConsistencyLevel was already specified for this query.")
   final def consistencyLevel_=(level: ConsistencyLevel)(

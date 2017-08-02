@@ -24,15 +24,7 @@ import scala.concurrent.ExecutionContextExecutor
 
 abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
 
-  def options: QueryOptions
-
-  def qb: CQLQuery
-
-  def queryString: String = qb.terminate.queryString
-
-  def statement()(implicit session: Session): Statement = {
-    options(new SimpleStatement(qb.terminate.queryString))
-  }
+  def executableQuery: ExecutableCqlQuery
 
   /**
     * Default asynchronous query execution method. This will convert the underlying
@@ -51,7 +43,7 @@ abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): M[ResultSet] = {
-    adapter.fromGuava(statement)
+    adapter.fromGuava(executableQuery)
   }
 
   /**
@@ -70,6 +62,6 @@ abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
   def future(modifyStatement: Statement => Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): M[ResultSet] = adapter.fromGuava(modifyStatement(statement))
+  ): M[ResultSet] = adapter.fromGuava(modifyStatement(executableQuery.statement()))
 }
 
