@@ -17,7 +17,6 @@ package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.util.samplers._
 
 object basicDb extends BasicDatabase
 

@@ -18,18 +18,17 @@ package com.outworkers.phantom
 import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.database.DatabaseProvider
 import com.outworkers.phantom.tables.TestDatabase
+import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.json4s.Formats
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
-import com.outworkers.util.samplers._
-import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 trait PhantomBaseSuite extends Suite with Matchers
   with BeforeAndAfterAll
