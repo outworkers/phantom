@@ -20,8 +20,7 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.macros.HListHelpers
-import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
+import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, HListHelpers}
 import org.joda.time.DateTime
 
 import scala.collection.concurrent.TrieMap

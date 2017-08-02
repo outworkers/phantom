@@ -18,7 +18,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.keys.SASIIndex
-import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
+import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.collection.generic.CanBuildFrom

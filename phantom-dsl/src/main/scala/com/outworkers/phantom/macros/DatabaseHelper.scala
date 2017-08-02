@@ -17,8 +17,8 @@ package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.execution.QueryCollection
-import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox

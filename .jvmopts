@@ -1,4 +1,4 @@
--Xmx1024m
+-Xmx2G
 -Djava.net.preferIPv4Stack=true
--XX:PermSize=256m
--XX:MaxPermSize=512m
+-XX:MetaspaceSize=512m
+-XX:MaxMetaspaceSize=1G

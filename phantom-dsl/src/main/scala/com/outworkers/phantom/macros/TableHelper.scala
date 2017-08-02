@@ -16,13 +16,13 @@
 package com.outworkers.phantom.macros
 
 import com.google.common.base.CaseFormat
-import com.outworkers.phantom.{CassandraTable, NamingStrategy, Row}
 import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.keys.{ClusteringOrder, PartitionKey, PrimaryKey, SASIIndex}
-import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, WhiteboxToolbelt}
+import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
+import com.outworkers.phantom.{CassandraTable, NamingStrategy, Row}
 import shapeless.HList
 
 import scala.collection.immutable.ListMap

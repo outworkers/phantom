@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
+import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import shapeless.Generic
 
 import scala.reflect.macros.whitebox
