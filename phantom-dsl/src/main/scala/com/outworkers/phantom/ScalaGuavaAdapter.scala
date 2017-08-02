@@ -23,7 +23,6 @@ import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
-
 object ScalaGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImplicits {
 
   protected[this] def statementToFuture(st: Statement)(
@@ -92,5 +91,21 @@ object ScalaGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImpli
 
   override def fromGuava[T](source: ListenableFuture[T])(
     implicit executor: ExecutionContextExecutor
-  ): Future[T] = ???
+  ): Future[T] = {
+
+    val promise = Promise[T]()
+
+    val callback = new FutureCallback[T] {
+      def onSuccess(result: T): Unit = {
+        promise success result
+      }
+
+      def onFailure(err: Throwable): Unit = {
+        promise failure err
+      }
+    }
+
+    Futures.addCallback(source, callback, executor)
+    promise.future
+  }
 }

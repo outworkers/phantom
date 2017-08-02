@@ -32,6 +32,9 @@ abstract class RootQuery[
   Record,
   Status <: ConsistencyBound
 ] extends SessionAugmenterImplicits {
+
+  def queryString: String = executableQuery.qb.queryString
+
   def executableQuery: ExecutableCqlQuery
 }
 

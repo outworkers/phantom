@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.ops
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.prepared.{PrepareMark}
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
