@@ -26,6 +26,8 @@ trait PromiseInterface[P[_], F[_]] {
   def become[T](source: P[T], value: F[T]): P[T]
 
   def future[T](source: P[T]): F[T]
+
+  def failed[T](exception: Exception): P[T]
 }
 
 class ExactlyOncePromise[P[_], F[_], T](

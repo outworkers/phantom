@@ -17,10 +17,10 @@ package com.outworkers.phantom.ops
 
 import cats.Monad
 import cats.syntax.functor._
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection, QueryInterface, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
@@ -94,11 +94,46 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def await[T](f: F[T], timeout: Timeout): T = outer.await(f, timeout)
   }
 
-  implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) {
-    def future()(
+  implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) extends QueryInterface[F] {
+    override def executableQuery: ExecutableCqlQuery = query.executableQuery
+
+    /**
+      * Default asynchronous query execution method. This will convert the underlying
+      * call to Cassandra done with Google Guava ListenableFuture to a consumable
+      * Scala Future that will be completed once the operation is completed on the
+      * database end.
+      *
+      * The execution context of the transformation is provided by phantom via
+      * based on the execution engine used.
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param ec The implicit Scala execution context.
+      * @return An asynchronous Scala future wrapping the Datastax result set.
+      */
+    override def future()(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
-    ): F[ResultSet] = adapter.fromGuava(query.options(query.statement))
+      ec: ExecutionContextExecutor
+    ): F[ResultSet] = {
+      adapter.fromGuava(query.options(query.statement))
+    }
+
+    /**
+      * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+      * Scala Future that will be completed once the operation is completed on the
+      * database end.
+      *
+      * The execution context of the transformation is provided by phantom via
+      * based on the execution engine used.
+      *
+      * @param modifyStatement The function allowing to modify underlying [[Statement]]
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param executor The implicit Scala executor.
+      * @return An asynchronous Scala future wrapping the Datastax result set.
+      */
+    override def future(modifyStatement: Statement => Statement)(
+      implicit session: Session,
+      executor: ExecutionContextExecutor
+    ): F[ResultSet] = adapter.fromGuava(modifyStatement(query.options(query.statement)))
   }
 
   implicit class ExecutablePreparedSelect[
@@ -149,11 +184,34 @@ abstract class QueryContext[P[_], F[_], Timeout](
     Table <: CassandraTable[Table, Record],
     Record,
     Consistency <: ConsistencyBound
-  ](query: CreateQuery[Table, Record, Consistency]) {
-    def futur()(
+  ](val query: CreateQuery[Table, Record, Consistency]) extends QueryInterface[F] {
+
+    /**
+      * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+      * Scala Future that will be completed once the operation is completed on the
+      * database end.
+      *
+      * The execution context of the transformation is provided by phantom via
+      * based on the execution engine used.
+      *
+      * @param modifyStatement The function allowing to modify underlying [[Statement]]
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param executor The implicit Scala executor.
+      * @return An asynchronous Scala future wrapping the Datastax result set.
+      */
+    override def future(modifyStatement: Statement => Statement)(
+      implicit session: Session,
+      executor: ExecutionContextExecutor
+    ): F[ResultSet] = promiseInterface.future(
+      promiseInterface.failed[ResultSet](new RuntimeException("Cannot use modifiers on create queries"))
+    )
+
+    override def future()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[Seq[ResultSet]] = new ExecutableStatements[F, Seq](query.queries).future()
+    ): F[ResultSet] = new ExecutableStatements[F, Seq](query.queries).sequence() map (_.head)
+
+    override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) {

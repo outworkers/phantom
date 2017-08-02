@@ -127,11 +127,11 @@ abstract class ResultQueryInterface[
     * @param ec The implicit Scala execution context.
     * @return A Scala future wrapping a list of mapped results.
     */
-  def fetch(source: F[ResultSet])(
+  def fetch()(
     implicit session: Session,
     ec: ExecutionContextExecutor
   ): F[List[R]] = {
-    source map (_.allRows().map(fromRow))
+    future() map (_.allRows().map(fromRow))
   }
 
   /**

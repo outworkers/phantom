@@ -201,7 +201,7 @@ sealed case class AssignmentsQuery[
   private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   options: QueryOptions
-) extends Batchable with SessionAugmenterImplicits {
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   val qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
@@ -336,7 +336,7 @@ sealed case class ConditionalQuery[
   private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   options: QueryOptions
-) extends Batchable with SessionAugmenterImplicits {
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   def qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
