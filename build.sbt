@@ -249,7 +249,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
     )
   ).dependsOn(
-    phantomEngine
+    phantomEngine % "compile->compile;test->test;"
   ).enablePlugins(
     CrossPerProjectPlugin
   )

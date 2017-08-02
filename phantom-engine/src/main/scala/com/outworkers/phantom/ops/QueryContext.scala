@@ -33,8 +33,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
 )(
   implicit fMonad: Monad[F],
-  promiseInterface: PromiseInterface[P, F],
-  adapter: GuavaAdapter[F]
+  val promiseInterface: PromiseInterface[P, F],
+  val adapter: GuavaAdapter[F]
 ) { outer =>
 
   def executeStatements[M[X] <: TraversableOnce[X]](
@@ -95,7 +95,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       cbfB: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
       cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]],
       fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      cbfRes: CanBuildFrom[M[ResultSet], ResultSet, M[ResultSet]]
+      fbf2: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {
 
       val builder = cbfB()
@@ -104,7 +104,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
         builder += table.store(el).executableQuery
       }
 
-      executeStatements[M](new QueryCollection[M](builder.result()))(cbfB).future()(session, ctx, fbf, fbf)
+      executeStatements[M](new QueryCollection[M](builder.result()))(cbfB).future()(session, ctx, fbf, fbf2)
     }
   }
 }

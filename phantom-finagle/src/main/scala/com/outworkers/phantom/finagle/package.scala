@@ -20,12 +20,11 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.execution.{ExecutableStatement, ExecutableStatements}
+import com.outworkers.phantom.builder.query.execution.ExecutableStatements
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
-import com.outworkers.phantom.database.ExecutableCreateStatementsList
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Duration => TwitterDuration, _}
 import org.joda.time.Seconds

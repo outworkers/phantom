@@ -322,7 +322,13 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
   ](val col: AbstractMapColumn[Owner, Record, A, B]) extends AnyVal {
 
     def set(key: A, value: B): UpdateClause.Default = {
-      new UpdateClause.Condition(QueryBuilder.Collections.mapSet(col.name, col.keyAsCql(key).toString, col.valueAsCql(value)))
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.mapSet(
+          col.name,
+          col.keyAsCql(key).toString,
+          col.valueAsCql(value)
+        )
+      )
     }
 
     def put(value: (A, B)): UpdateClause.Default = {

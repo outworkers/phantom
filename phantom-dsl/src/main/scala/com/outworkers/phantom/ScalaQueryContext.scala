@@ -16,12 +16,12 @@
 package com.outworkers.phantom
 
 import cats.Monad
-import com.outworkers.phantom.ops.QueryContext
-
-import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.duration._
 import cats.instances.future._
 import com.outworkers.phantom.builder.query.execution.PromiseInterface
+import com.outworkers.phantom.ops.QueryContext
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
 
 object ScalaFutureImplicits {
 
@@ -42,8 +42,7 @@ class ScalaQueryContext extends QueryContext[Promise, Future, Duration](10.secon
   ScalaPromiseInterface,
   ScalaGuavaAdapter
 ) {
+
   override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
-
-
 
 }
