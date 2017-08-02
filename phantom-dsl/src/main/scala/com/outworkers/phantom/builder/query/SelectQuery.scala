@@ -167,7 +167,7 @@ case class SelectQuery[
     copy(usingPart = usingPart append clause.qb)
   }
 
-  override def consistencyLevel_=(level: ConsistencyLevel)(
+  def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session
   ): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {

@@ -29,9 +29,9 @@ class TruncateQuery[
 ](
   table: Table,
   val init: CQLQuery,
-  val options: QueryOptions,
+  override val options: QueryOptions,
   protected[phantom] val usingPart: UsingPart = UsingPart.empty
-) extends SessionAugmenterImplicits {
+) extends RootQuery[Table, Record, Status](table, init, options) {
 
   def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 
@@ -43,7 +43,7 @@ class TruncateQuery[
     }
   }
 
-  def qb: CQLQuery = usingPart build init
+  override val qb: CQLQuery = usingPart build init
 }
 
 

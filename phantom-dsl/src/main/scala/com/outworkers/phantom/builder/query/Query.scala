@@ -31,27 +31,7 @@ abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, val options: QueryOptions) {
-
-  protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    S <: ConsistencyBound
-  ] <: RootQuery[T, R, S]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    S <: ConsistencyBound
-  ](t: T, q: CQLQuery, options: QueryOptions): QueryType[T, R, S]
-
-
-  @implicitNotFound("You have already specified a ConsistencyLevel for this query")
-  def consistencyLevel_=(level: ConsistencyLevel)(
-    implicit ev: Status =:= Unspecified,
-    session: Session
-  ): QueryType[Table, Record, Specified]
-}
+](table: Table, val qb: CQLQuery, val options: QueryOptions) extends SessionAugmenterImplicits
 
 
 abstract class Query[
@@ -64,11 +44,11 @@ abstract class Query[
   PS <: HList
 ](
   table: Table,
-  val qb: CQLQuery,
+  override val qb: CQLQuery,
   row: Row => Record,
   usingPart: UsingPart = UsingPart.empty,
-  val options: QueryOptions
-) extends SessionAugmenterImplicits {
+  override val options: QueryOptions
+) extends RootQuery[Table, Record, Status](table, qb, options) {
 
   def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 
@@ -81,38 +61,6 @@ abstract class Query[
     C <: WhereBound,
     P <: HList
   ] <: Query[T, R, L, O, S, C, P]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P]
-
-  @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.protocolConsistency) {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](
-        table,
-        CQLQuery.empty,
-        row,
-        usingPart,
-        options.consistencyLevel_=(level)
-      )
-    } else {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](
-        table,
-        CQLQuery.empty,
-        row,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        options
-      )
-    }
-  }
 
   /**
     * The where method of a select query.
@@ -147,21 +95,6 @@ abstract class Query[
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
-
-
-  def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    create[Table, Record, Limit, Order, Status, Chain, PS](
-      table,
-      qb,
-      row,
-      usingPart append QueryBuilder.ttl(seconds.toString),
-      options
-    )
-  }
-
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    ttl(duration.toSeconds)
-  }
 }
 
 private[phantom] trait Batchable {

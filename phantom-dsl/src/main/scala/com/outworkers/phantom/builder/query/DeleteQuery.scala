@@ -148,7 +148,7 @@ case class DeleteQuery[
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
-  override def consistencyLevel_=(level: ConsistencyLevel)(
+  def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.protocolConsistency) {
@@ -172,7 +172,7 @@ case class DeleteQuery[
   def onlyIf(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    new ConditionalDeleteQuery(
+    ConditionalDeleteQuery(
       table = table,
       init = init,
       wherePart = wherePart,

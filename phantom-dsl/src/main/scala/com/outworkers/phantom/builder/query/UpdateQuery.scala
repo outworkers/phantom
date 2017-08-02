@@ -108,7 +108,7 @@ case class UpdateQuery[
     )
   }
 
-  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
