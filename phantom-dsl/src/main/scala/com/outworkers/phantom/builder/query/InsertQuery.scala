@@ -228,7 +228,7 @@ class InsertJsonQuery[
   usingPart: UsingPart = UsingPart.empty,
   lightweightPart: LightweightPart = LightweightPart.empty,
   val options: QueryOptions
-) extends  Batchable {
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   def prepare[Rev <: HList]()(
     implicit session: Session,

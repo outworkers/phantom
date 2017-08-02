@@ -17,7 +17,7 @@ package com.outworkers.phantom
 
 import com.datastax.driver.core.{PagingState, Session, SimpleStatement, Statement, Duration => DatastaxDuration, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.outworkers.phantom.batch.{BatchQuery, BatchWithQuery}
+import com.outworkers.phantom.builder.batch.{BatchQuery, BatchWithQuery}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.execution.ExecutableStatements

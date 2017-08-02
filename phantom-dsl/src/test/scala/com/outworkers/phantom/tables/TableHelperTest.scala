@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.primitives.Primitive
 import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.TableHelper
 import com.outworkers.phantom.tables.Article
 import com.outworkers.phantom.tables.sasi.SASIIndexedArticles
 import org.scalamock.scalatest.MockFactory

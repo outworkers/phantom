@@ -58,7 +58,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def createSchema[F[_]]()(
+  def generateSchema[F[_]]()(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,

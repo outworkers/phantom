@@ -17,7 +17,7 @@ package com.outworkers.phantom
 
 import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
-import com.outworkers.phantom.batch.BatchType
+import com.outworkers.phantom.builder.batch.BatchType
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.query.execution.ExecutableStatement
 import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}

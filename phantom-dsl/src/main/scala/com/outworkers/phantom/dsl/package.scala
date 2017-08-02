@@ -22,7 +22,7 @@ import cats.instances.FutureInstances
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
-import com.outworkers.phantom.batch.Batcher
+import com.outworkers.phantom.builder.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._

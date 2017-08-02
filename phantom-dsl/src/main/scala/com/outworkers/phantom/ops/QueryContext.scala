@@ -18,7 +18,7 @@ package com.outworkers.phantom.ops
 import cats.Monad
 import cats.syntax.functor._
 import com.datastax.driver.core.{Session, Statement}
-import com.outworkers.phantom.batch.BatchQuery
+import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
@@ -216,6 +216,14 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) {
 
+    def createSchema()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ec: ExecutionContextExecutor
+    ): F[Seq[ResultSet]] = {
+      new ExecutableStatements[F, Seq](table.autocreate(keySpace).queries).sequence()
+    }
+
     def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
       implicit keySpace: KeySpace,
       session: Session,
@@ -235,7 +243,6 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ev: Out ==:== Repr,
       ctx: ExecutionContextExecutor,
       cbfB: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
-      cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]],
       fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
       fbf2: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {

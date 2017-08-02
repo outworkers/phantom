@@ -17,7 +17,7 @@ package com.outworkers.phantom
 
 import com.datastax.driver.core.{Session, Statement, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
-import com.outworkers.phantom.batch.BatchWithQuery
+import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.execution.GuavaAdapter
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
