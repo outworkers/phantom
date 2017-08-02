@@ -20,7 +20,7 @@ import cats.syntax.functor._
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.batch.BatchQuery
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, PromiseInterface, QueryCollection, QueryInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace

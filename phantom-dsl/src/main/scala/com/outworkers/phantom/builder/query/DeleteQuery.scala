@@ -225,7 +225,7 @@ sealed case class ConditionalDeleteQuery[
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
   options: QueryOptions
- ) extends Batchable {
+ ) extends RootQuery[Table, Record, Status] with Batchable {
 
   val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
