@@ -148,7 +148,7 @@ case class CreateQuery[
     })
   }
 
-  val queries = new QueryCollection[Seq](Seq(ExecutableCqlQuery(qb))) ++ indexList ++ table.sasiQueries
+  val queries = new QueryCollection[Seq](Seq(ExecutableCqlQuery(qb, options))) ++ indexList ++ table.sasiQueries
 }
 
 object CreateQuery {
