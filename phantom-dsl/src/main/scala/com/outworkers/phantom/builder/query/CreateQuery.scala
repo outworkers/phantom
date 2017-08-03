@@ -134,6 +134,8 @@ case class CreateQuery[
 
   val qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
+  def queryString: String = qb.queryString
+
   private[phantom] val indexList: QueryCollection[Seq] = {
     val name = keySpace.name
 

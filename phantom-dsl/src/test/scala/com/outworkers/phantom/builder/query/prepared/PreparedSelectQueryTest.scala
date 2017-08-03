@@ -26,7 +26,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
 
-    database.recipes.createSchema()
+    new CassandraTableStoreMethods(database.recipes).createSchema()
     database.articlesByAuthor.createSchema()
     database.primitives.createSchema()
     if (session.v4orNewer) {

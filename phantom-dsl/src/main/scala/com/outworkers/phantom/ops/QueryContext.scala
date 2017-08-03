@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
-import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, SelectQuery}
+import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, RootSelectBlock, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
@@ -63,6 +63,29 @@ abstract class QueryContext[P[_], F[_], Timeout](
       implicit session: Session,
       ctx: ExecutionContextExecutor
     ): F[ResultSet] = adapter.fromGuava(query.executableQuery)
+  }
+
+  implicit class RootSelectBlockOps[
+    Table <: CassandraTable[Table, Record],
+    Record
+  ](block: RootSelectBlock[Table, Record])(implicit keySpace: KeySpace) extends ResultQueryInterface[F, Table, Record, Unlimited] {
+    override def fromRow(r: Row): Record = block.fromRow(r)
+
+    /**
+      * Returns the first row from the select ignoring everything else
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @param ev      The implicit limit for the query.
+      * @param ec      The implicit Scala execution context.
+      * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+      */
+    override def one()(
+      implicit session: Session,
+      ev: =:=[Unlimited, Unlimited],
+      ec: ExecutionContextExecutor
+    ): F[Option[Record]] = block.all().one()
+
+    override def executableQuery: ExecutableCqlQuery = block.executableQuery
   }
 
   implicit class SelectOps[
@@ -214,7 +237,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
-  implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: T) {
+  implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
 
     def createSchema()(
       implicit session: Session,

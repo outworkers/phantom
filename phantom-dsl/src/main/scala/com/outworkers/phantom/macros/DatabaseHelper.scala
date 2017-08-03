@@ -72,9 +72,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
          }
 
          def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
-            new $prefix.QueryCollection(
-              space => $seqCmp.apply(..$queryList)
-            )
+            new $prefix.QueryCollection[_root_.scala.collection.Seq]($seqCmp.apply(..$queryList))
          }
        }
      """
