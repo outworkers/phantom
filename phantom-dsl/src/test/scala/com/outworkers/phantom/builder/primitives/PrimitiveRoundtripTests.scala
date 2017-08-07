@@ -59,7 +59,8 @@ class PrimitiveRoundtripTests extends FlatSpec
   }
 
   it should "serialize and deserialize an Option[String] primitive" in {
-    roundtrip[Option[String]]
+    Console.println(Primitive[Option[String]].asCql(None))
+    roundtrip(Gen.option(Gen.alphaNumStr))
   }
 
   it should "serialize and deserialize a Int primitive" in {

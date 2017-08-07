@@ -145,7 +145,7 @@ object Primitives {
     override def deserialize(source: ByteBuffer, version: ProtocolVersion): String = {
       source match {
         case Primitive.nullValue => Primitive.nullValue
-        case bytes if bytes.remaining() == 0 => ""
+        case bytes if bytes.remaining() == 0 => Primitive.nullValue
         case arr @ _ => new String(Bytes.getArray(arr), charset)
       }
     }
