@@ -97,7 +97,7 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   it should "deserialize an empty string to a Some(empty) with optional primitives" in {
     val primitve = Primitive[Option[String]]
     primitve.serialize(None, ProtocolVersion.V5)
-    primitve.deserialize(null, ProtocolVersion.V5) shouldEqual None
+    primitve.deserialize(Primitive.nullValue, ProtocolVersion.V5) shouldEqual None
   }
 
   it should "autogenerate set primitives for Map types" in {
