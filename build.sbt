@@ -89,7 +89,7 @@ lazy val Versions = new {
   }
 }
 
-val defaultConcurrency = 4
+val defaultConcurrency = 8
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:experimental.macros",
